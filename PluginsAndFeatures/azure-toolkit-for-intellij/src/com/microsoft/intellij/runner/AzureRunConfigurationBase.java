@@ -31,6 +31,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.Accessor;
+import com.intellij.util.xmlb.SerializationFilter;
 import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
 import org.jdom.Element;
@@ -72,22 +73,18 @@ public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase 
     @Override
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
-        XmlSerializer.serializeInto(getModel(), element, new SensitiveInformationSerializationFilter());
+        XmlSerializer.serializeInto(getModel(), element, new SerializationFilterBase() {
+            @Override
+            protected boolean accepts(@NotNull Accessor accessor, @NotNull Object bean, @Nullable Object beanValue) {
+                if (accessor == null || bean == null) {
+                    return false;
+                }
+                return !(accessor.getName() instanceof String && accessor.getName().equalsIgnoreCase("password"));
+            }
+        });
     }
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
-    }
-
-    // Use this to filter sensitive information like password
-    class SensitiveInformationSerializationFilter extends SerializationFilterBase {
-
-        @Override
-        protected boolean accepts(@NotNull Accessor accessor, @NotNull Object bean, @Nullable Object beanValue) {
-            if (accessor == null || bean == null) {
-                return false;
-            }
-            return !(accessor.getName() instanceof String && accessor.getName().equalsIgnoreCase("password"));
-        }
     }
 }
