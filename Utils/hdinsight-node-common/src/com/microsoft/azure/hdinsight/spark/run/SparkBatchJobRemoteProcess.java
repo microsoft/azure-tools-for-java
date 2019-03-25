@@ -169,7 +169,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                         ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
-                    ctrlError(err.getMessage());
+                    ctrlSubject.onError(err);
                     destroy();
                 }, () -> {
                     disconnect();
