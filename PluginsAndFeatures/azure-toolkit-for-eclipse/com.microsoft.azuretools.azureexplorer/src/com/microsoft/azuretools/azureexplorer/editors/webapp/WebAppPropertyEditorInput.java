@@ -22,6 +22,8 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
+import java.util.Objects;
+
 public class WebAppPropertyEditorInput extends WebAppBasePropertyEditorInput {
 
     private String id;
@@ -41,20 +43,6 @@ public class WebAppPropertyEditorInput extends WebAppBasePropertyEditorInput {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof WebAppPropertyEditorInput) {
-            WebAppPropertyEditorInput input = (WebAppPropertyEditorInput) o;
-            return this.getId().equals(input.getId());
-        }
-        return false;
-
-    }
-
-
-    @Override
     public String getName() {
         return this.webappName;
     }
@@ -67,4 +55,20 @@ public class WebAppPropertyEditorInput extends WebAppBasePropertyEditorInput {
         return subscriptionId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        WebAppPropertyEditorInput that = (WebAppPropertyEditorInput) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

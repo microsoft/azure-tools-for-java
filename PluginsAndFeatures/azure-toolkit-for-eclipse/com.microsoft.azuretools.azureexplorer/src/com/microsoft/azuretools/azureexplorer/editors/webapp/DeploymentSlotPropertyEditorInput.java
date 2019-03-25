@@ -22,6 +22,8 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
+import java.util.Objects;
+
 public class DeploymentSlotPropertyEditorInput extends WebAppBasePropertyEditorInput {
 
     private String id;
@@ -58,14 +60,16 @@ public class DeploymentSlotPropertyEditorInput extends WebAppBasePropertyEditorI
         if (this == o) {
             return true;
         }
-        if (o == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (o instanceof DeploymentSlotPropertyEditorInput) {
-            DeploymentSlotPropertyEditorInput input = (DeploymentSlotPropertyEditorInput) o;
-            return this.getId().equals(input.getId());
-        }
-        return false;
+        DeploymentSlotPropertyEditorInput that = (DeploymentSlotPropertyEditorInput) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 }
