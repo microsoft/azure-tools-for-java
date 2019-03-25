@@ -22,13 +22,40 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IPersistableElement;
 
-public class WebAppPropertyEditor extends WebAppBasePropertyEditor {
-    public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor";
+public abstract class WebAppBasePropertyEditorInput implements IEditorInput {
 
-    public WebAppPropertyEditor() {
-        super(new WebAppPropertyViewPresenter());
+    @Override
+    public boolean exists() {
+        return false;
+    }
+
+    @Override
+    public ImageDescriptor getImageDescriptor() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public IPersistableElement getPersistable() {
+        return null;
+    }
+
+    @Override
+    public String getToolTipText() {
+        return null;
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> aClass) {
+        return null;
     }
 
 }

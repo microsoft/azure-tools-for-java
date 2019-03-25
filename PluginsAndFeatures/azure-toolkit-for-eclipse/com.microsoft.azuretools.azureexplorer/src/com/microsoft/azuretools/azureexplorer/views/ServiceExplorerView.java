@@ -34,7 +34,6 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -241,11 +240,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             case add:
                 // create child tree nodes for the new nodes
                 for (Node childNode : (Collection<Node>) e.getNewItems()) {
-                    // Dirty fix for issue https://github.com/Microsoft/azure-tools-for-java/issues/2791
-                    // Since we do not support slot, here should not let user see slot in the azure explorer
-                    if (childNode.getName() == null || !childNode.getName().equals("Deployment Slots")) {
-                        treeNode.add(createTreeNode(childNode));
-                    }
+                    treeNode.add(createTreeNode(childNode));
                 }
                 break;
             case remove:
@@ -330,12 +325,6 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     Node node = ((TreeNode) selection.getFirstElement()).node;
                     if (node.hasNodeActions()) {
                         for (final NodeAction nodeAction : node.getNodeActions()) {
-                            // Dirty fix, should not show "refresh" in webapp node, since we do not support deploy slot
-                            // Temp solution, after we support deploy slot, should remove this line.
-                            if (node.getClass().getName().equals(WebAppNode.class.getName())
-                                    && nodeAction.getName().equals("Refresh")) {
-                                continue;
-                            }
                             ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ? Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
                             Action action = new Action(nodeAction.getName(), imageDescriptor) {
                                 @Override

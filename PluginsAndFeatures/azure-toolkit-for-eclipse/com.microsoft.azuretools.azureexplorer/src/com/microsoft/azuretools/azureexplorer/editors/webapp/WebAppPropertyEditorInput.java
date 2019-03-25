@@ -22,11 +22,9 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IPersistableElement;
+import java.util.Objects;
 
-public class WebAppPropertyEditorInput implements IEditorInput {
+public class WebAppPropertyEditorInput extends WebAppBasePropertyEditorInput {
 
     private String id;
     private String subscriptionId;
@@ -45,46 +43,8 @@ public class WebAppPropertyEditorInput implements IEditorInput {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof WebAppPropertyEditorInput) {
-            WebAppPropertyEditorInput input = (WebAppPropertyEditorInput) o;
-            return this.getId().equals(input.getId());
-        }
-        return false;
-
-    }
-
-    @Override
-    public <T> T getAdapter(Class<T> arg0) {
-        return null;
-    }
-
-    @Override
-    public boolean exists() {
-        return false;
-    }
-
-    @Override
-    public ImageDescriptor getImageDescriptor() {
-        return null;
-    }
-
-    @Override
     public String getName() {
         return this.webappName;
-    }
-
-    @Override
-    public IPersistableElement getPersistable() {
-        return null;
-    }
-
-    @Override
-    public String getToolTipText() {
-        return null;
     }
 
     public String getId() {
@@ -93,5 +53,22 @@ public class WebAppPropertyEditorInput implements IEditorInput {
 
     public String getSubscriptionId() {
         return subscriptionId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        WebAppPropertyEditorInput that = (WebAppPropertyEditorInput) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
