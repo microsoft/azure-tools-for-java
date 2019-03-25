@@ -22,48 +22,39 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
-public class WebAppPropertyEditorInput extends WebAppBasePropertyEditorInput {
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IPersistableElement;
 
-    private String id;
-    private String subscriptionId;
-    private String webappName;
+public abstract class WebAppBasePropertyEditorInput implements IEditorInput {
 
-    /**
-     * Constructor.
-     * @param sid   Subscription ID
-     * @param id    Resource ID
-     * @param name  Resource Name
-     */
-    public WebAppPropertyEditorInput(String sid, String id, String name) {
-        this.id = id;
-        this.subscriptionId = sid;
-        this.webappName = name;
+    @Override
+    public boolean exists() {
+        return false;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof WebAppPropertyEditorInput) {
-            WebAppPropertyEditorInput input = (WebAppPropertyEditorInput) o;
-            return this.getId().equals(input.getId());
-        }
-        return false;
-
+    public ImageDescriptor getImageDescriptor() {
+        return null;
     }
-
 
     @Override
     public String getName() {
-        return this.webappName;
+        return null;
     }
 
-    public String getId() {
-        return id;
+    @Override
+    public IPersistableElement getPersistable() {
+        return null;
     }
 
-    public String getSubscriptionId() {
-        return subscriptionId;
+    @Override
+    public String getToolTipText() {
+        return null;
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> aClass) {
+        return null;
     }
 }
