@@ -60,9 +60,11 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
 import rx.Observable;
+import rx.exceptions.Exceptions;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.net.UnknownServiceException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -205,7 +207,16 @@ public class HttpObservable implements ILogger {
 
     public HttpObservable setDefaultHeader(@Nullable Header defaultHeader) {
         this.defaultHeaders.updateHeader(defaultHeader);
+        return this;
+    }
 
+    @Nullable
+    public HeaderGroup getDefaultHeaderGroup()  {
+        return defaultHeaders;
+    }
+
+    public HttpObservable setDefaultHeaderGroup(@Nullable HeaderGroup defaultHeaders) {
+        this.defaultHeaders = defaultHeaders;
         return this;
     }
 
@@ -417,5 +428,19 @@ public class HttpObservable implements ILogger {
                                    @NotNull final Class<T> clazz) {
         return requestWithHttpResponse(new HttpPatch(uri), entity, parameters, addOrReplaceHeaders)
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
+    }
+
+    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs, List<Header> headers) {
+        return request(req, req.getEntity(), pairs, headers)
+                .doOnNext(
+                        resp -> {
+                            int statusCode = resp.getStatusLine().getStatusCode();
+                            if (statusCode != validStatueCode) {
+                                Exceptions.propagate(new UnknownServiceException(
+                                        String.format("Exceute request with unexpected code %s and resp %s", statusCode, resp)
+                                ));
+                            }
+                        }
+                );
     }
 }

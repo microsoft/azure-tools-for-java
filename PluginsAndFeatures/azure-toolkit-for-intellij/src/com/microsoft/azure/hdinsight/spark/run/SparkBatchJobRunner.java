@@ -42,10 +42,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping;
-import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
-import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.*;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
@@ -95,9 +92,10 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         // get storage account and access token from submitModel
         IHDIStorageAccount storageAccount = null;
         String accessToken = null;
+        String accessKey = null;
         String destinationRootPath = null;
         HttpObservable httpObservable = null;
-        Deployable webHDFSDeploy = null;
+        Deployable jobDeploy = null;
         String clusterName = submitModel.getSubmissionParameter().getClusterName();
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                 .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
@@ -164,6 +162,24 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 }
 
                 break;
+            case ADLS_GEN2:
+                destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
+                accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
+                try {
+                    clusterDetail.getConfigurationInfo();
+                    storageAccount = clusterDetail.getStorageAccount();
+                } catch (Exception ex) {
+                    log().warn("Error getting cluster storage configuration. Error: " + ExceptionUtils.getStackTrace(ex));
+                    throw new ExecutionException("Cannot get valid storage account");
+                }
+
+                httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
+                if (StringUtils.isBlank(accessKey)) {
+                    throw new ExecutionException("Invalid access key input.");
+                }
+
+                jobDeploy = new ADLSGen2Deploy(clusterDetail, httpObservable);
+                break;
             case WEBHDFS:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
                 if(StringUtils.isBlank(destinationRootPath) || !destinationRootPath.matches(SparkBatchJob.WebHDFSPathPattern)){
@@ -174,17 +190,17 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 try {
                     if (clusterDetail instanceof ClusterDetail) {
                         httpObservable = new AzureHttpObservable(clusterDetail.getSubscription().getTenantId(), ApiVersion.VERSION);
-                        webHDFSDeploy = clusterDetail.getStorageAccount().getAccountType() == StorageAccountTypeEnum.ADLS
+                        jobDeploy = clusterDetail.getStorageAccount().getAccountType() == StorageAccountTypeEnum.ADLS
                                 ? new ADLSGen1HDFSDeploy(clusterDetail, httpObservable)
                                 : null;
                     } else if (clusterDetail instanceof SqlBigDataLivyLinkClusterDetail) {
                         httpObservable = new HttpObservable(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
-                        webHDFSDeploy = new WebHDFSDeploy(clusterDetail, httpObservable);
+                        jobDeploy = new WebHDFSDeploy(clusterDetail, httpObservable);
                     }
                 } catch (HDIException ignore) {
                 }
 
-                if (httpObservable == null || webHDFSDeploy == null) {
+                if (httpObservable == null || jobDeploy == null) {
                     throw new ExecutionException("Error preparing webhdfs uploading info based on the given cluster");
                 }
 
@@ -193,7 +209,9 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         //TODO:use httpobservable to replace sparkbathsubmission and deprecate the old constructor.
         if (httpObservable != null) {
-            return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath, httpObservable, webHDFSDeploy);
+            return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount
+                    , storageAcccountType == SparkSubmitStorageType.ADLS_GEN2 ? accessKey : accessToken,
+                    destinationRootPath, httpObservable, jobDeploy);
         } else {
             return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath);
         }

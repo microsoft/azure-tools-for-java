@@ -43,7 +43,7 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
 
     // cluster detail using adls gen2 as default storage type
     ClusterWithAdlsGen2(new SparkSubmitStorageType[]{
-            SparkSubmitStorageType.NOT_SUPPORT_STORAGE_TYPE
+            SparkSubmitStorageType.ADLS_GEN2
     }),
 
     // cluster detail with unknown storage type
