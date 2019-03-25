@@ -360,12 +360,14 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         webAppOnLinuxDeployConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
         // set ACR info
         webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
-                containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
-                containerSettingPanel.getUserName(),
-                containerSettingPanel.getPassword(),
-                containerSettingPanel.getImageTag(),
-                containerSettingPanel.getStartupFile()
+            containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
+            containerSettingPanel.getUserName(),
+            containerSettingPanel.getPassword(),
+            containerSettingPanel.getImageTag(),
+            containerSettingPanel.getStartupFile()
         ));
+        savePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
+            containerSettingPanel.getPassword());
 
         webAppOnLinuxDeployConfiguration.setTargetPath(getTargetPath());
         webAppOnLinuxDeployConfiguration.setTargetName(getTargetName());
@@ -464,6 +466,7 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         }
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
+        acrInfo.setPassword(loadPassword(acrInfo.getServerUrl(), acrInfo.getUsername()));
         containerSettingPanel.setTxtFields(acrInfo);
 
         // cache for table/combo selection
