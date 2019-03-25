@@ -70,6 +70,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
         this.account = account;
         this.jobUuid = UUID.randomUUID().toString();
         this.jobDeploy = jobDeploy;
+        setDelaySeconds(5);
     }
 
     public int getLogStartIndex() {
@@ -172,7 +173,6 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     protected Observable<AbstractMap.SimpleImmutableEntry<String, String>> getJobDoneObservable() {
         // Refer parent class "SparkBatchJob" for delay interval
         final int GET_JOB_DONE_REPEAT_DELAY_MILLISECONDS = 1000;
-        final int GET_JOB_DONE_RETRY_DELAY_MILLISECONDS = 5000;
         return getSparkBatchJobRequest()
                 .flatMap(batchResp ->
                         getJobSchedulerState(batchResp) == null
@@ -181,7 +181,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 )
                 .retryWhen(err ->
                         err.zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
-                                .delay(GET_JOB_DONE_RETRY_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS)
+                                .delay(getDelaySeconds(), TimeUnit.SECONDS)
                 )
                 .repeatWhen(ob -> ob.delay(GET_JOB_DONE_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
                 .takeUntil(this::isJobEnded)
@@ -195,7 +195,6 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
 
     @Override
     public Observable<String> awaitStarted() {
-        final int AWAIT_JOB_START_RETRY_DELAY_MILLISECONDS = 5000;
         return getSparkBatchJobRequest()
                 .flatMap(batchResp ->
                         getJobSchedulerState(batchResp) == null
@@ -204,43 +203,31 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 )
                 .retryWhen(err ->
                         err.zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
-                                .delay(AWAIT_JOB_START_RETRY_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS)
+                                .delay(getDelaySeconds(), TimeUnit.SECONDS)
                 )
+                .repeatWhen(ob ->
+                        ob.doOnNext(ignore -> ctrlInfo("The Spark job is starting..."))
+                                .delay(getDelaySeconds(), TimeUnit.SECONDS))
+                .takeUntil(batchResp -> isJobEnded(batchResp) || isJobRunning(batchResp))
+                .filter(batchResp -> isJobEnded(batchResp) || isJobRunning(batchResp))
                 .doOnNext(batchResp -> {
                     String sparkMasterUI = getMasterUI(batchResp);
                     if (sparkMasterUI != null) {
                         ctrlHyperLink(sparkMasterUI + "?adlaAccountName=" + getAccount().getName());
                     }
                 })
-                .flatMap(job ->
-                        getSparkBatchJobRequest()
-                                .flatMap(batchResp ->
-                                        getJobSchedulerState(batchResp) == null
-                                                ? Observable.error(new IOException("Failed to get scheduler state of the job."))
-                                                : Observable.just(batchResp)
-                                )
-                                .retryWhen(err ->
-                                        err.zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
-                                                .delay(AWAIT_JOB_START_RETRY_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS)
-                                )
-                                .repeatWhen(ob ->
-                                        ob.doOnNext(ignore -> ctrlInfo("The Spark job is starting..."))
-                                                .delay(getDelaySeconds(), TimeUnit.SECONDS))
-                                .takeUntil(batchResp -> isJobEnded(batchResp) || isJobRunning(batchResp))
-                                .filter(batchResp -> isJobEnded(batchResp) || isJobRunning(batchResp))
-                                .flatMap(batchResp -> {
-                                    if (isJobRunning(batchResp) || isJobSuccess(batchResp)) {
-                                        return Observable.just(getJobState(batchResp));
-                                    } else if (isJobFailed(batchResp)) {
-                                        String errorMsg = "The Spark job failed to start due to:\n" + getJobLog(batchResp);
-                                        log().warn(errorMsg);
-                                        return Observable.error(new SparkJobException(errorMsg));
-                                    } else {
-                                        // Job scheduler state is ENDED;
-                                        return Observable.just("unknown");
-                                    }
-                                })
-                );
+                .flatMap(batchResp -> {
+                    if (isJobRunning(batchResp) || isJobSuccess(batchResp)) {
+                        return Observable.just(getJobState(batchResp));
+                    } else if (isJobFailed(batchResp)) {
+                        String errorMsg = "The Spark job failed to start due to:\n" + getJobLog(batchResp);
+                        log().warn(errorMsg);
+                        return Observable.error(new SparkJobException(errorMsg));
+                    } else {
+                        // Job scheduler state is ENDED;
+                        return Observable.just("unknown");
+                    }
+                });
     }
 
     @NotNull
@@ -350,10 +337,8 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     public Observable<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
         ImmutableSet<String> ignoredEmptyLines = ImmutableSet.of("stdout:", "stderr:", "yarn diagnostics:");
         final int GET_LIVY_URL_REPEAT_DELAY_MILLISECONDS = 3000;
-        final int GET_LIVY_URL_RETRY_DELAY_MILLISECONDS = 5000;
         final int MAX_LOG_LINES_PER_REQUEST = 128;
         final int GET_LOG_REPEAT_DELAY_MILLISECONDS = 1000;
-        final int GET_LOG_RETRY_DELAY_MILLISECONDS = 5000;
         // We need to repeatly call getSparkBatchJobRequest() since "livyServerApi" field does not always exist in response but
         // only appeared for a while and before that we can't get the "livyServerApi" field.
         ctrlInfo("Trying to get livy URL...");
@@ -365,7 +350,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 )
                 .retryWhen(err ->
                         err.zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
-                                .delay(GET_LIVY_URL_RETRY_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS)
+                                .delay(getDelaySeconds(), TimeUnit.SECONDS)
                 )
                 .repeatWhen(ob -> ob.delay(GET_LIVY_URL_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
                 .takeUntil(batchResp -> isJobEnded(batchResp) || StringUtils.isNotEmpty(getLivyAPI(batchResp)))
@@ -399,29 +384,12 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                                         return Observable.just(Triple.of(logLines, SparkBatchJobState.STARTING.toString(), SchedulerState.SCHEDULED.toString()));
                                                     } else {
                                                         return getSparkBatchJobRequest()
-                                                                .flatMap(batchResp ->
-                                                                        getJobSchedulerState(batchResp) == null
-                                                                                ? Observable.error(new IOException("Failed to get scheduler state of the job."))
-                                                                                : Observable.just(batchResp)
-                                                                )
-                                                                .retryWhen(err ->
-                                                                        err.zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
-                                                                                .delay(GET_LOG_RETRY_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS)
-                                                                )
                                                                 .map(batchResp -> Triple.of(logLines, getJobState(batchResp), getJobSchedulerState(batchResp)));
                                                     }
                                                 })
                                                 .onErrorResumeNext(errors ->
                                                         getSparkBatchJobRequest()
-                                                                .flatMap(batchResp ->
-                                                                        getJobSchedulerState(batchResp) == null
-                                                                                ? Observable.error(new IOException("Failed to get scheduler state of the job."))
-                                                                                : Observable.just(batchResp)
-                                                                )
-                                                                .retryWhen(err ->
-                                                                        err.zipWith(Observable.range(1, getRetriesMax()), (n, i) -> i)
-                                                                                .delay(GET_LOG_RETRY_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS)
-                                                                )
+                                                                .delay(getDelaySeconds(), TimeUnit.SECONDS)
                                                                 .map(batchResp -> Triple.of(new ArrayList<>(), getJobState(batchResp), getJobSchedulerState(batchResp)))
                                                 )
                                                 .repeatWhen(ob -> ob.delay(GET_LOG_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
