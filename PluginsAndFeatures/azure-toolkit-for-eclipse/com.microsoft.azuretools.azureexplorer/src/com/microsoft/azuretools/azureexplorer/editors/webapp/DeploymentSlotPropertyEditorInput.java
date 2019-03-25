@@ -22,13 +22,54 @@
 
 package com.microsoft.azuretools.azureexplorer.editors.webapp;
 
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
+import java.util.Objects;
 
-public class WebAppPropertyEditor extends WebAppBasePropertyEditor {
-    public static final String ID = "com.microsoft.azuretools.azureexplorer.editors.webapp.WebAppPropertyEditor";
+public class DeploymentSlotPropertyEditorInput extends WebAppBasePropertyEditorInput {
 
-    public WebAppPropertyEditor() {
-        super(new WebAppPropertyViewPresenter());
+    private String id;
+    private String subscriptionId;
+    private String webappId;
+    private String slotName;
+
+    public DeploymentSlotPropertyEditorInput(String id, String sid, String webappId, String slotName) {
+        this.id = id;
+        this.subscriptionId = sid;
+        this.webappId = webappId;
+        this.slotName = slotName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getSubscriptionId() {
+        return subscriptionId;
+    }
+
+    public String getWebappId() {
+        return webappId;
+    }
+
+    @Override
+    public String getName() {
+        return this.slotName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DeploymentSlotPropertyEditorInput that = (DeploymentSlotPropertyEditorInput) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 }

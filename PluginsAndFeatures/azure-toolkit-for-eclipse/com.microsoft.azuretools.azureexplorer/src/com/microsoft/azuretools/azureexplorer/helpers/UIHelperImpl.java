@@ -19,6 +19,8 @@
  */
 package com.microsoft.azuretools.azureexplorer.helpers;
 
+import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor;
+import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotPropertyEditorInput;
 import java.io.File;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -377,6 +379,13 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openDeploymentSlotPropertyView(final DeploymentSlotNode node) {
-        // todo
+        if (Utils.isEmptyString(node.getId())) {
+            return;
+        }
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        DeploymentSlotPropertyEditorInput input = new DeploymentSlotPropertyEditorInput(node.getId(),
+            node.getSubscriptionId(), node.getWebAppId(), node.getName());
+        IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
+        openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }
 }
