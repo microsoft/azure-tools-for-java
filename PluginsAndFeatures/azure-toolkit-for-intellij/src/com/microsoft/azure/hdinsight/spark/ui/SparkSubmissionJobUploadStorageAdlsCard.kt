@@ -37,7 +37,7 @@ import javax.swing.JPanel
 class SparkSubmissionJobUploadStorageAdlsCard: SparkSubmissionJobUploadStorageBasicCard() {
     private val refreshButtonIconPath = "/icons/refresh.png"
     override val title: String = SparkSubmitStorageType.ADLS_GEN1.description
-    private val adlsRootPathTip = "e.g. adl://myaccount.azuredatalakestore.net/root/path"
+    private val adlsRootPathTip = "e.g. adl://myaccount.azuredatalakestore.net/<root path>"
     private val adlsRootPathLabel = JLabel("ADLS Root Path").apply { toolTipText = adlsRootPathTip }
     val adlsRootPathField = HintTextField(adlsRootPathTip)
     private val authMethodLabel = JLabel("Authentication Method")
