@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.intellij" version "0.4.2"
+    id "org.jetbrains.intellij" version "0.4.5"
     id "org.jetbrains.kotlin.jvm" version "1.2.50"
 }
 
@@ -23,8 +23,6 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = javaVersion
 }
-
-buildSearchableOptions.onlyIf {false}
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
