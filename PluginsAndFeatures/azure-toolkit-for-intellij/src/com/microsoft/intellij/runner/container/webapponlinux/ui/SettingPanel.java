@@ -359,14 +359,13 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
     public void apply(WebAppOnLinuxDeployConfiguration webAppOnLinuxDeployConfiguration) {
         webAppOnLinuxDeployConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
         // set ACR info
-        PrivateRegistryImageSetting privateRegistryImageSetting = new PrivateRegistryImageSetting(
+        webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
             containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
             containerSettingPanel.getUserName(),
             containerSettingPanel.getPassword(),
             containerSettingPanel.getImageTag(),
             containerSettingPanel.getStartupFile()
-        );
-        webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(privateRegistryImageSetting);
+        ));
         savePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
             containerSettingPanel.getPassword());
 

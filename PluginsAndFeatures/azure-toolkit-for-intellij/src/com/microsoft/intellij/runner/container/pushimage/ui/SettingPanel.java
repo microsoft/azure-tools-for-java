@@ -137,14 +137,13 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         pushImageRunConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
 
         // set ACR info
-        PrivateRegistryImageSetting privateRegistryImageSetting = new PrivateRegistryImageSetting(
+        pushImageRunConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
             containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
             containerSettingPanel.getUserName(),
             containerSettingPanel.getPassword(),
             containerSettingPanel.getImageTag(),
             ""
-        );
-        pushImageRunConfiguration.setPrivateRegistryImageSetting(privateRegistryImageSetting);
+        ));
         savePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
             containerSettingPanel.getPassword());
 
