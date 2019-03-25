@@ -39,6 +39,7 @@
         <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2714" rel="nofollow">#2714</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2688" rel="nofollow">#2688</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2669" rel="nofollow">#2669</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2728" rel="nofollow">#2728</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2807" rel="nofollow">#2807</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2808" rel="nofollow">#2808</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2811" rel="nofollow">#2811</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2831" rel="nofollow">#2831</a>Spark Run Configuration validation issues.</li>
         <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2810" rel="nofollow">#2810</a>,<a href="https://github.com/Microsoft/azure-tools-for-java/issues/2760" rel="nofollow">#2760</a> Spark Run Configuration issues when created from context menu.</li>
       </ul>
+      <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
   </change-notes>
