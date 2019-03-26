@@ -35,8 +35,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 class KillCosmosServerlessSparkBatchJobAction(private val account: AzureSparkServerlessAccount,
                                               private val job: SparkBatchJob) : AzureAnAction(AllIcons.Actions.Cancel), ILogger {
     override fun onActionPerformed(anActionEvent: AnActionEvent?) {
-        if (job.state() == SchedulerState.ENDED) {
-            PluginUtil.displayInfoDialog("Kill Serverless Spark Job", "Can't kill spark job ${job.name()}. It's in 'Ended' state!")
+        if (job.state() == SchedulerState.ENDED || job.state() == SchedulerState.FINALIZING) {
+            PluginUtil.displayInfoDialog("Kill Serverless Spark Job", "Can't kill spark job ${job.name()}. It's in '${job.schedulerState()}' state!")
         } else {
             account.killSparkBatchJobRequest(job.id()?.toString())
                 .subscribe(

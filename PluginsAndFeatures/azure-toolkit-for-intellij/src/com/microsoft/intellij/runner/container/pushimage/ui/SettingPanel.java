@@ -22,18 +22,17 @@
 
 package com.microsoft.intellij.runner.container.pushimage.ui;
 
-import com.microsoft.intellij.runner.AzureSettingPanel;
-import icons.MavenIcons;
-
 import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.container.common.ContainerSettingPanel;
 import com.microsoft.intellij.runner.container.pushimage.PushImageRunConfiguration;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
-
+import icons.MavenIcons;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
@@ -61,7 +60,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
 
         cbArtifact.addActionListener(e -> {
-            artifactActionPeformed((Artifact)cbArtifact.getSelectedItem());
+            artifactActionPeformed((Artifact) cbArtifact.getSelectedItem());
         });
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
@@ -78,7 +77,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
             MavenProject selectedMavenProject = (MavenProject) cbMavenProject.getSelectedItem();
             if (selectedMavenProject != null) {
                 containerSettingPanel.setDockerPath(
-                        DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
+                    DockerUtil.getDefaultDockerFilePathIfExist(selectedMavenProject.getDirectory())
                 );
             }
         });
@@ -136,19 +135,22 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
     @Override
     public void apply(PushImageRunConfiguration pushImageRunConfiguration) {
         pushImageRunConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
+
         // set ACR info
         pushImageRunConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
-                containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
-                containerSettingPanel.getUserName(),
-                containerSettingPanel.getPassword(),
-                containerSettingPanel.getImageTag(),
-                ""
+            containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
+            containerSettingPanel.getUserName(),
+            containerSettingPanel.getPassword(),
+            containerSettingPanel.getImageTag(),
+            ""
         ));
+        savePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
+            containerSettingPanel.getPassword());
 
         // set target
         pushImageRunConfiguration.setTargetPath(getTargetPath());
         pushImageRunConfiguration.setTargetName(getTargetName());
-     }
+    }
 
     /**
      * Function triggered in constructing the panel.
@@ -162,6 +164,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         }
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
+        acrInfo.setPassword(loadPassword(acrInfo.getServerUrl(), acrInfo.getUsername()));
         containerSettingPanel.setTxtFields(acrInfo);
 
         // load dockerFile path from existing configuration.
@@ -181,5 +184,6 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         containerSettingPanel = new ContainerSettingPanel(this.project);
     }
 
-    private void $$$setupUI$$$(){}
+    private void $$$setupUI$$$() {
+    }
 }
