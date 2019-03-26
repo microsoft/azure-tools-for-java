@@ -32,6 +32,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -159,6 +160,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private static final String GROUP_APPSETTING = "App Settings";
 
     private static final String PRICING_URL = "https://azure.microsoft.com/en-us/pricing/details/app-service/";
+    public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
+    public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
     private static final String LNK_PRICING = "<a>App service pricing details</a>";
     private static final String NOT_AVAILABLE = "N/A";
     private static final String RESOURCE_GROUP_PREFIX = "rg-webapp-";
@@ -1024,14 +1027,17 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         SubscriptionDetail sd = binderSubscriptionDetails.get(i);
         List<Location> locl = sdlocMap.get(sd);
         if (locl != null) {
-            for (Location loc : locl) {
+            for (i = 0; i < locl.size(); i++) {
+                Location loc = locl.get(i);
                 comboAppServicePlanLocation.add(loc.displayName());
                 binderAppServicePlanLocation.add(loc);
+                if (loc.name().equals(DEFAULT_REGION.name())) {
+                    comboAppServicePlanLocation.select(i);
+                }
             }
-        }
-
-        if (comboAppServicePlanLocation.getItemCount() > 0) {
-            comboAppServicePlanLocation.select(0);
+            if (comboAppServicePlanLocation.getSelectionIndex() < 0 && comboAppServicePlanLocation.getItemCount() > 0) {
+                comboAppServicePlanLocation.select(0);
+            }
         }
     }
 
@@ -1040,13 +1046,16 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             comboAppServicePlanPricingTier.removeAll();
             binderAppServicePlanPricingTier = new ArrayList<>();
             List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
-            for (PricingTier pricingTier : pricingTiers) {
-                if (pricingTier != null) {
-                    comboAppServicePlanPricingTier.add(pricingTier.toString());
-                    binderAppServicePlanPricingTier.add(pricingTier);
+            for (int i = 0; i < pricingTiers.size(); i++) {
+                PricingTier pricingTier = pricingTiers.get(i);
+                comboAppServicePlanPricingTier.add(pricingTier.toString());
+                binderAppServicePlanPricingTier.add(pricingTier);
+                if (pricingTier.equals(DEFAULT_PRICINGTIER)) {
+                    comboAppServicePlanPricingTier.select(i);
                 }
             }
-            if (comboAppServicePlanPricingTier.getItemCount() > 0) {
+            if (comboAppServicePlanPricingTier.getSelectionIndex() < 0
+                && comboAppServicePlanPricingTier.getItemCount() > 0) {
                 comboAppServicePlanPricingTier.select(0);
             }
         } catch (Exception ex) {

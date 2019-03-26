@@ -404,7 +404,15 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         Composite compositeSlot = new Composite(grpSlot, SWT.NONE);
         compositeSlot.setLayout(new GridLayout(2, false));
 
-        btnDeployToSlot = new Button(compositeSlot, SWT.CHECK);
+        Composite compositeSlotCb = new Composite(compositeSlot, SWT.LEFT);
+        RowLayout rowLayout = new RowLayout();
+        rowLayout.marginLeft = 0;
+        rowLayout.marginTop = 0;
+        rowLayout.marginRight = 0;
+        rowLayout.marginBottom = 0;
+        compositeSlotCb.setLayout(rowLayout);
+
+        btnDeployToSlot = new Button(compositeSlotCb, SWT.CHECK);
         btnDeployToSlot.setSelection(false);
         btnDeployToSlot.setText("Deploy to Slot");
         btnDeployToSlot.addSelectionListener(new SelectionAdapter() {
@@ -415,10 +423,10 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             }
         });
 
-        Label label = new Label(compositeSlot, SWT.NONE);
+        Label label = new Label(compositeSlotCb, SWT.NONE);
         label.setText("");
-        label.setImage(scaleImage(compositeSlot.getDisplay(), compositeSlot.getBackground(),
-            compositeSlot.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
+        label.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
+            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
         label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         label.addMouseListener(new MouseAdapter() {
             @Override
@@ -426,6 +434,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 Program.launch("https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots");
             }
         });
+        new Label(compositeSlot, SWT.NONE);
 
         btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
         btnSlotUseExisting.addSelectionListener(new SelectionAdapter() {
@@ -893,6 +902,10 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         String appServiceName = table.getItems()[selectedRow].getText(0);
         WebAppDetails wad = webAppDetailsMap.get(appServiceName);
         String jobDescription = String.format("Web App '%s' deployment", wad.webApp.name());
+        if (isDeployToSlot) {
+            jobDescription = String.format("Web App '%s' deploy to slot '%s'", wad.webApp.name(),
+                isCreateNewSlot ? webAppSettingModel.getNewSlotName() : webAppSettingModel.getSlotName());
+        }
         String deploymentName = UUID.randomUUID().toString();
         AzureDeploymentProgressNotification.createAzureDeploymentProgressNotification(deploymentName, jobDescription);
         boolean isDeployToRoot = btnDeployToRoot.getSelection();
@@ -932,6 +945,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         export(artifactName, artifactPath);
                     }
                     message = "Deploying Web App...";
+                    if (isDeployToSlot) {
+                        message = "Deploying Web App to Slot...";
+                    }
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
                     PublishingProfile pp = webApp.getPublishingProfile();
@@ -968,7 +984,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
                     message = "Checking Web App availability...";
                     monitor.setTaskName(message);
-                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 50, message);
+                    AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 20, message);
 
                     // to make warn up cancelable
                     int stepLimit = 5;
@@ -1031,9 +1047,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         String deploymentName) {
         if (isDeployToSlot) {
             if (isCreateNewSlot) {
-                monitor.setTaskName(String.format("create deployment slot"));
-                AzureDeploymentProgressNotification
-                    .notifyProgress(parent, deploymentName, "", 5, "create deployment slot");
+                String message = "Create Deployment Slot...";
+                monitor.setTaskName(message);
+                AzureDeploymentProgressNotification.notifyProgress(parent, deploymentName, "", 30, message);
                 return createDeploymentSlot(webAppDetails);
             } else {
                 return webAppDetails.webApp.deploymentSlots().getByName(webAppSettingModel.getSlotName());
