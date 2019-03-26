@@ -43,6 +43,9 @@ public class SparkFailureTaskDebugSettingsModel implements Cloneable {
     @Nullable
     private String vmParameters;
 
+    @Nullable
+    private String log4jProperties;
+
     @Override
     protected Object clone() throws CloneNotSupportedException {
         // Here is a shadow clone, not deep clone
@@ -93,5 +96,14 @@ public class SparkFailureTaskDebugSettingsModel implements Cloneable {
 
     public void setVmParameters(@Nullable String vmParameters) {
         this.vmParameters = vmParameters;
+    }
+
+    @Nullable
+    public String getLog4jProperties() {
+        return log4jProperties;
+    }
+
+    public void setLog4jProperties(@Nullable String log4jProperties) {
+        this.log4jProperties = log4jProperties;
     }
 }

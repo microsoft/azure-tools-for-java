@@ -143,7 +143,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
                                 // TODO: Remove hardcoded packaging here with spark-tools being independent.
                                 File sparkToolsJar = Paths.get(Objects.requireNonNull(module.getProject().getBasePath()),
                                                                "lib",
-                                                               "spark-tools-0.1.0.jar").toFile();
+                                                               SparkToolsLib.INSTANCE.getJarFileName(this.sparkVersion)).toFile();
 
                                 artifact.getRootElement().addOrFindChild(
                                         artifactPackagingFactory.createExtractedDirectoryWithParentDirectories(
