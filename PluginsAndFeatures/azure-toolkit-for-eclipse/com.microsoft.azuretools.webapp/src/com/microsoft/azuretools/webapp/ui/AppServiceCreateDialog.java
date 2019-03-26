@@ -1129,10 +1129,10 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                                 new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
                         }
                     }, (ex) -> {
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
-                        Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
-                    });
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
+                            Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                        });
                 });
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));

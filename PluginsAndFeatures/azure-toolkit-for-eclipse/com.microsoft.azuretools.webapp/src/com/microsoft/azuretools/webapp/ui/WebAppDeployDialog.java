@@ -1065,8 +1065,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             webAppSettingModel.setWebAppId(webAppDetails.webApp.id());
             return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
         }, (e) -> {
-            throw new RuntimeException("create slot failed", e);
-        });
+                throw new RuntimeException("create slot failed", e);
+            });
     }
 
     private void collectData() {
@@ -1119,10 +1119,10 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                             slotMap.remove(wad.webApp.name());
                         });
                     }, (ex) -> {
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
-                        Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
-                    });
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
+                            Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                        });
                 });
         } catch (Exception ex) {
             ex.printStackTrace();
