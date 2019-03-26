@@ -96,7 +96,6 @@ dependencies {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
-    compile 'com.microsoft.azuretools:spark-tools:0.1.0'
     compile 'com.microsoft.azuretools:hdinsight-node-common:3.19.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
