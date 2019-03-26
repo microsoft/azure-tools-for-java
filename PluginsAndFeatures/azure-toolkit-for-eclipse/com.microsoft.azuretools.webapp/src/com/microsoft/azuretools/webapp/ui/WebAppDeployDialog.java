@@ -896,7 +896,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         WebAppDetails wad = webAppDetailsMap.get(appServiceName);
         String jobDescription = String.format("Web App '%s' deployment", wad.webApp.name());
         if (isDeployToSlot) {
-            jobDescription = String.format("Web App '%s' deploy to slot %s", wad.webApp.name(),
+            jobDescription = String.format("Web App '%s' deploy to slot '%s'", wad.webApp.name(),
                 isCreateNewSlot ? webAppSettingModel.getNewSlotName() : webAppSettingModel.getSlotName());
         }
         String deploymentName = UUID.randomUUID().toString();
@@ -934,6 +934,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     }
                     TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.DEPLOY_WEBAPP);
                     message = "Deploying Web App...";
+                    if (isDeployToSlot) {
+                        message = "Deploying Web App to Slot...";
+                    }
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
                     PublishingProfile pp = webApp.getPublishingProfile();
@@ -1033,9 +1036,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         String deploymentName) throws Exception {
         if (isDeployToSlot) {
             if (isCreateNewSlot) {
-                monitor.setTaskName(String.format("create deployment slot"));
-                AzureDeploymentProgressNotification
-                    .notifyProgress(parent, deploymentName, "", 30, "create deployment slot");
+                String message = "Create Deployment Slot...";
+                monitor.setTaskName(message);
+                AzureDeploymentProgressNotification.notifyProgress(parent, deploymentName, "", 30, message);
                 return createDeploymentSlot(webAppDetails);
             } else {
                 return webAppDetails.webApp.deploymentSlots().getByName(webAppSettingModel.getSlotName());
