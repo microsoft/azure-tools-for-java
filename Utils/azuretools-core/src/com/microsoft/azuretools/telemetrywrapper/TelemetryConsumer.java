@@ -22,11 +22,9 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-public enum EventType {
-    opStart,
-    opEnd,
-    step,
-    info,
-    warn,
-    error
+@FunctionalInterface
+public interface TelemetryConsumer<T> {
+
+    void accept(T t) throws Exception;
+
 }

@@ -1,5 +1,12 @@
 package com.microsoft.azuretools.webapp.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP_SLOT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_CREATEWEBAPP_DIALOG;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REFRESH_METADATA;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
@@ -23,13 +30,15 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
-import com.microsoft.azuretools.webapp.utils.TelemetryUtil;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -253,7 +262,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("CREATE");
-                TelemetryUtil.logEvent(EventType.info, TelemetryConstants.OPEN_CREATEWEBAPP_DIALOG, buildProperties());
+                EventUtil.logEvent(EventType.info, WEBAPP, OPEN_CREATEWEBAPP_DIALOG, buildProperties());
                 createAppService(project);
             }
         });
@@ -277,19 +286,17 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("REFRESH");
-                Map<String, String> properties = buildProperties();
-                TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.REFRESH_METADATA);
-                TelemetryUtil.sendTelemetryInfo(properties);
-                table.removeAll();
-                fillAppServiceDetails();
-                AzureModel.getInstance().setResourceGroupToWebAppMap(null);
-                fillTable();
-                slotMap.clear();
-                if (lnkWebConfig != null) {
-                    lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
-                }
-                AppServiceCreateDialog.initAspCache();
-                TelemetryUtil.sendTelemetryOpEnd();
+                EventUtil.logCommand(WEBAPP, REFRESH_METADATA, (operation) -> {
+                    table.removeAll();
+                    fillAppServiceDetails();
+                    AzureModel.getInstance().setResourceGroupToWebAppMap(null);
+                    fillTable();
+                    slotMap.clear();
+                    if (lnkWebConfig != null) {
+                        lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
+                    }
+                    AppServiceCreateDialog.initAspCache();
+                });
             }
         });
         btnRefresh.setText("Refresh");
@@ -901,25 +908,29 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 try {
                     boolean isJar = MavenUtils.isMavenProject(project) && MavenUtils.getPackaging(project)
                         .equals(WebAppUtils.TYPE_JAR);
-                    postEventProperties.put("Java App Name", project.getName());
-                    postEventProperties.put("FileType", isJar ? "jar" : "war");
-                    postEventProperties.put("runtime",
+                    postEventProperties.put(TelemetryConstants.JAVA_APPNAME, project.getName());
+                    postEventProperties.put(TelemetryConstants.FILETYPE, isJar ? "jar" : "war");
+                    postEventProperties.put(TelemetryConstants.RUNTIME,
                         wad.webApp.operatingSystem() == OperatingSystem.LINUX ? "linux-" + wad.webApp.linuxFxVersion()
                             : "windows-" + wad.webApp.javaContainer());
+                    postEventProperties
+                        .put(TelemetryConstants.WEBAPP_DEPLOY_TO_SLOT, Boolean.valueOf(isDeployToSlot).toString());
                 } catch (Exception e) {
                 }
 
                 String errTitle = "Deploy Web App Error";
                 monitor.beginTask(message, IProgressMonitor.UNKNOWN);
                 WebAppBase webApp = null;
+                Operation operation = TelemetryManager.createOperation(WEBAPP, DEPLOY_WEBAPP);
+
                 try {
+                    operation.start();
                     webApp = getRealWebApp(wad, this, monitor, deploymentName);
                     String sitePath = buildSiteLink(webApp, isDeployToRoot ? null : artifactName);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 5, message);
                     if (!MavenUtils.isMavenProject(project)) {
                         export(artifactName, artifactPath);
                     }
-                    TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.DEPLOY_WEBAPP);
                     message = "Deploying Web App...";
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
@@ -945,7 +956,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
                             new UpdateProgressIndicator(monitor));
                     }
-                    postEventProperties.put("uploadingTryCount", String.valueOf(uploadingTryCount));
+                    postEventProperties
+                        .put(TelemetryConstants.ARTIFACT_UPLOAD_COUNT, String.valueOf(uploadingTryCount));
                     webApp.start();
 
                     if (monitor.isCanceled()) {
@@ -1004,11 +1016,10 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                         webApp.start();
                     }
                     Display.getDefault().asyncExec(() -> ErrorWindow.go(parentShell, ex.getMessage(), errTitle));
-                    TelemetryUtil
-                        .sendTelemetryOpError(ErrorType.systemError, ex.getMessage(), postEventProperties);
+                    EventUtil.logError(operation, ErrorType.systemError, ex, postEventProperties, null);
                 } finally {
-                    TelemetryUtil.sendTelemetryInfo(postEventProperties);
-                    TelemetryUtil.sendTelemetryOpEnd();
+                    EventUtil.logEvent(EventType.info, operation, postEventProperties);
+                    operation.complete();
                 }
                 return Status.OK_STATUS;
             }
@@ -1017,7 +1028,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     }
 
     private WebAppBase getRealWebApp(WebAppDetails webAppDetails, Object parent, IProgressMonitor monitor,
-        String deploymentName) throws Exception {
+        String deploymentName) {
         if (isDeployToSlot) {
             if (isCreateNewSlot) {
                 monitor.setTaskName(String.format("create deployment slot"));
@@ -1032,14 +1043,14 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         }
     }
 
-    private DeploymentSlot createDeploymentSlot(WebAppDetails webAppDetails) throws Exception {
-        try {
+    private DeploymentSlot createDeploymentSlot(WebAppDetails webAppDetails) {
+        return EventUtil.logCommand(WEBAPP, CREATE_WEBAPP_SLOT, (operation) -> {
             webAppSettingModel.setSubscriptionId(webAppDetails.subscriptionDetail.getSubscriptionId());
             webAppSettingModel.setWebAppId(webAppDetails.webApp.id());
             return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
-        } catch (Exception e) {
-            throw new Exception("create slot failed", e);
-        }
+        }, (e) -> {
+            throw new RuntimeException("create slot failed", e);
+        });
     }
 
     private void collectData() {
@@ -1083,8 +1094,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             ProgressDialog.get(this.getShell(), "Delete App Service Progress").run(true, true,
                 (monitor) -> {
                     monitor.beginTask("Deleting App Service...", IProgressMonitor.UNKNOWN);
-                    try {
-                        TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.DELETE_WEBAPP);
+                    EventUtil.logCommand(WEBAPP, DELETE_WEBAPP, (operation) -> {
                         WebAppUtils.deleteAppService(wad);
                         Display.getDefault().asyncExec(() -> {
                             table.remove(selectedRow);
@@ -1092,14 +1102,11 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                             fillSlot();
                             slotMap.remove(wad.webApp.name());
                         });
-                    } catch (Exception ex) {
+                    }, (ex) -> {
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                             "run@ProgressDialog@deleteAppService@AppServiceCreateDialog", ex));
                         Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
-                        TelemetryUtil.sendTelemetryOpError(ErrorType.userError, ex.getMessage(), null);
-                    } finally {
-                        TelemetryUtil.sendTelemetryOpEnd();
-                    }
+                    });
                 });
         } catch (Exception ex) {
             ex.printStackTrace();

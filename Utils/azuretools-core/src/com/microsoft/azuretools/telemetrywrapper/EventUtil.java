@@ -28,29 +28,107 @@ import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class EventUtil {
 
     public static void logEvent(EventType eventType, String eventName, String operName, Map<String, String> properties,
         Map<String, Double> metrics) {
-        if (properties == null) {
-            properties = new HashMap<>();
+        try {
+            if (properties == null) {
+                properties = new HashMap<>();
+            }
+            properties.put(CommonUtil.OPERATION_NAME, operName);
+            properties.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
+            sendTelemetry(eventType, eventName, mergeProperties(properties), metrics);
+        } catch (Exception ignore) {
         }
-        properties.put(CommonUtil.OPERATION_NAME, operName);
-        properties.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
-        sendTelemetry(eventType, eventName, mergeProperties(properties), metrics);
     }
 
-    public static void logError(String eventName, String operName, ErrorType errorType, String errMsg,
+    public static void logEvent(EventType eventType, String eventName, String operName,
+        Map<String, String> properties) {
+        logEvent(eventType, eventName, operName, properties, null);
+    }
+
+    public static void logError(String eventName, String operName, ErrorType errorType, Exception e,
         Map<String, String> properties, Map<String, Double> metrics) {
-        if (properties == null) {
-            properties = new HashMap<>();
+        try {
+            if (properties == null) {
+                properties = new HashMap<>();
+            }
+            properties.put(CommonUtil.OPERATION_NAME, operName);
+            properties.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
+            properties.put(CommonUtil.ERROR_CODE, "1");
+            properties.put(CommonUtil.ERROR_MSG, e != null ? e.getMessage() : "");
+            properties.put(CommonUtil.ERROR_CLASSNAME, e != null ? e.getClass().getName() : "");
+            properties.put(CommonUtil.ERROR_TYPE, errorType.name());
+            sendTelemetry(EventType.error, eventName, mergeProperties(properties), metrics);
+        } catch (Exception ignore) {
         }
-        properties.put(CommonUtil.OPERATION_NAME, operName);
-        properties.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
-        properties.put(CommonUtil.ERROR_CODE, "1");
-        properties.put(CommonUtil.ERROR_MSG, errMsg);
-        properties.put(CommonUtil.ERROR_TYPE, errorType.name());
-        sendTelemetry(EventType.error, eventName, mergeProperties(properties), metrics);
+    }
+
+    public static void logEvent(EventType eventType, Operation operation, Map<String, String> properties,
+        Map<String, Double> metrics) {
+        ((DefaultOperation) operation).logEvent(eventType, properties, metrics);
+    }
+
+    public static void logEvent(EventType eventType, Operation operation, Map<String, String> properties) {
+        logEvent(eventType, operation, properties, null);
+    }
+
+    public static void logError(Operation operation, ErrorType errorType, Exception e,
+        Map<String, String> properties, Map<String, Double> metrics) {
+        ((DefaultOperation) operation).logError(errorType, e, properties, metrics);
+    }
+
+    public static void logCommand(String eventName, String operName, Map<String, String> properties,
+        Map<String, Double> metrics, TelemetryConsumer<Operation> command, Consumer<Exception> errorHandle) {
+        Operation operation = TelemetryManager.createOperation(eventName, operName);
+        try {
+            operation.start();
+            command.accept(operation);
+        } catch (Exception e) {
+            logError(operation, ErrorType.userError, e, properties, metrics);
+            if (errorHandle != null) {
+                errorHandle.accept(e);
+            }
+        } finally {
+            operation.complete();
+        }
+    }
+
+    public static <R> R logCommand(String eventName, String operName, Map<String, String> properties,
+        Map<String, Double> metrics, TelemetryFunction<Operation, R> function, Consumer<Exception> errorHandle) {
+        Operation operation = TelemetryManager.createOperation(eventName, operName);
+        try {
+            operation.start();
+            return function.apply(operation);
+        } catch (Exception e) {
+            logError(operation, ErrorType.userError, e, properties, metrics);
+            if (errorHandle != null) {
+                errorHandle.accept(e);
+            }
+        } finally {
+            operation.complete();
+        }
+        return null;
+    }
+
+    public static void logCommand(String eventName, String operName, TelemetryConsumer<Operation> command) {
+        logCommand(eventName, operName, null, null, command, null);
+    }
+
+    public static void logCommand(String eventName, String operName, TelemetryConsumer<Operation> command,
+        Consumer<Exception> errorHandle) {
+        logCommand(eventName, operName, null, null, command, errorHandle);
+    }
+
+    public static <R> R logCommand(String eventName, String operName, TelemetryFunction<Operation, R> command,
+        Consumer<Exception> errorHandle) {
+        return logCommand(eventName, operName, null, null, command, errorHandle);
+    }
+
+    public static <R> R logCommand(String eventName, String operName, TelemetryFunction<Operation, R> function) {
+        return logCommand(eventName, operName, null, null, function, null);
     }
 }
