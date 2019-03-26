@@ -1,42 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.hdinsight.spark.ui.SparkFailureTaskDebugConfigurable">
-  <grid id="27dc6" binding="myWholePanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="myWholePanel" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="601" height="177"/>
+      <xy x="20" y="20" width="1032" height="489"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <vspacer id="85b49">
+      <component id="8d449" class="javax.swing.JLabel">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
-      </vspacer>
-      <grid id="e5cf9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-        <margin top="0" left="0" bottom="0" right="0"/>
+        <properties>
+          <text value="Spark Local log4j.properties:"/>
+        </properties>
+      </component>
+      <component id="85a66" class="javax.swing.JLabel">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Spark Job Failure Context location:"/>
+        </properties>
+      </component>
+      <component id="b99c9" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myFailureJobContextPathField">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <scrollpane id="c3844" class="com.intellij.ui.components.JBScrollPane">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="831" height="425"/>
+          </grid>
         </constraints>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="85a66" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
+          <component id="b73db" class="javax.swing.JTextArea" binding="myLog4jPropertiesField">
+            <constraints/>
             <properties>
-              <text value="Spark Job Failure Context location:"/>
+              <text value="# Set everything to be logged to the console&#10;log4j.rootCategory=INFO, console&#10;log4j.appender.console=org.apache.log4j.ConsoleAppender&#10;log4j.appender.console.target=System.err&#10;log4j.appender.console.layout=org.apache.log4j.PatternLayout&#10;log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n&#10;&#10;# Set the default spark-shell log level to WARN. When running the spark-shell, the&#10;# log level for this class is used to overwrite the root logger's log level, so that&#10;# the user can have different defaults for the shell and regular Spark apps.&#10;log4j.logger.org.apache.spark.repl.Main=WARN&#10;&#10;# Settings to quiet third party logs that are too verbose&#10;log4j.logger.org.spark_project.jetty=WARN&#10;log4j.logger.org.spark_project.jetty.util.component.AbstractLifeCycle=ERROR&#10;log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=INFO&#10;log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=INFO&#10;&#10;# SPARK-9183: Settings to avoid annoying messages when looking up nonexistent UDFs in SparkSQL with Hive support&#10;log4j.logger.org.apache.hadoop.hive.metastore.RetryingHMSHandler=FATAL&#10;log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry=ERROR&#10;&#10;# Parquet related logging&#10;log4j.logger.org.apache.parquet.CorruptStatistics=ERROR&#10;log4j.logger.parquet.CorruptStatistics=ERROR"/>
             </properties>
           </component>
-          <component id="b99c9" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myFailureJobContextPathField">
-            <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
-          </component>
         </children>
-      </grid>
+      </scrollpane>
     </children>
   </grid>
 </form>
