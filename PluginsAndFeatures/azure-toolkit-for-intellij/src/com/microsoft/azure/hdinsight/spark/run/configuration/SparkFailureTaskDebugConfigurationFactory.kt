@@ -22,14 +22,13 @@
 
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
-import com.intellij.execution.configuration.ConfigurationFactoryEx
+import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.common.SparkFailureTaskDebugConfigurableModel
 
-class SparkFailureTaskDebugConfigurationFactory(type: ConfigurationType) :
-        ConfigurationFactoryEx<SparkFailureTaskDebugConfiguration>(type) {
+class SparkFailureTaskDebugConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
     companion object {
         @JvmStatic val NAME = "Spark Failure Task Debug"
     }
