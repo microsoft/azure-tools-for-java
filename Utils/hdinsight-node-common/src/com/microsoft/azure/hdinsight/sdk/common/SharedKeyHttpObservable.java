@@ -52,8 +52,9 @@ public class SharedKeyHttpObservable extends HttpObservable {
         setDefaultHeaderGroup(defaultHeaders);
         try {
             this.cred = new SharedKeyCredential(accountName, accessKey);
-        } catch (InvalidKeyException e) {
-            throw new IllegalArgumentException("Cannot init shared key credential");
+        } catch (IllegalArgumentException ex) {
+            log().warn("Create shared key credential encounter exception", ex);
+            throw new IllegalArgumentException("Can't create shared key credential.Please check access key");
         }
     }
 

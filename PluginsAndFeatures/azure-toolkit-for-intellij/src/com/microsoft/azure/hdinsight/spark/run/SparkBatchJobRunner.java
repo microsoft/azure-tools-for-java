@@ -173,11 +173,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                     throw new ExecutionException("Cannot get valid storage account");
                 }
 
-                httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
                 if (StringUtils.isBlank(accessKey)) {
-                    throw new ExecutionException("Invalid access key input.");
+                    throw new ExecutionException("Invalid access key input");
                 }
 
+                httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
                 jobDeploy = new ADLSGen2Deploy(clusterDetail, httpObservable);
                 break;
             case WEBHDFS:

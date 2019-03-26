@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.ui.ComboboxWithBrowseButton
+import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
@@ -38,7 +39,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
     private val storageAccountLabel = JLabel("Storage Account").apply { toolTipText = storageAccountTip }
     val storageAccountField = JTextField().apply { toolTipText = storageAccountTip }
     private val storageKeyLabel = JLabel("Storage Key").apply { toolTipText = storageKeyTip }
-    val storageKeyField = JTextArea().apply { toolTipText = storageKeyTip }
+    val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip }
     private val storageContainerLabel = JLabel("Storage Container")
     val storageContainerUI = ComboboxWithBrowseButton().apply {
         button.toolTipText = "Refresh"
