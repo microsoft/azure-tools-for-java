@@ -447,6 +447,8 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
     private void updateTableActionBtnStatus(boolean enabled) {
         btnNewItem.setEnabled(enabled);
         btnDeleteItem.setEnabled(enabled);
+        btnDiscard.setEnabled(enabled);
+        btnSave.setEnabled(enabled);
         btnEditItem.setEnabled(enabled);
     }
 
