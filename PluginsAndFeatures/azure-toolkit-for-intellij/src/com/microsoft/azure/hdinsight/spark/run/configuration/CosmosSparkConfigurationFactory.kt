@@ -22,13 +22,12 @@
 
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
-import com.intellij.execution.configuration.ConfigurationFactoryEx
+import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 
-open class CosmosSparkConfigurationFactory (type: ConfigurationType) :
-        ConfigurationFactoryEx<CosmosSparkRunConfiguration>(type) {
+open class CosmosSparkConfigurationFactory (type: ConfigurationType) : ConfigurationFactory(type) {
     companion object {
         @JvmStatic val NAME = "Azure Data Lake Spark"
     }
