@@ -70,7 +70,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                                 consoleView!!.print("ERROR: ${messageWithType.value}\n", ConsoleViewContentType.ERROR_OUTPUT)
 
                                 val classifiedEx = ClassifiedExceptionFactory
-                                        .createClassifiedException(YarnDiagnosticsException(messageWithType.value))
+                                        .createClassifiedException(YarnDiagnosticsException(messageWithType.value ?: ""))
                                 classifiedEx.logStackTrace()
                                 classifiedEx.handleByUser()
                             }
