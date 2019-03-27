@@ -22,6 +22,7 @@
 package com.microsoft.intellij.ui.libraries;
 
 import com.intellij.openapi.application.AccessToken;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -127,7 +128,8 @@ public class LibrariesConfigurationDialog extends AzureDialogWrapper {
                 for (OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
                     if (orderEntry instanceof ModuleLibraryOrderEntryImpl
                             && azureLibrary.getName().equals(((ModuleLibraryOrderEntryImpl) orderEntry).getLibraryName())) {
-                        PluginUtil.displayErrorDialog(message("error"), message("libraryExistsError"));
+                        ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(message(
+                            "error"), message("libraryExistsError")));
                         return;
                     }
                 }
