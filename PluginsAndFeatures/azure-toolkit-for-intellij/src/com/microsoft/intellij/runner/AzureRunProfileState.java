@@ -33,12 +33,15 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import java.util.HashMap;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class AzureRunProfileState <T> implements RunProfileState {
     protected final Project project;
@@ -57,20 +60,37 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
         processHandler.startNotify();
         consoleView.attachToProcess(processHandler);
         Map<String, String> telemetryMap = new HashMap<>();
+        final Operation operation = createOperation();
         Observable.fromCallable(
             () -> {
+                if (operation != null) {
+                    operation.start();
+                    EventUtil.logEvent(EventType.info, operation, telemetryMap);
+                }
                 return this.executeSteps(processHandler, telemetryMap);
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
             (res) -> {
+                if (operation != null) {
+                    operation.complete();
+                }
                 this.sendTelemetry(telemetryMap, true, null);
                 this.onSuccess(res, processHandler);
             },
             (err) -> {
                 err.printStackTrace();
+                if (operation != null) {
+                    EventUtil.logError(operation, ErrorType.userError, new Exception(err.getMessage(), err),
+                        telemetryMap, null);
+                    operation.complete();
+                }
                 this.onFail(err.getMessage(), processHandler);
                 this.sendTelemetry(telemetryMap, false, err.getMessage());
             });
         return new DefaultExecutionResult(consoleView, processHandler);
+    }
+
+    protected Operation createOperation() {
+        return null;
     }
 
     protected void updateTelemetryMap(@NotNull  Map<String, String> telemetryMap){}

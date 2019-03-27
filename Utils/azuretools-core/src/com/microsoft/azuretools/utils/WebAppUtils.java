@@ -521,4 +521,16 @@ public class WebAppUtils {
             RuntimeStack.WILDFLY_14_JRE8,
             RuntimeStack.JAVA_8_JRE8});
     }
+
+    public static String getFileType(String fileName) {
+        if (StringUtils.isBlank(fileName)) {
+            return "";
+        }
+        String fileType = "";
+        int index = fileName.lastIndexOf(".");
+        if (index >= 0 && (index + 1) < fileName.length()) {
+            fileType = fileName.substring(index + 1);
+        }
+        return fileType;
+    }
 }
