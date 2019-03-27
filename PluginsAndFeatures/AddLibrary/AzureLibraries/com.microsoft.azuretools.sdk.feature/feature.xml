@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.sdk.feature"
       label="Package for Microsoft Azure Libraries for Java"
-      version="3.12.0.qualifier"
+      version="3.13.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>

@@ -5,7 +5,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.19.0</version>
+        <version>3.20.0</version>
     </parent>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
