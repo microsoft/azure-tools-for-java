@@ -170,9 +170,9 @@ public class SignInWindow extends AzureDialogWrapper {
         FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("azureauth");
         fileDescriptor.setTitle("Select Authentication File");
         final VirtualFile file = FileChooser.chooseFile(
-                fileDescriptor,
-                this.project,
-                LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"))
+            fileDescriptor,
+            this.project,
+            LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home"))
         );
         if (file != null) {
             authFileTextField.setText(file.getPath());
@@ -270,16 +270,16 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void doCreateServicePrincipal() {
-        AdAuthManager adAuthManager = null;
+        DCAuthManager dcAuthManager = null;
         try {
-            adAuthManager = AdAuthManager.getInstance();
-            if (adAuthManager.isSignedIn()) {
-                adAuthManager.signOut();
+            dcAuthManager = DCAuthManager.getInstance();
+            if (dcAuthManager.isSignedIn()) {
+                dcAuthManager.signOut();
             }
 
-            signInAsync();
+            doDeviceLogin();
 
-            if (!adAuthManager.isSignedIn()) {
+            if (!dcAuthManager.isSignedIn()) {
                 // canceled by the user
                 System.out.println(">> Canceled by the user");
                 return;
@@ -336,7 +336,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 }
             }
 
-            SrvPriCreationStatusDialog  d1 = SrvPriCreationStatusDialog.go(tidSidsMap, destinationFolder, project);
+            SrvPriCreationStatusDialog d1 = SrvPriCreationStatusDialog.go(tidSidsMap, destinationFolder, project);
             if (d1 == null) {
                 System.out.println(">> Canceled by the user");
                 return;
@@ -356,10 +356,10 @@ public class SignInWindow extends AzureDialogWrapper {
             ErrorWindow.show(project, ex.getMessage(), "Get Subscription Error");
 
         } finally {
-            if (adAuthManager != null) {
+            if (dcAuthManager != null) {
                 try {
                     System.out.println(">> Signing out...");
-                    adAuthManager.signOut();
+                    dcAuthManager.signOut();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -422,7 +422,8 @@ public class SignInWindow extends AzureDialogWrapper {
     @Override
     public void doHelpAction() {
         JXHyperlink helpLink = new JXHyperlink();
-        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
+        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in" +
+            "-instructions"));
         helpLink.doClick();
     }
 
