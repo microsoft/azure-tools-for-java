@@ -1091,13 +1091,13 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         properties.put("runtime",
             model.getOS() == OperatingSystem.LINUX ? "Linux-" + model.getLinuxRuntime().toString()
                 : "windows-" + model.getWebContainer());
+        if (!validated()) {
+            return;
+        }
         try {
             ProgressDialog.get(this.getShell(), CREATE_APP_SERVICE_PROGRESS_TITLE).run(true, true,
                 (monitor) -> {
                     monitor.beginTask(VALIDATING_FORM_FIELDS, IProgressMonitor.UNKNOWN);
-                    if (!validated()) {
-                        return;
-                    }
                     monitor.setTaskName(CREATING_APP_SERVICE);
                     if (monitor.isCanceled()) {
                         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
@@ -1173,18 +1173,12 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     return false;
                 }
                 // App service plan name must be unique in each subscription
-                List<ResourceGroup> rgl = AzureMvpModel.getInstance()
-                    .getResourceGroupsBySubscriptionId(model.getSubscriptionId());
-                for (ResourceGroup rg : rgl) {
-                    List<AppServicePlan> aspl = AzureWebAppMvpModel.getInstance()
-                        .listAppServicePlanBySubscriptionIdAndResourceGroupName(model.getSubscriptionId(),
-                            rg.name());
-                    for (AppServicePlan asp : aspl) {
-                        if (asp != null
-                            && asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
-                            setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);
-                            return false;
-                        }
+                List<AppServicePlan> appServicePlans = getAppservicePlanBySID(model.getSubscriptionId());
+                for (AppServicePlan asp : appServicePlans) {
+                    if (asp != null
+                        && asp.name().toLowerCase().equals(model.getAppServicePlanName().toLowerCase())) {
+                        setError(dec_textAppSevicePlanName, APP_SERVICE_PLAN_NAME_MUST_UNUQUE);
+                        return false;
                     }
                 }
             }
