@@ -36,19 +36,20 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
             // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
-            if (template is CosmosSparkRunConfiguration) {
-                CosmosSparkScalaLivyConsoleRunConfiguration(
-                        template.project,
-                        this,
-                        template,
-                        "${template.name} >> Azure Data Lake Spark Livy Interactive Session Console(Scala)"
-                )
-            } else {
-                SparkScalaLivyConsoleRunConfiguration(
-                        template.project,
-                        this,
-                        template as LivySparkBatchJobRunConfiguration,
-                        "${template.name} >> Spark Livy Interactive Session Console(Scala)"
-                )
+            when (template) {
+                is CosmosSparkRunConfiguration ->
+                    CosmosSparkScalaLivyConsoleRunConfiguration(
+                            template.project,
+                            this,
+                            template,
+                            "${template.name} >> Azure Data Lake Spark Livy Interactive Session Console(Scala)")
+                is LivySparkBatchJobRunConfiguration ->
+                    SparkScalaLivyConsoleRunConfiguration(
+                            template.project,
+                            this,
+                            template,
+                            "${template.name} >> Spark Livy Interactive Session Console(Scala)")
+                else -> throw UnsupportedOperationException(
+                        "Spark Livy Console doesn't support starting from the configuration ${template.name}(type: ${template.type.displayName})")
             }
 }

@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.RunnerRegistry
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -130,6 +129,8 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
                     val savedIsEditBeforeRun = selectedConfigSettings.isEditBeforeRun
 
                     selectedConfigSettings.isEditBeforeRun = true
+
+                    // canRun() has checked configuration is LivySparkBatchJobRunConfiguration or not
                     (selectedConfigSettings.configuration as LivySparkBatchJobRunConfiguration).submitModel.mainClassName =
                             className
 
