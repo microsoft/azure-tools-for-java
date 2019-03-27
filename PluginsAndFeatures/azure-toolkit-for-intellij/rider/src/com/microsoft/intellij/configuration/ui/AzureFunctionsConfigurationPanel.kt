@@ -22,21 +22,39 @@
 
 package com.microsoft.intellij.configuration.ui
 
-import com.intellij.ide.BrowserUtil
+import com.intellij.ide.plugins.newui.TwoLineProgressIndicator
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.components.labels.LinkLabel
+import com.intellij.ui.components.panels.OpaquePanel
 import com.intellij.util.ui.FormBuilder
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import com.microsoft.intellij.configuration.AzureRiderSettings
+import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
+import java.awt.CardLayout
 import java.io.File
+import javax.swing.JLabel
 import javax.swing.JPanel
 
 class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     companion object {
         private const val DISPLAY_NAME = "Functions"
+
+        private const val PATH_TO_CORE_TOOLS = "Azure Functions Core Tools path:"
+        private const val CURRENT_VERSION = "Current version:"
+        private const val LATEST_VERSION = "Latest available version:"
+        private const val UNKNOWN = "<unknown>"
+
+        private const val PATH_TO_CORE_TOOLS_DESCRIPTION = "Path to Azure Functions Core Tools"
+        private const val INSTALL_LATEST = "Download latest version..."
+
+        private const val CARD_BUTTON = "button"
+        private const val CARD_PROGRESS = "progress"
     }
 
     private val properties = PropertiesComponent.getInstance()
@@ -44,27 +62,77 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
     private val coreToolsPathField = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(
                 "",
-                "Path to Azure Functions Core Tools",
+                PATH_TO_CORE_TOOLS_DESCRIPTION,
                 null,
                 FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                 TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
         )
     }
 
-    private val downloadCoreToolsLabel = LinkLabel<Any>("Download latest version from GitHub...", null) {
-        _, _ -> BrowserUtil.open("https://github.com/Azure/azure-functions-core-tools/releases")
-    }
+    private val currentVersionLabel = JLabel(UNKNOWN)
+    private val latestVersionLabel = JLabel(UNKNOWN)
+    private val installButton = LinkLabel<Any>(INSTALL_LATEST, null) { _, _ -> installLatestCoreTools() }
+            .apply {
+                isEnabled = false
+            }
+
+    private val wrapperLayout = CardLayout()
+    private val installActionPanel = OpaquePanel(wrapperLayout)
+            .apply {
+                add(installButton, CARD_BUTTON)
+                add(TwoLineProgressIndicator().component, CARD_PROGRESS)
+            }
+
 
     init {
         coreToolsPathField.text = properties.getValue(
                 AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH,
                 "")
+
+        updateVersionLabels()
+    }
+
+    private fun installLatestCoreTools()  {
+        val installIndicator = TwoLineProgressIndicator()
+        installIndicator.setCancelRunnable {
+            if (installIndicator.isRunning) installIndicator.stop()
+            wrapperLayout.show(installActionPanel, CARD_BUTTON)
+        }
+
+        installActionPanel.add(installIndicator.component, CARD_PROGRESS)
+        wrapperLayout.show(installActionPanel, CARD_PROGRESS)
+
+        FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
+            UIUtil.invokeAndWaitIfNeeded(Runnable {
+                coreToolsPathField.text = it
+                installButton.isEnabled = false
+                wrapperLayout.show(installActionPanel, CARD_BUTTON)
+            })
+
+            updateVersionLabels()
+        }
+    }
+
+    private fun updateVersionLabels() {
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val local = FunctionsCoreToolsManager.determineVersion(coreToolsPathField.text)
+            val remote = FunctionsCoreToolsManager.determineLatestRemote()
+
+            UIUtil.invokeAndWaitIfNeeded(Runnable {
+                currentVersionLabel.text = local?.version ?: UNKNOWN
+                latestVersionLabel.text = remote?.version ?: UNKNOWN
+
+                installButton.isEnabled = local == null || remote != null && local < remote
+            })
+        }
     }
 
     override val panel = FormBuilder
             .createFormBuilder()
-            .addLabeledComponent("Azure Functions Core Tools path:", coreToolsPathField)
-            .addComponentToRightColumn(downloadCoreToolsLabel)
+            .addLabeledComponent(PATH_TO_CORE_TOOLS, coreToolsPathField)
+            .addLabeledComponent(CURRENT_VERSION, currentVersionLabel)
+            .addLabeledComponent(LATEST_VERSION, latestVersionLabel, JBUI.scale(8))
+            .addComponentToRightColumn(installActionPanel)
             .addComponentFillVertically(JPanel(), 0)
             .panel
 

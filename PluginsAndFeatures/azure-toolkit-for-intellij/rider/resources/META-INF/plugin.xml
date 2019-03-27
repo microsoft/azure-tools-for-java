@@ -113,6 +113,8 @@
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBeforeRunTaskProvider"/>
     <configurationType implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationType"/>
     <runConfigurationProducer implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsConfigurationProducer"/>
+
+    <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsNotification" />
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
