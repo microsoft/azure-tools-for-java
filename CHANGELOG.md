@@ -4,6 +4,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 - [Change Log](#change-log)
 
+  - [3.20.0](#3200)
   - [3.19.0](#3190)
   - [3.18.0](#3180)
   - [3.17.0](#3170)
@@ -31,18 +32,28 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
-## [3.20.0]
+## 3.20.0
 
 ### Added
+
+- Support Failure Task Local Reproduce for Spark 2.3 on Cosmos
+- Support mock file system in Spark local console
+- Support ADLS Gen2 storage type to submit job to HDInsight cluster
+- Introduce extended properties field when provision a Spark on Cosmos cluster or submit a Spark on Cosmos Serverless job
 
 ### Changed
 
 - Use device login as the default login method.
+- Change icons for HDInsight cluster and related configuration
 
 ### Fixed
 
 - [#2805](https://github.com/Microsoft/azure-tools-for-java/issues/2805) Save password with SecureStore.
-
+- [#2888](https://github.com/Microsoft/azure-tools-for-java/issues/2888), [#2894](https://github.com/Microsoft/azure-tools-for-java/issues/2894), [#2921](https://github.com/Microsoft/azure-tools-for-java/issues/2921) Fix Spark on Cosmos Serverless job run failed related issues
+- [#2912](https://github.com/Microsoft/azure-tools-for-java/issues/2912) Check invalid access key for submitting with ADLS Gen2 account
+- [#2844](https://github.com/Microsoft/azure-tools-for-java/issues/2844) Refine WebHDFS and ADLS input path hints
+- [#2848](https://github.com/Microsoft/azure-tools-for-java/issues/2848) Reset background color for not empty ADLS path input
+- [#2749](https://github.com/Microsoft/azure-tools-for-java/issues/2749), [#2936](https://github.com/Microsoft/azure-tools-for-java/issues/2936) Fix Spark run configuration cast issues and classified exception message factory NPE issues
 
 ## 3.19.0
 

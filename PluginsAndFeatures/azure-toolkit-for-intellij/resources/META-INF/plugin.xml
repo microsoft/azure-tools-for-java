@@ -21,19 +21,39 @@
     <![CDATA[
     <html>
     <h3>[3.20.0]</h3>
-      <h4>Added</h4>
-      <ul>
-        
-      </ul>
-      <h4>Changed</h4>
-      <ul>
+    <h4>Added</h4>
+    <ul>
+        <li>Support Failure Task Local Reproduce for Spark 2.3 on Cosmos</li>
+        <li>Support mock file system in Spark local console</li>
+        <li>Support ADLS Gen2 storage type to submit job to HDInsight cluster</li>
+        <li>Introduce extended properties field when provision a Spark on Cosmos cluster or submit a Spark on Cosmos
+            Serverless job</li>
+    </ul>
+    <h4>Changed</h4>
+    <ul>
         <li>Use device login as the default login method.</li>
-      </ul>
-      <h4>Fixed</h4>
-      <ul>
-        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2805" rel="nofollow">#2805</a> Save password with SecureStore.</li>
-      </ul>
-      <p>You may get the full change log <a href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
+        <li>Change icons for HDInsight cluster and related configuration</li>
+    </ul>
+    <h4>Fixed</h4>
+    <ul>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2805">#2805</a> Save password with
+            SecureStore.</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2888">#2888</a>, <a
+                href="https://github.com/Microsoft/azure-tools-for-java/issues/2894">#2894</a>, <a
+                href="https://github.com/Microsoft/azure-tools-for-java/issues/2921">#2921</a> Fix Spark on Cosmos
+            Serverless job run failed related issues</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2912">#2912</a> Check invalid access key for
+            submitting with ADLS Gen2 account</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2844">#2844</a> Refine WebHDFS and ADLS input
+            path hints</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2848">#2848</a> Reset background color for not
+            empty ADLS path input</li>
+        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2749">#2749</a>, <a
+                href="https://github.com/Microsoft/azure-tools-for-java/issues/2936">#2936</a> Fix Spark run configuration
+            cast issues and classified exception message factory NPE issues</li>
+    </ul>
+    <p>You may get the full change log <a
+            href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
     ]]>
   </change-notes>
