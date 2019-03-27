@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.ui.ComboboxWithBrowseButton
+import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.StreamUtil
@@ -36,7 +37,7 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
     private val refreshButtonIconPath = "/icons/refresh.png"
     private val storageKeyTip = "The access key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
     private val storageKeyLabel = JLabel("Access Key").apply { toolTipText = storageKeyTip }
-    val storageKeyField = JTextArea().apply { toolTipText = storageKeyTip }
+    val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip }
     val gen2AccountField = JTextArea().apply { isVisible = false }
 
     init {

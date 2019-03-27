@@ -43,10 +43,9 @@ public final class SharedKeyCredential {
     private final String accountName;
     private final byte[] accountKey;
 
-    public SharedKeyCredential(String accountName, String accountKey) throws InvalidKeyException {
+    public SharedKeyCredential(String accountName, String accountKey) {
         this.accountName = accountName;
         this.accountKey = Base64.getDecoder().decode(accountKey);
-        StorageCredentialsAccountAndKey cred = new StorageCredentialsAccountAndKey(accountName, accountKey);
     }
 
     private String buildStringToSign(HttpRequestBase request, HeaderGroup httpHeaders, List<NameValuePair> pairs) {

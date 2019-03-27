@@ -33,19 +33,18 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2ParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPut;
 import rx.Observable;
+import rx.exceptions.Exceptions;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -84,6 +83,13 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
         HttpPut req = new HttpPut(dirPath);
         ADLSGen2FSOperation op = new ADLSGen2FSOperation((SharedKeyHttpObservable) this.http);
         return op.createDir(dirPath)
+                .onErrorReturn(err -> {
+                    if (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))) {
+                        throw new IllegalArgumentException("Failed to upload Spark application artifacts.The access key is invalid.");
+                    } else {
+                        throw Exceptions.propagate(err);
+                    }
+                })
                 .flatMap(ignore -> op.createFile(filePath))
                 .flatMap(ignore -> op.uploadData(filePath, src))
                 .map(ignored -> {
