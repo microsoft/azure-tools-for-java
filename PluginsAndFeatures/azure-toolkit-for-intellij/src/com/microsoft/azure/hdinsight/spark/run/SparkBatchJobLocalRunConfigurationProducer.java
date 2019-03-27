@@ -26,6 +26,7 @@ import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.junit.JavaRunConfigurationProducerBase;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Comparing;
@@ -117,11 +118,18 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
                     if (!Comparing.equal(context.getModule(), configurationModule)) {
 
-                        LivySparkBatchJobRunConfiguration template = (LivySparkBatchJobRunConfiguration)context
+                        RunConfiguration template = context
                                 .getRunManager()
                                 .getConfigurationTemplate(getConfigurationFactory())
                                 .getConfiguration();
-                        final Module predefinedModule = template.getConfigurationModule().getModule();
+
+                        if (!(template instanceof LivySparkBatchJobRunConfiguration)) {
+                            return false;
+                        }
+
+                        final Module predefinedModule = ((LivySparkBatchJobRunConfiguration)template)
+                                .getConfigurationModule()
+                                .getModule();
 
                         if (!Comparing.equal(predefinedModule, configurationModule)) {
                             return false;
