@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 class PublicIpAddressProvider {
     companion object {
         private const val userAgentHeaderName: String = "User-Agent"
-        private const val userAgentHeaderValue: String = "Azure Tookit for JetBrains Rider"
+        private const val userAgentHeaderValue: String = "Azure Toolkit for JetBrains Rider"
 
         private val logger = Logger.getInstance(PublicIpAddressProvider::class.java)
 
@@ -57,7 +57,7 @@ class PublicIpAddressProvider {
                     val response = httpClient.newCall(request).execute()
 
                     if (response.isSuccessful && response.body() != null) {
-                        logger.info("Public IP address retrieved succesfully from $plainTextProviderUrl")
+                        logger.info("Public IP address retrieved successfully from $plainTextProviderUrl")
 
                         val ipAddress = response.body()!!.string()
 
