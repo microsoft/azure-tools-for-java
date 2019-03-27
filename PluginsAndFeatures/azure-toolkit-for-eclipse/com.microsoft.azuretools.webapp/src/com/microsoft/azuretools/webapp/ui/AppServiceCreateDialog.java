@@ -21,6 +21,9 @@
  */
 package com.microsoft.azuretools.webapp.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
@@ -40,15 +43,14 @@ import com.microsoft.azuretools.core.utils.MavenUtils;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.webapp.Activator;
-import com.microsoft.azuretools.webapp.utils.TelemetryUtil;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -1103,9 +1105,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                         AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                         Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
                     }
-                    try {
-                        TelemetryUtil.sendTelemetryOpStart(TelemetryConstants.CREATE_WEBAPP);
-                        TelemetryUtil.sendTelemetryInfo(properties);
+
+                    EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, (operation) -> {
+                        EventUtil.logEvent(EventType.info, operation, properties);
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
                         if (!appSettings.isEmpty()) {
                             webApp.update().withAppSettings(appSettings).apply();
@@ -1126,15 +1128,11 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                             AzureUIRefreshCore.execute(
                                 new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
                         }
-                    } catch (Exception ex) {
-                        TelemetryUtil
-                            .sendTelemetryOpError(ErrorType.userError, ex.getMessage(), properties);
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
-                        Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
-                    } finally {
-                        TelemetryUtil.sendTelemetryOpEnd();
-                    }
+                    }, (ex) -> {
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                "run@ProgressDialog@okPressed@AppServiceCreateDialog", ex));
+                            Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), errTitle));
+                        });
                 });
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@AppServiceCreateDialog", ex));

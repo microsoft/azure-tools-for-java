@@ -27,11 +27,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommonUtil {
+
     public static final String OPERATION_NAME = "operationName";
     public static final String OPERATION_ID = "operationId";
     public static final String ERROR_CODE = "errorCode";
     public static final String ERROR_MSG = "message";
     public static final String ERROR_TYPE = "errorType";
+    public static final String ERROR_CLASSNAME = "errorClassName";
     public static final String DURATION = "duration";
     public static TelemetryClient client;
 
@@ -55,4 +57,5 @@ public class CommonUtil {
     private static String getFullEventName(String eventName, EventType eventType) {
         return TelemetryManager.getInstance().getEventNamePrefix() + eventName + "/" + eventType.name();
     }
+
 }
