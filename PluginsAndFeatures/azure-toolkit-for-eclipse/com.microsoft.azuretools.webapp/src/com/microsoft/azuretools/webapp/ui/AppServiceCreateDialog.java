@@ -1106,7 +1106,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                         Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.cancelPressed());
                     }
 
-                    EventUtil.logCommand(WEBAPP, CREATE_WEBAPP, (operation) -> {
+                    EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, (operation) -> {
                         EventUtil.logEvent(EventType.info, operation, properties);
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
                         if (!appSettings.isEmpty()) {

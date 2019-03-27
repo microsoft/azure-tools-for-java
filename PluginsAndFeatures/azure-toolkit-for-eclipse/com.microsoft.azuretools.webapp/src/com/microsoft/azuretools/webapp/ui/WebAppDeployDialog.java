@@ -286,7 +286,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sendTelemetry("REFRESH");
-                EventUtil.logCommand(WEBAPP, REFRESH_METADATA, (operation) -> {
+                EventUtil.executeWithLog(WEBAPP, REFRESH_METADATA, (operation) -> {
                     table.removeAll();
                     fillAppServiceDetails();
                     AzureModel.getInstance().setResourceGroupToWebAppMap(null);
@@ -1060,7 +1060,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     }
 
     private DeploymentSlot createDeploymentSlot(WebAppDetails webAppDetails) {
-        return EventUtil.logCommand(WEBAPP, CREATE_WEBAPP_SLOT, (operation) -> {
+        return EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP_SLOT, (operation) -> {
             webAppSettingModel.setSubscriptionId(webAppDetails.subscriptionDetail.getSubscriptionId());
             webAppSettingModel.setWebAppId(webAppDetails.webApp.id());
             return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
@@ -1110,7 +1110,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             ProgressDialog.get(this.getShell(), "Delete App Service Progress").run(true, true,
                 (monitor) -> {
                     monitor.beginTask("Deleting App Service...", IProgressMonitor.UNKNOWN);
-                    EventUtil.logCommand(WEBAPP, DELETE_WEBAPP, (operation) -> {
+                    EventUtil.executeWithLog(WEBAPP, DELETE_WEBAPP, (operation) -> {
                         WebAppUtils.deleteAppService(wad);
                         Display.getDefault().asyncExec(() -> {
                             table.remove(selectedRow);

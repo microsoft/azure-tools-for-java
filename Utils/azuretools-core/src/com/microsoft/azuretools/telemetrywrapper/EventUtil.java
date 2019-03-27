@@ -81,12 +81,12 @@ public class EventUtil {
         ((DefaultOperation) operation).logError(errorType, e, properties, metrics);
     }
 
-    public static void logCommand(String eventName, String operName, Map<String, String> properties,
-        Map<String, Double> metrics, TelemetryConsumer<Operation> command, Consumer<Exception> errorHandle) {
+    public static void executeWithLog(String eventName, String operName, Map<String, String> properties,
+        Map<String, Double> metrics, TelemetryConsumer<Operation> consumer, Consumer<Exception> errorHandle) {
         Operation operation = TelemetryManager.createOperation(eventName, operName);
         try {
             operation.start();
-            command.accept(operation);
+            consumer.accept(operation);
         } catch (Exception e) {
             logError(operation, ErrorType.userError, e, properties, metrics);
             if (errorHandle != null) {
@@ -97,7 +97,7 @@ public class EventUtil {
         }
     }
 
-    public static <R> R logCommand(String eventName, String operName, Map<String, String> properties,
+    public static <R> R executeWithLog(String eventName, String operName, Map<String, String> properties,
         Map<String, Double> metrics, TelemetryFunction<Operation, R> function, Consumer<Exception> errorHandle) {
         Operation operation = TelemetryManager.createOperation(eventName, operName);
         try {
@@ -114,21 +114,21 @@ public class EventUtil {
         return null;
     }
 
-    public static void logCommand(String eventName, String operName, TelemetryConsumer<Operation> command) {
-        logCommand(eventName, operName, null, null, command, null);
+    public static void executeWithLog(String eventName, String operName, TelemetryConsumer<Operation> consumer) {
+        executeWithLog(eventName, operName, null, null, consumer, null);
     }
 
-    public static void logCommand(String eventName, String operName, TelemetryConsumer<Operation> command,
+    public static void executeWithLog(String eventName, String operName, TelemetryConsumer<Operation> consumer,
         Consumer<Exception> errorHandle) {
-        logCommand(eventName, operName, null, null, command, errorHandle);
+        executeWithLog(eventName, operName, null, null, consumer, errorHandle);
     }
 
-    public static <R> R logCommand(String eventName, String operName, TelemetryFunction<Operation, R> command,
+    public static <R> R executeWithLog(String eventName, String operName, TelemetryFunction<Operation, R> consumer,
         Consumer<Exception> errorHandle) {
-        return logCommand(eventName, operName, null, null, command, errorHandle);
+        return executeWithLog(eventName, operName, null, null, consumer, errorHandle);
     }
 
-    public static <R> R logCommand(String eventName, String operName, TelemetryFunction<Operation, R> function) {
-        return logCommand(eventName, operName, null, null, function, null);
+    public static <R> R executeWithLog(String eventName, String operName, TelemetryFunction<Operation, R> function) {
+        return executeWithLog(eventName, operName, null, null, function, null);
     }
 }
