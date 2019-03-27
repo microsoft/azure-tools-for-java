@@ -1047,7 +1047,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         String deploymentName) {
         if (isDeployToSlot) {
             if (isCreateNewSlot) {
-                String message = "Create Deployment Slot...";
+                String message = "Creating Deployment Slot...";
                 monitor.setTaskName(message);
                 AzureDeploymentProgressNotification.notifyProgress(parent, deploymentName, "", 30, message);
                 return createDeploymentSlot(webAppDetails);
