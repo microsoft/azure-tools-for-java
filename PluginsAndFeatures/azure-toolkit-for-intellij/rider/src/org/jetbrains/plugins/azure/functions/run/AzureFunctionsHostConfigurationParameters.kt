@@ -50,6 +50,7 @@ import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jdom.Element
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
+import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 import java.io.File
 
 open class AzureFunctionsHostConfigurationParameters(
@@ -184,10 +185,8 @@ open class AzureFunctionsHostConfigurationParameters(
                 throw RuntimeConfigurationError("Invalid working directory: ${if (workingDirectory.isNotEmpty()) workingDirectory else "<empty>"}")
         }
 
-        val funcCoreToolsPath = PropertiesComponent.getInstance().getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH)
-        if (funcCoreToolsPath.isNullOrEmpty() || !File(funcCoreToolsPath).exists()) {
-            throw RuntimeConfigurationError("Path to Azure Functions core tools has not been configured. This can be done in the settings under Tools | Azure | Functions.")
-        }
+        FunctionsCoreToolsInfoProvider.build()
+                ?: throw RuntimeConfigurationError("Path to Azure Functions core tools has not been configured. This can be done in the settings under Tools | Azure | Functions.")
 
         if (useMonoRuntime && riderDotNetActiveRuntimeHost.monoRuntime == null)
             throw RuntimeConfigurationError("Mono runtime not found. " +
