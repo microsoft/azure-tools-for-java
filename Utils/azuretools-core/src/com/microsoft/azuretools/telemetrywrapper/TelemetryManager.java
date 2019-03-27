@@ -28,9 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TelemetryManager {
+
     private String eventNamePrefix = "";
     private Map<String, String> commonProperties = Collections.unmodifiableMap(new HashMap<>());
-    private Producer producer = new DefaultProducer();
 
     private static final class SingletonHolder {
         private static final TelemetryManager INSTANCE = new TelemetryManager();
@@ -65,10 +65,8 @@ public class TelemetryManager {
         }
     }
 
-    public synchronized Producer getProducer() {
-        if (producer == null) {
-            producer = new DefaultProducer();
-        }
-        return producer;
+    public static Operation createOperation(String eventName, String operationName) {
+        return new DefaultOperation(eventName, operationName);
     }
+
 }
