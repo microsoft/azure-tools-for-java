@@ -31,6 +31,19 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## [3.20.0]
+
+### Added
+
+### Changed
+
+- Use device login as the default login method.
+
+### Fixed
+
+- [#2805](https://github.com/Microsoft/azure-tools-for-java/issues/2805) Save password with SecureStore.
+
+
 ## 3.19.0
 
 ### Added
