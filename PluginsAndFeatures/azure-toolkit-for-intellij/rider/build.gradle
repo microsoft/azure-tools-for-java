@@ -1,3 +1,5 @@
+import org.jetbrains.intellij.tasks.PrepareSandboxTask
+
 dependencies {
     compile rootProject
     compile 'org.java-websocket:Java-WebSocket:1.3.9'
@@ -18,4 +20,10 @@ intellij {
     version = rider_version
 
     plugins 'terminal', dep_plugins_rider
+}
+
+def extensionsFrom = 'resources/dotnet'
+
+tasks.withType(PrepareSandboxTask) {
+    from(extensionsFrom, { into "$intellij.pluginName/dotnet" })
 }
