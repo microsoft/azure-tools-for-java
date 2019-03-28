@@ -41,7 +41,6 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
-import com.sun.javaws.exceptions.InvalidArgumentException
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observable
