@@ -422,8 +422,7 @@ public class SignInWindow extends AzureDialogWrapper {
     @Override
     public void doHelpAction() {
         JXHyperlink helpLink = new JXHyperlink();
-        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in" +
-            "-instructions"));
+        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
         helpLink.doClick();
     }
 
