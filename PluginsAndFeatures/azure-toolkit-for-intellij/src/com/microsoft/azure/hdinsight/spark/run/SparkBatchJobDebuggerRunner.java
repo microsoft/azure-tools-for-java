@@ -239,7 +239,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                             // Parse container ID and host URL from driver console view
                             jobOutputView.getSecondaryConsoleView().addMessageFilter((line, entireLength) -> {
                                 Matcher matcher = Pattern.compile(
-                                        "Launching container (\\w+) on host ([a-zA-Z_0-9-.]+)",
+                                        "Launching container (\\w+).* on host ([a-zA-Z_0-9-.]+)",
                                         Pattern.CASE_INSENSITIVE)
                                         .matcher(line);
                                 while (matcher.find()) {
