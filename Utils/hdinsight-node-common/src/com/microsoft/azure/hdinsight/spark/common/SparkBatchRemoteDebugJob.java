@@ -26,18 +26,14 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.Observer;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.UnknownServiceException;
 import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -126,17 +122,6 @@ public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBat
         SparkSubmissionParameter debugSubmissionParameter = convertToDebugParameter(submissionParameter);
 
         return new SparkBatchRemoteDebugJob(debugSubmissionParameter, submission, ctrlSubject);
-    }
-
-    /**
-     * To get Executor from Yarn UI App Attempt page
-     */
-    public Observable<SimpleEntry<URI, String>> getExecutorsObservable() {
-        return getSparkJobYarnCurrentAppAttempt()
-                .flatMap(appAttempt -> getSparkJobYarnContainersObservable(appAttempt)
-                        .filter(hostContainerPair -> !StringUtils.equals(
-                                hostContainerPair.getValue(), appAttempt.getContainerId())))
-                .map(kv -> new SimpleEntry<>(kv.getKey(), kv.getValue()));
     }
 
     static public SparkSubmissionParameter convertToDebugParameter(SparkSubmissionParameter submissionParameter)

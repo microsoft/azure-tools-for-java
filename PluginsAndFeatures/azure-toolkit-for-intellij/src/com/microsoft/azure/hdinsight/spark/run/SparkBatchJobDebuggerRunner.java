@@ -59,6 +59,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implements SparkSubmissionRunner {
     public static final Key<String> DebugTargetKey = new Key<>("debug-target");
@@ -228,6 +230,26 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
                             // Prepare the debug tab console view UI
                             SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
+                            // Get YARN container log URL port
+                            int containerLogUrlPort =
+                                    ((SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob())
+                                            .getYarnContainerLogUrlPort()
+                                            .toBlocking()
+                                            .single();
+                            // Parse container ID and host URL from driver console view
+                            jobOutputView.getSecondaryConsoleView().addMessageFilter((line, entireLength) -> {
+                                Matcher matcher = Pattern.compile(
+                                        "Launching container (\\w+) on host ([a-zA-Z_0-9-.]+)",
+                                        Pattern.CASE_INSENSITIVE)
+                                        .matcher(line);
+                                while (matcher.find()) {
+                                    String containerId = matcher.group(1);
+                                    // TODO: get port from somewhere else rather than hard code here
+                                    URI hostUri = URI.create(String.format("http://%s:%d", matcher.group(2), containerLogUrlPort));
+                                    debugEventSubject.onNext(new SparkBatchJobExecutorCreatedEvent(hostUri, containerId));
+                                }
+                                return null;
+                            });
                             jobOutputView.attachToProcess(handlerReadyEvent.getDebugProcessHandler());
 
                             ExecutionResult result = new DefaultExecutionResult(
@@ -252,7 +274,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
                             final String containerId = executorCreatedEvent.getContainerId();
                             final SparkBatchRemoteDebugJob debugJob =
-                                    (SparkBatchRemoteDebugJob) executorCreatedEvent.getJob();
+                                    (SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob();
 
                             URI internalHostUri = executorCreatedEvent.getHostUri();
                             URI executorLogUrl = debugJob.convertToPublicLogUri(internalHostUri)
@@ -265,7 +287,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                             schedulers,
                                             debugJob,
                                             internalHostUri.getHost(),
-                                            executorCreatedEvent.getDebugSshSession(),
+                                            driverDebugProcess.getDebugSession(),
                                             executorLogUrl.toString());
 
                             SparkBatchJobDebugProcessHandler executorDebugHandler =
