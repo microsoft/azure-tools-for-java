@@ -39,7 +39,7 @@ class AzureFunctionsHostExecutorFactory(
     private val logger = getLogger<AzureFunctionsHostExecutorFactory>()
 
     override fun create(executorId: String, environment: ExecutionEnvironment): RunProfileState {
-        val coreToolsInfo: FunctionsCoreToolsInfo? = FunctionsCoreToolsInfoProvider.build()
+        val coreToolsInfo: FunctionsCoreToolsInfo? = FunctionsCoreToolsInfoProvider.retrieve()
                 ?: throw CantRunException("Can't run Azure Functions host - path to core tools has not been configured.")
 
         val projectKind = parameters.projectKind

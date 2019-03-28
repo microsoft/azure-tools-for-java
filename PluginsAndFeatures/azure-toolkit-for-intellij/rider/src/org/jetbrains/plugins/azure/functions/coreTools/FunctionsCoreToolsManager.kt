@@ -34,11 +34,11 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.ZipUtil
-import com.jetbrains.rd.util.debug
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.string.printToString
 import com.jetbrains.rd.util.warn
+import com.jetbrains.rider.projectView.actions.projectTemplating.backend.ReSharperProjectTemplateProvider
 import org.jetbrains.plugins.azure.functions.GitHubReleasesService
 import java.io.File
 import java.io.IOException
@@ -148,17 +148,6 @@ object FunctionsCoreToolsManager {
         } catch (e: Exception) {
             logger.error("Error while removing temporary file $tempFile.path", e)
         }
-
-//      // TODO: Should we register project templates?
-//      indicator.text = "Registering templates..."
-//      val templatesFolder = File(latestDirectory.path + File.separator + "templates")
-//      if (templatesFolder.exists()) {
-//          templatesFolder
-//              .listFiles { f: File? -> f != null && f.isFile && f.name.contains("projectTemplates", true) }
-//              .forEach {
-//                  ReSharperProjectTemplateProvider.addUserTemplateSource(it)
-//              }
-//       }
 
         pi.finishNonCancelableSection()
         pi.text = "Finished."

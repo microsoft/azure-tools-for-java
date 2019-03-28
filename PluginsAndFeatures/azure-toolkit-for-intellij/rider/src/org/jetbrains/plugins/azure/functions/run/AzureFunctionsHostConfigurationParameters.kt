@@ -102,7 +102,7 @@ open class AzureFunctionsHostConfigurationParameters(
         val runnableProject = tryGetRunnableProject() ?: throw CantRunException("Project is not specified")
         val projectOutput = tryGetProjectOutput(runnableProject)
 
-        val coreToolsInfo: FunctionsCoreToolsInfo? = FunctionsCoreToolsInfoProvider.build()
+        val coreToolsInfo: FunctionsCoreToolsInfo? = FunctionsCoreToolsInfoProvider.retrieve()
                 ?: throw CantRunException("Can't run Azure Functions host - path to core tools has not been configured.")
 
         val effectiveWorkingDirectory = if (trackProjectWorkingDirectory && projectOutput != null) {
@@ -185,7 +185,7 @@ open class AzureFunctionsHostConfigurationParameters(
                 throw RuntimeConfigurationError("Invalid working directory: ${if (workingDirectory.isNotEmpty()) workingDirectory else "<empty>"}")
         }
 
-        FunctionsCoreToolsInfoProvider.build()
+        FunctionsCoreToolsInfoProvider.retrieve()
                 ?: throw RuntimeConfigurationError("Path to Azure Functions core tools has not been configured. This can be done in the settings under Tools | Azure | Functions.")
 
         if (useMonoRuntime && riderDotNetActiveRuntimeHost.monoRuntime == null)

@@ -42,6 +42,7 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract implements OptionsContainingConfigurable {
     public static final String AZURE_PLUGIN_NAME = "Microsoft Tools";
     public static final String AZURE_PLUGIN_ID = "com.microsoft.intellij";
+    public static final String AZURE_CONFIGURABLE_PREFIX = "preferences.sourceCode.";
 
     private java.util.List<Configurable> myPanels;
     private final Project myProject;
@@ -151,7 +152,7 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
         @NotNull
         @Override
         public String getId() {
-            return "preferences.sourceCode." + getDisplayName();
+            return AZURE_CONFIGURABLE_PREFIX + getDisplayName();
         }
 
         @Nullable

@@ -35,6 +35,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
+import org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplateManager
 import java.awt.CardLayout
 import java.io.File
 import javax.swing.JLabel
@@ -43,7 +44,7 @@ import javax.swing.JPanel
 class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     companion object {
-        private const val DISPLAY_NAME = "Functions"
+        const val DISPLAY_NAME = "Functions"
 
         private const val PATH_TO_CORE_TOOLS = "Azure Functions Core Tools path:"
         private const val CURRENT_VERSION = "Current version:"
@@ -103,6 +104,8 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         wrapperLayout.show(installActionPanel, CARD_PROGRESS)
 
         FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
+            FunctionsCoreToolsTemplateManager.tryReload()
+
             UIUtil.invokeAndWaitIfNeeded(Runnable {
                 coreToolsPathField.text = it
                 installButton.isEnabled = false

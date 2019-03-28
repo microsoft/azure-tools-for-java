@@ -25,6 +25,7 @@ package com.microsoft.intellij.configuration
 import com.intellij.application.options.OptionsContainingConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.SearchableConfigurable
+import com.microsoft.intellij.AzureConfigurable.AZURE_CONFIGURABLE_PREFIX
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
 import org.jetbrains.annotations.Nls
 import javax.swing.JComponent
@@ -56,7 +57,7 @@ class AzureRiderAbstractConfigurable(private val panel: AzureRiderAbstractConfig
     override fun isModified() = true
 
     override fun getId(): String {
-        return "preferences.sourceCode.$displayName"
+        return AZURE_CONFIGURABLE_PREFIX + displayName
     }
 
     override fun enableSearch(option: String?): Runnable? {

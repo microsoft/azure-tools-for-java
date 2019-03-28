@@ -46,7 +46,7 @@ class AzureCoreToolsNotification : StartupActivity {
         project.solution.runnableProjectsModel.projects.adviseOnce(project.createLifetime()) { runnableProjects ->
             if (runnableProjects.none { it.kind == RunnableProjectKind.AzureFunctions }) return@adviseOnce
 
-            val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.build()
+            val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.retrieve()
 
             val local = FunctionsCoreToolsManager.determineVersion(funcCoreToolsInfo?.coreToolsPath)
             val remote = FunctionsCoreToolsManager.determineLatestRemote()

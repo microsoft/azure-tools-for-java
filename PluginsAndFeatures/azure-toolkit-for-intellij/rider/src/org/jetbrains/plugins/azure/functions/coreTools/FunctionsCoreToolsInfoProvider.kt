@@ -35,7 +35,7 @@ data class FunctionsCoreToolsInfo(val coreToolsPath: String, var coreToolsExecut
 object FunctionsCoreToolsInfoProvider {
     private val logger = getLogger<FunctionsCoreToolsInfoProvider>()
 
-    fun build(): FunctionsCoreToolsInfo? {
+    fun retrieve(): FunctionsCoreToolsInfo? {
         val funcCoreToolsPath = PropertiesComponent.getInstance().getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH)
         if (funcCoreToolsPath.isNullOrEmpty() || !File(funcCoreToolsPath).exists()) {
             return null
