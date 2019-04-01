@@ -61,7 +61,7 @@ class FunctionsCoreToolsTemplatesProvider : RiderProjectTemplateProvider {
         override val name: String
             get() = "Azure Functions"
         override val icon: Icon
-            get() = IconLoader.getIcon("icons/FunctionApp.svg")
+            get() = IconLoader.getIcon("icons/TemplateAzureFunc.svg")
 
         override fun getKeywords() = arrayOf(name)
 
