@@ -127,7 +127,8 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
         view.storagePanel.adlsGen2Card.storageKeyField.addFocusListener(object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 saveAccesKey().subscribe(
-                        { model -> log().info("save new access key for account" + model.gen2Account) },
+                        { model -> if(!StringUtils.isEmpty(model.gen2Account))
+                                      log().info("save new access key for account" + model.gen2Account) },
                         {}
                 )
             }

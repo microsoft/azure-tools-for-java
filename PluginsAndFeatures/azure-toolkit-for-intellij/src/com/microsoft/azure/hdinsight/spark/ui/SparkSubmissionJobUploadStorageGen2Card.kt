@@ -38,7 +38,9 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
     private val storageKeyTip = "The access key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
     private val storageKeyLabel = JLabel("Access Key").apply { toolTipText = storageKeyTip }
     val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip }
-    val gen2AccountField = JTextArea().apply { isVisible = false }
+    private val gen2RootPathTip = "e.g. https://<mystorageaccount>.dfs.core.windows.net/<root path>."
+    private val gen2RootPathLabel = JLabel("ADLS GEN2 Root Path").apply { toolTipText = gen2RootPathTip }
+    val gen2RootPathField = JTextArea().apply { toolTipText = gen2RootPathTip }
 
     init {
         val formBuilder = panel {
@@ -51,6 +53,9 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
                     hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
                     fill = GridConstraints.FILL_HORIZONTAL
                 }
+            }
+            row {
+                c(gen2RootPathLabel); c(gen2RootPathField)
             }
             row {
                 c(storageKeyLabel); c(storageKeyField)
