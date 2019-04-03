@@ -23,6 +23,9 @@ package com.microsoft.azuretools.webapp.ui;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_LOCATION;
+import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_PRICING;
+import static com.microsoft.azuretools.webapp.util.CommonUtils.getSelectedItem;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
@@ -51,6 +54,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.webapp.Activator;
+import com.microsoft.azuretools.webapp.util.CommonUtils;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -357,7 +361,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         fillAppServicePlanLocations();
         fillAppServicePlanPricingTiers();
         fillJavaVersion();
-
+        fillUserSettings();
         return scrolledComposite;
     }
 
@@ -1084,11 +1088,70 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         }
     }
 
+    private void fillUserSettings() {
+        try {
+            String os = CommonUtils.getPreference(CommonUtils.RUNTIME_OS);
+            if (os.equals(OperatingSystem.LINUX.toString())) {
+                btnOSGroupLinux.setSelection(true);
+                btnOSGroupWin.setSelection(false);
+            } else if (os.equals(OperatingSystem.WINDOWS.toString())) {
+                btnOSGroupLinux.setSelection(false);
+                btnOSGroupWin.setSelection(true);
+            }
+            String subscription = CommonUtils.getPreference(CommonUtils.SUBSCRIPTION);
+            CommonUtils.selectComboIndex(comboSubscription, subscription);
+
+            String linuxRuntime = CommonUtils.getPreference(CommonUtils.RUNTIME_LINUX);
+            CommonUtils.selectComboIndex(comboLinuxRuntime, linuxRuntime);
+
+            String javaversion = CommonUtils.getPreference(CommonUtils.RUNTIME_JAVAVERSION);
+            CommonUtils.selectComboIndex(cbJavaVersion, javaversion);
+
+            String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
+            CommonUtils.selectComboIndex(comboWebContainer, webContainer);
+
+            String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
+            CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
+
+            String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
+            CommonUtils.selectComboIndex(comboAppServicePlanLocation, aspLocation);
+
+            String aspPricing = CommonUtils.getPreference(ASP_CREATE_PRICING);
+            CommonUtils.selectComboIndex(comboAppServicePlanPricingTier, aspPricing);
+
+            String resourceGroup = CommonUtils.getPreference(CommonUtils.RG_NAME);
+            CommonUtils.selectComboIndex(comboResourceGroup, resourceGroup);
+        } catch (Exception ignore) {
+        }
+    }
+
+    private void recordUserSettings() {
+        try {
+            CommonUtils.setPreference(CommonUtils.SUBSCRIPTION, getSelectedItem(comboSubscription));
+            CommonUtils.setPreference(CommonUtils.RUNTIME_OS, model.getOS().toString());
+            CommonUtils.setPreference(CommonUtils.RUNTIME_LINUX, getSelectedItem(comboLinuxRuntime));
+            CommonUtils.setPreference(CommonUtils.RUNTIME_JAVAVERSION, getSelectedItem(cbJavaVersion));
+            CommonUtils.setPreference(CommonUtils.RUNTIME_WEBCONTAINER, getSelectedItem(comboWebContainer));
+            CommonUtils.setPreference(CommonUtils.ASP_NAME, getSelectedItem(comboAppServicePlan));
+            if (model.isCreatingAppServicePlan()) {
+                CommonUtils.setPreference(CommonUtils.ASP_NAME, model.getAppServicePlanName());
+                CommonUtils.setPreference(ASP_CREATE_LOCATION, getSelectedItem(comboAppServicePlanLocation));
+                CommonUtils.setPreference(ASP_CREATE_PRICING, getSelectedItem(comboAppServicePlanPricingTier));
+            }
+            CommonUtils.setPreference(CommonUtils.RG_NAME, getSelectedItem(comboResourceGroup));
+            if (model.isCreatingResGrp()) {
+                CommonUtils.setPreference(CommonUtils.RG_NAME, model.getResourceGroup());
+            }
+        } catch (Exception ignore) {
+        }
+    }
+
     @Override
     protected void okPressed() {
         String errTitle = ERROR_DIALOG_TITLE;
         cleanError();
         collectData();
+        recordUserSettings();
         Map<String, String> properties = new HashMap<>();
         properties.put("runtime",
             model.getOS() == OperatingSystem.LINUX ? "Linux-" + model.getLinuxRuntime().toString()

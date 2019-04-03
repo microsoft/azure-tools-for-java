@@ -39,6 +39,7 @@ import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
+import com.microsoft.azuretools.webapp.util.CommonUtils;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -425,8 +426,11 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         Label label = new Label(compositeSlotCb, SWT.NONE);
         label.setText("");
+        RowData labelConf = new RowData();
+        labelConf.height = 20;
+        label.setLayoutData(labelConf);
         label.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
-            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
+            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 18, 18));
         label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         label.addMouseListener(new MouseAdapter() {
             @Override
@@ -549,6 +553,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         super.create();
         Display.getDefault().asyncExec(() -> {
             fillTable();
+            fillUserSettings();
             AppServiceCreateDialog.initAspCache();
         });
     }
@@ -728,10 +733,40 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         if (comboSlot.getItemCount() > 0) {
             comboSlot.select(0);
         }
-
         comboSlotConf.add(webApp.name());
         comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
         comboSlotConf.select(0);
+    }
+
+    private void fillUserSettings() {
+        try {
+            selectTableRowWithWebAppName(CommonUtils.getPreference(CommonUtils.WEBAPP_NAME));
+            fillAppServiceDetails();
+            String slotName = CommonUtils.getPreference(CommonUtils.SLOT_NAME);
+            String slotConf = CommonUtils.getPreference(CommonUtils.SLOT_CONF);
+            CommonUtils.selectComboIndex(comboSlot, slotName);
+            CommonUtils.selectComboIndex(comboSlotConf, slotConf);
+        } catch (Exception ignore) {
+        }
+    }
+
+    private void recordUserSettings() {
+        try {
+            int selectedRow = table.getSelectionIndex();
+            String appServiceName = table.getItems()[selectedRow].getText(0);
+            CommonUtils.setPreference(CommonUtils.WEBAPP_NAME, appServiceName);
+
+            if (isDeployToSlot) {
+                if (isCreateNewSlot) {
+                    CommonUtils
+                        .setPreference(CommonUtils.SLOT_CONF, webAppSettingModel.getNewSlotConfigurationSource());
+                    CommonUtils.setPreference(CommonUtils.SLOT_NAME, webAppSettingModel.getNewSlotName());
+                } else {
+                    CommonUtils.setPreference(CommonUtils.SLOT_NAME, webAppSettingModel.getSlotName());
+                }
+            }
+        } catch (Exception ignore) {
+        }
     }
 
     private boolean validate() {
@@ -854,6 +889,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 destinationPath = project.getLocation() + "/" + artifactName + ".war";
             }
             collectData();
+            recordUserSettings();
             if (!validate()) {
                 return;
             }
