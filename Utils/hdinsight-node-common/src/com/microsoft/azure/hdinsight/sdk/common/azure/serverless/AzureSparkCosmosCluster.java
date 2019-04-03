@@ -384,7 +384,9 @@ public class AzureSparkCosmosCluster extends SparkCluster
 
     public boolean isRunning() {
         return !getState().equalsIgnoreCase(SchedulerState.FINALIZING.toString())
-                && !getState().equalsIgnoreCase(SchedulerState.ENDED.toString());
+                && !getState().equalsIgnoreCase(SchedulerState.ENDED.toString())
+                && !getState().equalsIgnoreCase(SchedulerState.ANY.toString());
+
     }
 
     public String getClusterStateForShow() {

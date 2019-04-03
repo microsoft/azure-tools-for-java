@@ -85,8 +85,9 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
                 new CosmosSparkSubmitAction(this, cluster, CosmosSparkClusterOps.getInstance().getSubmitAction()));
         submitCosmosSparkJobAction.setEnabled(isClusterStable());
 
-        addAction("View Cluster Status", new CosmosSparkMonitorAction(
+        NodeAction viewClusterStatusAction = addAction("View Cluster Status", new CosmosSparkMonitorAction(
                 this, cluster, CosmosSparkClusterOps.getInstance().getMonitorAction()));
+        viewClusterStatusAction.setEnabled(isClusterRunning());
 
         NodeAction updateAction = addAction(UPDATE_ACTION_NAME, new CosmosSparkUpdateAction(
                 this, cluster, CosmosSparkClusterOps.getInstance().getUpdateAction()));
@@ -94,7 +95,7 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
 
         NodeAction deleteAction = addAction("Delete", new CosmosSparkDestroyAction(
                 this, cluster, adlAccount, CosmosSparkClusterOps.getInstance().getDestroyAction()));
-        deleteAction.setEnabled(isClusterStable());
+        deleteAction.setEnabled(isClusterRunning());
 
         addAction("Open Spark Master UI", new NodeActionListener() {
             @Override
@@ -118,6 +119,10 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
 
     private boolean isClusterStable() {
         return cluster.isStable();
+    }
+
+    private boolean isClusterRunning() {
+        return cluster.isRunning();
     }
 
     @NotNull
