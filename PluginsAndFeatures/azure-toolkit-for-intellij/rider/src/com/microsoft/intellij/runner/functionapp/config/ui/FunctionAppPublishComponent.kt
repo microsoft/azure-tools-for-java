@@ -135,7 +135,7 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         model.appName = pnlCreateFunctionApp.pnlAppName.txtAppName.text
 
         if (!model.isCreatingNewApp)
-            model.app = pnlExistingFunctionApp.pnlExistingAppTable.lastSelectedApp
+            model.appId = pnlExistingFunctionApp.pnlExistingAppTable.lastSelectedApp?.id() ?: ""
 
         model.isCreatingResourceGroup = pnlCreateFunctionApp.pnlResourceGroup.rdoCreateNew.isSelected
         if (pnlCreateFunctionApp.pnlResourceGroup.rdoCreateNew.isSelected) {
@@ -154,14 +154,14 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         val storageAccount = pnlCreateFunctionApp.pnlStorageAccount
         model.isCreatingStorageAccount = storageAccount.isCreatingNew
         model.storageAccountName       = storageAccount.txtName.text
-        model.storageAccount           = storageAccount.cbStorageAccount.getSelectedValue()
+        model.storageAccountId         = storageAccount.cbStorageAccount.getSelectedValue()?.id() ?: ""
         model.storageAccountType       = storageAccount.cbStorageAccountType.getSelectedValue() ?: model.storageAccountType
     }
 
     //region Fill Values
 
     fun fillAppsTable(apps: List<ResourceEx<FunctionApp>>) =
-            pnlExistingFunctionApp.fillAppsTable(apps, model.app?.id())
+            pnlExistingFunctionApp.fillAppsTable(apps, model.appId)
 
     fun fillSubscription(subscriptions: List<Subscription>) =
             pnlCreateFunctionApp.fillSubscription(subscriptions, model.subscription)
@@ -179,7 +179,7 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
             pnlCreateFunctionApp.fillPricingTier(pricingTiers, model.pricingTier)
 
     fun fillStorageAccount(storageAccounts: List<StorageAccount>) =
-            pnlCreateFunctionApp.fillStorageAccount(storageAccounts, model.storageAccount)
+            pnlCreateFunctionApp.fillStorageAccount(storageAccounts, model.storageAccountId)
 
     fun fillStorageAccountType(storageAccountType: List<StorageAccountSkuType>) =
             pnlCreateFunctionApp.fillStorageAccountType(storageAccountType)

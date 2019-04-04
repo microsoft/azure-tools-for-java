@@ -31,6 +31,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel
+import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
@@ -122,7 +123,7 @@ object AzureFunctionAppMvpModel {
                           region: Region,
                           pricingTier: PricingTier,
                           isCreateStorageAccount: Boolean,
-                          storageAccount: StorageAccount?,
+                          storageAccountId: String,
                           storageAccountName: String,
                           storageAccountType: StorageAccountSkuType): FunctionApp {
 
@@ -161,6 +162,7 @@ object AzureFunctionAppMvpModel {
                     withResourceGroup
                 }
 
+        val storageAccount = AzureStorageAccountMvpModel.getStorageAccountById(subscriptionId, storageAccountId)
         val withAppStorage = withStorageAccount(withPlan, isCreateStorageAccount, storageAccount, storageAccountName, storageAccountType.name())
 
         return withAppStorage
@@ -188,6 +190,16 @@ object AzureFunctionAppMvpModel {
         appToConnectionStringsMap[app] = connectionStrings
 
         return connectionStrings
+    }
+
+    fun checkConnectionStringNameExists(subscriptionId: String, appId: String, connectionStringName: String, force: Boolean = false): Boolean {
+        if (!force && subscriptionIdToFunctionAppsMap.containsKey(subscriptionId)) {
+            val app = subscriptionIdToFunctionAppsMap[subscriptionId]!!.find { it.id() == appId } ?: return false
+            return checkConnectionStringNameExists(app, connectionStringName, force)
+        }
+
+        val app = AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, appId)
+        return checkConnectionStringNameExists(app, connectionStringName, force)
     }
 
     fun checkConnectionStringNameExists(app: FunctionApp, connectionStringName: String, force: Boolean = false): Boolean {

@@ -24,6 +24,7 @@ package com.microsoft.intellij.runner.webapp.config
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
@@ -33,6 +34,7 @@ import com.microsoft.intellij.runner.validator.ProjectConfigValidator
 import com.microsoft.intellij.runner.validator.SqlDatabaseConfigValidator
 import com.microsoft.intellij.runner.webapp.config.validator.WebAppConfigValidator
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
+import org.jdom.Element
 
 class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String?) :
         AzureRunConfigurationBase<DotNetWebAppSettingModel>(project, factory, name) {
@@ -45,9 +47,24 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     override fun getModel() = myModel
 
     override fun getConfigurationEditor() = RiderWebAppSettingEditor(project, this)
-    override fun getState(executor: Executor, executionEnvironment: ExecutionEnvironment) = RiderWebAppRunState(project, myModel)
+
+    override fun getState(executor: Executor, executionEnvironment: ExecutionEnvironment): RunProfileState? {
+        return RiderWebAppRunState(project, myModel)
+    }
 
     override fun validate() { }
+
+    override fun readExternal(element: Element) {
+        super.readExternal(element)
+        myModel.webAppModel.readExternal(project, element)
+        myModel.databaseModel.readExternal(element)
+    }
+
+    override fun writeExternal(element: Element) {
+        super.writeExternal(element)
+        myModel.webAppModel.writeExternal(element)
+        myModel.databaseModel.writeExternal(element)
+    }
 
     /**
      * Validate the configuration to run

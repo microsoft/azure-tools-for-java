@@ -43,9 +43,12 @@ object DatabaseDeployUtil {
             return createDatabase(sqlServer, model, processHandler)
         }
 
-        val database = model.database ?: throw RuntimeException(UiConstants.SQL_DATABASE_NOT_DEFINED)
+        processHandler.setText(String.format(UiConstants.SQL_DATABASE_GET_EXISTING, model.databaseId))
+        val sqlServerId = model.databaseId.split("/").dropLast(2).joinToString("/")
+        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(model.subscription?.subscriptionId() ?: "", sqlServerId)
 
-        processHandler.setText(String.format(UiConstants.SQL_DATABASE_GET_EXISTING, database.name()))
+        val databaseId = model.databaseId.split("/").last()
+        val database = sqlServer.databases().get(databaseId)
         return database
     }
 

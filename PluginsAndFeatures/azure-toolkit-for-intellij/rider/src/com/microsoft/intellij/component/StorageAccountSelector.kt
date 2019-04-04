@@ -103,8 +103,10 @@ class StorageAccountSelector(private val lifetime: Lifetime) :
                     StorageAccountValidator.checkStorageAccountNameMinLength(txtName.text) })
     }
 
-    fun fillStorageAccount(storageAccount: List<StorageAccount>, defaultStorageAccount: StorageAccount? = null) {
-        cbStorageAccount.fillComboBox(storageAccount, defaultStorageAccount)
+    fun fillStorageAccount(storageAccount: List<StorageAccount>, defaultStorageAccountId: String? = null) {
+        cbStorageAccount.fillComboBox(
+                elements = storageAccount,
+                defaultComparator = { storage -> storage.id() == defaultStorageAccountId })
     }
 
     fun fillStorageAccountType(storageAccountType: List<StorageAccountSkuType>, defaultStorageAccountType: StorageAccountSkuType? = null) {

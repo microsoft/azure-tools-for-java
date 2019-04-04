@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -96,6 +96,9 @@ object AzureSqlDatabaseMvpModel {
 
         return sqlDatabases
     }
+
+    fun getSqlDatabaseById(subscriptionId: String, databaseId: String) =
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).sqlServers().databases().getById(databaseId)
 
     fun deleteDatabase(subscriptionId: String, databaseId: String) {
         val sqlDatabases = listSqlDatabasesBySubscriptionId(subscriptionId)

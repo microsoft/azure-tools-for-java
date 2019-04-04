@@ -59,9 +59,8 @@ object StorageAccountValidator : AzureResourceValidator() {
     fun checkStorageAccountIsSet(storageAccount: StorageAccount?) =
             checkValueIsSet(storageAccount, STORAGE_ACCOUNT_NOT_DEFINED)
 
-    @Suppress("unused")
-    fun checkStorageAccountIdIsSet(planId: String?) =
-            checkValueIsSet(planId, STORAGE_ACCOUNT_ID_NOT_DEFINED)
+    fun checkStorageAccountIdIsSet(storageAccountId: String?) =
+            checkValueIsSet(storageAccountId, STORAGE_ACCOUNT_ID_NOT_DEFINED)
 
     fun checkStorageAccountNameIsSet(name: String) =
             checkValueIsSet(name, STORAGE_ACCOUNT_NAME_NOT_DEFINED)

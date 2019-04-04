@@ -68,7 +68,7 @@ class ExistingDatabaseComponent :
     fun fillSqlDatabase(sqlDatabases: List<SqlDatabase>, defaultDatabaseId: String? = null) {
         cbDatabase.fillComboBox(
                 elements = sqlDatabases.sortedBy { it.name() },
-                defaultComparator = { sqlDatabase -> sqlDatabase.databaseId() == defaultDatabaseId })
+                defaultComparator = { sqlDatabase -> sqlDatabase.id() == defaultDatabaseId })
 
         if (sqlDatabases.isEmpty()) {
             lastSelectedDatabase = null

@@ -78,8 +78,6 @@ class DatabasePublishComponent(private val lifetime: Lifetime,
 
     fun resetFromConfig(config: DatabasePublishModel, dateString: String) {
 
-        pnlExistingDb.cbDatabase.selectedItem = config.database
-
         pnlCreateNewDb.pnlNewDatabaseName.txtNameValue.text =
                 if (config.databaseName.isEmpty()) String.format(DEFAULT_SQL_DATABASE_NAME, dateString)
                 else config.databaseName
@@ -135,7 +133,7 @@ class DatabasePublishComponent(private val lifetime: Lifetime,
 
             model.collation = pnlCreateNewDb.pnlCollation.txtCollation.text
         } else {
-            model.database = pnlExistingDb.cbDatabase.getSelectedValue()
+            model.databaseId = pnlExistingDb.cbDatabase.getSelectedValue()?.id() ?: ""
             model.sqlServerAdminLogin = pnlExistingDb.lblExistingAdminLoginValue.text
             model.sqlServerAdminPassword = pnlExistingDb.passExistingDbAdminPassword.password
         }
@@ -206,7 +204,7 @@ class DatabasePublishComponent(private val lifetime: Lifetime,
     //endregion Button Group
 
     fun fillSqlDatabase(sqlDatabases: List<SqlDatabase>) =
-            pnlExistingDb.fillSqlDatabase(sqlDatabases, model.database?.databaseId())
+            pnlExistingDb.fillSqlDatabase(sqlDatabases, model.databaseId)
 
     fun fillResourceGroup(resourceGroups: List<ResourceGroup>) =
             pnlCreateNewDb.fillResourceGroup(resourceGroups, model.resourceGroupName)

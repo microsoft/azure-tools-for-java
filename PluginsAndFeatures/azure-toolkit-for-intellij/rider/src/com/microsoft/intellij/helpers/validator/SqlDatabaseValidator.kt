@@ -61,6 +61,9 @@ object SqlDatabaseValidator : AzureResourceValidator() {
     fun checkDatabaseIsSet(sqlDatabase: SqlDatabase?) =
             checkValueIsSet(sqlDatabase, SQL_DATABASE_NOT_DEFINED)
 
+    fun checkDatabaseIdIsSet(sqlDatabaseId: String?) =
+            checkValueIsSet(sqlDatabaseId, SQL_DATABASE_NOT_DEFINED)
+
     fun checkInvalidCharacters(name: String) =
             validateResourceNameRegex(name, sqlDatabaseNameRegex, SQL_DATABASE_NAME_INVALID)
 

@@ -43,18 +43,21 @@ object FunctionAppValidator : AppValidator("Function") {
     fun checkFunctionAppIsSet(app: FunctionApp?) =
             checkValueIsSet(app, FUNCTION_APP_NOT_DEFINED)
 
+    fun checkFunctionAppIdIsSet(appId: String) =
+            checkValueIsSet(appId, FUNCTION_APP_NOT_DEFINED)
+
     fun checkFunctionAppExists(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()
         if (isFunctionAppExist(subscriptionId, name)) return status.setInvalid(String.format(FUNCTION_APP_ALREADY_EXISTS, name))
         return status
     }
 
-    fun checkConnectionStringNameExistence(name: String, functionApp: FunctionApp): ValidationResult {
-        val status = checkConnectionStringNameIsSet(name)
+    fun checkConnectionStringNameExistence(subscriptionId: String, appId: String, connectionStringName: String): ValidationResult {
+        val status = checkConnectionStringNameIsSet(connectionStringName)
         if (!status.isValid) return status
 
-        if (AzureFunctionAppMvpModel.checkConnectionStringNameExists(functionApp, name))
-            status.setInvalid(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, name))
+        if (AzureFunctionAppMvpModel.checkConnectionStringNameExists(subscriptionId, appId, connectionStringName))
+            status.setInvalid(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, connectionStringName))
 
         return status
     }

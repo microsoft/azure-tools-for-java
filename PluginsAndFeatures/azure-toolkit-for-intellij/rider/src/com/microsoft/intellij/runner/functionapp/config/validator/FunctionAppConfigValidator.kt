@@ -57,21 +57,19 @@ object FunctionAppConfigValidator : ConfigurationValidator() {
                 checkStatus(StorageAccountValidator.validateStorageAccountName(subscriptionId, model.storageAccountName))
                 checkStatus(StorageAccountValidator.checkStorageAccountTypeIsSet(model.storageAccountType))
             } else {
-                checkStatus(StorageAccountValidator.checkStorageAccountIsSet(model.storageAccount))
+                checkStatus(StorageAccountValidator.checkStorageAccountIdIsSet(model.storageAccountId))
             }
         } else {
-            checkStatus(FunctionAppValidator.checkFunctionAppIsSet(model.app))
+            checkStatus(FunctionAppValidator.checkFunctionAppIdIsSet(model.appId))
         }
     }
 
     /**
-     * Check Connection String name existence for a web app
+     * Check Connection String name existence for a function app
      *
-     * @param name connection string name
-     * @param webAppId a web app to check
-     * @throws [RuntimeConfigurationError] when connection string with a specified name already configured for a web app
+     * @throws [RuntimeConfigurationError] when connection string with a specified name already configured for a function app
      */
     @Throws(RuntimeConfigurationError::class)
-    fun checkConnectionStringNameExistence(name: String, app: FunctionApp) =
-            checkStatus(FunctionAppValidator.checkConnectionStringNameExistence(name, app))
+    fun checkConnectionStringNameExistence(subscriptionId: String, appId: String, connectionStringName: String) =
+            checkStatus(FunctionAppValidator.checkConnectionStringNameExistence(subscriptionId, appId, connectionStringName))
 }

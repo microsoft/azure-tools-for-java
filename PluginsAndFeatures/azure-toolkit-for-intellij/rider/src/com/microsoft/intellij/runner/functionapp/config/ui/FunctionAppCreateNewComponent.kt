@@ -92,8 +92,8 @@ class FunctionAppCreateNewComponent(lifetime: Lifetime) :
     fun fillPricingTier(pricingTiers: List<PricingTier>, defaultPricingTier: PricingTier? = null) =
             pnlHostingPlan.fillPricingTier(updatePricingTiers(pricingTiers), defaultPricingTier)
 
-    fun fillStorageAccount(storageAccounts: List<StorageAccount>, defaultStorageAccount: StorageAccount? = null) =
-            pnlStorageAccount.fillStorageAccount(storageAccounts, defaultStorageAccount)
+    fun fillStorageAccount(storageAccounts: List<StorageAccount>, defaultStorageAccountId: String? = null) =
+            pnlStorageAccount.fillStorageAccount(storageAccounts, defaultStorageAccountId)
 
     fun fillStorageAccountType(storageAccountType: List<StorageAccountSkuType>, defaultType: StorageAccountSkuType? = null) =
             pnlStorageAccount.fillStorageAccountType(storageAccountType, defaultType)

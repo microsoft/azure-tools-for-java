@@ -65,18 +65,14 @@ object FunctionAppDeployStateUtil {
                 ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
         if (!model.isCreatingNewApp) {
-            processHandler.setText(String.format(UiConstants.FUNCTION_APP_GET_EXISTING, model.app?.id()))
-
-            val appId = model.app?.id() ?: throw RuntimeException(UiConstants.FUNCTION_APP_ID_NOT_DEFINED)
-            return AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, appId)
+            processHandler.setText(String.format(UiConstants.FUNCTION_APP_GET_EXISTING, model.appId))
+            return AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, model.appId)
         }
 
         processHandler.setText(String.format(UiConstants.FUNCTION_APP_CREATE, model.appName))
 
         if (model.appName.isEmpty()) throw RuntimeException(UiConstants.FUNCTION_APP_NAME_NOT_DEFINED)
         if (model.resourceGroupName.isEmpty()) throw RuntimeException(UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
-
-        model.storageAccount
 
         val app = AzureFunctionAppMvpModel.createFunctionApp(
                 subscriptionId         = subscriptionId,
@@ -89,7 +85,7 @@ object FunctionAppDeployStateUtil {
                 region                 = model.location,
                 pricingTier            = model.pricingTier,
                 isCreateStorageAccount = model.isCreatingStorageAccount,
-                storageAccount         = model.storageAccount,
+                storageAccountId       = model.storageAccountId,
                 storageAccountName     = model.storageAccountName,
                 storageAccountType     = model.storageAccountType)
 

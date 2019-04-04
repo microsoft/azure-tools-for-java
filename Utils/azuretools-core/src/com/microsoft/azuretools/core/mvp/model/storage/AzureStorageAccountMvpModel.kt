@@ -76,6 +76,9 @@ object AzureStorageAccountMvpModel {
         return storageAccounts
     }
 
+    fun getStorageAccountById(subscriptionId: String, storageAccountId: String) =
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).storageAccounts().getById(storageAccountId)
+
     fun checkNameAvailability(subscriptionId: String, name: String) =
             AuthMethodManager.getInstance().getAzureClient(subscriptionId).storageAccounts()
                     .checkNameAvailability(name).isAvailable

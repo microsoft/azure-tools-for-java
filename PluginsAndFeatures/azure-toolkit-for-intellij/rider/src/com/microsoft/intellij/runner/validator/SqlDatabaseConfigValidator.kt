@@ -63,7 +63,7 @@ object SqlDatabaseConfigValidator : ConfigurationValidator() {
 
             SqlDatabaseValidator.checkCollationIsSet(model.collation)
         } else {
-            checkStatus(SqlDatabaseValidator.checkDatabaseIsSet(model.database))
+            checkStatus(SqlDatabaseValidator.checkDatabaseIdIsSet(model.databaseId))
             checkStatus(SqlServerValidator.checkAdminLoginIsSet(model.sqlServerAdminLogin))
             checkStatus(SqlServerValidator.checkPasswordIsSet(model.sqlServerAdminPassword))
         }

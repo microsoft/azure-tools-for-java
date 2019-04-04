@@ -42,8 +42,8 @@ class AzureRiderAbstractConfigurable(private val panel: AzureRiderAbstractConfig
         return null
     }
 
-    override fun processListOptions(): Set<String>? {
-        return null
+    override fun processListOptions(): Set<String> {
+        return emptySet()
     }
 
     override fun createComponent(): JComponent? {

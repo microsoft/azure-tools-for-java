@@ -33,6 +33,7 @@ import com.microsoft.intellij.runner.functionapp.model.FunctionAppSettingModel
 import com.microsoft.intellij.runner.validator.ConfigurationValidator
 import com.microsoft.intellij.runner.validator.ProjectConfigValidator
 import com.microsoft.intellij.runner.validator.SqlDatabaseConfigValidator
+import org.jdom.Element
 
 class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, name: String?) :
         AzureRunConfigurationBase<FunctionAppSettingModel>(project, factory, name) {
@@ -49,6 +50,18 @@ class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
     override fun validate() { }
 
+    override fun readExternal(element: Element) {
+        super.readExternal(element)
+        myModel.functionAppModel.readExternal(project, element)
+        myModel.databaseModel.readExternal(element)
+    }
+
+    override fun writeExternal(element: Element) {
+        super.writeExternal(element)
+        myModel.functionAppModel.writeExternal(element)
+        myModel.databaseModel.writeExternal(element)
+    }
+
     /**
      * Validate the configuration to run
      *
@@ -64,8 +77,10 @@ class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, 
         SqlDatabaseConfigValidator.validateDatabaseConnection(myModel.databaseModel)
 
         if (myModel.databaseModel.isDatabaseConnectionEnabled) {
-            val app = myModel.functionAppModel.app ?: return
-            FunctionAppConfigValidator.checkConnectionStringNameExistence(myModel.databaseModel.connectionStringName, app)
+            FunctionAppConfigValidator.checkConnectionStringNameExistence(
+                    subscriptionId = myModel.functionAppModel.subscription?.subscriptionId() ?: "",
+                    appId = myModel.functionAppModel.appId,
+                    connectionStringName = myModel.databaseModel.connectionStringName)
         }
     }
 }

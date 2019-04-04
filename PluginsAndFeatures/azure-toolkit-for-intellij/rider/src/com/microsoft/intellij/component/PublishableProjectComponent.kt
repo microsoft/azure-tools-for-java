@@ -75,9 +75,9 @@ class PublishableProjectComponent(private val project: Project) :
         val projectsToProcess = publishableProjects.sortedBy { it.projectName }
         cbProject.fillComboBox(projectsToProcess, defaultProject)
 
-        // Find first project that can be published to Azure and pre-select it
+        // Find first project that can be published to Azure and pre-select it if there was no project was selected by user
         val projectCanBePublished = projectsToProcess.find { canBePublishedAction(it) }
-        if (projectCanBePublished != null) {
+        if (defaultProject == null && projectCanBePublished != null) {
             cbProject.selectedItem = projectCanBePublished
             lastSelectedProject = projectCanBePublished
         }
