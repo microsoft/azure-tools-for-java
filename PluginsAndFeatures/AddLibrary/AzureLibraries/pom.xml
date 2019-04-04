@@ -82,7 +82,7 @@
             <phase>process-classes</phase>
             <goals>    
                 <goal>manifest</goal>
-            </goals>                
+            </goals>
             </execution>
         </executions>
         <configuration>
