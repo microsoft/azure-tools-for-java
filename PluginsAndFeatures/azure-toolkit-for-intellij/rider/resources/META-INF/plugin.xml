@@ -21,15 +21,17 @@
       <html>
         <p>[3.14.0-2019.1]</p>
         <ul>
+          <li>Azure Function Apps
+            <ul>
+              <li>Create Function Apps from Project (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/151">#151</a>) and Item Templates (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/152">#152</a>)</li>
+              <li>Run and debug .NET Core Function Apps locally (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/161">#161</a>)</li>
+              <li>Publish Function Apps with run configuration or from a project explorer context menu (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/150">#150</a>)</li>
+            </ul>
+          </li>
           <li>Sql Databases in Azure Explorer
             <ul>
               <li>Create SQL Server from Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/134">#134</a>)</li>
               <li>Create SQL Database from Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/135">#135</a>)</li>
-            </ul>
-          </li>
-          <li>Azure Function Apps
-            <ul>
-              <li>Publish Function Apps with run configuration or from a project explorer context menu (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/150">#150</a>)</li>
             </ul>
           </li>
         </ul>
