@@ -160,7 +160,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     override fun fillDatabaseComputeSize(objectives: List<ServiceObjectiveName>) {
         cachedComputeSize = objectives
         cbDatabaseComputeSize.fillComboBox(
-                filterComputeSizeValues(cachedComputeSize, cbDatabaseEdition.getSelectedValue() ?: AzureDefaults.databaseEdition))
+                filterComputeSizeValues(objectives, cbDatabaseEdition.getSelectedValue() ?: AzureDefaults.databaseEdition))
     }
 
     override fun validateComponent(): List<ValidationInfo> {
