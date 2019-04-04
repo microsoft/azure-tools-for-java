@@ -17,9 +17,11 @@ The plugin can be downloaded and installed in JetBrains Rider and is available [
 * Basic management of storage accounts (create/delete, list/create/delete blob container, list/upload/download/delete blobs, connect to emulator)
 * Basic management of virtual machines (create/delete, start/stop, view details)
 * Basic management of web apps and deployment slots (create/delete, start/stop, view details, edit settings, swap slot)
-* Run configuration to deploy ASP.NET web apps (can also provision SQL database)
+* Basic management of function apps and deployment slots (create/delete, start/stop, view details, edit settings, swap slot)
+* Run configuration to deploy function apps and ASP.NET web apps (can also provision SQL database)
   * ASP.NET Core web apps (any platform)
   * .NET framework web apps (Windows)
+* Azure Functions Core Tools integration with project and item templates, and a run configuration to run/debug .NET Core function apps
 * Azure Cloud Shell support
   * Connect to cloud shell and work with terminal
   * Upload file action in Rider, support `download <file>` command in terminal
@@ -43,7 +45,7 @@ The Azure Toolkit for [JetBrains Rider](https://www.jetbrains.com/rider) is rele
 * No telemetry or usage data is collected and sent to Microsoft
 * Icons have been replaced by custom icons, as [the original icons are not open-source](https://github.com/Microsoft/azure-tools-for-java/issues/1626)
 * Java/JVM-specific functionality was removed
-* .NET-specific functionality, such as deploying an ASP.NET web application, has been added
+* .NET-specific functionalities, such as deploying an ASP.NET web application and more, have been added
 
 JetBrains [opened a pull request](https://github.com/Microsoft/azure-tools-for-java/pull/1725) to Microsoft's Azure Toolkit for IntelliJ as well, which would contribute this effort back to the original plugin, and open up the original plugin to various other ecosystems.
 
