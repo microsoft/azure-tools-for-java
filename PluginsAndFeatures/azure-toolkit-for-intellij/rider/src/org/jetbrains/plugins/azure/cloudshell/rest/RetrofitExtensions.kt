@@ -21,19 +21,14 @@
  */
 package org.jetbrains.plugins.azure.cloudshell.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.microsoft.azure.AzureResponseBuilder
 import com.microsoft.azure.management.resources.fluentcore.utils.ResourceManagerThrottlingInterceptor
-import com.microsoft.azure.serializer.AzureJacksonAdapter
 import com.microsoft.azuretools.authmanage.AdAuthManager
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.RestClient
 import com.microsoft.rest.credentials.ServiceClientCredentials
 import com.microsoft.rest.protocol.Environment
-import com.microsoft.rest.protocol.SerializerAdapter
-import com.microsoft.rest.serializer.JacksonAdapter
 import org.jetbrains.plugins.azure.util.KotlinAzureJacksonAdapter
 import java.util.concurrent.TimeUnit
 
