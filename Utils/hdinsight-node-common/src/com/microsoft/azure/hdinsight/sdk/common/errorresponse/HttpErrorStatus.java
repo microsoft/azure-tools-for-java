@@ -28,6 +28,9 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class HttpErrorStatus extends HttpException {
     private int statusCode;
 
@@ -43,6 +46,7 @@ public class HttpErrorStatus extends HttpException {
             @Nullable Header[] headers,
             @Nullable HttpEntity entity) {
         super(message);
+        this.statusCode = statusCode;
         this.headers = headers;
         this.entity = entity;
     }
@@ -61,4 +65,16 @@ public class HttpErrorStatus extends HttpException {
         return entity;
     }
 
+    public String getErrorDetails() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Status Code: " + getStatusCode() + "\n");
+        if (getHeaders() != null) {
+            String headersString = Arrays.stream(getHeaders())
+                    .map(header -> header.getName() + ": " + header.getValue())
+                    .collect(Collectors.joining("\n"));
+            sb.append("Headers:\n" + headersString + "\n");
+        }
+        sb.append("Error message: " + getMessage());
+        return sb.toString();
+    }
 }

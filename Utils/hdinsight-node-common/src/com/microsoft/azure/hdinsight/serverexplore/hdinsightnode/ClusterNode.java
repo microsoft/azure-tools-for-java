@@ -148,8 +148,8 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             String password = clusterDetail.getHttpPassword();
             return userName != null && password != null;
         } catch (Exception ex) {
-            log().info("Error getting cluster credential. Cluster Name: " + clusterDetail.getName());
-            log().info(ExceptionUtils.getStackTrace(ex));
+            log().warn("Error getting cluster credential. Cluster Name: " + clusterDetail.getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
             return false;
         }
     }

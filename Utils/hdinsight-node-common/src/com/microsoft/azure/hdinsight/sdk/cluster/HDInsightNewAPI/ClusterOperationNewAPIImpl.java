@@ -26,6 +26,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterOperationImpl;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
+import com.microsoft.azure.hdinsight.sdk.common.errorresponse.HttpErrorStatus;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -70,7 +71,11 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                         log().info("HDInsight user role type is READER. Request cluster ID: " + clusterId);
                         return Observable.just(true);
                     } else {
-                        log().warn("Probe getting cluster configuration failed. Request cluster ID: " + clusterId);
+                        HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
+                        log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
+                        if (err instanceof HttpErrorStatus) {
+                            log().warn(((HttpErrorStatus) err).getErrorDetails());
+                        }
                         log().warn(ExceptionUtils.getStackTrace(err));
                         return Observable.just(false);
                     }

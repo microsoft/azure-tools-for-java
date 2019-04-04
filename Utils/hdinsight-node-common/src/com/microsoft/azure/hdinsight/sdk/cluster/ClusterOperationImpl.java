@@ -41,8 +41,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class ClusterOperationImpl implements IClusterOperation {
-
-     private static String VERSION = "2015-03-01-preview";
+     private static final String VERSION = "2015-03-01-preview";
 
      /**
       * list hdinsight cluster
