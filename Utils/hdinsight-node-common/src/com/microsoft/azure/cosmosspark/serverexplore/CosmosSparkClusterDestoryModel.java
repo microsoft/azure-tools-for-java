@@ -32,6 +32,9 @@ public class CosmosSparkClusterDestoryModel implements Cloneable {
     @Nullable
     private String errorMessage;
 
+    @Nullable
+    private String requestId;
+
     @NotNull
     public String getClusterName() {
         return clusterName;
@@ -49,6 +52,16 @@ public class CosmosSparkClusterDestoryModel implements Cloneable {
 
     public CosmosSparkClusterDestoryModel setErrorMessage(@Nullable String errorMessage) {
         this.errorMessage = errorMessage;
+        return this;
+    }
+
+    @Nullable
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public CosmosSparkClusterDestoryModel setRequestId(@Nullable String requestId) {
+        this.requestId = requestId;
         return this;
     }
 
