@@ -21,20 +21,18 @@
  */
 package com.microsoft.tooling.msservices.helpers;
 
-import java.io.File;
-
+import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
-import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+
+import java.io.File;
 
 public interface UIHelper {
     void showException(@NotNull String message,
@@ -76,6 +74,11 @@ public interface UIHelper {
     void openWebAppPropertyView(@NotNull WebAppNode node);
 
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
+
+    @Nullable
+    default NodeActionListener createAddNewHDInsightReaderClusterAction(@NotNull HDInsightRootModule module, @NotNull String clusterName) {
+        return null;
+    }
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,

@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 import com.microsoft.azure.hdinsight.common.*;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -47,7 +46,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     private IClusterDetail clusterDetail;
 
     public ClusterNode(Node parent, @NotNull IClusterDetail clusterDetail) {
-        super(CLUSTER_MODULE_ID, getClusterNameWitStatus(clusterDetail), parent, ICON_PATH, true);
+        super(CLUSTER_MODULE_ID, getTitleForClusterNode(clusterDetail), parent, ICON_PATH, true);
         this.clusterDetail = clusterDetail;
         this.loadActions();
     }
@@ -55,6 +54,16 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     @Override
     protected void loadActions() {
         super.loadActions();
+
+        if (isHdiReader(clusterDetail) && !isAmbariCredentialProvided()) {
+            // We need to refresh the whole HDInsight root node when we successfully linked the cluster
+            // So we have to pass "hdinsightRootModule" to the link cluster action
+            HDInsightRootModule hdinsightRootModule = (HDInsightRootModule) this.getParent();
+            NodeActionListener linkClusterActionListener =
+                    DefaultLoader.getUIHelper().createAddNewHDInsightReaderClusterAction(hdinsightRootModule,
+                            clusterDetail.getName());
+            addAction("Link this cluster", linkClusterActionListener);
+        }
 
         if (clusterDetail instanceof ClusterDetail || clusterDetail instanceof HDInsightAdditionalClusterDetail ||
                 clusterDetail instanceof EmulatorClusterDetail) {
@@ -141,6 +150,10 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         }
     }
 
+    private static boolean isHdiReader(@NotNull IClusterDetail clusterDetail) {
+        return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isRoleTypeReader();
+    }
+
     public boolean isAmbariCredentialProvided() {
         try {
             clusterDetail.getConfigurationInfo();
@@ -156,10 +169,10 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
 
     @Override
     protected void refreshItems() {
-        if(!clusterDetail.isEmulator()) {
+        if(!clusterDetail.isEmulator() && isAmbariCredentialProvided()) {
             boolean isIntelliJ = HDInsightLoader.getHDInsightHelper().isIntelliJPlugin();
             boolean isLinux = System.getProperty("os.name").toLowerCase().contains("linux");
-            if(isAmbariCredentialProvided() && (isIntelliJ || !isLinux)) {
+            if (isIntelliJ || !isLinux) {
                 JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
                 JobViewNode jobViewNode = new JobViewNode(this, clusterDetail.getName());
                 addChildNode(jobViewNode);
@@ -170,13 +183,20 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         }
     }
 
-    private static String getClusterNameWitStatus(IClusterDetail clusterDetail) {
-        String state = clusterDetail.getState();
-        if (!StringHelper.isNullOrWhiteSpace(state) && !state.equalsIgnoreCase("Running")) {
-            return String.format("%s (State:%s)", clusterDetail.getTitle(), state);
+    @NotNull
+    private static String getTitleForClusterNode(@NotNull IClusterDetail clusterDetail) {
+        StringBuilder titleStringBuilder = new StringBuilder(clusterDetail.getTitle());
+
+        if (isHdiReader(clusterDetail)) {
+            titleStringBuilder.append(" (Role: Reader)");
         }
 
-        return clusterDetail.getTitle();
+        String state = clusterDetail.getState();
+        if (!StringHelper.isNullOrWhiteSpace(state) && !state.equalsIgnoreCase("Running")) {
+            titleStringBuilder.append(String.format(" (State: %s)", state));
+        }
+
+        return titleStringBuilder.toString();
     }
 
     private void openUrlLink(@NotNull String linkUrl) {
