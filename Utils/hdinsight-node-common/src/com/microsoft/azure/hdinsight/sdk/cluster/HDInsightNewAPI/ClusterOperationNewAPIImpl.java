@@ -163,4 +163,11 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
     public void setRoleType(@NotNull HDInsightUserRoleType roleType) {
         this.roleType = roleType;
     }
+
+    @NotNull
+    public HDInsightUserRoleType getRoleType() {
+        assert roleType != null : "isProbeGetConfigurationSucceed() should be called first to determine role type";
+
+        return roleType;
+    }
 }

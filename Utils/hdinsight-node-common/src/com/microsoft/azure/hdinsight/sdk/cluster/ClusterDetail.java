@@ -22,6 +22,8 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.HDInsightUserRoleType;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.*;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
@@ -71,6 +73,11 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         this.clusterRawInfo = paramClusterRawInfo;
         this.clusterOperation = clusterOperation;
         ExtractInfoFromComputeProfile();
+    }
+
+    public boolean isRoleTypeReader() {
+        return clusterOperation instanceof ClusterOperationNewAPIImpl
+                && ((ClusterOperationNewAPIImpl) clusterOperation).getRoleType() == HDInsightUserRoleType.READER;
     }
 
     public boolean isEmulator () { return false; }
