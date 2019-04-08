@@ -32,7 +32,6 @@ public class UIFactory implements IUIFactory {
 
     @Override
     public IDeviceLoginUI getDeviceLoginUI() {
-        // unimplemented
-        return null;
+        return new DeviceLoginWindow();
     }
 }
