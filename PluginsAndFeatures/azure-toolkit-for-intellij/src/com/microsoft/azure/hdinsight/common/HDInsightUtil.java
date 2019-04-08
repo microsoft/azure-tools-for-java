@@ -59,6 +59,9 @@ public class HDInsightUtil {
     }
 
     public static void setHDInsightRootModule(@NotNull AzureModule azureModule) {
+        // Enable HDInsight new SDK for IntelliJ
+        DefaultLoader.getIdeHelper().setApplicationProperty(
+                com.microsoft.azure.hdinsight.common.CommonConst.ENABLE_HDINSIGHT_NEW_SDK, "true");
         HDInsightRootModuleImpl hdInsightRootModule =  new HDInsightRootModuleImpl(azureModule);
 
         // add telemetry for HDInsight Node

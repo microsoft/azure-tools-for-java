@@ -55,6 +55,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
 
     private SubscriptionDetail subscription;
     private ClusterRawInfo clusterRawInfo;
+    private IClusterOperation clusterOperation;
 
     private int dataNodes;
     private String userName;
@@ -63,9 +64,12 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private List<HDStorageAccount> additionalStorageAccounts;
     private boolean isConfigInfoAvailable = false;
 
-    public ClusterDetail(SubscriptionDetail paramSubscription, ClusterRawInfo paramClusterRawInfo){
+    public ClusterDetail(SubscriptionDetail paramSubscription,
+                         ClusterRawInfo paramClusterRawInfo,
+                         IClusterOperation clusterOperation){
         this.subscription = paramSubscription;
         this.clusterRawInfo = paramClusterRawInfo;
+        this.clusterOperation = clusterOperation;
         ExtractInfoFromComputeProfile();
     }
 
@@ -207,7 +211,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     }
 
     public void getConfigurationInfo() throws IOException, HDIException, AzureCmdException {
-        IClusterOperation clusterOperation = new ClusterOperationImpl();
         ClusterConfiguration clusterConfiguration =
                 clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
         if(clusterConfiguration != null && clusterConfiguration.getConfigurations() != null){

@@ -20,54 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.cosmosspark.serverexplore;
+package com.microsoft.azure.hdinsight.sdk.common.errorresponse;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 
-public class CosmosSparkClusterDestoryModel implements Cloneable {
-    @NotNull
-    private String clusterName;
-
-    @Nullable
-    private String errorMessage;
-
-    @Nullable
-    private String requestId;
-
-    @NotNull
-    public String getClusterName() {
-        return clusterName;
-    }
-
-    public CosmosSparkClusterDestoryModel setClusterName(@NotNull String clusterName) {
-        this.clusterName = clusterName;
-        return this;
-    }
-
-    @Nullable
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public CosmosSparkClusterDestoryModel setErrorMessage(@Nullable String errorMessage) {
-        this.errorMessage = errorMessage;
-        return this;
-    }
-
-    @Nullable
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public CosmosSparkClusterDestoryModel setRequestId(@Nullable String requestId) {
-        this.requestId = requestId;
-        return this;
-    }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        // Here is a shadow clone, not deep clone
-        return super.clone();
+public class InternalServerErrorHttpErrorStatus extends HttpErrorStatus {
+    public InternalServerErrorHttpErrorStatus(
+            @NotNull String message,
+            @Nullable Header[] headers,
+            @Nullable HttpEntity entity) {
+        super(500, message, headers, entity);
     }
 }

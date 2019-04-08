@@ -22,7 +22,9 @@
 package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.microsoft.azure.hdinsight.common.*;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -32,11 +34,12 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClusterNode extends RefreshableNode implements TelemetryProperties {
+public class ClusterNode extends RefreshableNode implements TelemetryProperties, ILogger {
     private static final String CLUSTER_MODULE_ID = ClusterNode.class.getName();
     private static final String ICON_PATH = CommonConst.ClusterIConPath;
 
@@ -138,14 +141,27 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
         }
     }
 
+    public boolean isAmbariCredentialProvided() {
+        try {
+            clusterDetail.getConfigurationInfo();
+            String userName = clusterDetail.getHttpUserName();
+            String password = clusterDetail.getHttpPassword();
+            return userName != null && password != null;
+        } catch (Exception ex) {
+            log().warn("Error getting cluster credential. Cluster Name: " + clusterDetail.getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
+            return false;
+        }
+    }
+
     @Override
     protected void refreshItems() {
         if(!clusterDetail.isEmulator()) {
-            JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
-            JobViewNode jobViewNode = new JobViewNode(this, clusterDetail.getName());
             boolean isIntelliJ = HDInsightLoader.getHDInsightHelper().isIntelliJPlugin();
             boolean isLinux = System.getProperty("os.name").toLowerCase().contains("linux");
-            if(isIntelliJ || !isLinux) {
+            if(isAmbariCredentialProvided() && (isIntelliJ || !isLinux)) {
+                JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
+                JobViewNode jobViewNode = new JobViewNode(this, clusterDetail.getName());
                 addChildNode(jobViewNode);
             }
 

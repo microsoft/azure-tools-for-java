@@ -29,6 +29,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterDestoryMo
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +46,7 @@ public class CosmosSparkClusterDestoryDialog extends DialogWrapper
     private CosmosSparkClusterNode clusterNode;
 
     @NotNull
-    private DestroyableCluster cluster;
+    private AzureSparkCosmosCluster cluster;
 
     private JPanel destroyDialogPanel;
     private JTextField clusterNameField;
@@ -53,7 +54,7 @@ public class CosmosSparkClusterDestoryDialog extends DialogWrapper
     private JLabel confimMessageLabel;
 
     public CosmosSparkClusterDestoryDialog(@NotNull CosmosSparkClusterNode clusterNode,
-                                           @NotNull DestroyableCluster cluster) {
+                                           @NotNull AzureSparkCosmosCluster cluster) {
         super((Project) clusterNode.getProject(), true);
         this.ctrlProvider = new CosmosSparkClusterDestoryCtrlProvider(
                 this, new IdeaSchedulers((Project) clusterNode.getProject()), cluster);

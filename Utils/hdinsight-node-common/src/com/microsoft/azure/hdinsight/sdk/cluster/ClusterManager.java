@@ -21,11 +21,14 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
 import com.microsoft.azure.hdinsight.sdk.common.AggregatedException;
 import com.microsoft.azure.hdinsight.sdk.common.CommonRunnable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -105,6 +108,11 @@ public class ClusterManager {
         return filterClusterDetailList;
     }
 
+    public boolean isHDInsightNewSDKEnabled() {
+        return DefaultLoader.getIdeHelper().isApplicationPropertySet(CommonConst.ENABLE_HDINSIGHT_NEW_SDK)
+                && Boolean.valueOf(DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.ENABLE_HDINSIGHT_NEW_SDK));
+    }
+
     private List<IClusterDetail> getClusterDetails(List<SubscriptionDetail> subscriptions) throws AggregatedException {
         ExecutorService taskExecutor = Executors.newFixedThreadPool(MAX_CONCURRENT);
         final List<IClusterDetail> cachedClusterList = new ArrayList<>();
@@ -118,7 +126,18 @@ public class ClusterManager {
                     List<ClusterRawInfo> clusterRawInfoList = clusterOperation.listCluster(parameter);
                     if (clusterRawInfoList != null) {
                         for (ClusterRawInfo item : clusterRawInfoList) {
-                            IClusterDetail tempClusterDetail = new ClusterDetail(parameter, item);
+                            IClusterDetail tempClusterDetail = null;
+                            ClusterOperationNewAPIImpl probeClusterNewApiOperation = new ClusterOperationNewAPIImpl();
+                            boolean isProbeNewApiSucceed =
+                                    probeClusterNewApiOperation.isProbeGetConfigurationSucceed(parameter, item.getId())
+                                            .toBlocking()
+                                            .singleOrDefault(false);
+                            if (isHDInsightNewSDKEnabled() && isProbeNewApiSucceed) {
+                                tempClusterDetail = new ClusterDetail(parameter, item, probeClusterNewApiOperation);
+                            } else {
+                                tempClusterDetail = new ClusterDetail(parameter, item, new ClusterOperationImpl());
+                            }
+
                             synchronized (ClusterManager.class) {
                                 cachedClusterList.add(tempClusterDetail);
                             }
