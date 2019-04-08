@@ -41,6 +41,10 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
             return URI.create(url)
         }
 
+    companion object {
+        val urlEncoderEndingRegex = """%25[\d\w]?$|%[\d\w]?$""".toRegex()
+    }
+
     private fun getRequestUrl(): String {
         // A very simple implement with embedded Github Issue parameters
         // into the browser URL (GET request), so there is a limitation
@@ -60,7 +64,7 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
                 listOf(BasicNameValuePair("return_to", "$newIssueUrlEncoded")), StandardCharsets.UTF_8)
 
         return StringUtils.left("$loginPrefix?$loginRedirectParam", 2083)   // 2083 URL max length
-                .replace("""%25[\d\w]?$""", "")                   // remove ending uncompleted escaped chars, %25 is % encoded
+                .replace(urlEncoderEndingRegex, "")                   // remove ending uncompleted escaped chars, %25 is % encoded
     }
 
     fun report() {
