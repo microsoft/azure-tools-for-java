@@ -30,15 +30,10 @@ import com.microsoft.aad.adal4j.DeviceCode;
 
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
-import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -123,8 +118,11 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                 @Override
                 public void changing(LocationEvent event) {
                     try {
-                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                            .openURL(new URL(event.location));
+                        if (event.location.contains("http")) {
+                            event.doit = false;
+                            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+                                .openURL(new URL(event.location));
+                        }
                     } catch (Exception ex) {
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
                     }
@@ -143,7 +141,8 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(selection, selection);
             try {
-                Desktop.getDesktop().browse(new URI(deviceCode.getVerificationUrl()));
+                PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+                    .openURL(new URL(deviceCode.getVerificationUrl()));
             } catch (Exception e) {
                 LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", e));
             }
@@ -164,11 +163,10 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 
         private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
             final AuthenticationCallback<AuthenticationResult> callback) {
-            final long interval = deviceCode.getInterval();
             long remaining = deviceCode.getExpiresIn();
             while (remaining > 0 && authenticationResult == null) {
                 try {
-                    remaining -= interval;
+                    remaining--;
                     Thread.sleep(1000);
                     authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
                 } catch (Exception e) {
