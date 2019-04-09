@@ -285,17 +285,14 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     }
 
     /**
-     * Get clusters with "Ended" and "Ending" state filtered
+     * Get clusters with "Ended" and "Finalizing" state filtered
      * @return cluster set with "Ended" and "Ending" state filtered 
      */
     @NotNull
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
-        return ImmutableSortedSet.copyOf(getRawClusters().stream().filter(cluster -> {
-            String clusterState = cluster.getState();
-            return !clusterState.equals(SparkResourcePoolState.ENDED.toString()) &&
-                    !clusterState.equals(SparkResourcePoolState.ENDING.toString());
-        }).iterator());
+        return ImmutableSortedSet.copyOf(getRawClusters().stream()
+                .filter(cluster -> ((AzureSparkCosmosCluster)cluster).isRunning()).iterator());
     }
 
     /**

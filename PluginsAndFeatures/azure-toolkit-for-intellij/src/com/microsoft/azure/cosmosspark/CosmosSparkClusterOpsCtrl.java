@@ -84,7 +84,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                             ((AzureSparkCosmosCluster) triplet.getMiddle()).getName(),
                             triplet.getRight().getName()));
                     CosmosSparkClusterDestoryDialog destroyDialog = new CosmosSparkClusterDestoryDialog(
-                            triplet.getRight(), triplet.getMiddle());
+                            triplet.getRight(), (AzureSparkCosmosCluster) triplet.getMiddle());
                     destroyDialog.show();
                 }, ex -> log().warn(ExceptionUtils.getStackTrace(ex)));
 

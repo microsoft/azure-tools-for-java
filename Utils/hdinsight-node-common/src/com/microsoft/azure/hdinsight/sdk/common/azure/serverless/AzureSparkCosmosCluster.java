@@ -376,8 +376,25 @@ public class AzureSparkCosmosCluster extends SparkCluster
         return name;
     }
 
+    public boolean isStable() {
+        return isRunning()
+                && getMasterState() != null
+                && getMasterState().equalsIgnoreCase(SparkItemGroupState.STABLE.toString());
+    }
+
+    public boolean isRunning() {
+        return !getState().equalsIgnoreCase(SchedulerState.FINALIZING.toString())
+                && !getState().equalsIgnoreCase(SchedulerState.ENDED.toString())
+                && !getState().equalsIgnoreCase(SchedulerState.ANY.toString());
+
+    }
+
     public String getClusterStateForShow() {
-        return getMasterState() != null ? getMasterState().toUpperCase(): getState().toUpperCase();
+        if (isRunning() && getMasterState() != null) {
+            return getMasterState().toUpperCase();
+        } else {
+            return getState().toUpperCase();
+        }
     }
 
     public String getClusterNameWithAccountName() {
