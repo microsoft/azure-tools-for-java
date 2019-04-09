@@ -126,6 +126,7 @@
     <runConfigurationProducer implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsConfigurationProducer"/>
 
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsNotification" />
+    <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsMissingNupkgInstaller" />
     <projectTemplateProvider implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplatesProvider" order="first"/>
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV1TemplateCustomizer" />
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV2TemplateCustomizer" />

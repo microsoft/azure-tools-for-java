@@ -77,7 +77,6 @@ using Microsoft.Extensions.Logging;
 
 namespace $NAMESPACE$
 {
-    // TODO: Ensure NuGet package is installed: Microsoft.Azure.WebJobs.Extensions.EventHubs
     public static class $CLASS$
     {
         private static HttpClient client = new HttpClient();
@@ -176,7 +175,6 @@ using Microsoft.Extensions.Logging;
 
 namespace $NAMESPACE$
 {
-    // TODO: Ensure NuGet package is installed: Microsoft.Azure.WebJobs.Extensions.EventGrid
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
@@ -347,7 +345,6 @@ using Microsoft.Extensions.Logging;
 
 namespace $NAMESPACE$
 {
-    // TODO: Ensure NuGet package is installed: Microsoft.Azure.WebJobs.Extensions.ServiceBus
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
@@ -448,7 +445,6 @@ using Microsoft.Extensions.Logging;
 
 namespace $NAMESPACE$
 {
-    // TODO: Ensure NuGet package is installed: Microsoft.Azure.WebJobs.Extensions.EventHubs
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
@@ -495,7 +491,6 @@ using Microsoft.Extensions.Logging;
 
 namespace $NAMESPACE$
 {
-    // TODO: Ensure NuGet package is installed: Microsoft.Azure.WebJobs.Extensions.DurableTask
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
@@ -575,7 +570,6 @@ using Microsoft.Extensions.Logging;
 
 namespace $NAMESPACE$
 {
-    // TODO: Ensure NuGet package is installed: Microsoft.Azure.WebJobs.Extensions.ServiceBus
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
@@ -630,7 +624,6 @@ using Microsoft.Extensions.Logging;
 
 namespace $NAMESPACE$
 {
-    // TODO: Ensure NuGet package is installed: Microsoft.Azure.WebJobs.Extensions.CosmosDB
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
