@@ -220,7 +220,7 @@ public class ClusterManagerEx {
                 .map(AzureManager::getSubscriptionManager)
                 .flatMap(subscriptionManager -> {
                     try {
-                        return Optional.ofNullable(subscriptionManager.getSubscriptionDetails());
+                        return Optional.ofNullable(subscriptionManager.getSelectedSubscriptionDetails());
                     } catch (IOException e) {
                         DefaultLoader.getUIHelper().showError("Failed to get HDInsight Clusters. " +
                                         "Please check your subscription and login at Azure Explorer (View -> Tool Windows -> Azure Explorer).",
@@ -261,7 +261,6 @@ public class ClusterManagerEx {
 
         // Merge the clusters from subscription with linked one if the name is same
         List<IClusterDetail> mergedClusters = clusterDetailsFromSubscription
-                .filter(clusterDetail -> clusterDetail.getSubscription().isSelected())
                 .map(cluster -> { // replace the duplicated cluster with the linked one
                     Optional<IClusterDetail> inLinkedAndSubscriptionCluster = allAdditionalClusters.stream()
                             .filter(linkedCluster -> linkedCluster instanceof HDInsightAdditionalClusterDetail ||
