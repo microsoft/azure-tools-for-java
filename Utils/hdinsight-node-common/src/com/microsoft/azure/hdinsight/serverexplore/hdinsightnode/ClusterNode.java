@@ -33,7 +33,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +54,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     protected void loadActions() {
         super.loadActions();
 
-        if (isHdiReader(clusterDetail) && !isAmbariCredentialProvided()) {
+        if (isHdiReader(clusterDetail) && !isHdiAmbariCredentialProvided(clusterDetail)) {
             // We need to refresh the whole HDInsight root node when we successfully linked the cluster
             // So we have to pass "hdinsightRootModule" to the link cluster action
             HDInsightRootModule hdinsightRootModule = (HDInsightRootModule) this.getParent();
@@ -154,22 +153,13 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isRoleTypeReader();
     }
 
-    public boolean isAmbariCredentialProvided() {
-        try {
-            clusterDetail.getConfigurationInfo();
-            String userName = clusterDetail.getHttpUserName();
-            String password = clusterDetail.getHttpPassword();
-            return userName != null && password != null;
-        } catch (Exception ex) {
-            log().warn("Error getting cluster credential. Cluster Name: " + clusterDetail.getName());
-            log().warn(ExceptionUtils.getStackTrace(ex));
-            return false;
-        }
+    public boolean isHdiAmbariCredentialProvided(@NotNull IClusterDetail clusterDetail) {
+        return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isAmbariCredentialProvided();
     }
 
     @Override
     protected void refreshItems() {
-        if(!clusterDetail.isEmulator() && isAmbariCredentialProvided()) {
+        if(!clusterDetail.isEmulator() && isHdiAmbariCredentialProvided(clusterDetail)) {
             boolean isIntelliJ = HDInsightLoader.getHDInsightHelper().isIntelliJPlugin();
             boolean isLinux = System.getProperty("os.name").toLowerCase().contains("linux");
             if (isIntelliJ || !isLinux) {

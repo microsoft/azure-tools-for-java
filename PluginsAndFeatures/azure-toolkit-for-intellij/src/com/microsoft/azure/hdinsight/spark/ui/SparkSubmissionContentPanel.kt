@@ -39,10 +39,13 @@ import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.intellij.util.execution.ParametersListUtil
+import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Error
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Warning
@@ -57,7 +60,9 @@ import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.exception.ExceptionUtils
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.event.ItemEvent
 import java.io.IOException
 import javax.swing.*
@@ -122,6 +127,37 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     protected open val clustersSelection by lazy { SparkClusterListRefreshableCombo().apply {
         Disposer.register(this@SparkSubmissionContentPanel, this@apply)
     }}
+
+    private val hdiReaderErrorLabel: JLabel =
+        JLabel("No Ambari permission to submit job to the selected cluster.").apply {
+            foreground = currentErrorColor
+            isVisible = false
+        }
+
+    private val linkClusterHyperLink = JXHyperLinkWithUri().apply {
+        text = "Link the cluster"
+        isVisible = false
+
+        addActionListener {
+            val selectedClusterName = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
+            selectedClusterName?.let {
+                val form = object: AddNewHDInsightReaderClusterForm(myProject, null, selectedClusterName) {
+                    override fun afterOkActionPerformed() {
+                        hideHdiReaderErrors()
+                        // refresh the cluster list
+                        viewModel.clusterSelection.doRefreshSubject.onNext(true)
+                    }
+                }
+                form.show()
+            }
+        }
+    }
+
+    private val clusterErrorMsgPanel: JPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
+        add(errorMessageLabels[ErrorMessage.ClusterName.ordinal])
+        add(hdiReaderErrorLabel)
+        add(linkClusterHyperLink)
+    }
 
     private val artifactSelectLabel: JLabel = JLabel("Select an Artifact to submit").apply {
         toolTipText = "The Artifact you want to use"
@@ -262,6 +298,36 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         }
     }
 
+    private fun hideHdiReaderErrors() {
+        // Hide errors for HDI reader cluster
+        hdiReaderErrorLabel.isVisible = false
+        linkClusterHyperLink.isVisible = false
+    }
+
+    private fun showHdiReaderErrors() {
+        // Show errors for HDI reader cluster
+        hdiReaderErrorLabel.isVisible = true
+        linkClusterHyperLink.isVisible = true
+    }
+
+    private fun checkHdiReaderCluster(cluster: IClusterDetail?) {
+        hideHdiReaderErrors()
+
+        cluster?.let {
+            if (cluster is ClusterDetail && cluster.isRoleTypeReader) {
+                try {
+                    if (!cluster.isAmbariCredentialProvided) {
+                        showHdiReaderErrors()
+                    }
+                } catch (ex: Exception) {
+                    log().warn("Error getting cluster credential. Cluster Name: " + cluster.getName())
+                    log().warn(ExceptionUtils.getStackTrace(ex))
+                    showHdiReaderErrors()
+                }
+            }
+        }
+    }
+
     @Synchronized
     private fun checkInputsWithErrorLabels() {
         ApplicationManager.getApplication().invokeLater({
@@ -340,7 +406,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 }
             }
             row { c(clustersSelectionPrompt);             c(clustersSelection.component) }
-            row { c();                                    c(errorMessageLabels[ErrorMessage.ClusterName.ordinal]) { fill = FILL_NONE } }
+            row { c();                                    c(clusterErrorMsgPanel) { fill = FILL_NONE } }
             row { c(artifactSelectLabel) }
             row {   c(ideaArtifactPrompt) { indent = 1 }; c(selectedArtifactComboBox) }
             row {   c();                                  c(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal]) { fill = FILL_NONE } }
@@ -390,6 +456,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                                     preSelectCluster?.name))
                 }
                 checkInputsWithErrorLabels()
+                checkHdiReaderCluster(it)
             }
         }}
     }

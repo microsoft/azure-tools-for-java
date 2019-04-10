@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.HDInsightUserRoleType;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
@@ -31,6 +32,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsF
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,7 +43,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
+public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, ILogger {
 
     private static final String ADL_HOME_PREFIX = "adl://home";
     private static final String ADLS_HOME_HOST_NAME = "dfs.adls.home.hostname";
@@ -78,6 +80,19 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     public boolean isRoleTypeReader() {
         return clusterOperation instanceof ClusterOperationNewAPIImpl
                 && ((ClusterOperationNewAPIImpl) clusterOperation).getRoleType() == HDInsightUserRoleType.READER;
+    }
+
+    public boolean isAmbariCredentialProvided() {
+        try {
+            getConfigurationInfo();
+            String userName = getHttpUserName();
+            String password = getHttpPassword();
+            return userName != null && password != null;
+        } catch (Exception ex) {
+            log().warn("Error getting cluster credential. Cluster Name: " + getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
+            return false;
+        }
     }
 
     public boolean isEmulator () { return false; }
@@ -371,7 +386,9 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             type = getStorageAccount().getAccountType();
         }
 
-        if (type == StorageAccountTypeEnum.ADLS) {
+        if (isRoleTypeReader()) {
+            return SparkSubmitStorageTypeOptionsForCluster.HDInsightReaderStorageTypeOptions;
+        } else if (type == StorageAccountTypeEnum.ADLS) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdls;
         } else if (type == StorageAccountTypeEnum.BLOB) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithBlob;
