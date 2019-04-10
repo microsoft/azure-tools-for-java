@@ -28,7 +28,7 @@ import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
 
-import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -45,6 +45,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -78,14 +79,14 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                 authenticationResult = dlg.authenticationResult;
             } catch (Exception ex) {
                 ex.printStackTrace();
-                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@Runnable@LoginWindow", ex));
+                LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
             }
         };
         Display.getDefault().syncExec(gui);
         return authenticationResult;
     }
 
-    private class DeviceLoginDialog extends AzureTitleAreaDialogWrapper {
+    private class DeviceLoginDialog extends AzureDialogWrapper {
 
         private final DeviceCode deviceCode;
         private final Future<?> future;
@@ -95,7 +96,6 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         public DeviceLoginDialog(Shell parentShell, AuthenticationContext authenticationContext, DeviceCode deviceCode,
             AuthenticationCallback<AuthenticationResult> authenticationCallback) {
             super(parentShell);
-            setHelpAvailable(false);
             setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
             this.deviceCode = deviceCode;
             future = es
@@ -104,8 +104,6 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 
         @Override
         protected Control createDialogArea(Composite parent) {
-            setTitle("Azure Device Login");
-            setMessage("Azure Device Login");
             GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
             Browser browser = new Browser(parent, SWT.NONE);
             FillLayout layout = new FillLayout(SWT.HORIZONTAL);
@@ -135,6 +133,12 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         }
 
         @Override
+        protected void configureShell(Shell newShell) {
+            super.configureShell(newShell);
+            newShell.setText("Azure Device Login");
+        }
+
+        @Override
         protected void okPressed() {
             final StringSelection selection = new StringSelection(deviceCode.getUserCode());
             final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -151,6 +155,13 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         protected void cancelPressed() {
             future.cancel(true);
             super.cancelPressed();
+        }
+
+        @Override
+        protected Point getInitialSize() {
+            Point shellSize = super.getInitialSize();
+            return new Point(Math.max(this.convertHorizontalDLUsToPixels(350), shellSize.x),
+                Math.max(this.convertVerticalDLUsToPixels(120), shellSize.y));
         }
 
         @Override
