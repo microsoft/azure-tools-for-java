@@ -21,6 +21,7 @@
  */
 package com.microsoft.azuretools.core.ui;
 
+import com.microsoft.azuretools.authmanage.DCAuthManager;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -53,7 +54,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.interact.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -65,12 +65,12 @@ import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 public class SignInDialog extends AzureTitleAreaDialogWrapper {
 	private static ILog LOG = Activator.getDefault().getLog();
     private Text textAuthenticationFilePath;
-    private Button rbtnInteractive;
+    private Button rbtnDevice;
     private Button rbtnAutomated;
     private Label lblAuthenticationFile;
     private Button btnBrowse;
     private Button btnCreateAuthenticationFile;
-    private Label lblInteractiveInfo;
+    private Label lblDeviceInfo;
     private Label lblAutomatedInfo;
     
     private AuthMethodDetails authMethodDetails;
@@ -129,28 +129,28 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         group.setText("Authentication Method");
         group.setLayout(new GridLayout(1, false));
         
-        rbtnInteractive = new Button(group, SWT.RADIO);
-        rbtnInteractive.setSelection(true);
-        rbtnInteractive.addSelectionListener(new SelectionAdapter() {
+        rbtnDevice = new Button(group, SWT.RADIO);
+        rbtnDevice.setSelection(true);
+        rbtnDevice.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 enableAutomatedAuthControls(false);
             }
         });
-        rbtnInteractive.setText("Interactive");
+        rbtnDevice.setText("Device Login");
 
-        Composite compositeInteractive = new Composite(group, SWT.NONE);
-        GridData gd_compositeInteractive = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        gd_compositeInteractive.heightHint = 38;
-        gd_compositeInteractive.widthHint = 66;
-        compositeInteractive.setLayoutData(gd_compositeInteractive);
-        compositeInteractive.setLayout(new GridLayout(1, false));
+        Composite compositeDevice = new Composite(group, SWT.NONE);
+        GridData gdCompositeDevice = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gdCompositeDevice.heightHint = 38;
+        gdCompositeDevice.widthHint = 66;
+        compositeDevice.setLayoutData(gdCompositeDevice);
+        compositeDevice.setLayout(new GridLayout(1, false));
         
-        lblInteractiveInfo = new Label(compositeInteractive, SWT.WRAP);
-        GridData gd_lblInteractiveInfo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-        gd_lblInteractiveInfo.horizontalIndent = 11;
-        lblInteractiveInfo.setLayoutData(gd_lblInteractiveInfo);
-        lblInteractiveInfo.setText("You will manually sign in using your Azure credentials as needed.");
+        lblDeviceInfo = new Label(compositeDevice, SWT.WRAP);
+        GridData gdLblDeviceInfo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+        gdLblDeviceInfo.horizontalIndent = 11;
+        lblDeviceInfo.setLayoutData(gdLblDeviceInfo);
+        lblDeviceInfo.setText("You will need to open an external browser and sign in with a generated device code.");
         
         rbtnAutomated = new Button(group, SWT.RADIO);
         rbtnAutomated.addSelectionListener(new SelectionAdapter() {
@@ -159,7 +159,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
                 enableAutomatedAuthControls(true);
             }
         });
-        rbtnAutomated.setText("Automated");
+        rbtnAutomated.setText("Service Principal");
 
         Composite compositeAutomated = new Composite(group, SWT.NONE);
         compositeAutomated.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -220,7 +220,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     
     private void enableAutomatedAuthControls(boolean enabled) {
         setErrorMessage(null);
-        lblInteractiveInfo.setEnabled(!enabled);
+        lblDeviceInfo.setEnabled(!enabled);
         lblAutomatedInfo.setEnabled(enabled);
         lblAuthenticationFile.setEnabled(enabled);
         lblAuthenticationFile.setEnabled(enabled);
@@ -231,31 +231,30 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
     @Override
     public void okPressed() {
-//      dropCurrentAzureManager();
         AuthMethodDetails authMethodDetailsResult = new AuthMethodDetails();
-      if (rbtnInteractive.getSelection()) {
-          doSignIn();
-          if (StringUtils.isNullOrEmpty(accountEmail)) {
-              System.out.println("Canceled by the user.");
-              return;
-          }
-          authMethodDetailsResult.setAuthMethod(AuthMethod.AD);
-          authMethodDetailsResult.setAccountEmail(accountEmail);
-      } else { // automated
-          String authPath = textAuthenticationFilePath.getText();
-          if (StringUtils.isNullOrWhiteSpace(authPath)) {
-              this.setErrorMessage("Select authentication file");
-              return;
-          }
+        if (rbtnDevice.getSelection()) {
+            doSignIn();
+            if (StringUtils.isNullOrEmpty(accountEmail)) {
+                System.out.println("Canceled by the user.");
+                return;
+            }
+            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
+            authMethodDetailsResult.setAccountEmail(accountEmail);
+        } else { // automated
+            String authPath = textAuthenticationFilePath.getText();
+            if (StringUtils.isNullOrWhiteSpace(authPath)) {
+                this.setErrorMessage("Select authentication file");
+                return;
+            }
 
-          authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
-          // TODO: check the file is valid
-          authMethodDetailsResult.setCredFilePath(authPath);
-      }
-      
-      this.authMethodDetails = authMethodDetailsResult;
-      
-      super.okPressed();
+            authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
+            // TODO: check the file is valid
+            authMethodDetailsResult.setCredFilePath(authPath);
+        }
+
+        this.authMethodDetails = authMethodDetailsResult;
+
+        super.okPressed();
     }
     
     private void doSelectCredFilepath() {
@@ -267,12 +266,12 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
     private void doSignIn() {
         try {
-            AdAuthManager adAuthManager = AdAuthManager.getInstance();
-            if (adAuthManager.isSignedIn()) {
+            final DCAuthManager dcAuthManager = DCAuthManager.getInstance();
+            if (dcAuthManager.isSignedIn()) {
                 doSignOut();
             }
-            signInAsync();
-            accountEmail = adAuthManager.getAccountEmail();
+            signInAsync(dcAuthManager);
+            accountEmail = dcAuthManager.getAccountEmail();
         } catch (InvocationTargetException | InterruptedException ex) {
             System.out.println("doSignIn@SingInDialog: " + ex.getMessage());
             ex.printStackTrace();
@@ -280,26 +279,16 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         }
     }
 
-    private void signInAsync() throws InvocationTargetException, InterruptedException  {
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                monitor.beginTask("Signing In...", IProgressMonitor.UNKNOWN);
-                try {
-                    AdAuthManager.getInstance().signIn();
-                } catch (AuthCanceledException ex) {
-                    System.out.println(ex.getMessage());
-                } catch (IOException ex) {
-                    System.out.println("run@ProgressDialog@signInAsync@SingInDialog: " + ex.getMessage());
-                    //ex.printStackTrace();
-                    //LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@signInAsync@SingInDialog", e));
-                    Display.getDefault().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            ErrorWindow.go(getShell(), ex.getMessage(), "Sign In Error");;
-                        }
-                    });
-                }
+    private void signInAsync(final DCAuthManager dcAuthManager) throws InvocationTargetException, InterruptedException {
+        IRunnableWithProgress op = (monitor) -> {
+            monitor.beginTask("Signing In...", IProgressMonitor.UNKNOWN);
+            try {
+                dcAuthManager.deviceLogin(null);
+            } catch (AuthCanceledException ex) {
+                System.out.println(ex.getMessage());
+            } catch (IOException ex) {
+                System.out.println("run@ProgressDialog@signInAsync@SingInDialog: " + ex.getMessage());
+                Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), "Sign In Error"));
             }
         };
         new ProgressMonitorDialog(this.getShell()).run(true, false, op);
@@ -307,21 +296,21 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
     private void doSignOut() {
         accountEmail = null;
-        AdAuthManager.getInstance().signOut();
+        DCAuthManager.getInstance().signOut();
     }
     
     private void doCreateServicePrincipal() {
         setErrorMessage(null);
-        AdAuthManager adAuthManager = null;
+        DCAuthManager dcAuthManager = null;
         try {
-            adAuthManager = AdAuthManager.getInstance();
-            if (adAuthManager.isSignedIn()) {
-                adAuthManager.signOut();
+            dcAuthManager = DCAuthManager.getInstance();
+            if (dcAuthManager.isSignedIn()) {
+                dcAuthManager.signOut();
             }
 
-            signInAsync();
+            signInAsync(dcAuthManager);
 
-            if (!adAuthManager.isSignedIn()) {
+            if (!dcAuthManager.isSignedIn()) {
                 // canceled by the user
                 System.out.println(">> Canceled by the user");
                 return;
@@ -390,8 +379,8 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doCreateServicePrincipal@SignInDialog", ex));
         } finally {
-            if (adAuthManager != null) {
-                adAuthManager.signOut();
+            if (dcAuthManager != null) {
+                dcAuthManager.signOut();
             }
         }
     }
