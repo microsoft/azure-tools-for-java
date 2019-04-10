@@ -28,8 +28,8 @@ import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
 
-import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -51,7 +51,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azuretools.core.Activator;
@@ -106,13 +105,12 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         protected Control createDialogArea(Composite parent) {
             setTitle("Azure Device Login");
             setMessage("Azure Device Login");
-            Group group = new Group(parent, SWT.NONE);
-            group.setLayout(new FillLayout(SWT.HORIZONTAL));
             GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-            gridData.heightHint = 70;
-            group.setLayoutData(gridData);
-
-            Browser browser = new Browser(group, SWT.NONE);
+            Browser browser = new Browser(parent, SWT.NONE);
+            FillLayout layout = new FillLayout(SWT.HORIZONTAL);
+            layout.marginHeight = 20;
+            browser.setLayout(layout);
+            browser.setLayoutData(gridData);
             browser.setText(createHtmlFormatMessage());
             browser.addLocationListener(new LocationListener() {
                 @Override
@@ -132,7 +130,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                 public void changed(LocationEvent locationEvent) {
                 }
             });
-            return group;
+            return browser;
         }
 
         @Override
@@ -185,7 +183,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 
         private String createHtmlFormatMessage() {
             final String verificationUrl = deviceCode.getVerificationUrl();
-            return "<p>"
+            return "<body bgcolor=\"#F0F0F0\"><p>"
                 + deviceCode.getMessage()
                 .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
                 + "</p><p>Waiting for signing in with the code ...</p>";
