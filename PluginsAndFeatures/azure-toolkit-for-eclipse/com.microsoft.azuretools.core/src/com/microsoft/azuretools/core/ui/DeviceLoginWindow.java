@@ -104,12 +104,16 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 
         @Override
         protected Control createDialogArea(Composite parent) {
-            GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-            Browser browser = new Browser(parent, SWT.NONE);
+            Composite area = (Composite) super.createDialogArea(parent);
+            FillLayout fillLayout = new FillLayout(SWT.HORIZONTAL);
+            fillLayout.marginHeight = 10;
+            area.setLayout(fillLayout);
+            GridData gridData = new GridData(GridData.FILL_BOTH);
+            area.setLayoutData(gridData);
+
+            Browser browser = new Browser(area, SWT.NONE);
             FillLayout layout = new FillLayout(SWT.HORIZONTAL);
-            layout.marginHeight = 20;
             browser.setLayout(layout);
-            browser.setLayoutData(gridData);
             browser.setText(createHtmlFormatMessage());
             browser.addLocationListener(new LocationListener() {
                 @Override
@@ -129,7 +133,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                 public void changed(LocationEvent locationEvent) {
                 }
             });
-            return browser;
+            return area;
         }
 
         @Override
@@ -195,10 +199,10 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 
         private String createHtmlFormatMessage() {
             final String verificationUrl = deviceCode.getVerificationUrl();
-            return "<body bgcolor=\"#F0F0F0\"><p>"
+            return "<div style=\"font-family: Arial; font-size: 13\"><body bgcolor=\"#F0F0F0\"><p>"
                 + deviceCode.getMessage()
                 .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
-                + "</p><p>Waiting for signing in with the code ...</p>";
+                + "</p><p>Waiting for signing in with the code ...</p></div>";
         }
     }
 }
