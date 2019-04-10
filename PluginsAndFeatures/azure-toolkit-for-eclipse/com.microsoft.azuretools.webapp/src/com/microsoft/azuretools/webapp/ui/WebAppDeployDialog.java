@@ -81,6 +81,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -426,11 +427,12 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         Label label = new Label(compositeSlotCb, SWT.NONE);
         label.setText("");
+        Point point = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         RowData labelConf = new RowData();
-        labelConf.height = 20;
+        labelConf.height = point.y;
         label.setLayoutData(labelConf);
         label.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
-            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 18, 18));
+            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), point.y * 9 / 10, point.y * 9 / 10));
         label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         label.addMouseListener(new MouseAdapter() {
             @Override
