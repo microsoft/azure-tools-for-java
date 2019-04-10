@@ -1091,10 +1091,10 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private void fillUserSettings() {
         try {
             String os = CommonUtils.getPreference(CommonUtils.RUNTIME_OS);
-            if (os.equals(OperatingSystem.LINUX.toString())) {
+            if (os.equalsIgnoreCase(OperatingSystem.LINUX.toString())) {
                 btnOSGroupLinux.setSelection(true);
                 btnOSGroupWin.setSelection(false);
-            } else if (os.equals(OperatingSystem.WINDOWS.toString())) {
+            } else if (os.equalsIgnoreCase(OperatingSystem.WINDOWS.toString())) {
                 btnOSGroupLinux.setSelection(false);
                 btnOSGroupWin.setSelection(true);
             }
