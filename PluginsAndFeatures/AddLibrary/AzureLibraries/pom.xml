@@ -56,6 +56,16 @@
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>hdinsight-node-common</artifactId>
             <version>${azuretool.version}</version>
+        </dependency>            
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.2</version>
         </dependency>
     </dependencies>
 
@@ -64,7 +74,7 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>4.1.0</version>
         <extensions>true</extensions>
         <executions>
             <execution>
@@ -72,7 +82,7 @@
             <phase>process-classes</phase>
             <goals>    
                 <goal>manifest</goal>
-            </goals>   
+            </goals>
             </execution>
         </executions>
         <configuration>
@@ -91,6 +101,7 @@
             <Eclipse-BundleShape>dir</Eclipse-BundleShape>
             <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
             <_nouses>true</_nouses>
+            <_noee>true</_noee>
           </instructions>
         </configuration>
       </plugin>

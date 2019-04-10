@@ -1,60 +1,50 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.sdk.cluster;
 
-import com.google.gson.annotations.SerializedName;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+package com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI;
 
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Configurations  {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Gateway {
+    @JsonProperty("restAuthCredential.isEnabled")
+    private String isEnabled;
 
-    @SerializedName("core-site")
-    private Map<String, String> coresite;
-    private ClusterIdentity clusterIdentity;
-    private Gateway gateway;
+    @JsonProperty("restAuthCredential.password")
+    private String password;
 
-    public Map<String,String> getCoresite(){
-        return coresite;
+    @JsonProperty("restAuthCredential.username")
+    private String username;
+
+    public String getIsEnabled(){
+        return isEnabled;
     }
 
-    public ClusterIdentity getClusterIdentity(){
-        return clusterIdentity;
+    public String getPassword(){
+        return password;
     }
 
-    public Gateway getGateway(){
-        return gateway;
-    }
-
-    public void setCoresite(@Nullable Map<String, String> coresite) {
-        this.coresite = coresite;
-    }
-
-    public void setClusterIdentity(@Nullable ClusterIdentity clusterIdentity) {
-        this.clusterIdentity = clusterIdentity;
-    }
-
-    public void setGateway(@Nullable Gateway gateway) {
-        this.gateway = gateway;
+    public String getUsername(){
+        return username;
     }
 }
