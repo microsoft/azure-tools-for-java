@@ -46,6 +46,10 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     @Attribute("adls_gen2_account")
     var gen2Account: String? = null
 
+    // model for ADLS Gen 2 storage type
+    @Attribute("adls_gen2_root_path")
+    var gen2RootPath: String? = null
+
     @get:Transient @set:Transient var storageKey: String? = null
 
     @get:Transient @set:Transient var accessKey: String? = null

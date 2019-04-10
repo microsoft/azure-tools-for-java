@@ -53,7 +53,13 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
     val clusterDefaultStorageCard = SparkSubmissionJobUploadStorageClusterDefaultStorageCard()
     val notSupportStorageCard = SparkSubmissionJobUploadStorageClusterNotSupportStorageCard()
     val accountDefaultStorageCard = SparkSubmissionJobUploadStorageAccountDefaultStorageCard()
-    val adlsGen2Card = SparkSubmissionJobUploadStorageGen2Card()
+    val adlsGen2Card = SparkSubmissionJobUploadStorageGen2Card().apply {
+        gen2RootPathField.addFocusListener(object : FocusAdapter() {
+            override fun focusLost(e: FocusEvent?) {
+                viewModel.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS GEN2"))
+            }
+        })
+    }
 
     val adlsCard = SparkSubmissionJobUploadStorageAdlsCard().apply {
         // handle sign in/out action when sign in/out link is clicked
@@ -81,6 +87,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
             }
         })
     }
+
 
     private val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf()).apply {
         // validate storage info after storage type is selected

@@ -28,10 +28,9 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -45,6 +44,8 @@ import rx.exceptions.Exceptions;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -104,24 +105,24 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
     @Override
     @Nullable
     public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        try {
-            HDStorageAccount account = (HDStorageAccount) this.cluster.getStorageAccount();
-            if (StringUtils.isBlank(account.getFullStorageBlobName())
-                    || StringUtils.isBlank(account.getDefaultContainer())
-                    || StringUtils.isBlank(account.getscheme())) {
-                throw new URISyntaxException("invalid storage account info", "blob ,container and scheme cannnot be empty");
-            }
-
-            //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to abfs://fileSystem@fullAccountName/SparkSubmission/xxxx
-            String subPath = rootPath.substring(rootPath.indexOf("SparkSubmission"));
-            return String.format("%s://%s@%s/%s"
-                    , account.getscheme()
-                    , account.getDefaultContainer()
-                    , account.getFullStorageBlobName()
-                    , subPath);
-        } catch (HDIException e) {
-            log().debug(String.format("Getting uploaded path encounters exception %s", e.toString()));
-            return null;
+        //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to abfs://fileSystem@fullAccountName/SparkSubmission/xxxx
+        String storageAccount = null;
+        String fileSystem = null;
+        int index = rootPath.indexOf("SparkSubmission");
+        Matcher m = Pattern.compile(SparkBatchJob.AdlsGen2RestfulPathPattern).matcher(rootPath.substring(0, index));
+        if (m.find()) {
+            storageAccount = m.group("accountName");
+            fileSystem = m.group("fileSystem");
         }
+
+        if (StringUtils.isBlank(storageAccount) || StringUtils.isBlank(fileSystem)) {
+            throw new URISyntaxException("invalid upload path info", "filesystem ,storageAccount and scheme cannnot be empty");
+        }
+
+        return String.format("%s://%s@%s/%s",
+                ADLSGen2StorageAccount.DefaultScheme,
+                fileSystem,
+                storageAccount,
+                rootPath.substring(index));
     }
 }
