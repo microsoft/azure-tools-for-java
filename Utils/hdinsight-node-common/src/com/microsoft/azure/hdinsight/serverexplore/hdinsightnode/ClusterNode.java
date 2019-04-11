@@ -33,6 +33,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -154,7 +155,13 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     }
 
     private boolean isHdiAmbariCredentialProvided(@NotNull IClusterDetail clusterDetail) {
-        return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isAmbariCredentialProvided();
+        try {
+            return clusterDetail.getHttpUserName() != null && clusterDetail.getHttpPassword() != null;
+        } catch (Exception ex) {
+            log().warn("Error getting cluster credential. Cluster Name: " + getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
+            return false;
+        }
     }
 
     @Override

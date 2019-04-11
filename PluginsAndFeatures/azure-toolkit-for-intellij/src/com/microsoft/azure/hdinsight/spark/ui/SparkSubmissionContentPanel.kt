@@ -314,16 +314,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         hideHdiReaderErrors()
 
         cluster?.let {
-            if (cluster is ClusterDetail && cluster.isRoleTypeReader) {
-                try {
-                    if (!cluster.isAmbariCredentialProvided) {
-                        showHdiReaderErrors()
-                    }
-                } catch (ex: Exception) {
-                    log().warn("Error getting cluster credential. Cluster Name: " + cluster.getName())
-                    log().warn(ExceptionUtils.getStackTrace(ex))
-                    showHdiReaderErrors()
-                }
+            if (cluster is ClusterDetail
+                && cluster.isRoleTypeReader
+                && (cluster.httpUserName == null || cluster.httpPassword == null)) {
+                showHdiReaderErrors()
             }
         }
     }
