@@ -153,7 +153,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isRoleTypeReader();
     }
 
-    public boolean isHdiAmbariCredentialProvided(@NotNull IClusterDetail clusterDetail) {
+    private boolean isHdiAmbariCredentialProvided(@NotNull IClusterDetail clusterDetail) {
         return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isAmbariCredentialProvided();
     }
 
