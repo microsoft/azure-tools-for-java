@@ -178,9 +178,11 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
             final AuthenticationCallback<AuthenticationResult> callback) {
             long remaining = deviceCode.getExpiresIn();
-            while (remaining > 0 && authenticationResult == null) {
+            long expiredTime = System.currentTimeMillis() + remaining * 1000;
+            int maxTries = 3;
+            int checkTime = 0;
+            while (System.currentTimeMillis() < expiredTime && checkTime < maxTries && authenticationResult == null) {
                 try {
-                    remaining--;
                     Thread.sleep(1000);
                     authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
                 } catch (Exception e) {
@@ -189,8 +191,8 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                             == AdalErrorCode.AUTHORIZATION_PENDING) {
                         // swallow the pending exception
                     } else {
+                        checkTime++;
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", e));
-                        break;
                     }
                 }
             }
