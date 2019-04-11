@@ -23,7 +23,6 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.google.gson.annotations.Expose;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
@@ -32,9 +31,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
@@ -104,11 +101,13 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Override
+    @NotNull
     public String getHttpUserName() {
         return userName;
     }
 
     @Override
+    @NotNull
     public String getHttpPassword() {
         return password;
     }

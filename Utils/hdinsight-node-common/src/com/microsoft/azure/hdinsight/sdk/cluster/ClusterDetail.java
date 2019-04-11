@@ -84,19 +84,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
                 && ((ClusterOperationNewAPIImpl) clusterOperation).getRoleType() == HDInsightUserRoleType.READER;
     }
 
-    public boolean isAmbariCredentialProvided() {
-        try {
-            getConfigurationInfo();
-            String userName = getHttpUserName();
-            String password = getHttpPassword();
-            return userName != null && password != null;
-        } catch (Exception ex) {
-            log().warn("Error getting cluster credential. Cluster Name: " + getName());
-            log().warn(ExceptionUtils.getStackTrace(ex));
-            return false;
-        }
-    }
-
     public boolean isEmulator () { return false; }
 
     public boolean isConfigInfoAvailable(){
@@ -259,27 +246,29 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     public void getConfigurationInfo() throws IOException, HDIException, AzureCmdException {
         // If exception happens, isConfigInfoAvailable is still false, which means
         // next time we call getConfigurationInfo(), load configuration codes will still be executed.
-        synchronized (this) {
-            if (!isConfigInfoAvailable()) {
-                ClusterConfiguration clusterConfiguration =
-                        clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
-                if (clusterConfiguration != null && clusterConfiguration.getConfigurations() != null) {
-                    Configurations configurations = clusterConfiguration.getConfigurations();
-                    Gateway gateway = configurations.getGateway();
-                    if (gateway != null) {
-                        this.userName = gateway.getUsername();
-                        this.passWord = gateway.getPassword();
+        if (!isConfigInfoAvailable()) {
+            synchronized (this) {
+                if (!isConfigInfoAvailable()) {
+                    ClusterConfiguration clusterConfiguration =
+                            clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
+                    if (clusterConfiguration != null && clusterConfiguration.getConfigurations() != null) {
+                        Configurations configurations = clusterConfiguration.getConfigurations();
+                        Gateway gateway = configurations.getGateway();
+                        if (gateway != null) {
+                            this.userName = gateway.getUsername();
+                            this.passWord = gateway.getPassword();
+                        }
+
+                        Map<String, String> coresSiteMap = configurations.getCoresite();
+                        ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
+                        if (coresSiteMap != null) {
+                            this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
+                            this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
+                        }
                     }
 
-                    Map<String, String> coresSiteMap = configurations.getCoresite();
-                    ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
-                    if (coresSiteMap != null) {
-                        this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
-                        this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
-                    }
+                    isConfigInfoAvailable = true;
                 }
-
-                isConfigInfoAvailable = true;
             }
         }
     }
