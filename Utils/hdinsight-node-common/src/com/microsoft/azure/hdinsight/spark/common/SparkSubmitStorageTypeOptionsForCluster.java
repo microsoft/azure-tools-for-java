@@ -76,6 +76,15 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
             SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
     }),
 
+    // for HDInsight Reader cluster
+    HDInsightReaderStorageTypeOptions(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
+            SparkSubmitStorageType.BLOB,
+            SparkSubmitStorageType.ADLS_GEN1,
+            SparkSubmitStorageType.ADLS_GEN2,
+            SparkSubmitStorageType.WEBHDFS
+    }),
+
     // for unknown type cluster
     ClusterWithFullType(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
