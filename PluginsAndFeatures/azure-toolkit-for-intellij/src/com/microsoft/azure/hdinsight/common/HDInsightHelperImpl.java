@@ -30,12 +30,19 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.intellij.ui.messages.AzureBundle;
-import com.microsoft.intellij.util.PluginHelper;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.azure.hdinsight.serverexplore.action.AddNewHDInsightReaderClusterAction;
+import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azure.hdinsight.serverexplore.ui.RefreshHdiLinkedClusterStorageAccountsWarningForm;
+import com.microsoft.azure.hdinsight.serverexplore.ui.RefreshHdiReaderClusterWarningForm;
+import com.microsoft.azure.hdinsight.serverexplore.ui.RefreshHdiReaderStorageAccountsWarningForm;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.intellij.ui.messages.AzureBundle;
+import com.microsoft.intellij.util.PluginHelper;
+import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 import javax.swing.*;
 
@@ -165,5 +172,49 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public boolean isOptIn() {
         return isOptIn;
+    }
+
+    @NotNull
+    @Override
+    public NodeActionListener createAddNewHDInsightReaderClusterAction(
+            @NotNull HDInsightRootModule module,
+            @NotNull String clusterName) {
+        return new AddNewHDInsightReaderClusterAction(module, clusterName);
+    }
+
+    @Override
+    public void createRefreshHdiReaderClusterWarningForm(@NotNull HDInsightRootModule module, @NotNull String clusterName) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                RefreshHdiReaderClusterWarningForm form =
+                        new RefreshHdiReaderClusterWarningForm((Project)module.getProject(), module, clusterName);
+                form.show();
+            }
+        }, ModalityState.any());
+    }
+
+    @Override
+    public void createRefreshHdiReaderStorageAccountsWarningForm(@NotNull RefreshableNode node, @NotNull String aseDeepLink) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                RefreshHdiReaderStorageAccountsWarningForm form =
+                        new RefreshHdiReaderStorageAccountsWarningForm((Project)node.getProject(), aseDeepLink);
+                form.show();
+            }
+        }, ModalityState.any());
+    }
+
+    @Override
+    public void createRefreshHdiLinkedClusterStorageAccountsWarningForm(@NotNull RefreshableNode node, @NotNull String aseDeepLink) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                RefreshHdiLinkedClusterStorageAccountsWarningForm form =
+                        new RefreshHdiLinkedClusterStorageAccountsWarningForm((Project)node.getProject(), aseDeepLink);
+                form.show();
+            }
+        }, ModalityState.any());
     }
 }
