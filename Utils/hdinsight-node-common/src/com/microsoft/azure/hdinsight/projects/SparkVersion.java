@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.projects;
 import java.util.Comparator;
 
 public enum SparkVersion {
+    SPARK_2_3_2("2.3.2", "2.11.8", "2.11"),
     SPARK_2_3_0("2.3.0", "2.11.8", "2.11"),
     SPARK_2_2_0("2.2.0", "2.11.8", "2.11"),
     SPARK_2_1_0("2.1.0", "2.11.8", "2.11"),
