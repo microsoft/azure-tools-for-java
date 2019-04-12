@@ -167,6 +167,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     private static final String PRICING_URL = "https://azure.microsoft.com/en-us/pricing/details/app-service/";
     public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
+    private static final JavaVersion DEFAULT_JAVAVERSION = JavaVersion.JAVA_11;
+    private static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JAVA11;
+    private static final WebContainerMod DEFAULT_WEBCONTAINER = WebContainerMod.Newest_Tomcat_85;
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
     private static final String LNK_PRICING = "<a>App service pricing details</a>";
     private static final String NOT_AVAILABLE = "N/A";
@@ -844,7 +847,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 WebContainerMod webContainerMod = webContainers[i];
                 comboWebContainer.add(webContainerMod.toString());
                 binderWebConteiners.add(webContainerMod);
-                if (webContainerMod == WebContainerMod.Newest_Tomcat_85) {
+                if (webContainerMod == DEFAULT_WEBCONTAINER) {
                     comboWebContainer.select(i);
                 }
             }
@@ -1075,7 +1078,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         for (int i = 0; i < runtimeStacks.size(); i++) {
             RuntimeStack runtimeStack = runtimeStacks.get(i);
             comboLinuxRuntime.add(runtimeStack.stack() + " " + runtimeStack.version());
-            if (runtimeStack == RuntimeStack.TOMCAT_8_5_JAVA11) {
+            if (runtimeStack == DEFAULT_LINUX_RUNTIME) {
                 comboLinuxRuntime.select(i);
             }
         }
@@ -1086,7 +1089,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         for (int i = 0; i < javaVersions.size(); i++) {
             JdkModel jdk = javaVersions.get(i);
             cbJavaVersion.add(jdk.toString());
-            if (jdk.getJavaVersion() == JavaVersion.JAVA_11) {
+            if (jdk.getJavaVersion() == DEFAULT_JAVAVERSION) {
                 cbJavaVersion.select(i);
             }
         }
