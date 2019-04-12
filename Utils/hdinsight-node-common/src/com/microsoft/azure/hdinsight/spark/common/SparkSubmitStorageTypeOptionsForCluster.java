@@ -56,7 +56,8 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
     HdiAdditionalClusterWithUndetermineStorage(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.BLOB,
-            SparkSubmitStorageType.ADLS_GEN1
+            SparkSubmitStorageType.ADLS_GEN1,
+            SparkSubmitStorageType.ADLS_GEN2
     }),
 
     // cosmos cluster on adl whose storage type is only default_storaget_account
@@ -75,13 +76,23 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
             SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
     }),
 
+    // for HDInsight Reader cluster
+    HDInsightReaderStorageTypeOptions(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
+            SparkSubmitStorageType.BLOB,
+            SparkSubmitStorageType.ADLS_GEN1,
+            SparkSubmitStorageType.ADLS_GEN2,
+            SparkSubmitStorageType.WEBHDFS
+    }),
+
     // for unknown type cluster
     ClusterWithFullType(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
             SparkSubmitStorageType.BLOB,
             SparkSubmitStorageType.ADLS_GEN1,
-            SparkSubmitStorageType.WEBHDFS
+            SparkSubmitStorageType.WEBHDFS,
+            SparkSubmitStorageType.ADLS_GEN2
     });
 
     private SparkSubmitStorageType[] optionTypes;

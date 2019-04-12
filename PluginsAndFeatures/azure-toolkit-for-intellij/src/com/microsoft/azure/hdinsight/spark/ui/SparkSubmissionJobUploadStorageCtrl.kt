@@ -33,7 +33,10 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
-import com.microsoft.azure.hdinsight.sdk.storage.*
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.storage.blob.BlobRequestOptions
@@ -124,7 +127,8 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
         view.storagePanel.adlsGen2Card.storageKeyField.addFocusListener(object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 saveAccesKey().subscribe(
-                        { model -> log().info("save new access key for account" + model.gen2Account) },
+                        { model -> if(!StringUtils.isEmpty(model.gen2Account))
+                                      log().info("save new access key for account" + model.gen2Account) },
                         {}
                 )
             }
@@ -164,6 +168,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                                 val subscriptionNameList = subscriptionManager.selectedSubscriptionDetails
                                         .stream()
                                         .map { subDetail -> subDetail.subscriptionName }
+                                        .sorted()
                                         .collect(Collectors.toList<String>())
 
                                 if (subscriptionNameList.size > 0) {

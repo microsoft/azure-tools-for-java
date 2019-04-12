@@ -164,20 +164,22 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case ADLS_GEN2:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
-                accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
-                try {
-                    clusterDetail.getConfigurationInfo();
-                    storageAccount = clusterDetail.getStorageAccount();
-                } catch (Exception ex) {
-                    log().warn("Error getting cluster storage configuration. Error: " + ExceptionUtils.getStackTrace(ex));
-                    throw new ExecutionException("Cannot get valid storage account");
+                String gen2StorageAccount = "";
+                Matcher m = Pattern.compile(SparkBatchJob.AdlsGen2RestfulPathPattern).matcher(destinationRootPath);
+                if(m.find()){
+                    gen2StorageAccount = m.group("accountName");
                 }
 
+                if (StringUtils.isBlank(gen2StorageAccount)) {
+                    throw new ExecutionException("Invalid ADLS GEN2 root path.");
+                }
+
+                accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
                 if (StringUtils.isBlank(accessKey)) {
                     throw new ExecutionException("Invalid access key input");
                 }
 
-                httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
+                httpObservable = new SharedKeyHttpObservable(gen2StorageAccount, accessKey);
                 jobDeploy = new ADLSGen2Deploy(clusterDetail, httpObservable);
                 break;
             case WEBHDFS:

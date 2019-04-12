@@ -247,20 +247,14 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     }
                                 }
                             }
-                            SparkSubmitStorageType.ADLS_GEN2 -> model.apply{
-                                val defaultStorageAccount = cluster.storageAccount
-                                if (defaultStorageAccount == null) {
-                                    errorMsg = "Cluster have no storage account"
+                            SparkSubmitStorageType.ADLS_GEN2 -> model.apply {
+                                if (gen2RootPath != null && !SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
                                     uploadPath = invalidUploadPath
+                                    errorMsg = "ADLS GEN2 Root Path is invalid"
                                 } else {
-                                    val path = control.getUploadPath(defaultStorageAccount)
-                                    if (path == null) {
-                                        errorMsg = "Error getting upload path from storage account"
-                                        uploadPath = invalidUploadPath
-                                    } else {
-                                        errorMsg = null
-                                        uploadPath = path
-                                    }
+                                    val formatAdlsRootPath = if (gen2RootPath?.endsWith("/") == true) gen2RootPath else "$gen2RootPath/"
+                                    uploadPath = "${formatAdlsRootPath}SparkSubmission/"
+                                    errorMsg = null
                                 }
                             }
                             SparkSubmitStorageType.WEBHDFS -> model.apply {
@@ -339,7 +333,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text.trim()
             }
             SparkSubmitStorageType.ADLS_GEN2 -> {
-                data.gen2Account = storagePanel.adlsGen2Card.gen2AccountField.text.trim()
+                data.gen2RootPath = storagePanel.adlsGen2Card.gen2RootPathField.text.trim()
+                data.gen2Account = if (!StringUtils.isEmpty(data.gen2RootPath))
+                    getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath) else ""
                 data.accessKey = storagePanel.adlsGen2Card.storageKeyField.text.trim()
             }
             else -> {}
@@ -407,8 +403,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     storagePanel.webHdfsCard.signOutCard.authUserNameLabel.text = data.webHdfsAuthUser
                 }
                 SparkSubmitStorageType.ADLS_GEN2 -> {
-                    storagePanel.adlsGen2Card.gen2AccountField.text = data.gen2Account
-                    val credentialAccount = data.getCredentialAccount(data.gen2Account, SparkSubmitStorageType.ADLS_GEN2)
+                    if (storagePanel.adlsGen2Card.gen2RootPathField.text != data.gen2RootPath){
+                        storagePanel.adlsGen2Card.gen2RootPathField.text = data.gen2RootPath
+                    }
+
+                    val credentialAccount = data.getCredentialAccount(
+                            getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath),
+                            SparkSubmitStorageType.ADLS_GEN2)
                     storagePanel.adlsGen2Card.storageKeyField.text =
                             if (StringUtils.isEmpty(data.accessKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.gen2Account) ?: "" }
@@ -424,6 +425,12 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         } catch (ignore: ProcessCanceledException) {
         }
 
+    }
+
+    private fun getAccount(pattern: String, rootPath: String?): String? {
+        return rootPath?.let {
+            SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex().find(rootPath)?.groupValues?.get(2)
+        }
     }
 
     override fun dispose() {
