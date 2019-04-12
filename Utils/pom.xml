@@ -314,7 +314,7 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure</artifactId>
-                <version>1.20.2</version>
+                <version>1.21.0</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
@@ -329,17 +329,17 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-client-runtime</artifactId>
-                <version>1.6.4</version>
+                <version>1.6.5</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-client-authentication</artifactId>
-                <version>1.6.4</version>
+                <version>1.6.5</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-mgmt-storage</artifactId>
-                <version>1.20.2</version>
+                <version>1.21.0</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
