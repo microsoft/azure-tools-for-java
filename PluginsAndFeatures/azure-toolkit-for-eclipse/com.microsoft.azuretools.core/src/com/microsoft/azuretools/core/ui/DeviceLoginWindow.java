@@ -45,6 +45,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -114,7 +115,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             Browser browser = new Browser(area, SWT.NONE);
             FillLayout layout = new FillLayout(SWT.HORIZONTAL);
             browser.setLayout(layout);
-            browser.setText(createHtmlFormatMessage());
+            browser.setText(createHtmlFormatMessage(area.getBackground()));
             browser.addLocationListener(new LocationListener() {
                 @Override
                 public void changing(LocationEvent event) {
@@ -199,10 +200,11 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             Display.getDefault().syncExec(() -> super.close());
         }
 
-        private String createHtmlFormatMessage() {
+        private String createHtmlFormatMessage(Color color) {
+            String bgcolor = String.format("rgb(%s,%s,%s)", color.getRed(), color.getGreen(), color.getBlue());
             final String verificationUrl = deviceCode.getVerificationUrl();
-            return "<div style=\"font-family: Arial; font-size: 13\"><body bgcolor=\"#F0F0F0\"><p>"
-                + deviceCode.getMessage()
+            return String.format("<div style=\"font-family:Arial;font-size:13\"><body style=\"background-color:%s\"><p>"
+                , bgcolor) + deviceCode.getMessage()
                 .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
                 + "</p><p>Waiting for signing in with the code ...</p></div>";
         }
