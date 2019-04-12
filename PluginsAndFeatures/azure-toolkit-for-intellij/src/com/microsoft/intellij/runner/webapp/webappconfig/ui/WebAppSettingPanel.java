@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.ui;
 
-import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation.WebAppCreationDialog;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -824,7 +824,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         cbWebContainer.removeAllItems();
         for (WebAppUtils.WebContainerMod container : webContainers) {
             cbWebContainer.addItem(container);
-            if (Comparing.equal(container.getValue(), WebAppUtils.WebContainerMod.Newest_Tomcat_85)
+            if (Comparing.equal(container.getValue(), WebAppCreationDialog.DEFAULT_WINDOWS_CONTAINER)
                 && cbWebContainer.getSelectedIndex() < 0) {
                 cbWebContainer.setSelectedItem(container);
             }
@@ -839,7 +839,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         cbJdkVersion.removeAllItems();
         for (JdkModel jdk : jdks) {
             cbJdkVersion.addItem(jdk);
-            if (Comparing.equal(jdk.getJavaVersion(), JavaVersion.JAVA_11) && cbJdkVersion.getSelectedIndex() < 0) {
+            if (Comparing.equal(jdk.getJavaVersion(), WebAppCreationDialog.DEFAULT_WINDOWS_JAVAVERSION)
+                && cbJdkVersion.getSelectedIndex() < 0) {
                 cbJdkVersion.setSelectedItem(jdk);
             }
             if (Comparing.equal(jdk.getJavaVersion(), webAppConfiguration.getJdkVersion())) {
@@ -853,7 +854,8 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
         cbLinuxRuntime.removeAllItems();
         for(final RuntimeStack runtime: linuxRuntimes) {
             cbLinuxRuntime.addItem(runtime);
-            if (Comparing.equal(runtime, RuntimeStack.TOMCAT_8_5_JAVA11) && cbLinuxRuntime.getSelectedIndex() < 0) {
+            if (Comparing.equal(runtime, WebAppCreationDialog.DEFAULT_LINUX_RUNTIME)
+                && cbLinuxRuntime.getSelectedIndex() < 0) {
                 cbLinuxRuntime.setSelectedItem(runtime);
             }
             if (Comparing.equal(runtime, webAppConfiguration.getLinuxRuntime())) {
