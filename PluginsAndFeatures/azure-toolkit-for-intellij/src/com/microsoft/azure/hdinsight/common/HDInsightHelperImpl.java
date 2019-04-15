@@ -32,15 +32,15 @@ import com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewHDInsightReaderClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
-import com.microsoft.azure.hdinsight.serverexplore.ui.RefreshHdiLinkedClusterStorageAccountsWarningForm;
-import com.microsoft.azure.hdinsight.serverexplore.ui.RefreshHdiReaderClusterWarningForm;
-import com.microsoft.azure.hdinsight.serverexplore.ui.RefreshHdiReaderStorageAccountsWarningForm;
+import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.azuretools.ijidea.ui.WarningMessageForm;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
@@ -187,8 +187,19 @@ public class HDInsightHelperImpl implements HDInsightHelper {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                RefreshHdiReaderClusterWarningForm form =
-                        new RefreshHdiReaderClusterWarningForm((Project)module.getProject(), module, clusterName);
+                Project project = (Project)module.getProject();
+                String title = "Read Only Cluster Warning";
+                String warningText = "<html><pre>You only have READ ONLY permission for this cluster.<br>Would you like to link this cluster?</pre></html>";
+                String okButtonText = "Link this cluster";
+                WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
+                    @Override
+                    protected void doOKAction() {
+                        super.doOKAction();
+
+                        AddNewHDInsightReaderClusterForm linkClusterForm = new AddNewHDInsightReaderClusterForm(project, module, clusterName);
+                        linkClusterForm.show();
+                    }
+                };
                 form.show();
             }
         }, ModalityState.any());
@@ -199,8 +210,23 @@ public class HDInsightHelperImpl implements HDInsightHelper {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                RefreshHdiReaderStorageAccountsWarningForm form =
-                        new RefreshHdiReaderStorageAccountsWarningForm((Project)node.getProject(), aseDeepLink);
+                Project project = (Project)node.getProject();
+                String title = "Storage Accounts Unavailable Warning";
+                String warningText = "<html><pre>You only have READ ONLY permission for this cluster.<br>Would you like to see storage accounts in Azure Storage Explorer?</pre></html>";
+                String okButtonText = "Open Azure Storage Explorer";
+                WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
+                    @Override
+                    protected void doOKAction() {
+                        super.doOKAction();
+
+                        try {
+                            DefaultLoader.getIdeHelper().openLinkInBrowser(aseDeepLink);
+                        } catch (Exception ex) {
+                            DefaultLoader.getUIHelper().showError(ex.getMessage(), "HDInsight Explorer");
+                        }
+
+                    }
+                };
                 form.show();
             }
         }, ModalityState.any());
@@ -211,8 +237,22 @@ public class HDInsightHelperImpl implements HDInsightHelper {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                RefreshHdiLinkedClusterStorageAccountsWarningForm form =
-                        new RefreshHdiLinkedClusterStorageAccountsWarningForm((Project)node.getProject(), aseDeepLink);
+                Project project = (Project)node.getProject();
+                String title = "Storage Accounts Unavailable Warning";
+                String warningText = "<html><pre>You don't have necessary credential to view storage accounts.<br>Would you like to see storage accounts in Azure Storage Explorer?</pre></html>";
+                String okButtonText = "Open Azure Storage Explorer";
+                WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
+                    @Override
+                    protected void doOKAction() {
+                        super.doOKAction();
+
+                        try {
+                            DefaultLoader.getIdeHelper().openLinkInBrowser(aseDeepLink);
+                        } catch (Exception ex) {
+                            DefaultLoader.getUIHelper().showError(ex.getMessage(), "HDInsight Explorer");
+                        }
+                    }
+                };
                 form.show();
             }
         }, ModalityState.any());
