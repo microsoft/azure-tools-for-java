@@ -46,6 +46,7 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -115,7 +116,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             Browser browser = new Browser(area, SWT.NONE);
             FillLayout layout = new FillLayout(SWT.HORIZONTAL);
             browser.setLayout(layout);
-            browser.setText(createHtmlFormatMessage(area.getBackground()));
+            browser.setText(createHtmlFormatMessage(area));
             browser.addLocationListener(new LocationListener() {
                 @Override
                 public void changing(LocationEvent event) {
@@ -179,12 +180,13 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
             final AuthenticationCallback<AuthenticationResult> callback) {
             long remaining = deviceCode.getExpiresIn();
+            long interval = deviceCode.getInterval();
             long expiredTime = System.currentTimeMillis() + remaining * 1000;
             int maxTries = 3;
             int checkTime = 0;
             while (System.currentTimeMillis() < expiredTime && checkTime < maxTries && authenticationResult == null) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1000 * interval);
                     authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
                 } catch (Exception e) {
                     if (e.getCause() instanceof AuthenticationException &&
@@ -200,10 +202,13 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             Display.getDefault().syncExec(() -> super.close());
         }
 
-        private String createHtmlFormatMessage(Color color) {
+        private String createHtmlFormatMessage(Composite composite) {
+            Color color = composite.getBackground();
+            FontData browserFontData = composite.getFont().getFontData()[0];
+            String browserFontStyle = String.format("font-family: '%s'; font-size: 13", browserFontData.getName());
             String bgcolor = String.format("rgb(%s,%s,%s)", color.getRed(), color.getGreen(), color.getBlue());
             final String verificationUrl = deviceCode.getVerificationUrl();
-            return String.format("<div style=\"font-family:Arial;font-size:13\"><body style=\"background-color:%s\"><p>"
+            return String.format("<div style=\"" + browserFontStyle + "\">" + "<body style=\"background-color:%s\"><p>"
                 , bgcolor) + deviceCode.getMessage()
                 .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
                 + "</p><p>Waiting for signing in with the code ...</p></div>";
