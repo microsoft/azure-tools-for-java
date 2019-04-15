@@ -22,9 +22,11 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
-import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.actions.ConfigurationFromContextImpl;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.junit.JavaRunConfigurationProducerBase;
@@ -46,15 +48,12 @@ import static com.intellij.openapi.roots.TestSourcesFilter.isTestSources;
 
 public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigurationProducerBase<LivySparkBatchJobRunConfiguration> {
     private SparkApplicationType applicationType;
-
-    public SparkBatchJobLocalRunConfigurationProducer(ConfigurationFactory configFactory, SparkApplicationType applicationType) {
-        super(configFactory);
-        this.applicationType = applicationType;
-    }
+    private ConfigurationType configType;
 
     public SparkBatchJobLocalRunConfigurationProducer(ConfigurationType configType, SparkApplicationType applicationType) {
         super(configType);
         this.applicationType = applicationType;
+        this.configType = getConfigurationType();
     }
 
     @Override
@@ -93,6 +92,31 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
     private static Optional<String> getNormalizedClassName(@NotNull PsiClass clazz) {
         return Optional.ofNullable(SparkContextUtilsKt.getNormalizedClassNameForSpark(clazz));
+    }
+
+    @Override
+    public ConfigurationFromContext findOrCreateConfigurationFromContext(ConfigurationContext context) {
+        return Optional.ofNullable(RunManager.getInstance(context.getProject()).getSelectedConfiguration())
+                .filter(setting -> {
+                    if (this.applicationType != SelectSparkApplicationTypeAction.getSelectedSparkApplicationType()) {
+                        return false;
+                    }
+
+                    LivySparkBatchJobRunConfiguration config = (LivySparkBatchJobRunConfiguration) setting.getConfiguration();
+
+                    if (config.getType().getId() != this.configType.getId()) {
+                        return false;
+                    }
+
+                    String mainClassName = config.getSubmitModel().getMainClassName();
+
+                    boolean res =  getNormalizedClassName(SparkContextUtilsKt.getSparkMainClassWithElement(context))
+                            .filter(className -> className.equals(mainClassName))
+                            .isPresent();
+
+                    return res;
+                }).map(setting -> (ConfigurationFromContext)(new ConfigurationFromContextImpl(this, setting, context.getPsiLocation())))
+                .orElse(super.findOrCreateConfigurationFromContext(context));
     }
 
     /**
