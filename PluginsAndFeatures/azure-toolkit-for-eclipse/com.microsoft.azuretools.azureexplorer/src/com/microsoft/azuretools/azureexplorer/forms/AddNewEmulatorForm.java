@@ -320,7 +320,7 @@ public class AddNewEmulatorForm extends AzureTitleAreaDialogWrapper {
 			EmulatorClusterDetail emulatorClusterDetail = new EmulatorClusterDetail(clusterName, userName, password,
 					livyEndpoint, sshEndpoint, sparkHistoryEndpoint, ambariEndpoint);
 			ClusterManagerEx.getInstance().addEmulatorCluster(emulatorClusterDetail);
-			hdInsightModule.refreshWithoutAsync();
+			hdInsightModule.load(false);
 			super.okPressed();
 		} else {
 			errorMessageField.setText(errorMessage);

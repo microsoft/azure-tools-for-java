@@ -26,6 +26,10 @@ package com.microsoft.azuretools.core.mvp.model.webapp;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.utils.WebAppUtils;
+import java.util.HashMap;
+import java.util.Map;
 
 public class WebAppSettingModel {
 
@@ -245,6 +249,26 @@ public class WebAppSettingModel {
 
     public void setOS(final OperatingSystem value) {
         this.os = value;
+    }
+
+    public Map<String, String> getTelemetryProperties(Map<String, String> properties) {
+        Map<String, String> result = new HashMap<>();
+        try {
+            if (properties != null) {
+                result.putAll(properties);
+            }
+            result.put(TelemetryConstants.RUNTIME,
+                os == OperatingSystem.LINUX ? "linux-" + getLinuxRuntime()
+                    .toString() : "windows-" + getWebContainer());
+            result.put(TelemetryConstants.WEBAPP_DEPLOY_TO_SLOT, String.valueOf(isDeployToSlot()));
+            result.put(TelemetryConstants.SUBSCRIPTIONID, getSubscriptionId());
+            result.put(TelemetryConstants.CREATE_NEWWEBAPP, String.valueOf(isCreatingNew()));
+            result.put(TelemetryConstants.CREATE_NEWASP, String.valueOf(isCreatingAppServicePlan()));
+            result.put(TelemetryConstants.CREATE_NEWRG, String.valueOf(isCreatingResGrp()));
+            result.put(TelemetryConstants.FILETYPE, WebAppUtils.getFileType(getTargetName()));
+        } catch (Exception ignore) {
+        }
+        return result;
     }
 
 }

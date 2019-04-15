@@ -30,6 +30,8 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.jarRepository.JarRepositoryManager
 import com.intellij.jarRepository.RemoteRepositoriesConfiguration
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.util.DispatchThreadProgressWindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.impl.libraries.LibraryEx
@@ -37,13 +39,18 @@ import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.NewLibraryConfiguration
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.NewLibraryEditor
+import com.intellij.openapi.ui.Messages
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.search.ProjectScope
+import com.intellij.util.PathUtil.getJarPathForClass
+import com.microsoft.azure.hdinsight.spark.mock.SparkLocalConsoleMockFsAgent
+import com.microsoft.azure.hdinsight.spark.mock.SparkLocalRunner
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow
 import com.microsoft.intellij.util.runInWriteAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
+import java.nio.file.Paths
 import javax.swing.Action
 
 class SparkScalaLocalConsoleRunConfiguration(
@@ -55,13 +62,22 @@ class SparkScalaLocalConsoleRunConfiguration(
     private val sparkCoreCoodRegex = """.*\b(org.apache.spark:spark-)(core)(_.+:.+)""".toRegex()
     private val replMain = "org.apache.spark.repl.Main"
 
-    lateinit var batchRunConfiguration: RemoteDebugRunConfiguration
+    lateinit var batchRunConfiguration: LivySparkBatchJobRunConfiguration
 
     override fun mainClass(): String = "org.apache.spark.deploy.SparkSubmit"
 
     override fun createParams(): JavaParameters {
+        var isMockFs = false
+        if (Messages.YES == Messages.showYesNoDialog(
+                        project,
+                        "Do you want to use a mocked file system?",
+                        "Setting file system",
+                        Messages.getQuestionIcon())) {
+            isMockFs = true
+        }
+
         val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel)
-                .createParams(hasJmockit = false, hasMainClass = false, hasClassPath = false)
+                .createParams(hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
         val params = super.createParams()
         params.classPath.clear()
         val replLibraryCoord = findReplCoord() ?: throw ExecutionException("""
@@ -79,13 +95,19 @@ class SparkScalaLocalConsoleRunConfiguration(
         // - https://github.com/Microsoft/azure-tools-for-java/issues/2285
         // - https://issues.apache.org/jira/browse/SPARK-13710
         val jlineLibraryCoord = "jline:jline:2.12.1"
-        promptAndFix(jlineLibraryCoord)
+        if (getLibraryByCoord(jlineLibraryCoord) == null) {
+            promptAndFix(jlineLibraryCoord)
+        }
         params.classPath.addAll(getDependencyClassPaths(jlineLibraryCoord))
 
         params.classPath.addAll(localRunParams.classPath.pathList)
         params.mainClass = mainClass()
 
         params.vmParametersList.addAll(localRunParams.vmParametersList.parameters)
+
+        if (isMockFs) {
+            params.vmParametersList.add("-javaagent:${getJarPathForClass(SparkLocalConsoleMockFsAgent::class.java)}")
+        }
 
         // FIXME!!! To support local mock filesystem
         // params.mainClass = localRunParams.mainClass
@@ -94,6 +116,7 @@ class SparkScalaLocalConsoleRunConfiguration(
         //         .forEach { params.programParametersList.add(it) }
         // params.programParametersList.add(mainClass())
 
+        params.workingDirectory = Paths.get(batchRunConfiguration.model.localRunConfigurableModel.dataRootDirectory, "__default__", "user", "current").toString()
         params.programParametersList.add("--class", "org.apache.spark.repl.Main")
         params.programParametersList.add("--name", "Spark shell")
         params.programParametersList.add("spark-shell")
@@ -158,9 +181,19 @@ class SparkScalaLocalConsoleRunConfiguration(
         val toFix = toFixDialog.showAndGet()
 
         if (toFix) {
-            fixDependence(libraryCoord)
-        }
+            val progress = DispatchThreadProgressWindow(false, project).apply {
+                setRunnable {
+                    ProgressManager.getInstance().runProcess({
+                        text = "Download $libraryCoord ..."
+                        fixDependence(libraryCoord)
+                    }, this@apply)
+                }
 
+                title = "Auto fix dependency $libraryCoord"
+            }
+
+            progress.start()
+        }
     }
 
     private fun fixDependence(libraryCoord: String) {

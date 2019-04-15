@@ -28,7 +28,7 @@ import java.io.File;
 
 public class PluginHelper {
 
-    private static final String AZURE_ARTIFACT = "azure-1.16.0.jar";
+    private static final String AZURE_ARTIFACT = "azure-1.17.1.jar";
 
     /**
      * @return resource filename in plugin's directory

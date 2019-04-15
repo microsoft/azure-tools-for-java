@@ -13,6 +13,11 @@ cache:
     - $HOME/.gradle/wrapper/
     - $HOME/.m2
 before_install:
-- export MAVEN_OPTS="-Xmx768M"
+- export MAVEN_OPTS="-Xmx4096M"
+branches:
+  only:
+  - master
+  - release
+  - develop
 script:
 - ./BuildDevint -B

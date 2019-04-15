@@ -31,10 +31,13 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <spark.version>2.1.1</spark.version>
+        <spark.version.major>2.1</spark.version.major>
+        <spark.version.minor>1</spark.version.minor>
+        <spark.version>${spark.version.major}.${spark.version.minor}</spark.version>
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>8</scala.version.minor>
         <scala.version>${scala.version.major}.${scala.version.minor}</scala.version>
+        <sparkTools.version>0.1.1_${spark.version.major}</sparkTools.version>
     </properties>
 
     <dependencies>
@@ -61,9 +64,9 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>spark-tools</artifactId>
-            <version>0.1.0</version>
+            <version>${sparkTools.version}</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/spark-tools-0.1.0.jar</systemPath>
+            <systemPath>${project.basedir}/lib/spark-tools-${sparkTools.version}.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>

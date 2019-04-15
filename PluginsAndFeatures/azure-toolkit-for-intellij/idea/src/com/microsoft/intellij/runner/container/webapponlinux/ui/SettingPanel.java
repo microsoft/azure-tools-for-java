@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.container.webapponlinux.ui;
 
 import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.container.utils.Constant;
 import icons.MavenIcons;
 
 import com.intellij.icons.AllIcons;
@@ -52,6 +53,7 @@ import com.microsoft.intellij.runner.container.webapponlinux.WebAppOnLinuxDeploy
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.WebAppOnLinuxDeployView;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
@@ -358,12 +360,14 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         webAppOnLinuxDeployConfiguration.setDockerFilePath(containerSettingPanel.getDockerPath());
         // set ACR info
         webAppOnLinuxDeployConfiguration.setPrivateRegistryImageSetting(new PrivateRegistryImageSetting(
-                containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
-                containerSettingPanel.getUserName(),
-                containerSettingPanel.getPassword(),
-                containerSettingPanel.getImageTag(),
-                containerSettingPanel.getStartupFile()
+            containerSettingPanel.getServerUrl().replaceFirst("^https?://", "").replaceFirst("/$", ""),
+            containerSettingPanel.getUserName(),
+            containerSettingPanel.getPassword(),
+            containerSettingPanel.getImageTag(),
+            containerSettingPanel.getStartupFile()
         ));
+        savePassword(containerSettingPanel.getServerUrl(), containerSettingPanel.getUserName(),
+            containerSettingPanel.getPassword());
 
         webAppOnLinuxDeployConfiguration.setTargetPath(getTargetPath());
         webAppOnLinuxDeployConfiguration.setTargetName(getTargetName());
@@ -462,13 +466,16 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         }
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
+        acrInfo.setPassword(loadPassword(acrInfo.getServerUrl(), acrInfo.getUsername()));
         containerSettingPanel.setTxtFields(acrInfo);
 
         // cache for table/combo selection
         defaultSubscriptionId = conf.getSubscriptionId();
         defaultWebAppId = conf.getWebAppId();
         defaultLocationName = conf.getLocationName();
-        defaultPricingTier = new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
+        defaultPricingTier = StringUtils.isEmpty(conf.getPricingSkuTier()) ?
+            Constant.WEBAPP_CONTAINER_DEFAULT_PRICING_TIER :
+            new PricingTier(conf.getPricingSkuTier(), conf.getPricingSkuSize()).toString();
         defaultResourceGroup = conf.getResourceGroupName();
         defaultAppServicePlanId = conf.getAppServicePlanId();
 
@@ -670,11 +677,9 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
                 cbPricing.addItem(item);
                 if (Comparing.equal(item.toString(), defaultPricingTier)) {
                     cbPricing.setSelectedItem(item);
-                    defaultPricingTier = null;
                 }
             });
         }
-
     }
 
     /**

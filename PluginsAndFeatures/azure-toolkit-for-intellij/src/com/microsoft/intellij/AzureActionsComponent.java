@@ -30,8 +30,10 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.extensions.Extensions;
-import com.intellij.util.containers.hash.HashMap;
+import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
+import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
+import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -46,16 +48,16 @@ import com.microsoft.intellij.helpers.IDEHelperImpl;
 import com.microsoft.intellij.helpers.MvpUIHelperImpl;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.secure.IdeaSecureStore;
+import com.microsoft.intellij.secure.IdeaTrustStrategy;
 import com.microsoft.intellij.serviceexplorer.NodeActionsMap;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
-import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -64,14 +66,13 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
 import rx.internal.util.PlatformDependent;
 
-public abstract class AzureActionsComponent implements ApplicationComponent, PluginComponent {
+public class AzureActionsComponent implements ApplicationComponent, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsComponent.class);
     private static FileHandler logFileHandler = null;
@@ -81,26 +82,18 @@ public abstract class AzureActionsComponent implements ApplicationComponent, Plu
     public AzureActionsComponent() {
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
-        DefaultLoader.setIdeHelper(createIDEHelper());
+        DefaultLoader.setIdeHelper(new IDEHelperImpl());
+        Node.setNode2Actions(NodeActionsMap.node2Actions);
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
-        Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions = new HashMap<>();
-        for (NodeActionsMap nodeActionsMap : Extensions.getExtensions(NodeActionsMap.EXTENSION_POINT_NAME)) {
-            node2Actions.putAll(nodeActionsMap.getMap());
-        }
-        Node.setNode2Actions(node2Actions);
-
+        HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
         try {
             loadPluginSettings();
         } catch (IOException e) {
             PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"),
                     "An error occurred while attempting to load settings", e);
         }
-    }
-
-    protected IDEHelper createIDEHelper() {
-        return new IDEHelperImpl();
     }
 
     @NotNull
@@ -110,12 +103,18 @@ public abstract class AzureActionsComponent implements ApplicationComponent, Plu
 
     public void initComponent() {
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
-
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
+            // enable spark serverless node subscribe actions
+            ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
+                    new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
+
+            ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
             initAuthManage();
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
+            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
+            popupGroup.add(am.getAction("AzurePopupGroup"));
             loadWebApps();
         }
 

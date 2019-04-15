@@ -38,7 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.http.entity.StringEntity;
 import rx.Observable;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -49,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
 public abstract class Session implements AutoCloseable, Closeable {
@@ -108,6 +110,11 @@ public abstract class Session implements AutoCloseable, Closeable {
 
     public void setName(@NotNull String name) {
         this.name = name;
+    }
+
+    @NotNull
+    public URI getBaseUrl() {
+        return baseUrl;
     }
 
     @NotNull
@@ -218,7 +225,9 @@ public abstract class Session implements AutoCloseable, Closeable {
     public boolean isStop() {
         return getLastState() == SessionState.SHUTTING_DOWN ||
                 getLastState() == SessionState.NOT_STARTED ||
-                getLastState() == SessionState.DEAD;
+                getLastState() == SessionState.DEAD ||
+                getLastState() == SessionState.KILLED ||
+                getLastState() == SessionState.ERROR;
     }
 
     public boolean isStatementRunnable() {
@@ -362,9 +371,14 @@ public abstract class Session implements AutoCloseable, Closeable {
                     }));
     }
 
-    public Observable<Session> awaitReady() {
+    public Observable<Session> awaitReady(@Nullable Scheduler scheduler) {
         return get()
-                .repeatWhen(ob -> ob.delay(1, TimeUnit.SECONDS))
+                .repeatWhen(ob -> scheduler != null ?
+                                // Use specified scheduler to delay
+                                ob.doOnNext(any -> { try { sleep(1000); } catch (InterruptedException ignored) { } }) :
+                                // Use the default delay scheduler if scheduler not specified
+                                ob.delay(1, TimeUnit.SECONDS),
+                            scheduler != null ? scheduler : Schedulers.trampoline())
                 .takeUntil(Session::isStatementRunnable)
                 .reduce(new ImmutablePair<>(this, getLastLogs()), (sesLogsPair, ses) -> {
                     List<String> currentLogs = ses.getLastLogs();
@@ -387,11 +401,15 @@ public abstract class Session implements AutoCloseable, Closeable {
                 .filter(Session::isStatementRunnable);
     }
 
+    public Observable<Session> awaitReady() {
+        return awaitReady(null);
+    }
+
     public Observable<Map<String, String>> runCodes(@NotNull String codes) {
         return runStatement(new Statement(this, new ByteArrayInputStream(codes.getBytes(StandardCharsets.UTF_8))));
     }
 
     public Observable<String> getLog() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 }

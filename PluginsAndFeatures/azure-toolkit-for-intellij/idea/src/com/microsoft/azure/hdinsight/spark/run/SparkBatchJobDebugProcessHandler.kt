@@ -25,18 +25,12 @@ import com.intellij.debugger.engine.RemoteDebugProcessHandler
 import com.intellij.execution.KillableProcess
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
-import com.intellij.execution.process.ProcessOutputTypes
+import com.intellij.execution.process.ProcessOutputTypes.STDERR
+import com.intellij.execution.process.ProcessOutputTypes.STDOUT
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import com.intellij.util.concurrency.AppExecutorUtil
-import com.intellij.util.io.BaseOutputReader
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import rx.subjects.PublishSubject
-
-import java.io.InputStream
-import java.nio.charset.Charset
 import java.util.AbstractMap.SimpleImmutableEntry
-import java.util.concurrent.Future
 
 class SparkBatchJobDebugProcessHandler(project: Project,
                                        val remoteDebugProcess: SparkBatchJobRemoteProcess,
@@ -85,29 +79,11 @@ class SparkBatchJobDebugProcessHandler(project: Project,
         return remoteDebugProcess.ctrlSubject
     }
 
-    // A simple log reader to connect the input stream and process handler
-    inner class SparkBatchJobLogReader internal constructor(inputStream: InputStream, private val logType: Key<*>)
-        : BaseOutputReader(inputStream, Charset.forName("UTF-8")) {
-
-        init {
-            start("Reading Spark job log " + logType.toString())
-        }
-
-        override fun onTextAvailable(s: String) {
-            // Call process handler's text notify
-            notifyTextAvailable(s, logType)
-        }
-
-        override fun executeOnPooledThread(runnable: Runnable): Future<*> {
-            return AppExecutorUtil.getAppExecutorService().submit(runnable)
-        }
-    }
-
     override fun startNotify() {
         addProcessListener(object : ProcessAdapter() {
             override fun startNotified(event: ProcessEvent) {
-                val stdoutReader = SparkBatchJobLogReader(remoteDebugProcess.inputStream, ProcessOutputTypes.STDOUT)
-                val stderrReader = SparkBatchJobLogReader(remoteDebugProcess.errorStream, ProcessOutputTypes.STDERR)
+                val stdoutReader = SparkSimpleLogStreamReader(this@SparkBatchJobDebugProcessHandler, remoteDebugProcess.inputStream, STDOUT)
+                val stderrReader = SparkSimpleLogStreamReader(this@SparkBatchJobDebugProcessHandler, remoteDebugProcess.errorStream, STDERR)
 
                 remoteDebugProcess.ctrlSubject.subscribe(
                         { },

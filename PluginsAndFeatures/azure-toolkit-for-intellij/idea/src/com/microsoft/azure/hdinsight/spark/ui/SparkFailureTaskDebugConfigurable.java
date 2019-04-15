@@ -31,12 +31,14 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.run.SparkFailureTaskDebugSettingsModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 
 public class SparkFailureTaskDebugConfigurable implements SettableControl<SparkFailureTaskDebugSettingsModel> {
     private TextFieldWithBrowseButton myFailureJobContextPathField;
     private JPanel myWholePanel;
+    private JTextArea myLog4jPropertiesField;
 
     public SparkFailureTaskDebugConfigurable(Project myProject) {
         // Bind the folder file chooser for Failure Task Context file
@@ -50,12 +52,16 @@ public class SparkFailureTaskDebugConfigurable implements SettableControl<SparkF
     @Override
     public void setData(@NotNull SparkFailureTaskDebugSettingsModel data) {
         myFailureJobContextPathField.setText(data.getFailureContextPath());
+        if (StringUtils.isNotBlank(data.getLog4jProperties())) {
+            myLog4jPropertiesField.setText(data.getLog4jProperties());
+        }
     }
 
     // Component -> Data
     @Override
     public void getData(@NotNull SparkFailureTaskDebugSettingsModel data) {
         data.setFailureContextPath(myFailureJobContextPathField.getText());
+        data.setLog4jProperties(myLog4jPropertiesField.getText());
     }
 
     @NotNull

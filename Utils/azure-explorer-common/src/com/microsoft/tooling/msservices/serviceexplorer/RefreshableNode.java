@@ -26,12 +26,10 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 
-import javax.swing.*;
-import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +47,7 @@ public abstract class RefreshableNode extends Node {
     public RefreshableNode(String id, String name, Node parent, String iconPath, boolean delayActionLoading) {
         super(id, name, parent, iconPath, delayActionLoading);
     }
-    
+
     @Override
     protected void loadActions() {
         addAction(REFRESH, DefaultLoader.getUIHelper().isDarkTheme() ? REFRESH_ICON_DARK : REFRESH_ICON_LIGHT, new NodeActionListener() {
@@ -128,22 +126,36 @@ public abstract class RefreshableNode extends Node {
                     public void run() {
                         if (!loading) {
                             final String nodeName = node.getName();
-                            updateName(nodeName + " (Refreshing...)", null);
-//                        node.setName(nodeName + " (Refreshing...)");
+                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateName(nodeName + " (Refreshing...)", null);
+                                }
+                            });
 
                             Futures.addCallback(future, new FutureCallback<List<Node>>() {
                                 @Override
                                 public void onSuccess(List<Node> nodes) {
-                                    updateName(nodeName, null);
-                                    updateNodeNameAfterLoading();
-                                    expandNodeAfterLoading();
+                                    DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateName(nodeName, null);
+                                            updateNodeNameAfterLoading();
+                                            expandNodeAfterLoading();
+                                        }
+                                    });
                                 }
 
                                 @Override
                                 public void onFailure(Throwable throwable) {
-                                    updateName(nodeName, throwable);
-                                    updateNodeNameAfterLoading();
-                                    expandNodeAfterLoading();
+                                    DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateName(nodeName, throwable);
+                                            updateNodeNameAfterLoading();
+                                            expandNodeAfterLoading();
+                                        }
+                                    });
                                 }
                             });
                             node.refreshItems(future, forceRefresh);
@@ -151,16 +163,16 @@ public abstract class RefreshableNode extends Node {
                     }
 
                     private void updateName(String name, final Throwable throwable) {
-                        DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
-                            @Override
-                            public void run() {
-                                node.setName(name);
+                        node.setName(name);
 
-                                if (throwable != null) {
-                                    throw new RuntimeException("MS Azure Explorer - Error Loading", throwable);
-                                }
-                            }
-                        });
+                        if (throwable != null) {
+                            DefaultLoader.getUIHelper().showException("An error occurred while attempting " +
+                                            "to load " + node.getName() + ".",
+                                    throwable,
+                                    "MS Azure Explorer - Error Loading " + node.getName(),
+                                    false,
+                                    true);
+                        }
                     }
                 }
         );

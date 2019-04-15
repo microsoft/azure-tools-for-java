@@ -38,7 +38,7 @@ class AuthCodeInteractiveHandler {
     private static final  Logger log = Logger.getLogger(AuthCodeInteractiveHandler.class.getName());
     private static final String LOGIN = "login";
     private static final String ERROR_NOWEBUI = "webUi not set";
-    private static final String ERROR_GETCODE = "Interactive sign in is unsuccessful or canceled";
+    private static final String ERROR_GETCODE = "Service principal sign in is unsuccessful or canceled";
     
     private final URI redirectUri;
     private final String clientId;

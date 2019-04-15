@@ -23,7 +23,7 @@
 package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessClusterManager;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
@@ -40,7 +40,7 @@ import rx.Observable;
 import java.io.IOException;
 import java.util.List;
 
-public class AzureSparkClusterManager extends AzureSparkServerlessClusterManager implements ILogger {
+public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager implements ILogger {
     // Lazy singleton initialization
     private static class LazyHolder {
         static final AzureSparkClusterManager INSTANCE =

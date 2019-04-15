@@ -23,20 +23,25 @@ package com.microsoft.azure.hdinsight.serverexplore;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.common.IconPathBuilder;
+import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.ClusterNode;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HDInsightRootModuleImpl extends HDInsightRootModule {
 
     private static final String HDInsight_SERVICE_MODULE_ID = HDInsightRootModuleImpl.class.getName();
-    private static final String ICON_PATH = CommonConst.HDExplorerIcon_16x_Path;
+    private static final String ICON_PATH = IconPathBuilder
+            .custom(CommonConst.HDExplorerIconName)
+            .setBigSize()
+            .setPathPrefix("")
+            .build();
     private static final String BASE_MODULE_NAME = "HDInsight";
 
     public HDInsightRootModuleImpl(@NotNull Node parent) {
@@ -52,40 +57,16 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        synchronized (this) { //todo???
-//            TelemetryManager.postEvent(TelemetryCommon.HDInsightExplorerHDInsightNodeExpand, null, null);
-
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails();
-
-            if (clusterDetailList != null) {
-                for (IClusterDetail clusterDetail : clusterDetailList) {
-                    addChildNode(new ClusterNode(this, clusterDetail));
-                }
-            }
-        }
-    }
-
-    @Override
-    public void refreshWithoutAsync() {
         synchronized (this) {
-            removeAllChildNodes();
-
-            // refresh the cluster list with invalidating the cache
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails();
+            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
+                    .filter(ClusterManagerEx.getInstance().getHDInsightClusterFilterPredicate())
+                    .collect(Collectors.toList());
 
             if (clusterDetailList != null) {
                 for (IClusterDetail clusterDetail : clusterDetailList) {
                     addChildNode(new ClusterNode(this, clusterDetail));
                 }
             }
-        }
-
-    }
-
-    @Override
-    protected void onNodeClick(NodeActionEvent e) {
-        if (!initialized) {
-            this.load(false);
         }
     }
 }

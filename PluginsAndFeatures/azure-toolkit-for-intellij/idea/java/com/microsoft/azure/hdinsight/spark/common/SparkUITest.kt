@@ -33,8 +33,8 @@ import javax.swing.JDialog
  * Ignore those UI tests, since they are helpers to do manually tests
  */
 @Ignore
-class SparkUITest : IdeaTestCase() {
-    private var dialog: JDialog? = null
+open class SparkUITest : IdeaTestCase() {
+    protected var dialog: JDialog? = null
 
     @Before
     override fun setUp() {

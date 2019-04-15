@@ -36,8 +36,6 @@ public abstract class HDInsightRootModule extends AzureRefreshableNode {
 
     public abstract HDInsightRootModule getNewNode(Node parent);
 
-    public abstract void refreshWithoutAsync();
-
     public boolean isFeatureEnabled() {
         return false;
     }

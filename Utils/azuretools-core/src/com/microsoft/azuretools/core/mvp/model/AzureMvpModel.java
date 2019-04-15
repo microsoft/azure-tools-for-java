@@ -168,7 +168,19 @@ public class AzureMvpModel {
                 ret.add(pt);
             }
         }
-        return ret;
+        return correctPricingTiers(ret);
+    }
+
+    // workaround for SDK not updated the PREMIUM pricing tiers to latest ones
+    // https://github.com/Azure/azure-libraries-for-java/issues/660
+    private List<PricingTier> correctPricingTiers(final List<PricingTier> pricingTiers) {
+        pricingTiers.remove(PricingTier.PREMIUM_P1);
+        pricingTiers.remove(PricingTier.PREMIUM_P2);
+        pricingTiers.remove(PricingTier.PREMIUM_P3);
+        pricingTiers.add(new PricingTier("Premium", "P1V2"));
+        pricingTiers.add(new PricingTier("Premium", "P2V2"));
+        pricingTiers.add(new PricingTier("Premium", "P3V2"));
+        return pricingTiers;
     }
 
     public URI getResourceUri(String subscriptionId, String id) throws IOException {

@@ -23,64 +23,54 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
+import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for SparkItemGroupState.
  */
-public enum SparkItemGroupState {
-    /** Enum value Waiting. */
-    WAITING("Waiting"),
+@JsonIgnoreProperties(ignoreUnknown = true)
+public final class SparkItemGroupState extends ExpandableStringEnum<SparkItemGroupState> {
+    /** Static value Waiting for SparkItemGroupState. */
+    public static final SparkItemGroupState WAITING = fromString("Waiting");
 
-    /** Enum value Launch. */
-    LAUNCH("Launch"),
+    /** Static value Launch for SparkItemGroupState. */
+    public static final SparkItemGroupState LAUNCH = fromString("Launch");
 
-    /** Enum value Release. */
-    RELEASE("Release"),
+    /** Static value Release for SparkItemGroupState. */
+    public static final SparkItemGroupState RELEASE = fromString("Release");
 
-    /** Enum value Stable. */
-    STABLE("Stable"),
+    /** Static value Stable for SparkItemGroupState. */
+    public static final SparkItemGroupState STABLE = fromString("Stable");
 
-    /** Enum value Idle. */
-    IDLE("Idle"),
+    /** Static value Idle for SparkItemGroupState. */
+    public static final SparkItemGroupState IDLE = fromString("Idle");
 
-    /** Enum value Failed. */
-    FAILED("Failed"),
+    /** Static value Failed for SparkItemGroupState. */
+    public static final SparkItemGroupState FAILED = fromString("Failed");
 
-    /** Enum value Shutdown. */
-    SHUTDOWN("Shutdown"),
+    /** Static value Shutdown for SparkItemGroupState. */
+    public static final SparkItemGroupState SHUTDOWN = fromString("Shutdown");
 
-    /** Enum value Completed. */
-    COMPLETED("Completed");
+    /** Static value Completed for SparkItemGroupState. */
+    public static final SparkItemGroupState COMPLETED = fromString("Completed");
 
-    /** The actual serialized value for a SparkItemGroupState instance. */
-    private String value;
-
-    SparkItemGroupState(String value) {
-        this.value = value;
+    /**
+     * Creates or finds a SparkItemGroupState from its string representation.
+     * @param name a name to look for
+     * @return the corresponding SparkItemGroupState
+     */
+    @JsonCreator
+    public static SparkItemGroupState fromString(String name) {
+        return fromString(name, SparkItemGroupState.class);
     }
 
     /**
-     * Parses a serialized value to a SparkItemGroupState instance.
-     *
-     * @param value the serialized value to parse.
-     * @return the parsed SparkItemGroupState object, or null if unable to parse.
+     * @return known SparkItemGroupState values
      */
-    @JsonCreator
-    public static SparkItemGroupState fromString(String value) {
-        SparkItemGroupState[] items = SparkItemGroupState.values();
-        for (SparkItemGroupState item : items) {
-            if (item.toString().equalsIgnoreCase(value)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    @JsonValue
-    @Override
-    public String toString() {
-        return this.value;
+    public static Collection<SparkItemGroupState> values() {
+        return values(SparkItemGroupState.class);
     }
 }

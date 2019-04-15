@@ -26,45 +26,58 @@ import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Cache;
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.*;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlTableBody;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.exceptions.Exceptions;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.UnknownServiceException;
-import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.Log;
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
+    public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
+    public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
+    public static final String AdlsGen2RestfulPathPattern = "^(https://)([^/.\\s]+\\.)(dfs\\.core\\.windows\\.net)(/[^/.\\s]+)*/?$";
+
     @Nullable
     private String currentLogUrl;
     @NotNull
@@ -122,7 +135,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     /**
      * The Spark Batch Job submission parameter
      */
-    private SparkSubmissionParameter submissionParameter;
+    protected SparkSubmissionParameter submissionParameter;
 
     /**
      * The Spark Batch Job submission for RestAPI transaction
@@ -153,6 +166,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private IHDIStorageAccount storageAccount;
 
+    @Nullable
+    private IClusterDetail cluster;
     /**
      * Access token used for uploading files to ADLS storage account
      */
@@ -160,28 +175,51 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     private String accessToken;
 
     @Nullable
-    private String adlRootPath;
+    private String destinationRootPath;
+
+    @Nullable
+    private HttpObservable httpObservable;
+
+    @Nullable
+    private Deployable jobDeploy;
 
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this(submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
+        this(null, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
     }
 
     public SparkBatchJob(
+            @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
-            @Nullable String adlRootPath) {
+            @Nullable String destinationRootPath) {
+        this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, storageAccount, accessToken, destinationRootPath, null, null);
+    }
+
+    public SparkBatchJob(
+            @Nullable IClusterDetail cluster,
+            SparkSubmissionParameter submissionParameter,
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            @Nullable IHDIStorageAccount storageAccount,
+            @Nullable String accessToken,
+            @Nullable String destinationRootPath,
+            @Nullable HttpObservable httpObservable,
+            @Nullable Deployable jobDeploy) {
+        this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
         this.ctrlSubject = ctrlSubject;
         this.accessToken = accessToken;
-        this.adlRootPath = adlRootPath;
+        this.destinationRootPath = destinationRootPath;
+        this.httpObservable = httpObservable;
+        this.jobDeploy = jobDeploy;
     }
 
     /**
@@ -192,8 +230,6 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public SparkSubmissionParameter getSubmissionParameter() {
         return submissionParameter;
     }
-
-
 
     /**
      * Getter of the Spark Batch Job submission for RestAPI transaction
@@ -213,13 +249,16 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Override
     public URI getConnectUri() {
         if (connectUri == null) {
-            Optional<IClusterDetail> cluster = ClusterManagerEx.getInstance()
-                    .getClusterDetailByName(getSubmissionParameter().getClusterName());
+            Optional<IClusterDetail> cluster = getCluster() != null
+                    ? Optional.of(getCluster())
+                    : ClusterManagerEx.getInstance().getClusterDetailByName(getSubmissionParameter().getClusterName());
 
             if (cluster.isPresent()) {
                 try {
-                    SparkBatchSubmission.getInstance()
-                            .setUsernamePasswordCredential(cluster.get().getHttpUserName(), cluster.get().getHttpPassword());
+                    getSubmission().setUsernamePasswordCredential(
+                            cluster.get().getHttpUserName(),
+                            cluster.get().getHttpPassword()
+                    );
                 } catch (HDIException e) {
                     log().warn("No credential provided for Spark batch job.");
                 }
@@ -239,13 +278,16 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     public URI getYarnNMConnectUri() {
         if (yarnConnectUri == null) {
-            Optional<IClusterDetail> cluster = ClusterManagerEx.getInstance()
-                    .getClusterDetailByName(getSubmissionParameter().getClusterName());
+            Optional<IClusterDetail> cluster = getCluster() != null
+                    ? Optional.of(getCluster())
+                    : ClusterManagerEx.getInstance().getClusterDetailByName(getSubmissionParameter().getClusterName());
 
             if (cluster.isPresent()) {
                 try {
-                    SparkBatchSubmission.getInstance()
-                            .setUsernamePasswordCredential(cluster.get().getHttpUserName(), cluster.get().getHttpPassword());
+                    getSubmission().setUsernamePasswordCredential(
+                            cluster.get().getHttpUserName(),
+                            cluster.get().getHttpPassword()
+                    );
                 } catch (HDIException e) {
                     log().warn("No credential provided for Spark batch job.");
                 }
@@ -260,6 +302,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         }
 
         return yarnConnectUri;
+    }
+
+    @Nullable
+    public IClusterDetail getCluster() {
+        return cluster;
     }
 
     @Nullable
@@ -282,7 +329,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @param batchId the LIVY Spark batch job ID
      */
-    private void setBatchId(int batchId) {
+    protected void setBatchId(int batchId) {
         this.batchId = batchId;
     }
 
@@ -364,7 +411,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      * @return the current instance for chain calling
      */
     @Override
-    public Observable<ISparkBatchJob> killBatchJob() {
+    public Observable<? extends ISparkBatchJob> killBatchJob() {
         return Observable.fromCallable(() -> {
             if (getConnectUri() == null) {
                 throw new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
@@ -936,7 +983,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         throw new UnknownServiceException("Failed to detect job activity: Unknown service error after " + --retries + " retries");
     }
 
-    private Observable<SimpleImmutableEntry<String, String>> getJobDoneObservable() {
+    protected Observable<SimpleImmutableEntry<String, String>> getJobDoneObservable() {
         if (getConnectUri() == null) {
             return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
                     "please configure Spark cluster which the Spark job will be submitted."));
@@ -981,7 +1028,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         });
     }
 
-    private Observable<String> getJobLogAggregationDoneObservable() {
+    protected Observable<String> getJobLogAggregationDoneObservable() {
         return getSparkJobApplicationIdObservable()
                 .flatMap(applicationId ->
                         Observable.fromCallable(() ->
@@ -1101,13 +1148,39 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        if (accessToken != null) {
-            return JobUtils.deployArtifactToADLS(artifactPath, adlRootPath, accessToken)
+        if (destinationRootPath != null && destinationRootPath.matches(AdlsPathPattern) && accessToken != null) {
+            //use ADLS GEN1
+            return JobUtils.deployArtifactToADLS(artifactPath, destinationRootPath, accessToken)
                     .map(path -> {
                         getSubmissionParameter().setFilePath(path);
                         return this;
                     });
+        } else if(destinationRootPath != null && destinationRootPath.matches(AdlsGen2RestfulPathPattern) && accessToken != null) {
+            //use ADLS GEN2
+            URI dest = jobDeploy.getUploadDir(destinationRootPath);
+            if (dest == null) {
+                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
+            }
+
+            return jobDeploy.deploy(new File(artifactPath), dest)
+                    .map(redirectPath -> {
+                        getSubmissionParameter().setFilePath(redirectPath);
+                        return this;
+                    });
+        } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
+            //use webhdfs
+            URI dest = jobDeploy.getUploadDir(destinationRootPath);
+            if (dest == null) {
+                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
+            }
+
+            return jobDeploy.deploy(new File(artifactPath), dest)
+                    .map(redirectPath -> {
+                        getSubmissionParameter().setFilePath(redirectPath);
+                        return this;
+                    });
         } else if (storageAccount == null) {
+            //use livy session
             return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
                     .map(clusterArtifactUriPair -> {
                         getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
@@ -1115,6 +1188,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     })
                     .toObservable();
         } else {
+            //use default storage account
             return JobUtils.deployArtifact(artifactPath, storageAccount, getCtrlSubject())
                     .map(path -> {
                         getSubmissionParameter().setFilePath(path);
@@ -1180,7 +1254,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      * @return Spark Job observable
      */
     @NotNull
-    public Observable<SparkSubmitResponse> getStatus() {
+    public Observable<? extends SparkSubmitResponse> getStatus() {
         if (getConnectUri() == null) {
             return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
                     "please configure Spark cluster which the Spark job will be submitted."));

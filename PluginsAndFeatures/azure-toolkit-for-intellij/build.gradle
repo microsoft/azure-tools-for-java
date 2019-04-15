@@ -19,8 +19,19 @@ processResources {
 }
 
 repositories {
-    maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
-    maven { url "https://cache-redirector.jetbrains.com/maven-central" }
+    maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
+    mavenLocal()
+    mavenCentral()
+}
+
+apply plugin: 'java'
+
+configurations {
+    compile.exclude module:'slf4j-api'
+    compile.exclude module:'log4j'
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
 }
 
 dependencies {
@@ -28,24 +39,20 @@ dependencies {
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     compile 'commons-io:commons-io:2.5'
     compile 'net.minidev:json-smart:2.3'
-    compile 'com.microsoft.azure:azure-client-runtime:1.6.2', { force = true }
-    compile 'com.microsoft.azure:azure-client-authentication:1.6.2', { force = true }
-    compile 'com.microsoft.azure:adal4j:1.6.0', { force = true }
-    
-    compile 'com.microsoft.azuretools:azuretools-core:3.14.0', {
+    compile 'com.microsoft.azure:azure-client-runtime:1.6.3', { force = true }
+    compile 'com.microsoft.azure:azure-client-authentication:1.6.3', { force = true }
+    compile 'com.microsoft.azuretools:azuretools-core:3.20.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.14.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.20.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
-    compile 'com.microsoft.azuretools:spark-tools:0.1.0'
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.14.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.20.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
     }
-
     compile 'com.spotify:docker-client:8.11.7'
 
     compile 'org.jetbrains.kotlin:kotlin-reflect:1.3.11'

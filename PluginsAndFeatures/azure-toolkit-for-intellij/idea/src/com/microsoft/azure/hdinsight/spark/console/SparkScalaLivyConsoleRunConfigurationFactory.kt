@@ -24,7 +24,8 @@ package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLivyConsoleConfigurationType)
@@ -33,12 +34,22 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
         return SparkScalaLivyConsoleRunConfiguration(project, this, null, "")
     }
 
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
-        // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
-        return SparkScalaLivyConsoleRunConfiguration(
-                template.project,
-                this,
-                template as? RemoteDebugRunConfiguration,
-                "${template.name ?: ""} >> Spark Livy Interactive Session Console(Scala)")
-    }
+    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
+            // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
+            when (template) {
+                is CosmosSparkRunConfiguration ->
+                    CosmosSparkScalaLivyConsoleRunConfiguration(
+                            template.project,
+                            this,
+                            template,
+                            "${template.name} >> Azure Data Lake Spark Livy Interactive Session Console(Scala)")
+                is LivySparkBatchJobRunConfiguration ->
+                    SparkScalaLivyConsoleRunConfiguration(
+                            template.project,
+                            this,
+                            template,
+                            "${template.name} >> Spark Livy Interactive Session Console(Scala)")
+                else -> throw UnsupportedOperationException(
+                        "Spark Livy Console doesn't support starting from the configuration ${template.name}(type: ${template.type.displayName})")
+            }
 }

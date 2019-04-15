@@ -22,17 +22,19 @@
 
 package com.microsoft.azure.hdinsight.spark.run.action
 
-import com.intellij.execution.*
-import com.intellij.execution.configurations.RunProfile
-import com.intellij.execution.configurations.RunnerSettings
-import com.intellij.execution.configurations.RuntimeConfigurationException
+import com.intellij.execution.Executor
+import com.intellij.execution.RunManagerEx
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.roots.TestSourcesFilter.isTestSources
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.getNormalizedClassNameForSpark
+import com.microsoft.azure.hdinsight.spark.run.getSparkConfigurationContext
+import com.microsoft.azure.hdinsight.spark.run.getSparkMainClassWithElement
+import com.microsoft.azure.hdinsight.spark.run.isSparkContext
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.util.runInReadAction
 import javax.swing.Icon
@@ -46,61 +48,114 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
     abstract val runExecutor: Executor
 
     open fun canRun(setting: RunnerAndConfigurationSettings): Boolean =
-            setting.configuration is RemoteDebugRunConfiguration &&
-                    RunnerRegistry.getInstance().getRunner(runExecutor.id, setting.configuration) != null
+            setting.configuration is LivySparkBatchJobRunConfiguration &&
+                    ProgramRunner.getRunner(runExecutor.id, setting.configuration)
+                            ?.canRun(runExecutor.id, setting.configuration) == true
 
     override fun update(actionEvent: AnActionEvent) {
-        val presentation = actionEvent.presentation.apply { isEnabled = false }
+        val presentation = actionEvent.presentation.apply { isEnabledAndVisible = false }
 
         val project = actionEvent.project ?: return
         val runManagerEx = RunManagerEx.getInstanceEx(project)
-        val selectedConfigSettings = runManagerEx.selectedConfiguration ?: return
+        val selectedConfigSettings = runManagerEx.selectedConfiguration
 
-        presentation.isEnabled = canRun(selectedConfigSettings)
+        val mainClass = actionEvent.dataContext.getSparkConfigurationContext()?.getSparkMainClassWithElement()
+        if (mainClass?.containingFile?.let { isTestSources(it.virtualFile, project) } == true) {
+            return
+        }
+
+        presentation.apply {
+            when {
+
+                actionEvent.isFromActionToolbar -> isEnabledAndVisible = canRun(selectedConfigSettings?: return)
+                else -> {
+                    // From context menu or Line marker action menu
+                    isEnabledAndVisible = actionEvent.dataContext.isSparkContext()
+
+                    if (!isEnabledAndVisible) {
+                        return@apply
+                    }
+
+                    // In Spark Context
+                    if (selectedConfigSettings?.let { canRun(it) } == true) {
+                        text = "${runExecutor.id} ${selectedConfigSettings.name}"
+                        description = "Submit a Spark job with the current configuration for this main class"
+                    } else {
+                        /**
+                         * FIXME with [LivySparkBatchJobRunConfiguration.suggestedName]
+                         * to create a new run configuration to submit a Spark job for this main class
+                         */
+//                        val className = actionEvent.dataContext.getSparkConfigurationContext()
+//                                ?.getSparkMainClassWithElement()
+//                                ?.getNormalizedClassNameForSpark()
+//                                ?: ""
+//
+//                        text = "${runExecutor.id} [Spark Job] $className"
+                        isEnabledAndVisible = false
+                    }
+                }
+            }
+        }
     }
 
     override fun onActionPerformed(actionEvent: AnActionEvent?) {
         val project = actionEvent?.project ?: return
         val runManagerEx = RunManagerEx.getInstanceEx(project)
-        val selectedConfigSettings = runManagerEx.selectedConfiguration ?: return
+        val selectedConfigSettings = runManagerEx.selectedConfiguration
 
-        // Try current selected Configuration
-        if (!canRun(selectedConfigSettings)) {
-            return
-        }
-
-        runExisting(selectedConfigSettings, project)
-    }
-
-    private fun runExisting(setting: RunnerAndConfigurationSettings, project: Project) {
-        runInReadAction {
-            runFromSetting(project, setting)
-        }
-    }
-
-    private fun runFromSetting(project: Project, setting: RunnerAndConfigurationSettings) {
-        val configuration = setting.configuration
-        val runner = RunnerRegistry.getInstance().getRunner(runExecutor.id, configuration) ?: return
-
-        try {
-            val environment = ExecutionEnvironmentBuilder.create(runExecutor, configuration).build()
-
-            try {
-                checkRunnerSettings(environment.runProfile, runner)
-                setting.isEditBeforeRun = false
-            } catch (configError: RuntimeConfigurationException) {
-                log().warn("Found configuration error $configError, pop up run configuration dialog")
-                setting.isEditBeforeRun = true
+        when {
+            actionEvent.isFromActionToolbar -> {
+                // Try current selected Configuration
+                selectedConfigSettings?.also {
+                    if (canRun(it)) {
+                        runExisting(it)
+                    }
+                }
             }
+            else -> {
+                // From context menu or Line marker action menu
+                if (!actionEvent.dataContext.isSparkContext()) {
+                    // No action for out of Spark Context
+                    return
+                }
 
-            ProgramRunnerUtil.executeConfiguration(setting, runExecutor)
-        } catch (e: Exception) {
-            Messages.showErrorDialog(project, e.message, ExecutionBundle.message("error.common.title"))
+                // In Spark Context
+                val className = actionEvent.dataContext.getSparkConfigurationContext()
+                        ?.getSparkMainClassWithElement()
+                        ?.getNormalizedClassNameForSpark()
+                        ?: ""
+
+                if (selectedConfigSettings?.let { canRun(it) } == true) {
+                    val savedIsEditBeforeRun = selectedConfigSettings.isEditBeforeRun
+
+                    selectedConfigSettings.isEditBeforeRun = true
+
+                    // canRun() has checked configuration is LivySparkBatchJobRunConfiguration or not
+                    (selectedConfigSettings.configuration as LivySparkBatchJobRunConfiguration).submitModel.mainClassName =
+                            className
+
+                    runExisting(selectedConfigSettings)
+
+                    selectedConfigSettings.isEditBeforeRun = savedIsEditBeforeRun
+                } else {
+                    /**
+                     * FIXME with [LivySparkBatchJobRunConfiguration.suggestedName]
+                     * to create a new run configuration to submit a Spark job for this main class
+                     */
+                }
+            }
         }
     }
 
-    open fun checkRunnerSettings(runProfile: RunProfile?, runner: ProgramRunner<RunnerSettings>) {
-        (runProfile as? RemoteDebugRunConfiguration)?.checkRunnerSettings(runner, null, null)
+    private fun runExisting(setting: RunnerAndConfigurationSettings) {
+        runInReadAction {
+            runFromSetting(setting)
+        }
     }
 
+    private fun runFromSetting(setting: RunnerAndConfigurationSettings) {
+        val environment = ExecutionEnvironmentBuilder.create(runExecutor, setting).build()
+
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
+    }
 }

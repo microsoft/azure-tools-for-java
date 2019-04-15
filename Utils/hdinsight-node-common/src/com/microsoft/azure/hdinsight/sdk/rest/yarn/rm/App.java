@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.sdk.rest.yarn.rm;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
 import java.util.ArrayList;
@@ -41,6 +42,8 @@ import java.util.List;
  * Query Parameters Supported
  *   None
  */
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class App implements IConvertible {
     private String id;                  // The application id
     private String user;                // The user who started the application

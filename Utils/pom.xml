@@ -27,11 +27,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.14.0</version>
+    <version>3.20.0</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}-${project.version}</name>
     <properties>
-        <azuretool.version>3.14.0</azuretool.version>
+        <azuretool.version>3.20.0</azuretool.version>
         <kotlin.version>1.2.50</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
     </properties>
@@ -41,6 +41,7 @@
         <module>./azure-explorer-common</module>
         <module>./spark-tools</module>
         <module>./hdinsight-node-common</module>
+        <module>./spark-localrun-mock</module>
     </modules>
     <profiles>
         <!-- Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. -->
@@ -313,7 +314,7 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure</artifactId>
-                <version>1.16.0</version>
+                <version>1.17.1</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
@@ -328,17 +329,17 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-client-runtime</artifactId>
-                <version>1.6.2</version>
+                <version>1.6.3</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-client-authentication</artifactId>
-                <version>1.6.2</version>
+                <version>1.6.3</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-mgmt-storage</artifactId>
-                <version>1.16.0</version>
+                <version>1.17.1</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
