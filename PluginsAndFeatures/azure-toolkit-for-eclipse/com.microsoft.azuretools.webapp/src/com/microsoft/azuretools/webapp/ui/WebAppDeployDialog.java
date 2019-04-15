@@ -303,7 +303,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnDeployToRoot = new Button(composite, SWT.CHECK);
         btnDeployToRoot.setSelection(true);
         btnDeployToRoot.setText("Deploy to root");
-        
+
         int size = btnDeployToRoot.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         btnCreate.setLayoutData(new RowData(size, SWT.DEFAULT));
         btnDelete.setLayoutData(new RowData(size, SWT.DEFAULT));
