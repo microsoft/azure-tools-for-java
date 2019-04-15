@@ -24,7 +24,6 @@ package com.microsoft.azure.cosmosserverlessspark.spark.ui;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -37,10 +36,5 @@ public class CosmosServerlessSparkJobsToolWindowFactory implements ToolWindowFac
                 PluginUtil.getIcon(IconPathBuilder
                         .custom(CommonConst.CosmosServerlessToolWindowIconName)
                         .build()));
-    }
-
-    @Override
-    public boolean shouldBeAvailable(@NotNull Project project) {
-        return CommonSettings.isCosmosServerlessEnabled;
     }
 }
