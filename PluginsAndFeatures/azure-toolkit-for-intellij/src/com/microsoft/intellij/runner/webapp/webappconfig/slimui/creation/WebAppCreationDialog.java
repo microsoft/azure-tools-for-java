@@ -66,8 +66,8 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private static final String NOT_APPLICABLE = "N/A";
     private static final String WARNING_MESSAGE = "<html><font size=\"3\" color=\"red\">%s</font></html>";
 
-    public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JAVA11;
-    public static final JdkModel DEFAULT_WINDOWS_JAVAVERSION = JdkModel.JAVA_11_0_2;
+    public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JRE8;
+    public static final JdkModel DEFAULT_WINDOWS_JAVAVERSION = JdkModel.JAVA_8_NEWEST;
     public static final WebAppUtils.WebContainerMod DEFAULT_WINDOWS_CONTAINER =
         WebAppUtils.WebContainerMod.Newest_Tomcat_85;
     public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
