@@ -28,6 +28,7 @@ import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_PRICIN
 import static com.microsoft.azuretools.webapp.util.CommonUtils.getSelectedItem;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.RuntimeStack;
@@ -53,6 +54,7 @@ import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.azuretools.utils.WebAppUtils.WebContainerMod;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
 import java.io.InputStream;
@@ -165,6 +167,9 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     private static final String PRICING_URL = "https://azure.microsoft.com/en-us/pricing/details/app-service/";
     public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
+    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8_NEWEST;
+    private static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JRE8;
+    private static final WebContainerMod DEFAULT_WEB_CONTAINER = WebContainerMod.Newest_Tomcat_85;
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
     private static final String LNK_PRICING = "<a>App service pricing details</a>";
     private static final String NOT_AVAILABLE = "N/A";
@@ -829,7 +834,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 packaging = MavenUtils.getPackaging(project);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
         }
         if (packaging.equals(WebAppUtils.TYPE_JAR)) {
@@ -838,13 +842,14 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         } else {
             comboWebContainer.removeAll();
             binderWebConteiners = new ArrayList<>();
-            for (WebAppUtils.WebContainerMod wc : WebAppUtils.WebContainerMod.values()) {
-                comboWebContainer.add(wc.toString());
-                binderWebConteiners.add(wc);
-            }
-
-            if (comboWebContainer.getItemCount() > 0) {
-                comboWebContainer.select(0);
+            WebContainerMod[] webContainers = WebContainerMod.values();
+            for (int i = 0; i < webContainers.length; i++) {
+                WebContainerMod webContainerMod = webContainers[i];
+                comboWebContainer.add(webContainerMod.toString());
+                binderWebConteiners.add(webContainerMod);
+                if (webContainerMod == DEFAULT_WEB_CONTAINER) {
+                    comboWebContainer.select(i);
+                }
             }
         }
     }
@@ -1070,21 +1075,23 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     private void fillLinuxRuntime() {
         List<RuntimeStack> runtimeStacks = WebAppUtils.getAllJavaLinuxRuntimeStacks();
-        for (RuntimeStack runtimeStack : runtimeStacks) {
+        for (int i = 0; i < runtimeStacks.size(); i++) {
+            RuntimeStack runtimeStack = runtimeStacks.get(i);
             comboLinuxRuntime.add(runtimeStack.stack() + " " + runtimeStack.version());
+            if (runtimeStack == DEFAULT_LINUX_RUNTIME) {
+                comboLinuxRuntime.select(i);
+            }
         }
-        comboLinuxRuntime.select(0);
     }
 
     protected void fillJavaVersion() {
         javaVersions = AzureWebAppMvpModel.getInstance().listJdks();
-        for (JdkModel jdk : javaVersions) {
-            if (jdk != null) {
-                cbJavaVersion.add(jdk.toString());
+        for (int i = 0; i < javaVersions.size(); i++) {
+            JdkModel jdk = javaVersions.get(i);
+            cbJavaVersion.add(jdk.toString());
+            if (jdk.getJavaVersion() == DEFAULT_JAVA_VERSION) {
+                cbJavaVersion.select(i);
             }
-        }
-        if (cbJavaVersion.getItemCount() > 0) {
-            cbJavaVersion.select(0);
         }
     }
 

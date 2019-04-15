@@ -28,6 +28,7 @@ import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.microsoft.azuretools.ijidea.ui.HintTextField
 import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JLabel
 import javax.swing.JTextArea
@@ -39,8 +40,8 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
     private val storageKeyLabel = JLabel("Access Key").apply { toolTipText = storageKeyTip }
     val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip }
     private val gen2RootPathTip = "e.g. https://<mystorageaccount>.dfs.core.windows.net/<root path>."
-    private val gen2RootPathLabel = JLabel("ADLS GEN2 Root Path").apply { toolTipText = gen2RootPathTip }
-    val gen2RootPathField = JTextArea().apply { toolTipText = gen2RootPathTip }
+    private val gen2RootPathLabel = JLabel("ADLS GEN2 Root Path")
+    val gen2RootPathField = HintTextField (gen2RootPathTip)
 
     init {
         val formBuilder = panel {
