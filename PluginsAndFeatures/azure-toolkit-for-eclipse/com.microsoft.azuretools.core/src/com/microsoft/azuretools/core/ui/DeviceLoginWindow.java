@@ -180,7 +180,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
             final AuthenticationCallback<AuthenticationResult> callback) {
             long remaining = deviceCode.getExpiresIn();
-            long interval = deviceCode.getInterval();
+            long interval = Math.min(3, deviceCode.getInterval());
             long expiredTime = System.currentTimeMillis() + remaining * 1000;
             int maxTries = 3;
             int checkTime = 0;
@@ -211,7 +211,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             return String.format("<div style=\"" + browserFontStyle + "\">" + "<body style=\"background-color:%s\"><p>"
                 , bgcolor) + deviceCode.getMessage()
                 .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
-                + "</p><p>Waiting for signing in with the code ...</p></div>";
+                + "</p><p>Waiting for signing in with the code, do not close the window.</p></div>";
         }
     }
 }
