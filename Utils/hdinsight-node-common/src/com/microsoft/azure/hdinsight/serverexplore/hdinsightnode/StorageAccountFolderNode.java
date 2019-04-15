@@ -21,13 +21,19 @@
  */
 package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -44,22 +50,37 @@ public class StorageAccountFolderNode extends RefreshableNode implements ILogger
     public StorageAccountFolderNode(Node parent, @NotNull IClusterDetail clusterDetail) {
         super(STORAGE_ACCOUNT_FOLDER_MODULE_ID, STORAGE_ACCOUNT_NAME, parent, ICON_PATH);
         this.clusterDetail = clusterDetail;
+
+        this.addClickActionListener(new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
+                    HDInsightLoader.getHDInsightHelper().createRefreshHdiReaderStorageAccountsWarningForm(
+                            StorageAccountFolderNode.this, ClusterNode.ASE_DEEP_LINK);
+                } else if (clusterDetail instanceof HDInsightAdditionalClusterDetail) {
+                    HDInsightLoader.getHDInsightHelper().createRefreshHdiLinkedClusterStorageAccountsWarningForm(
+                            StorageAccountFolderNode.this, ClusterNode.ASE_DEEP_LINK);
+                }
+            }
+        });
     }
 
     @Override
     protected void refreshItems() {
         if (!clusterDetail.isEmulator()) {
             try {
-                clusterDetail.getConfigurationInfo();
+                if (isStorageAccountsAvailable(clusterDetail)) {
+                    clusterDetail.getConfigurationInfo();
 
-                Optional.ofNullable(clusterDetail.getStorageAccount())
-                        .map(defaultStorageAccount -> new StorageAccountNode(this, defaultStorageAccount, true))
-                        .ifPresent(this::addChildNode);
+                    Optional.ofNullable(clusterDetail.getStorageAccount())
+                            .map(defaultStorageAccount -> new StorageAccountNode(this, defaultStorageAccount, true))
+                            .ifPresent(this::addChildNode);
 
-                List<HDStorageAccount> additionalStorageAccount = clusterDetail.getAdditionalStorageAccounts();
-                if (additionalStorageAccount != null) {
-                    for (HDStorageAccount account : additionalStorageAccount) {
-                        addChildNode(new StorageAccountNode(this, account, false));
+                    List<HDStorageAccount> additionalStorageAccount = clusterDetail.getAdditionalStorageAccounts();
+                    if (additionalStorageAccount != null) {
+                        for (HDStorageAccount account : additionalStorageAccount) {
+                            addChildNode(new StorageAccountNode(this, account, false));
+                        }
                     }
                 }
             } catch (Exception ex) {
@@ -70,5 +91,10 @@ public class StorageAccountFolderNode extends RefreshableNode implements ILogger
                 DefaultLoader.getUIHelper().showError(errorHint + exceptionMsg, "HDInsight Explorer");
             }
         }
+    }
+
+    private boolean isStorageAccountsAvailable(@NotNull IClusterDetail clusterDetail) {
+        return !ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)
+                && !(clusterDetail instanceof HDInsightAdditionalClusterDetail);
     }
 }

@@ -320,7 +320,11 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             }
 
             if (scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme)) {
-                return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName, scheme);
+                try {
+                    return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName, scheme);
+                } catch (Exception ex) {
+                    throw new HDIException("Failed to init ADLSGEN2 account", ex);
+                }
             } else {
                 return new HDStorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
             }
