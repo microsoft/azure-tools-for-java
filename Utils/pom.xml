@@ -32,6 +32,7 @@
     <name>${project.artifactId}-${project.version}</name>
     <properties>
         <azuretool.version>3.20.0</azuretool.version>
+        <applicationinsights.version>2.3.1</applicationinsights.version>
         <kotlin.version>1.2.50</kotlin.version>
         <kotlin.jvmTargetVersion>1.8</kotlin.jvmTargetVersion>
     </properties>
@@ -314,7 +315,7 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure</artifactId>
-                <version>1.17.1</version>
+                <version>1.21.0</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
@@ -329,27 +330,27 @@
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-client-runtime</artifactId>
-                <version>1.6.3</version>
+                <version>1.6.5</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-client-authentication</artifactId>
-                <version>1.6.3</version>
+                <version>1.6.5</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-mgmt-storage</artifactId>
-                <version>1.17.1</version>
+                <version>1.21.0</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>applicationinsights-core</artifactId>
-                <version>[2.0.0, 3.0.0)</version>
+                <version>${applicationinsights.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>applicationinsights-web</artifactId>
-                <version>[2.0.0, 3.0.0)</version>
+                <version>${applicationinsights.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>
