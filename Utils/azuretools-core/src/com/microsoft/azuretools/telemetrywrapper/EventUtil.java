@@ -91,6 +91,8 @@ public class EventUtil {
             logError(operation, ErrorType.userError, e, properties, metrics);
             if (errorHandle != null) {
                 errorHandle.accept(e);
+            } else {
+                throw new RuntimeException(e);
             }
         } finally {
             operation.complete();
@@ -107,6 +109,8 @@ public class EventUtil {
             logError(operation, ErrorType.userError, e, properties, metrics);
             if (errorHandle != null) {
                 errorHandle.accept(e);
+            } else {
+                throw new RuntimeException(e);
             }
         } finally {
             operation.complete();

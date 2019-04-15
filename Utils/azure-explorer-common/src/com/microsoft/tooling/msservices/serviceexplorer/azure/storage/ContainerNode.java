@@ -21,11 +21,16 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_BLOB_CONTAINER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
@@ -79,15 +84,15 @@ public class ContainerNode extends Node implements TelemetryProperties{
                 DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
             }
 
-            try {
-                StorageClientSDKManager.getManager().deleteBlobContainer(storageAccount, blobContainer);
-
-                parent.removeAllChildNodes();
-                ((RefreshableNode) parent).load(false);
-            } catch (AzureCmdException ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete blob storage", ex,
-                        "MS Services - Error Deleting Blob Storage", false, true);
-            }
+            EventUtil.executeWithLog(STORAGE, DELETE_BLOB_CONTAINER, (operation) -> {
+                    StorageClientSDKManager.getManager().deleteBlobContainer(storageAccount, blobContainer);
+                    parent.removeAllChildNodes();
+                    ((RefreshableNode) parent).load(false);
+                }, (ex) ->
+                    DefaultLoader.getUIHelper()
+                        .showException("An error occurred while attempting to delete blob storage", ex,
+                            "MS Services - Error Deleting Blob Storage", false, true)
+                );
         }
 
         @Override

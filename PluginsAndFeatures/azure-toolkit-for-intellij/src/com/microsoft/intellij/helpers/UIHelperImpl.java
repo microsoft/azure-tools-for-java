@@ -44,6 +44,8 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
@@ -307,30 +309,33 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openRedisPropertyView(@NotNull RedisCacheNode node) {
-        String redisName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
-        String sid = node.getSubscriptionId();
-        String resId = node.getResourceId();
-        if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
-            return;
-        }
-        Project project = (Project) node.getProject();
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
-        if (fileEditorManager == null) {
-            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
-            return;
-        }
-        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCachePropertyViewProvider.TYPE, resId);
-        if (itemVirtualFile == null) {
-            itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE,
-                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
-        }
-        FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
-        for (FileEditor editor: editors) {
-            if (editor.getName().equals(RedisCachePropertyView.ID) &&
-                    editor instanceof RedisCachePropertyView) {
-                ((RedisCachePropertyView) editor).onReadProperty(sid, resId);
+        EventUtil.executeWithLog(TelemetryConstants.REDIS, TelemetryConstants.REDIS_READPROP, (operation) -> {
+            String redisName = node.getName() != null ? node.getName() : RedisCacheNode.TYPE;
+            String sid = node.getSubscriptionId();
+            String resId = node.getResourceId();
+            if (isSubscriptionIdAndResourceIdEmpty(sid, resId)) {
+                return;
             }
-        }
+            Project project = (Project) node.getProject();
+            FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+            if (fileEditorManager == null) {
+                showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
+                return;
+            }
+            LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
+                RedisCachePropertyViewProvider.TYPE, resId);
+            if (itemVirtualFile == null) {
+                itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE,
+                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+            }
+            FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
+            for (FileEditor editor : editors) {
+                if (editor.getName().equals(RedisCachePropertyView.ID) &&
+                    editor instanceof RedisCachePropertyView) {
+                    ((RedisCachePropertyView) editor).onReadProperty(sid, resId);
+                }
+            }
+        });
     }
 
     @Override
