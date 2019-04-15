@@ -27,12 +27,21 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import org.apache.commons.lang3.StringUtils
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import javax.swing.DefaultComboBoxModel
 
-class AddNewHDInsightReaderClusterForm(val project: Project, val module: HDInsightRootModule, val clusterName: String) :
+open class AddNewHDInsightReaderClusterForm(val project: Project, val module: HDInsightRootModule?, val clusterName: String) :
     AddNewClusterForm(project, module) {
     init {
-        clusterComboBox.isEnabled = false
-        authComboBox.isEnabled = false
+        title = "Link HDInsight Cluster"
+
+        val hdiLinkTitle = "HDInsight Cluster"
+        clusterComboBox.model = DefaultComboBoxModel(arrayOf(hdiLinkTitle))
+        clusterComboBox.isEnabled = true
+
+        val basicAuthTitle = "Basic Authentication"
+        authComboBox.model = DefaultComboBoxModel(arrayOf(basicAuthTitle))
+        authComboBox.isEnabled = true
+
 
         window.addWindowListener(object : WindowAdapter() {
             override fun windowOpened(e: WindowEvent?) {

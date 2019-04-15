@@ -23,7 +23,6 @@
 package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2;
 
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPatch;
@@ -40,7 +39,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class ADLSGen2FSOperation {
-    private SharedKeyHttpObservable http;
+    private HttpObservable http;
 
     @NotNull
     private List<NameValuePair> createDirReqParams;
@@ -55,7 +54,7 @@ public class ADLSGen2FSOperation {
     private ADLSGen2ParamsBuilder flushReqParamsBuilder;
 
     public ADLSGen2FSOperation(@NotNull HttpObservable http) {
-        this.http = (SharedKeyHttpObservable) http;
+        this.http = http;
         this.createDirReqParams = new ADLSGen2ParamsBuilder()
                 .setResource("directory")
                 .build();
@@ -75,15 +74,13 @@ public class ADLSGen2FSOperation {
 
     public Observable<Boolean> createDir(String dirpath) {
         HttpPut req = new HttpPut(dirpath);
-        return http.executeReqAndCheckStatus(req, 201, this.createDirReqParams,
-                http.setAuthorization(req, this.createDirReqParams).getHeaderList())
+        return http.executeReqAndCheckStatus(req, 201, this.createDirReqParams)
                 .map(ignore -> true);
     }
 
     public Observable<Boolean> createFile(String filePath) {
         HttpPut req = new HttpPut(filePath);
-        return http.executeReqAndCheckStatus(req, 201, this.createFileReqParams,
-                http.setAuthorization(req, this.createFileReqParams).getHeaderList())
+        return http.executeReqAndCheckStatus(req, 201, this.createFileReqParams)
                 .map(ignore -> true);
     }
 
@@ -103,16 +100,9 @@ public class ADLSGen2FSOperation {
 
             HttpPatch req = new HttpPatch(filePath);
             req.setEntity(entity);
+            http.setContentType("application/octet-stream");
 
-            // adls gen2 deployable needs set content-length to generate shared key
-            // but httpclient auto adds this header and calculates length when executing
-            // so remove this header after key generation otherwise header already exists exp happens
-            return http.executeReqAndCheckStatus(req, 202, this.appendReqParams,
-                    http.setContentType("application/octet-stream")
-                            .setContentLength(String.valueOf(len))
-                            .setAuthorization(req, this.appendReqParams)
-                            .removeContentLength()
-                            .getHeaderList())
+            return http.executeReqAndCheckStatus(req, 202, this.appendReqParams)
                     .map(ignore -> len);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(new IllegalArgumentException("Can not find the aritifact"));
@@ -124,13 +114,9 @@ public class ADLSGen2FSOperation {
     private Observable<Boolean> flushData(String filePath, long flushLen) {
         HttpPatch req = new HttpPatch(filePath);
         List<NameValuePair> flushReqParams = this.flushReqParamsBuilder.setPosition(flushLen).build();
+        http.setContentType("application/json");
 
-        return http.executeReqAndCheckStatus(req, 200, flushReqParams,
-                http.setContentType("application/json")
-                        .setContentLength("0")
-                        .setAuthorization(req, flushReqParams)
-                        .removeContentLength()
-                        .getHeaderList())
+        return http.executeReqAndCheckStatus(req, 200, flushReqParams)
                 .map(ignore -> true);
     }
 }

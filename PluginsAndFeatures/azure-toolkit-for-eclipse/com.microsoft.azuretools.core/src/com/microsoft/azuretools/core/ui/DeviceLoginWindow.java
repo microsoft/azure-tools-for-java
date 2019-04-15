@@ -45,6 +45,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -104,13 +105,17 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 
         @Override
         protected Control createDialogArea(Composite parent) {
-            GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-            Browser browser = new Browser(parent, SWT.NONE);
+            Composite area = (Composite) super.createDialogArea(parent);
+            FillLayout fillLayout = new FillLayout(SWT.HORIZONTAL);
+            fillLayout.marginHeight = 10;
+            area.setLayout(fillLayout);
+            GridData gridData = new GridData(GridData.FILL_BOTH);
+            area.setLayoutData(gridData);
+
+            Browser browser = new Browser(area, SWT.NONE);
             FillLayout layout = new FillLayout(SWT.HORIZONTAL);
-            layout.marginHeight = 20;
             browser.setLayout(layout);
-            browser.setLayoutData(gridData);
-            browser.setText(createHtmlFormatMessage());
+            browser.setText(createHtmlFormatMessage(area.getBackground()));
             browser.addLocationListener(new LocationListener() {
                 @Override
                 public void changing(LocationEvent event) {
@@ -129,7 +134,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                 public void changed(LocationEvent locationEvent) {
                 }
             });
-            return browser;
+            return area;
         }
 
         @Override
@@ -174,9 +179,11 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         private void pullAuthenticationResult(final AuthenticationContext ctx, final DeviceCode deviceCode,
             final AuthenticationCallback<AuthenticationResult> callback) {
             long remaining = deviceCode.getExpiresIn();
-            while (remaining > 0 && authenticationResult == null) {
+            long expiredTime = System.currentTimeMillis() + remaining * 1000;
+            int maxTries = 3;
+            int checkTime = 0;
+            while (System.currentTimeMillis() < expiredTime && checkTime < maxTries && authenticationResult == null) {
                 try {
-                    remaining--;
                     Thread.sleep(1000);
                     authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
                 } catch (Exception e) {
@@ -185,20 +192,21 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                             == AdalErrorCode.AUTHORIZATION_PENDING) {
                         // swallow the pending exception
                     } else {
+                        checkTime++;
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", e));
-                        break;
                     }
                 }
             }
             Display.getDefault().syncExec(() -> super.close());
         }
 
-        private String createHtmlFormatMessage() {
+        private String createHtmlFormatMessage(Color color) {
+            String bgcolor = String.format("rgb(%s,%s,%s)", color.getRed(), color.getGreen(), color.getBlue());
             final String verificationUrl = deviceCode.getVerificationUrl();
-            return "<body bgcolor=\"#F0F0F0\"><p>"
-                + deviceCode.getMessage()
+            return String.format("<div style=\"font-family:Arial;font-size:13\"><body style=\"background-color:%s\"><p>"
+                , bgcolor) + deviceCode.getMessage()
                 .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
-                + "</p><p>Waiting for signing in with the code ...</p>";
+                + "</p><p>Waiting for signing in with the code ...</p></div>";
         }
     }
 }

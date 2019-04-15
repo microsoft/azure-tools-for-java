@@ -44,6 +44,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping;
 import com.microsoft.azure.hdinsight.sdk.common.*;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
@@ -112,7 +113,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
                 String key = submitModel.getJobUploadStorageModel().getStorageKey();
                 String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
-                if(StringUtils.isBlank(key) || StringUtils.isBlank(container)) {
+                if (StringUtils.isBlank(key) || StringUtils.isBlank(container)) {
                     throw new ExecutionException("Can't get the valid key or container name.");
                 }
 
@@ -122,6 +123,17 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 try {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
+
+                    if (storageAccount.getAccountType() == StorageAccountTypeEnum.ADLSGen2) {
+                        destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
+                        accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
+                        if (StringUtils.isBlank(accessKey)) {
+                            throw new ExecutionException("Cannot get valid access key for storage account");
+                        }
+
+                        httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
+                        jobDeploy = new ADLSGen2Deploy(clusterDetail, httpObservable);
+                    }
                 } catch (Exception ex) {
                     log().warn("Error getting cluster storage configuration. Error: " + ExceptionUtils.getStackTrace(ex));
                     storageAccount = null;
@@ -137,17 +149,17 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
                 destinationRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
-                String adlsAccountName =  destinationRootPath.split("\\.")[0].split("//")[1];
+                String adlsAccountName = destinationRootPath.split("\\.")[0].split("//")[1];
 
-                Optional<SubscriptionDetail> subscriptionDetail =  Optional.empty();
-                try{
+                Optional<SubscriptionDetail> subscriptionDetail = Optional.empty();
+                try {
                     subscriptionDetail = AuthMethodManager.getInstance().getAzureManager().getSubscriptionManager()
                             .getSelectedSubscriptionDetails()
                             .stream()
                             .filter((detail) -> detail.getSubscriptionName().equals(subscription))
                             .findFirst();
 
-                }catch (Exception ignore){
+                } catch (Exception ignore) {
                 }
 
                 if (!subscriptionDetail.isPresent()) {
@@ -184,7 +196,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 break;
             case WEBHDFS:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
-                if(StringUtils.isBlank(destinationRootPath) || !destinationRootPath.matches(SparkBatchJob.WebHDFSPathPattern)){
+                if (StringUtils.isBlank(destinationRootPath) || !destinationRootPath.matches(SparkBatchJob.WebHDFSPathPattern)) {
                     throw new ExecutionException("Invalid webhdfs root path input");
                 }
 
@@ -211,8 +223,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         //TODO:use httpobservable to replace sparkbathsubmission and deprecate the old constructor.
         if (httpObservable != null) {
-            return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount
-                    , storageAcccountType == SparkSubmitStorageType.ADLS_GEN2 ? accessKey : accessToken,
+            return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount,
+                    storageAcccountType == SparkSubmitStorageType.ADLS_GEN2 ? accessKey : accessToken,
                     destinationRootPath, httpObservable, jobDeploy);
         } else {
             return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, storageAccount, accessToken, destinationRootPath);
@@ -221,7 +233,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     @Nullable
     @Override
-    protected RunContentDescriptor doExecute(@NotNull RunProfileState state,@NotNull ExecutionEnvironment environment) throws ExecutionException {
+    protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) throws ExecutionException {
         SparkBatchRemoteRunProfileState submissionState = (SparkBatchRemoteRunProfileState) state;
 
         // Check parameters before starting
@@ -274,7 +286,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         submissionState.setRemoteProcessCtrlLogHandler(processHandler);
 
         ctrlSubject.subscribe(
-                messageWithType -> {},
+                messageWithType -> {
+                },
                 err -> disconnectAction.setEnabled(false),
                 () -> disconnectAction.setEnabled(false));
 

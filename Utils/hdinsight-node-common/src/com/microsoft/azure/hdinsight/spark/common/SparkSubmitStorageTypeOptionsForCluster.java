@@ -43,6 +43,7 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
 
     // cluster detail using adls gen2 as default storage type
     ClusterWithAdlsGen2(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.ADLS_GEN2
     }),
 
@@ -74,6 +75,15 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
     // Cosmos Serverless Spark cluster
     ServerlessClusterWithAccountDefault(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE
+    }),
+
+    // for HDInsight Reader cluster
+    HDInsightReaderStorageTypeOptions(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,
+            SparkSubmitStorageType.BLOB,
+            SparkSubmitStorageType.ADLS_GEN1,
+            SparkSubmitStorageType.ADLS_GEN2,
+            SparkSubmitStorageType.WEBHDFS
     }),
 
     // for unknown type cluster

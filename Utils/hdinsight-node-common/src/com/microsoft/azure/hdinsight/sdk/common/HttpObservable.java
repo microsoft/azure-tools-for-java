@@ -221,6 +221,11 @@ public class HttpObservable implements ILogger {
         return this;
     }
 
+    public HttpObservable setContentType(@NotNull String type) {
+        this.defaultHeaders.updateHeader(new BasicHeader("Content-Type", type));
+        return this;
+    }
+
     @NotNull
     public HttpContext getHttpContext() {
         return httpContext;
@@ -452,8 +457,8 @@ public class HttpObservable implements ILogger {
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
-    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs, List<Header> headers) {
-        return request(req, req.getEntity(), pairs, headers)
+    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs) {
+        return request(req, req.getEntity(), pairs, Arrays.asList(getDefaultHeaderGroup().getAllHeaders()))
                 .doOnNext(
                         resp -> {
                             int statusCode = resp.getStatusLine().getStatusCode();

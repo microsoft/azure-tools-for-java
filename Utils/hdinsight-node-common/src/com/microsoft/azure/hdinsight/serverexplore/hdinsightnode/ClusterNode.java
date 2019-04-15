@@ -33,7 +33,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +40,7 @@ import java.util.Map;
 public class ClusterNode extends RefreshableNode implements TelemetryProperties, ILogger {
     private static final String CLUSTER_MODULE_ID = ClusterNode.class.getName();
     private static final String ICON_PATH = CommonConst.ClusterIConPath;
+    public static final String ASE_DEEP_LINK = "storageexplorer:///";
 
     @NotNull
     private IClusterDetail clusterDetail;
@@ -55,12 +55,12 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     protected void loadActions() {
         super.loadActions();
 
-        if (isHdiReader(clusterDetail) && !isAmbariCredentialProvided()) {
+        if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
             // We need to refresh the whole HDInsight root node when we successfully linked the cluster
             // So we have to pass "hdinsightRootModule" to the link cluster action
             HDInsightRootModule hdinsightRootModule = (HDInsightRootModule) this.getParent();
             NodeActionListener linkClusterActionListener =
-                    DefaultLoader.getUIHelper().createAddNewHDInsightReaderClusterAction(hdinsightRootModule,
+                    HDInsightLoader.getHDInsightHelper().createAddNewHDInsightReaderClusterAction(hdinsightRootModule,
                             clusterDetail.getName());
             addAction("Link this cluster", linkClusterActionListener);
         }
@@ -80,8 +80,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             addAction("Open Azure Storage Explorer for storage", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
-                    String aseDeepLink = "storageexplorer:///";
-                    openUrlLink(aseDeepLink);
+                    openUrlLink(ASE_DEEP_LINK);
                 }
             });
 
@@ -150,31 +149,14 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         }
     }
 
-    private static boolean isHdiReader(@NotNull IClusterDetail clusterDetail) {
-        return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isRoleTypeReader();
-    }
-
-    public boolean isAmbariCredentialProvided() {
-        try {
-            clusterDetail.getConfigurationInfo();
-            String userName = clusterDetail.getHttpUserName();
-            String password = clusterDetail.getHttpPassword();
-            return userName != null && password != null;
-        } catch (Exception ex) {
-            log().warn("Error getting cluster credential. Cluster Name: " + clusterDetail.getName());
-            log().warn(ExceptionUtils.getStackTrace(ex));
-            return false;
-        }
-    }
-
     @Override
     protected void refreshItems() {
-        if(!clusterDetail.isEmulator() && isAmbariCredentialProvided()) {
+        if(!clusterDetail.isEmulator()) {
+            JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
+            JobViewNode jobViewNode = new JobViewNode(this, clusterDetail);
             boolean isIntelliJ = HDInsightLoader.getHDInsightHelper().isIntelliJPlugin();
             boolean isLinux = System.getProperty("os.name").toLowerCase().contains("linux");
-            if (isIntelliJ || !isLinux) {
-                JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
-                JobViewNode jobViewNode = new JobViewNode(this, clusterDetail.getName());
+            if(isIntelliJ || !isLinux) {
                 addChildNode(jobViewNode);
             }
 
@@ -187,7 +169,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     private static String getTitleForClusterNode(@NotNull IClusterDetail clusterDetail) {
         StringBuilder titleStringBuilder = new StringBuilder(clusterDetail.getTitle());
 
-        if (isHdiReader(clusterDetail)) {
+        if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
             titleStringBuilder.append(" (Role: Reader)");
         }
 

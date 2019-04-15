@@ -19,21 +19,22 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.api;
 
-package com.microsoft.azure.hdinsight.projects
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.StorageAccountAccessKey;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-import com.microsoft.azure.hdinsight.projects.SparkVersion.*
-import com.microsoft.azure.hdinsight.spark.exception.UnsupportedSparkVersionException
+import java.util.List;
 
-object SparkToolsLib {
-    private const val toolsVerForSpark2_1: String = "0.1.1"
-    private const val toolsVerForSpark2_3: String = "0.1.1"
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class PostListKeysResponse {
+    private List<StorageAccountAccessKey> keys;
+    public List<StorageAccountAccessKey> getKeys(){
+        return  keys;
+    }
 
-    fun getJarFileName(sparkVer: SparkVersion): String = when (sparkVer) {
-        SPARK_2_3_0 -> "spark-tools-${toolsVerForSpark2_3}_2.3.0.jar"
-        SPARK_2_3_2 -> "spark-tools-${toolsVerForSpark2_3}_2.3.2.jar"
-        SPARK_2_1_0 -> "spark-tools-${toolsVerForSpark2_1}_2.1.jar"
-        else -> throw UnsupportedSparkVersionException(
-                "Unsupported version $sparkVer, Current Spark tools only supports Spark v2.1 and v2.3")
+    public void setKeys(@NotNull List<StorageAccountAccessKey> keys){
+        this.keys = keys;
     }
 }
