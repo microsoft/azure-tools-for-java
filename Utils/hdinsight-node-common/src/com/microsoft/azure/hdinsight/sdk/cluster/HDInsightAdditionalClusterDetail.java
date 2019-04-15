@@ -23,7 +23,6 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.google.gson.annotations.Expose;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
@@ -32,9 +31,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
@@ -81,16 +78,6 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Override
-    public String getState() {
-        return null;
-    }
-
-    @Override
-    public String getLocation() {
-        return null;
-    }
-
-    @Override
     public String getConnectionUrl() {
         return ClusterManagerEx.getInstance().getClusterConnectionString(this.clusterName);
     }
@@ -104,31 +91,6 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Override
-    public String getCreateDate() {
-        return null;
-    }
-
-    @Override
-    public ClusterType getType() {
-        return null;
-    }
-
-    @Override
-    public String getResourceGroup(){
-        return null;
-    }
-
-    @Override
-    public String getVersion() {
-        return null;
-    }
-
-    @Override
-    public String getSparkVersion() {
-        return null;
-    }
-
-    @Override
     public SubscriptionDetail getSubscription() {
         return new SubscriptionDetail("[LinkedCluster]", "[NoSubscription]", "", false);
     }
@@ -139,34 +101,21 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Override
-    public String getHttpUserName() throws HDIException {
+    @NotNull
+    public String getHttpUserName() {
         return userName;
     }
 
     @Override
-    public String getHttpPassword() throws HDIException {
+    @NotNull
+    public String getHttpPassword() {
         return password;
     }
 
     @Override
-    public String getOSType() {
-        return null;
-    }
-
-    @Override
     @Nullable
-    public IHDIStorageAccount getStorageAccount() throws HDIException {
+    public IHDIStorageAccount getStorageAccount() {
         return defaultStorageAccount;
-    }
-
-    @Override
-    public List<HDStorageAccount> getAdditionalStorageAccounts() {
-        return null;
-    }
-
-    @Override
-    public void getConfigurationInfo() throws IOException, HDIException {
-
     }
 
     @Override

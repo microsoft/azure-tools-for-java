@@ -55,7 +55,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     protected void loadActions() {
         super.loadActions();
 
-        if (isHdiReader(clusterDetail) && !isAmbariCredentialProvided()) {
+        if (isHdiReader(clusterDetail) && !isHdiAmbariCredentialProvided(clusterDetail)) {
             // We need to refresh the whole HDInsight root node when we successfully linked the cluster
             // So we have to pass "hdinsightRootModule" to the link cluster action
             HDInsightRootModule hdinsightRootModule = (HDInsightRootModule) this.getParent();
@@ -154,14 +154,11 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isRoleTypeReader();
     }
 
-    public boolean isAmbariCredentialProvided() {
+    private boolean isHdiAmbariCredentialProvided(@NotNull IClusterDetail clusterDetail) {
         try {
-            clusterDetail.getConfigurationInfo();
-            String userName = clusterDetail.getHttpUserName();
-            String password = clusterDetail.getHttpPassword();
-            return userName != null && password != null;
+            return clusterDetail.getHttpUserName() != null && clusterDetail.getHttpPassword() != null;
         } catch (Exception ex) {
-            log().warn("Error getting cluster credential. Cluster Name: " + clusterDetail.getName());
+            log().warn("Error getting cluster credential. Cluster Name: " + getName());
             log().warn(ExceptionUtils.getStackTrace(ex));
             return false;
         }
@@ -169,7 +166,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
 
     @Override
     protected void refreshItems() {
-        if(!clusterDetail.isEmulator() && isAmbariCredentialProvided()) {
+        if(!clusterDetail.isEmulator() && isHdiAmbariCredentialProvided(clusterDetail)) {
             boolean isIntelliJ = HDInsightLoader.getHDInsightHelper().isIntelliJPlugin();
             boolean isLinux = System.getProperty("os.name").toLowerCase().contains("linux");
             if (isIntelliJ || !isLinux) {

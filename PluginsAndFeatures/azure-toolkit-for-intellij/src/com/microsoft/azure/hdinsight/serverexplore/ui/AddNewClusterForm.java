@@ -98,7 +98,8 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
     private static final String HELP_URL = "https://go.microsoft.com/fwlink/?linkid=866472";
 
-    public AddNewClusterForm(@Nullable final Project project, @NotNull RefreshableNode hdInsightModule) {
+    // ConsoleViewImpl requires project to be NotNull
+    public AddNewClusterForm(@NotNull final Project project, @Nullable RefreshableNode hdInsightModule) {
         super(project, true);
         this.ctrlProvider = new AddNewClusterCtrlProvider(this, new IdeaSchedulers(project));
 
@@ -231,6 +232,12 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         }
     }
 
+    public void afterOkActionPerformed() {
+        if (hdInsightModule != null) {
+            hdInsightModule.load(false);
+        }
+    }
+
     @Override
     protected void doOKAction() {
         if (!getOKAction().isEnabled()) {
@@ -243,7 +250,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 .validateAndAdd()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
-                    hdInsightModule.load(false);
+                    afterOkActionPerformed();
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
 
                     super.doOKAction();

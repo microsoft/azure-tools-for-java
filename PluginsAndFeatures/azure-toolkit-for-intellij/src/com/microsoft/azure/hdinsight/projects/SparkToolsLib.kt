@@ -29,12 +29,11 @@ object SparkToolsLib {
     private const val toolsVerForSpark2_1: String = "0.1.1"
     private const val toolsVerForSpark2_3: String = "0.1.1"
 
-    fun getJarFileName(sparkVer: SparkVersion): String {
-        return when (sparkVer) {
-            SPARK_2_3_0 -> "spark-tools-${toolsVerForSpark2_3}_2.3.jar"
-            SPARK_2_1_0 -> "spark-tools-${toolsVerForSpark2_1}_2.1.jar"
-            else -> throw UnsupportedSparkVersionException("Unsupported version $sparkVer, Current Spark tools only supports Spark v2.1 and v2.3")
-        }
-
+    fun getJarFileName(sparkVer: SparkVersion): String = when (sparkVer) {
+        SPARK_2_3_0 -> "spark-tools-${toolsVerForSpark2_3}_2.3.0.jar"
+        SPARK_2_3_2 -> "spark-tools-${toolsVerForSpark2_3}_2.3.2.jar"
+        SPARK_2_1_0 -> "spark-tools-${toolsVerForSpark2_1}_2.1.jar"
+        else -> throw UnsupportedSparkVersionException(
+                "Unsupported version $sparkVer, Current Spark tools only supports Spark v2.1 and v2.3")
     }
 }

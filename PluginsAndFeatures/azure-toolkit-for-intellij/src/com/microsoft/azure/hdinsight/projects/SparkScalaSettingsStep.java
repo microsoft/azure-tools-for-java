@@ -43,7 +43,8 @@ public class SparkScalaSettingsStep extends ModuleWizardStep {
                 builder.getSelectedTemplate().getTemplateType() == HDInsightTemplatesType.ScalaFailureTaskDebugSample) {
             this.sparkVersionOptionsPanel = new SparkVersionOptionsPanel(new SparkVersion[] {
                     SparkVersion.SPARK_2_1_0,
-                    SparkVersion.SPARK_2_3_0
+                    SparkVersion.SPARK_2_3_0,
+                    SparkVersion.SPARK_2_3_2
             });
         } else {
             this.sparkVersionOptionsPanel = new SparkVersionOptionsPanel();
