@@ -33,6 +33,7 @@ import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.intellij.component.ExistingOrNewSelector
 import com.microsoft.intellij.component.AzureComponent
@@ -162,8 +163,16 @@ class WebAppPublishComponent(lifetime: Lifetime,
         if (!model.isCreatingAppServicePlan)
             model.appServicePlanId = pnlCreateWebApp.pnlAppServicePlan.cbAppServicePlan.getSelectedValue()?.id() ?: model.appServicePlanId
 
-        val selectedWebApp = pnlExistingWebApp.pnlExistingAppTable.lastSelectedApp
+        val selectedResource = pnlExistingWebApp.pnlExistingAppTable.lastSelectedResource
+        val selectedWebApp = selectedResource?.resource
         model.appId = selectedWebApp?.id() ?: ""
+
+        if (!model.isCreatingNewApp) {
+            model.subscription = AzureMvpModel.getInstance()
+                    .selectedSubscriptions
+                    .find { it.subscriptionId() == selectedResource?.subscriptionId }
+        }
+
         val operatingSystem = selectedWebApp?.operatingSystem() ?: OperatingSystem.WINDOWS
         if (operatingSystem == OperatingSystem.LINUX) {
             val dotNetCoreVersionArray = selectedWebApp?.linuxFxVersion()?.split('|')
@@ -230,7 +239,7 @@ class WebAppPublishComponent(lifetime: Lifetime,
             pnlCreateWebApp.setOperatingSystemRadioButtons(publishableProject.isDotNetCore)
             pnlExistingWebApp.filterAppTableContent(publishableProject.isDotNetCore)
 
-            val webApp = pnlExistingWebApp.pnlExistingAppTable.lastSelectedApp
+            val webApp = pnlExistingWebApp.pnlExistingAppTable.lastSelectedResource?.resource
             if (webApp != null)
                 checkSelectedProjectAgainstWebAppRuntime(webApp, publishableProject)
         }

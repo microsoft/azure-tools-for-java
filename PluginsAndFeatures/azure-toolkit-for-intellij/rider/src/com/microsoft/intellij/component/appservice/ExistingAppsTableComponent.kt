@@ -73,7 +73,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
     private val pnlAppTable: JPanel
     private val txtSelectedApp = JTextField()
 
-    var lastSelectedApp: T? = null
+    var lastSelectedResource: ResourceEx<T>? = null
     var cachedAppList = listOf<ResourceEx<T>>()
 
     init {
@@ -128,7 +128,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
                     subscription.displayName())
             )
 
-            if (defaultComparator(app) || (lastSelectedApp != null && lastSelectedApp?.id() == app.id())) {
+            if (defaultComparator(app) || (lastSelectedResource != null && lastSelectedResource?.resource?.id() == app.id())) {
                 table.setRowSelectionInterval(appIndex, appIndex)
             }
         }
@@ -179,7 +179,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
             val selectedRow = table.selectedRow
 
             if (cachedAppList.isEmpty() || selectedRow < 0 || selectedRow >= cachedAppList.size) {
-                lastSelectedApp = null
+                lastSelectedResource = null
                 txtSelectedApp.text = ""
                 return@addListSelectionListener
             }
@@ -191,14 +191,15 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
             val appResourceGroup = table.getValueAt(selectedRow, resourceGroupIndex)
             val appName = table.getValueAt(selectedRow, appNameIndex)
 
-            val app = cachedAppList.find { appResource ->
+            val resource = cachedAppList.find { appResource ->
                 appResource.resource.name() == appName &&
                         appResource.resource.resourceGroupName() == appResourceGroup
-            }?.resource
+            }
 
-            lastSelectedApp = app
+            lastSelectedResource = resource
 
             // This is not visible on the UI, but is used to preform a re-validation over selected web app from the table
+            val app = resource?.resource
             txtSelectedApp.text = app?.name() ?: ""
 
             if (app != null)

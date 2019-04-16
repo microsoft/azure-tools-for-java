@@ -35,6 +35,7 @@ import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.intellij.component.AzureComponent
 import com.microsoft.intellij.component.ExistingOrNewSelector
@@ -134,8 +135,15 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         model.isCreatingNewApp = pnlFunctionAppSelector.isCreateNew
         model.appName = pnlCreateFunctionApp.pnlAppName.txtAppName.text
 
-        if (!model.isCreatingNewApp)
-            model.appId = pnlExistingFunctionApp.pnlExistingAppTable.lastSelectedApp?.id() ?: ""
+        if (!model.isCreatingNewApp) {
+            val selectedResource = pnlExistingFunctionApp.pnlExistingAppTable.lastSelectedResource
+            val selectedApp = selectedResource?.resource
+
+            model.appId = selectedApp?.id() ?: ""
+            model.subscription = AzureMvpModel.getInstance()
+                    .selectedSubscriptions
+                    .find { it.subscriptionId() == selectedResource?.subscriptionId }
+        }
 
         model.isCreatingResourceGroup = pnlCreateFunctionApp.pnlResourceGroup.rdoCreateNew.isSelected
         if (pnlCreateFunctionApp.pnlResourceGroup.rdoCreateNew.isSelected) {
