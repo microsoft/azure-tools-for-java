@@ -47,9 +47,10 @@ public class SignOutCommandHandler extends AzureAbstractHandler {
 	public static void doSignOut(Shell shell) {
 		try {
             AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            String artifact = (authMethodManager.getAuthMethod() == AuthMethod.AD)
-                    ? "Signed in as " + authMethodManager.getAuthMethodDetails().getAccountEmail()
-                    : "Signed in using file \"" + authMethodManager.getAuthMethodDetails().getCredFilePath() + "\"";
+            String artifact = (authMethodManager.getAuthMethod() == AuthMethod.AD
+                || authMethodManager.getAuthMethod() == AuthMethod.DC)
+                ? "Signed in as " + authMethodManager.getAuthMethodDetails().getAccountEmail()
+                : "Signed in using file \"" + authMethodManager.getAuthMethodDetails().getCredFilePath() + "\"";
             MessageBox messageBox = new MessageBox(
                     shell, 
                     SWT.ICON_QUESTION | SWT.YES | SWT.NO);

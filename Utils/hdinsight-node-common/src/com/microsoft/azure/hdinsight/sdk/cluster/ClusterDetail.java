@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.HDInsightUserRoleType;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
@@ -31,6 +32,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsF
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,7 +43,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
+public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, ILogger {
 
     private static final String ADL_HOME_PREFIX = "adl://home";
     private static final String ADLS_HOME_HOST_NAME = "dfs.adls.home.hostname";
@@ -60,7 +62,9 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     private IClusterOperation clusterOperation;
 
     private int dataNodes;
+    @Nullable
     private String userName;
+    @Nullable
     private String passWord;
     private IHDIStorageAccount defaultStorageAccount;
     private List<HDStorageAccount> additionalStorageAccounts;
@@ -177,20 +181,28 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
         return dataNodes;
     }
 
-    public String getHttpUserName() throws HDIException {
-        if(userName == null){
-            throw new HDIException("username is null, please call getConfigurationInfo first");
+    @Nullable
+    public String getHttpUserName() {
+        try {
+            getConfigurationInfo();
+        } catch (Exception ex) {
+            log().warn("Error getting cluster configuration info. Cluster Name: " + getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
+        } finally {
+            return userName;
         }
-
-        return userName;
     }
 
-    public String getHttpPassword() throws HDIException{
-        if(passWord == null){
-            throw new HDIException("passWord is null, please call getConfigurationInfo first");
+    @Nullable
+    public String getHttpPassword() {
+        try {
+            getConfigurationInfo();
+        } catch (Exception ex) {
+            log().warn("Error getting cluster configuration info. Cluster Name: " + getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
+        } finally {
+            return passWord;
         }
-
-        return passWord;
     }
 
     public String getOSType(){
@@ -200,11 +212,25 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
 
     @Nullable
     public IHDIStorageAccount getStorageAccount() {
-        return this.defaultStorageAccount;
+        try {
+            getConfigurationInfo();
+        } catch (Exception ex) {
+            log().warn("Error getting cluster configuration info. Cluster Name: " + getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
+        } finally {
+            return defaultStorageAccount;
+        }
     }
 
     public List<HDStorageAccount> getAdditionalStorageAccounts(){
-        return this.additionalStorageAccounts;
+        try {
+            getConfigurationInfo();
+        } catch (Exception ex) {
+            log().warn("Error getting cluster configuration info. Cluster Name: " + getName());
+            log().warn(ExceptionUtils.getStackTrace(ex));
+        } finally {
+            return additionalStorageAccounts;
+        }
     }
 
     private void ExtractInfoFromComputeProfile(){
@@ -218,25 +244,33 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     }
 
     public void getConfigurationInfo() throws IOException, HDIException, AzureCmdException {
-        ClusterConfiguration clusterConfiguration =
-                clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
-        if(clusterConfiguration != null && clusterConfiguration.getConfigurations() != null){
-            Configurations configurations = clusterConfiguration.getConfigurations();
-            Gateway gateway = configurations.getGateway();
-            if(gateway != null){
-                this.userName = gateway.getUsername();
-                this.passWord = gateway.getPassword();
-            }
+        // If exception happens, isConfigInfoAvailable is still false, which means
+        // next time we call getConfigurationInfo(), load configuration codes will still be executed.
+        if (!isConfigInfoAvailable()) {
+            synchronized (this) {
+                if (!isConfigInfoAvailable()) {
+                    ClusterConfiguration clusterConfiguration =
+                            clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
+                    if (clusterConfiguration != null && clusterConfiguration.getConfigurations() != null) {
+                        Configurations configurations = clusterConfiguration.getConfigurations();
+                        Gateway gateway = configurations.getGateway();
+                        if (gateway != null) {
+                            this.userName = gateway.getUsername();
+                            this.passWord = gateway.getPassword();
+                        }
 
-            Map<String,String> coresSiteMap = configurations.getCoresite();
-            ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
-            if(coresSiteMap!= null){
-                this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
-                this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
+                        Map<String, String> coresSiteMap = configurations.getCoresite();
+                        ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
+                        if (coresSiteMap != null) {
+                            this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
+                            this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
+                        }
+                    }
+
+                    isConfigInfoAvailable = true;
+                }
             }
         }
-
-        isConfigInfoAvailable = true;
     }
 
     private IHDIStorageAccount getDefaultStorageAccount(Map<String, String> coresiteMap, ClusterIdentity clusterIdentity) throws HDIException{
@@ -286,7 +320,11 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             }
 
             if (scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme)) {
-                return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName, scheme);
+                try {
+                    return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName, scheme);
+                } catch (Exception ex) {
+                    throw new HDIException("Failed to init ADLSGEN2 account", ex);
+                }
             } else {
                 return new HDStorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
             }
@@ -371,7 +409,9 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
             type = getStorageAccount().getAccountType();
         }
 
-        if (type == StorageAccountTypeEnum.ADLS) {
+        if (isRoleTypeReader()) {
+            return SparkSubmitStorageTypeOptionsForCluster.HDInsightReaderStorageTypeOptions;
+        } else if (type == StorageAccountTypeEnum.ADLS) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdls;
         } else if (type == StorageAccountTypeEnum.BLOB) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithBlob;

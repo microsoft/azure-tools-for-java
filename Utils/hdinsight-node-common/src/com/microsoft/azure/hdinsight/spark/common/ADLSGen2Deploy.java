@@ -26,26 +26,32 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPut;
 import rx.Observable;
+import rx.Observer;
 import rx.exceptions.Exceptions;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -81,8 +87,7 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
         String dirPath = destStr.endsWith("/") ? destStr.substring(0, destStr.length() - 1) : destStr;
         String filePath = String.format("%s/%s", dirPath, src.getName());
 
-        HttpPut req = new HttpPut(dirPath);
-        ADLSGen2FSOperation op = new ADLSGen2FSOperation((SharedKeyHttpObservable) this.http);
+        ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
         return op.createDir(dirPath)
                 .onErrorReturn(err -> {
                     if (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))) {
@@ -91,8 +96,10 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                         throw Exceptions.propagate(err);
                     }
                 })
+                .doOnNext(ignore -> log().info(String.format("Create filesystem %s successfully.", dirPath)))
                 .flatMap(ignore -> op.createFile(filePath))
                 .flatMap(ignore -> op.uploadData(filePath, src))
+                .doOnNext(ignore -> log().info(String.format("Append data to file %s successfully.", filePath)))
                 .map(ignored -> {
                     try {
                         return getArtifactUploadedPath(filePath);
@@ -105,24 +112,8 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
     @Override
     @Nullable
     public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to abfs://fileSystem@fullAccountName/SparkSubmission/xxxx
-        String storageAccount = null;
-        String fileSystem = null;
+        //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to /SparkSubmission/xxxx
         int index = rootPath.indexOf("SparkSubmission");
-        Matcher m = Pattern.compile(SparkBatchJob.AdlsGen2RestfulPathPattern).matcher(rootPath.substring(0, index));
-        if (m.find()) {
-            storageAccount = m.group("accountName");
-            fileSystem = m.group("fileSystem");
-        }
-
-        if (StringUtils.isBlank(storageAccount) || StringUtils.isBlank(fileSystem)) {
-            throw new URISyntaxException("invalid upload path info", "filesystem ,storageAccount and scheme cannnot be empty");
-        }
-
-        return String.format("%s://%s@%s/%s",
-                ADLSGen2StorageAccount.DefaultScheme,
-                fileSystem,
-                storageAccount,
-                rootPath.substring(index));
+        return String.format("/%s", rootPath.substring(index));
     }
 }

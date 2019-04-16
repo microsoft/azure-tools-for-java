@@ -1056,26 +1056,19 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         getSubmissionParameter().setFilePath(path);
                         return this;
                     });
-        } else if(destinationRootPath != null && destinationRootPath.matches(AdlsGen2RestfulPathPattern) && accessToken != null) {
-            //use ADLS GEN2
+        } else if (destinationRootPath != null
+                && (destinationRootPath.matches(AdlsGen2RestfulPathPattern)
+                || destinationRootPath.matches(WebHDFSPathPattern))) {
+            //use ADLS GEN2 or webhdfs
             URI dest = jobDeploy.getUploadDir(destinationRootPath);
             if (dest == null) {
                 return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
             }
 
             return jobDeploy.deploy(new File(artifactPath), dest)
-                    .map(redirectPath -> {
-                        getSubmissionParameter().setFilePath(redirectPath);
-                        return this;
-                    });
-        } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
-            //use webhdfs
-            URI dest = jobDeploy.getUploadDir(destinationRootPath);
-            if (dest == null) {
-                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
-            }
-
-            return jobDeploy.deploy(new File(artifactPath), dest)
+                    .flatMap(ignore -> jobDeploy.deploy(new File(artifactPath), dest))
+                    .doOnNext(ignore -> getCtrlSubject().onNext(new SimpleImmutableEntry<>(Info,
+                            String.format("Finish to upload artifact to ADLSGEN2 file system %s", dest))))
                     .map(redirectPath -> {
                         getSubmissionParameter().setFilePath(redirectPath);
                         return this;

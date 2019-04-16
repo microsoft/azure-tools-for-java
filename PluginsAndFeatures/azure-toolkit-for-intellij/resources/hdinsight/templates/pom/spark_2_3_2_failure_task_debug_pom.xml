@@ -32,7 +32,7 @@
 
     <properties>
         <spark.version.major>2.3</spark.version.major>
-        <spark.version.minor>0</spark.version.minor>
+        <spark.version.minor>2</spark.version.minor>
         <spark.version>${spark.version.major}.${spark.version.minor}</spark.version>
         <scala.version.major>2.11</scala.version.major>
         <scala.version.minor>8</scala.version.minor>

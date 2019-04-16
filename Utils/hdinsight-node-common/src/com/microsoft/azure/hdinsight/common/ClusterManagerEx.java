@@ -27,6 +27,10 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.microsoft.azure.hdinsight.metadata.ClusterMetaDataService;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
+import com.microsoft.azure.hdinsight.sdk.common.AggregatedException;
+import com.microsoft.azure.hdinsight.sdk.common.AuthenticationErrorHandler;
+import com.microsoft.azure.hdinsight.sdk.common.HDIException;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -36,10 +40,6 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azure.hdinsight.sdk.common.AggregatedException;
-import com.microsoft.azure.hdinsight.sdk.common.AuthenticationErrorHandler;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -467,5 +467,9 @@ public class ClusterManagerEx {
         }
 
         return isReAuth;
+    }
+
+    public boolean isHdiReaderCluster(@NotNull IClusterDetail clusterDetail) {
+        return clusterDetail instanceof ClusterDetail && ((ClusterDetail) clusterDetail).isRoleTypeReader();
     }
 }
