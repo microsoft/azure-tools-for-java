@@ -36,13 +36,30 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>spark-tools</artifactId>
-    <version>0.1.1_${spark.version}</version>
+    <version>0.1.1_2.3.2</version>
+    <packaging>jar</packaging>
     <name>${project.artifactId}-${project.version}</name>
 
     <build>
         <sourceDirectory>../src/main/scala</sourceDirectory>
         <testSourceDirectory>../src/test/scala</testSourceDirectory>
         <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>4.0.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>testCompile</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                </configuration>
+            </plugin>
             <!-- Scalatest runs all Scala tests -->
             <plugin>
                 <groupId>org.scalatest</groupId>

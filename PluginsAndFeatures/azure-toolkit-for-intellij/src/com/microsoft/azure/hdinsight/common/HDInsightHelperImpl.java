@@ -188,8 +188,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             @Override
             public void run() {
                 Project project = (Project)module.getProject();
-                String title = "Read Only Cluster Warning";
-                String warningText = "<html><pre>You only have READ ONLY permission for this cluster.<br>Would you like to link this cluster?</pre></html>";
+                String title = "Cluster Job Access Denied";
+                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please ‘Link this cluster’ through Ambari credentials to view the corresponding jobs.</pre></html>";
                 String okButtonText = "Link this cluster";
                 WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
                     @Override
@@ -211,8 +211,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             @Override
             public void run() {
                 Project project = (Project)node.getProject();
-                String title = "Storage Accounts Unavailable Warning";
-                String warningText = "<html><pre>You only have READ ONLY permission for this cluster.<br>Would you like to see storage accounts in Azure Storage Explorer?</pre></html>";
+                String title = "Storage Access Denied";
+                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please use ‘Open Azure Storage Explorer’ to access the storage associated with this cluster.</pre></html>";
                 String okButtonText = "Open Azure Storage Explorer";
                 WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
                     @Override
@@ -238,8 +238,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             @Override
             public void run() {
                 Project project = (Project)node.getProject();
-                String title = "Storage Accounts Unavailable Warning";
-                String warningText = "<html><pre>You don't have necessary credential to view storage accounts.<br>Would you like to see storage accounts in Azure Storage Explorer?</pre></html>";
+                String title = "Storage Access Denied";
+                String warningText = "<html><pre>You are only linked to HDInsight cluster through Ambari credentials.<br>Please use ‘Open Azure Storage Explorer’ to access the storage associated with this cluster.</pre></html>";
                 String okButtonText = "Open Azure Storage Explorer";
                 WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
                     @Override
