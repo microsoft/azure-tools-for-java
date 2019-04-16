@@ -208,10 +208,12 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             String browserFontStyle = String.format("font-family: '%s'; font-size: 13", browserFontData.getName());
             String bgcolor = String.format("rgb(%s,%s,%s)", color.getRed(), color.getGreen(), color.getBlue());
             final String verificationUrl = deviceCode.getVerificationUrl();
-            return String.format("<div style=\"" + browserFontStyle + "\">" + "<body style=\"background-color:%s\"><p>"
-                , bgcolor) + deviceCode.getMessage()
-                .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
-                + "</p><p>Waiting for signing in with the code, do not close the window.</p></div>";
+            String formattedMsg = deviceCode.getMessage()
+                .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl));
+
+            return String.format("<div style=\"%s\"><body style=\"background-color:%s\"><p>%s</p>"
+                + "<p>Waiting for signing in with the code, do not close the window.</p></div>",
+                browserFontStyle, bgcolor, formattedMsg);
         }
     }
 }
