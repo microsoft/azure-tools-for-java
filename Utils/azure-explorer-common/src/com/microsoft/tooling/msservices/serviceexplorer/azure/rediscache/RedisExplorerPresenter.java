@@ -125,6 +125,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
             });
         }, e -> {
             EventUtil.logError(operation, ErrorType.userError, new Exception(e), null, null);
+            operation.complete();
             errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
@@ -156,6 +157,7 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
             });
         }, e -> {
             EventUtil.logError(operation, ErrorType.userError, new Exception(e), null, null);
+            operation.complete();
             errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }

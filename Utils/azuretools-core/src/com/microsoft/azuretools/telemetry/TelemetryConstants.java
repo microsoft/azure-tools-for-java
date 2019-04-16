@@ -61,6 +61,8 @@ public class TelemetryConstants {
     public static final String REDIS_READPROP = "redis-readprop";
     public static final String ACR_PUSHIMAGE = "acr-pushimage";
     public static final String ACR_READPROP = "acr-readprop";
+    public static final String SIGNIN_DC = "dc";
+    public static final String SIGNIN_SP = "sp";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
@@ -72,7 +74,6 @@ public class TelemetryConstants {
     public static final String FILETYPE = "fileType";
     public static final String ARTIFACT_UPLOAD_COUNT = "artifactUploadCount";
     public static final String JAVA_APPNAME = "javaAppName";
-    public static final String SIGNIN_DC = "dc";
-    public static final String SIGNIN_SP = "sp";
+    public static final String SIGNIN_METHOD = "signinMethod";
 
 }
