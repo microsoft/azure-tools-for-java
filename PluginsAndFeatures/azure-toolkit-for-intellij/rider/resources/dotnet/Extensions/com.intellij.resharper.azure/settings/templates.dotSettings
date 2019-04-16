@@ -1,4 +1,5 @@
 <wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <!-- C# templates -->
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=10AA984D50993544AC205383CE878BCA/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=10AA984D50993544AC205383CE878BCA/EntryName/@EntryValue">IoT Hub Trigger</s:String>
     <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=10AA984D50993544AC205383CE878BCA/Position/@EntryValue">14</s:Int64>
@@ -63,7 +64,7 @@
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Text/@EntryValue">$HEADER$using System;
 using IoTHubTrigger = Microsoft.Azure.WebJobs.EventHubTriggerAttribute;
@@ -119,7 +120,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Text/@EntryValue">$HEADER$using System;
 using Microsoft.Azure.WebJobs;
@@ -161,7 +162,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=465D49B3384FDE4E87E869774F455DAE/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=465D49B3384FDE4E87E869774F455DAE/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=465D49B3384FDE4E87E869774F455DAE/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=465D49B3384FDE4E87E869774F455DAE/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=465D49B3384FDE4E87E869774F455DAE/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=465D49B3384FDE4E87E869774F455DAE/Text/@EntryValue">$HEADER$// Default URL for triggering event grid function in the local environment.
 // http://localhost:7071/runtime/webhooks/EventGrid?functionName=$CLASS$
@@ -211,7 +212,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
 
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
@@ -279,7 +280,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
 
 
 
@@ -336,7 +337,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/Text/@EntryValue">$HEADER$using System;
 using Microsoft.Azure.WebJobs;
@@ -385,7 +386,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
 
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
@@ -436,7 +437,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Text/@EntryValue">$HEADER$using System;
 using Microsoft.Azure.WebJobs;
@@ -478,7 +479,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Text/@EntryValue">$HEADER$using System;
 using System.Collections.Generic;
@@ -561,7 +562,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/Text/@EntryValue">$HEADER$using System;
 using Microsoft.Azure.WebJobs;
@@ -613,7 +614,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/Scope/=BDFADE4AF68546458327737E414C0E82/@KeyIndexDefined">False</s:Boolean>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsProject</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/Text/@EntryValue">$HEADER$using System;
 using System.Collections.Generic;
@@ -641,4 +642,363 @@ namespace $NAMESPACE$
         }$END$
     }
 }</s:String>
+
+    <!-- F# templates -->
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=0A4B10E8DE974748B8F05B9F438BDC92/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=0A4B10E8DE974748B8F05B9F438BDC92/EntryName/@EntryValue">HTTP Trigger</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=0A4B10E8DE974748B8F05B9F438BDC92/Position/@EntryValue">17</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=2BFA324C21EC8947BA43B5A897FB8F5B/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=2BFA324C21EC8947BA43B5A897FB8F5B/EntryName/@EntryValue">Event Grid Trigger</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=2BFA324C21EC8947BA43B5A897FB8F5B/Position/@EntryValue">22</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3CA2A97142C5824EAF8D4A1BB410A6B2/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3CA2A97142C5824EAF8D4A1BB410A6B2/EntryName/@EntryValue">Timer Trigger</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3CA2A97142C5824EAF8D4A1BB410A6B2/Position/@EntryValue">16</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=53F73E3ED7813041A8C9AFF5CABC23ED/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=53F73E3ED7813041A8C9AFF5CABC23ED/EntryName/@EntryValue">Blob Trigger</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=53F73E3ED7813041A8C9AFF5CABC23ED/Position/@EntryValue">18</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=CB73324A95D5D64B9B698EAF71120B55/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=CB73324A95D5D64B9B698EAF71120B55/EntryName/@EntryValue">Event Hub Trigger</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=CB73324A95D5D64B9B698EAF71120B55/Position/@EntryValue">21</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=D5C7CCBF430AC24FA4D4580D1265B536/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=D5C7CCBF430AC24FA4D4580D1265B536/EntryName/@EntryValue">Queue Trigger</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=D5C7CCBF430AC24FA4D4580D1265B536/Position/@EntryValue">19</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F2E6EBF145B0764487EFD9458EC74C23/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F2E6EBF145B0764487EFD9458EC74C23/EntryName/@EntryValue">CosmosDB Trigger</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F2E6EBF145B0764487EFD9458EC74C23/Position/@EntryValue">20</s:Int64>
+
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/CustomProperties/=Extension/@EntryIndexedValue">fs</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/CustomProperties/=FileName/@EntryIndexedValue">HttpTrigger</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Description/@EntryValue">HTTP Trigger</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+
+open System
+open System.IO
+open Microsoft.AspNetCore.Mvc
+open Microsoft.Azure.WebJobs
+open Microsoft.Azure.WebJobs.Extensions.Http
+open Microsoft.AspNetCore.Http
+open Newtonsoft.Json
+open Microsoft.Extensions.Logging
+
+module $CLASS$ =
+    // Define a nullable container to deserialize into.
+    [&lt;AllowNullLiteral&gt;]
+    type NameContainer() =
+        member val Name = "" with get, set
+
+    // For convenience, it's better to have a central place for the literal.
+    [&lt;Literal&gt;]
+    let Name = "name"
+
+    [&lt;FunctionName("$CLASS$")&gt;]
+    let run ([&lt;HttpTrigger(AuthorizationLevel.$AUTHLEVELVALUE$, "get", "post", Route = null)&gt;]req: HttpRequest) (log: ILogger) =
+        async {
+            log.LogInformation("F# HTTP trigger function processed a request.")
+
+            let nameOpt =
+                if req.Query.ContainsKey(Name) then
+                    Some(req.Query.[Name].[0])
+                else
+                    None
+
+            use stream = new StreamReader(req.Body)
+            let! reqBody = stream.ReadToEndAsync() |&gt; Async.AwaitTask
+
+            let data = JsonConvert.DeserializeObject&lt;NameContainer&gt;(reqBody)
+
+            let name =
+                match nameOpt with
+                | Some n -&gt; n
+                | None -&gt;
+                   match data with
+                   | null -&gt; ""
+                   | nc -&gt; nc.Name
+
+            if not (String.IsNullOrWhiteSpace(name)) then
+                return OkObjectResult(sprintf "Hello, %s" name) :&gt; IActionResult
+            else
+                return BadRequestObjectResult("Please pass a name on the query string or in the request body") :&gt; IActionResult
+        } |&gt; Async.StartAsTask$END$</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=AUTHLEVELVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=AUTHLEVELVALUE/Expression/@EntryValue">list("Function,Anonymous,Admin")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=AUTHLEVELVALUE/Order/@EntryValue">3</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=CLASS/Order/@EntryValue">2</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsFSharpProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/CustomProperties/=Extension/@EntryIndexedValue">fs</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/CustomProperties/=FileName/@EntryIndexedValue">EventGridTrigger</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Description/@EntryValue">Event Grid Trigger</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+// Default URL for triggering event grid function in the local environment.
+// http://localhost:7071/runtime/webhooks/EventGrid?functionName={functionname}
+
+open Microsoft.Azure.WebJobs
+open Microsoft.Azure.WebJobs.Host
+open Microsoft.Azure.EventGrid.Models
+open Microsoft.Azure.WebJobs.Extensions.EventGrid
+open Microsoft.Extensions.Logging
+
+module $CLASS$ =
+    [&lt;FunctionName("$CLASS$")&gt;]
+    let run ([&lt;EventGridTrigger&gt;] eventGridEvent: EventGridEvent, log: ILogger) =
+        log.LogInformation(eventGridEvent.Data.ToString())$END$</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=CLASS/Order/@EntryValue">2</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsFSharpProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/CustomProperties/=Extension/@EntryIndexedValue">fs</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/CustomProperties/=FileName/@EntryIndexedValue">TimerTrigger</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Description/@EntryValue">Timer Trigger</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+
+open System
+open Microsoft.Azure.WebJobs
+open Microsoft.Azure.WebJobs.Host
+open Microsoft.Extensions.Logging
+
+module $CLASS$ =
+    [&lt;FunctionName("$CLASS$")&gt;]
+    let run([&lt;TimerTrigger("$SCHEDULE$")&gt;]myTimer: TimerInfo, log: ILogger) =
+        let msg = sprintf "F# Time trigger function executed at: %A" DateTime.Now
+        log.LogInformation msg$END$</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=CLASS/Order/@EntryValue">2</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=SCHEDULE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=SCHEDULE/Expression/@EntryValue">constant("0 */5 * * * *")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Field/=SCHEDULE/Order/@EntryValue">3</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsFSharpProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/CustomProperties/=Extension/@EntryIndexedValue">fs</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/CustomProperties/=FileName/@EntryIndexedValue">BlobTrigger</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Description/@EntryValue">Blob Trigger</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+
+open System.IO
+open Microsoft.Azure.WebJobs
+open Microsoft.Azure.WebJobs.Host
+open Microsoft.Extensions.Logging
+
+module $CLASS$ =
+    [&lt;FunctionName("$CLASS$")&gt;]
+    let run ([&lt;BlobTrigger("$PATHVALUE$/{name}", Connection = "$CONNECTIONVALUE$")&gt;] myBlob: Stream, name: string, log: ILogger) =
+        let msg = sprintf "F# Blob trigger function Processed blob\nName: %s \n Size: %d Bytes" name myBlob.Length
+        log.LogInformation msg$END$</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CLASS/Order/@EntryValue">2</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CONNECTIONVALUE/Expression/@EntryValue">constant("")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=CONNECTIONVALUE/Order/@EntryValue">4</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=PATHVALUE/Expression/@EntryValue">constant("samples-workitems")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Field/=PATHVALUE/Order/@EntryValue">3</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsFSharpProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/CustomProperties/=Extension/@EntryIndexedValue">fs</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/CustomProperties/=FileName/@EntryIndexedValue">EventHubTrigger</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Description/@EntryValue">Event Hub Trigger</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+
+open System
+open System.Text
+open System.Threading.Tasks
+open Microsoft.Azure.EventHubs
+open Microsoft.Azure.WebJobs
+open Microsoft.Extensions.Logging
+
+module $CLASS$ =
+    [&lt;FunctionName("$CLASS$")&gt;]
+    let run([&lt;EventHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")&gt;] events: EventData[], log: ILogger) =
+        async {
+            let exns = ResizeArray&lt;Exception&gt;()
+
+            for eventData in events do
+                try
+                    let msgBody = Encoding.UTF8.GetString(eventData.Body.Array, eventData.Body.Offset, eventData.Body.Count)
+                    let msg = sprintf "F# Event Hub trigger function processed a message: %s" msgBody
+                    log.LogInformation msg
+                    Task.Yield() |&gt; Async.AwaitTask
+                with
+                | e -&gt; exns.Add(e)
+
+            if exns.Count &gt; 1 then
+                raise(AggregateException(exns))
+            if exns.Count = 1 then
+                raise(exns.[0])
+        } |&gt; Async.StartAsTask$END$</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CLASS/Order/@EntryValue">2</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CONNECTIONVALUE/Expression/@EntryValue">constant("")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=CONNECTIONVALUE/Order/@EntryValue">4</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=PATHVALUE/Expression/@EntryValue">constant("samples-workitems")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Field/=PATHVALUE/Order/@EntryValue">3</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsFSharpProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/CustomProperties/=Extension/@EntryIndexedValue">fs</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/CustomProperties/=FileName/@EntryIndexedValue">QueueTrigger</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Description/@EntryValue">Queue Trigger</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+
+open System
+open Microsoft.Azure.WebJobs
+open Microsoft.Azure.WebJobs.Host
+open Microsoft.Extensions.Logging
+
+module $CLASS$ =
+    [&lt;FunctionName("$CLASS$")&gt;]
+    let run([&lt;QueueTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")&gt;]myQueueItem: string, log: ILogger) =
+        let msg = sprintf "F# Queue trigger function processed: %s" myQueueItem
+        log.LogInformation msg$END$</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CLASS/Order/@EntryValue">2</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CONNECTIONVALUE/Expression/@EntryValue">constant("")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=CONNECTIONVALUE/Order/@EntryValue">4</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=PATHVALUE/Expression/@EntryValue">constant("myqueue")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Field/=PATHVALUE/Order/@EntryValue">3</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsFSharpProject</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/@KeyIndexDefined">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/CustomProperties/=Extension/@EntryIndexedValue">fs</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/CustomProperties/=FileName/@EntryIndexedValue">CosmosDbTrigger</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Description/@EntryValue">CosmosDB Trigger</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Reformat/@EntryValue">True</s:Boolean>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+
+open System.Collections.Generic
+open Microsoft.Azure.Documents
+open Microsoft.Azure.WebJobs
+open Microsoft.Azure.WebJobs.Host
+open Microsoft.Extensions.Logging
+
+module $CLASS$ =
+    [&lt;FunctionName("$CLASS$")&gt;]
+    let run([&lt;CosmosDBTrigger(databaseName="$DATABASEVALUE$", collectionName="$COLLECTIONVALUE$", ConnectionStringSetting="$CONNECTIONVALUE$", LeaseCollectionName="leases")&gt;] input: IReadOnlyList&lt;Document&gt;, log: ILogger) =
+        if not(isNull input) &amp;&amp; input.Count &gt; 0 then
+            log.LogInformation(sprintf "Documents modified %d" input.Count)
+            log.LogInformation("First document Id " + input.[0].Id)</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CLASS/Order/@EntryValue">2</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=COLLECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=COLLECTIONVALUE/Expression/@EntryValue">constant("collectionName")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=COLLECTIONVALUE/Order/@EntryValue">4</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CONNECTIONVALUE/Expression/@EntryValue">constant("")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CONNECTIONVALUE/Order/@EntryValue">5</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=DATABASEVALUE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=DATABASEVALUE/Expression/@EntryValue">constant("databaseName")</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=DATABASEVALUE/Order/@EntryValue">3</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=HEADER/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=HEADER/Expression/@EntryValue">fileheader()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=HEADER/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=HEADER/Order/@EntryValue">0</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=NAMESPACE/Order/@EntryValue">1</s:Int64>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsFSharpProject</s:String>
 </wpf:ResourceDictionary>
