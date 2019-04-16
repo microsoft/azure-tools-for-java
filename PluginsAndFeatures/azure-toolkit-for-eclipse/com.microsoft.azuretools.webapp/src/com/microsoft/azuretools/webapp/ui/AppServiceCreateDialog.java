@@ -355,13 +355,21 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
+        String os = CommonUtils.getPreference(CommonUtils.RUNTIME_OS);
+        if (os.equalsIgnoreCase(OperatingSystem.LINUX.toString())) {
+            btnOSGroupLinux.setSelection(true);
+            btnOSGroupWin.setSelection(false);
+        } else if (os.equalsIgnoreCase(OperatingSystem.WINDOWS.toString())) {
+            btnOSGroupLinux.setSelection(false);
+            btnOSGroupWin.setSelection(true);
+        }
+        radioRuntimeLogic();
         fillResourceGroups();
         fillAppServicePlans();
         fillAppServicePlansDetails();
         fillAppServicePlanLocations();
         fillAppServicePlanPricingTiers();
         fillJavaVersion();
-        fillUserSettings();
         return scrolledComposite;
     }
 
@@ -846,6 +854,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             if (comboWebContainer.getItemCount() > 0) {
                 comboWebContainer.select(0);
             }
+            String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
+            CommonUtils.selectComboIndex(comboWebContainer, webContainer);
         }
     }
 
@@ -913,6 +923,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             if (comboSubscription.getItemCount() > 0) {
                 comboSubscription.select(0);
             }
+            String subscription = CommonUtils.getPreference(CommonUtils.SUBSCRIPTION);
+            CommonUtils.selectComboIndex(comboSubscription, subscription);
         } catch (Exception ex) {
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doFillSubscriptions@AppServiceCreateDialog", ex));
@@ -942,6 +954,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         if (comboResourceGroup.getItemCount() > 0) {
             comboResourceGroup.select(0);
         }
+        String resourceGroup = CommonUtils.getPreference(CommonUtils.RG_NAME);
+        CommonUtils.selectComboIndex(comboResourceGroup, resourceGroup);
     }
 
     protected void fillAppServicePlans() {
@@ -976,6 +990,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         if (comboAppServicePlan.getItemCount() > 0) {
             comboAppServicePlan.select(0);
         }
+        String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
+        CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
         fillAppServicePlansDetails();
     }
 
@@ -1042,6 +1058,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             if (comboAppServicePlanLocation.getSelectionIndex() < 0 && comboAppServicePlanLocation.getItemCount() > 0) {
                 comboAppServicePlanLocation.select(0);
             }
+            String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
+            CommonUtils.selectComboIndex(comboAppServicePlanLocation, aspLocation);
         }
     }
 
@@ -1062,6 +1080,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 && comboAppServicePlanPricingTier.getItemCount() > 0) {
                 comboAppServicePlanPricingTier.select(0);
             }
+            String aspPricing = CommonUtils.getPreference(ASP_CREATE_PRICING);
+            CommonUtils.selectComboIndex(comboAppServicePlanPricingTier, aspPricing);
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                 "fillAppServicePlanPricingTiers@AppServiceCreateDialog", ex));
@@ -1074,6 +1094,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             comboLinuxRuntime.add(runtimeStack.stack() + " " + runtimeStack.version());
         }
         comboLinuxRuntime.select(0);
+        String linuxRuntime = CommonUtils.getPreference(CommonUtils.RUNTIME_LINUX);
+        CommonUtils.selectComboIndex(comboLinuxRuntime, linuxRuntime);
     }
 
     protected void fillJavaVersion() {
@@ -1086,43 +1108,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         if (cbJavaVersion.getItemCount() > 0) {
             cbJavaVersion.select(0);
         }
-    }
-
-    private void fillUserSettings() {
-        try {
-            String os = CommonUtils.getPreference(CommonUtils.RUNTIME_OS);
-            if (os.equalsIgnoreCase(OperatingSystem.LINUX.toString())) {
-                btnOSGroupLinux.setSelection(true);
-                btnOSGroupWin.setSelection(false);
-            } else if (os.equalsIgnoreCase(OperatingSystem.WINDOWS.toString())) {
-                btnOSGroupLinux.setSelection(false);
-                btnOSGroupWin.setSelection(true);
-            }
-            String subscription = CommonUtils.getPreference(CommonUtils.SUBSCRIPTION);
-            CommonUtils.selectComboIndex(comboSubscription, subscription);
-
-            String linuxRuntime = CommonUtils.getPreference(CommonUtils.RUNTIME_LINUX);
-            CommonUtils.selectComboIndex(comboLinuxRuntime, linuxRuntime);
-
-            String javaversion = CommonUtils.getPreference(CommonUtils.RUNTIME_JAVAVERSION);
-            CommonUtils.selectComboIndex(cbJavaVersion, javaversion);
-
-            String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
-            CommonUtils.selectComboIndex(comboWebContainer, webContainer);
-
-            String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
-            CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
-
-            String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
-            CommonUtils.selectComboIndex(comboAppServicePlanLocation, aspLocation);
-
-            String aspPricing = CommonUtils.getPreference(ASP_CREATE_PRICING);
-            CommonUtils.selectComboIndex(comboAppServicePlanPricingTier, aspPricing);
-
-            String resourceGroup = CommonUtils.getPreference(CommonUtils.RG_NAME);
-            CommonUtils.selectComboIndex(comboResourceGroup, resourceGroup);
-        } catch (Exception ignore) {
-        }
+        String javaversion = CommonUtils.getPreference(CommonUtils.RUNTIME_JAVAVERSION);
+        CommonUtils.selectComboIndex(cbJavaVersion, javaversion);
     }
 
     private void recordUserSettings() {
