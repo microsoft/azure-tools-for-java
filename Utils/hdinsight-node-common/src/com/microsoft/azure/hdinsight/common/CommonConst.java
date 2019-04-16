@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.common;
 
 public class CommonConst {
+    public static final String ProductIconName = "Product";
     public static final String ProductIConPath = "/icons/Product.png";
     public static final String RefreshIConPath = "/icons/refresh.svg";
     public static final String REFRESH_DARK_ICON_PATH = "icons/RefreshDark_16.png";

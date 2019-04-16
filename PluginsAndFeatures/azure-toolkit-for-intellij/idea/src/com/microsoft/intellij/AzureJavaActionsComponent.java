@@ -26,10 +26,10 @@ package com.microsoft.intellij;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
+import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
+import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.sparkserverless.SparkServerlessClusterOpsCtrl;
-import com.microsoft.azure.sparkserverless.serverexplore.sparkserverlessnode.SparkServerlessClusterOps;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.intellij.helpers.IDEHelperJavaImpl;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
@@ -45,8 +45,8 @@ public class AzureJavaActionsComponent extends AzureActionsComponent {
     public void initComponent() {
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             // enable spark serverless node subscribe actions
-            ServiceManager.setServiceProvider(SparkServerlessClusterOpsCtrl.class,
-                    new SparkServerlessClusterOpsCtrl(SparkServerlessClusterOps.getInstance()));
+            ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
+                    new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
 
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);

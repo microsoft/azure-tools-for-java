@@ -25,7 +25,9 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
-import com.microsoft.azure.hdinsight.spark.run.configuration.*
+import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
 import com.microsoft.azuretools.authmanage.CommonSettings
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.common.CommonConst
@@ -49,7 +51,7 @@ abstract class SelectSparkApplicationTypeAction
         fun getRunConfigurationType() : ConfigurationType? {
             return when(getSelectedSparkApplicationType()) {
                 SparkApplicationType.None -> null
-                SparkApplicationType.HDInsight -> LivySparkBatchJobRunConfigurationType.getInstance()
+                SparkApplicationType.HDInsight -> com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType.getInstance()
                 SparkApplicationType.CosmosSpark -> CosmosSparkConfigurationType
                 SparkApplicationType.CosmosServerlessSpark -> CosmosServerlessSparkConfigurationType
                 SparkApplicationType.ArisSpark -> ArisSparkConfigurationType

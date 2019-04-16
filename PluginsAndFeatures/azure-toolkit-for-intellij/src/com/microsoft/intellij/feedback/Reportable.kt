@@ -26,16 +26,17 @@ package com.microsoft.intellij.feedback
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.extensions.PluginId
+import com.microsoft.intellij.common.CommonConst
 
 open class Reportable(private val shortMessage: String) {
-    val plugin = PluginManager.getPlugin(PluginId.getId("com.intellij.resharper.azure"))
+    val plugin = PluginManager.getPlugin(PluginId.getId(CommonConst.PLUGIN_ID))!!
     private val appInfo = ApplicationInfo.getInstance()
 
     private val platformInfo = mutableMapOf<String, String>(
             "IntelliJ build version" to "${appInfo.fullVersion} ${appInfo.build}",
             "OS" to System.getProperty("os.name"),
             "JDK" to "${System.getProperty("java.vendor")} ${System.getProperty("java.version")}",
-            "Plugin version" to "${plugin?.version}"
+            "Plugin version" to plugin.version
     )
 
     protected open val detailInfo get() = mapOf<String, String>()

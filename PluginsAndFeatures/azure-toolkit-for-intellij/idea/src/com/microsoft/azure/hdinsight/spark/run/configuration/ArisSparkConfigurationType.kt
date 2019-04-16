@@ -24,29 +24,32 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.microsoft.azure.hdinsight.common.CommonConst
+import com.microsoft.azure.hdinsight.common.IconPathBuilder
 import com.microsoft.intellij.util.PluginUtil
 import javax.swing.Icon
 
-object CosmosSparkConfigurationType : ConfigurationType {
+object ArisSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
-        return PluginUtil.getIcon("/icons/${CommonConst.AZURE_SERVERLESS_SPARK_ROOT_ICON_PATH}")
-    }
-
-    override fun getConfigurationTypeDescription(): String {
-        return "Spark on Cosmos Run Configuration"
-    }
-
-    override fun getId(): String {
-        return "CosmosADLSparkConfiguration"
+        // TODO: should use Aris config icon
+        return PluginUtil.getIcon(IconPathBuilder
+                .custom(CommonConst.OpenSparkUIIconName)
+                .build())
     }
 
     override fun getDisplayName(): String {
-        return "Apache Spark on Cosmos"
+        return "Apache Spark on SQL Server Big Data Cluster"
+    }
+
+    override fun getId(): String {
+        return "ArisOnSparkConfiguration"
+    }
+
+    override fun getConfigurationTypeDescription(): String {
+        return "Spark on SQL Server Big Data Cluster Run Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return arrayOf(CosmosSparkConfigurationFactory(this))
+        return arrayOf(ArisSparkConfigurationFactory(this))
     }
 }
