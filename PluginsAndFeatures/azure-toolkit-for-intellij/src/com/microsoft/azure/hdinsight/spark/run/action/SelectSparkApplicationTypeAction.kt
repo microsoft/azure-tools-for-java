@@ -25,8 +25,10 @@ package com.microsoft.azure.hdinsight.spark.run.action
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
-import com.microsoft.azure.hdinsight.spark.run.configuration.*
-import com.microsoft.azuretools.authmanage.CommonSettings
+import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.intellij.common.CommonConst
 import com.microsoft.tooling.msservices.components.DefaultLoader
@@ -92,13 +94,6 @@ class SelectCosmosSparkTypeAction : SelectSparkApplicationTypeAction() {
 class SelectCosmosServerlessSparkTypeAction : SelectSparkApplicationTypeAction() {
     override fun getSparkApplicationType() : SparkApplicationType {
         return SparkApplicationType.CosmosServerlessSpark
-    }
-
-    override fun update(e: AnActionEvent) {
-        super.update(e)
-        if (!CommonSettings.isCosmosServerlessEnabled) {
-            e.presentation.isEnabled = false
-        }
     }
 }
 

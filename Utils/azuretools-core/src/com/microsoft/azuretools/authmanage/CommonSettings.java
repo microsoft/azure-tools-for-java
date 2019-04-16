@@ -26,7 +26,6 @@ import com.google.gson.*;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import net.minidev.json.JSONObject;
 
 import java.io.File;
 import java.io.FileReader;
@@ -42,10 +41,8 @@ public class CommonSettings {
     private static String settingsBaseDir = null;
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
     private static final String ENV_NAME_KEY = "EnvironmentName";
-    private static final String COSMOS_SERVERLESS_KEY = "EnableCosmosServerlessSpark";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
-    public static boolean isCosmosServerlessEnabled = false;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
@@ -95,11 +92,6 @@ public class CommonSettings {
                     } else {
                         ENV = providedEnv;
                     }
-                }
-
-                JsonElement serverlessElement = jsonObject.get(COSMOS_SERVERLESS_KEY);
-                if(serverlessElement != null) {
-                    isCosmosServerlessEnabled = serverlessElement.getAsBoolean();
                 }
             }
         } catch (Exception e) {

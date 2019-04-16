@@ -288,6 +288,7 @@ public class WebAppUtils {
     }
 
     public enum WebContainerMod {
+        Newest_Tomcat_90("Newest Tomcat 9.0", "tomcat 9.0"),
         Newest_Tomcat_85("Newest Tomcat 8.5", "tomcat 8.5"),
         Newest_Tomcat_80("Newest Tomcat 8.0", "tomcat 8.0"),
         Newest_Tomcat_70("Newest Tomcat 7.0", "tomcat 7.0"),
@@ -456,7 +457,8 @@ public class WebAppUtils {
      */
     public static boolean isJavaWebApp(@NotNull WebApp webApp) {
         return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
-         || (webApp.operatingSystem() == OperatingSystem.LINUX && StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8"));
+         || (webApp.operatingSystem() == OperatingSystem.LINUX && (StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8")
+         || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "java11")));
     }
 
     /**
@@ -519,7 +521,10 @@ public class WebAppUtils {
             RuntimeStack.TOMCAT_8_5_JRE8,
             RuntimeStack.TOMCAT_9_0_JRE8,
             RuntimeStack.WILDFLY_14_JRE8,
-            RuntimeStack.JAVA_8_JRE8});
+            RuntimeStack.JAVA_8_JRE8,
+            RuntimeStack.JAVA_11_JAVA11,
+            RuntimeStack.TOMCAT_8_5_JAVA11,
+            RuntimeStack.TOMCAT_9_0_JAVA11});
     }
 
     public static String getFileType(String fileName) {
