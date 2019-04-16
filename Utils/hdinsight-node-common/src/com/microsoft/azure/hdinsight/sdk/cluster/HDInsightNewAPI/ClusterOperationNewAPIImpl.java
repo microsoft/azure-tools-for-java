@@ -32,6 +32,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.entity.StringEntity;
 import rx.Observable;
@@ -39,6 +40,8 @@ import rx.Observable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements ILogger {
@@ -73,10 +76,18 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                     } else {
                         HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
                         log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
+
+                        final Map<String, String> properties = new HashMap<>();
+                        properties.put("ClusterID", clusterId);
+                        properties.put("StackTrace", ExceptionUtils.getStackTrace(err));
                         if (err instanceof HttpErrorStatus) {
                             log().warn(((HttpErrorStatus) err).getErrorDetails());
+                            properties.put("StatusCode", String.valueOf(((HttpErrorStatus) err).getStatusCode()));
+                            properties.put("ErrorDetails", ((HttpErrorStatus) err).getErrorDetails());
                         }
                         log().warn(ExceptionUtils.getStackTrace(err));
+
+                        AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
                         return Observable.just(false);
                     }
                 });
