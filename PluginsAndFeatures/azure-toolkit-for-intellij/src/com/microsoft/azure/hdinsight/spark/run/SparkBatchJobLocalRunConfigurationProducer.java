@@ -110,11 +110,9 @@ public class SparkBatchJobLocalRunConfigurationProducer extends JavaRunConfigura
 
                     String mainClassName = config.getSubmitModel().getMainClassName();
 
-                    boolean res =  getNormalizedClassName(SparkContextUtilsKt.getSparkMainClassWithElement(context))
+                    return getNormalizedClassName(SparkContextUtilsKt.getSparkMainClassWithElement(context))
                             .filter(className -> className.equals(mainClassName))
                             .isPresent();
-
-                    return res;
                 }).map(setting -> (ConfigurationFromContext)(new ConfigurationFromContextImpl(this, setting, context.getPsiLocation())))
                 .orElse(super.findOrCreateConfigurationFromContext(context));
     }
