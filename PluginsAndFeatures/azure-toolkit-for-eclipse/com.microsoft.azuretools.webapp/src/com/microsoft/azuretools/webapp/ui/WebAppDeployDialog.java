@@ -259,7 +259,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 
         Button btnCreate = new Button(composite, SWT.NONE);
-        btnCreate.setLayoutData(new RowData(90, SWT.DEFAULT));
         btnCreate.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -272,7 +271,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         btnDelete = new Button(composite, SWT.NONE);
         btnDelete.setEnabled(false);
-        btnDelete.setLayoutData(new RowData(90, SWT.DEFAULT));
         btnDelete.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -283,7 +281,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnDelete.setText("Delete...");
 
         Button btnRefresh = new Button(composite, SWT.NONE);
-        btnRefresh.setLayoutData(new RowData(90, SWT.DEFAULT));
         btnRefresh.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -305,8 +302,13 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         btnDeployToRoot = new Button(composite, SWT.CHECK);
         btnDeployToRoot.setSelection(true);
-        btnDeployToRoot.setLayoutData(new RowData(120, SWT.DEFAULT));
         btnDeployToRoot.setText("Deploy to root");
+
+        int size = btnDeployToRoot.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        btnCreate.setLayoutData(new RowData(size, SWT.DEFAULT));
+        btnDelete.setLayoutData(new RowData(size, SWT.DEFAULT));
+        btnRefresh.setLayoutData(new RowData(size, SWT.DEFAULT));
+        btnDeployToRoot.setLayoutData(new RowData(size, SWT.DEFAULT));
     }
 
     private void createAppDetailGroup(Composite container) {
