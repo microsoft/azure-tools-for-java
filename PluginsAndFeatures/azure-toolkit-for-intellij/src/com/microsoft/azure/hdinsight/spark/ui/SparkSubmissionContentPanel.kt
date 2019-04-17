@@ -129,7 +129,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }}
 
     private val hdiReaderErrorLabel: JLabel =
-        JLabel("No Ambari permission to submit job to the selected cluster. Please ask the administrator to upgrade your role to Cluster Operator, or link to the selected cluster.").apply {
+        JLabel("No Ambari permission to submit job to the selected cluster...").apply {
+            toolTipText = "No Ambari permission to submit job to the selected cluster. Please ask the administrator to upgrade your role to Cluster Operator, or link to the selected cluster."
             foreground = currentErrorColor
             isVisible = false
         }
