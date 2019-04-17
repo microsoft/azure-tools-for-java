@@ -355,10 +355,16 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
     public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel, @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
         try {
             SparkSubmissionAdvancedConfigPanel.Companion.checkSettings(submitModel.getAdvancedConfigModel());
+            SparkSubmissionParameter debugSubmissionParameter = SparkBatchRemoteDebugJob.convertToDebugParameter(submitModel.getSubmissionParameter());
+            SparkSubmitModel debugModel = new SparkSubmitModel(submitModel.getProject(), debugSubmissionParameter,
+                    submitModel.getAdvancedConfigModel(), submitModel.getJobUploadStorageModel());
 
-            return SparkBatchRemoteDebugJob.factory(submitModel.getSubmissionParameter(),
-                                                    SparkBatchSubmission.getInstance(),
-                                                    ctrlSubject);
+            String clusterName = submitModel.getSubmissionParameter().getClusterName();
+            IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
+                    .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
+
+            Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(debugModel, ctrlSubject);
+            return new SparkBatchRemoteDebugJob(clusterDetail, debugModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
         } catch (DebugParameterDefinedException e) {
             throw new ExecutionException(e);
         }

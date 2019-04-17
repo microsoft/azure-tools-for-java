@@ -143,8 +143,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        URI dest = URI.create(account.getStorageRootPath());
-        return jobDeploy.deploy(new File(artifactPath), dest)
+        return jobDeploy.deploy(new File(artifactPath))
                 .map(path -> {
                     ctrlInfo(String.format("Upload to Azure Datalake store %s successfully", path));
                     getSubmissionParameter().setFilePath(path);

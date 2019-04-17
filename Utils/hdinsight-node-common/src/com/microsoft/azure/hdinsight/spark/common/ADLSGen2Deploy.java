@@ -55,32 +55,30 @@ import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
-    IClusterDetail cluster;
-
-    @Nullable
     public HttpObservable http;
 
-    public ADLSGen2Deploy(IClusterDetail cluster, HttpObservable http) {
-        this.cluster = cluster;
+    @NotNull
+    public String destinationRootPath;
+
+    public ADLSGen2Deploy(@NotNull HttpObservable http, @NotNull String destinationRootPath) {
+        this.destinationRootPath = destinationRootPath;
         this.http = http;
-        if (http == null) {
-            throw new IllegalArgumentException("Cluster type doesen't support adls gen2 storage type.");
-        }
     }
 
-    @Override
-    public URI getUploadDir(@NotNull String rootPath) {
-        return URI.create(rootPath)
+    private URI getUploadDir() {
+        return URI.create(destinationRootPath)
                 .resolve(JobUtils.getFormatPathByDate() + "/");
     }
 
-    @NotNull
-    public Observable<String> deploy(@NotNull File src, @NotNull URI destURI) {
+    @Override
+    public Observable<String> deploy(@NotNull File src) {
         // four steps to upload via adls gen2 rest api
         // 1.put request to create new dir
         // 2.put request to create new file(artifact) which is empty
         // 3.patch request to append data to file
         // 4.patch request to flush data to file
+
+        URI destURI = getUploadDir();
 
         //remove request / end otherwise invalid url response
         String destStr = destURI.toString();
@@ -109,9 +107,8 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                 });
     }
 
-    @Override
     @Nullable
-    public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
+    private String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
         //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to /SparkSubmission/xxxx
         int index = rootPath.indexOf("SparkSubmission");
         return String.format("/%s", rootPath.substring(index));
