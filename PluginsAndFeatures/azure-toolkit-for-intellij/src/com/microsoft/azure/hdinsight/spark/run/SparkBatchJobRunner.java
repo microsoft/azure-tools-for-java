@@ -103,6 +103,20 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         SparkSubmitStorageType storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
         String subscription = submitModel.getJobUploadStorageModel().getSelectedSubscription();
+
+        // For HDI Reader cluster, Ambari credential is necessary for job submission.
+        if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
+            try {
+                if (clusterDetail.getHttpUserName() == null || clusterDetail.getHttpPassword() == null) {
+                    throw new ExecutionException("You have Ready-only permission for this cluster. Please link the cluster first.");
+                }
+            } catch (HDIException ex) {
+                log().warn("Error getting cluster credential. Cluster Name: " + clusterName);
+                log().warn(ExceptionUtils.getStackTrace(ex));
+                throw new ExecutionException("Error getting Ambari credential for this cluster.");
+            }
+        }
+
         switch (storageAcccountType) {
             case BLOB:
                 String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
