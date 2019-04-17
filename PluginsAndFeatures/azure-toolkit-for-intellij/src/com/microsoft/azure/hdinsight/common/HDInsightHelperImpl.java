@@ -189,7 +189,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             public void run() {
                 Project project = (Project)module.getProject();
                 String title = "Cluster Job Access Denied";
-                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please ‘Link this cluster’ through Ambari credentials to view the corresponding jobs.</pre></html>";
+                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please ask the administrator to upgrade your role to Cluster Operator,  or<br>‘Link this cluster’ through Ambari credentials to view the corresponding jobs.</pre></html>";
                 String okButtonText = "Link this cluster";
                 WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
                     @Override
@@ -212,7 +212,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             public void run() {
                 Project project = (Project)node.getProject();
                 String title = "Storage Access Denied";
-                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please use ‘Open Azure Storage Explorer’ to access the storage associated with this cluster.</pre></html>";
+                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please ask the administrator to upgrade your role to Cluster Operator,  or <br>use ‘Open Azure Storage Explorer’ to access the storages associated with this cluster.</pre></html>";
                 String okButtonText = "Open Azure Storage Explorer";
                 WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
                     @Override
