@@ -21,14 +21,17 @@
  */
 package com.microsoft.azuretools.core.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInDCProp;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInSPProp;
+
 import com.microsoft.azuretools.authmanage.DCAuthManager;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -53,7 +56,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -249,6 +251,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             authMethodDetailsResult.setAccountEmail(accountEmail);
         } else { // automated
             String authPath = textAuthenticationFilePath.getText();
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 this.setErrorMessage("Select authentication file");
                 return;
@@ -287,20 +290,18 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void signInAsync(final DCAuthManager dcAuthManager) throws InvocationTargetException, InterruptedException {
-        Operation operation = TelemetryManager.createOperation(TelemetryConstants.ACCOUNT, TelemetryConstants.SIGNIN);
+        Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         IRunnableWithProgress op = (monitor) -> {
             operation.start();
-            Map<String, String> prop = new HashMap<>();
-            prop.put(TelemetryConstants.SIGNIN_METHOD, TelemetryConstants.SIGNIN_DC);
             monitor.beginTask("Signing In...", IProgressMonitor.UNKNOWN);
             try {
-                EventUtil.logEvent(EventType.info, operation, prop, null);
+                EventUtil.logEvent(EventType.info, operation, signInDCProp, null);
                 dcAuthManager.deviceLogin(null);
             } catch (AuthCanceledException ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, prop, null);
+                EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                 System.out.println(ex.getMessage());
             } catch (Exception ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, prop, null);
+                EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                 System.out.println("run@ProgressDialog@signInAsync@SingInDialog: " + ex.getMessage());
                 Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), "Sign In Error"));
             } finally {
@@ -312,9 +313,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
     private void doSignOut() {
         accountEmail = null;
-        EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.SIGNOUT, (operation -> {
-            DCAuthManager.getInstance().signOut();
-        }));
+        DCAuthManager.getInstance().signOut();
     }
     
     private void doCreateServicePrincipal() {

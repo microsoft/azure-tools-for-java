@@ -22,6 +22,9 @@
 
 package com.microsoft.azuretools.telemetry;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TelemetryConstants {
 
     // production name
@@ -75,4 +78,11 @@ public class TelemetryConstants {
     public static final String JAVA_APPNAME = "javaAppName";
     public static final String SIGNIN_METHOD = "signinMethod";
 
+    public static final Map<String, String> signInSPProp = new HashMap<>();
+    public static final Map<String, String> signInDCProp = new HashMap<>();
+
+    static {
+        signInSPProp.put(SIGNIN_METHOD, SIGNIN_SP);
+        signInDCProp.put(SIGNIN_METHOD, SIGNIN_DC);
+    }
 }

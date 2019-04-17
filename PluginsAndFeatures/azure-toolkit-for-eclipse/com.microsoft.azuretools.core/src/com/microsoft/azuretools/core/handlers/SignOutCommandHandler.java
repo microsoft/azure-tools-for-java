@@ -21,6 +21,8 @@
  */
 package com.microsoft.azuretools.core.handlers;
 
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.SWT;
@@ -45,7 +47,7 @@ public class SignOutCommandHandler extends AzureAbstractHandler {
     }
 
 	public static void doSignOut(Shell shell) {
-		try {
+        EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.SIGNOUT, (operation) -> {
             AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
             String artifact = (authMethodManager.getAuthMethod() == AuthMethod.AD
                 || authMethodManager.getAuthMethod() == AuthMethod.DC)
@@ -67,8 +69,6 @@ public class SignOutCommandHandler extends AzureAbstractHandler {
                 }
                 authMethodManager.signOut();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }, (ex) -> ex.printStackTrace());
 	}
 }
