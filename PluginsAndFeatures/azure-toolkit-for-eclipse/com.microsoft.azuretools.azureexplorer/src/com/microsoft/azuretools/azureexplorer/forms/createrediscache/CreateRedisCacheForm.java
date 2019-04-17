@@ -498,7 +498,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                 }
             });
         } catch (Exception ex) {
-            EventUtil.logError(operation, ErrorType.userError, new Exception(ex), null, null);
+            EventUtil.logError(operation, ErrorType.userError, ex, null, null);
             operation.complete();
             MessageDialog.openError(getShell(),
                     String.format(MessageHandler.getResourceString(resourceBundle, CREATING_ERROR_INDICATOR_FORMAT),

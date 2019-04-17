@@ -105,12 +105,12 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
     @Override
     public boolean performFinish() {
 		Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
-    	DefaultLoader.getIdeHelper().runInBackground(null, "Creating virtual machine " + name + "...", false, true,
+		DefaultLoader.getIdeHelper().runInBackground(null, "Creating virtual machine " + name + "...", false, true,
 			"Creating virtual machine " + name + "...", new Runnable() {
             @Override
             public void run() {
                 try {
-                	operation.start();
+					operation.start();
                     byte[] certData = new byte[0];
                     if (!certificate.isEmpty()) {
                         File certFile = new File(certificate);
@@ -180,7 +180,7 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
                 		}
                 	});
                 } finally {
-                	operation.complete();
+					operation.complete();
 				}
             }
         });
