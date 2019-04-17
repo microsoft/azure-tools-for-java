@@ -66,28 +66,45 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
             final SubscriptionDetail subscription,
             final String clusterId) throws IOException {
         return getClusterConfigurationRequest(subscription, clusterId)
-                .map(clusterConfiguration -> true)
-                .doOnNext(clusterConfiguration -> setRoleType(HDInsightUserRoleType.OWNER))
+                .map(clusterConfiguration -> {
+                    if (clusterConfiguration != null
+                            && clusterConfiguration.getConfigurations() != null
+                            && clusterConfiguration.getConfigurations().getGateway() != null
+                            && clusterConfiguration.getConfigurations().getGateway().getUsername() != null
+                            && clusterConfiguration.getConfigurations().getGateway().getPassword() != null) {
+                        setRoleType(HDInsightUserRoleType.OWNER);
+                        return true;
+                    } else {
+                        final Map<String, String> properties = new HashMap<>();
+                        properties.put("ClusterID", clusterId);
+                        properties.put("StatusCode", "200");
+                        properties.put("ErrorDetails", "Cluster credential is incomplete.");
+                        AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
+
+                        log().error("Cluster credential is incomplete even if successfully get cluster configuration.");
+                        return false;
+                    }
+                })
                 .onErrorResumeNext(err -> {
                     if (err instanceof ForbiddenHttpErrorStatus) {
                         setRoleType(HDInsightUserRoleType.READER);
                         log().info("HDInsight user role type is READER. Request cluster ID: " + clusterId);
                         return Observable.just(true);
                     } else {
-                        HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
-                        log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
-
-                        final Map<String, String> properties = new HashMap<>();
-                        properties.put("ClusterID", clusterId);
-                        properties.put("StackTrace", ExceptionUtils.getStackTrace(err));
                         if (err instanceof HttpErrorStatus) {
+                            HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
+                            log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
                             log().warn(((HttpErrorStatus) err).getErrorDetails());
+
+                            final Map<String, String> properties = new HashMap<>();
+                            properties.put("ClusterID", clusterId);
+                            properties.put("StackTrace", ExceptionUtils.getStackTrace(err));
                             properties.put("StatusCode", String.valueOf(((HttpErrorStatus) err).getStatusCode()));
                             properties.put("ErrorDetails", ((HttpErrorStatus) err).getErrorDetails());
+                            AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
                         }
-                        log().warn(ExceptionUtils.getStackTrace(err));
 
-                        AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
+                        log().warn("Error getting cluster configurations with NEW HDInsight API. " + ExceptionUtils.getStackTrace(err));
                         return Observable.just(false);
                     }
                 });

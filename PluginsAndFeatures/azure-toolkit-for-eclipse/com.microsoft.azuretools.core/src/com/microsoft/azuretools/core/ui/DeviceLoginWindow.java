@@ -192,7 +192,8 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
                     if (e.getCause() instanceof AuthenticationException &&
                         ((AuthenticationException) e.getCause()).getErrorCode()
                             == AdalErrorCode.AUTHORIZATION_PENDING) {
-                        // swallow the pending exception
+                        // reset the retryCount to zero, will quit only for 3 consecutive fail
+                        checkTime = 0;
                     } else {
                         checkTime++;
                         LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", e));
