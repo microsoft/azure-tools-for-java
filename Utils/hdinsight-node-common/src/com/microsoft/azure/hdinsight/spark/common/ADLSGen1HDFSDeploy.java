@@ -36,9 +36,10 @@ import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URISyntaxException;
 
+// for cluster with adls account to deploy using webhdfs storage account type
 public class ADLSGen1HDFSDeploy extends WebHDFSDeploy {
-    public ADLSGen1HDFSDeploy(IClusterDetail cluster, HttpObservable http) {
-        super(cluster, http);
+    public ADLSGen1HDFSDeploy(IClusterDetail cluster, HttpObservable http, String destinationRootPath) {
+        super(cluster, http, destinationRootPath);
     }
 
     @Override
