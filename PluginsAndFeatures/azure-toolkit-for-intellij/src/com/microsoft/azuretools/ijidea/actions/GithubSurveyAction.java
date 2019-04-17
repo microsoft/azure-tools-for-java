@@ -29,6 +29,6 @@ import com.microsoft.intellij.feedback.ReportableSurvey;
 
 public class GithubSurveyAction extends NewGithubIssueAction {
     public GithubSurveyAction() {
-        super(new GithubIssue<>(new ReportableSurvey("User feedback")), "user satisfaction survey");
+        super(new GithubIssue<>(new ReportableSurvey("User feedback")), "Provide Feedback...");
     }
 }
