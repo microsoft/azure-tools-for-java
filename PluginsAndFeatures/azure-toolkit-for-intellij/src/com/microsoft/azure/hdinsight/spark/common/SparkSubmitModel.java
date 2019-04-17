@@ -83,9 +83,15 @@ public class SparkSubmitModel {
     }
 
     public SparkSubmitModel(@NotNull Project project, @NotNull SparkSubmissionParameter submissionParameter) {
+        this(project, submissionParameter, new SparkSubmitAdvancedConfigModel(), new SparkSubmitJobUploadStorageModel());
+    }
+
+    public SparkSubmitModel(@NotNull Project project, @NotNull SparkSubmissionParameter submissionParameter,
+                            @NotNull SparkSubmitAdvancedConfigModel advancedConfigModel,
+                            @NotNull SparkSubmitJobUploadStorageModel jobUploadStorageModel) {
         this.project = project;
-        this.advancedConfigModel = new SparkSubmitAdvancedConfigModel();
-        this.jobUploadStorageModel = new SparkSubmitJobUploadStorageModel();
+        this.advancedConfigModel = advancedConfigModel;
+        this.jobUploadStorageModel = jobUploadStorageModel;
         this.submissionParameter = submissionParameter;
 
         setTableModel(new SubmissionTableModel(submissionParameter.flatJobConfig()));
