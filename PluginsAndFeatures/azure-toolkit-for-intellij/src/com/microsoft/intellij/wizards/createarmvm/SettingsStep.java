@@ -42,6 +42,10 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.intellij.AzurePlugin;
@@ -64,6 +68,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class SettingsStep extends AzureWizardStep<VMWizardModel> implements TelemetryProperties {
@@ -745,7 +751,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     public boolean onFinish() {
         final boolean isNewResourceGroup = createNewRadioButton.isSelected();
         final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
-
+        Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating virtual machine " + model.getName() + "...", false) {
 
             @Override
@@ -753,29 +759,18 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                 progressIndicator.setIndeterminate(true);
 
                 try {
+                    operation.start();
                     String certificate = model.getCertificate();
                     byte[] certData = new byte[0];
-
                     if (!certificate.isEmpty()) {
                         File certFile = new File(certificate);
-
                         if (certFile.exists()) {
-                            FileInputStream certStream = null;
-
-                            try {
-                                certStream = new FileInputStream(certFile);
+                            try (FileInputStream certStream = new FileInputStream(certFile)) {
                                 certData = new byte[(int) certFile.length()];
-
                                 if (certStream.read(certData) != certData.length) {
                                     throw new Exception("Unable to process certificate: stream longer than informed size.");
                                 }
                             } finally {
-                                if (certStream != null) {
-                                    try {
-                                        certStream.close();
-                                    } catch (IOException ignored) {
-                                    }
-                                }
                             }
                         }
                     }
@@ -827,7 +822,8 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                         @Override
                         public void run() {
                             try {
-                                parent.addChildNode(new com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMNode(parent, model.getSubscription().getSubscriptionId(), vm));
+                                parent.addChildNode(new com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.
+                                    VMNode(parent, model.getSubscription().getSubscriptionId(), vm));
                             } catch (AzureCmdException e) {
                                 String msg = "An error occurred while attempting to refresh the list of virtual machines.";
                                 DefaultLoader.getUIHelper().showException(msg,
@@ -840,9 +836,13 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                         }
                     });
                 } catch (Exception e) {
-                    String msg = "An error occurred while attempting to create the specified virtual machine." + "<br>" + String.format(message("webappExpMsg"), e.getMessage());
+                    EventUtil.logError(operation, ErrorType.userError, e, null, null);
+                    String msg = "An error occurred while attempting to create the specified virtual machine."
+                        + "<br>" + String.format(message("webappExpMsg"), e.getMessage());
                     DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true);
                     AzurePlugin.log(msg, e);
+                } finally {
+                    operation.complete();
                 }
             }
         });

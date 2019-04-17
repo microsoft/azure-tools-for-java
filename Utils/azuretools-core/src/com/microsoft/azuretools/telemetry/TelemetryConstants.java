@@ -49,7 +49,6 @@ public class TelemetryConstants {
     public static final String START_VM = "start-vm";
     public static final String RESTART_VM = "restart-vm";
     public static final String CREATE_STORAGE_ACCOUNT = "create-storage-account";
-    public static final String ADD_STORAGE_ACCOUNT = "add-storage-account";
     public static final String DELETE_STORAGE_ACCOUNT = "delete-storage-account";
     public static final String CREATE_BLOB_CONTAINER = "create-blob-container";
     public static final String UPLOAD_BLOB_FILE = "upload-blob-file";

@@ -21,6 +21,9 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -28,6 +31,7 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
@@ -74,7 +78,7 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            try {
+            EventUtil.executeWithLog(STORAGE, DELETE_STORAGE_ACCOUNT, (operation -> {
                 AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
                 // not signed in
                 if (azureManager == null) {
@@ -89,10 +93,10 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
                         getParent().removeDirectChildNode(StorageNode.this);
                     }
                 });
-            } catch (Exception ex) {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete storage account.", ex,
-                        "MS Services - Error Deleting Storage Account", false, true);
-            }
+            }), (ex) -> {
+                DefaultLoader.getUIHelper().showException("An error occurred while attempting to "
+                        + "delete storage account.", ex, "MS Services - Error Deleting Storage Account", false, true);
+            });
         }
 
         @Override
