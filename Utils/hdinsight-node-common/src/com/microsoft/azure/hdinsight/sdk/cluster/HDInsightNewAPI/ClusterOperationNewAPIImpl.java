@@ -89,6 +89,14 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                     if (err instanceof ForbiddenHttpErrorStatus) {
                         setRoleType(HDInsightUserRoleType.READER);
                         log().info("HDInsight user role type is READER. Request cluster ID: " + clusterId);
+
+                        // Send telemetry when cluster role type is READER
+                        final Map<String, String> properties = new HashMap<>();
+                        properties.put("ClusterID", clusterId);
+                        properties.put("RoleType", "READER");
+                        properties.put("StatusCode", String.valueOf(((HttpErrorStatus) err).getStatusCode()));
+                        properties.put("ErrorDetails", ((HttpErrorStatus) err).getErrorDetails());
+                        AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
                         return Observable.just(true);
                     } else {
                         if (err instanceof HttpErrorStatus) {
