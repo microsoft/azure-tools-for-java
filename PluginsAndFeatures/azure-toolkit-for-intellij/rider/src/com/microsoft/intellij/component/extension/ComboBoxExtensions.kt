@@ -33,6 +33,8 @@ fun <T>JComboBox<T>.getSelectedValue(): T? {
     return getItemAt(index)
 }
 
+fun <T>JComboBox<T>.getAllItems() = List(itemCount) { index -> getItemAt(index) }
+
 fun <T>JComboBox<T>.fillComboBox(elements: List<T>, defaultElement: T? = null) {
     fillComboBox<T>(elements) { element -> element != null && element == defaultElement }
 }

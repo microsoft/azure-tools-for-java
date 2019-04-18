@@ -23,7 +23,6 @@
 package com.microsoft.intellij.helpers.validator
 
 import com.intellij.openapi.util.SystemInfo
-import com.jetbrains.rd.framework.impl.RpcTimeouts
 import com.jetbrains.rider.model.PublishableProjectModel
 
 object ProjectValidator : AzureResourceValidator() {
@@ -37,14 +36,10 @@ object ProjectValidator : AzureResourceValidator() {
             "Selected project '%s' cannot be published. Publishing .Net Web Apps is not yet supported on '%s'"
 
     private const val PROJECT_TARGETS_NOT_DEFINED =
-            "Selected project '%s' cannot be published. Required target '%s' was not found."
+            "Selected project '%s' cannot be published. Required target 'WebPublish' was not found."
 
     private const val PROJECT_NOT_FUNCTION_APP =
             "Selected project '%s' cannot be published. Please select a Function App"
-
-    private const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
-
-    private val timeouts = RpcTimeouts(500L, 2000L)
 
     /**
      * Validate publishable project in the config
@@ -64,9 +59,9 @@ object ProjectValidator : AzureResourceValidator() {
             return status.setInvalid(
                     String.format(PROJECT_PUBLISHING_OS_NOT_SUPPORTED, publishableProject.projectName, SystemInfo.OS_NAME))
 
-        if (!publishableProject.isDotNetCore && !isWebTargetsPresent(publishableProject))
+        if (!publishableProject.isDotNetCore && !publishableProject.hasWebPublishTarget)
             return status.setInvalid(
-                    String.format(PROJECT_TARGETS_NOT_DEFINED, publishableProject.projectName, WEB_APP_TARGET_NAME))
+                    String.format(PROJECT_TARGETS_NOT_DEFINED, publishableProject.projectName))
 
         return status
     }
@@ -87,13 +82,4 @@ object ProjectValidator : AzureResourceValidator() {
 
     private fun isPublishToFunctionAppSupported(publishableProject: PublishableProjectModel) =
             publishableProject.isAzureFunction
-
-    /**
-     * Check whether necessary targets exists in a project that are necessary for web app deployment
-     * Note: On Windows only
-     *
-     * @return [Boolean] whether WebApplication targets are present in publishable project
-     */
-    private fun isWebTargetsPresent(publishableProject: PublishableProjectModel) =
-            publishableProject.hasTarget.sync(WEB_APP_TARGET_NAME, timeouts)
 }

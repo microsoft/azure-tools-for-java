@@ -149,7 +149,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
         val table = object : JBTable(tableModel) {
             override fun getPreferredScrollableViewportSize(): Dimension? {
                 val minHeight = JBUI.scale(200)
-                val subtractHeight = JBUI.scale(420) // Height of all components, but web apps table (experimental value)
+                val subtractHeight = JBUI.scale(430) // Height of all components, but web apps table (experimental value)
                 return Dimension(-1, Math.max(topLevelAncestor?.height?.minus(subtractHeight) ?: minHeight, minHeight))
             }
         }
