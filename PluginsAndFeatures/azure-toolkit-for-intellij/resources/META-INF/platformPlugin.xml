@@ -343,12 +343,6 @@
             text="Select Subscriptions..."
             description="ShowSubscriptionsAction"/>
 
-    <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
-      <action id="AzureToolkit.DisableSSLCertificateValidation"
-              class="com.microsoft.azuretools.ijidea.actions.DisableSslCertificateValidationAction"
-              text="Disable"/>
-    </group>
-
     <group id="AzureToolbarGroup" text="Azure" description="Azure">
       <reference ref="Actions.AzureExplorerOpenAction"/>
     </group>
@@ -363,8 +357,6 @@
       <reference ref="AzureToolkit.SelectSubscriptions"/>
       <separator/>
       <reference ref="AzureToolkit.AzureSignIn"/>
-      <separator/>
-      <reference ref="AzureToolkit.ValidateCertificate"/>
       <separator/>
     </group>
 

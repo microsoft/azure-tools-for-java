@@ -101,6 +101,14 @@
       <add-to-group group-id="AzureToolbarGroup" anchor="after" relative-to-action="Actions.AzureExplorerOpenAction" />
     </action>
 
+    <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
+      <action id="AzureToolkit.DisableSSLCertificateValidation"
+              class="com.microsoft.azuretools.ijidea.actions.DisableSslCertificateValidationAction"
+              text="Disable"/>
+
+      <add-to-group group-id="AzureToolkit.AzureActionGroup" anchor="last"  />
+    </group>
+
     <action id="Actions.SubmitSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
             description="Submit Spark Application" icon="/icons/Spark.png"/>
