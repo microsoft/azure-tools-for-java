@@ -32,13 +32,13 @@ import java.nio.charset.StandardCharsets
 
 class GithubIssue<T : Reportable>(private val reportable: T) {
     private val plugin = reportable.plugin
-    private val labels = mutableSetOf("Rider")
+    private val loginPrefix = "https://github.com/login"
+    private val labels = mutableSetOf("IntelliJ")
 
     private val pluginRepo: URI
         get() {
-            plugin ?: throw Exception("plugin is NULL")
-            plugin.url ?: throw Exception("plugin.url is NULL")
             val url = if (plugin.url.endsWith("/")) plugin.url else plugin.url + "/"
+
             return URI.create(url)
         }
 
@@ -50,24 +50,22 @@ class GithubIssue<T : Reportable>(private val reportable: T) {
         // To support a bigger issue body, please implement a RESTful API
         // version request.
 
-        val properties = mutableListOf(
+        // Limit the URL length with double encoding by Github login redirection prefix
+        val newIssueUrlEncoded = pluginRepo.resolve("issues/new?" + URLEncodedUtils.format(listOf(
                 BasicNameValuePair("title", reportable.getTitle()),
-                BasicNameValuePair("labels", labels.joinToString(",")))
+                BasicNameValuePair("labels", labels.joinToString(",")),
+                BasicNameValuePair("body", reportable.getBody())
+        ), StandardCharsets.UTF_8))
 
-        if (reportable.getProject().isNotEmpty())
-            properties.add(BasicNameValuePair("projects", reportable.getProject()))
+        val loginRedirectParam = URLEncodedUtils.format(
+                listOf(BasicNameValuePair("return_to", "$newIssueUrlEncoded")), StandardCharsets.UTF_8)
 
-        properties.add(BasicNameValuePair("body", reportable.getBody()))
-
-        // 2083 URL max length
-        return StringUtils.left(
-                pluginRepo.resolve("issues/new?${URLEncodedUtils.format(properties, StandardCharsets.UTF_8)}").toString(), 2083)
-                .replace("""%[\d\w]?$""", "") // remove ending uncompleted escaped chars
+        return StringUtils.left("$loginPrefix?$loginRedirectParam", 2083)   // 2083 URL max length
+                .replace("""%25[\d\w]?$""", "")                   // remove ending uncompleted escaped chars, %25 is % encoded
     }
 
     fun report() {
-        val url = getRequestUrl()
-        BrowserUtil.browse(url)
+        BrowserUtil.browse(getRequestUrl())
     }
 
     fun withLabel(label: String): GithubIssue<T> {

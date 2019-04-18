@@ -35,6 +35,9 @@ class SparkFailureTaskDebugConfigurableModel(project: Project)
     : RunConfigurationModule(project), CommonJavaRunConfigurationParameters {
     var settings: SparkFailureTaskDebugSettingsModel = SparkFailureTaskDebugSettingsModel()
 
+    val log4jProperties: String?
+        get() = settings.log4jProperties
+
     override fun getEnvs(): MutableMap<String, String> {
         return settings.envs
     }

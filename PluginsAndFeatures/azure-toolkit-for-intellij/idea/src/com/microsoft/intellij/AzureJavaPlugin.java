@@ -22,6 +22,9 @@
 
 package com.microsoft.intellij;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
@@ -50,10 +53,23 @@ public class AzureJavaPlugin extends AzurePlugin {
     protected void copyPluginComponents() {
         try {
             extractJobViewResource();
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+        } catch (ExtractHdiJobViewException e) {
+            Notification hdiSparkJobListNaNotification = new Notification(
+                    "Azure Toolkit plugin",
+                    e.getMessage(),
+                    "The HDInsight cluster Spark Job list feature is not available since " + e.getCause().toString() +
+                            " Reinstall the plugin to fix that.",
+                    NotificationType.WARNING);
+
+            Notifications.Bus.notify(hdiSparkJobListNaNotification);
         }
         super.copyPluginComponents();
+    }
+
+    static class ExtractHdiJobViewException extends IOException {
+        ExtractHdiJobViewException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
@@ -68,7 +84,7 @@ public class AzureJavaPlugin extends AzurePlugin {
         return true;
     }
 
-    private void extractJobViewResource() {
+    private synchronized void extractJobViewResource() throws ExtractHdiJobViewException {
         File indexRootFile = new File(PluginUtil.getPluginRootDirectory() + File.separator + "com.microsoft.hdinsight");
 
         if (isFirstInstallationByVersion() || isDebugModel()) {
@@ -76,22 +92,42 @@ public class AzureJavaPlugin extends AzurePlugin {
                 try {
                     FileUtils.deleteDirectory(indexRootFile);
                 } catch (IOException e) {
-                    LOG.error("delete HDInsight job view folder error", e);
+                    throw new ExtractHdiJobViewException("Delete HDInsight job view folder error", e);
                 }
             }
         }
 
-        URL url = AzureJavaPlugin.class.getResource(HTML_ZIP_FILE_NAME);
+        URL url = AzurePlugin.class.getResource(HTML_ZIP_FILE_NAME);
         if (url != null) {
             File toFile = new File(indexRootFile.getAbsolutePath(), HTML_ZIP_FILE_NAME);
             try {
                 FileUtils.copyURLToFile(url, toFile);
+
+                // Need to wait for OS native process finished, otherwise, may get the following exception:
+                // message=Extract Job View Folder, throwable=java.io.FileNotFoundException: xxx.zip
+                // (The process cannot access the file because it is being used by another process)
+                int retryCount = 60;
+                while (!toFile.renameTo(toFile) && retryCount-- > 0) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                        break;
+                    }
+                }
+
+                if (!toFile.renameTo(toFile)) {
+                    throw new ExtractHdiJobViewException("Copying Job view zip file are not finished",
+                            new IOException("The native file system has not finished the file copy for " +
+                                    toFile.getPath() + " in 1 minute"));
+                }
+
                 unzip(toFile.getAbsolutePath(), toFile.getParent());
             } catch (IOException e) {
-                LOG.error("Extract Job View Folder", e);
+                throw new ExtractHdiJobViewException("Extract Job View Folder error", e);
             }
         } else {
-            LOG.error("Can't find HDInsight job view zip package");
+            throw new ExtractHdiJobViewException("Can't find HDInsight job view zip package",
+                    new FileNotFoundException("The HDInsight Job view zip file " + HTML_ZIP_FILE_NAME + " is not found"));
         }
     }
 

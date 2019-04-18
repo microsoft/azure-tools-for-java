@@ -25,10 +25,13 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
+import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.Constants;
@@ -37,6 +40,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
+import java.util.ArrayList;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -52,10 +56,9 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
-/**
- * Created by vlashch on 1/19/17.
- */
 public class WebAppUtils {
 
     public static final String TYPE_WAR = "war";
@@ -66,6 +69,7 @@ public class WebAppUtils {
     private static String webConfigFilename = "web.config";
     private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
     private static final String ROOT = "ROOT";
+    private static final String JAVASE_ROOT= "app";
     private static final int FTP_MAX_TRY = 3;
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final String DEFAULT_VALUE_WHEN_VERSION_INVALID = "";
@@ -110,7 +114,7 @@ public class WebAppUtils {
             if (indicator != null) indicator.setText("Connecting to FTP server...");
 
             ftp = getFtpConnection(pp);
-
+            ensureWebAppsFolderExist(ftp);
             if (indicator != null) indicator.setText("Uploading the application...");
             input = new FileInputStream(artifactPath);
             int indexOfDot = artifactPath.lastIndexOf(".");
@@ -144,6 +148,58 @@ public class WebAppUtils {
             }
         }
         return uploadingTryCount;
+    }
+
+    public static int deployArtifactForJavaSE(String artifactPath, PublishingProfile pp, IProgressIndicator indicator) throws IOException {
+        File file = new File(artifactPath);
+        if (!file.exists()) {
+            throw new FileNotFoundException(String.format(NO_TARGET_FILE, artifactPath));
+        }
+        FTPClient ftp = null;
+        int uploadingTryCount;
+        try (InputStream input = new FileInputStream(artifactPath)){
+            if (indicator != null) {
+                indicator.setText("Connecting to FTP server...");
+            }
+            ftp = getFtpConnection(pp);
+            if (indicator != null) {
+                indicator.setText("Uploading the application...");
+            }
+            uploadingTryCount = uploadFileToFtp(ftp, ftpRootPath + JAVASE_ROOT + "." + TYPE_JAR, input, indicator);
+            if (indicator != null) {
+                indicator.setText("Logging out of FTP server...");
+            }
+            ftp.logout();
+        } finally {
+            if (ftp != null && ftp.isConnected()) {
+                ftp.disconnect();
+            }
+        }
+        return uploadingTryCount;
+    }
+
+    private static void ensureWebAppsFolderExist(FTPClient ftp) throws IOException {
+        int count = 0;
+        while (count++ < FTP_MAX_TRY) {
+            try {
+                ftp.getStatus(ftpWebAppsPath);
+                if (FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
+                    return;
+                }
+                if (ftp.makeDirectory(ftpWebAppsPath)){
+                    return;
+                }
+                try {
+                    Thread.sleep(SLEEP_TIME);
+                } catch (InterruptedException ignore) {}
+            } catch (Exception e) {
+                if (count == FTP_MAX_TRY) {
+                    throw new IOException("FTP client can't make directory, reply code: " + ftp.getReplyCode(), e);
+                }
+            }
+        }
+
+        throw new IOException("FTP client can't make directory, reply code: " + ftp.getReplyCode());
     }
 
     public static void removeFtpDirectory(FTPClient ftpClient, String path, IProgressIndicator pi) throws IOException {
@@ -214,6 +270,8 @@ public class WebAppUtils {
             }
         } catch (IOException ex) {
             return false;
+        } finally {
+            con.disconnect();
         }
         return true;
     }
@@ -314,25 +372,47 @@ public class WebAppUtils {
         }
     }
 
-    private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) throws IOException {
-        boolean success = false;
-        int count = 0;
-        while (!success && ++count < FTP_MAX_TRY) {
-            try {
-                Thread.sleep(SLEEP_TIME);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+    public static int uploadToRemoteServer(WebAppBase webApp, String fileName, InputStream ins,
+        IProgressIndicator indicator, String targetPath) throws IOException {
+        FTPClient ftp = null;
+        try {
+            PublishingProfile pp = webApp.getPublishingProfile();
+            ftp = getFtpConnection(pp);
+            if (indicator != null) {
+                indicator.setText(String.format("Uploading %s ...", fileName));
             }
-            success = ftp.storeFile(path, stream);
+            return uploadFileToFtp(ftp, targetPath, ins, indicator);
+        } finally {
+            if (ftp != null && ftp.isConnected()) {
+                ftp.disconnect();
+            }
         }
-        if (!success) {
-            int rc = ftp.getReplyCode();
-            throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+    }
+
+    private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) throws IOException {
+        boolean success;
+        int count = 0;
+        int rc = 0;
+        while (count++ < FTP_MAX_TRY) {
+            try {
+                success = ftp.storeFile(path, stream);
+                if (success) {
+                    if (indicator != null) {
+                        indicator.setText("Uploading successfully...");
+                    }
+                    return count;
+                }
+                rc = ftp.getReplyCode();
+                try {
+                    Thread.sleep(SLEEP_TIME);
+                } catch (InterruptedException ignore) {}
+            } catch (Exception e) {
+                if (count == FTP_MAX_TRY) {
+                    throw new IOException("FTP client can't store the artifact, reply code: " + rc, e);
+                }
+            }
         }
-        if (indicator != null) {
-            indicator.setText("Uploading successfully...");
-        }
-        return count;
+        throw new IOException("FTP client can't store the artifact, reply code: " + rc);
     }
 
     public static class WebAppDetails {
@@ -406,7 +486,12 @@ public class WebAppUtils {
                 webContainer = versions[0].toLowerCase();
                 final String webContainerVersion = versions[1];
                 final String jreVersion = versions[2];
-                if (webContainer.contains("tomcat")) {
+                final boolean isJavaLinuxRuntimeWithWebContainer = getAllJavaLinuxRuntimeStacks()
+                    .stream()
+                    .map(r -> r.stack())
+                    .filter(w -> !w.equalsIgnoreCase("java"))
+                    .anyMatch(w -> w.equalsIgnoreCase(webContainer));
+                if (isJavaLinuxRuntimeWithWebContainer) {
                     // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
                     return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());
                 } else {
@@ -416,5 +501,36 @@ public class WebAppUtils {
             default:
                 return DEFAULT_VALUE_WHEN_VERSION_INVALID;
         }
+    }
+
+    public static List<DeploymentSlot> getDeployments(WebApp webApp) {
+        if (webApp == null || webApp.deploymentSlots() == null || webApp.deploymentSlots().list() == null) {
+            return new ArrayList<>();
+        }
+        List<DeploymentSlot> result = new ArrayList<>();
+        for (DeploymentSlot deploymentSlot : webApp.deploymentSlots().list()) {
+            result.add(deploymentSlot);
+        }
+        return result;
+    }
+
+    public static List<RuntimeStack> getAllJavaLinuxRuntimeStacks() {
+        return Arrays.asList(new RuntimeStack[]{
+            RuntimeStack.TOMCAT_8_5_JRE8,
+            RuntimeStack.TOMCAT_9_0_JRE8,
+            RuntimeStack.WILDFLY_14_JRE8,
+            RuntimeStack.JAVA_8_JRE8});
+    }
+
+    public static String getFileType(String fileName) {
+        if (StringUtils.isBlank(fileName)) {
+            return "";
+        }
+        String fileType = "";
+        int index = fileName.lastIndexOf(".");
+        if (index >= 0 && (index + 1) < fileName.length()) {
+            fileType = fileName.substring(index + 1);
+        }
+        return fileType;
     }
 }

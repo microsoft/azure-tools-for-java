@@ -79,7 +79,7 @@ public interface ISparkBatchJob {
      * @return the current instance observable for chain calling,
      *         Observable Error: IOException exceptions for networking connection issues related
      */
-    Observable<ISparkBatchJob> killBatchJob();
+    Observable<? extends ISparkBatchJob> killBatchJob();
 
     /**
      * Get Spark batch job driver host by ID

@@ -26,12 +26,14 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
+import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.*;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.*;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
+import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
@@ -50,21 +52,43 @@ public class NodeJavaActionsMap extends NodeActionsMap {
             new HashMap<>();
 
     static {
+        node2Actions.put(VMArmModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateVMAction.class).build());
+        node2Actions.put(QueueModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateQueueAction.class).build());
+        node2Actions.put(TableModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateTableAction.class).build());
+        node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateBlobContainer.class).build());
+        node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateStorageAccountAction.class).build());
+        node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateRedisCacheAction.class).build());
+        node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateBlobContainer.class).build());
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
-        // noinspection unchecked
+        // todo: what is ConfirmDialogAction?
+        //noinspection unchecked
+        node2Actions.put(ExternalStorageNode.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
+        //noinspection unchecked
         node2Actions.put(HDInsightRootModuleImpl.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
-
+        node2Actions.put(SqlBigDataClusterModule.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .add(LinkSqlServerBigDataClusterAction.class).build());
         //noinspection unchecked
         node2Actions.put(DockerHostNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(DeployDockerContainerAction.class).build());
+                        .add(ViewDockerHostAction.class, DeployDockerContainerAction.class,
+                                DeleteDockerHostAction.class).build());
         //noinspection unchecked
         node2Actions.put(DockerHostModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(PublishDockerContainerAction.class).build());
+                        .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
     }
 
     @Override

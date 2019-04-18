@@ -23,6 +23,7 @@
 package com.microsoft.intellij.rxjava;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -54,7 +55,7 @@ public class IdeaSchedulers implements IdeSchedulers {
             final ProgressIndicator progressIndicator = new BackgroundableProcessIndicator(task);
 
             ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, progressIndicator);
-        }));
+        }, ModalityState.any()));
     }
 
     public Scheduler processBarVisibleSync( @NotNull String title) {

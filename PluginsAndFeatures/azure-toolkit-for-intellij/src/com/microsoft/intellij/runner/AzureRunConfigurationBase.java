@@ -31,6 +31,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.util.xmlb.Accessor;
+import com.intellij.util.xmlb.SerializationFilter;
+import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -44,9 +47,13 @@ public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase 
     }
 
     public abstract T getModel();
+
     public abstract String getTargetName();
+
     public abstract String getTargetPath();
+
     public abstract String getSubscriptionId();
+
     public abstract void validate() throws ConfigurationException;
 
     public final boolean isFirstTimeCreated() {
@@ -67,9 +74,18 @@ public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase 
     @Override
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
-        XmlSerializer.serializeInto(getModel(), element);
+        XmlSerializer.serializeInto(getModel(), element, new SerializationFilterBase() {
+            @Override
+            protected boolean accepts(@NotNull Accessor accessor, @NotNull Object bean, @Nullable Object beanValue) {
+                if (accessor == null || bean == null) {
+                    return false;
+                }
+                return !(accessor.getName() instanceof String && accessor.getName().equalsIgnoreCase("password"));
+            }
+        });
     }
 
     @Override
-    public void checkConfiguration() throws RuntimeConfigurationException { }
+    public void checkConfiguration() throws RuntimeConfigurationException {
+    }
 }

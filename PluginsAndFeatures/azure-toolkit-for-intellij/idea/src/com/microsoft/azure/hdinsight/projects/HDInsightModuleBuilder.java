@@ -39,6 +39,7 @@ import com.intellij.packaging.elements.PackagingElementFactory;
 import com.intellij.packaging.impl.artifacts.JarArtifactType;
 import com.intellij.platform.ProjectTemplate;
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import com.microsoft.azure.hdinsight.projects.ui.HDInsightProjectTypeStep;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
@@ -77,7 +78,9 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
     @Override
     public Icon getNodeIcon() {
-        return IconLoader.getIcon(CommonConst.ProductIConPath);
+        return IconLoader.getIcon(IconPathBuilder
+                .custom(CommonConst.ProductIconName)
+                .build());
     }
 
     @Override
@@ -140,7 +143,7 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
                                 // TODO: Remove hardcoded packaging here with spark-tools being independent.
                                 File sparkToolsJar = Paths.get(Objects.requireNonNull(module.getProject().getBasePath()),
                                                                "lib",
-                                                               "spark-tools-0.1.0.jar").toFile();
+                                                               SparkToolsLib.INSTANCE.getJarFileName(this.sparkVersion)).toFile();
 
                                 artifact.getRootElement().addOrFindChild(
                                         artifactPackagingFactory.createExtractedDirectoryWithParentDirectories(

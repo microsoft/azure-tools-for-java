@@ -40,8 +40,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.HADOOP_HOME_ENV;
-import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.WINUTILS_EXE_NAME;
+import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunParamsPanel.HADOOP_HOME_ENV;
+import static com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunParamsPanel.WINUTILS_EXE_NAME;
 
 @Tag("spark-local-run-configurable-model")
 public class SparkLocalRunConfigurableModel implements CommonJavaRunConfigurationParameters, ILogger {
@@ -68,6 +68,9 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     @Tag("main-class")
     @Nullable
     private String mainClass;
+    @Tag("classpath-module")
+    @Nullable
+    private String classpathModule;
     @Tag("data-root")
     @Nullable
     private String dataRootDirectory;
@@ -226,5 +229,14 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     @Override
     public String getPackage() {
         return null;
+    }
+
+    @Nullable
+    public String getClasspathModule() {
+        return classpathModule;
+    }
+
+    public void setClasspathModule(@Nullable String classpathModule) {
+        this.classpathModule = classpathModule;
     }
 }

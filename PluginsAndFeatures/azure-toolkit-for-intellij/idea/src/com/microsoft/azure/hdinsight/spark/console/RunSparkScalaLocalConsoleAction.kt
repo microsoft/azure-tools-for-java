@@ -22,16 +22,20 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
-import com.intellij.execution.configurations.RunProfile
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
+    override val selectedMenuActionId: String
+        get() = "Actions.SparkRunLocalConsoleActionGroups"
+
+    override val isLocalRunConfigEnabled: Boolean
+        get() = true
+
+    override val focusedTabIndex: Int
+        get() = 0
+
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
         get() = SparkScalaLocalConsoleConfigurationType().confFactory()
-
-    override fun checkSettingsBeforeRun(runProfile: RunProfile?) {
-        // TODO: Add local run check
-    }
 
     override fun getNewSettingName(): String = "Spark Local Console(Scala)"
 }

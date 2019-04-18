@@ -35,9 +35,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
-/**
- * Created by shch on 10/10/2016.
- */
 public class CommonSettings {
     private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
@@ -45,8 +42,10 @@ public class CommonSettings {
     private static String settingsBaseDir = null;
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
     private static final String ENV_NAME_KEY = "EnvironmentName";
+    private static final String COSMOS_SERVERLESS_KEY = "EnableCosmosServerlessSpark";
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
+    public static boolean isCosmosServerlessEnabled = false;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
@@ -97,11 +96,17 @@ public class CommonSettings {
                         ENV = providedEnv;
                     }
                 }
+
+                JsonElement serverlessElement = jsonObject.get(COSMOS_SERVERLESS_KEY);
+                if(serverlessElement != null) {
+                    isCosmosServerlessEnabled = serverlessElement.getAsBoolean();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     public static IUIFactory getUiFactory() {
         return uiFactory;
     }

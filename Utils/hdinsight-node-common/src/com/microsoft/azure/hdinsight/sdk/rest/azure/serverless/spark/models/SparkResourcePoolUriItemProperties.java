@@ -32,62 +32,93 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkResourcePoolUriItemProperties {
     /**
-     * Livy Server Url.
+     * Livy API Url.
      */
     @JsonProperty(value = "livyAPI", access = JsonProperty.Access.WRITE_ONLY)
-    private String livyServerUrl;
+    private String livyAPI;
 
     /**
-     * Livy Server Url.
+     * Livy UI Url.
      */
     @JsonProperty(value = "livyUI", access = JsonProperty.Access.WRITE_ONLY)
-    private String livyUiUrl;
+    private String livyUI;
 
     /**
-     * Spark History server Web UI URL.
+     * Spark Master API Url.
      */
-    @JsonProperty(value = "sparkHistoryUI", access = JsonProperty.Access.WRITE_ONLY)
-    private String sparkHistoryWebUiUrl;
+    @JsonProperty(value = "sparkMasterAPI", access = JsonProperty.Access.WRITE_ONLY)
+    private String sparkMasterAPI;
 
     /**
-     * Spark Master Web UI URL.
+     * Spark Master UI Url.
      */
     @JsonProperty(value = "sparkMasterUI", access = JsonProperty.Access.WRITE_ONLY)
-    private String sparkMasterWebUiUrl;
+    private String sparkMasterUI;
 
     /**
-     * Get the livyServerUrl value.
-     *
-     * @return the livyServerUrl value
+     * Spark History API Url.
      */
-    public String livyServerUrl() {
-        return this.livyServerUrl;
+    @JsonProperty(value = "sparkHistoryAPI", access = JsonProperty.Access.WRITE_ONLY)
+    private String sparkHistoryAPI;
+
+    /**
+     * Spark History UI Url.
+     */
+    @JsonProperty(value = "sparkHistoryUI", access = JsonProperty.Access.WRITE_ONLY)
+    private String sparkHistoryUI;
+
+    /**
+     * Get livy API Url.
+     *
+     * @return the livyAPI value
+     */
+    public String livyAPI() {
+        return this.livyAPI;
     }
 
     /**
-     * Get the livyUiUrl value.
+     * Get livy UI Url.
      *
-     * @return the livyUiUrl value
+     * @return the livyUI value
      */
-    public String livyUiUrl() {
-        return this.livyUiUrl;
-    }
-    /**
-     * Get the sparkHistoryWebUiUrl value.
-     *
-     * @return the sparkHistoryWebUiUrl value
-     */
-    public String sparkHistoryWebUiUrl() {
-        return this.sparkHistoryWebUiUrl;
+    public String livyUI() {
+        return this.livyUI;
     }
 
     /**
-     * Get the sparkMasterWebUiUrl value.
+     * Get spark Master API Url.
      *
-     * @return the sparkMasterWebUiUrl value
+     * @return the sparkMasterAPI value
      */
-    public String sparkMasterWebUiUrl() {
-        return this.sparkMasterWebUiUrl;
+    public String sparkMasterAPI() {
+        return this.sparkMasterAPI;
+    }
+
+    /**
+     * Get spark Master UI Url.
+     *
+     * @return the sparkMasterUI value
+     */
+    public String sparkMasterUI() {
+        return this.sparkMasterUI;
+    }
+
+    /**
+     * Get spark History API Url.
+     *
+     * @return the sparkHistoryAPI value
+     */
+    public String sparkHistoryAPI() {
+        return this.sparkHistoryAPI;
+    }
+
+    /**
+     * Get spark History UI Url.
+     *
+     * @return the sparkHistoryUI value
+     */
+    public String sparkHistoryUI() {
+        return this.sparkHistoryUI;
     }
 
 }

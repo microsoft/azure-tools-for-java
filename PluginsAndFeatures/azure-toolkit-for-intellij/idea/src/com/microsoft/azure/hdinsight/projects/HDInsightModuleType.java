@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.projects;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.util.IconLoader;
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -63,6 +64,8 @@ public class HDInsightModuleType extends ModuleType<HDInsightModuleBuilder> {
 
     @Override
     public Icon getNodeIcon(@Deprecated boolean b) {
-        return IconLoader.getIcon(CommonConst.ProductIConPath);
+        return IconLoader.getIcon(IconPathBuilder
+                .custom(CommonConst.ProductIconName)
+                .build());
     }
 }

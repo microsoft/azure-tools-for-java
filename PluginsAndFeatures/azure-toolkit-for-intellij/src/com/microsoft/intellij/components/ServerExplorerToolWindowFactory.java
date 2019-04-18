@@ -23,18 +23,20 @@
 
 package com.microsoft.intellij.components;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
+import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -72,6 +74,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
@@ -83,12 +86,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         AzureModule azureModule = new AzureModuleImpl(project);
-        for (ServerExplorerToolWindowListener listener : Extensions.getExtensions(ServerExplorerToolWindowListener.EXTENSION_POINT_NAME)) {
-            listener.onAzureModuleCreated(azureModule);
-        }
+//        HDInsightUtil.setHDInsightRootModule(azureModule);
+        azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
+        // initialize aris service module
+//        SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
 
         // initialize with all the service modules
-        DefaultTreeModel treeModel = new DefaultTreeModel(initRoot(project, azureModule));
+        DefaultTreeModel treeModel = new DefaultTreeModel(initRoot(project, ImmutableList.of(azureModule)));
         treeModelMap.put(project, treeModel);
 
         // initialize tree
@@ -152,14 +156,14 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
     }
 
-    private SortableTreeNode initRoot(Project project, AzureModule azureModule) {
+    private SortableTreeNode initRoot(Project project, List<RefreshableNode> nodes) {
         SortableTreeNode root = new SortableTreeNode();
 
-        // add the azure service root service module
-        root.add(createTreeNode(azureModule, project));
-
-        // kick-off asynchronous load of child nodes on all the modules
-        azureModule.load(false);
+        nodes.forEach(node -> {
+            root.add(createTreeNode(node, project));
+            // kick-off asynchronous load of child nodes on all the modules
+            node.load(false);
+        });
 
         return root;
     }

@@ -39,8 +39,10 @@ import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import com.microsoft.rest.credentials.ServiceClientCredentials;
+import rx.Observable;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -113,12 +115,30 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     }
 
     public static List<Subscription> getSubscriptions(String tid) throws IOException {
-        List<Subscription> sl = authTid(tid).subscriptions().list();
+        List<Subscription> sl = authTid(tid).subscriptions().listAsync()
+                .onErrorResumeNext(err -> {
+                    LOGGER.warning(err.getMessage());
+
+                    return Observable.empty();
+                })
+                .toList()
+                .toBlocking()
+                .singleOrDefault(Collections.emptyList());
+
         return sl;
     }
 
     public static List<Tenant> getTenants(String tid) throws IOException {
-        List<Tenant> tl = authTid(tid).tenants().list();
+        List<Tenant> tl = authTid(tid).tenants().listAsync()
+                .onErrorResumeNext(err -> {
+                    LOGGER.warning(err.getMessage());
+
+                    return Observable.empty();
+                })
+                .toList()
+                .toBlocking()
+                .singleOrDefault(Collections.emptyList());
+
         return tl;
     }
 

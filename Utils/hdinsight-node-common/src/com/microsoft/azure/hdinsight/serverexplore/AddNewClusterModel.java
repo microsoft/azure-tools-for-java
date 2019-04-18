@@ -22,8 +22,10 @@
 
 package com.microsoft.azure.hdinsight.serverexplore;
 
+import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -31,10 +33,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class AddNewClusterModel implements Cloneable {
+    public static final String NORMAL_OUTPUT = "NORMAL_OUTPUT";
+    public static final String ERROR_OUTPUT = "ERROR_OUTPUT";
     private String clusterNameLabelTitle;
     private String userNameLabelTitle;
     private String passwordLabelTitle;
 
+    @NotNull
+    // set default cluster type as HDINSIGHT_CLUSTER (to be compatible with Eclipse code)
+    private SparkClusterType sparkClusterType = SparkClusterType.HDINSIGHT_CLUSTER;
     private String clusterName;
     private String userName;
     private String password;
@@ -42,11 +49,17 @@ public class AddNewClusterModel implements Cloneable {
     private URI livyEndpoint;
     @Nullable
     private URI yarnEndpoint;
-    private boolean isHDInsightClusterSelected = true;
+    @Nullable
+    private String host;
+    private int knoxPort = 30443;
 
     private String storageName;
     private String storageKey;
 
+    // Pair of <OutputType, Log>
+    // OutputType can be: NORMAL_OUTPUT or ERROR_OUTPUT
+    @Nullable
+    private List<Pair<String, String>> errorMessageList;
     @Nullable
     private String errorMessage;
 
@@ -81,6 +94,15 @@ public class AddNewClusterModel implements Cloneable {
     public AddNewClusterModel setPasswordLabelTitle(String passwordLabelTitle) {
         this.passwordLabelTitle = passwordLabelTitle;
 
+        return this;
+    }
+
+    public SparkClusterType getSparkClusterType() {
+        return sparkClusterType;
+    }
+
+    public AddNewClusterModel setSparkClusterType(@NotNull SparkClusterType sparkClusterType) {
+        this.sparkClusterType = sparkClusterType;
         return this;
     }
 
@@ -154,12 +176,34 @@ public class AddNewClusterModel implements Cloneable {
         return this;
     }
 
-    public boolean getHDInsightClusterSelected() {
-        return isHDInsightClusterSelected;
+    @Nullable
+    public String getHost() {
+        return host;
     }
 
-    public AddNewClusterModel setHDInsightClusterSelected(boolean HDInsightClusterSelected) {
-        isHDInsightClusterSelected = HDInsightClusterSelected;
+    public AddNewClusterModel setHost(@Nullable String host) {
+        this.host = host;
+        return this;
+    }
+
+    public int getKnoxPort() {
+        return knoxPort;
+    }
+
+    @NotNull
+    public AddNewClusterModel setKnoxPort(int knoxPort) {
+        this.knoxPort = knoxPort;
+        return this;
+    }
+
+    @Nullable
+    public List<Pair<String, String>> getErrorMessageList() {
+        return errorMessageList;
+    }
+
+    @NotNull
+    public AddNewClusterModel setErrorMessageList(@Nullable List<Pair<String, String>> errorMessageList) {
+        this.errorMessageList = errorMessageList;
         return this;
     }
 

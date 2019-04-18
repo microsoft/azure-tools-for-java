@@ -23,19 +23,19 @@
 package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.StorageNode;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.List;
 import java.util.Optional;
 
-public class StorageAccountFolderNode extends RefreshableNode {
+public class StorageAccountFolderNode extends RefreshableNode implements ILogger {
     private static final String STORAGE_ACCOUNT_FOLDER_MODULE_ID = StorageAccountFolderNode.class.getName();
     private static final String STORAGE_ACCOUNT_NAME = "Storage Accounts";
     private static final String ICON_PATH = CommonConst.StorageAccountFoldIConPath;
@@ -45,12 +45,10 @@ public class StorageAccountFolderNode extends RefreshableNode {
     public StorageAccountFolderNode(Node parent, @NotNull IClusterDetail clusterDetail) {
         super(STORAGE_ACCOUNT_FOLDER_MODULE_ID, STORAGE_ACCOUNT_NAME, parent, ICON_PATH);
         this.clusterDetail = clusterDetail;
-        load(false);
     }
 
     @Override
-    protected void refreshItems()
-            throws AzureCmdException {
+    protected void refreshItems() {
         if (!clusterDetail.isEmulator()) {
             try {
                 clusterDetail.getConfigurationInfo();
@@ -65,8 +63,12 @@ public class StorageAccountFolderNode extends RefreshableNode {
                         addChildNode(new StorageAccountNode(this, account, false));
                     }
                 }
-            } catch (Throwable exception) {
-                throw new RuntimeException("Failed to get HDInsight cluster configuration.", exception);
+            } catch (Exception ex) {
+                String exceptionMsg = ex.getCause() == null ? "" : ex.getCause().getMessage();
+                String errorHint = String.format("Failed to get HDInsight cluster %s configuration. ", clusterDetail.getName());
+                log().warn(errorHint + ExceptionUtils.getStackTrace(ex));
+
+                DefaultLoader.getUIHelper().showError(errorHint + exceptionMsg, "HDInsight Explorer");
             }
         }
     }

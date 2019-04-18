@@ -90,6 +90,21 @@ public class UserInfo {
             return null;
         }
     }
+
+    static UserInfo createFromAdAlUserInfo(final com.microsoft.aad.adal4j.UserInfo adalUserInfo) {
+        if (adalUserInfo == null) {
+            return null;
+        }
+        final UserInfo userInfo = new UserInfo();
+        userInfo.uniqueId = adalUserInfo.getUniqueId();
+        userInfo.displayableId = adalUserInfo.getDisplayableId();
+        userInfo.givenName = adalUserInfo.getGivenName();
+        userInfo.familyName = adalUserInfo.getFamilyName();
+        userInfo.identityProvider = adalUserInfo.getIdentityProvider();
+        userInfo.passwordExpiresOn = adalUserInfo.getPasswordExpiresOn();
+        userInfo.passwordChangeUrl = adalUserInfo.getPasswordChangeUrl();
+        return userInfo;
+    }
     
     static UserInfo createFromIdTokens(final IdToken tokens){
         if (null == tokens) {

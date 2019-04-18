@@ -180,19 +180,17 @@
                     anchor="before"
                     relative-to-action="AzureToolkit.AzureSignIn" />
 
-      <action class="org.jetbrains.plugins.azure.cloudshell.actions.StartAzureCloudShellAction"
-              id="AzureToolkit.StartAzureCloudShellAction"
+      <action id="AzureToolkit.StartAzureCloudShellAction"
+              class="org.jetbrains.plugins.azure.cloudshell.actions.StartAzureCloudShellAction"
               text="Start Azure Cloud Shell..."
               description="Start Azure Cloud Shell"
-              icon="/icons/AzureOpenCloudShell.svg">
-      </action>
+              icon="/icons/AzureOpenCloudShell.svg" />
 
-      <action class="org.jetbrains.plugins.azure.cloudshell.actions.UploadToAzureCloudShellAction"
-              id="AzureToolkit.UploadToAzureCloudShellAction"
+      <action id="AzureToolkit.UploadToAzureCloudShellAction"
+              class="org.jetbrains.plugins.azure.cloudshell.actions.UploadToAzureCloudShellAction"
               text="Upload file to Azure Cloud Shell..."
               description="Upload file to Azure Cloud Shell"
-              icon="AllIcons.Actions.Upload">
-      </action>
+              icon="AllIcons.Actions.Upload" />
 
       <separator />
     </group>

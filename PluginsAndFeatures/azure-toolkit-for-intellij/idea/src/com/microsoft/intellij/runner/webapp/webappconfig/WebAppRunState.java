@@ -23,20 +23,6 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.Map;
-
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.model.MavenConstants;
-
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
@@ -47,7 +33,9 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
@@ -55,6 +43,21 @@ import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenConstants;
+
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.util.Map;
 
 public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
@@ -65,7 +68,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     private static final String GETTING_DEPLOYMENT_CREDENTIAL = "Getting Deployment Credential...";
     private static final String CONNECTING_FTP = "Connecting to FTP server...";
     private static final String UPLOADING_ARTIFACT = "Uploading artifact to: %s ...";
-    private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: https://aka.ms/spring-boot)...";
+    private static final String UPLOADING_WEB_CONFIG = "Uploading web.config (check more details at: " +
+        "https://aka.ms/spring-boot)...";
     private static final String UPLOADING_SUCCESSFUL = "Uploading successfully...";
     private static final String STOP_WEB_APP = "Stopping Web App...";
     private static final String STOP_DEPLOYMENT_SLOT = "Stopping Deployment Slot...";
@@ -89,19 +93,22 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final int UPLOADING_MAX_TRY = 3;
 
-    private final WebAppSettingModel webAppSettingModel;
+    private WebAppConfiguration webAppConfiguration;
+    private final IntelliJWebAppSettingModel webAppSettingModel;
+
     /**
      * Place to execute the Web App deployment task.
      */
-    public WebAppRunState(Project project, WebAppSettingModel webAppSettingModel) {
+    public WebAppRunState(Project project, WebAppConfiguration webAppConfiguration) {
         super(project);
-        this.webAppSettingModel = webAppSettingModel;
+        this.webAppConfiguration = webAppConfiguration;
+        this.webAppSettingModel = webAppConfiguration.getModel();
     }
 
     @Nullable
     @Override
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
-            , @NotNull Map<String, String> telemetryMap) throws Exception {
+        , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(webAppSettingModel.getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
@@ -131,10 +138,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
         processHandler.setText(isDeployToSlot() ? START_DEPLOYMENT_SLOT : START_WEB_APP);
         deployTarget.start();
-
-        String url = getUrl(deployTarget, fileName, fileType);
-        processHandler.setText(DEPLOY_SUCCESSFUL);
-        processHandler.setText("URL: " + url);
         return deployTarget;
     }
 
@@ -142,14 +145,37 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         return !webAppSettingModel.isCreatingNew() && webAppSettingModel.isDeployToSlot();
     }
 
+    private void openWebAppInBrowser(String url, RunProcessHandler processHandler) {
+        try {
+            Desktop.getDesktop().browse(new URL(url).toURI());
+        } catch (Exception e) {
+            processHandler.println(e.getMessage(), ProcessOutputTypes.STDERR);
+        }
+    }
+
+    @Override
+    protected Operation createOperation() {
+        return TelemetryManager.createOperation(TelemetryConstants.WEBAPP, TelemetryConstants.DEPLOY_WEBAPP);
+    }
+
     @Override
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
-        processHandler.notifyComplete();
         if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
         updateConfigurationDataModel(result);
         AzureWebAppMvpModel.getInstance().listAllWebApps(true /*force*/);
+
+        int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
+        final String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
+        final String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
+        final String url = getUrl(result, fileName, fileType);
+        processHandler.setText(DEPLOY_SUCCESSFUL);
+        processHandler.setText("URL: " + url);
+        if (webAppSettingModel.isOpenBrowserAfterDeployment()) {
+            openWebAppInBrowser(url, processHandler);
+        }
+        processHandler.notifyComplete();
     }
 
     @Override
@@ -164,7 +190,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap){
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         telemetryMap.put("SubscriptionId", webAppSettingModel.getSubscriptionId());
         telemetryMap.put("CreateNewApp", String.valueOf(webAppSettingModel.isCreatingNew()));
         telemetryMap.put("CreateNewSP", String.valueOf(webAppSettingModel.isCreatingAppServicePlan()));
@@ -337,7 +363,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
                 return uploadCount;
             } catch (Exception e) {
                 processHandler.setText(
-                    String.format("Upload file via zip deploy met exception: %s, retry immediately...", e.getMessage()));
+                    String.format("Upload file via zip deploy met exception: %s, retry immediately...",
+                        e.getMessage()));
             }
         }
         throw new Exception(String.format("Upload failed after %d times of retry.", UPLOADING_MAX_TRY));
@@ -345,33 +372,34 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     /**
      * when upload file to FTP, the plugin will retry 3 times in case of unexpected errors.
-     * For each try, the method will wait 5 seconds.
      */
     private int uploadFileToFtp(@NotNull FTPClient ftp, @NotNull String path,
-                                 @NotNull InputStream stream, RunProcessHandler processHandler) throws IOException {
-        boolean success = false;
-        int count = 0;
-        while (!success && ++count < UPLOADING_MAX_TRY) {
+                                @NotNull InputStream stream, RunProcessHandler processHandler) throws IOException {
+        int retry = UPLOADING_MAX_TRY;
+        while (retry > 0) {
+            try {
+                retry -= 1;
+                if (ftp.storeFile(path, stream)) {
+                    processHandler.setText(UPLOADING_SUCCESSFUL);
+                    return UPLOADING_MAX_TRY - retry;
+                }
+            } catch (IOException e) {
+                // swallow exception
+            }
             try {
                 Thread.sleep(SLEEP_TIME);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // swallow exception
             }
-            success = ftp.storeFile(path, stream);
         }
-        if (!success) {
-            int rc = ftp.getReplyCode();
-            throw new IOException(String.format(FAIL_FTP_STORE, rc));
-        }
-        processHandler.setText(UPLOADING_SUCCESSFUL);
-        return count;
+        throw new IOException(String.format(FAIL_FTP_STORE, ftp.getReplyCode()));
     }
 
     @NotNull
     private String getUrl(@NotNull WebAppBase webApp, @NotNull String fileName, @NotNull String fileType) {
         String url = "https://" + webApp.defaultHostName();
         if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)
-                && !webAppSettingModel.isDeployToRoot()) {
+            && !webAppSettingModel.isDeployToRoot()) {
             url += "/" + fileName;
         }
         return url;
@@ -384,7 +412,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             webAppSettingModel.setSlotName(app.name());
             webAppSettingModel.setNewSlotConfigurationSource(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
             webAppSettingModel.setNewSlotName("");
-            webAppSettingModel.setWebAppId(((DeploymentSlot)app).parent().id());
+            webAppSettingModel.setWebAppId(((DeploymentSlot) app).parent().id());
         } else {
             webAppSettingModel.setWebAppId(app.id());
         }

@@ -29,26 +29,34 @@
   -->
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
-
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
     <toolWindow
-        anchor="bottom"
-        factoryClass="com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionToolWindowFactory"
-        id="HDInsight Spark Submission"
-        canCloseContents="false"
-        icon="/icons/SparkSubmissionToolWindow.png"/>
+            anchor="bottom"
+            factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
+            id="Cosmos Serverless Spark Jobs"
+            canCloseContents="true"/>
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
     <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
-    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType"/>
+    <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoterDelegate"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.LivySparkRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
+    <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobLocalRunConfigurationProducer"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
+    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
+    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
-    <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoterDelegate"/>
+    <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
@@ -62,10 +70,10 @@
       <implementation-class>com.microsoft.intellij.AzureJavaActionsComponent</implementation-class>
     </component>
     <component>
-      <implementation-class>com.microsoft.azure.hdinsight.jobs.JobViewApplicationComponent</implementation-class>
+      <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent</implementation-class>
     </component>
     <component>
-      <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent</implementation-class>
+      <implementation-class>com.microsoft.azure.hdinsight.jobs.JobViewApplicationComponent</implementation-class>
     </component>
   </application-components>
 
@@ -92,14 +100,47 @@
       <add-to-group group-id="AzureToolbarGroup" anchor="after" relative-to-action="Actions.AzureExplorerOpenAction" />
     </action>
 
+    <group id="AzureToolkit.ValidateCertificate" text="Validate Spark Cluster SSL Certificate" popup="true">
+      <action id="AzureToolkit.DisableSSLCertificateValidation"
+              class="com.microsoft.azuretools.ijidea.actions.DisableSslCertificateValidationAction"
+              text="Disable"/>
+
+      <add-to-group group-id="AzureToolkit.AzureActionGroup" anchor="last"  />
+    </group>
+
     <action id="Actions.SubmitSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.SubmitAction" text="Submit Spark Application to HDInsight"
-            description="Submit Spark Application to HDInsight" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
+            description="Submit Spark Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitLivySparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="Spark on HDInsight"
+            description="Submit Spark on HDInsight Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitCosmosSparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction" text="Spark on Cosmos"
+            description="Submit Spark on Cosmos Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Spark on Cosmos Serverless"
+            description="Submit Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitArisSparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction" text="Spark on SQL Server Big Data Cluster"
+            description="Submit Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+
+    <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction"
+            id="AzureToolkit.Survey"
+            text="Provide Feedback...">
+      <add-to-group group-id="AzureToolkit.AzureActionGroup" />
+    </action>
 
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
             text="Run on Web App" description="Run on Web App"
             icon="/icons/PublishWebApp_16.png">
     </action>
+
+    <action id="Actions.AzureDockerHostDeploy"
+            class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
+            text="Publish as Docker Container..."
+            description="Azure website deployment for Java on Docker"
+            icon="/icons/DockerContainer.svg" />
+
     <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
             text="Add Docker Support" description="Add Docker Support"
             icon="/icons/AddDockerSupport_16.png">
@@ -121,6 +162,57 @@
             icon="/icons/SparkJobDisconnect.png">
     </action>
 
+    <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"
+            text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">
+    </action>
+    <action id="Spark.RunScalaLivyConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleActionDelegate"
+            text="Run Spark Livy Interactive Session Console(Scala)" description="Run Spark Livy Interactive Session Console (Scala language)">
+    </action>
+    <action id="SparkConsole.Execute" class="com.microsoft.azure.hdinsight.spark.console.SparkConsoleExecuteAction" text="Execute Spark Console Statement">
+        <keyboard-shortcut first-keystroke="control ENTER" keymap="$default"/>
+        <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift ENTER"/>
+    </action>
+    <action id="Spark.SendSelectionToConsole" class="com.microsoft.azure.hdinsight.spark.console.SparkSendSelectionToConsoleActionDelegate"
+            text="Send Selection To Spark Console" description="Send selection to Spark console">
+        <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+        <keyboard-shortcut first-keystroke="control shift S" keymap="$default"/>
+        <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl shift S"/>
+        <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift S" remove="true"/>
+        <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="ctrl shift S"/>
+        <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta shift S" remove="true"/>
+    </action>
+
+    <action id="SparkJobRun" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobRunAction"
+            text="SparkJobRun"/>
+    <action id="SparkJobDebug" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobDebugAction"
+            text="SparkJobDebug"/>
+
+    <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
+
+    <action id="Actions.SparkRunLivyConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLivyConsoleActionGroups" text="Run Spark Console"/>
+
+    <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Spark Local Console"/>
+
+    <action id="Actions.RunLivySparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Spark on HDInsight"
+            description="Start an interactive console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunCosmosSparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Spark on Cosmos"
+            description="Start an interactive console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunArisSparkConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction" text="Spark on SQL Server Big Data Cluster"
+            description="Start an interactive console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+
+    <action id="Actions.RunLivySparkLocalConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
+            description="Start a Spark local console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunCosmosSparkLocalConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Spark on Cosmos"
+            description="Start a Spark local console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+    <action id="Actions.RunArisSparkLocalConsoleAction"
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction" text="Spark on SQL Server Big Data Cluster"
+            description="Start a Spark local console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+
     <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
       <reference ref="Actions.WebDeployAction"/>
       <reference ref="Actions.WebAppOnLinux"/>
@@ -141,6 +233,33 @@
       <separator/>
       <reference ref="Actions.ApplicationInsightsAction"/>
       <reference ref="Actions.LibraryConfigurationAction"/>
+    </group>
+
+    <group id="Actions.SelectDefaultSparkApplicationTypeActionGroup" text="Default Spark Application Type" description="Select default spark application type" popup="true">
+        <add-to-group group-id="ToolsMenu" anchor="last"/>
+        <add-to-group group-id="RunContextPopupGroup" anchor="after" relative-to-action="SparkJobDebug"/>
+        <action id="Actions.SelectNoneSparkType"
+                class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
+        </action>
+        <action id="Actions.SelectHDInsightSparkType"
+                class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
+        </action>
+        <action id="Actions.SelectCosmosSparkType"
+                class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Spark on Cosmos" >
+        </action>
+        <action id="Actions.SelectCosmosServerlessSparkType"
+                class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
+        </action>
+        <action id="Actions.SelectArisSparkType"
+                class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
+        </action>
+    </group>
+
+    <group id="SparkConsoleGroup" text="Spark Console" description="Spark Console" popup="true">
+      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <reference ref="Spark.RunScalaLocalConsole"/>
+      <reference ref="Spark.RunScalaLivyConsole"/>
     </group>
 
   </actions>

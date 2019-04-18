@@ -34,7 +34,6 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.StringEntity;
 import rx.Observable;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -216,6 +215,6 @@ public class Statement implements ILogger {
     }
 
     public Observable<Statement> cancel() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 }

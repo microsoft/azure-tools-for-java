@@ -28,15 +28,16 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeStoreAccountInformation;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobInfoListResult;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.JobState;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ResourcePoolState;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkResourcePoolList;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -44,15 +45,19 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.StringEntity;
 import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-public class AzureSparkServerlessAccount implements ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
+public class AzureSparkServerlessAccount implements IClusterDetail, ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
+    private static final String REST_SEGMENT_SPARK_BATCH_JOB = "/activityTypes/spark/batchJobs";
     private static final String REST_SEGMENT_JOB_LIST = "/Jobs";
     private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
     private static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
@@ -154,6 +159,87 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
     // RestFUL API operations
     //
 
+    /**
+     * Get Cosmos Serverless Spark batch job list
+     * @return Cosmos Serverless Spark batch job list
+     */
+    public Observable<SparkBatchJobList> getSparkBatchJobList() {
+        URI uri = getUri().resolve(REST_SEGMENT_SPARK_BATCH_JOB);
+
+        return getHttp()
+                .withUuidUserAgent()
+                .get(uri.toString(), null, null, SparkBatchJobList.class);
+    }
+
+    /**
+     * Prepare for creating Cosmos Serverless Spark batch job
+     * @return the CreateSparkBatchJob object which contains parameters of the job
+     */
+    @NotNull
+    public CreateSparkBatchJob prepareCreateSparkBatchJob(@NotNull String jobUuid,
+                                                          @NotNull CreateSparkBatchJobParameters parameters) {
+        return new CreateSparkBatchJob()
+                .withName(parameters.getName())
+                .withProperties(parameters);
+    }
+
+    /**
+     * Create Cosmos Serverless Spark batch job
+     * @return the SparkBatchJob object which contains the property of the job
+     */
+    public Observable<SparkBatchJob> createSparkBatchJobRequest(@NotNull String jobUuid,
+                                                                @NotNull CreateSparkBatchJobParameters parameters) {
+        String url = getUri().resolve(REST_SEGMENT_SPARK_BATCH_JOB).toString() + "/" + jobUuid;
+        CreateSparkBatchJob putBody = prepareCreateSparkBatchJob(jobUuid, parameters);
+
+        String json = putBody.convertToJson()
+                .orElseThrow(() -> new IllegalArgumentException("Bad Cosmos Serverless Spark Batch Job arguments to put"));
+
+        StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
+
+        return getHttp()
+                .withUuidUserAgent()
+                .put(url, entity, null, null, SparkBatchJob.class);
+    }
+
+    /**
+     * Get Cosmos Serverless Spark batch job detail info
+     * @return the SparkBatchJob object which contains the property of the job
+     */
+    public Observable<SparkBatchJob> getSparkBatchJobRequest(@NotNull String jobUuid) {
+        String url = getUri().resolve(REST_SEGMENT_SPARK_BATCH_JOB).toString() + "/" + jobUuid;
+
+        return getHttp()
+                .withUuidUserAgent()
+                .get(url, null, null, SparkBatchJob.class);
+    }
+
+    /**
+     * Get Cosmos Serverless Spark batch job detail info with raw http response
+     * @param jobUuid
+     * @return Http response for the request
+     */
+    public Observable<HttpResponse> getSparkBatchJobWithRawHttpResponse(@NotNull String jobUuid) {
+        String url = getUri().resolve(REST_SEGMENT_SPARK_BATCH_JOB).toString() + "/" + jobUuid;
+
+        return getHttp()
+                .withUuidUserAgent()
+                .requestWithHttpResponse(new HttpGet(url), null, null, null);
+    }
+
+
+    /**
+     * Kill Cosmos Serverless Spark batch job
+     * @return http response of the killing request
+     */
+    public Observable<HttpResponse> killSparkBatchJobRequest(@NotNull String jobUuid) {
+        String url = getUri().resolve(REST_SEGMENT_SPARK_BATCH_JOB).toString() + "/" + jobUuid;
+
+        return getHttp()
+                .withUuidUserAgent()
+                .delete(url, null, null);
+    }
+
     public Observable<Integer> getJobDegreeOfParallelism() {
         return getJobs()
                 .flatMap(jobList -> Observable.from(jobList.value()))
@@ -191,7 +277,7 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
 
     private AzureSparkServerlessAccount updateWithResponse(SparkResourcePoolList sparkResourcePoolList) {
         clusters = ImmutableSortedSet.copyOf(sparkResourcePoolList.value().stream()
-                .map(analyticsActivity -> new AzureSparkServerlessCluster(this, analyticsActivity.id().toString())
+                .map(analyticsActivity -> new AzureSparkCosmosCluster(this, analyticsActivity.id().toString())
                         .updateWithAnalyticsActivity(analyticsActivity))
                 .iterator());
 
@@ -207,8 +293,8 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
         return ImmutableSortedSet.copyOf(getRawClusters().stream().filter(cluster -> {
             String clusterState = cluster.getState();
-            return !clusterState.equals(ResourcePoolState.ENDED.toString()) &&
-                    !clusterState.equals(ResourcePoolState.ENDING.toString());
+            return !clusterState.equals(SparkResourcePoolState.ENDED.toString()) &&
+                    !clusterState.equals(SparkResourcePoolState.ENDING.toString());
         }).iterator());
     }
 
@@ -250,6 +336,26 @@ public class AzureSparkServerlessAccount implements ClusterContainer, Comparable
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getTitle() {
+        return name;
+    }
+
+    @Override
+    public String getConnectionUrl() {
+        return null;
+    }
+
+    @Override
+    public SparkSubmitStorageType getDefaultStorageType() {
+        return SparkSubmitStorageType.ADLA_ACCOUNT_DEFAULT_STORAGE;
+    }
+
+    @Override
+    public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+        return SparkSubmitStorageTypeOptionsForCluster.ServerlessClusterWithAccountDefault;
     }
 
     public int getSystemMaxDegreeOfParallelism() {

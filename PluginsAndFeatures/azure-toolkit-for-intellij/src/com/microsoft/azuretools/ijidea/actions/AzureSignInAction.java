@@ -36,6 +36,7 @@ import com.microsoft.azuretools.ijidea.ui.SignInWindow;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -77,21 +78,36 @@ public class AzureSignInAction extends AzureAnAction {
         }
     }
 
+    private static String getSignOutWarningMessage(@NotNull AuthMethodManager authMethodManager) {
+        final AuthMethodDetails authMethodDetails = authMethodManager.getAuthMethodDetails();
+        final AuthMethod authMethod = authMethodManager.getAuthMethod();
+        final String warningMessage;
+        switch (authMethod) {
+            case SP:
+                warningMessage = String.format("Signed in using file \"%s\"", authMethodDetails.getCredFilePath());
+                break;
+            case AD:
+            case DC:
+                warningMessage = String.format("Signed in as %s", authMethodDetails.getAccountEmail());
+                break;
+            default:
+                warningMessage = "Signed in by unknown authentication method.";
+                break;
+        }
+        return String.format("%s\n Do you really want to sign out?", warningMessage);
+    }
+
     public static void onAzureSignIn(Project project) {
         JFrame frame = WindowManager.getInstance().getFrame(project);
         try {
             AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
             boolean isSignIn = authMethodManager.isSignedIn();
             if (isSignIn) {
-                String artifact = (authMethodManager.getAuthMethod() == AuthMethod.AD)
-                        ? "Signed in as " + authMethodManager.getAuthMethodDetails().getAccountEmail()
-                        : "Signed in using file \"" + authMethodManager.getAuthMethodDetails().getCredFilePath() + "\"";
                 int res = JOptionPane.showConfirmDialog(frame,
-                        artifact + "\n"
-                                + "Do you really want to sign out?",
-                        "Azure Sign Out",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
-                        new ImageIcon("icons/azure.png"));
+                    getSignOutWarningMessage(authMethodManager),
+                    "Azure Sign Out",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    new ImageIcon("icons/azure.png"));
                 if (res == JOptionPane.OK_OPTION) {
                     AdAuthManager adAuthManager = AdAuthManager.getInstance();
                     if (adAuthManager.isSignedIn())
@@ -99,17 +115,10 @@ public class AzureSignInAction extends AzureAnAction {
                     authMethodManager.signOut();
                 }
             } else {
-//                SignInWindow w = SignInWindow.go(authMethodManager.getAuthMethodDetails(), project);
-//                if (w != null) {
-//                    AuthMethodDetails authMethodDetailsUpdated = w.getAuthMethodDetails();
-//                    authMethodManager.setAuthMethodDetails(authMethodDetailsUpdated);
-//                    SelectSubscriptionsAction.onShowSubscriptions(project);
-//                }
                 doSignIn(authMethodManager, project);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            //LOGGER.error("onAzureSignIn", ex);
             ErrorWindow.show(project, ex.getMessage(), "AzureSignIn Action Error");
         }
     }

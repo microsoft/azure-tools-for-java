@@ -27,7 +27,6 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -44,12 +43,10 @@ import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.azuretools.ijidea.actions.GithubSurveyAction;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.intellij.common.CommonConst;
-import com.microsoft.intellij.feedback.GithubIssue;
-import com.microsoft.intellij.feedback.NewGithubIssueAction;
-import com.microsoft.intellij.feedback.ReportableSurvey;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -73,7 +70,6 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AzurePlugin extends AbstractProjectComponent {
     protected static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
-
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
@@ -126,9 +122,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 "Thanks for helping Microsoft improve Azure Toolkit experience!\nYour feedback is important. Please take a minute to fill out our",
                 NotificationType.INFORMATION);
 
-        feedbackNotification.addAction(new NewGithubIssueAction(
-                        new GithubIssue<>(new ReportableSurvey("User feedback")).withLabel("FeedbRack"),
-                        "user satisfaction survey"));
+        feedbackNotification.addAction(new GithubSurveyAction());
 
         Observable.timer(30, TimeUnit.SECONDS)
                 .take(1)
@@ -146,6 +140,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         if (IS_ANDROID_STUDIO || IS_RIDER) return;
 
         LOG.info("Starting Azure Plugin");
+        firstInstallationByVersion = new Boolean(isFirstInstallationByVersion());
 		try {
             //this code is for copying componentset.xml in plugins folder
             copyPluginComponents();
@@ -315,23 +310,23 @@ public class AzurePlugin extends AbstractProjectComponent {
      * related files in azure-toolkit-for-intellij plugin folder at startup.
      */
     protected void copyPluginComponents() {
-        Runnable runnable = () -> {
-            try {
-                for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
-                    if (azureLibrary.getLocation() != null) {
-                        if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
-                            for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
-                                new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
-                                copyResourceFile(entryName, pluginFolder + File.separator + entryName);
-                            }
+
+
+        try {
+            for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
+                if (azureLibrary.getLocation() != null) {
+                    if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
+                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                            new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
+                            copyResourceFile(entryName, pluginFolder + File.separator + entryName);
                         }
                     }
                 }
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
             }
-        };
-        ApplicationManager.getApplication().invokeLater(runnable);
+
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -384,6 +379,8 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static void log(String message) {
         LOG.info(message);
     }
+
+    private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
     synchronized private boolean isFirstInstallationByVersion() {
         if (firstInstallationByVersion != null) {

@@ -27,10 +27,12 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 
 public class HDStorageAccount extends ClientStorageAccount implements IHDIStorageAccount {
+    public final static String DefaultScheme = "wasbs";
     private String fullStorageBlobName;
     private boolean isDefaultStorageAccount;
     private String defaultContainer;
     private IClusterDetail clusterDetail;
+    public String scheme;
 
     public HDStorageAccount(@Nullable IClusterDetail clusterDetail, String fullStorageBlobName, String key, boolean isDefault, String defaultContainer) {
         super(getStorageShortName(fullStorageBlobName));
@@ -39,6 +41,7 @@ public class HDStorageAccount extends ClientStorageAccount implements IHDIStorag
         this.isDefaultStorageAccount = isDefault;
         this.defaultContainer = defaultContainer;
         this.clusterDetail = clusterDetail;
+        this.scheme = DefaultScheme;
     }
 
     @Override
@@ -71,6 +74,10 @@ public class HDStorageAccount extends ClientStorageAccount implements IHDIStorag
 
     public String getDefaultContainer() {
         return defaultContainer;
+    }
+
+    public String getscheme() {
+        return scheme;
     }
 
     private static String getStorageShortName(@NotNull final String fullStorageBlobName) {

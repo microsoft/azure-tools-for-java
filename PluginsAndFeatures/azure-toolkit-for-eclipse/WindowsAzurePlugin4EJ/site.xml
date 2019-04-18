@@ -4,10 +4,10 @@
    <description name="Microsoft Azure" url="Microsoft Azure">
       Microsoft Azure
    </description>
-   <feature url="features/com.microsoft.applicationinsights.feature_3.13.0.qualifier.jar" id="com.microsoft.applicationinsights.feature" version="3.14.0.qualifier">
+   <feature url="features/com.microsoft.applicationinsights.feature_3.13.0.qualifier.jar" id="com.microsoft.applicationinsights.feature" version="3.13.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.sdk.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.sdk.feature" version="3.14.0.qualifier">
+   <feature url="features/com.microsoft.azuretools.sdk.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.sdk.feature" version="3.13.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
    <feature url="features/com.microsoft.azuretools.hdinsight.feature_1.0.0.qualifier.jar" id="com.microsoft.azuretools.hdinsight.feature" version="1.0.0.qualifier">
@@ -16,19 +16,19 @@
    <feature url="features/com.microsoft.sqljdbc4.feature_6.1.0.jre8.jar" id="com.microsoft.sqljdbc4.feature" version="6.1.0.jre8">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.azureexplorer.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.azureexplorer.feature" version="3.14.0.qualifier">
+   <feature url="features/com.microsoft.azuretools.azureexplorer.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.azureexplorer.feature" version="3.13.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.core.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.core.feature" version="3.14.0.qualifier">
+   <feature url="features/com.microsoft.azuretools.core.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.core.feature" version="3.13.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.webapp.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.webapp.feature" version="3.14.0.qualifier">
+   <feature url="features/com.microsoft.azuretools.webapp.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.webapp.feature" version="3.13.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.docker.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.docker.feature" version="3.14.0.qualifier">
+   <feature url="features/com.microsoft.azuretools.docker.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.docker.feature" version="3.13.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.container.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.container.feature" version="3.14.0.qualifier">
+   <feature url="features/com.microsoft.azuretools.container.feature_3.13.0.qualifier.jar" id="com.microsoft.azuretools.container.feature" version="3.13.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
    <category-def name="com.persistent.azuretools.eclipseplugin.category" label="Azure Toolkit for Eclipse">

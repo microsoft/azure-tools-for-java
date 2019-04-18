@@ -23,22 +23,39 @@
 package com.microsoft.azure.hdinsight.spark.actions
 
 import com.intellij.execution.ExecutorRegistry
-import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
-import com.microsoft.azure.hdinsight.spark.run.configuration.RemoteDebugRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
+import com.microsoft.azure.hdinsight.spark.run.action.SeqActions
+import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 
-class SparkSubmitJobAction : AzureAnAction() {
+
+open class SparkSubmitJobAction : AzureAnAction() {
+    open fun submitWithPopupMenu(anActionEvent: AnActionEvent) : Boolean {
+        return if (SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() == SparkApplicationType.None) {
+            val action = ActionManagerEx.getInstance().getAction("Actions.SparkSubmitJobActionGroups")
+            action?.actionPerformed(anActionEvent)
+            true
+        } else {
+            false
+        }
+    }
     override fun onActionPerformed(anActionEvent: AnActionEvent?) {
         if (anActionEvent == null) {
             return
         }
-
+        if (submitWithPopupMenu(anActionEvent)) {
+            return
+        }
         val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING) ?:
                 getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return
         val clusterName = anActionEvent.dataContext.getData(CLUSTER)?.name
@@ -56,7 +73,8 @@ class SparkSubmitJobAction : AzureAnAction() {
     private fun getRunConfigurationFromDataContext(dataContext: DataContext): RunnerAndConfigurationSettings? {
         val configContext = ConfigurationContext.getFromContext(dataContext)
 
-        return configContext.findExisting() ?: configContext.configuration
+        val existingConfig = configContext.findExisting()
+        return if (existingConfig != null && existingConfig is LivySparkBatchJobRunConfiguration) existingConfig else configContext.configuration
     }
 
     private fun submit(runConfigurationSetting: RunnerAndConfigurationSettings, clusterName: String?, mainClassName: String?) {
@@ -64,7 +82,7 @@ class SparkSubmitJobAction : AzureAnAction() {
 
         runConfigurationSetting.isEditBeforeRun = true
 
-        val runConfiguration = runConfigurationSetting.configuration as RemoteDebugRunConfiguration
+        val runConfiguration = runConfigurationSetting.configuration as? LivySparkBatchJobRunConfiguration ?: return
         val model = runConfiguration.model
         model.focusedTabIndex = 1   // Select remote job submission tab
 
@@ -81,7 +99,8 @@ class SparkSubmitJobAction : AzureAnAction() {
 
         model.isLocalRunConfigEnabled = false   // Disable local run configuration tab
 
-        ProgramRunnerUtil.executeConfiguration(runConfigurationSetting, executor)
+        val environment = ExecutionEnvironmentBuilder.create(executor, runConfigurationSetting).build()
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
 
         // Restore for common run configuration editor
         runConfigurationSetting.isEditBeforeRun = false
@@ -91,3 +110,8 @@ class SparkSubmitJobAction : AzureAnAction() {
         }
     }
 }
+
+class LivySparkSelectAndSubmitAction : SeqActions("Actions.SelectHDInsightSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
+class CosmosServerlessSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
+class ArisSparkSelectAndSubmitAction : SeqActions("Actions.SelectArisSparkType", "Actions.SubmitSparkApplicationAction")

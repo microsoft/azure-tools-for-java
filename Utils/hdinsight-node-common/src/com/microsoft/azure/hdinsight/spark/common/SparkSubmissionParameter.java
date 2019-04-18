@@ -53,6 +53,7 @@ public class SparkSubmissionParameter implements IConvertible {
      * name	            Name of the application	string
      * conf             Spark configuration properties  Map of key=val
      */
+    private String name = "";
     private String file = "";
     private String className = "";
 
@@ -71,16 +72,16 @@ public class SparkSubmissionParameter implements IConvertible {
     public static final String DriverMemoryDefaultValue = "4G";
 
     public static final String DriverCores = "driverCores";
-    public static final Integer DriverCoresDefaultValue = 1;
+    public static final int DriverCoresDefaultValue = 1;
 
     public static final String ExecutorMemory = "executorMemory";
     public static final String ExecutorMemoryDefaultValue = "4G";
 
     public static final String NumExecutors = "numExecutors";
-    public static final Integer NumExecutorsDefaultValue = 5;
+    public static final int NumExecutorsDefaultValue = 5;
 
     public static final String ExecutorCores = "executorCores";
-    public static final Integer ExecutorCoresDefaultValue = 1;
+    public static final int ExecutorCoresDefaultValue = 1;
 
     public static final String Conf = "conf";   // 	Spark configuration properties
 
@@ -109,6 +110,10 @@ public class SparkSubmissionParameter implements IConvertible {
         this.jars = referencedJars;
         this.jobConfig = jobConfig;
         this.args = args;
+    }
+
+    public void setName(@NotNull String name) {
+        this.name = name;
     }
 
     public void setFile(String file) {
@@ -153,6 +158,11 @@ public class SparkSubmissionParameter implements IConvertible {
 
     public void setLocalArtifactPath(String path) {
         localArtifactPath = path;
+    }
+
+    @JsonProperty(NAME)
+    public String getName() {
+        return name;
     }
 
     @JsonProperty("file")

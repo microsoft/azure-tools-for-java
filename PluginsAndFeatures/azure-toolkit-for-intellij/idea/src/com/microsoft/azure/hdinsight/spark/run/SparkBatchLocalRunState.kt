@@ -39,7 +39,7 @@ import com.intellij.util.PathUtil
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel
 import com.microsoft.azure.hdinsight.spark.mock.SparkLocalRunner
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView
-import com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable
+import com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunParamsPanel
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import org.apache.commons.lang3.SystemUtils
 import java.io.File
@@ -72,12 +72,12 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
         }
     }
 
-    open fun getCommandLineVmParameters(params: JavaParameters): List<String> {
+    open fun getCommandLineVmParameters(params: JavaParameters, moduleName: String): List<String> {
         // Add jmockit as -javaagent
         val jmockitJarPath = params.classPath.pathList.stream()
                 .filter { path -> path.toLowerCase().matches(".*\\Wjmockit-.*\\.jar".toRegex()) }
                 .findFirst()
-                .orElseThrow { ExecutionException("Dependence jmockit not found") }
+                .orElseThrow { ExecutionException("Dependency jmockit hasn't been found in module `$moduleName` classpath") }
 
         val javaAgentParam = "-javaagent:$jmockitJarPath"
 
@@ -96,7 +96,9 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
 
         JavaParametersUtil.configureConfiguration(params, model)
 
-        val mainModule = ModuleManager.getInstance(myProject).findModuleByName(myProject.name)
+        val mainModule = model.classpathModule?.let {
+            ModuleManager.getInstance(myProject).findModuleByName(it)
+        } ?: ModuleManager.getInstance(myProject).modules.first { it.name.equals(myProject.name, ignoreCase = true) }
 
         if (mainModule != null) {
             params.configureByModule(mainModule, JavaParameters.JDK_AND_CLASSES_AND_TESTS)
@@ -107,7 +109,7 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
         params.workingDirectory = Paths.get(model.dataRootDirectory, "__default__", "user", "current").toString()
 
         if (hasJmockit) {
-            params.vmParametersList.addAll(getCommandLineVmParameters(params))
+            params.vmParametersList.addAll(getCommandLineVmParameters(params, mainModule.name))
         }
 
         if (hasClassPath) {
@@ -126,8 +128,8 @@ open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocal
                 .addAt(0, "--master local[" + (if (model.isIsParallelExecution) 2 else 1) + "]")
 
         if (SystemUtils.IS_OS_WINDOWS) {
-            if (!Optional.ofNullable(params.env[com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunConfigurable.HADOOP_HOME_ENV])
-                            .map { hadoopHome -> Paths.get(hadoopHome, "bin", SparkLocalRunConfigurable.WINUTILS_EXE_NAME).toString() }
+            if (!Optional.ofNullable(params.env[SparkLocalRunParamsPanel.HADOOP_HOME_ENV])
+                            .map { hadoopHome -> Paths.get(hadoopHome, "bin", SparkLocalRunParamsPanel.WINUTILS_EXE_NAME).toString() }
                             .map { File(it) }
                             .map { it.exists() }
                             .orElse(false)) {
