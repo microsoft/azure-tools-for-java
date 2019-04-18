@@ -91,14 +91,17 @@ dependencies {
     compile 'com.microsoft.azuretools:azuretools-core:3.20.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
     compile 'com.microsoft.azuretools:azure-explorer-common:3.20.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
     compile 'com.microsoft.azuretools:hdinsight-node-common:3.20.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
     compile 'com.spotify:docker-client:8.11.7'
 
