@@ -29,7 +29,6 @@
   -->
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
     <toolWindow
             anchor="bottom"
