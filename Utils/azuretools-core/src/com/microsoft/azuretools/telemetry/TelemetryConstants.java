@@ -22,12 +22,19 @@
 
 package com.microsoft.azuretools.telemetry;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TelemetryConstants {
 
     // production name
     public static final String WEBAPP = "webapp";
     public static final String ACR = "acr";
     public static final String DOCKER = "docker";
+    public static final String VM = "vm";
+    public static final String REDIS = "redis";
+    public static final String STORAGE = "storage";
+    public static final String ACCOUNT = "account";
 
     // operation value
     public static final String CREATE_WEBAPP = "create-webapp";
@@ -37,6 +44,27 @@ public class TelemetryConstants {
     public static final String CREATE_WEBAPP_SLOT = "create-webapp-slot";
     public static final String OPEN_CREATEWEBAPP_DIALOG = "open-create-webapp-dialog";
     public static final String REFRESH_METADATA = "refresh";
+    public static final String SIGNIN = "signin";
+    public static final String SIGNOUT = "signout";
+    public static final String CREATE_VM = "create-vm";
+    public static final String DELETE_VM = "delete-vm";
+    public static final String SHUTDOWN_VM = "shutdown-vm";
+    public static final String START_VM = "start-vm";
+    public static final String RESTART_VM = "restart-vm";
+    public static final String CREATE_STORAGE_ACCOUNT = "create-storage-account";
+    public static final String DELETE_STORAGE_ACCOUNT = "delete-storage-account";
+    public static final String CREATE_BLOB_CONTAINER = "create-blob-container";
+    public static final String UPLOAD_BLOB_FILE = "upload-blob-file";
+    public static final String DELETE_BLOB_CONTAINER = "delete-blob-container";
+    public static final String CREATE_REDIS = "create-redis";
+    public static final String DELETE_REDIS = "delete-redis";
+    public static final String REDIS_SCAN = "redis-scan";
+    public static final String REDIS_GET = "redis-get";
+    public static final String REDIS_READPROP = "redis-readprop";
+    public static final String ACR_PUSHIMAGE = "acr-pushimage";
+    public static final String ACR_READPROP = "acr-readprop";
+    public static final String SIGNIN_DC = "dc";
+    public static final String SIGNIN_SP = "sp";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
@@ -48,4 +76,13 @@ public class TelemetryConstants {
     public static final String FILETYPE = "fileType";
     public static final String ARTIFACT_UPLOAD_COUNT = "artifactUploadCount";
     public static final String JAVA_APPNAME = "javaAppName";
+    public static final String SIGNIN_METHOD = "signinMethod";
+
+    public static final Map<String, String> signInSPProp = new HashMap<>();
+    public static final Map<String, String> signInDCProp = new HashMap<>();
+
+    static {
+        signInSPProp.put(SIGNIN_METHOD, SIGNIN_SP);
+        signInDCProp.put(SIGNIN_METHOD, SIGNIN_DC);
+    }
 }

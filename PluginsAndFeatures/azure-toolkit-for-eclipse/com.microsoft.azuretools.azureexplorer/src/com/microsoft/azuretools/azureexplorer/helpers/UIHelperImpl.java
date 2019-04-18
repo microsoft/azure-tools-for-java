@@ -21,6 +21,8 @@ package com.microsoft.azuretools.azureexplorer.helpers;
 
 import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor;
 import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotPropertyEditorInput;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.File;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -271,12 +273,14 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openRedisPropertyView(RedisCacheNode node) {
-        String sid = node.getSubscriptionId();
-        String resId = node.getResourceId();
-        if (sid == null || resId == null) {
-            return;
-        }
-        openView(RedisPropertyView.ID, sid, resId);
+        EventUtil.executeWithLog(TelemetryConstants.REDIS, TelemetryConstants.REDIS_READPROP, (operation) -> {
+            String sid = node.getSubscriptionId();
+            String resId = node.getResourceId();
+            if (sid == null || resId == null) {
+                return;
+            }
+            openView(RedisPropertyView.ID, sid, resId);
+        });
     }
 
     @Override

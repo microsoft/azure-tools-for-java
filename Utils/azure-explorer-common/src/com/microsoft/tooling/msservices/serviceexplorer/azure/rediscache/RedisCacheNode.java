@@ -22,6 +22,10 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_REDIS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
+
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -101,8 +105,10 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId,
+            EventUtil.executeWithLog(REDIS, DELETE_REDIS, (operation) -> {
+                RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId,
                     RedisCacheNode.this.resourceId, RedisCacheNode.this);
+            });
         }
 
         @Override

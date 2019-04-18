@@ -19,6 +19,8 @@
  */
 package com.microsoft.azuretools.azureexplorer.forms;
 
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -145,9 +147,9 @@ public class UploadBlobFileForm extends AzureDialogWrapper {
         try {
             folder = new URI(null, null, folder, null).getPath();
         } catch (URISyntaxException ignore) {}
-
-        uploadSelected.run();
-
+        EventUtil.executeWithLog(TelemetryConstants.STORAGE, TelemetryConstants.UPLOAD_BLOB_FILE, (operation) -> {
+            uploadSelected.run();
+        });
         super.okPressed();
     }
 
