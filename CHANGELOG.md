@@ -4,6 +4,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 - [Change Log](#change-log)
 
+  - [3.21.0](#3210)
   - [3.20.0](#3200)
   - [3.19.0](#3190)
   - [3.18.0](#3180)
@@ -31,6 +32,16 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.21.0
+
+### Added
+
+- Support Java 11 App Service
+
+### Changed
+
+### Fixed
 
 ## 3.20.0
 
