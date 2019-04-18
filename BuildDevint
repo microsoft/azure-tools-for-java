@@ -104,7 +104,7 @@ if $BUILD_INTELLIJ; then
   tc_close "Building IDEA plugin"
 fi
 
-BUILD_NUMBER="3.14.0.$BUILD_COUNTER-2019.1"
+BUILD_NUMBER="3.20.0.$BUILD_COUNTER-2019.1"
 
 # Build JetBrains Rider 2019.1 plugin
 tc_open "Building Rider plugin"
