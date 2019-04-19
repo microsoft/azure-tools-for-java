@@ -30,7 +30,7 @@
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>User experiences change for HDInsight Reader role cluster</li>
+        <li><span style="color: red;font-weight: bold;">Breaking Change: </span>Users with cluster ‘<span style="font-weight: bold;">Reader</span>’ only role can no longer submit job to the HDInsight cluster nor access to the cluster storage. Please request the cluster owner or user access administrator to upgrade your role to <span style="font-weight: bold;">HDInsight Cluster Operator</span> or <span style="font-weight: bold;">Contributor</span> in the <a href="https://ms.portal.azure.com">Azure Portal</a>. Click <a href="https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#contributor">here</a> for more information</li>
         <li>AadProvider.json file is no longer needed for Spark on Cosmos Serverless feature</li>
     </ul>
     <h4>Fixed</h4>
