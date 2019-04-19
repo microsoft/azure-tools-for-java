@@ -34,13 +34,17 @@ import org.osgi.framework.BundleException;
 import com.microsoft.azure.hdinsight.common.HDInsightHelper;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.JobViewManager;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.actions.AddNewHDInsightReaderClusterAction;
 import com.microsoft.azuretools.azureexplorer.editors.JobViewInput;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
 public class HDInsightHelperImpl implements HDInsightHelper {
 	private static final String HDINSIHGT_BUNDLE_ID = "com.microsoft.azuretools.hdinsight";
@@ -115,4 +119,10 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             HDInsightLoader.setHHDInsightHelper(new com.microsoft.azuretools.azureexplorer.helpers.HDInsightHelperImpl());
         }
     }
+    
+    @NotNull
+    public NodeActionListener createAddNewHDInsightReaderClusterAction(@NotNull HDInsightRootModule module, @NotNull ClusterDetail clusterDetail) {
+        return new AddNewHDInsightReaderClusterAction(module, clusterDetail);
+    }
+
 }
