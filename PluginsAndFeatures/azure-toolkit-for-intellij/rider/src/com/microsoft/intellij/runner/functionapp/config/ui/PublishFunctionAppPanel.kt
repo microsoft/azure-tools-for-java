@@ -65,8 +65,6 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
     companion object {
         private const val FUNCTION_APP_SETTINGS_PANEL_NAME = "Run On Function App"
 
-        private const val RUN_CONFIG_PREFIX = "Azure Function App"
-
         private const val TAB_WEB_APP_CONFIGURATION = "App Configuration"
         private const val TAB_DATABASE_CONNECTION = "Database Connection"
 

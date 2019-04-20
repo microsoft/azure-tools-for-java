@@ -47,6 +47,7 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         private const val ACTION_RESTART = "Restart"
         private const val ACTION_DELETE = "Delete"
         private const val ACTION_OPEN_IN_BROWSER = "Open In Browser"
+        private const val ACTION_OPEN_PROPERTIES = "Open Properties"
 
         private const val PROGRESS_MESSAGE_DELETE_FUNCTION_APP = "Deleting Function App '%s'"
         private const val PROMPT_MESSAGE_DELETE_FUNCTION_APP =
@@ -59,6 +60,7 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         private const val ICON_ACTION_RESTART = "AzureRestart.svg"
         private const val ICON_ACTION_OPEN_IN_BROWSER = "OpenInBrowser.svg"
         private const val ICON_ACTION_DELETE = "Discard.svg"
+        private const val ICON_ACTION_SHOW_PROPERTIES = "gearPlain.svg"
 
         private fun getFunctionAppIcon(state: String) =
                 if (FunctionAppState.fromString(state) == FunctionAppState.RUNNING) ICON_FUNCTION_APP_RUNNING
@@ -94,6 +96,7 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         addAction(ACTION_RESTART, ICON_ACTION_RESTART, createBackgroundActionListener("Restarting Function App") { restartFunctionApp() })
         addAction(ACTION_DELETE, ICON_ACTION_DELETE, DeleteFunctionAppAction())
         addAction(ACTION_OPEN_IN_BROWSER, ICON_ACTION_OPEN_IN_BROWSER, OpenInBrowserAction())
+        addAction(ACTION_OPEN_PROPERTIES, ICON_ACTION_SHOW_PROPERTIES, OpenProperties())
         super.loadActions()
     }
 
@@ -191,6 +194,13 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
 
         override fun actionPerformed(e: NodeActionEvent?) {
             DefaultLoader.getUIHelper().openInBrowser("http://$hostName")
+        }
+    }
+
+    private inner class OpenProperties internal constructor() : NodeActionListener() {
+
+        override fun actionPerformed(e: NodeActionEvent?) {
+            DefaultLoader.getUIHelper().openFunctionAppProperties(this@FunctionAppNode)
         }
     }
 }

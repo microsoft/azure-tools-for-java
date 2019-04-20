@@ -1,6 +1,6 @@
 /**
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -47,6 +47,7 @@ import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
+import com.microsoft.intellij.helpers.functionapp.FunctionAppPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
@@ -56,6 +57,7 @@ import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -446,6 +448,24 @@ public class UIHelperImpl implements UIHelper {
                 type, iconPath, userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+    }
+
+    @Override
+    public void openFunctionAppProperties(FunctionAppNode node) {
+        final String subscriptionId = node.getSubscriptionId();
+        final String functionAppId = node.getFunctionAppId();
+        final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, functionAppId, (Project) node.getProject());
+        if (fileEditorManager == null) {
+            return;
+        }
+        final String type = FunctionAppPropertyViewProvider.TYPE;
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, functionAppId);
+        if (itemVirtualFile == null) {
+            final String iconPath = node.getParent() == null ? node.getIconPath()
+                    : node.getParent().getIconPath();
+            itemVirtualFile = createVirtualFile(node.getFunctionAppName(), type, iconPath, subscriptionId, functionAppId);
+        }
+        fileEditorManager.openFile(itemVirtualFile, true, true);
     }
 
     @Nullable

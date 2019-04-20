@@ -48,6 +48,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String ICON_ACTION_RESTART = "AzureRestart.svg";
     private static final String ICON_ACTION_OPEN_IN_BROWSER = "OpenInBrowser.svg";
     private static final String ICON_ACTION_DELETE = "Discard.svg";
+    private static final String ICON_ACTION_SHOW_PROPERTIES = "gearPlain.svg";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     protected String webAppName;
@@ -100,7 +101,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
             }
         });
-        addAction(ACTION_SHOW_PROPERTY, null, new NodeActionListener() {
+        addAction(ACTION_SHOW_PROPERTY, ICON_ACTION_SHOW_PROPERTIES, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);

@@ -37,7 +37,11 @@ import com.microsoft.azuretools.core.mvp.model.functionapp.functions.FunctionImp
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.FunctionAppService
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
+import org.apache.commons.io.IOUtils
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 
@@ -272,6 +276,39 @@ object AzureFunctionAppMvpModel {
         return functions
     }
 
+    fun getPublishableProfileXmlWithSecrets(subscriptionId: String, appId: String, filePath: String): Boolean {
+        val app = getFunctionAppById(subscriptionId, appId)
+        val file = File(Paths.get(filePath, "${app.name()}_${System.currentTimeMillis()}.PublishSettings").toString())
+        file.createNewFile()
+        try {
+            app.manager().inner().webApps()
+                    .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), PublishingProfileFormat.FTP)
+                    .use { inputStream ->
+                        FileOutputStream(file).use { outputStream ->
+                            IOUtils.copy(inputStream, outputStream)
+                            return true
+                        }
+                    }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    fun updateFunctionAppSettings(subscriptionId: String,
+                                  appId: String,
+                                  toUpdate: Map<String, String>,
+                                  toRemove: Set<String>) {
+
+        val app = getFunctionAppById(subscriptionId, appId)
+        clearTags(app)
+        var update = app.update().withAppSettings(toUpdate)
+        for (key in toRemove) {
+            update = update.withoutAppSetting(key)
+        }
+        update.apply()
+    }
+
     private fun createFunctionAppDefinition(subscriptionId: String, name: String) =
             AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps().define(name)
 
@@ -283,5 +320,16 @@ object AzureFunctionAppMvpModel {
 
         return if (isCreateNew) definition.withNewStorageAccount(name, skuName)
         else definition.withExistingStorageAccount(storageAccount)
+    }
+
+    /**
+     * Work Around:
+     * When a web app is created from Azure Portal, there are hidden tags associated with the app.
+     * It will be messed up when calling "update" API.
+     * An issue is logged at https://github.com/Azure/azure-libraries-for-java/issues/508 .
+     * Remove all tags here to make it work.
+     */
+    private fun clearTags(app: WebAppBase) {
+        app.inner().withTags(null)
     }
 }

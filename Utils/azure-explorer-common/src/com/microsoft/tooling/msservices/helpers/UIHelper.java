@@ -1,5 +1,6 @@
 /**
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -31,6 +32,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -76,6 +78,8 @@ public interface UIHelper {
     void openWebAppPropertyView(@NotNull WebAppNode node);
 
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
+
+    void openFunctionAppProperties(@NotNull FunctionAppNode node);
 
     @Nullable
     <T extends StorageServiceTreeItem> Object getOpenedFile(@NotNull Object projectObject,

@@ -1,19 +1,18 @@
-/*
- * Copyright (c) Microsoft Corporation
+/**
  * Copyright (c) 2019 JetBrains s.r.o.
- *
+ * <p/>
  * All rights reserved.
- *
+ * <p/>
  * MIT License
- *
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
+ * <p/>
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- *
+ * <p/>
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -21,28 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.helpers.webapp;
+package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
 
-import com.microsoft.intellij.helpers.base.AppBasePropertyViewProvider;
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView
+import com.microsoft.azuretools.core.mvp.ui.functionapp.FunctionAppProperty
 
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.intellij.helpers.UIHelperImpl;
+interface FunctionAppPropertyMvpView : MvpView {
 
-public class WebAppPropertyViewProvider extends AppBasePropertyViewProvider {
-    public static final String TYPE = "WEB_APP_PROPERTY";
-    @NotNull
-    @Override
-    public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
-        String sid = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
-        String id = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
-        return WebAppPropertyView.create(project, sid, id);
-    }
+    fun onLoadFunctionAppProperty(sid: String, appId: String, slotName: String)
 
-    @Override
-    protected String getType() {
-        return TYPE;
-    }
+    fun showProperty(property: FunctionAppProperty)
+
+    fun showPropertyUpdateResult(isSuccess: Boolean)
+
+    fun showGetPublishingProfileResult(isSuccess: Boolean)
 }

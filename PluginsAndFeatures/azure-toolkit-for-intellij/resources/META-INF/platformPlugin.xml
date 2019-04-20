@@ -309,6 +309,7 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.functionapp.FunctionAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider"/>
     <toolWindow
           anchor="left"
