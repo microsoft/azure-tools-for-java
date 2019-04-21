@@ -22,6 +22,7 @@
  */
 package com.microsoft.intellij.common;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 
@@ -31,6 +32,14 @@ public class CommonConst {
     public static final String REMOTE_SPARK_JOB_WINDOW_ID = "Remote Spark Job in Cluster";
     public static final String PLUGIN_ID = "com.intellij.resharper.azure";
     public static final String PLUGIN_NAME = "azure-toolkit-for-intellij";
-    public static final String PLUGIN_VERISON = PluginManager.getPlugin(PluginId.getId(PLUGIN_ID)).getVersion();
+    public static final String PLUGIN_VERISON = getPluginVersion();
     public static final String SPARK_APPLICATION_TYPE = "com.microsoft.azure.hdinsight.DefaultSparkApplicationType";
+
+    private static String getPluginVersion() {
+        IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId(PLUGIN_ID));
+        if (descriptor == null)
+            return "";
+
+        return descriptor.getVersion();
+    }
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -176,6 +176,7 @@ public class PluginUtil {
 
     public static String getPluginRootDirectory() {
         IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID));
+        if (pluginDescriptor == null) return "";
         return pluginDescriptor.getPath().getAbsolutePath();
     }
 

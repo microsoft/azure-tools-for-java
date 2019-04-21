@@ -128,11 +128,12 @@
             class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction" text="Spark on SQL Server Big Data Cluster"
             description="Submit Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
 
-    <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction"
-            id="AzureToolkit.Survey"
-            text="Provide Feedback...">
+    <group id="AzureToolkit.Survey">
+      <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction"
+              id="AzureToolkit.Survey"
+              text="Provide Feedback..."/>
       <add-to-group group-id="AzureToolkit.AzureActionGroup" />
-    </action>
+    </group>
 
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
             text="Run on Web App" description="Run on Web App"

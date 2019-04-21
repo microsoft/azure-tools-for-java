@@ -1,5 +1,6 @@
 /**
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -34,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -91,9 +93,10 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
         return true;
     }
 
+    @NotNull
     @Override
     public Set<String> processListOptions() {
-        return new HashSet<String>();
+        return new HashSet<>();
     }
 
     public class AzureAbstractConfigurable implements SearchableConfigurable, Configurable.NoScroll, OptionsContainingConfigurable {
@@ -115,9 +118,10 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
             return null;
         }
 
+        @NotNull
         @Override
         public Set<String> processListOptions() {
-            return null;
+            return Collections.emptySet();
         }
 
         @Nullable
