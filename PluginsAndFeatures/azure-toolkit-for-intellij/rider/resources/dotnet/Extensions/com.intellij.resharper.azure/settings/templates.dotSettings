@@ -2,37 +2,37 @@
     <!-- C# templates -->
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=10AA984D50993544AC205383CE878BCA/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=10AA984D50993544AC205383CE878BCA/EntryName/@EntryValue">IoT Hub Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=10AA984D50993544AC205383CE878BCA/Position/@EntryValue">14</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=10AA984D50993544AC205383CE878BCA/Position/@EntryValue">29</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3EEDE17E903019419043E88D376059DC/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3EEDE17E903019419043E88D376059DC/EntryName/@EntryValue">Queue Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3EEDE17E903019419043E88D376059DC/Position/@EntryValue">8</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3EEDE17E903019419043E88D376059DC/Position/@EntryValue">23</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=465D49B3384FDE4E87E869774F455DAE/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=465D49B3384FDE4E87E869774F455DAE/EntryName/@EntryValue">Event Grid Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=465D49B3384FDE4E87E869774F455DAE/Position/@EntryValue">13</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=465D49B3384FDE4E87E869774F455DAE/Position/@EntryValue">28</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=69F652E2FB29B04BB94505057AB259C5/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=69F652E2FB29B04BB94505057AB259C5/EntryName/@EntryValue">HTTP Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=69F652E2FB29B04BB94505057AB259C5/Position/@EntryValue">6</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=69F652E2FB29B04BB94505057AB259C5/Position/@EntryValue">21</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/EntryName/@EntryValue">Blob Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Position/@EntryValue">7</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Position/@EntryValue">22</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=744A6A5E6574184EB1EBA82294AD3391/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=744A6A5E6574184EB1EBA82294AD3391/EntryName/@EntryValue">Service Bus Topic Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=744A6A5E6574184EB1EBA82294AD3391/Position/@EntryValue">10</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=744A6A5E6574184EB1EBA82294AD3391/Position/@EntryValue">25</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=81D7BB6083CC6949894044E09CE85725/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=81D7BB6083CC6949894044E09CE85725/EntryName/@EntryValue">Timer Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=81D7BB6083CC6949894044E09CE85725/Position/@EntryValue">5</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=81D7BB6083CC6949894044E09CE85725/Position/@EntryValue">20</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/EntryName/@EntryValue">Event Hub Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Position/@EntryValue">12</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Position/@EntryValue">27</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F1E2B81457D1AE4A9977557216C67FD6/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F1E2B81457D1AE4A9977557216C67FD6/EntryName/@EntryValue">Durable Functions Orchestration</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F1E2B81457D1AE4A9977557216C67FD6/Position/@EntryValue">15</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F1E2B81457D1AE4A9977557216C67FD6/Position/@EntryValue">30</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F7EE3A0674610547AB87B8FC949B596A/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F7EE3A0674610547AB87B8FC949B596A/EntryName/@EntryValue">Service Bus Queue Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F7EE3A0674610547AB87B8FC949B596A/Position/@EntryValue">9</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F7EE3A0674610547AB87B8FC949B596A/Position/@EntryValue">24</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F96BDA43831E514AA19A550B9421C1E1/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F96BDA43831E514AA19A550B9421C1E1/EntryName/@EntryValue">CosmosDB Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F96BDA43831E514AA19A550B9421C1E1/Position/@EntryValue">11</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F96BDA43831E514AA19A550B9421C1E1/Position/@EntryValue">26</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/CustomProperties/=Extension/@EntryIndexedValue">cs</s:String>
@@ -647,25 +647,25 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=0A4B10E8DE974748B8F05B9F438BDC92/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=0A4B10E8DE974748B8F05B9F438BDC92/EntryName/@EntryValue">HTTP Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=0A4B10E8DE974748B8F05B9F438BDC92/Position/@EntryValue">17</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=0A4B10E8DE974748B8F05B9F438BDC92/Position/@EntryValue">21</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=2BFA324C21EC8947BA43B5A897FB8F5B/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=2BFA324C21EC8947BA43B5A897FB8F5B/EntryName/@EntryValue">Event Grid Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=2BFA324C21EC8947BA43B5A897FB8F5B/Position/@EntryValue">22</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=2BFA324C21EC8947BA43B5A897FB8F5B/Position/@EntryValue">26</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3CA2A97142C5824EAF8D4A1BB410A6B2/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3CA2A97142C5824EAF8D4A1BB410A6B2/EntryName/@EntryValue">Timer Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3CA2A97142C5824EAF8D4A1BB410A6B2/Position/@EntryValue">16</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=3CA2A97142C5824EAF8D4A1BB410A6B2/Position/@EntryValue">20</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=53F73E3ED7813041A8C9AFF5CABC23ED/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=53F73E3ED7813041A8C9AFF5CABC23ED/EntryName/@EntryValue">Blob Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=53F73E3ED7813041A8C9AFF5CABC23ED/Position/@EntryValue">18</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=53F73E3ED7813041A8C9AFF5CABC23ED/Position/@EntryValue">22</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=CB73324A95D5D64B9B698EAF71120B55/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=CB73324A95D5D64B9B698EAF71120B55/EntryName/@EntryValue">Event Hub Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=CB73324A95D5D64B9B698EAF71120B55/Position/@EntryValue">21</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=CB73324A95D5D64B9B698EAF71120B55/Position/@EntryValue">25</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=D5C7CCBF430AC24FA4D4580D1265B536/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=D5C7CCBF430AC24FA4D4580D1265B536/EntryName/@EntryValue">Queue Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=D5C7CCBF430AC24FA4D4580D1265B536/Position/@EntryValue">19</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=D5C7CCBF430AC24FA4D4580D1265B536/Position/@EntryValue">23</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F2E6EBF145B0764487EFD9458EC74C23/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F2E6EBF145B0764487EFD9458EC74C23/EntryName/@EntryValue">CosmosDB Trigger</s:String>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F2E6EBF145B0764487EFD9458EC74C23/Position/@EntryValue">20</s:Int64>
+    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F2E6EBF145B0764487EFD9458EC74C23/Position/@EntryValue">24</s:Int64>
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
