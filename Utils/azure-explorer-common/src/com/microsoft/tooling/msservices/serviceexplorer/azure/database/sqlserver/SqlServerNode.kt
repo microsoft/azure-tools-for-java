@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -47,6 +47,8 @@ class SqlServerNode(parent: AzureDatabaseModule,
         private const val PROGRESS_MESSAGE_DELETE_SQL_SERVER = "Deleting SQL Server '%s'"
         private const val PROMPT_MESSAGE_DELETE_SQL_SERVER =
                 "This operation will delete SQL Server '%s'.\nAre you sure you want to continue?"
+
+        private const val ICON_ACTION_DELETE = "Discard.svg"
     }
 
     init {
@@ -60,7 +62,7 @@ class SqlServerNode(parent: AzureDatabaseModule,
     }
 
     override fun loadActions() {
-        addAction(ACTION_DELETE, DeleteSqlServerAction())
+        addAction(ACTION_DELETE, ICON_ACTION_DELETE, DeleteSqlServerAction())
         super.loadActions()
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2019 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -43,6 +43,8 @@ class SqlDatabaseNode(parent: SqlServerNode,
         private const val SQL_DATABASE_ICON = "Database.svg"
         private const val DELETE_SQL_DATABASE_PROMPT_MESSAGE = "This operation will delete SQL Database %s.\n" + "Are you sure you want to continue?"
         private const val DELETE_SQL_DATABASE_PROGRESS_MESSAGE = "Deleting SQL Database '%s'"
+
+        private const val ICON_ACTION_DELETE = "Discard.svg"
     }
 
     init {
@@ -50,7 +52,7 @@ class SqlDatabaseNode(parent: SqlServerNode,
     }
 
     override fun loadActions() {
-        addAction(ACTION_DELETE, DeleteSqlDatabaseAction())
+        addAction(ACTION_DELETE, ICON_ACTION_DELETE, DeleteSqlDatabaseAction())
         super.loadActions()
     }
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2019 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,21 +23,16 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class WebAppBaseNode extends RefreshableNode implements TelemetryProperties, WebAppBaseNodeView {
     protected static final String ACTION_START = "Start";
@@ -72,9 +68,18 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(ACTION_START).setEnabled(!running);
-        getNodeActionByName(ACTION_STOP).setEnabled(running);
-        getNodeActionByName(ACTION_RESTART).setEnabled(running);
+
+        NodeAction startAction = getNodeActionByName(ACTION_START);
+        if (startAction != null)
+            startAction.setEnabled(!running);
+
+        NodeAction stopAction = getNodeActionByName(ACTION_STOP);
+        if (stopAction != null)
+            stopAction.setEnabled(running);
+
+        NodeAction restartAction = getNodeActionByName(ACTION_RESTART);
+        if (restartAction != null)
+            restartAction.setEnabled(running);
 
         return super.getNodeActions();
     }

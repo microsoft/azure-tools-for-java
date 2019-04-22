@@ -127,14 +127,23 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
 
         val stopAction = getNodeActionByName(ACTION_STOP)
         val startAction = getNodeActionByName(ACTION_START)
+        val restartAction = getNodeActionByName(ACTION_RESTART)
 
-        if (isRunning && stopAction == null) {
-            nodeActions.remove(getNodeActionByName(ACTION_START))
-            nodeActions.add(0, this.stopAction)
-        } else if (!isRunning && startAction == null) {
-            nodeActions.remove(getNodeActionByName(ACTION_STOP))
-            nodeActions.add(0, this.startAction)
+        if (isRunning) {
+            if (startAction != null)
+                nodeActions.remove(startAction)
+
+            if (stopAction == null)
+                nodeActions.add(0, this.stopAction)
+        } else {
+            if (stopAction != null)
+                nodeActions.remove(stopAction)
+
+            if (startAction == null)
+                nodeActions.add(0, this.startAction)
         }
+
+        restartAction.isEnabled = isRunning
 
         return super.getNodeActions()
     }

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2019 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,9 +23,11 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -40,10 +43,19 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
 
+    private static final String ICON_ACTION_START = "AzureStart.svg";
+    private static final String ICON_ACTION_STOP = "AzureStop.svg";
+    private static final String ICON_ACTION_RESTART = "AzureRestart.svg";
+    private static final String ICON_ACTION_OPEN_IN_BROWSER = "OpenInBrowser.svg";
+    private static final String ICON_ACTION_DELETE = "Discard.svg";
+
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     protected String webAppName;
     protected String webAppId;
     protected Map<String, String> propertyMap;
+
+    private NodeAction startAction;
+    private NodeAction stopAction;
 
     /**
      * Constructor.
@@ -56,6 +68,15 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
+
+        startAction = new NodeAction(this, ACTION_START);
+        startAction.setIconPath(ICON_ACTION_START);
+        startAction.addListener(createBackgroundActionListener("Starting Web App", this::startWebApp));
+
+        stopAction = new NodeAction(this, ACTION_STOP);
+        stopAction.setIconPath(ICON_ACTION_STOP);
+        stopAction.addListener(createBackgroundActionListener("Stopping Web App", this::stopWebApp));
+
         loadActions();
     }
 
@@ -71,12 +92,9 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED),
-            createBackgroundActionListener("Stopping Web App", () -> stopWebApp()));
-        addAction(ACTION_START, createBackgroundActionListener("Starting Web App", () -> startWebApp()));
-        addAction(ACTION_RESTART, createBackgroundActionListener("Restarting Web App", () -> restartWebApp()));
-        addAction(ACTION_DELETE, new DeleteWebAppAction());
-        addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
+        addAction(ACTION_RESTART, ICON_ACTION_RESTART, createBackgroundActionListener("Restarting Web App", () -> restartWebApp()));
+        addAction(ACTION_DELETE, ICON_ACTION_DELETE, new DeleteWebAppAction());
+        addAction(ACTION_OPEN_IN_BROWSER, ICON_ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
@@ -90,6 +108,24 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         });
 
         super.loadActions();
+    }
+
+    @Override
+    public List<NodeAction> getNodeActions() {
+        boolean isRunning = WebAppBaseState.fromString(state.name()) == WebAppBaseState.RUNNING;
+
+        NodeAction stopAction = getNodeActionByName(ACTION_STOP);
+        NodeAction startAction = getNodeActionByName(ACTION_START);
+
+        if (isRunning && stopAction == null) {
+            nodeActions.remove(getNodeActionByName(ACTION_START));
+            nodeActions.add(0, this.stopAction);
+        } else if (!isRunning && startAction == null) {
+            nodeActions.remove(getNodeActionByName(ACTION_STOP));
+            nodeActions.add(0, this.startAction);
+        }
+
+        return super.getNodeActions();
     }
 
     @Override
