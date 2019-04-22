@@ -35,15 +35,15 @@ import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
-import com.microsoft.intellij.component.ExistingOrNewSelector
-import com.microsoft.intellij.component.AzureComponent
-import com.microsoft.intellij.component.PublishableProjectComponent
-import com.microsoft.intellij.component.extension.getSelectedValue
-import com.microsoft.intellij.component.extension.setComponentsVisible
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
-import com.microsoft.intellij.component.appservice.AppAfterPublishSettingPanel
-import com.microsoft.intellij.component.appservice.AppExistingComponent
+import com.microsoft.intellij.ui.component.AzureComponent
+import com.microsoft.intellij.ui.component.ExistingOrNewSelector
+import com.microsoft.intellij.ui.component.PublishableProjectComponent
+import com.microsoft.intellij.ui.component.appservice.AppAfterPublishSettingPanel
+import com.microsoft.intellij.ui.component.appservice.AppExistingComponent
+import com.microsoft.intellij.ui.extension.getSelectedValue
+import com.microsoft.intellij.ui.extension.setComponentsVisible
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 

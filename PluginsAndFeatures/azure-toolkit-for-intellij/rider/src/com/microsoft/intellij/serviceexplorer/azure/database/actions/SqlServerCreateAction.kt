@@ -25,7 +25,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.rdclient.util.idea.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
-import com.microsoft.intellij.forms.sqlserver.CreateSqlServerDialog
+import com.microsoft.intellij.ui.forms.sqlserver.CreateSqlServerDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener

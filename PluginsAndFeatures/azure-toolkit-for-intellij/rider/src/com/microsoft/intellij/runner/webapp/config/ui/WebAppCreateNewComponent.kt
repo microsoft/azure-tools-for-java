@@ -31,14 +31,14 @@ import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
-import com.microsoft.intellij.component.AzureComponent
-import com.microsoft.intellij.component.AzureResourceGroupSelector
-import com.microsoft.intellij.component.AzureSubscriptionsSelector
-import com.microsoft.intellij.component.appservice.AppNameComponent
-import com.microsoft.intellij.component.appservice.AppServicePlanSelector
-import com.microsoft.intellij.component.appservice.OperatingSystemSelector
-import com.microsoft.intellij.component.extension.fillComboBox
-import com.microsoft.intellij.component.extension.setComponentsEnabled
+import com.microsoft.intellij.ui.component.AzureComponent
+import com.microsoft.intellij.ui.component.AzureResourceGroupSelector
+import com.microsoft.intellij.ui.component.AzureSubscriptionsSelector
+import com.microsoft.intellij.ui.component.appservice.AppNameComponent
+import com.microsoft.intellij.ui.component.appservice.AppServicePlanSelector
+import com.microsoft.intellij.ui.component.appservice.OperatingSystemSelector
+import com.microsoft.intellij.ui.extension.fillComboBox
+import com.microsoft.intellij.ui.extension.setComponentsEnabled
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
