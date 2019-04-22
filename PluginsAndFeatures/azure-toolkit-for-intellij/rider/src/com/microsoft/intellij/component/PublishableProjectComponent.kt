@@ -25,9 +25,7 @@ package com.microsoft.intellij.component
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.IconLoader
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.ui.LayeredIcon
 import com.intellij.ui.ListCellRendererWrapper
@@ -37,7 +35,6 @@ import com.jetbrains.rider.projectView.nodes.isProject
 import com.jetbrains.rider.projectView.nodes.isUnloadedProject
 import com.microsoft.intellij.component.extension.fillComboBox
 import com.microsoft.intellij.component.extension.getSelectedValue
-import com.microsoft.intellij.helpers.validator.ProjectValidator
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import javax.swing.JLabel
