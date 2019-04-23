@@ -127,9 +127,9 @@ public class ClusterManager {
                     if (clusterRawInfoList != null) {
                         for (ClusterRawInfo item : clusterRawInfoList) {
                             IClusterDetail tempClusterDetail = null;
-                            ClusterOperationNewAPIImpl probeClusterNewApiOperation = new ClusterOperationNewAPIImpl();
+                            ClusterOperationNewAPIImpl probeClusterNewApiOperation = new ClusterOperationNewAPIImpl(parameter);
                             boolean isProbeNewApiSucceed =
-                                    probeClusterNewApiOperation.isProbeGetConfigurationSucceed(parameter, item.getId())
+                                    probeClusterNewApiOperation.isProbeGetConfigurationSucceed(item.getId())
                                             .toBlocking()
                                             .singleOrDefault(false);
                             if (isHDInsightNewSDKEnabled() && isProbeNewApiSucceed) {

@@ -36,6 +36,7 @@ public class AppInsightsClient {
     public enum EventType {
         Action,
         Dialog,
+        Error,
         WizardStep,
         Telemetry,
         DockerContainer,

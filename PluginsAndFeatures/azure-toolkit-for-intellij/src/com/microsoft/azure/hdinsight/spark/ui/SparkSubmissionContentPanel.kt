@@ -40,10 +40,12 @@ import com.intellij.ui.table.JBTable
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.intellij.util.execution.ParametersListUtil
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus
@@ -60,7 +62,6 @@ import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
-import org.apache.commons.lang3.exception.ExceptionUtils
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ItemEvent
@@ -141,10 +142,30 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
         addActionListener {
             val selectedClusterName = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
+            // record default storage root path for HDInsight Reader role cluster
+            val selectedClusterDetail =
+                ClusterManagerEx.getInstance().findClusterDetail({ clusterDetail ->
+                    clusterDetail is ClusterDetail
+                            && clusterDetail.getName() == selectedClusterName
+                }, false) as? ClusterDetail
+            val defaultStorageRootPath = selectedClusterDetail?.defaultStorageRootPath
+
             selectedClusterName?.let {
                 val form = object: AddNewHDInsightReaderClusterForm(myProject, null, selectedClusterName) {
                     override fun afterOkActionPerformed() {
                         hideHdiReaderErrors()
+
+                        // Update linked cluster detail with default storage root path
+                        val linkedCluster =
+                            ClusterManagerEx.getInstance().findClusterDetail({ clusterDetail ->
+                                clusterDetail is HDInsightAdditionalClusterDetail
+                                        && clusterDetail.getName() == selectedClusterName
+                            }, true) as? HDInsightAdditionalClusterDetail
+                        linkedCluster?.let {
+                            it.defaultStorageRootPath = defaultStorageRootPath
+                            ClusterManagerEx.getInstance().updateHdiAdditionalClusterDetail(it)
+                        }
+
                         // refresh the cluster list
                         viewModel.clusterSelection.doRefreshSubject.onNext(true)
                     }
