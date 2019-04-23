@@ -53,7 +53,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     private final String DefaultFS = "fs.defaultFS";
     private final String FSDefaultName = "fs.default.name";
     private final String StorageAccountKeyPrefix = "fs.azure.account.key.";
-    private final String StorageAccountNamePattern = "^(abfs[s]?|wasb[s]?)://(.*)@(.*)$";
+    public static final String StorageAccountNamePattern = "^(?<scheme>abfs[s]?|wasb[s]?)://(?<container>.*)@(?<fullAccountName>.*)$";
     private final String ResourceGroupStartTag = "resourceGroups/";
     private final String ResourceGroupEndTag = "/providers/";
 

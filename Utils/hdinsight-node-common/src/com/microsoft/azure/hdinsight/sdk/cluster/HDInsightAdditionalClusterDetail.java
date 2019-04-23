@@ -23,16 +23,22 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.google.gson.annotations.Expose;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
+import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     @NotNull
@@ -41,6 +47,9 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     private String userName;
     @NotNull
     private String password;
+
+    @Nullable
+    private String defaultFS;
 
     @Expose
     @Nullable
@@ -116,9 +125,15 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Override
-    @Nullable
-    public IHDIStorageAccount getStorageAccount() {
-        return defaultStorageAccount;
+    public SparkSubmitStorageType getDefaultStorageType() {
+        SparkSubmitStorageType type = getStorageOptionsType().getOptionTypes().length == 0
+                ? null
+                : getStorageOptionsType().getOptionTypes()[0];
+        return type;
+    }
+
+    public String getDefaultFS(){
+        return defaultFS;
     }
 
     @Nullable
@@ -131,12 +146,37 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Override
-    public SparkSubmitStorageType getDefaultStorageType() {
-        return SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION;
+    @Nullable
+    public IHDIStorageAccount getStorageAccount() {
+        return defaultStorageAccount;
     }
 
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+        // for cluster which is not reader
+        if (StringUtils.isNullOrEmpty(defaultFS)) {
+            return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterWithUndetermineStorage;
+        }
+
+        // blob or adls gen2 storage account
+        if (defaultFS.matches(ClusterDetail.StorageAccountNamePattern)) {
+            Matcher m = Pattern.compile(ClusterDetail.StorageAccountNamePattern).matcher(defaultFS);
+            String scheme = null;
+            if (m.find()) {
+                scheme = m.group("scheme");
+            }
+
+            if (HDStorageAccount.DefaultScheme.startsWith(scheme)) {
+                return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterForReaderWithBlob;
+            } else
+                return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterForReaderWithADLSGen2;
+        }
+
+        // adls gen1 storage account
+        if (defaultFS.matches(SparkBatchJob.AdlsPathPattern)) {
+            return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterForReaderWithADLSGen1;
+        }
+
         return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterWithUndetermineStorage;
     }
 }

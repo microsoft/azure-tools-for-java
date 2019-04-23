@@ -32,6 +32,8 @@ import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
@@ -56,6 +58,7 @@ import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import javax.swing.*
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel
@@ -168,6 +171,29 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
         }
 
+        private fun setUploadInfoForLinkedCluster(cluster: IClusterDetail, model: SparkSubmitJobUploadStorageModel) {
+            model.apply {
+                val defaultFS = (cluster as? HDInsightAdditionalClusterDetail)?.defaultFS
+                defaultFS?.run {
+                    // get account and container for blob or adls gen2
+                    var fullAccountName: String? = null
+                    var container: String? = null
+                    val m = Pattern.compile(ClusterDetail.StorageAccountNamePattern).matcher(defaultFS)
+                    if (m.find()) {
+                        fullAccountName = m.group("fullAccountName")
+                        container = m.group("container")
+                    }
+
+                    when (cluster.defaultStorageType) {
+                        SparkSubmitStorageType.ADLS_GEN1 -> model.adlsRootPath = defaultFS
+                        SparkSubmitStorageType.BLOB -> model.storageAccount = fullAccountName!!.substring(0, fullAccountName.indexOf("."))
+                        SparkSubmitStorageType.ADLS_GEN2 -> model.gen2RootPath = container ?.let{ "https://$fullAccountName/$it/" }
+                        else -> { }
+                    }
+                }
+            }
+        }
+
         private fun validateStorageInfo(checkEvent:StorageCheckEvent): Observable<SparkSubmitJobUploadStorageModel> {
             val cluster = clusterSelectedSubject.value ?: return empty()
 
@@ -180,6 +206,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     .doOnNext { model -> run {
                         getData(model)
                         setDefaultStorageType(checkEvent, cluster, model)
+                        setUploadInfoForLinkedCluster(cluster, model)
                     }}
                     // set error message to prevent user from applying the changes when validation is not completed
                     .map { model -> model.apply {
