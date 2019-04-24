@@ -164,10 +164,14 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                         linkedCluster?.let {
                             it.defaultStorageRootPath = defaultStorageRootPath
                             ClusterManagerEx.getInstance().updateHdiAdditionalClusterDetail(it)
-                        }
 
-                        // refresh the cluster list
-                        viewModel.clusterSelection.doRefreshSubject.onNext(true)
+                            // Notify storage type to change
+                            storageWithUploadPathPanel.viewModel.clusterSelectedSubject.onNext(it)
+                            storageWithUploadPathPanel.viewModel.uploadStorage.storageCheckSubject.onNext(
+                                SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it, it.name))
+                            // refresh the cluster list
+                            viewModel.clusterSelection.doRefreshSubject.onNext(true)
+                        }
                     }
                 }
                 form.show()
