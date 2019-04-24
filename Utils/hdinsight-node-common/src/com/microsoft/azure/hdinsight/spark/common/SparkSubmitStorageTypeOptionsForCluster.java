@@ -26,7 +26,7 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 
 public enum SparkSubmitStorageTypeOptionsForCluster {
     // cluster detail using blob as default storage type
@@ -64,11 +64,11 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
     }),
 
     // for hdi additional cluster with reader role and default storage type is blob,adls or adls gen2
-    HdiAdditionalClusterForReaderWithBlob(StorageAccountTypeEnum.BLOB),
+    HdiAdditionalClusterForReaderWithBlob(StorageAccountType.BLOB),
 
-    HdiAdditionalClusterForReaderWithADLSGen1(StorageAccountTypeEnum.ADLS),
+    HdiAdditionalClusterForReaderWithADLSGen1(StorageAccountType.ADLS),
 
-    HdiAdditionalClusterForReaderWithADLSGen2(StorageAccountTypeEnum.ADLSGen2),
+    HdiAdditionalClusterForReaderWithADLSGen2(StorageAccountType.ADLSGen2),
 
     // cosmos cluster on adl whose storage type is only default_storaget_account
     AzureSparkCosmosClusterWithDefaultStorage(new SparkSubmitStorageType[]{
@@ -111,14 +111,14 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
         this.optionTypes = optionTypes;
     }
 
-    SparkSubmitStorageTypeOptionsForCluster(StorageAccountTypeEnum type) {
-        switch(type){
+    SparkSubmitStorageTypeOptionsForCluster(StorageAccountType type) {
+        switch (type) {
             case BLOB:
-            this.optionTypes = new SparkSubmitStorageType[]{
-                    SparkSubmitStorageType.BLOB,
-                    SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
-            };
-            break;
+                this.optionTypes = new SparkSubmitStorageType[]{
+                        SparkSubmitStorageType.BLOB,
+                        SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
+                };
+                break;
             case ADLS:
                 this.optionTypes = new SparkSubmitStorageType[]{
                         SparkSubmitStorageType.ADLS_GEN1,

@@ -53,7 +53,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     private final String DefaultFS = "fs.defaultFS";
     private final String FSDefaultName = "fs.default.name";
     private final String StorageAccountKeyPrefix = "fs.azure.account.key.";
-    public static final String StorageAccountNamePattern = "^(?<scheme>abfs[s]?|wasb[s]?)://(?<container>.*)@(?<fullAccountName>.*)$";
     private final String ResourceGroupStartTag = "resourceGroups/";
     private final String ResourceGroupEndTag = "/providers/";
 
@@ -301,7 +300,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
             URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName)).resolve(defaultRootPath);
             return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
-        } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
+        } else if (Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
             if(storageAccountName == null){
                 throw new HDIException("Failed to get default storage account name");
@@ -357,7 +356,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     }
 
     private String getStorageAccountName(String containerAddress){
-        Pattern r = Pattern.compile(StorageAccountNamePattern);
+        Pattern r = Pattern.compile(StoragePathInfo.BlobPathPattern);
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
@@ -368,7 +367,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     }
 
     private String getDefaultContainerName(String containerAddress){
-        Pattern r = Pattern.compile(StorageAccountNamePattern);
+        Pattern r = Pattern.compile(StoragePathInfo.BlobPathPattern);
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
@@ -396,7 +395,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
-        StorageAccountTypeEnum type = StorageAccountTypeEnum.UNKNOWN;
+        StorageAccountType type = StorageAccountType.UNKNOWN;
 
         if (getStorageAccount() == null) {
             try {
@@ -411,11 +410,11 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
         if (isRoleTypeReader()) {
             return SparkSubmitStorageTypeOptionsForCluster.HDInsightReaderStorageTypeOptions;
-        } else if (type == StorageAccountTypeEnum.ADLS) {
+        } else if (type == StorageAccountType.ADLS) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdls;
-        } else if (type == StorageAccountTypeEnum.BLOB) {
+        } else if (type == StorageAccountType.BLOB) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithBlob;
-        } else if(type == StorageAccountTypeEnum.ADLSGen2){
+        } else if(type == StorageAccountType.ADLSGen2){
            return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdlsGen2;
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;

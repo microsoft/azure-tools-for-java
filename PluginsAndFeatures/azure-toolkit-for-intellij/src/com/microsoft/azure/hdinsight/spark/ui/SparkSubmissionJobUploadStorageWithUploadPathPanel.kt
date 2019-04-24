@@ -37,9 +37,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetai
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum
+import com.microsoft.azure.hdinsight.sdk.storage.*
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
@@ -173,22 +171,16 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
         private fun setUploadInfoForLinkedCluster(cluster: IClusterDetail, model: SparkSubmitJobUploadStorageModel) {
             model.apply {
-                val defaultFS = (cluster as? HDInsightAdditionalClusterDetail)?.defaultFS
-                defaultFS?.run {
-                    // get account and container for blob or adls gen2
-                    var fullAccountName: String? = null
-                    var container: String? = null
-                    val m = Pattern.compile(ClusterDetail.StorageAccountNamePattern).matcher(defaultFS)
-                    if (m.find()) {
-                        fullAccountName = m.group("fullAccountName")
-                        container = m.group("container")
-                    }
-
-                    when (cluster.defaultStorageType) {
-                        SparkSubmitStorageType.ADLS_GEN1 -> model.adlsRootPath = defaultFS
-                        SparkSubmitStorageType.BLOB -> model.storageAccount = fullAccountName!!.substring(0, fullAccountName.indexOf("."))
-                        SparkSubmitStorageType.ADLS_GEN2 -> model.gen2RootPath = container ?.let{ "https://$fullAccountName/$it/" }
-                        else -> { }
+                val defaultRootPath = (cluster as? HDInsightAdditionalClusterDetail)?.defaultStorageRootPath
+                defaultRootPath?.run {
+                    val pathUri = StoragePathInfo(defaultRootPath).path
+                    if (cluster.defaultStorageType == model.storageAccountType) {
+                        when (cluster.defaultStorageType) {
+                            SparkSubmitStorageType.ADLS_GEN1 -> model.adlsRootPath = pathUri.toString()
+                            SparkSubmitStorageType.BLOB -> model.storageAccount = pathUri.host.let { it.substring(0, it.indexOf(".")) }
+                            SparkSubmitStorageType.ADLS_GEN2 -> model.gen2RootPath = "https://${pathUri.host}/${pathUri.userInfo}/"
+                            else -> { }
+                        }
                     }
                 }
             }
@@ -200,7 +192,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             return just(SparkSubmitJobUploadStorageModel()
                     .apply {
                         gen2Account = cluster.storageAccount?.name.takeIf {
-                            cluster.storageAccount?.accountType == StorageAccountTypeEnum.ADLSGen2
+                            cluster.storageAccount?.accountType == StorageAccountType.ADLSGen2
                         }
                     })
                     .doOnNext { model -> run {
@@ -264,7 +256,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 } else {
                                     // basic validation for ADLS root path
                                     // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
-                                    if (adlsRootPath != null && !SparkBatchJob.AdlsPathPattern.toRegex().matches(adlsRootPath!!)) {
+                                    if (adlsRootPath != null && !StoragePathInfo.AdlsPathPattern.toRegex().matches(adlsRootPath!!)) {
                                         uploadPath = invalidUploadPath
                                         errorMsg = "ADLS Root Path is invalid"
                                     } else {
