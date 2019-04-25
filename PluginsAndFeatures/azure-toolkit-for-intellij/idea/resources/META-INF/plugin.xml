@@ -29,6 +29,10 @@
   -->
 
   <extensions defaultExtensionNs="com.intellij">
+    <projectConfigurable groupId="root"
+                         id="com.microsoft.intellij.AzureConfigurable"
+                         provider="com.microsoft.intellij.AzureConfigurableProvider"
+                         dynamic="true"/>
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
     <toolWindow
             anchor="bottom"
