@@ -49,7 +49,6 @@ import com.microsoft.intellij.runner.database.model.DatabasePublishModel
 import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.addConnectionString
 import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.deployToAzureFunctionApp
 import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.functionAppStart
-import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.functionAppStop
 import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.getOrCreateFunctionAppFromConfiguration
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppSettingModel
@@ -76,8 +75,6 @@ class FunctionAppRunState(project: Project,
         val subscriptionId = myModel.functionAppModel.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
         val app = getOrCreateFunctionAppFromConfiguration(myModel.functionAppModel, processHandler)
-
-        functionAppStop(app, processHandler)
         deployToAzureFunctionApp(project, publishableProject, app, processHandler)
 
         isFunctionAppCreated = true

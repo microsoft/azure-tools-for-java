@@ -52,7 +52,6 @@ import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUti
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil.getOrCreateWebAppFromConfiguration
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil.setStartupCommand
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil.webAppStart
-import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil.webAppStop
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 
@@ -87,8 +86,6 @@ class RiderWebAppRunState(project: Project,
         val subscriptionId = myModel.webAppModel.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
 
         val webApp = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
-
-        webAppStop(webApp, processHandler)
         deployToAzureWebApp(project, publishableProject, webApp, processHandler)
 
         if (myModel.webAppModel.operatingSystem == OperatingSystem.LINUX && publishableProject.isDotNetCore) {

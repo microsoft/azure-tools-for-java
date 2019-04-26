@@ -197,6 +197,8 @@ object WebAppDeployStateUtil {
             processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
 
+            webAppStop(webApp, processHandler)
+
             KuduClient.kuduZipDeploy(zipFile, webApp.publishingProfile, webApp.name(), processHandler)
 
             if (zipFile.exists()) {

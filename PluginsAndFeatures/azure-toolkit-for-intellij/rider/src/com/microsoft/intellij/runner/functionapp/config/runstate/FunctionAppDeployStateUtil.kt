@@ -154,6 +154,8 @@ object FunctionAppDeployStateUtil {
             processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
 
+            functionAppStop(app, processHandler)
+
             KuduClient.kuduZipDeploy(zipFile, app.publishingProfile, app.name(), processHandler)
 
             if (zipFile.exists()) {

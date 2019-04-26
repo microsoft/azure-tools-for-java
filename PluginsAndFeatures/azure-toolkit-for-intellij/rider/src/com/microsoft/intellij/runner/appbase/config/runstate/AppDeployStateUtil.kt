@@ -28,6 +28,7 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.wm.ToolWindowId
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.util.io.ZipUtil
+import com.jetbrains.rd.util.spinUntil
 import com.jetbrains.rd.util.threading.SpinWait
 import com.jetbrains.rdclient.util.idea.toIOFile
 import com.jetbrains.rider.model.BuildResultKind
@@ -40,6 +41,7 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.RunProcessHandler
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
 import org.jetbrains.concurrency.AsyncPromise
 import java.io.File
 import java.io.FileFilter
@@ -55,6 +57,8 @@ object AppDeployStateUtil {
 
     private const val COLLECT_ARTIFACTS_TIMEOUT_MS = 180000L
 
+    private const val APP_START_TIMEOUT_MS = 20000L
+    private const val APP_STOP_TIMEOUT_MS = 10000L
     private const val APP_LAUNCH_TIMEOUT_MS = 10000L
     private const val APP_IS_NOT_STARTED = "Web app is not started. State: '%s'"
     private const val APP_STATE_RUNNING = "Running"
@@ -66,12 +70,24 @@ object AppDeployStateUtil {
     fun appStart(app: WebAppBase, processHandler: RunProcessHandler, progressMessage: String, notificationTitle: String) {
         processHandler.setText(progressMessage)
         app.start()
+
+        spinUntil(APP_START_TIMEOUT_MS) {
+            val state = app.state() ?: return@spinUntil false
+            WebAppBaseState.fromString(state) == WebAppBaseState.RUNNING
+        }
+
         activityNotifier.notifyProgress(notificationTitle, Date(), app.defaultHostName(), 100, progressMessage)
     }
 
     fun appStop(app: WebAppBase, processHandler: RunProcessHandler, progressMessage: String, notificationTitle: String) {
         processHandler.setText(progressMessage)
         app.stop()
+
+        spinUntil(APP_STOP_TIMEOUT_MS) {
+            val state = app.state() ?: return@spinUntil false
+            WebAppBaseState.fromString(state) == WebAppBaseState.STOPPED
+        }
+
         activityNotifier.notifyProgress(notificationTitle, Date(), app.defaultHostName(), 100, progressMessage)
     }
 
