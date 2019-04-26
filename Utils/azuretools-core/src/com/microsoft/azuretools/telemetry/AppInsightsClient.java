@@ -186,12 +186,7 @@ public class AppInsightsClient {
         try {
             TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
             TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
-            // The eclipse eventName prefix is AzurePlugin.Eclipse. We should remove the last "."
-            String eventName = configuration.eventNamePrefix();
-            if (eventName.charAt(eventName.length() - 1) == '.') {
-                eventName = eventName.substring(0, eventName.length() - 1);
-            }
-            TelemetryManager.getInstance().setEventNamePrefix(eventName);
+            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventName());
         } catch (Exception ignore) {
         }
     }
