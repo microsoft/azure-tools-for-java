@@ -22,6 +22,10 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.GET_SUBSCRIPTIONS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
+
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -36,6 +40,8 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 
 import org.jetbrains.annotations.NotNull;
@@ -99,7 +105,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     }
 
     private void refreshSubscriptions() {
-        try {
+        EventUtil.executeWithLog(ACCOUNT, GET_SUBSCRIPTIONS, (operation) -> {
             AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
             if (manager == null) {
                 return;
@@ -119,11 +125,11 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             // to notify subscribers
             subscriptionManager.setSubscriptionDetails(sdl);
 
-        } catch (Exception ex) {
+        }, (ex) -> {
             ex.printStackTrace();
             //LOGGER.error("refreshSubscriptions", ex);
             ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
-        }
+        });
     }
 
     private void setSubscriptions() {
@@ -195,6 +201,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
+        EventUtil.logEvent(EventType.info, ACCOUNT, SELECT_SUBSCRIPTIONS, null);
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         int rc = model.getRowCount();
         int unselectedCount = 0;

@@ -22,6 +22,13 @@
 
 package com.microsoft.azuretools.container.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR_PUSHIMAGE;
+
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
@@ -259,8 +266,10 @@ public class PushImageDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void execute() {
+        Operation operation = TelemetryManager.createOperation(ACR, ACR_PUSHIMAGE);
         Observable.fromCallable(() -> {
             ConsoleLogger.info("Starting job ...  ");
+            operation.start();
             if (basePath == null) {
                 ConsoleLogger.error("Project base path is null.");
                 throw new FileNotFoundException("Project base path is null.");
@@ -298,10 +307,13 @@ public class PushImageDialog extends AzureTitleAreaDialogWrapper {
             props -> {
                 ConsoleLogger.info("pushed.");
                 sendTelemetry(true, null);
+                operation.complete();
             },
             err -> {
                 err.printStackTrace();
                 ConsoleLogger.error(err.getMessage());
+                EventUtil.logError(operation, ErrorType.systemError, new Exception(err), null, null);
+                operation.complete();
                 sendTelemetry(false, err.getMessage());
             }
         );
