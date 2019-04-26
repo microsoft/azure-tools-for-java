@@ -46,6 +46,9 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     @Nullable
     private HDStorageAccount defaultStorageAccount;
 
+    @Nullable
+    private String defaultStorageRootPath;
+
     public HDInsightAdditionalClusterDetail(@NotNull String clusterName,
                                             @NotNull String userName,
                                             @NotNull String password,
@@ -116,6 +119,15 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     @Nullable
     public IHDIStorageAccount getStorageAccount() {
         return defaultStorageAccount;
+    }
+
+    @Nullable
+    public String getDefaultStorageRootPath() {
+        return defaultStorageRootPath;
+    }
+
+    public void setDefaultStorageRootPath(@Nullable String defaultStorageRootPath) {
+        this.defaultStorageRootPath = defaultStorageRootPath;
     }
 
     @Override
