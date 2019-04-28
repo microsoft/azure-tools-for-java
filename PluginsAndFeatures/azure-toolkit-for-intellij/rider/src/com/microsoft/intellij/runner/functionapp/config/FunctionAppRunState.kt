@@ -44,6 +44,7 @@ import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.getAppUrl
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.openAppInBrowser
+import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.refreshAzureExplorer
 import com.microsoft.intellij.runner.database.config.deploy.DatabaseDeployUtil.getOrCreateSqlDatabaseFromConfig
 import com.microsoft.intellij.runner.database.model.DatabasePublishModel
 import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.addConnectionString
@@ -52,6 +53,7 @@ import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDepl
 import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDeployStateUtil.getOrCreateFunctionAppFromConfiguration
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppSettingModel
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.AzureFunctionAppModule
 
 class FunctionAppRunState(project: Project,
                           private val myModel: FunctionAppSettingModel) : AzureRunProfileState<Pair<FunctionApp, SqlDatabase?>>(project) {
@@ -116,9 +118,9 @@ class FunctionAppRunState(project: Project,
     override fun onSuccess(result: Pair<FunctionApp, SqlDatabase?>, processHandler: RunProcessHandler) {
         processHandler.notifyComplete()
 
-        if (myModel.functionAppModel.isCreatingNewApp && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
-        }
+        // Refresh for both cases (when create new function app and publish into existing one)
+        // to make sure separate functions are updated as well
+        refreshAzureExplorer(listenerId = AzureFunctionAppModule.LISTENER_ID)
 
         val (app, sqlDatabase) = result
         refreshAppsAfterPublish(app, myModel.functionAppModel)

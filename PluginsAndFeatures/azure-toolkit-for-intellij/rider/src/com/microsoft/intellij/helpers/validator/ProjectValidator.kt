@@ -44,7 +44,7 @@ object ProjectValidator : AzureResourceValidator() {
     /**
      * Validate publishable project in the config
      *
-     * Note: for .NET web apps we ned to check for the "WebApplication" targets
+     * Note: for .NET web apps we need to check for the "WebApplication" targets
      *       that contains tasks for generating publishable package
      */
     fun validateProjectForWebApp(publishableProject: PublishableProjectModel?): ValidationResult {

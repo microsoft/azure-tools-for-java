@@ -256,7 +256,10 @@ object AzureFunctionAppMvpModel {
 
         val functions = mutableListOf<Function>()
 
-        rawFunctions.value?.forEach { function ->
+        if (rawFunctions?.value == null)
+            return functions
+
+        rawFunctions.value.forEach { function ->
             functions.add(FunctionImpl(
                     parent            = functionApp,
                     name              = function.properties?.name ?: throw Exception("Cannot get Function name for App '${functionApp.name()}'"),

@@ -32,10 +32,10 @@ object FunctionAppConfigValidator : ConfigurationValidator() {
 
     @Throws(RuntimeConfigurationError::class)
     fun validateFunctionApp(model: FunctionAppPublishModel) {
-        checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
-        val subscriptionId = model.subscription!!.subscriptionId()
-
         if (model.isCreatingNewApp) {
+            checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
+            val subscriptionId = model.subscription!!.subscriptionId()
+
             checkStatus(FunctionAppValidator.validateFunctionAppName(subscriptionId, model.appName))
 
             if (model.isCreatingResourceGroup) {
@@ -61,6 +61,7 @@ object FunctionAppConfigValidator : ConfigurationValidator() {
             }
         } else {
             checkStatus(FunctionAppValidator.checkFunctionAppIdIsSet(model.appId))
+            checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
         }
     }
 

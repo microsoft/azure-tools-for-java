@@ -38,6 +38,8 @@ import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
+import com.microsoft.azuretools.utils.AzureUIRefreshCore
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.RunProcessHandler
@@ -206,6 +208,24 @@ object AppDeployStateUtil {
             logger.error(t)
             processHandler.setText("${UiConstants.ZIP_FILE_NOT_CREATED}: $t")
             throw RuntimeException(t)
+        }
+    }
+
+    fun refreshAzureExplorer(listenerId: String) {
+        val listeners = AzureUIRefreshCore.listeners
+
+        if (!listeners.isNullOrEmpty()) {
+            val expectedListener = listeners.filter { it.key == listenerId }
+            if (expectedListener.isNotEmpty()) {
+                try {
+                    AzureUIRefreshCore.listeners = expectedListener
+                    AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
+                } catch (t: Throwable) {
+                    logger.error("Error while refreshing Azure Explorer tree: $t")
+                } finally {
+                    AzureUIRefreshCore.listeners = listeners
+                }
+            }
         }
     }
 

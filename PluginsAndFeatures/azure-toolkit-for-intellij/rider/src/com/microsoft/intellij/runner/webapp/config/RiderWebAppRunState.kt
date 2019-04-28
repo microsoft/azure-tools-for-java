@@ -44,6 +44,7 @@ import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.getAppUrl
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.openAppInBrowser
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.projectAssemblyRelativePath
+import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.refreshAzureExplorer
 import com.microsoft.intellij.runner.database.config.deploy.DatabaseDeployUtil.getOrCreateSqlDatabaseFromConfig
 import com.microsoft.intellij.runner.database.model.DatabasePublishModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
@@ -54,6 +55,7 @@ import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUti
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil.webAppStart
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
 
 class RiderWebAppRunState(project: Project,
                           private val myModel: DotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
@@ -133,8 +135,8 @@ class RiderWebAppRunState(project: Project,
     override fun onSuccess(result: Pair<WebApp, SqlDatabase?>, processHandler: RunProcessHandler) {
         processHandler.notifyComplete()
 
-        if (myModel.webAppModel.isCreatingNewApp && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null))
+        if (myModel.webAppModel.isCreatingNewApp) {
+            refreshAzureExplorer(listenerId = "WebAppModule")
         }
 
         val (webApp, sqlDatabase) = result

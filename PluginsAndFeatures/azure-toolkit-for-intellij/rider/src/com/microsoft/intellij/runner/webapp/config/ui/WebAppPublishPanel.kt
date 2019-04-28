@@ -65,7 +65,7 @@ class WebAppPublishPanel(private val lifetime: Lifetime,
 
         private const val RUN_CONFIG_PREFIX = "Azure Web App"
 
-        private const val TAB_WEB_APP_CONFIGURATION = "Web App Configuration"
+        private const val TAB_WEB_APP_CONFIGURATION = "App Configuration"
         private const val TAB_DATABASE_CONNECTION = "Database Connection"
 
         private val webAppIcon = IconLoader.getIcon("icons/WebApp.svg")

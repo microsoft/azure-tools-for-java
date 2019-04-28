@@ -31,11 +31,10 @@ object WebAppConfigValidator : ConfigurationValidator() {
 
     @Throws(RuntimeConfigurationError::class)
     fun validateWebApp(model: WebAppPublishModel) {
-
-        checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
-        val subscriptionId = model.subscription!!.subscriptionId()
-
         if (model.isCreatingNewApp) {
+            checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
+            val subscriptionId = model.subscription!!.subscriptionId()
+
             checkStatus(WebAppValidator.validateWebAppName(model.appName))
 
             if (model.isCreatingResourceGroup) {
@@ -54,6 +53,7 @@ object WebAppConfigValidator : ConfigurationValidator() {
             }
         } else {
             checkStatus(WebAppValidator.checkAppIdIsSet(model.appId))
+            checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
         }
     }
 

@@ -155,8 +155,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
                 }
             }
 
-    //region Actions
-
     private fun stopFunctionApp() =
             try { presenter.onStopFunctionApp(subscriptionId, functionAppId) }
             catch (t: Throwable) { logger.warning("Error while stopping Function App with Id: $functionAppId: $t") }
@@ -195,6 +193,4 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
             DefaultLoader.getUIHelper().openInBrowser("http://$hostName")
         }
     }
-
-    //endregion Actions
 }

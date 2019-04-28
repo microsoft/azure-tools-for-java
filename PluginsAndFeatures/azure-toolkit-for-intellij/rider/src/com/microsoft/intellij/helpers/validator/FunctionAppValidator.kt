@@ -44,7 +44,7 @@ object FunctionAppValidator : AppValidator("Function") {
             checkValueIsSet(app, FUNCTION_APP_NOT_DEFINED)
 
     fun checkFunctionAppIdIsSet(appId: String) =
-            checkValueIsSet(appId, FUNCTION_APP_NOT_DEFINED)
+            checkAppIdIsSet(appId)
 
     fun checkFunctionAppExists(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()

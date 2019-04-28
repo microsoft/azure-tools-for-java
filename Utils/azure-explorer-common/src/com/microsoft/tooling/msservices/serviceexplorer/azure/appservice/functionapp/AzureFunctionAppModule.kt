@@ -22,12 +22,18 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
 
+import com.microsoft.azuretools.utils.AzureUIRefreshCore
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent
+import com.microsoft.azuretools.utils.AzureUIRefreshListener
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
 
 class AzureFunctionAppModule(parent: Node) : RefreshableNode(MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH) {
 
     companion object {
+
+        const val LISTENER_ID = "FunctionAppModule"
+
         private val MODULE_ID = AzureFunctionAppModule::class.java.name
         private const val ICON_PATH = "FunctionApp.svg"
         private const val BASE_MODULE_NAME = "Function Apps"
@@ -38,6 +44,7 @@ class AzureFunctionAppModule(parent: Node) : RefreshableNode(MODULE_ID, BASE_MOD
 
     init {
         presenter.onAttachView(this@AzureFunctionAppModule)
+        createListener()
     }
 
     override fun refreshItems() {
@@ -55,4 +62,30 @@ class AzureFunctionAppModule(parent: Node) : RefreshableNode(MODULE_ID, BASE_MOD
     override fun onError(message: String) {}
 
     override fun onErrorWithException(message: String, ex: Exception) {}
+
+    private fun createListener() {
+        val listener = object : AzureUIRefreshListener() {
+            override fun run() {
+                if (event.opsType == AzureUIRefreshEvent.EventType.SIGNIN ||
+                        event.opsType == AzureUIRefreshEvent.EventType.SIGNOUT) {
+                    removeAllChildNodes()
+                    return
+                }
+
+                if (event.`object` == null && event.opsType == AzureUIRefreshEvent.EventType.REFRESH) {
+                    load(true)
+                    return
+                }
+
+                if (event.`object` == null &&
+                        (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event.opsType == AzureUIRefreshEvent.EventType.REMOVE)) {
+                    if (hasChildNodes()) {
+                        load(true)
+                    }
+                    return
+                }
+            }
+        }
+        AzureUIRefreshCore.addListener(LISTENER_ID, listener)
+    }
 }
