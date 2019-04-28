@@ -22,6 +22,9 @@
 
 package com.microsoft.intellij.runner.container.dockerhost;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERLOCAL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
 import com.google.common.collect.ImmutableList;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
@@ -29,6 +32,8 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.container.utils.Constant;
@@ -155,6 +160,11 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
                 (hostname != null ? hostname : "localhost") + (publicPort != null ? ":" + publicPort : "")
         ));
         return null;
+    }
+
+    @Override
+    protected Operation createOperation() {
+        return TelemetryManager.createOperation(WEBAPP, DEPLOY_WEBAPP_DOCKERLOCAL);
     }
 
     @Override

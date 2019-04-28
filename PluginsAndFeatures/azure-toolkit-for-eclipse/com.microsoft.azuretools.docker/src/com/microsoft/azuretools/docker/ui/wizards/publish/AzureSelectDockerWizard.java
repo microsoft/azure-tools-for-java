@@ -19,6 +19,9 @@
  */
 package com.microsoft.azuretools.docker.ui.wizards.publish;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERHOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
 import com.jcraft.jsch.Session;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerImageInstance;
@@ -44,6 +47,10 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.docker.ui.dialogs.AzureInputDockerLoginCredsDialog;
 import com.microsoft.azuretools.docker.utils.AzureDockerUIResources;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -221,6 +228,8 @@ public class AzureSelectDockerWizard extends Wizard implements TelemetryProperti
 		Job createDockerHostJob = new Job(jobDescription) {
 			@Override
 			protected IStatus run(IProgressMonitor progressMonitor) {
+				Operation operation = TelemetryManager.createOperation(WEBAPP, DEPLOY_WEBAPP_DOCKERHOST);
+				operation.start();
 		        try {
 		        	// Setup Azure Console and Azure Activity Log Window notifications
 					MessageConsole console = com.microsoft.azuretools.core.Activator.findConsole(com.microsoft.azuretools.core.Activator.CONSOLE_NAME);
@@ -403,7 +412,10 @@ public class AzureSelectDockerWizard extends Wizard implements TelemetryProperti
 					log.log(Level.SEVERE, "createDockerContainerDeployTask: " + msg, e);
 					e.printStackTrace();
 					AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1, "Error: " + e.getMessage());
+					EventUtil.logError(operation, ErrorType.systemError, e, null, null);
 					return Status.CANCEL_STATUS;
+				} finally {
+		        	operation.complete();
 				}
 			}
 		};

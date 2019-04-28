@@ -19,6 +19,13 @@
  */
 package com.microsoft.azuretools.docker.ui.wizards.createhost;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_DOCKER_HOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -124,6 +131,8 @@ public class AzureNewDockerWizard extends Wizard implements TelemetryProperties 
 			@Override
 			protected IStatus run(IProgressMonitor progressMonitor) {
 				progressMonitor.beginTask("start task", 100);
+				Operation operation = TelemetryManager.createOperation(WEBAPP, CREATE_DOCKER_HOST);
+				operation.start();
 		        try {
 		        	DockerHost dockerHost = newHost;
 		        	
@@ -232,7 +241,10 @@ public class AzureNewDockerWizard extends Wizard implements TelemetryProperties 
 					String msg = "An error occurred while attempting to create Docker host." + "\n" + e.getMessage();
 					log.log(Level.SEVERE, "createHost: " + msg, e);
 					e.printStackTrace();
+					EventUtil.logError(operation, ErrorType.systemError, e, null, null);
 					return Status.CANCEL_STATUS;
+				} finally {
+		        	operation.complete();
 				}
 
 //				progressMonitor.subTask("");

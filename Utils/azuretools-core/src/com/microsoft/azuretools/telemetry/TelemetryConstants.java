@@ -35,17 +35,26 @@ public class TelemetryConstants {
     public static final String REDIS = "redis";
     public static final String STORAGE = "storage";
     public static final String ACCOUNT = "account";
+    public static final String FEEDBACK = "feedback";
 
     // operation value
     public static final String CREATE_WEBAPP = "create-webapp";
     public static final String DELETE_WEBAPP = "delete-webapp";
     public static final String DEPLOY_WEBAPP = "deploy-webapp";
+    public static final String CREATE_DOCKER_FILE = "create-dockerfile";
+    public static final String CREATE_DOCKER_HOST = "create-dockerhost";
+    public static final String DEPLOY_WEBAPP_DOCKERLOCAL = "deploy-webapp-dockerlocal";
+    public static final String DEPLOY_WEBAPP_DOCKERHOST = "deploy-webapp-dockerhost";
+    public static final String DEPLOY_WEBAPP_CONTAINER = "deploy-webapp-container";
     public static final String DEPLOY_WEBAPP_SLOT = "deploy-webapp-slot";
     public static final String CREATE_WEBAPP_SLOT = "create-webapp-slot";
     public static final String OPEN_CREATEWEBAPP_DIALOG = "open-create-webapp-dialog";
     public static final String REFRESH_METADATA = "refresh";
     public static final String SIGNIN = "signin";
     public static final String SIGNOUT = "signout";
+    public static final String SELECT_SUBSCRIPTIONS = "select-subscriptions";
+    public static final String GET_SUBSCRIPTIONS = "get-subscriptions";
+    public static final String REPORT_ISSUES = "report-issues";
     public static final String CREATE_VM = "create-vm";
     public static final String DELETE_VM = "delete-vm";
     public static final String SHUTDOWN_VM = "shutdown-vm";
