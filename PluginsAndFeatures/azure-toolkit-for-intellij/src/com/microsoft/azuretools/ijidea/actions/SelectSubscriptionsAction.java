@@ -36,6 +36,8 @@ import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SubscriptionsDialog;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.ManageSubscriptionsAction;
 
@@ -57,7 +59,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     public static void onShowSubscriptions(Project project) {
         JFrame frame = WindowManager.getInstance().getFrame(project);
 
-        try {
+        EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
             //Project project = ProjectManager.getInstance().getDefaultProject();();
 
             AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
@@ -80,11 +82,11 @@ public class SelectSubscriptionsAction extends AzureAnAction {
                 subscriptionDetailsUpdated = d.getSubscriptionDetails();
                 subscriptionManager.setSubscriptionDetails(subscriptionDetailsUpdated);
             }
-        } catch (Exception ex) {
+        }, (ex) -> {
             ex.printStackTrace();
             //LOGGER.error("onShowSubscriptions", ex);
             ErrorWindow.show(project, ex.getMessage(), "Select Subscriptions Action Error");
-        }
+        });
     }
 
     @Override

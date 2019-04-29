@@ -186,7 +186,7 @@ public class AppInsightsClient {
         try {
             TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
             TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
-            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventNamePrefix());
+            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventName());
         } catch (Exception ignore) {
         }
     }

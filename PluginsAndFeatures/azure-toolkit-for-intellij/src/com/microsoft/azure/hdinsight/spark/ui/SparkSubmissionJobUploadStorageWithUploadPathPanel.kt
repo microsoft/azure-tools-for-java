@@ -32,12 +32,12 @@ import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum
+import com.microsoft.azure.hdinsight.sdk.storage.*
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
@@ -56,6 +56,7 @@ import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 import javax.swing.*
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel
@@ -168,18 +169,36 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
         }
 
+        private fun setUploadInfoForLinkedCluster(cluster: IClusterDetail, model: SparkSubmitJobUploadStorageModel) {
+            model.apply {
+                val defaultRootPath = (cluster as? HDInsightAdditionalClusterDetail)?.defaultStorageRootPath
+                defaultRootPath?.run {
+                    val pathUri = StoragePathInfo(defaultRootPath).path
+                    if (cluster.defaultStorageType == model.storageAccountType) {
+                        when (cluster.defaultStorageType) {
+                            SparkSubmitStorageType.ADLS_GEN1 -> model.adlsRootPath = pathUri.toString()
+                            SparkSubmitStorageType.BLOB -> model.storageAccount = pathUri.host.let { it.substring(0, it.indexOf(".")) }
+                            SparkSubmitStorageType.ADLS_GEN2 -> model.gen2RootPath = "https://${pathUri.host}/${pathUri.userInfo}/"
+                            else -> { }
+                        }
+                    }
+                }
+            }
+        }
+
         private fun validateStorageInfo(checkEvent:StorageCheckEvent): Observable<SparkSubmitJobUploadStorageModel> {
             val cluster = clusterSelectedSubject.value ?: return empty()
 
             return just(SparkSubmitJobUploadStorageModel()
                     .apply {
                         gen2Account = cluster.storageAccount?.name.takeIf {
-                            cluster.storageAccount?.accountType == StorageAccountTypeEnum.ADLSGen2
+                            cluster.storageAccount?.accountType == StorageAccountType.ADLSGen2
                         }
                     })
                     .doOnNext { model -> run {
                         getData(model)
                         setDefaultStorageType(checkEvent, cluster, model)
+                        setUploadInfoForLinkedCluster(cluster, model)
                     }}
                     // set error message to prevent user from applying the changes when validation is not completed
                     .map { model -> model.apply {
@@ -237,7 +256,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 } else {
                                     // basic validation for ADLS root path
                                     // pattern for adl root path. e.g. adl://john.azuredatalakestore.net/root/path/
-                                    if (adlsRootPath != null && !SparkBatchJob.AdlsPathPattern.toRegex().matches(adlsRootPath!!)) {
+                                    if (adlsRootPath != null && !StoragePathInfo.AdlsPathPattern.toRegex().matches(adlsRootPath!!)) {
                                         uploadPath = invalidUploadPath
                                         errorMsg = "ADLS Root Path is invalid"
                                     } else {

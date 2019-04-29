@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.21.0</version>
+  <version>3.21.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -20,29 +20,10 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.21.0</h3>
-    <h4>Added</h4>
-    <ul>
-        <li>Support Java 11 App Service</li>
-        <li>Add failure task debug feature for HDInsight cluster with Spark 2.3.2</li>
-        <li>Support linking cluster with ADLS GEN2 storage account</li>
-        <li>Add default storage type for cluster with ADLS GEN2 account</li>
-    </ul>
-    <h4>Changed</h4>
-    <ul>
-        <li>User experiences change for HDInsight Reader role cluster</li>
-        <li>AadProvider.json file is no longer needed for Spark on Cosmos Serverless feature</li>
-    </ul>
+    <h3>3.21.1</h3>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2866">#2866</a> Fix uncaught exception when
-            remote debug in HDI 4.0</li>
-        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2958">#2958</a> Fix deleted cluster
-            re-appeared issue for Spark on Cosmos cluster</li>
-        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2988">#2988</a> Fix toolkit installation
-            failure with version incompatibility issue</li>
-        <li><a href="https://github.com/Microsoft/azure-tools-for-java/issues/2977">#2977</a> Fix "Report to Microsoft"
-            button been disabled issue</li>
+        <li>Fix telemetry shares same installation id</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

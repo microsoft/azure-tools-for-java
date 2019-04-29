@@ -22,6 +22,13 @@
 
 package com.microsoft.azuretools.container.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERLOCAL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
@@ -308,7 +315,9 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void execute() {
+        Operation operation = TelemetryManager.createOperation(WEBAPP, DEPLOY_WEBAPP_DOCKERLOCAL);
         Observable.fromCallable(() -> {
+            operation.start();
             ConsoleLogger.info("Starting job ...  ");
             if (basePath == null) {
                 ConsoleLogger.error("Project base path is null.");
@@ -369,11 +378,14 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
             ret -> {
                 ConsoleLogger.info("Container started.");
                 sendTelemetry(true, null);
+                operation.complete();
             },
             e -> {
                 e.printStackTrace();
                 ConsoleLogger.error(e.getMessage());
                 sendTelemetry(false, e.getMessage());
+                EventUtil.logError(operation, ErrorType.systemError, new Exception(e), null, null);
+                operation.complete();
             }
         );
     }

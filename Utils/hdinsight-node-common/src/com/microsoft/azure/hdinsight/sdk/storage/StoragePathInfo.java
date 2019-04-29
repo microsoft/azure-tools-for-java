@@ -21,18 +21,39 @@
  */
 package com.microsoft.azure.hdinsight.sdk.storage;
 
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-public interface IHDIStorageAccount {
-    String getName();
-    StorageAccountType getAccountType();
-    String getDefaultContainerOrRootPath();
-    String getSubscriptionId();
+import java.net.URI;
 
-    @Nullable
-    default String getDefaultStorageSchema(){
-        return null;
+public class StoragePathInfo {
+    public static final String AdlsGen2PathPattern = "^(abfs[s]?)://(.*)@(.*)$";
+    public static final String BlobPathPattern = "^(wasb[s]?)://(.*)@(.*)$";
+    public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
+
+    @NotNull
+    public final URI path;
+
+    @NotNull
+    public final StorageAccountType storageType;
+
+    public StoragePathInfo(@NotNull String path) {
+        this.storageType = setStorageType(path);
+        this.path = URI.create(path);
+    }
+
+    private StorageAccountType setStorageType(@NotNull String path) {
+        if (path.matches(AdlsGen2PathPattern)) {
+            return StorageAccountType.ADLSGen2;
+        }
+
+        if (path.matches(BlobPathPattern)) {
+            return StorageAccountType.BLOB;
+        }
+
+        if (path.matches(AdlsPathPattern)) {
+            return StorageAccountType.ADLS;
+        }
+
+        throw new IllegalArgumentException("Cannot get valid storage type by default storage root path");
     }
 }
-
-

@@ -24,8 +24,8 @@ public class ADLSGen2StorageAccount extends HDStorageAccount implements ILogger 
     }
 
     @Override
-    public StorageAccountTypeEnum getAccountType() {
-        return StorageAccountTypeEnum.ADLSGen2;
+    public StorageAccountType getAccountType() {
+        return StorageAccountType.ADLSGen2;
     }
 
     private Observable<StorageAccountAccessKey> getAccessKeyList(SubscriptionDetail subscription) {

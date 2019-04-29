@@ -33,6 +33,8 @@ import java.util.UUID;
 
 public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
     static final String EVENT_NAME_PREFIX_INTELLIJ = "AzurePlugin.Intellij.";
+    // eventname for new telemetry
+    static final String EVENT_NAME = "AzurePlugin.Intellij";
     static final String sessionId = UUID.randomUUID().toString();
     static final String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
     static final String ide = getIDE();
@@ -76,4 +78,10 @@ public class AppInsightsConfigurationImpl implements AppInsightsConfiguration {
     public String ide() {
         return ide;
     }
+
+    @Override
+    public String eventName() {
+        return EVENT_NAME;
+    }
+
 }

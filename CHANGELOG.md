@@ -4,6 +4,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 - [Change Log](#change-log)
 
+  - [3.21.1](#3211)
   - [3.21.0](#3210)
   - [3.20.0](#3200)
   - [3.19.0](#3190)
@@ -33,6 +34,12 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.21.1
+
+### Fixed
+
+- Fix telemetry shares same installation id
+
 ## 3.21.0
 
 ### Added
@@ -44,7 +51,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Changed
 
-- User experiences change for HDInsight Reader role cluster
+- **Breaking change**: Users with cluster ‘**Reader**’ only role can no longer submit job to the HDInsight cluster nor access to the cluster storage. Please request the cluster owner or user access administrator to upgrade your role to **HDInsight Cluster Operator** or **Contributor** in the [Azure Portal](https://ms.portal.azure.com). Click [here](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#contributor) for more information. 
 - AadProvider.json file is no longer needed for Spark on Cosmos Serverless feature
 
 ### Fixed

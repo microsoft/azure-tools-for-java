@@ -21,6 +21,12 @@
  */
 package com.microsoft.azuretools.core.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
+
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -141,12 +147,12 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Reading subscriptions...", IProgressMonitor.UNKNOWN);
-                    try {
+                    EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
                         subscriptionManager.getSubscriptionDetails();
-                    } catch (IOException ex) {
+                    }, (ex) -> {
                     	ex.printStackTrace();
-                    	 LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
-                    }
+                    	LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
+                    });
                     monitor.done();
                 }
             });
@@ -198,6 +204,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
 
     @Override
     public void okPressed() {
+        EventUtil.logEvent(EventType.info, ACCOUNT, SELECT_SUBSCRIPTIONS, null);
         TableItem[] tia = table.getItems();
         int chekedCount = 0;
         for (TableItem ti : tia) {
