@@ -135,6 +135,15 @@ public class ClusterManagerEx {
         }
     }
 
+    @Nullable
+    public IClusterDetail findClusterDetail(Predicate<IClusterDetail> predicate, boolean isLinkedCluster) {
+        Stream<IClusterDetail> clusterDetailStream =
+                isLinkedCluster
+                        ? getAdditionalClusterDetails().stream()
+                        : ClusterMetaDataService.getInstance().getCachedClusterDetails().stream();
+        return clusterDetailStream.filter(predicate).findFirst().orElse(null);
+    }
+
     public Optional<IClusterDetail> getClusterDetailByName(String clusterName) {
         return getClusterDetailsWithoutAsync(true)
                 .stream()
@@ -293,6 +302,17 @@ public class ClusterManagerEx {
         additionalClusterDetails.add(hdInsightClusterDetail);
         ClusterMetaDataService.getInstance().addClusterToCache(hdInsightClusterDetail);
         saveAdditionalClusters();
+    }
+
+    public synchronized void updateHdiAdditionalClusterDetail(@NotNull HDInsightAdditionalClusterDetail clusterDetailToUpdate) {
+        // Remove the cluster which is a linked HDI cluster and share the same cluster name with clusterDetailToUpdate
+        this.additionalClusterDetails = additionalClusterDetails.stream()
+                .filter(clusterDetail1 ->
+                        !(clusterDetail1 instanceof HDInsightAdditionalClusterDetail
+                                && clusterDetail1.getName().equals(clusterDetailToUpdate.getName())))
+                .collect(Collectors.toList());
+        ClusterMetaDataService.getInstance().removeClusterFromCache(clusterDetailToUpdate);
+        addAdditionalCluster(clusterDetailToUpdate);
     }
 
     public synchronized void removeEmulatorCluster(EmulatorClusterDetail emulatorClusterDetail) {

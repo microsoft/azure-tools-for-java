@@ -40,14 +40,14 @@ public class DefaultOperation implements Operation {
 
     private long timeStart;
     private String operationId;
-    private String eventName;
+    private String serviceName;
     private String operationName;
     private Error error;
     private Map<String, String> properties;
     private volatile boolean isComplete = false;
 
-    public DefaultOperation(String eventName, String operationName) {
-        this.eventName = eventName == null ? "" : eventName;
+    public DefaultOperation(String serviceName, String operationName) {
+        this.serviceName = serviceName == null ? "" : serviceName;
         this.operationName = operationName == null ? "" : operationName;
         this.operationId = UUID.randomUUID().toString();
         this.properties = new HashMap<>();
@@ -75,7 +75,7 @@ public class DefaultOperation implements Operation {
             if (eventType == EventType.step) {
                 metrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
             }
-            sendTelemetry(eventType, eventName, mergeProperties(properties), metrics);
+            sendTelemetry(eventType, serviceName, mergeProperties(properties), metrics);
         } catch (Exception ignore) {
         }
     }
@@ -105,7 +105,7 @@ public class DefaultOperation implements Operation {
             properties.put(OPERATION_NAME, operationName);
 
             metrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
-            sendTelemetry(EventType.error, eventName, mergeProperties(properties), metrics);
+            sendTelemetry(EventType.error, serviceName, mergeProperties(properties), metrics);
         } catch (Exception ignore) {
         }
     }
@@ -117,7 +117,7 @@ public class DefaultOperation implements Operation {
                 return;
             }
             timeStart = System.currentTimeMillis();
-            sendTelemetry(EventType.opStart, eventName, mergeProperties(properties), null);
+            sendTelemetry(EventType.opStart, serviceName, mergeProperties(properties), null);
         } catch (Exception ignore) {
         }
     }
@@ -137,7 +137,7 @@ public class DefaultOperation implements Operation {
                 mergedProperty.put(ERROR_TYPE, error.errorType.name());
                 mergedProperty.put(ERROR_CLASSNAME, error.className);
             }
-            sendTelemetry(EventType.opEnd, eventName, mergedProperty, metrics);
+            sendTelemetry(EventType.opEnd, serviceName, mergedProperty, metrics);
         } catch (Exception ignore) {
         } finally {
             clear();

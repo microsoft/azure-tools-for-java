@@ -22,6 +22,10 @@
 
 package com.microsoft.azuretools.container.handlers;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_DOCKER_FILE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.nio.file.Paths;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -50,7 +54,7 @@ public class DockerizeHandler extends AzureAbstractHandler {
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
         IProject project = PluginUtil.getSelectedProject();
         ConsoleLogger.info(Constant.MESSAGE_ADDING_DOCKER_SUPPORT);
-        try {
+        EventUtil.executeWithLog(WEBAPP, CREATE_DOCKER_FILE, (operation) -> {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
@@ -80,10 +84,10 @@ public class DockerizeHandler extends AzureAbstractHandler {
                     Paths.get(Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).toString()));
             ConsoleLogger.info(Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK);
             ConsoleLogger.info(String.format(Constant.MESSAGE_DOCKER_HOST_INFO, DefaultDockerClient.fromEnv().uri()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            ConsoleLogger.error(String.format(Constant.ERROR_CREATING_DOCKERFILE, e.getMessage()));
-        }
+        }, (e) -> {
+                e.printStackTrace();
+                ConsoleLogger.error(String.format(Constant.ERROR_CREATING_DOCKERFILE, e.getMessage()));
+            });
         return null;
     }
 

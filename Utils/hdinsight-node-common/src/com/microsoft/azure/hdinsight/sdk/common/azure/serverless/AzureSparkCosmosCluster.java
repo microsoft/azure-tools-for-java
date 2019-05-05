@@ -32,7 +32,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -134,8 +134,8 @@ public class AzureSparkCosmosCluster extends SparkCluster
         }
 
         @Override
-        public StorageAccountTypeEnum getAccountType() {
-            return StorageAccountTypeEnum.ADLS;
+        public StorageAccountType getAccountType() {
+            return StorageAccountType.ADLS;
         }
 
         @NotNull

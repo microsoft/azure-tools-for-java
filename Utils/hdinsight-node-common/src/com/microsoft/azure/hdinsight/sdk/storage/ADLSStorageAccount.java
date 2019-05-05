@@ -76,8 +76,8 @@ public class ADLSStorageAccount implements IHDIStorageAccount, ServiceTreeItem {
     }
 
     @Override
-    public StorageAccountTypeEnum getAccountType() {
-        return StorageAccountTypeEnum.ADLS;
+    public StorageAccountType getAccountType() {
+        return StorageAccountType.ADLS;
     }
 
     @Override

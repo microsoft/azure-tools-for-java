@@ -48,7 +48,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.ApplicationMasterLogs;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
@@ -447,7 +447,7 @@ public class JobUtils {
                                            @NotNull String uploadFolderPath,
                                            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject,
                                            @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
-        if(storageAccount.getAccountType() == StorageAccountTypeEnum.BLOB) {
+        if(storageAccount.getAccountType() == StorageAccountType.BLOB) {
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
                 try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
                     HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
@@ -478,7 +478,7 @@ public class JobUtils {
                     return uploadedPath;
                 }
             }
-        } else if(storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
+        } else if(storageAccount.getAccountType() == StorageAccountType.ADLS) {
             String uploadPath = String.format("adl://%s.azuredatalakestore.net%s%s", storageAccount.getName(), storageAccount.getDefaultContainerOrRootPath(), "SparkSubmission");
             logSubject.onNext(new SimpleImmutableEntry<>(Info,
                               String.format("Begin uploading file %s to Azure Datalake store %s ...", file.getPath(), uploadPath)));

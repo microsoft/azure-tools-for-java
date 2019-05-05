@@ -19,21 +19,41 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.common.classifiedexception
+package com.microsoft.azure.hdinsight.sdk.storage;
 
-import com.microsoft.azure.datalake.store.ADLException
-import java.io.FileNotFoundException
-import java.io.IOException
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-class SparkServiceException(exp: Throwable?) : ClassifiedException(exp) {
-    override val title: String = "Spark Service Error"
-}
+import java.net.URI;
 
-object SparkServiceExceptionFactory : ClassifiedExceptionFactory() {
-    override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
-        return if (exp is IOException
-                && exp !is FileNotFoundException
-                && (exp is ADLException && exp.httpResponseCode != 403))
-            SparkServiceException(exp) else null
+public class StoragePathInfo {
+    public static final String AdlsGen2PathPattern = "^(abfs[s]?)://(.*)@(.*)$";
+    public static final String BlobPathPattern = "^(wasb[s]?)://(.*)@(.*)$";
+    public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
+
+    @NotNull
+    public final URI path;
+
+    @NotNull
+    public final StorageAccountType storageType;
+
+    public StoragePathInfo(@NotNull String path) {
+        this.storageType = setStorageType(path);
+        this.path = URI.create(path);
+    }
+
+    private StorageAccountType setStorageType(@NotNull String path) {
+        if (path.matches(AdlsGen2PathPattern)) {
+            return StorageAccountType.ADLSGen2;
+        }
+
+        if (path.matches(BlobPathPattern)) {
+            return StorageAccountType.BLOB;
+        }
+
+        if (path.matches(AdlsPathPattern)) {
+            return StorageAccountType.ADLS;
+        }
+
+        throw new IllegalArgumentException("Cannot get valid storage type by default storage root path");
     }
 }

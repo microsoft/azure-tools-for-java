@@ -47,25 +47,43 @@ import java.util.Optional;
 public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements ILogger {
     private static final String VERSION = "2015-03-01-preview";
     private HDInsightUserRoleType roleType;
+    @NotNull
+    private final SubscriptionDetail subscription;
+    @NotNull
+    private final AzureManagementHttpObservable http;
+
+    public ClusterOperationNewAPIImpl(@NotNull SubscriptionDetail subscription) {
+        this.subscription = subscription;
+        this.http = new AzureManagementHttpObservable(subscription, VERSION);
+    }
+
+    private AzureManagementHttpObservable getHttp() {
+        return this.http;
+    }
+
+    public Observable<Map> getClusterCoreSiteRequest(@NotNull final String clusterId) throws IOException {
+        String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
+        String url = URI.create(managementURI)
+                .resolve(clusterId.replaceAll("/+$", "") + "/configurations/core-site").toString();
+        return getHttp()
+                .withUuidUserAgent()
+                .get(url, null, null, Map.class);
+    }
 
     private Observable<ClusterConfiguration> getClusterConfigurationRequest(
-            @NotNull final SubscriptionDetail subscription,
             @NotNull final String clusterId) throws IOException {
         String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
-        AzureManagementHttpObservable httpObservable = new AzureManagementHttpObservable(subscription, VERSION);
         String url = URI.create(managementURI)
                 .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
         StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
         entity.setContentType("application/json");
-        return httpObservable
+        return getHttp()
                 .withUuidUserAgent()
                 .post(url, entity, null, null, ClusterConfiguration.class);
     }
 
-    public Observable<Boolean> isProbeGetConfigurationSucceed(
-            final SubscriptionDetail subscription,
-            final String clusterId) throws IOException {
-        return getClusterConfigurationRequest(subscription, clusterId)
+    public Observable<Boolean> isProbeGetConfigurationSucceed(final String clusterId) throws IOException {
+        return getClusterConfigurationRequest(clusterId)
                 .map(clusterConfiguration -> {
                     if (clusterConfiguration != null
                             && clusterConfiguration.getConfigurations() != null
@@ -136,7 +154,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
         try {
             switch (roleType) {
                 case OWNER:
-                    return getClusterConfigurationRequest(subscription, clusterId)
+                    return getClusterConfigurationRequest(clusterId)
                             // As you can see, the response class is
                             // com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterConfiguration.
                             // However, if we want to override method getClusterConfiguration, the method return type should be

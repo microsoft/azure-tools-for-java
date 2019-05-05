@@ -36,6 +36,7 @@ public class AppInsightsClient {
     public enum EventType {
         Action,
         Dialog,
+        Error,
         WizardStep,
         Telemetry,
         DockerContainer,
@@ -186,7 +187,7 @@ public class AppInsightsClient {
         try {
             TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
             TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
-            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventNamePrefix());
+            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventName());
         } catch (Exception ignore) {
         }
     }

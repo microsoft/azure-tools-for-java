@@ -32,14 +32,16 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsF
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +55,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     private final String DefaultFS = "fs.defaultFS";
     private final String FSDefaultName = "fs.default.name";
     private final String StorageAccountKeyPrefix = "fs.azure.account.key.";
-    private final String StorageAccountNamePattern = "^(abfs[s]?|wasb[s]?)://(.*)@(.*)$";
     private final String ResourceGroupStartTag = "resourceGroups/";
     private final String ResourceGroupEndTag = "/providers/";
 
@@ -96,10 +97,23 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
     @Override
     public String getTitle() {
-        return Optional.ofNullable(getSparkVersion())
-                .filter(ver -> !ver.trim().isEmpty())
-                .map(ver -> getName() + " (Spark: " + ver + ")")
-                .orElse(getName());
+        StringBuilder titleStringBuilder = new StringBuilder(getName());
+
+        String sparkVersion = getSparkVersion();
+        if (StringUtils.isNotBlank(sparkVersion)) {
+            titleStringBuilder.append(String.format(" (Spark: %s)", sparkVersion));
+        }
+
+        if (ClusterManagerEx.getInstance().isHdiReaderCluster(this)) {
+            titleStringBuilder.append(" (Role: Reader)");
+        }
+
+        String state = getState();
+        if (StringUtils.isNotBlank(state) && !state.equalsIgnoreCase("Running")) {
+            titleStringBuilder.append(String.format(" (State: %s)", state));
+        }
+
+        return titleStringBuilder.toString();
     }
 
     @Override
@@ -273,6 +287,68 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
     }
 
+    @Nullable
+    public String getDefaultStorageRootPath() {
+        if (!(clusterOperation instanceof ClusterOperationNewAPIImpl)) {
+            return null;
+        }
+
+        log().info("Cluster ID: " + clusterRawInfo.getId());
+        Map<String, String> coresiteMap = null;
+        try {
+            coresiteMap =
+                    ((ClusterOperationNewAPIImpl) clusterOperation).getClusterCoreSiteRequest(clusterRawInfo.getId())
+                            .toBlocking()
+                            .singleOrDefault(null);
+            if (coresiteMap == null) {
+                log().warn("Error getting cluster core-site. coresiteMap is null.");
+                return null;
+            }
+        } catch (Exception ex) {
+            log().warn("Error getting cluster core-site. " + ExceptionUtils.getStackTrace(ex));
+            return null;
+        }
+
+        String containerAddress = null;
+        if (coresiteMap.containsKey(DefaultFS)) {
+            containerAddress = coresiteMap.get(DefaultFS);
+        } else if (coresiteMap.containsKey(FSDefaultName)) {
+            containerAddress = coresiteMap.get(FSDefaultName);
+        } else {
+            log().warn("Error getting cluster default storage account. containerAddress is null.");
+            return null;
+        }
+
+        String scheme = URI.create(containerAddress).getScheme();
+        if (ADL_HOME_PREFIX.equalsIgnoreCase(containerAddress)) {
+            String accountName = "";
+            String defaultRootPath = "";
+
+            if (coresiteMap.containsKey(ADLS_HOME_HOST_NAME)) {
+                accountName = coresiteMap.get(ADLS_HOME_HOST_NAME).split("\\.")[0];
+            }
+            if (coresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
+                defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
+            }
+
+            return URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName))
+                    .resolve(defaultRootPath)
+                    .toString();
+        } else if (Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches()
+                || Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(containerAddress).matches()) {
+            return containerAddress;
+        } else {
+            final Map<String, String> properties = new HashMap<>();
+            properties.put("ErrorType", "Unknown HDInsight default storage type");
+            properties.put("coreSiteMap", StringUtils.join(coresiteMap));
+            properties.put("containerAddress", containerAddress);
+            properties.put("ClusterID", this.clusterRawInfo.getId());
+            AppInsightsClient.createByType(AppInsightsClient.EventType.Error, this.getClass().getSimpleName(), null, properties);
+
+            return null;
+        }
+    }
+
     private IHDIStorageAccount getDefaultStorageAccount(Map<String, String> coresiteMap, ClusterIdentity clusterIdentity) throws HDIException{
         String containerAddress = null;
         if(coresiteMap.containsKey(DefaultFS)){
@@ -301,7 +377,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
             URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName)).resolve(defaultRootPath);
             return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
-        } else if (Pattern.compile(StorageAccountNamePattern).matcher(containerAddress).matches()) {
+        } else if (Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches()
+                || Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(containerAddress).matches()) {
             String storageAccountName = getStorageAccountName(containerAddress);
             if(storageAccountName == null){
                 throw new HDIException("Failed to get default storage account name");
@@ -357,7 +434,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     }
 
     private String getStorageAccountName(String containerAddress){
-        Pattern r = Pattern.compile(StorageAccountNamePattern);
+        Pattern r = Pattern.compile(StoragePathInfo.BlobPathPattern);
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
@@ -368,7 +445,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     }
 
     private String getDefaultContainerName(String containerAddress){
-        Pattern r = Pattern.compile(StorageAccountNamePattern);
+        Pattern r = Pattern.compile(StoragePathInfo.BlobPathPattern);
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
@@ -396,7 +473,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
-        StorageAccountTypeEnum type = StorageAccountTypeEnum.UNKNOWN;
+        StorageAccountType type = StorageAccountType.UNKNOWN;
 
         if (getStorageAccount() == null) {
             try {
@@ -411,11 +488,11 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
         if (isRoleTypeReader()) {
             return SparkSubmitStorageTypeOptionsForCluster.HDInsightReaderStorageTypeOptions;
-        } else if (type == StorageAccountTypeEnum.ADLS) {
+        } else if (type == StorageAccountType.ADLS) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdls;
-        } else if (type == StorageAccountTypeEnum.BLOB) {
+        } else if (type == StorageAccountType.BLOB) {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithBlob;
-        } else if(type == StorageAccountTypeEnum.ADLSGen2){
+        } else if(type == StorageAccountType.ADLSGen2){
            return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdlsGen2;
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
