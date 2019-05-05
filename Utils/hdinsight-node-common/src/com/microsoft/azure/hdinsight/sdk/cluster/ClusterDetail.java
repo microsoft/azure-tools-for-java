@@ -38,7 +38,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,10 +97,23 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
     @Override
     public String getTitle() {
-        return Optional.ofNullable(getSparkVersion())
-                .filter(ver -> !ver.trim().isEmpty())
-                .map(ver -> getName() + " (Spark: " + ver + ")")
-                .orElse(getName());
+        StringBuilder titleStringBuilder = new StringBuilder(getName());
+
+        String sparkVersion = getSparkVersion();
+        if (StringUtils.isNotBlank(sparkVersion)) {
+            titleStringBuilder.append(String.format(" (Spark: %s)", sparkVersion));
+        }
+
+        if (ClusterManagerEx.getInstance().isHdiReaderCluster(this)) {
+            titleStringBuilder.append(" (Role: Reader)");
+        }
+
+        String state = getState();
+        if (StringUtils.isNotBlank(state) && !state.equalsIgnoreCase("Running")) {
+            titleStringBuilder.append(String.format(" (State: %s)", state));
+        }
+
+        return titleStringBuilder.toString();
     }
 
     @Override
