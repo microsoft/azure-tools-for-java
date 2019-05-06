@@ -60,7 +60,7 @@ public class TelemetryConstants {
     public static final String CREATE_DOCKER_HOST = "create-docker-host";
     public static final String RESTART_DOCKER_HOST = "restart-docker-host";
     public static final String SHUTDOWN_DOCKER_HOST = "shutdown-docker-host";
-    public static final String START_DOCKER_HOST = "browse-docker-host";
+    public static final String START_DOCKER_HOST = "start-docker-host";
     public static final String START_DOCKER_CONTAINER = "start-docker-container";
     public static final String RESTART_DOCKER_CONTAINER = "restart-docker-container";
     public static final String STOP_DOCKER_CONTAINER = "stop-docker-container";
