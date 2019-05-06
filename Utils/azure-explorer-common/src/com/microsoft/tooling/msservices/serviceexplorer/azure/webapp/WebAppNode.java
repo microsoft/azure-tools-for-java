@@ -22,6 +22,15 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_OPEN_INBROWSER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_SHOWPROP;
+
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
 import java.util.HashMap;
@@ -72,23 +81,28 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     protected void loadActions() {
         addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED),
-            createBackgroundActionListener("Stopping Web App", () -> stopWebApp()));
-        addAction(ACTION_START, createBackgroundActionListener("Starting Web App", () -> startWebApp()));
-        addAction(ACTION_RESTART, createBackgroundActionListener("Restarting Web App", () -> restartWebApp()));
-        addAction(ACTION_DELETE, new DeleteWebAppAction());
-        addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
-            }
-        });
-        addAction(ACTION_SHOW_PROPERTY, null, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
-            }
-        });
-
+            new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP,
+                createBackgroundActionListener("Stopping Web App", () -> stopWebApp())));
+        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(WEBAPP, START_WEBAPP,
+            createBackgroundActionListener("Starting Web App", () -> startWebApp())));
+        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP,
+            createBackgroundActionListener("Restarting Web App", () -> restartWebApp())));
+        addAction(ACTION_DELETE, new WrappedTelemetryNodeActionListener(WEBAPP, DELETE_WEBAPP,
+            new DeleteWebAppAction()));
+        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_OPEN_INBROWSER,
+            new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) {
+                    DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
+                }
+            }));
+        addAction(ACTION_SHOW_PROPERTY, null, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_SHOWPROP,
+            new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) {
+                    DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
+                }
+            }));
         super.loadActions();
     }
 

@@ -23,8 +23,13 @@
 package com.microsoft.azuretools.ijidea.utility;
 
 import com.intellij.openapi.actionSystem.*;
+import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.utils.TelemetryUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -54,10 +59,26 @@ public abstract class AzureAnAction extends AnAction {
     @Override
     public final void actionPerformed(AnActionEvent anActionEvent) {
         sendTelemetryOnAction(anActionEvent, "Execute", null);
-        onActionPerformed(anActionEvent);
+        String serviceName = getServiceName();
+        String operationName = getOperationName();
+        if (StringUtils.isNullOrWhiteSpace(serviceName)) {
+            serviceName = TelemetryConstants.ACTION;
+        }
+        if (StringUtils.isNullOrWhiteSpace(operationName)) {
+            operationName = TelemetryUtils.removeSpace(anActionEvent.getPresentation().getText());
+        }
+        EventUtil.executeWithLog(serviceName, operationName, (operation) -> {
+            EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
+            onActionPerformed(anActionEvent);
+        });
     }
 
     public void sendTelemetryOnAction(AnActionEvent anActionEvent, final String action, Map<String, String> extraInfo) {
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, anActionEvent.getPresentation().getText(),
+            null, buildProp(anActionEvent, extraInfo));
+    }
+
+    private Map<String, String> buildProp(AnActionEvent anActionEvent, Map<String, String> extraInfo) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Text", anActionEvent.getPresentation().getText());
         properties.put("Description", anActionEvent.getPresentation().getDescription());
@@ -69,7 +90,15 @@ public abstract class AzureAnAction extends AnAction {
         if (this instanceof TelemetryProperties) {
             properties.putAll(((TelemetryProperties) this).toProperties());
         }
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, anActionEvent.getPresentation().getText(), null, properties);
+        return properties;
+    }
+
+    protected String getServiceName() {
+        return "";
+    }
+
+    protected String getOperationName() {
+        return "";
     }
 
     public void sendTelemetryOnSuccess(AnActionEvent anActionEvent, Map<String, String> extraInfo) {

@@ -42,6 +42,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azure.docker.model.DockerHost.DockerHostVMState.RUNNING;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DOCKER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_DOCKER_HOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHUTDOWN_DOCKER_HOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_DOCKER_HOST;
 
 public class DockerHostNode extends AzureRefreshableNode implements TelemetryProperties {
   //TODO: Replace the icons with the real Docker host icons
@@ -161,7 +165,8 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
 
   @Override
   protected void loadActions() {
-    addAction(ACTION_START, ACTION_START_ICON, new NodeActionListener() {
+    addAction(ACTION_START, ACTION_START_ICON, new WrappedTelemetryNodeActionListener(DOCKER, START_DOCKER_HOST,
+        new NodeActionListener() {
       @Override
       public void actionPerformed(NodeActionEvent e) {
         DefaultLoader.getIdeHelper().runInBackground(null, "Starting Docker Host", false, true, "Starting Docker Host...", new Runnable() {
@@ -183,9 +188,11 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
           }
         });
       }
-    });
-    addAction(ACTION_RESTART, ACTION_START_ICON, new RestartDockerHostAction());
-    addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new ShutdownDockerHostAction());
+    }));
+    addAction(ACTION_RESTART, ACTION_START_ICON, new WrappedTelemetryNodeActionListener(DOCKER, RESTART_DOCKER_HOST,
+        new RestartDockerHostAction()));
+    addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new WrappedTelemetryNodeActionListener(DOCKER, SHUTDOWN_DOCKER_HOST,
+        new ShutdownDockerHostAction()));
     super.loadActions();
   }
 

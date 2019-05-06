@@ -23,10 +23,18 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.utils.TelemetryUtils;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,8 +57,13 @@ public abstract class NodeActionListener implements EventListener {
     }
 
     protected void sendTelemetry(NodeActionEvent nodeActionEvent) {
-        final Map<String, String> properties = new HashMap<>();
         Node node = nodeActionEvent.getAction().getNode();
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, node.getClass().getSimpleName(),
+            nodeActionEvent.getAction().getName(), buildProp(node));
+    }
+
+    private Map<String, String> buildProp(Node node) {
+        final Map<String, String> properties = new HashMap<>();
         properties.put("Node", node.getId());
         properties.put("Name", node.getName());
         if (node instanceof TelemetryProperties) {
@@ -60,20 +73,42 @@ public abstract class NodeActionListener implements EventListener {
             properties.put("Parent", node.getParent().getName());
             properties.put("ParentType", node.getParent().getClass().getSimpleName());
         }
-
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Action, node.getClass().getSimpleName(), nodeActionEvent.getAction().getName(), properties);
+        return properties;
     }
 
     protected abstract void actionPerformed(NodeActionEvent e)
             throws AzureCmdException;
 
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
+        String serviceName = getServiceName();
+        String operationName = getOperationName();
+        if (StringUtils.isNullOrWhiteSpace(serviceName)) {
+            serviceName = TelemetryConstants.ACTION;
+        }
+        if (StringUtils.isNullOrWhiteSpace(operationName)) {
+            operationName = TelemetryUtils.removeSpace(e.getAction().getName());
+        }
+        Operation operation = TelemetryManager.createOperation(serviceName, operationName);
         try {
+            operation.start();
+            Node node = e.getAction().getNode();
+            EventUtil.logEvent(EventType.info, operation, buildProp(node));
             actionPerformed(e);
             return Futures.immediateFuture(null);
         } catch (AzureCmdException ex) {
+            EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
             return Futures.immediateFailedFuture(ex);
+        } finally {
+            operation.complete();
         }
+    }
+
+    protected String getServiceName() {
+        return "";
+    }
+
+    protected String getOperationName() {
+        return "";
     }
 
     protected void afterActionPerformed(NodeActionEvent e) {

@@ -27,6 +27,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.libraries.LibrariesConfigurationDialog;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -46,6 +47,16 @@ public class LibraryConfigurationAction extends AzureAnAction {
         }
         LibrariesConfigurationDialog configurationDialog = new LibrariesConfigurationDialog(module, currentLibs);
         configurationDialog.show();
+    }
+
+    @Override
+    protected String getServiceName() {
+        return TelemetryConstants.SYSTEM;
+    }
+
+    @Override
+    protected String getOperationName() {
+        return TelemetryConstants.LIB_CONFIGURATION;
     }
 
     public void update(AnActionEvent event) {

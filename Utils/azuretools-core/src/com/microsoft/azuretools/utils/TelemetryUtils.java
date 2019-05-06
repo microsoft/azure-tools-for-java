@@ -1,5 +1,6 @@
 package com.microsoft.azuretools.utils;
 
+import com.microsoft.azuretools.adauth.StringUtils;
 import java.io.File;
 
 import javax.xml.xpath.XPath;
@@ -86,4 +87,27 @@ public class TelemetryUtils {
 			eleListener.getParentNode().removeChild(eleListener);
 		}
 	}
+
+	/**
+	 * For telemetry value, we will remove the space
+	 * @return
+	 */
+	public static String removeSpace(String str) {
+		try {
+			if (StringUtils.isNullOrWhiteSpace(str)) {
+				return "";
+			}
+			char[] res = new char[str.length()];
+			int j = 0;
+			for (int i = 0; i < str.length(); i++) {
+				if (str.charAt(i) != ' ') {
+					res[j++] = str.charAt(i);
+				}
+			}
+			return new String(res, 0, j);
+		} catch (Exception ignore) {
+			return "";
+		}
+	}
+
 }
