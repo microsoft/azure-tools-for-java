@@ -24,7 +24,7 @@ public class AzureCodeSamples extends AzureAnAction {
     }
 
     @Override
-    protected String getOperationName() {
+    protected String getOperationName(AnActionEvent event) {
         return TelemetryConstants.AZURECODE_SAMPLES;
     }
 }

@@ -23,7 +23,6 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -34,7 +33,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
-import com.microsoft.azuretools.utils.TelemetryUtils;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,13 +79,7 @@ public abstract class NodeActionListener implements EventListener {
 
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
         String serviceName = getServiceName();
-        String operationName = getOperationName();
-        if (StringUtils.isNullOrWhiteSpace(serviceName)) {
-            serviceName = TelemetryConstants.ACTION;
-        }
-        if (StringUtils.isNullOrWhiteSpace(operationName)) {
-            operationName = TelemetryUtils.removeSpace(e.getAction().getName());
-        }
+        String operationName = getOperationName(e);
         Operation operation = TelemetryManager.createOperation(serviceName, operationName);
         try {
             operation.start();
@@ -104,11 +96,15 @@ public abstract class NodeActionListener implements EventListener {
     }
 
     protected String getServiceName() {
-        return "";
+        return TelemetryConstants.ACTION;
     }
 
-    protected String getOperationName() {
-        return "";
+    protected String getOperationName(NodeActionEvent event) {
+        try {
+            return event.getAction().getName().replace(" ", "");
+        } catch (Exception ignore) {
+            return "";
+        }
     }
 
     protected void afterActionPerformed(NodeActionEvent e) {

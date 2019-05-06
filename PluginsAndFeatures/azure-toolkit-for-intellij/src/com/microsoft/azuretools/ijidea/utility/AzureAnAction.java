@@ -60,13 +60,7 @@ public abstract class AzureAnAction extends AnAction {
     public final void actionPerformed(AnActionEvent anActionEvent) {
         sendTelemetryOnAction(anActionEvent, "Execute", null);
         String serviceName = getServiceName();
-        String operationName = getOperationName();
-        if (StringUtils.isNullOrWhiteSpace(serviceName)) {
-            serviceName = TelemetryConstants.ACTION;
-        }
-        if (StringUtils.isNullOrWhiteSpace(operationName)) {
-            operationName = TelemetryUtils.removeSpace(anActionEvent.getPresentation().getText());
-        }
+        String operationName = getOperationName(anActionEvent);
         EventUtil.executeWithLog(serviceName, operationName, (operation) -> {
             EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
             onActionPerformed(anActionEvent);
@@ -94,11 +88,15 @@ public abstract class AzureAnAction extends AnAction {
     }
 
     protected String getServiceName() {
-        return "";
+        return TelemetryConstants.ACTION;
     }
 
-    protected String getOperationName() {
-        return "";
+    protected String getOperationName(AnActionEvent event) {
+        try {
+            return event.getPresentation().getText().replace(" ", "");
+        } catch (Exception ignore) {
+            return "";
+        }
     }
 
     public void sendTelemetryOnSuccess(AnActionEvent anActionEvent, Map<String, String> extraInfo) {

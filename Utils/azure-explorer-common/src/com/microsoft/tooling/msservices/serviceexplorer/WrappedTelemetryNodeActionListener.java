@@ -47,7 +47,7 @@ public class WrappedTelemetryNodeActionListener extends NodeActionListener {
     }
 
     @Override
-    protected String getOperationName() {
+    protected String getOperationName(NodeActionEvent e) {
         return this.operationName;
     }
 }

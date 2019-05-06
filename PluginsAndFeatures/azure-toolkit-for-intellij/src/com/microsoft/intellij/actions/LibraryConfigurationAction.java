@@ -55,7 +55,7 @@ public class LibraryConfigurationAction extends AzureAnAction {
     }
 
     @Override
-    protected String getOperationName() {
+    protected String getOperationName(AnActionEvent event) {
         return TelemetryConstants.LIB_CONFIGURATION;
     }
 
