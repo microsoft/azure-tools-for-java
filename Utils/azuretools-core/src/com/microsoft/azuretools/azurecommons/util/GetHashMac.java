@@ -20,13 +20,21 @@
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +60,9 @@ public class GetHashMac {
             Pattern pattern_zero = Pattern.compile(mac_regex_zero);
             Matcher matcher = pattern.matcher(mac_raw);
             String mac = "";
+            if(!matcher.matches()){
+                matcher = pattern.matcher(getRawMacWithoutIfconfig());
+            }
             while (matcher.find()) {
                 mac = matcher.group(0);
                 if (!pattern_zero.matcher(mac).matches()) {
@@ -73,7 +84,6 @@ public class GetHashMac {
             if (os != null && !os.isEmpty() && os.startsWith("win")) {
                 command = new String[]{"getmac"};
             }
-            
             ProcessBuilder probuilder = new ProcessBuilder(command);
             Process process = probuilder.start();
             InputStream inputStream = process.getInputStream();
@@ -95,6 +105,29 @@ public class GetHashMac {
         }
 
         return ret;
+    }
+
+    private static String getRawMacWithoutIfconfig() {
+        List<String> macSet = new ArrayList<>();
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (networkInterface.getHardwareAddress() != null) {
+                    byte[] mac = networkInterface.getHardwareAddress();
+                    // Refers https://www.mkyong.com/java/how-to-get-mac-address-in-java/
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < mac.length; i++) {
+                        sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+                    }
+                    macSet.add(sb.toString());
+                }
+            }
+        } catch (SocketException e) {
+            return StringUtils.EMPTY;
+        }
+        Collections.sort(macSet);
+        return String.join(" ", macSet);
     }
 
     private static String Hash(String mac) {
