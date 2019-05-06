@@ -4,21 +4,9 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h3>[3.20.0]</h3>
-      <h4>Added:</h4>
+      <h4>Bugfix:</h4>
       <ul>
-        <li>Azure Functions project and item templates (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/151">#151</a>, <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/152">#152</a>)</li>
-        <li>Running and debugging Azure Functions (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/161">#161</a>)</li>
-        <li>Add Function Apps in Azure Explorer (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/86">#86</a>, <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/88">#88</a>, <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/89">#89</a>)</li>
-        <li>Deploy Function Apps to Azure (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/150">#150</a>)</li>
-        <li>Azure SQL Database tools improvements (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/134">#134</a>, <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/135">#135</a>, <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/114">#114</a>)</li>
-      </ul>
-      <h4>Fixes and improvements:</h4>
-      <ul>
-        <li>Stop Azure web app only after preparing a publishable package (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/122">#122</a>)</li>
-        <li>Saving run configuration (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/167">#167</a>)</li>
-        <li>Persists web app selected from existing apps table (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/170">#170</a>)</li>
-        <li>Show .NET Code Samples from plugin (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/144">#144</a>)
+        <li>Fix Azure Function run configuration clashing - <a href="https://youtrack.jetbrains.com/issue/RIDER-27409">RIDER-27409</a></li>
       </ul>
     </html>
     ]]>
