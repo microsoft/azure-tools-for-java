@@ -41,14 +41,14 @@ import javax.swing.Icon
 
 class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildProjectBeforeRunTask>(){
     companion object {
-        val providerId = Key.create<BuildProjectBeforeRunTask>("Build")
+        val providerId = Key.create<BuildProjectBeforeRunTask>("BuildFunctionsProject")
     }
 
     override fun getId(): Key<BuildProjectBeforeRunTask>? = providerId
 
-    override fun getName(): String? = "Build Project"
+    override fun getName(): String? = "Build Functions Project"
 
-    override fun getDescription(task: BuildProjectBeforeRunTask?): String? = "Build project"
+    override fun getDescription(task: BuildProjectBeforeRunTask?): String? = "Build Functions project"
 
     override fun isConfigurable(): Boolean {
         return false
