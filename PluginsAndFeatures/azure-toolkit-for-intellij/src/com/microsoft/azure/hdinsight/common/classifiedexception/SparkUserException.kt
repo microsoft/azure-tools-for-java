@@ -42,7 +42,7 @@ object SparkUserExceptionFactory : ClassifiedExceptionFactory() {
                 || exp is FileNotFoundException) {
             SparkUserException(exp)
         } else if (exp is ADLException && exp.httpResponseCode == 403) {
-            val hintMsg = "\nPlease make sure use have RWX permissions for the storage account"
+            val hintMsg = "\nPlease make sure user has RWX permissions for the storage account"
             SparkUserException(ADLException("${exp.remoteExceptionMessage}$hintMsg"))
         } else null
     }
