@@ -26,6 +26,7 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.PermanentInstallationID;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -54,6 +55,7 @@ import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import rx.Observable;
 
@@ -92,7 +94,8 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private final AzureSettings azureSettings;
 
-    private String _hashmac = GetHashMac.GetHashMac();
+    private String _hashmac = StringUtils.isNotEmpty(GetHashMac.GetHashMac()) ? GetHashMac.GetHashMac() :
+        GetHashMac.hash(PermanentInstallationID.get());
 
     private Boolean firstInstallationByVersion;
 
@@ -175,6 +178,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                     } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
                         upgrade = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
+
                         DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
                         ParserXMLUtility.saveXMLFile(dataFile, doc);
                     }

@@ -32,11 +32,11 @@ public class TelemetryUtils {
                 return ret;
             }
             ret = DataOperations.getProperty(dataFile, instId);
-            if (ret == null || ret.isEmpty() || !GetHashMac.isValidHashMacFormat(ret)) {
-                ret = GetHashMac.getHashMac();
+            if (ret == null || ret.isEmpty() || !GetHashMac.IsValidHashMacFormat(ret)) {
+                ret = GetHashMac.GetHashMac();
             }
         } else {
-            ret = GetHashMac.getHashMac();
+            ret = GetHashMac.GetHashMac();
         }
 
         return ret;

@@ -43,7 +43,7 @@ public class GetHashMac {
     public static final String MAC_REGEX = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
     public static final Pattern MAC_PATTERN = Pattern.compile(MAC_REGEX);
 
-    public static boolean isValidHashMacFormat(String hashMac) {
+    public static boolean IsValidHashMacFormat(String hashMac) {
         if (hashMac == null || hashMac.isEmpty()) {
             return false;
         }
@@ -53,7 +53,7 @@ public class GetHashMac {
         return matcher.matches();
     }
 
-    public static String getHashMac() {
+    public static String GetHashMac() {
         String ret = null;
         String mac_raw = getRawMac();
         mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithoutIfconfig();
@@ -127,7 +127,7 @@ public class GetHashMac {
         return String.join(" ", macSet);
     }
 
-    private static String hash(String mac) {
+    public static String hash(String mac) {
         if (mac == null || mac.isEmpty()) {
             return null;
         }
