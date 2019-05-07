@@ -379,13 +379,16 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
         } else if (Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches()
                 || Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(containerAddress).matches()) {
-            String storageAccountName = getStorageAccountName(containerAddress);
+
+            String regex = Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches() ?
+                    StoragePathInfo.BlobPathPattern : StoragePathInfo.AdlsGen2PathPattern;
+
+            String storageAccountName = getStorageAccountName(containerAddress, regex);
             if(storageAccountName == null){
                 throw new HDIException("Failed to get default storage account name");
             }
 
-            String defaultContainerName = getDefaultContainerName(containerAddress);
-
+            String defaultContainerName = getDefaultContainerName(containerAddress, regex);
             String keyNameOfDefaultStorageAccountKey = StorageAccountKeyPrefix + storageAccountName;
             String storageAccountKey = null;
             if(coresiteMap.containsKey(keyNameOfDefaultStorageAccountKey)){
@@ -433,8 +436,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         return storageAccounts;
     }
 
-    private String getStorageAccountName(String containerAddress){
-        Pattern r = Pattern.compile(StoragePathInfo.BlobPathPattern);
+    private String getStorageAccountName(String containerAddress, String regex){
+        Pattern r = Pattern.compile(regex);
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
@@ -444,8 +447,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         return null;
     }
 
-    private String getDefaultContainerName(String containerAddress){
-        Pattern r = Pattern.compile(StoragePathInfo.BlobPathPattern);
+    private String getDefaultContainerName(String containerAddress, String regex){
+        Pattern r = Pattern.compile(regex);
         Matcher m = r.matcher(containerAddress);
         if(m.find())
         {
