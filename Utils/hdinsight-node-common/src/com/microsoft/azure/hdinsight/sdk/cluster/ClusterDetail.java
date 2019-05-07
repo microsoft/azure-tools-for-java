@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, ILogger {
@@ -349,68 +348,48 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
     }
 
-    private IHDIStorageAccount getDefaultStorageAccount(Map<String, String> coresiteMap, ClusterIdentity clusterIdentity) throws HDIException{
-        String containerAddress = null;
-        if(coresiteMap.containsKey(DefaultFS)){
-            containerAddress = coresiteMap.get(DefaultFS);
-        }else if(coresiteMap.containsKey(FSDefaultName)){
-            containerAddress = coresiteMap.get(FSDefaultName);
-        }
-
-        if(containerAddress == null){
+    @Nullable
+    private IHDIStorageAccount getDefaultStorageAccount(Map<String, String> coresiteMap, ClusterIdentity clusterIdentity) throws HDIException {
+        String defaultStorageRootPath = getDefaultStorageRootPath();
+        if (defaultStorageRootPath == null) {
             throw new HDIException("Failed to get default storage account");
         }
 
-        String scheme = URI.create(containerAddress).getScheme();
+        StoragePathInfo pathInfo = new StoragePathInfo(defaultStorageRootPath);
+        switch (pathInfo.storageType) {
+            case ADLS:
+                return new ADLSStorageAccount(this, true, clusterIdentity, URI.create(defaultStorageRootPath));
 
-        //for adls
-        if(ADL_HOME_PREFIX.equalsIgnoreCase(containerAddress)) {
-            String accountName = "";
-            String defaultRootPath = "";
-
-            if(coresiteMap.containsKey(ADLS_HOME_HOST_NAME)) {
-                accountName = coresiteMap.get(ADLS_HOME_HOST_NAME).split("\\.")[0];
-            }
-            if(coresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
-                defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
-            }
-
-            URI rootURI = URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName)).resolve(defaultRootPath);
-            return new ADLSStorageAccount(this,true, clusterIdentity, rootURI);
-        } else if (Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches()
-                || Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(containerAddress).matches()) {
-
-            String regex = Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches() ?
-                    StoragePathInfo.BlobPathPattern : StoragePathInfo.AdlsGen2PathPattern;
-
-            String storageAccountName = getStorageAccountName(containerAddress, regex);
-            if(storageAccountName == null){
-                throw new HDIException("Failed to get default storage account name");
-            }
-
-            String defaultContainerName = getDefaultContainerName(containerAddress, regex);
-            String keyNameOfDefaultStorageAccountKey = StorageAccountKeyPrefix + storageAccountName;
-            String storageAccountKey = null;
-            if(coresiteMap.containsKey(keyNameOfDefaultStorageAccountKey)){
-                storageAccountKey = coresiteMap.get(keyNameOfDefaultStorageAccountKey);
-            }
-
-            if (!scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme) && storageAccountKey == null) {
-                throw new HDIException("Failed to get default storage account key");
-            }
-
-            if (scheme.startsWith(ADLSGen2StorageAccount.DefaultScheme)) {
-                try {
-                    return new ADLSGen2StorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName, scheme);
-                } catch (Exception ex) {
-                    throw new HDIException("Failed to init ADLSGEN2 account", ex);
+            case BLOB:
+                String storageAccountName = pathInfo.path.getHost();
+                if (StringUtils.isBlank(storageAccountName)) {
+                    throw new HDIException("Failed to get default storage account name");
                 }
-            } else {
-                return new HDStorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
-            }
 
-        } else {
-            return null;
+                String defaultContainerName = pathInfo.path.getUserInfo();
+                String defaultStorageAccountKey = StorageAccountKeyPrefix + storageAccountName;
+                String storageAccountKey = null;
+                if (coresiteMap.containsKey(defaultStorageAccountKey)) {
+                    storageAccountKey = coresiteMap.get(defaultStorageAccountKey);
+                }
+
+                if (storageAccountKey == null) {
+                   return null;
+                }
+
+                return new HDStorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
+
+            case ADLSGen2:
+                String accountName = pathInfo.path.getHost();
+                if (StringUtils.isBlank(accountName)) {
+                    throw new HDIException("Failed to get default storage account name");
+                }
+
+                String fileSystem = pathInfo.path.getUserInfo();
+                return new ADLSGen2StorageAccount(this, accountName, null, true, fileSystem, pathInfo.path.getScheme());
+
+            default:
+                return null;
         }
     }
 
@@ -434,28 +413,6 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
 
         return storageAccounts;
-    }
-
-    private String getStorageAccountName(String containerAddress, String regex){
-        Pattern r = Pattern.compile(regex);
-        Matcher m = r.matcher(containerAddress);
-        if(m.find())
-        {
-            return m.group(3);
-        }
-
-        return null;
-    }
-
-    private String getDefaultContainerName(String containerAddress, String regex){
-        Pattern r = Pattern.compile(regex);
-        Matcher m = r.matcher(containerAddress);
-        if(m.find())
-        {
-            return m.group(2);
-        }
-
-        return null;
     }
 
     public String getLivyConnectionUrl() {
