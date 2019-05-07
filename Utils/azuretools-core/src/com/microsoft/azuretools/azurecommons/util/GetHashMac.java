@@ -5,16 +5,23 @@
  * <p>
  * MIT License
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files
+ * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use,
+ * copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so,
  * subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
  * <p>
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
@@ -40,7 +47,10 @@ import java.util.regex.Pattern;
 
 public class GetHashMac {
 
-    public static boolean IsValidHashMacFormat(String hashMac) {
+    public static final String MAC_REGEX = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
+    public static final Pattern MAC_PATTERN = Pattern.compile(MAC_REGEX);
+
+    public static boolean isValidHashMacFormat(String hashMac) {
         if (hashMac == null || hashMac.isEmpty()) {
             return false;
         }
@@ -50,33 +60,33 @@ public class GetHashMac {
         return matcher.matches();
     }
 
-    public static String GetHashMac() {
+    public static String getHashMac() {
         String ret = null;
-        String mac_raw = GetRawMac();
-        if (mac_raw != null && !mac_raw.isEmpty()) {
-            String mac_regex = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
+        String mac_raw = getRawMac();
+        mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithoutIfconfig();
+
+        if (isValidMac(mac_raw)) {
             String mac_regex_zero = "([0]{2}[:-]){5}[0]{2}";
-            Pattern pattern = Pattern.compile(mac_regex);
             Pattern pattern_zero = Pattern.compile(mac_regex_zero);
-            Matcher matcher = pattern.matcher(mac_raw);
+            Matcher matcher = MAC_PATTERN.matcher(mac_raw);
             String mac = "";
-            if(!matcher.matches()){
-                matcher = pattern.matcher(getRawMacWithoutIfconfig());
-            }
             while (matcher.find()) {
                 mac = matcher.group(0);
                 if (!pattern_zero.matcher(mac).matches()) {
                     break;
                 }
             }
-
-            ret = Hash(mac);
+            ret = hash(mac);
         }
 
         return ret;
     }
 
-    private static String GetRawMac() {
+    private static boolean isValidMac(String mac) {
+        return StringUtils.isNotEmpty(mac) && MAC_PATTERN.matcher(mac).find();
+    }
+
+    private static String getRawMac() {
         String ret = null;
         try {
             String os = System.getProperty("os.name").toLowerCase();
@@ -130,7 +140,7 @@ public class GetHashMac {
         return String.join(" ", macSet);
     }
 
-    private static String Hash(String mac) {
+    private static String hash(String mac) {
         if (mac == null || mac.isEmpty()) {
             return null;
         }
