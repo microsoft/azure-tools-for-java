@@ -89,19 +89,13 @@ public class GetHashMac {
             }
             ProcessBuilder probuilder = new ProcessBuilder(command);
             Process process = probuilder.start();
-            InputStream inputStream = process.getInputStream();
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader br = new BufferedReader(inputStreamReader);
-            String tmp;
-            while ((tmp = br.readLine()) != null) {
-                ret += tmp;
-            }
-
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (br != null) {
-                br.close();
+            try (final InputStream inputStream = process.getInputStream();
+                 final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                 final BufferedReader br = new BufferedReader(inputStreamReader)) {
+                String tmp;
+                while ((tmp = br.readLine()) != null) {
+                    ret += tmp;
+                }
             }
         } catch (IOException ex) {
             return null;
