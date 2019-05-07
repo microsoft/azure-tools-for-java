@@ -78,7 +78,7 @@ public abstract class NodeActionListener implements EventListener {
             throws AzureCmdException;
 
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
-        String serviceName = getServiceName();
+        String serviceName = transformHDInsight(getServiceName(), e.getAction().getNode());
         String operationName = getOperationName(e);
         Operation operation = TelemetryManager.createOperation(serviceName, operationName);
         try {
@@ -93,6 +93,28 @@ public abstract class NodeActionListener implements EventListener {
         } finally {
             operation.complete();
         }
+    }
+
+    /**
+     * If nodeName contains spark and hdinsight, we just think it is a spark node.
+     * So set the service name to hdinsight
+     * @param serviceName
+     * @return
+     */
+    private String transformHDInsight(String serviceName, Node node) {
+        if (serviceName.equals(TelemetryConstants.ACTION)) {
+            String nodeName = node.getName().toLowerCase();
+            if (nodeName.contains("spark") || nodeName.contains("hdinsight")) {
+                return TelemetryConstants.HDINSIGHT;
+            }
+            if (node.getParent() != null) {
+                String parentName = node.getParent().getName().toLowerCase();
+                if (parentName.contains("spark") || parentName.contains("hdinsight")) {
+                    return TelemetryConstants.HDINSIGHT;
+                }
+            }
+        }
+        return serviceName;
     }
 
     protected String getServiceName() {

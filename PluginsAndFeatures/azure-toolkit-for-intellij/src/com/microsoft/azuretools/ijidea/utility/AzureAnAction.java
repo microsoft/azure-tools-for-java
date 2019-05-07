@@ -23,13 +23,11 @@
 package com.microsoft.azuretools.ijidea.utility;
 
 import com.intellij.openapi.actionSystem.*;
-import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.TelemetryUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -59,7 +57,7 @@ public abstract class AzureAnAction extends AnAction {
     @Override
     public final void actionPerformed(AnActionEvent anActionEvent) {
         sendTelemetryOnAction(anActionEvent, "Execute", null);
-        String serviceName = getServiceName();
+        String serviceName = transformHDInsight(getServiceName(), anActionEvent);
         String operationName = getOperationName(anActionEvent);
         EventUtil.executeWithLog(serviceName, operationName, (operation) -> {
             EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
@@ -97,6 +95,26 @@ public abstract class AzureAnAction extends AnAction {
         } catch (Exception ignore) {
             return "";
         }
+    }
+
+    /**
+     * If eventName contains spark and hdinsight, we just think it is a spark node.
+     * So set the service name to hdinsight
+     * @param serviceName
+     * @return
+     */
+    private String transformHDInsight(String serviceName, AnActionEvent event) {
+        if (serviceName.equals(TelemetryConstants.ACTION)) {
+            String text = event.getPresentation().getText().toLowerCase();
+            if (text.contains("spark") || text.contains("hdinsight")) {
+                return TelemetryConstants.HDINSIGHT;
+            }
+            String place = event.getPlace();
+            if (place.contains("spark") || place.contains("hdinsight")) {
+                return TelemetryConstants.HDINSIGHT;
+            }
+        }
+        return serviceName;
     }
 
     public void sendTelemetryOnSuccess(AnActionEvent anActionEvent, Map<String, String> extraInfo) {

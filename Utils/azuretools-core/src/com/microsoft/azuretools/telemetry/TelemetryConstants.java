@@ -38,6 +38,7 @@ public class TelemetryConstants {
     public static final String SYSTEM = "system";
     public static final String ACTION = "action";
     public static final String DIALOG = "dialog";
+    public static final String HDINSIGHT = "hdinsight";
 
     // operation value
     public static final String FEEDBACK = "feedback";
