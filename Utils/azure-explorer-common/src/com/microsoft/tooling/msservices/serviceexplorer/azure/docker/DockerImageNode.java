@@ -21,6 +21,9 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.docker;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_DOCKER_IMAGE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DOCKER;
+
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerContainer;
 import com.microsoft.azure.docker.model.DockerHost;
@@ -137,6 +140,16 @@ public class DockerImageNode extends AzureRefreshableNode implements TelemetryPr
 
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+    }
+
+    @Override
+    protected String getServiceName() {
+      return DOCKER;
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+      return DELETE_DOCKER_IMAGE;
     }
   }
 }

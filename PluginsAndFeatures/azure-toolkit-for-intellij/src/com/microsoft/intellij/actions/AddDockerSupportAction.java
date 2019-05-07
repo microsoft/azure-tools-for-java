@@ -32,12 +32,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -132,6 +132,14 @@ public class AddDockerSupportAction extends AzureAnAction {
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";
         notifyInfo(notificationContent);
+    }
+
+    protected String getServiceName() {
+        return TelemetryConstants.DOCKER;
+    }
+
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.DEPLOY_DOCKER_HOST;
     }
 
     @Override

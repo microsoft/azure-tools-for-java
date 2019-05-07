@@ -38,6 +38,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
 import com.microsoft.intellij.runner.container.utils.Constant;
 
@@ -58,6 +59,16 @@ public class PushImageAction extends AzureAnAction {
             return;
         }
         ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+    }
+
+    @Override
+    protected String getServiceName() {
+        return TelemetryConstants.ACR;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.ACR_PUSHIMAGE;
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})

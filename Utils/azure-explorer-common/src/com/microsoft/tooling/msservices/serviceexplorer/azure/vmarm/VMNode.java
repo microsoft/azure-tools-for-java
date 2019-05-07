@@ -21,6 +21,12 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHUTDOWN_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
+
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.compute.InstanceViewStatus;
 import com.microsoft.azure.management.compute.VirtualMachine;
@@ -29,9 +35,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
@@ -66,7 +70,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            EventUtil.executeWithLog(TelemetryConstants.VM, TelemetryConstants.DELETE_VM, (operation) -> {
+            try {
                 AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
                 // not signed in
                 if (azureManager == null) {
@@ -74,7 +78,8 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
                 }
                 azureManager.getAzure(subscriptionId).virtualMachines().
                     deleteByResourceGroup(virtualMachine.resourceGroupName(), virtualMachine.name());
-            });
+            } catch (Exception ex) {
+            }
 
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 // instruct parent node to remove this node
@@ -84,6 +89,16 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return VM;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_VM;
         }
     }
 
@@ -97,14 +112,22 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            EventUtil.executeWithLog(TelemetryConstants.VM, TelemetryConstants.RESTART_VM, (operation) -> {
-                virtualMachine.restart();
-                refreshItems();
-            });
+            virtualMachine.restart();
+            refreshItems();
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return VM;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return RESTART_VM;
         }
     }
 
@@ -118,14 +141,22 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            EventUtil.executeWithLog(TelemetryConstants.VM, TelemetryConstants.START_VM, (operation) -> {
-                virtualMachine.start();
-                refreshItems();
-            });
+            virtualMachine.start();
+            refreshItems();
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return VM;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return START_VM;
         }
     }
 
@@ -140,14 +171,22 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            EventUtil.executeWithLog(TelemetryConstants.VM, TelemetryConstants.SHUTDOWN_VM, (operation) -> {
-                virtualMachine.powerOff();
-                refreshItems();
-            });
+            virtualMachine.powerOff();
+            refreshItems();
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return VM;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return SHUTDOWN_VM;
         }
     }
 

@@ -36,6 +36,7 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SignInWindow;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
@@ -61,6 +62,16 @@ public class AzureSignInAction extends AzureAnAction {
     public void onActionPerformed(AnActionEvent e) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
+    }
+
+    @Override
+    protected String getServiceName() {
+        return ACCOUNT;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.SIGNIN;
     }
 
     @Override

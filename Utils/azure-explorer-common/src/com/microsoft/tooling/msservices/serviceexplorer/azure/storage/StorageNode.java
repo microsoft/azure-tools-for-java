@@ -31,7 +31,6 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
@@ -78,7 +77,7 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            EventUtil.executeWithLog(STORAGE, DELETE_STORAGE_ACCOUNT, (operation -> {
+            try {
                 AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
                 // not signed in
                 if (azureManager == null) {
@@ -93,14 +92,24 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
                         getParent().removeDirectChildNode(StorageNode.this);
                     }
                 });
-            }), (ex) -> {
-                DefaultLoader.getUIHelper().showException("An error occurred while attempting to "
-                        + "delete storage account.", ex, "MS Services - Error Deleting Storage Account", false, true);
-            });
+            } catch (Exception ex) {
+                DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete storage account.", ex,
+                    "MS Services - Error Deleting Storage Account", false, true);
+            }
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return STORAGE;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_STORAGE_ACCOUNT;
         }
     }
 

@@ -21,6 +21,9 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DETACH_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
 import com.microsoft.tooling.msservices.helpers.ExternalStorageHelper;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -52,6 +55,16 @@ public class ExternalStorageNode extends ClientStorageNode {
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e)
                 throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return STORAGE;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DETACH_STORAGE_ACCOUNT;
         }
     }
 

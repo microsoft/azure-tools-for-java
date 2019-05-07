@@ -28,7 +28,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_B
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_EXPLORER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_READPROP;
 
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,14 +108,22 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            EventUtil.executeWithLog(REDIS, DELETE_REDIS, (operation) -> {
-                RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId,
-                    RedisCacheNode.this.resourceId, RedisCacheNode.this);
-            });
+            RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId,
+                RedisCacheNode.this.resourceId, RedisCacheNode.this);
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return REDIS;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_REDIS;
         }
     }
 

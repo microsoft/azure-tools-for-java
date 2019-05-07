@@ -58,6 +58,7 @@ public class TelemetryConstants {
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
     public static final String CREATE_DOCKER_HOST = "create-docker-host";
+    public static final String DEPLOY_DOCKER_HOST = "deploy-docker-host";
     public static final String RESTART_DOCKER_HOST = "restart-docker-host";
     public static final String SHUTDOWN_DOCKER_HOST = "shutdown-docker-host";
     public static final String START_DOCKER_HOST = "start-docker-host";
@@ -66,6 +67,7 @@ public class TelemetryConstants {
     public static final String STOP_DOCKER_CONTAINER = "stop-docker-container";
     public static final String BROWSE_DOCKER_CONTAINER = "browser-docker-container";
     public static final String DELETE_DOCKER_CONTAINER = "delete-docker-container";
+    public static final String DELETE_DOCKER_IMAGE = "delete-docker-image";
     public static final String DEPLOY_WEBAPP_DOCKERLOCAL = "deploy-webapp-dockerlocal";
     public static final String DEPLOY_WEBAPP_DOCKERHOST = "deploy-webapp-dockerhost";
     public static final String DEPLOY_WEBAPP_CONTAINER = "deploy-webapp-container";
@@ -92,6 +94,8 @@ public class TelemetryConstants {
     public static final String RESTART_VM = "restart-vm";
     public static final String CREATE_STORAGE_ACCOUNT = "create-storage-account";
     public static final String DELETE_STORAGE_ACCOUNT = "delete-storage-account";
+    public static final String DETACH_STORAGE_ACCOUNT = "detach-storage-account";
+    public static final String DELETE_STORAGE_TABLE = "delete-storage-table";
     public static final String CREATE_BLOB_CONTAINER = "create-blob-container";
     public static final String UPLOAD_BLOB_FILE = "upload-blob-file";
     public static final String DELETE_BLOB_CONTAINER = "delete-blob-container";

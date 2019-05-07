@@ -37,6 +37,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
 import com.microsoft.intellij.runner.container.utils.Constant;
 
@@ -68,6 +69,16 @@ public class WebAppOnLinuxAction extends AzureAnAction {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected String getServiceName() {
+        return TelemetryConstants.WEBAPP;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.DEPLOY_WEBAPP_CONTAINER;
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})

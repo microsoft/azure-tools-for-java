@@ -39,6 +39,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardDialog;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
@@ -113,6 +114,17 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
       e.printStackTrace();
     }
   }
+
+    @Override
+    protected String getServiceName() {
+        return TelemetryConstants.DOCKER;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.CREATE_DOCKER_HOST;
+    }
+
 
   @Override
   public void update(AnActionEvent actionEvent) {

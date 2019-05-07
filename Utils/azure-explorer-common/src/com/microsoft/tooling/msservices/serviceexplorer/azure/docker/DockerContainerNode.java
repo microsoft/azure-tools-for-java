@@ -255,6 +255,16 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
     }
+
+    @Override
+    protected String getServiceName() {
+      return DOCKER;
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+      return DELETE_DOCKER_CONTAINER;
+    }
   }
 
 }

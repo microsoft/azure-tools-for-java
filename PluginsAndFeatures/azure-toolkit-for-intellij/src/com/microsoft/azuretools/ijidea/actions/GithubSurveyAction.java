@@ -22,9 +22,8 @@
 
 package com.microsoft.azuretools.ijidea.actions;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.feedback.GithubIssue;
 import com.microsoft.intellij.feedback.NewGithubIssueAction;
 import com.microsoft.intellij.feedback.ReportableSurvey;
@@ -33,6 +32,15 @@ import com.microsoft.intellij.feedback.ReportableSurvey;
 public class GithubSurveyAction extends NewGithubIssueAction {
     public GithubSurveyAction() {
         super(new GithubIssue<>(new ReportableSurvey("User feedback")), "Provide Feedback...");
-        EventUtil.logEvent(EventType.info, TelemetryConstants.SYSTEM, TelemetryConstants.FEEDBACK, null);
+    }
+
+    @Override
+    protected String getServiceName() {
+        return TelemetryConstants.SYSTEM;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.FEEDBACK;
     }
 }
