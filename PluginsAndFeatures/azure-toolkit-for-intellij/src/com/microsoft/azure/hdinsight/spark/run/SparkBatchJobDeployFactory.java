@@ -78,12 +78,12 @@ public class SparkBatchJobDeployFactory implements ILogger {
         if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
             try {
                 if (clusterDetail.getHttpUserName() == null || clusterDetail.getHttpPassword() == null) {
-                    throw new ExecutionException("You have Ready-only permission for this cluster. Please link the cluster first.");
+                    throw new ExecutionException("No Ambari permission to submit job to the selected cluster");
                 }
             } catch (HDIException ex) {
                 log().warn("Error getting cluster credential. Cluster Name: " + clusterName);
                 log().warn(ExceptionUtils.getStackTrace(ex));
-                throw new ExecutionException("Error getting Ambari credential for this cluster.");
+                throw new ExecutionException("Error getting Ambari credential for this cluster");
             }
         }
 
@@ -91,14 +91,14 @@ public class SparkBatchJobDeployFactory implements ILogger {
             case BLOB:
                 String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
                 if (StringUtils.isBlank(storageAccountName)) {
-                    throw new ExecutionException("Can't get the valid storage account.");
+                    throw new ExecutionException("Can't get the valid storage account");
                 }
 
                 String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
                 String key = submitModel.getJobUploadStorageModel().getStorageKey();
                 String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
                 if (StringUtils.isBlank(key) || StringUtils.isBlank(container)) {
-                    throw new ExecutionException("Can't get the valid key or container name.");
+                    throw new ExecutionException("Can't get the valid key or container name");
                 }
 
                 storageAccount = new HDStorageAccount(clusterDetail, fullStorageBlobName, key, false, container);
@@ -133,7 +133,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
             case ADLS_GEN1:
                 String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
                 if (StringUtils.isBlank(rawRootPath) || !rawRootPath.matches(StoragePathInfo.AdlsPathPattern)) {
-                    throw new ExecutionException("Invalid adls root path input.");
+                    throw new ExecutionException("Invalid adls root path input");
                 }
 
                 destinationRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
@@ -173,7 +173,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 }
 
                 if (StringUtils.isBlank(gen2StorageAccount)) {
-                    throw new ExecutionException("Invalid ADLS GEN2 root path.");
+                    throw new ExecutionException("Invalid ADLS GEN2 root path");
                 }
 
                 accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
