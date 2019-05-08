@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.common;
 
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -36,7 +37,7 @@ public interface HDInsightHelper {
     boolean isOptIn();
 
     @Nullable
-    default NodeActionListener createAddNewHDInsightReaderClusterAction(@NotNull HDInsightRootModule module, @NotNull String clusterName) {
+    default NodeActionListener createAddNewHDInsightReaderClusterAction(@NotNull HDInsightRootModule module, @NotNull ClusterDetail clusterDetail) {
         return null;
     }
 

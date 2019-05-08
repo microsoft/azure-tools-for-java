@@ -61,7 +61,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             HDInsightRootModule hdinsightRootModule = (HDInsightRootModule) this.getParent();
             NodeActionListener linkClusterActionListener =
                     HDInsightLoader.getHDInsightHelper().createAddNewHDInsightReaderClusterAction(hdinsightRootModule,
-                            clusterDetail.getName());
+                            (ClusterDetail) clusterDetail);
             addAction("Link this cluster", linkClusterActionListener);
         }
 

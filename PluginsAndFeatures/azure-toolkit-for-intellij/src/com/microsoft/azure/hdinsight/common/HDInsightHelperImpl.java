@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewHDInsightReaderClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
@@ -178,8 +179,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public NodeActionListener createAddNewHDInsightReaderClusterAction(
             @NotNull HDInsightRootModule module,
-            @NotNull String clusterName) {
-        return new AddNewHDInsightReaderClusterAction(module, clusterName);
+            @NotNull ClusterDetail clusterDetail) {
+        return new AddNewHDInsightReaderClusterAction(module, clusterDetail);
     }
 
     @Override
