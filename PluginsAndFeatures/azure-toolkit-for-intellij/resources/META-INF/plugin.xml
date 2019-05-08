@@ -20,10 +20,16 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.21.1</h3>
+    <h3>3.22.0</h3>
+    <h4>Added</h4>
+    <ul>
+    </ul>
+    <h4>Changed</h4>
+    <ul>
+        <li>Improve app service data loading performance</li>
+    </ul>
     <h4>Fixed</h4>
     <ul>
-        <li>Fix telemetry shares same installation id</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

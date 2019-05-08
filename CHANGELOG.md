@@ -4,6 +4,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 - [Change Log](#change-log)
 
+  - [3.22.0](#3220)
   - [3.21.1](#3211)
   - [3.21.0](#3210)
   - [3.20.0](#3200)
@@ -33,6 +34,16 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.22.0
+
+### Added
+
+### Changed
+
+- Improve app service data loading performance
+
+### Fixed
 
 ## 3.21.1
 
