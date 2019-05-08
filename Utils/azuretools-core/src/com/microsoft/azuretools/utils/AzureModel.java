@@ -75,7 +75,7 @@ public class AzureModel {
     }
 
     public Map<SubscriptionDetail, List<Location>> createSubscriptionToRegionMap() {
-        return new HashMap<SubscriptionDetail, List<Location>>();
+        return new ConcurrentHashMap<>();
     }
 
     public void setSubscriptionToLocationMap(Map<SubscriptionDetail, List<Location>> subscriptionToLocationMap) {
@@ -93,7 +93,7 @@ public class AzureModel {
     }
 
     public synchronized Map<SubscriptionDetail, List<ResourceGroup>> createSubscriptionToResourceGroupMap() {
-        return new HashMap<SubscriptionDetail, List<ResourceGroup>>();
+        return new ConcurrentHashMap<>();
     }
 
     // == resourceGroupToWebAppMap
