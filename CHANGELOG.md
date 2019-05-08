@@ -39,11 +39,16 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Added
 
+- Automaticly fill in Azure Blob account name or ADLS Gen1/Gen2 root path for linked HDInsight Reader role cluster in run configuration dialog
+
 ### Changed
 
 - Improve app service data loading performance
+- Restrict upload storage type to cluster default storage type and spark interactive session storage type for linked HDInsight Reader role cluster
 
 ### Fixed
+- [#3094](https://github.com/microsoft/azure-tools-for-java/issues/3094), [#3096](https://github.com/microsoft/azure-tools-for-java/issues/3096) Fix warning message spelling issue
+
 
 ## 3.21.1
 
