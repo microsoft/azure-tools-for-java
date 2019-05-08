@@ -19,6 +19,10 @@
  */
 package com.microsoft.azuretools.hdinsight.projects;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,20 +123,25 @@ public class CreateProjectUtil {
 			
 			copyFileTo(Java_Local_RunSample, rootPath);
 			AppInsightsClient.create(Messages.SparkProjectSystemJavaSampleCreation, null);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkProjectSystemJavaSampleCreation, null);
 			break;
 		case "com.microsoft.azure.hdinsight.cluster-scala.projwizard":
 			if (useMaven) rootPath += ScalaMavenProjectFolder;
 			copyFileTo(Scala_Cluster_Run_Sample, rootPath);
 			AppInsightsClient.create(Messages.SparkProjectSystemScalaSampleCreation, null);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkProjectSystemScalaSampleCreation, null);
 			break;
 		case "com.microsoft.azure.hdinsight.scala.projwizard":
 			AppInsightsClient.create(Messages.SparkProjectSystemScalaCreation, null);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkProjectSystemScalaCreation, null);
 			break;
 		case "com.microsoft.azure.hdinsight.java.projwizard":
 			AppInsightsClient.create(Messages.SparkProjectSystemJavaCreation, null);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkProjectSystemJavaCreation, null);
 			break;
 		default:
 			AppInsightsClient.create(Messages.SparkProjectSystemOtherCreation, null);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkProjectSystemOtherCreation, null);
 			break;
 		}
 		

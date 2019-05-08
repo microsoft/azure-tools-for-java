@@ -19,6 +19,10 @@
  */
 package com.microsoft.azuretools.hdinsight.spark.common2;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -183,6 +187,7 @@ public class SparkSubmitHelper {
 				postEventProperty.put("IsKilled", "true");
 				AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent,
 						Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+				EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
 				return;
 			}
 
@@ -207,6 +212,7 @@ public class SparkSubmitHelper {
 
 			AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent,
 					Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
 		} catch (Exception e) {
 			if (HDInsightUtil.getSparkSubmissionToolWindowView().getJobStatusManager().isJobKilled() == false) {
 				HDInsightUtil.getSparkSubmissionToolWindowView()
@@ -218,6 +224,7 @@ public class SparkSubmitHelper {
 			}
 			AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent,
 					Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
 		}
 	}
 
