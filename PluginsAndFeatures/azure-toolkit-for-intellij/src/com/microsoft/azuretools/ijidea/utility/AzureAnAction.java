@@ -109,7 +109,7 @@ public abstract class AzureAnAction extends AnAction {
             if (text.contains("spark") || text.contains("hdinsight")) {
                 return TelemetryConstants.HDINSIGHT;
             }
-            String place = event.getPlace();
+            String place = event.getPlace().toLowerCase();
             if (place.contains("spark") || place.contains("hdinsight")) {
                 return TelemetryConstants.HDINSIGHT;
             }
