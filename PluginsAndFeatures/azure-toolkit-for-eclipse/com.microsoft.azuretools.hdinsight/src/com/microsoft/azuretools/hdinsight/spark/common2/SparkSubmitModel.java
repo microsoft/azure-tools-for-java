@@ -21,6 +21,8 @@
  */
 package com.microsoft.azuretools.hdinsight.spark.common2;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
@@ -32,6 +34,8 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitResponse;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
@@ -240,6 +244,7 @@ public class SparkSubmitModel {
             postEventProperty.put("IsSubmitSucceed", "false");
             postEventProperty.put("SubmitFailedReason", response.getContent());
             AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, null, postEventProperty);
+            EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
         }
     }
 
@@ -248,6 +253,7 @@ public class SparkSubmitModel {
         postEventProperty.put("IsSubmitSucceed", "false");
         postEventProperty.put("SubmitFailedReason", exception.toString());
         AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, null, postEventProperty);
+        EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
     }
 
     private void writeJobLogToLocal() {
