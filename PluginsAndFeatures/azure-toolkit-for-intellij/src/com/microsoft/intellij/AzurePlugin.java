@@ -94,16 +94,17 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private final AzureSettings azureSettings;
 
-    private String _hashmac = StringUtils.isNotEmpty(GetHashMac.GetHashMac()) ? GetHashMac.GetHashMac() :
-        GetHashMac.hash(PermanentInstallationID.get());
+    private String installationID;
 
     private Boolean firstInstallationByVersion;
 
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
+        String hasMac = GetHashMac.GetHashMac();
+        this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
         CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
+            TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
     }
 
 
@@ -179,7 +180,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                         upgrade = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 
-                        DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
+                        DataOperations.updatePropertyValue(doc, message("instID"), installationID);
                         ParserXMLUtility.saveXMLFile(dataFile, doc);
                     }
                 } else {
@@ -243,7 +244,7 @@ public class AzurePlugin extends AbstractProjectComponent {
             }
 
             DataOperations.updatePropertyValue(doc, message("pluginVersion"), PLUGIN_VERSION);
-            DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
+            DataOperations.updatePropertyValue(doc, message("instID"), installationID);
 
             ParserXMLUtility.saveXMLFile(dataFile, doc);
         } catch (Exception ex) {
