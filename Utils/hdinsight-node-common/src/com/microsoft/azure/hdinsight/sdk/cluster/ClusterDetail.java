@@ -69,6 +69,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     private IHDIStorageAccount defaultStorageAccount;
     private List<HDStorageAccount> additionalStorageAccounts;
     private boolean isConfigInfoAvailable = false;
+    @Nullable
+    private Map<String, String> coresiteMap = null;
 
     public ClusterDetail(SubscriptionDetail paramSubscription,
                          ClusterRawInfo paramClusterRawInfo,
@@ -275,6 +277,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
                         Map<String, String> coresSiteMap = configurations.getCoresite();
                         ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
                         if (coresSiteMap != null) {
+                            this.coresiteMap = coresSiteMap;
                             this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
                             this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
                         }
@@ -288,18 +291,20 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
     @Nullable
     public String getDefaultStorageRootPath() {
-        if (!(clusterOperation instanceof ClusterOperationNewAPIImpl)) {
-            return null;
-        }
-
         log().info("Cluster ID: " + clusterRawInfo.getId());
-        Map<String, String> coresiteMap = null;
+        Map<String, String> requestedCoresiteMap = null;
+
         try {
-            coresiteMap =
-                    ((ClusterOperationNewAPIImpl) clusterOperation).getClusterCoreSiteRequest(clusterRawInfo.getId())
-                            .toBlocking()
-                            .singleOrDefault(null);
-            if (coresiteMap == null) {
+            if (!(clusterOperation instanceof ClusterOperationNewAPIImpl)) {
+                requestedCoresiteMap = this.coresiteMap;
+            } else {
+                requestedCoresiteMap =
+                        ((ClusterOperationNewAPIImpl) clusterOperation).getClusterCoreSiteRequest(clusterRawInfo.getId())
+                                .toBlocking()
+                                .singleOrDefault(null);
+            }
+
+            if (requestedCoresiteMap == null) {
                 log().warn("Error getting cluster core-site. coresiteMap is null.");
                 return null;
             }
@@ -309,10 +314,10 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
 
         String containerAddress = null;
-        if (coresiteMap.containsKey(DefaultFS)) {
-            containerAddress = coresiteMap.get(DefaultFS);
-        } else if (coresiteMap.containsKey(FSDefaultName)) {
-            containerAddress = coresiteMap.get(FSDefaultName);
+        if (requestedCoresiteMap.containsKey(DefaultFS)) {
+            containerAddress = requestedCoresiteMap.get(DefaultFS);
+        } else if (requestedCoresiteMap.containsKey(FSDefaultName)) {
+            containerAddress = requestedCoresiteMap.get(FSDefaultName);
         } else {
             log().warn("Error getting cluster default storage account. containerAddress is null.");
             return null;
@@ -323,11 +328,11 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             String accountName = "";
             String defaultRootPath = "";
 
-            if (coresiteMap.containsKey(ADLS_HOME_HOST_NAME)) {
-                accountName = coresiteMap.get(ADLS_HOME_HOST_NAME).split("\\.")[0];
+            if (requestedCoresiteMap.containsKey(ADLS_HOME_HOST_NAME)) {
+                accountName = requestedCoresiteMap.get(ADLS_HOME_HOST_NAME).split("\\.")[0];
             }
-            if (coresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
-                defaultRootPath = coresiteMap.get(ADLS_HOME_MOUNTPOINT);
+            if (requestedCoresiteMap.containsKey(ADLS_HOME_MOUNTPOINT)) {
+                defaultRootPath = requestedCoresiteMap.get(ADLS_HOME_MOUNTPOINT);
             }
 
             return URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName))
@@ -339,7 +344,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         } else {
             final Map<String, String> properties = new HashMap<>();
             properties.put("ErrorType", "Unknown HDInsight default storage type");
-            properties.put("coreSiteMap", StringUtils.join(coresiteMap));
+            properties.put("coreSiteMap", StringUtils.join(requestedCoresiteMap));
             properties.put("containerAddress", containerAddress);
             properties.put("ClusterID", this.clusterRawInfo.getId());
             AppInsightsClient.createByType(AppInsightsClient.EventType.Error, this.getClass().getSimpleName(), null, properties);
@@ -352,7 +357,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     private IHDIStorageAccount getDefaultStorageAccount(Map<String, String> coresiteMap, ClusterIdentity clusterIdentity) throws HDIException {
         String defaultStorageRootPath = getDefaultStorageRootPath();
         if (defaultStorageRootPath == null) {
-            throw new HDIException("Failed to get default storage account");
+            throw new HDIException("Failed to get default storage root path");
         }
 
         StoragePathInfo pathInfo = new StoragePathInfo(defaultStorageRootPath);
