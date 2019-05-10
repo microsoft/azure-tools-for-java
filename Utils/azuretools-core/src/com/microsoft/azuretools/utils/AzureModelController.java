@@ -287,8 +287,8 @@ public class AzureModelController {
                         List<Location> locl = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
                         Collections.sort(locl, Comparator.comparing(Location::displayName));
                         sdlocMap.put(sd, locl);
-                        subscriber.onCompleted();
                     }
+                    subscriber.onCompleted();
                 } catch (Exception e) {
                     Exceptions.propagate(e);
                 }
