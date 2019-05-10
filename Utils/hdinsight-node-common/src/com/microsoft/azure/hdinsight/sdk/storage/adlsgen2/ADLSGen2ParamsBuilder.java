@@ -28,11 +28,7 @@ package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2;
 
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ADLSGen2ParamsBuilder extends WebHdfsParamsBuilder {
     public ADLSGen2ParamsBuilder() {
@@ -50,6 +46,16 @@ public class ADLSGen2ParamsBuilder extends WebHdfsParamsBuilder {
 
     public ADLSGen2ParamsBuilder setResource(@NotNull String value) {
         params.add(new BasicNameValuePair("resource", value));
+        return this;
+    }
+
+    public ADLSGen2ParamsBuilder setDirectory(@NotNull String value) {
+        params.add(new BasicNameValuePair("directory", value));
+        return this;
+    }
+
+    public ADLSGen2ParamsBuilder setRecursive(@NotNull boolean value) {
+        params.add(new BasicNameValuePair("recursive", String.valueOf(value)));
         return this;
     }
 }

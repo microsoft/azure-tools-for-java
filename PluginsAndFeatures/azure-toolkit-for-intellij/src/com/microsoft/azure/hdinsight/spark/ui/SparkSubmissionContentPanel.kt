@@ -31,6 +31,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.packaging.artifacts.Artifact
 import com.intellij.packaging.impl.artifacts.ArtifactUtil
 import com.intellij.ui.ListCellRendererWrapper
@@ -54,6 +55,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckS
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.SparkFileChooser
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
 import com.microsoft.intellij.forms.dsl.panel
@@ -279,8 +281,25 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)"
     }
 
-    private val referencedJarsTextField: ExpandableTextField = ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
-        toolTipText = refJarsPrompt.toolTipText
+    private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
+        toolTipText = "Artifact from remote storage account."
+        isEnabled = true
+        textField.document.addDocumentListener(documentValidationListener)
+
+        button.addActionListener {
+            val chooserDescriptor = FileChooserDescriptor(true, true, true, false, true, false).apply {
+                title = "Select Remote Artifact File"
+            }
+
+            val model = SparkSubmitModel()
+            getData(model)
+            chooserDescriptor.setRoots(SparkFileChooser.setRoots(model))
+
+            val chooseFile = SparkFileChooser.chooseFile(chooserDescriptor)
+            val path = chooseFile?.path ?: return@addActionListener
+            val normalizedPath = if (path.endsWith("!/")) path.substring(0, path.length - 2) else path
+            text = normalizedPath
+        }
     }
 
     private val refFilesPrompt: JLabel = JLabel("Referenced Files(spark.files)").apply {

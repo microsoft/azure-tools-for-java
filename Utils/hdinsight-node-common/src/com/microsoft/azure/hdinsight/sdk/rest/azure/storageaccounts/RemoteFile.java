@@ -19,29 +19,24 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts;
 
-package com.microsoft.azure.hdinsight.spark.common;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import rx.Observable;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class RemoteFile {
+    @JsonProperty(value = "name")
+    private String name;
 
-import java.io.File;
+    @JsonProperty(value = "isDirectory", defaultValue = "false")
+    private Boolean isDirectory = false;
 
-public interface Deployable {
-    /**
-     * Deploy the job artifact into cluster
-     *
-     * @param src the artifact to deploy
-     * @return Observable: upload path
-     *         Observable Error: IOException;
-     */
-    @NotNull
-    Observable<String> deploy(@NotNull File src);
+    public String getName() {
+        return name;
+    }
 
-    @Nullable
-    default Observable<RemoteFile> listRemoteFiles(@NotNull String artifactPath){
-         return null;
+    public Boolean isDirectory() {
+        return isDirectory;
     }
 }

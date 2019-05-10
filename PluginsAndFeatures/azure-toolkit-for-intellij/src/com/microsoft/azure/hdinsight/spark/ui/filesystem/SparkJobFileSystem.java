@@ -19,29 +19,15 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
-package com.microsoft.azure.hdinsight.spark.common;
+import com.intellij.openapi.vfs.impl.http.HttpFileSystemBase;
 
-import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import rx.Observable;
-
-import java.io.File;
-
-public interface Deployable {
-    /**
-     * Deploy the job artifact into cluster
-     *
-     * @param src the artifact to deploy
-     * @return Observable: upload path
-     *         Observable Error: IOException;
-     */
-    @NotNull
-    Observable<String> deploy(@NotNull File src);
-
-    @Nullable
-    default Observable<RemoteFile> listRemoteFiles(@NotNull String artifactPath){
-         return null;
+public class SparkJobFileSystem extends HttpFileSystemBase {
+    public static SparkJobFileSystem instance = new SparkJobFileSystem("https");
+    private String myProtocol;
+    private SparkJobFileSystem(String protocol) {
+        super(protocol);
+        this.myProtocol = protocol;
     }
 }

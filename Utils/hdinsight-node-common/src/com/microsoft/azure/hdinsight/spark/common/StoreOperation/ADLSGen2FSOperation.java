@@ -23,6 +23,8 @@
 package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2;
 
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.api.GetRemoteFilesResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPatch;
@@ -51,6 +53,9 @@ public class ADLSGen2FSOperation {
     private List<NameValuePair> appendReqParams;
 
     @NotNull
+    private List<NameValuePair> listReqParams;
+
+    @NotNull
     private ADLSGen2ParamsBuilder flushReqParamsBuilder;
 
     public ADLSGen2FSOperation(@NotNull HttpObservable http) {
@@ -68,8 +73,15 @@ public class ADLSGen2FSOperation {
                 .setPosition(0)
                 .build();
 
+        this.listReqParams = new ADLSGen2ParamsBuilder()
+                .setRecursive(true)
+                .setResource("filesystem")
+                .setDirectory("SparkSubmission")
+                .build();
+
         this.flushReqParamsBuilder = new ADLSGen2ParamsBuilder()
                 .setAction("flush");
+
     }
 
     public Observable<Boolean> createDir(String dirpath) {
@@ -87,6 +99,11 @@ public class ADLSGen2FSOperation {
     public Observable<Boolean> uploadData(String destFilePath, File src) {
         return appendData(destFilePath, src)
                 .flatMap(len -> flushData(destFilePath, len));
+    }
+
+    public Observable<RemoteFile> list(String rootPath) {
+        return http.get(rootPath, listReqParams, null, GetRemoteFilesResponse.class)
+                 .flatMap(pathList -> Observable.from(pathList.getRemoteFiles()));
     }
 
     private Observable<Long> appendData(String filePath, File src) {

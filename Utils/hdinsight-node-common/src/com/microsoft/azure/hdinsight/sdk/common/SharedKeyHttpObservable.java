@@ -29,15 +29,13 @@ import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import rx.Observable;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -95,6 +93,12 @@ public class SharedKeyHttpObservable extends HttpObservable {
         this.setAuthorization(req, pairs);
         this.removeContentLength();
         return super.executeReqAndCheckStatus(req, validStatueCode, pairs);
+    }
+
+    @Override
+    public <T> Observable<T> get(String uri, List<NameValuePair> parameters, List<Header> addOrReplaceHeaders, Class<T> clazz) {
+        this.setAuthorization(new HttpGet(uri),parameters);
+        return super.get(uri, parameters, addOrReplaceHeaders, clazz);
     }
 
     @Override
