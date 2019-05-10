@@ -150,6 +150,8 @@ class StartAzureCloudShellAction : AnAction() {
     private fun provisionAzureCloudShell(project: Project, azureManager: AzureManager, tokenCredentials: ServiceClientCredentials, subscriptionDetail: SubscriptionDetail) {
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, this.templatePresentation.text) {
             override fun run(indicator: ProgressIndicator) {
+                indicator.isIndeterminate = false
+
                 // Custom Azure API client
                 val retrofitClient = azureManager.getRetrofitClient(
                         azureManager.environment.azureEnvironment,
