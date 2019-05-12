@@ -516,6 +516,9 @@ public class AzureWebAppMvpModel {
     public List<ResourceEx<WebApp>> listAllWebApps(final boolean force) {
         final List<ResourceEx<WebApp>> webApps = new ArrayList<>();
         List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        if (subs.size() == 0) {
+            return webApps;
+        }
         Observable.from(subs).flatMap((sd) ->
             Observable.create((subscriber) -> {
                 List<ResourceEx<WebApp>> webAppList = listWebApps(sd.subscriptionId(), force);

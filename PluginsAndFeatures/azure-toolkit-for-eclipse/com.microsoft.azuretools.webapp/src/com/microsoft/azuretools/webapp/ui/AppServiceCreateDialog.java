@@ -1022,17 +1022,19 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         try {
             Map<String, List<AppServicePlan>> map = new ConcurrentHashMap<>();
             Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
-            Observable.from(sdl).flatMap((sd) ->
-                Observable.create((subscriber) -> {
-                    try {
-                        List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
-                            .listAppServicePlanBySubscriptionId(sd.getSubscriptionId());
-                        map.put(sd.getSubscriptionId(), appServicePlans);
-                        subscriber.onCompleted();
-                    } catch (Exception e) {
-                        Exceptions.propagate(e);
-                    }
-                }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
+            if (sdl.size() > 0) {
+                Observable.from(sdl).flatMap((sd) ->
+                    Observable.create((subscriber) -> {
+                        try {
+                            List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
+                                .listAppServicePlanBySubscriptionId(sd.getSubscriptionId());
+                            map.put(sd.getSubscriptionId(), appServicePlans);
+                            subscriber.onCompleted();
+                        } catch (Exception e) {
+                            Exceptions.propagate(e);
+                        }
+                    }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
+            }
             sidAspMap = map;
         } catch (Exception ignore) {
         }

@@ -189,10 +189,8 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
         });
       }
     }));
-    addAction(ACTION_RESTART, ACTION_START_ICON, new WrappedTelemetryNodeActionListener(DOCKER, RESTART_DOCKER_HOST,
-        new RestartDockerHostAction()));
-    addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new WrappedTelemetryNodeActionListener(DOCKER, SHUTDOWN_DOCKER_HOST,
-        new ShutdownDockerHostAction()));
+    addAction(ACTION_RESTART, ACTION_START_ICON, new RestartDockerHostAction());
+    addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new ShutdownDockerHostAction());
     super.loadActions();
   }
 
@@ -243,6 +241,16 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
     }
+
+    @Override
+    protected String getServiceName() {
+      return DOCKER;
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+      return RESTART_DOCKER_HOST;
+    }
   }
 
   public class ShutdownDockerHostAction extends AzureNodeActionPromptListener {
@@ -281,6 +289,16 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
 
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+    }
+
+    @Override
+    protected String getServiceName() {
+      return DOCKER;
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+      return SHUTDOWN_DOCKER_HOST;
     }
   }
 

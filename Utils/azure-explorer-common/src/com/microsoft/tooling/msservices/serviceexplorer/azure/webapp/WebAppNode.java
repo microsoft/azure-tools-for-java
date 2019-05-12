@@ -87,8 +87,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
             createBackgroundActionListener("Starting Web App", () -> startWebApp())));
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP,
             createBackgroundActionListener("Restarting Web App", () -> restartWebApp())));
-        addAction(ACTION_DELETE, new WrappedTelemetryNodeActionListener(WEBAPP, DELETE_WEBAPP,
-            new DeleteWebAppAction()));
+        addAction(ACTION_DELETE, new DeleteWebAppAction());
         addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_OPEN_INBROWSER,
             new NodeActionListener() {
                 @Override
@@ -162,6 +161,16 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return WEBAPP;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_WEBAPP;
         }
     }
 }

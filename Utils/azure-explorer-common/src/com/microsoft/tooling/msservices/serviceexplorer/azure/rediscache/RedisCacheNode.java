@@ -153,8 +153,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     @Override
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
-            addAction(DELETE_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, DELETE_REDIS,
-                new DeleteRedisCacheAction()));
+            addAction(DELETE_ACTION, null, new DeleteRedisCacheAction());
             addAction(SHOW_PROPERTY_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_READPROP,
                 new ShowRedisCachePropertyAction()));
             addAction(OPEN_EXPLORER, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_EXPLORER,

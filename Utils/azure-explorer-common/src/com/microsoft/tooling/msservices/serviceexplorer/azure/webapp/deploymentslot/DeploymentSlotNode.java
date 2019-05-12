@@ -100,8 +100,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
             }
         }));
-        addAction(ACTION_DELETE, new WrappedTelemetryNodeActionListener(WEBAPP, DELETE_WEBAPP_SLOT,
-            new DeleteDeploymentSlotAction()));
+        addAction(ACTION_DELETE, new DeleteDeploymentSlotAction());
         addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(WEBAPP, SHOW_WEBAPP_SLOT_PROP,
             new NodeActionListener() {
                 @Override
@@ -179,6 +178,16 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return WEBAPP;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_WEBAPP_SLOT;
         }
     }
 }

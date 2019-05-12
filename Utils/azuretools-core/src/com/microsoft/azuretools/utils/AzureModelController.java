@@ -268,32 +268,33 @@ public class AzureModelController {
         subscriptionManager.addListener(subscriptionSelectionListener);
 
         List<SubscriptionDetail> sdl = subscriptionManager.getSubscriptionDetails();
-        Observable.from(sdl).flatMap((sd) ->
-            Observable.create((subscriber) -> {
-                try {
-                    if (progressIndicator != null && progressIndicator.isCanceled()) {
-                        clearAll();
-                        throw new CanceledByUserException();
-                    }
-                    if (sd.isSelected()) {
-                        if (progressIndicator != null) {
-                            progressIndicator.setText("Reading subscription");
+        if (sdl.size() > 0) {
+            Observable.from(sdl).flatMap((sd) ->
+                Observable.create((subscriber) -> {
+                    try {
+                        if (progressIndicator != null && progressIndicator.isCanceled()) {
+                            clearAll();
+                            throw new CanceledByUserException();
                         }
-                        Azure azure = azureManager.getAzure(sd.getSubscriptionId());
+                        if (sd.isSelected()) {
+                            if (progressIndicator != null) {
+                                progressIndicator.setText("Reading subscription");
+                            }
+                            Azure azure = azureManager.getAzure(sd.getSubscriptionId());
 
-                        List<ResourceGroup> rgList = azure.resourceGroups().list();
-                        sdrgMap.put(sd, rgList);
+                            List<ResourceGroup> rgList = azure.resourceGroups().list();
+                            sdrgMap.put(sd, rgList);
 
-                        List<Location> locl = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
-                        Collections.sort(locl, Comparator.comparing(Location::displayName));
-                        sdlocMap.put(sd, locl);
-                        subscriber.onCompleted();
+                            List<Location> locl = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
+                            Collections.sort(locl, Comparator.comparing(Location::displayName));
+                            sdlocMap.put(sd, locl);
+                            subscriber.onCompleted();
+                        }
+                    } catch (Exception e) {
+                        Exceptions.propagate(e);
                     }
-                } catch (Exception e) {
-                    Exceptions.propagate(e);
-                }
-            }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
-
+                }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
+        }
         azureModel.setSubscriptionToResourceGroupMap(sdrgMap);
         azureModel.setSubscriptionToLocationMap(sdlocMap);
     }
@@ -308,8 +309,13 @@ public class AzureModelController {
         Map<ResourceGroup, List<WebApp>> rgwaMap = azureModel.createResourceGroupToWebAppMap();
         Map<ResourceGroup, List<AppServicePlan>> rgspMap = azureModel.createResourceGroupToAppServicePlanMap();
         Set<SubscriptionDetail> sdSet = azureModel.getSubscriptionToResourceGroupMap().keySet();
-        CountDownLatch countDownLatch = new CountDownLatch(sdSet.size());
+        if (sdSet.size() == 0) {
+            azureModel.setResourceGroupToWebAppMap(rgwaMap);
+            azureModel.setResourceGroupToAppServicePlanMap(rgspMap);
+            return;
+        }
 
+        CountDownLatch countDownLatch = new CountDownLatch(sdSet.size());
         Observable.from(sdSet).flatMap((sd) ->
             Observable.create((subscriber) -> {
                 try {

@@ -213,8 +213,7 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
         });
       }
     }));
-    addAction(ACTION_DELETE, ACTION_DELETE_ICON, new WrappedTelemetryNodeActionListener(DOCKER, DELETE_DOCKER_CONTAINER,
-        new DeleteDockerContainerAction()));
+    addAction(ACTION_DELETE, ACTION_DELETE_ICON, new DeleteDockerContainerAction());
     super.loadActions();
   }
 

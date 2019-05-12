@@ -104,15 +104,19 @@ public abstract class AzureAnAction extends AnAction {
      * @return
      */
     private String transformHDInsight(String serviceName, AnActionEvent event) {
-        if (serviceName.equals(TelemetryConstants.ACTION)) {
-            String text = event.getPresentation().getText().toLowerCase();
-            if (text.contains("spark") || text.contains("hdinsight")) {
-                return TelemetryConstants.HDINSIGHT;
+        try {
+            if (serviceName.equals(TelemetryConstants.ACTION)) {
+                String text = event.getPresentation().getText().toLowerCase();
+                if (text.contains("spark") || text.contains("hdinsight")) {
+                    return TelemetryConstants.HDINSIGHT;
+                }
+                String place = event.getPlace().toLowerCase();
+                if (place.contains("spark") || place.contains("hdinsight")) {
+                    return TelemetryConstants.HDINSIGHT;
+                }
             }
-            String place = event.getPlace().toLowerCase();
-            if (place.contains("spark") || place.contains("hdinsight")) {
-                return TelemetryConstants.HDINSIGHT;
-            }
+            return serviceName;
+        } catch (Exception ignore) {
         }
         return serviceName;
     }

@@ -102,17 +102,21 @@ public abstract class NodeActionListener implements EventListener {
      * @return
      */
     private String transformHDInsight(String serviceName, Node node) {
-        if (serviceName.equals(TelemetryConstants.ACTION)) {
-            String nodeName = node.getName().toLowerCase();
-            if (nodeName.contains("spark") || nodeName.contains("hdinsight")) {
-                return TelemetryConstants.HDINSIGHT;
-            }
-            if (node.getParent() != null) {
-                String parentName = node.getParent().getName().toLowerCase();
-                if (parentName.contains("spark") || parentName.contains("hdinsight")) {
+        try {
+            if (serviceName.equals(TelemetryConstants.ACTION)) {
+                String nodeName = node.getName().toLowerCase();
+                if (nodeName.contains("spark") || nodeName.contains("hdinsight")) {
                     return TelemetryConstants.HDINSIGHT;
                 }
+                if (node.getParent() != null) {
+                    String parentName = node.getParent().getName().toLowerCase();
+                    if (parentName.contains("spark") || parentName.contains("hdinsight")) {
+                        return TelemetryConstants.HDINSIGHT;
+                    }
+                }
             }
+            return serviceName;
+        } catch (Exception ignore) {
         }
         return serviceName;
     }
