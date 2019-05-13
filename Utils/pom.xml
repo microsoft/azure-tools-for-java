@@ -43,6 +43,32 @@
         <module>./hdinsight-node-common</module>
         <module>./spark-localrun-mock</module>
     </modules>
+    <repositories>
+        <repository>
+            <id>m2.java.net</id>
+            <url>https://download.java.net/maven/2</url>
+        </repository>
+        <repository>
+            <id>m2.dev.java.net</id>
+            <url>https://download.java.net/maven/2</url>
+        </repository>
+        <repository>
+            <id>repository.jboss.org</id>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>codehaus.org</id>
+            <url>https://snapshots.repository.codehaus.org</url>
+        </repository>
+        <repository>
+            <id>glassfish-repository</id>
+            <url>https://maven.glassfish.org/content/groups/glassfish</url>
+        </repository>
+        <repository>
+            <id>apache.snapshots</id>
+            <url>https://people.apache.org/repo/m2-snapshot-repository</url>
+        </repository>
+    </repositories>
     <profiles>
         <!-- Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. -->
         <profile>
