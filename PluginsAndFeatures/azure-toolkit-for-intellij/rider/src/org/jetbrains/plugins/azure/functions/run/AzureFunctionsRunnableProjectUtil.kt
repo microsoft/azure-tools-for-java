@@ -22,6 +22,7 @@
 
 package org.jetbrains.plugins.azure.functions.run
 
+import com.jetbrains.rider.model.ProjectOutput
 import com.jetbrains.rider.model.RunnableProject
 
 object AzureFunctionsRunnableProjectUtil {
@@ -31,19 +32,21 @@ object AzureFunctionsRunnableProjectUtil {
                 runnableProject.fullName,
                 runnableProject.projectFilePath,
                 runnableProject.kind,
-                runnableProject.projectOutputs.map { it.copy(
-                        // Azure Functions host needs the tfm folder, not the bin folder
-                        workingDirectory = if (it.workingDirectory.endsWith("bin", true)) {
-                            it.workingDirectory.substringBeforeLast("bin")
-                        } else {
-                            it.workingDirectory
-                        },
-
-                        // Add default arguments to start host
-                        defaultArguments = mutableListOf("host", "start", "--port", "7071", "--pause-on-error"))
-                }.toMutableList(),
+                runnableProject.projectOutputs
+                        .map { patchProjectOutput(it) }.toMutableList(),
                 runnableProject.environmentVariables,
                 runnableProject.problems,
                 runnableProject.customAttributes)
     }
+
+    fun patchProjectOutput(projectOutput: ProjectOutput): ProjectOutput = projectOutput.copy(
+            // Azure Functions host needs the tfm folder, not the bin folder
+            workingDirectory = if (projectOutput.workingDirectory.endsWith("bin", true)) {
+                projectOutput.workingDirectory.substringBeforeLast("bin")
+            } else {
+                projectOutput.workingDirectory
+            },
+
+            // Add default arguments to start host
+            defaultArguments = mutableListOf("host", "start", "--port", "7071", "--pause-on-error"))
 }

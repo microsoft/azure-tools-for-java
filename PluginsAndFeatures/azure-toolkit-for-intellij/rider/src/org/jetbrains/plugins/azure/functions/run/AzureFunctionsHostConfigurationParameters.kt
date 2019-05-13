@@ -110,7 +110,8 @@ open class AzureFunctionsHostConfigurationParameters(
         } else {
             workingDirectory
         }
-        val effectiveArguments = if (trackProjectArguments && projectOutput != null && projectOutput.defaultArguments.isNotEmpty()) {
+
+        val effectiveArguments = if (trackProjectArguments && programParameters.isEmpty() && projectOutput != null && projectOutput.defaultArguments.isNotEmpty()) {
             projectOutput.defaultArguments
         } else {
             ParametersListUtil.parse(programParameters)
