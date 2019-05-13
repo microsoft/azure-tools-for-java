@@ -22,6 +22,7 @@
 
 package org.jetbrains.plugins.azure.functions.buildTasks
 
+import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -31,7 +32,6 @@ import com.intellij.openapi.util.Key
 import com.intellij.util.concurrency.Semaphore
 import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.build.BuildParameters
-import com.jetbrains.rider.build.tasks.BuildProjectBeforeRunTask
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.BuildTarget
 import com.jetbrains.rider.util.idea.application
@@ -39,16 +39,18 @@ import com.jetbrains.rider.util.idea.getComponent
 import org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfiguration
 import javax.swing.Icon
 
-class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildProjectBeforeRunTask>(){
+class BuildFunctionsProjectBeforeRunTask : BeforeRunTask<BuildFunctionsProjectBeforeRunTask>(BuildFunctionsProjectBeforeRunTaskProvider.providerId)
+
+class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildFunctionsProjectBeforeRunTask>(){
     companion object {
-        val providerId = Key.create<BuildProjectBeforeRunTask>("BuildFunctionsProject")
+        val providerId = Key.create<BuildFunctionsProjectBeforeRunTask>("BuildFunctionsProject")
     }
 
-    override fun getId(): Key<BuildProjectBeforeRunTask>? = providerId
+    override fun getId(): Key<BuildFunctionsProjectBeforeRunTask>? = providerId
 
     override fun getName(): String? = "Build Functions Project"
 
-    override fun getDescription(task: BuildProjectBeforeRunTask?): String? = "Build Functions project"
+    override fun getDescription(task: BuildFunctionsProjectBeforeRunTask?): String? = "Build Functions project"
 
     override fun isConfigurable(): Boolean {
         return false
@@ -60,19 +62,19 @@ class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPr
         return runConfiguration is AzureFunctionsHostConfiguration
     }
 
-    override fun createTask(runConfiguration: RunConfiguration): BuildProjectBeforeRunTask? {
+    override fun createTask(runConfiguration: RunConfiguration): BuildFunctionsProjectBeforeRunTask? {
         if (!shouldCreateBuildBeforeRunTaskByDefault(runConfiguration)) return null
-        val task = BuildProjectBeforeRunTask()
+        val task = BuildFunctionsProjectBeforeRunTask()
         task.isEnabled = true
         return task
     }
 
-    override fun canExecuteTask(configuration: RunConfiguration, task: BuildProjectBeforeRunTask): Boolean {
+    override fun canExecuteTask(configuration: RunConfiguration, task: BuildFunctionsProjectBeforeRunTask): Boolean {
         return configuration.project.getComponent<BuildHost>().ready.value
     }
 
     override fun executeTask(context: DataContext, configuration: RunConfiguration, env: ExecutionEnvironment,
-                             task: BuildProjectBeforeRunTask): Boolean {
+                             task: BuildFunctionsProjectBeforeRunTask): Boolean {
         val project = configuration.project
         val buildHost = project.getComponent<BuildHost>()
         val selectedProjectsForBuild = when (configuration) {
