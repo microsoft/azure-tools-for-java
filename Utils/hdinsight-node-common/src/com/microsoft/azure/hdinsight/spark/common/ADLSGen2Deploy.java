@@ -28,7 +28,6 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -93,12 +92,6 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                         throw new RuntimeException(new IllegalArgumentException("Can not get valid artifact upload path" + ex.toString()));
                     }
                 });
-    }
-
-    @Override
-    public Observable<RemoteFile> listRemoteFiles(String artifactPath) {
-        ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
-        return op.list(artifactPath);
     }
 
     @Nullable

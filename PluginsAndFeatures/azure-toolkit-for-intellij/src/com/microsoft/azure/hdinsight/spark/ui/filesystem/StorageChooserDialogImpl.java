@@ -30,11 +30,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
-public class SparkFileChooserDialogImpl extends FileChooserDialogImpl {
+public class StorageChooserDialogImpl extends FileChooserDialogImpl {
     private FileChooserDescriptor myChooserDescriptor;
     private VirtualFile[] myChosenFiles = VirtualFile.EMPTY_ARRAY;
 
-    public SparkFileChooserDialogImpl(@NotNull FileChooserDescriptor descriptor, @NotNull Component parent, @Nullable Project project) {
+    public StorageChooserDialogImpl(@NotNull FileChooserDescriptor descriptor, @NotNull Component parent, @Nullable Project project) {
         super(descriptor, parent, project);
         this.myChooserDescriptor = descriptor;
     }

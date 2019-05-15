@@ -27,6 +27,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.util.Disposer
+import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
@@ -55,10 +56,12 @@ import rx.Observable
 import rx.Observable.empty
 import rx.Observable.just
 import rx.schedulers.Schedulers
+import rx.subjects.PublishSubject
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
 import javax.swing.*
+import javax.swing.event.DocumentEvent
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel
     : JPanel(), Disposable, SettableControl<SparkSubmitJobUploadStorageModel>, ILogger {
@@ -77,6 +80,14 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     private val uploadPathField = JTextField().apply {
         isEditable = false
         border = BorderFactory.createEmptyBorder()
+
+        document.addDocumentListener(object : DocumentAdapter() {
+            override fun textChanged(e: DocumentEvent) {
+                if(e.type == DocumentEvent.EventType.INSERT && text != invalidUploadPath){
+                    viewModel.uploadPathFieldSubject.onNext(text)
+                }
+            }
+        })
     }
 
     val storagePanel = SparkSubmissionJobUploadStoragePanel().apply {
@@ -112,6 +123,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     val control: Control = SparkSubmissionJobUploadStorageCtrl(this)
 
     inner class ViewModel : DisposableObservers() {
+        val uploadPathFieldSubject:PublishSubject<String> = PublishSubject.create()
+
         val uploadStorage = storagePanel.viewModel.apply {
             // check storage info when cluster selection changes
             storageCheckSubject

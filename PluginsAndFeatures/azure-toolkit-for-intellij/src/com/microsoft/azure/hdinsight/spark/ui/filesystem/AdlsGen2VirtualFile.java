@@ -2,6 +2,7 @@ package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileSystem;
+import com.intellij.openapi.vfs.impl.http.HttpFileSystemImpl;
 import com.intellij.openapi.vfs.impl.http.HttpVirtualFile;
 import com.intellij.openapi.vfs.impl.http.RemoteFileInfo;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +14,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SparkVirtualFile extends HttpVirtualFile {
+public class AdlsGen2VirtualFile extends HttpVirtualFile {
     private String name;
     private String path;
     private VirtualFileSystem fileSystem;
@@ -21,14 +22,14 @@ public class SparkVirtualFile extends HttpVirtualFile {
     private String prefix;
     private List<VirtualFile> children = new ArrayList<>();
     private VirtualFile parent;
-    public static VirtualFile empty = new SparkVirtualFile("", false, "");
+    public static VirtualFile empty = new AdlsGen2VirtualFile("", false, "", new HttpFileSystemImpl());
 
-    public SparkVirtualFile(String path, boolean isDirectory, String prefix) {
+    public AdlsGen2VirtualFile(String path, boolean isDirectory, String prefix, VirtualFileSystem fileSystem) {
         this.name = path.substring(path.lastIndexOf("/") + 1);
         this.path = path;
         this.isDirectory = isDirectory;
         this.prefix = prefix;
-        this.fileSystem = SparkJobFileSystem.instance;
+        this.fileSystem = fileSystem;
     }
 
     @Nullable
@@ -82,10 +83,10 @@ public class SparkVirtualFile extends HttpVirtualFile {
 
     @Override
     public VirtualFile[] getChildren() {
-        return this.children.toArray(new SparkVirtualFile[0]);
+        return this.children.toArray(new AdlsGen2VirtualFile[0]);
     }
 
-    public void addChildren(SparkVirtualFile vf) {
+    public void addChildren(AdlsGen2VirtualFile vf) {
         this.children.add(vf);
     }
 
