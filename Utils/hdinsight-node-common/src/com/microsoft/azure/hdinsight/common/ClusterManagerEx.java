@@ -342,22 +342,17 @@ public class ClusterManagerEx {
 
         for (IClusterDetail clusterDetail : cachedClusterDetails) {
             if (clusterDetail.getName().equals(clusterName) && clusterDetail instanceof HDInsightAdditionalClusterDetail) {
-                try {
-                    IHDIStorageAccount storageAccount = clusterDetail.getStorageAccount();
-
-                    if (storageAccount == null) {
-                        return 0;
-                    } else if (storageAccount.getName().equals(storageName)) {
-                        return 1;
-                    }
-                } catch (HDIException e) {
+                IHDIStorageAccount storageAccount = clusterDetail.getStorageAccount();
+                if (storageAccount == null) {
                     return 0;
+                } else if (storageAccount.getName().equals(storageName)) {
+                    return 1;
                 }
 
                 List<HDStorageAccount> additionalStorageAccount = clusterDetail.getAdditionalStorageAccounts();
                 if (additionalStorageAccount != null) {
-                    for (HDStorageAccount storageAccount : additionalStorageAccount) {
-                        if (storageAccount.getName().equals(storageName)) {
+                    for (HDStorageAccount account : additionalStorageAccount) {
+                        if (account.getName().equals(storageName)) {
                             return 2;
                         }
                     }

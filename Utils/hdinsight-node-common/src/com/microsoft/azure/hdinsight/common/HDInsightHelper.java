@@ -41,7 +41,7 @@ public interface HDInsightHelper {
         return null;
     }
 
-    default void createRefreshHdiReaderClusterWarningForm(@NotNull HDInsightRootModule module, @NotNull String aseDeepLink) {
+    default void createRefreshHdiReaderJobsWarningForm(@NotNull HDInsightRootModule module, @NotNull ClusterDetail clusterDetail) {
     }
 
     default void createRefreshHdiReaderStorageAccountsWarningForm(@NotNull RefreshableNode node, @NotNull String aseDeepLink) {

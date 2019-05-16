@@ -25,6 +25,7 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -49,8 +50,8 @@ public class JobViewNode extends RefreshableNode implements ILogger {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                 if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
-                    HDInsightLoader.getHDInsightHelper().createRefreshHdiReaderClusterWarningForm(
-                            getHDInsightRootModule(), clusterDetail.getName());
+                    HDInsightLoader.getHDInsightHelper().createRefreshHdiReaderJobsWarningForm(
+                            getHDInsightRootModule(), (ClusterDetail) clusterDetail);
                 } else {
                     HDInsightLoader.getHDInsightHelper().openJobViewEditor(getProject(), clusterDetail.getName());
                 }

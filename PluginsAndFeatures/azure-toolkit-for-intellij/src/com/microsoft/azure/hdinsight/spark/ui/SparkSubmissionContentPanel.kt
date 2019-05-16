@@ -150,8 +150,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 }, false) as? ClusterDetail
             val defaultStorageRootPath = selectedClusterDetail?.defaultStorageRootPath
 
-            selectedClusterName?.let {
-                val form = object: AddNewHDInsightReaderClusterForm(myProject, null, selectedClusterName) {
+            selectedClusterDetail?.let {
+                val form = object: AddNewHDInsightReaderClusterForm(myProject, null, selectedClusterDetail) {
                     override fun afterOkActionPerformed() {
                         hideHdiReaderErrors()
 

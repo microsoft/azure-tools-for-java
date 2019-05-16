@@ -537,7 +537,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
 
     @Nullable
     @Override
-    public IHDIStorageAccount getStorageAccount() throws HDIException {
+    public IHDIStorageAccount getStorageAccount() {
         return storageAccount;
     }
 

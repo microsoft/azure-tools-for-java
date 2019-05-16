@@ -31,9 +31,9 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.serverexplore.action.AddNewHDInsightReaderClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
@@ -42,6 +42,7 @@ import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
@@ -180,15 +181,22 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     public NodeActionListener createAddNewHDInsightReaderClusterAction(
             @NotNull HDInsightRootModule module,
             @NotNull ClusterDetail clusterDetail) {
-        return new AddNewHDInsightReaderClusterAction(module, clusterDetail);
+        return new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
+                AddNewHDInsightReaderClusterForm linkClusterForm =
+                        new AddNewHDInsightReaderClusterForm((Project) module.getProject(), module, clusterDetail);
+                linkClusterForm.show();
+            }
+        };
     }
 
     @Override
-    public void createRefreshHdiReaderClusterWarningForm(@NotNull HDInsightRootModule module, @NotNull String clusterName) {
+    public void createRefreshHdiReaderJobsWarningForm(@NotNull HDInsightRootModule module, @NotNull ClusterDetail clusterDetail) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                Project project = (Project)module.getProject();
+                Project project = (Project) module.getProject();
                 String title = "Cluster Job Access Denied";
                 String warningText = "<html><pre>You have Read-only permission for this cluster. Please ask the cluster owner or<br>user access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or<br>‘Link this cluster’ through Ambari credentials to view the corresponding jobs.</pre></html>";
                 String okButtonText = "Link this cluster";
@@ -197,7 +205,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                     protected void doOKAction() {
                         super.doOKAction();
 
-                        AddNewHDInsightReaderClusterForm linkClusterForm = new AddNewHDInsightReaderClusterForm(project, module, clusterName);
+                        AddNewHDInsightReaderClusterForm linkClusterForm =
+                                new AddNewHDInsightReaderClusterForm(project, module, clusterDetail);
                         linkClusterForm.show();
                     }
                 };

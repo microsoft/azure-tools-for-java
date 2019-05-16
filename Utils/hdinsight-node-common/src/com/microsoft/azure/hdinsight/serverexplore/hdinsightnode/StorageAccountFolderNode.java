@@ -28,6 +28,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -57,7 +58,8 @@ public class StorageAccountFolderNode extends RefreshableNode implements ILogger
                 if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
                     HDInsightLoader.getHDInsightHelper().createRefreshHdiReaderStorageAccountsWarningForm(
                             StorageAccountFolderNode.this, ClusterNode.ASE_DEEP_LINK);
-                } else if (clusterDetail instanceof HDInsightAdditionalClusterDetail) {
+                } else if (clusterDetail instanceof HDInsightAdditionalClusterDetail
+                        && !isStorageAccountsAvailable(clusterDetail)) {
                     HDInsightLoader.getHDInsightHelper().createRefreshHdiLinkedClusterStorageAccountsWarningForm(
                             StorageAccountFolderNode.this, ClusterNode.ASE_DEEP_LINK);
                 }
@@ -94,7 +96,9 @@ public class StorageAccountFolderNode extends RefreshableNode implements ILogger
     }
 
     private boolean isStorageAccountsAvailable(@NotNull IClusterDetail clusterDetail) {
-        return !ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)
-                && !(clusterDetail instanceof HDInsightAdditionalClusterDetail);
+        IHDIStorageAccount defaultStorageAccount = clusterDetail.getStorageAccount();
+        List<HDStorageAccount> additionalStorageAccounts = clusterDetail.getAdditionalStorageAccounts();
+        return defaultStorageAccount != null ||
+                (additionalStorageAccounts != null && additionalStorageAccounts.size() > 0);
     }
 }
