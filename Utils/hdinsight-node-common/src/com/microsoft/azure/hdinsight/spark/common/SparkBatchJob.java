@@ -64,7 +64,6 @@ import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
-    public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
     public static final String AdlsGen2RestfulPathPattern = "^(https://)(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(/[^/.\\s]+)*/?$";
 
     @Nullable
@@ -208,6 +207,19 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
         this.httpObservable = httpObservable;
+        this.jobDeploy = jobDeploy;
+    }
+
+    public SparkBatchJob(
+            @Nullable IClusterDetail cluster,
+            SparkSubmissionParameter submissionParameter,
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            @Nullable Deployable jobDeploy) {
+        this.cluster = cluster;
+        this.submissionParameter = submissionParameter;
+        this.submission = sparkBatchSubmission;
+        this.ctrlSubject = ctrlSubject;
         this.jobDeploy = jobDeploy;
     }
 
@@ -1049,46 +1061,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        if (destinationRootPath != null && destinationRootPath.matches(AdlsPathPattern) && accessToken != null) {
-            //use ADLS GEN1
-            return JobUtils.deployArtifactToADLS(artifactPath, destinationRootPath, accessToken)
-                    .map(path -> {
-                        getSubmissionParameter().setFilePath(path);
-                        return this;
-                    });
-        } else if (destinationRootPath != null
-                && (destinationRootPath.matches(AdlsGen2RestfulPathPattern)
-                || destinationRootPath.matches(WebHDFSPathPattern))) {
-            //use ADLS GEN2 or webhdfs
-            URI dest = jobDeploy.getUploadDir(destinationRootPath);
-            if (dest == null) {
-                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
-            }
-
-            return jobDeploy.deploy(new File(artifactPath), dest)
-                    .flatMap(ignore -> jobDeploy.deploy(new File(artifactPath), dest))
-                    .doOnNext(ignore -> getCtrlSubject().onNext(new SimpleImmutableEntry<>(Info,
-                            String.format("Finish to upload artifact to ADLSGEN2 file system %s", dest))))
-                    .map(redirectPath -> {
-                        getSubmissionParameter().setFilePath(redirectPath);
-                        return this;
-                    });
-        } else if (storageAccount == null) {
-            //use livy session
-            return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
-                    .map(clusterArtifactUriPair -> {
-                        getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
-                        return this;
-                    })
-                    .toObservable();
-        } else {
-            //use default storage account
-            return JobUtils.deployArtifact(artifactPath, storageAccount, getCtrlSubject())
-                    .map(path -> {
-                        getSubmissionParameter().setFilePath(path);
-                        return this;
-                    });
-        }
+        return jobDeploy.deploy(new File(artifactPath))
+                .map(redirectPath -> {
+                    getSubmissionParameter().setFilePath(redirectPath);
+                    return this;
+                });
     }
 
     /**

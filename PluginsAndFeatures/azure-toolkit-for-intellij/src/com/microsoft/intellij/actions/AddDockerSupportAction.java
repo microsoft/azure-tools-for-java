@@ -22,6 +22,9 @@
 
 package com.microsoft.intellij.actions;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_DOCKER_FILE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -29,12 +32,16 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.spotify.docker.client.DefaultDockerClient;
@@ -57,6 +64,8 @@ public class AddDockerSupportAction extends AzureAnAction {
 
     @Override
     public void onActionPerformed(AnActionEvent anActionEvent) {
+        Operation operation = TelemetryManager.createOperation(WEBAPP, CREATE_DOCKER_FILE);
+        operation.start();
         module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         if (module == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
@@ -98,6 +107,8 @@ public class AddDockerSupportAction extends AzureAnAction {
                     }
             );
         } catch (IOException e) {
+            EventUtil.logError(operation, ErrorType.userError, e, null, null);
+            operation.complete();
             e.printStackTrace();
             notifyError(e.getMessage());
             return;
@@ -107,8 +118,11 @@ public class AddDockerSupportAction extends AzureAnAction {
         try {
             defaultDockerHost = DefaultDockerClient.fromEnv().uri().toString();
         } catch (DockerCertificateException e) {
+            EventUtil.logError(operation, ErrorType.userError, e, null, null);
             e.printStackTrace();
             // leave defaultDockerHost null
+        } finally {
+            operation.complete();
         }
         // print instructions
         String notificationContent = "";
@@ -118,6 +132,14 @@ public class AddDockerSupportAction extends AzureAnAction {
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";
         notifyInfo(notificationContent);
+    }
+
+    protected String getServiceName() {
+        return TelemetryConstants.DOCKER;
+    }
+
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.DEPLOY_DOCKER_HOST;
     }
 
     @Override

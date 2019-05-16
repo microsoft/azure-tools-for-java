@@ -19,6 +19,10 @@
  */
 package com.microsoft.azuretools.hdinsight.spark.common2;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,7 +53,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkJobLog;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitResponse;
@@ -183,6 +187,7 @@ public class SparkSubmitHelper {
 				postEventProperty.put("IsKilled", "true");
 				AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent,
 						Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+				EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
 				return;
 			}
 
@@ -207,6 +212,7 @@ public class SparkSubmitHelper {
 
 			AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent,
 					Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
 		} catch (Exception e) {
 			if (HDInsightUtil.getSparkSubmissionToolWindowView().getJobStatusManager().isJobKilled() == false) {
 				HDInsightUtil.getSparkSubmissionToolWindowView()
@@ -218,6 +224,7 @@ public class SparkSubmitHelper {
 			}
 			AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent,
 					Activator.getDefault().getBundle().getVersion().toString(), postEventProperty);
+			EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
 		}
 	}
 
@@ -225,7 +232,7 @@ public class SparkSubmitHelper {
                                   IHDIStorageAccount storageAccount,
 			String defaultContainerName, String uploadFolderPath) throws Exception {
 		final File file = new File(localFile);
-		if (storageAccount.getAccountType() == StorageAccountTypeEnum.BLOB) {
+		if (storageAccount.getAccountType() == StorageAccountType.BLOB) {
 			try (FileInputStream fileInputStream = new FileInputStream(file)) {
 				try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
 					final CallableSingleArg<Void, Long> callable = new CallableSingleArg<Void, Long>() {
@@ -255,7 +262,7 @@ public class SparkSubmitHelper {
 					return uploadedPath;
 				}
 			}
-		} else if (storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
+		} else if (storageAccount.getAccountType() == StorageAccountType.ADLS) {
 			String uploadPath = String.format("adl://%s.azuredatalakestore.net/%s/%s", storageAccount.getName(),
 					storageAccount.getDefaultContainerOrRootPath(), "SparkSubmission");
 			HDInsightUtil.showInfoOnSubmissionMessageWindow(String

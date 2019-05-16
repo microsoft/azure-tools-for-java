@@ -29,6 +29,7 @@ import rx.Observable;
 import java.io.File;
 import java.net.URI;
 
+// for cluster with adls gen1 account to deploy using ADLS storage account type
 public class AdlsDeploy implements Deployable {
     @NotNull
     private String adlsRootPath;
@@ -42,7 +43,8 @@ public class AdlsDeploy implements Deployable {
     }
 
     @NotNull
-    public Observable<String> deploy(@NotNull File src, @NotNull URI dest)  {
+    @Override
+    public Observable<String> deploy(@NotNull File src)  {
         return JobUtils.deployArtifactToADLS(src.getAbsolutePath(), adlsRootPath, accessToken);
     }
 }

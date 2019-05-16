@@ -38,4 +38,7 @@ public interface AppInsightsConfiguration {
     default String ide() {
         return "";
     }
+
+    String eventName();
+
 }

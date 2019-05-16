@@ -28,6 +28,9 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.runner.AzureRunProfileState;
@@ -127,6 +130,11 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
             }
         }
         return null;
+    }
+
+    @Override
+    protected Operation createOperation() {
+        return TelemetryManager.createOperation(TelemetryConstants.WEBAPP, TelemetryConstants.DEPLOY_WEBAPP_CONTAINER);
     }
 
     @Override

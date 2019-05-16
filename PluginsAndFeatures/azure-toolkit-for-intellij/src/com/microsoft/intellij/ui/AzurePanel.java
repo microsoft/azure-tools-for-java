@@ -31,6 +31,9 @@ import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.common.CommonConst;
@@ -41,6 +44,11 @@ import org.w3c.dom.Document;
 import javax.swing.*;
 import java.io.File;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_ALLOW;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_DENY;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -90,11 +98,13 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                 } else if (!AzurePlugin.PLUGIN_VERSION.equalsIgnoreCase(version)) {
                     DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
+                    EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
                 }
                 String instID = DataOperations.getProperty(dataFile, message("instID"));
                 if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
                     DataOperations.updatePropertyValue(doc, message("instID"), GetHashMac.GetHashMac());
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
+                    EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
                 }
                 ParserXMLUtility.saveXMLFile(dataFile, doc);
                 // Its necessary to call application insights custom create event after saving data.xml
@@ -104,6 +114,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     // Either from Agree to Deny, or from Deny to Agree.
                     final String action = acceptTelemetry ? AppInsightsConstants.Allow : AppInsightsConstants.Deny;
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, "", action, null, true);
+                    EventUtil.logEvent(EventType.info, SYSTEM, acceptTelemetry ? TELEMETRY_ALLOW : TELEMETRY_DENY, null,
+                        null);
                 }
             } else {
                 AzurePlugin.copyResourceFile(message("dataFileName"), dataFile);

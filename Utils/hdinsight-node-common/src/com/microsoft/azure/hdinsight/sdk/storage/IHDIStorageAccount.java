@@ -25,7 +25,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 public interface IHDIStorageAccount {
     String getName();
-    StorageAccountTypeEnum getAccountType();
+    StorageAccountType getAccountType();
     String getDefaultContainerOrRootPath();
     String getSubscriptionId();
 

@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
+import com.microsoft.azure.datalake.store.ADLException
 import java.io.FileNotFoundException
 import java.io.IOException
 
@@ -30,6 +31,9 @@ class SparkServiceException(exp: Throwable?) : ClassifiedException(exp) {
 
 object SparkServiceExceptionFactory : ClassifiedExceptionFactory() {
     override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
-        return if (exp is IOException && exp !is FileNotFoundException) SparkServiceException(exp) else null
+        return if (exp is IOException
+                && exp !is FileNotFoundException
+                && (exp is ADLException && exp.httpResponseCode != 403))
+            SparkServiceException(exp) else null
     }
 }

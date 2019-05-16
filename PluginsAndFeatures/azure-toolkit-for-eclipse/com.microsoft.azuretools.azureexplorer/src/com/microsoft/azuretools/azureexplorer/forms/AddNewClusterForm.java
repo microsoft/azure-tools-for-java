@@ -35,7 +35,7 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
     @NotNull
     private AddNewClusterCtrlProvider ctrlProvider;
 
-    private Text clusterNameField;
+    protected Text clusterNameField;
     private Text userNameField;
     private Text storageNameField;
     private Text storageKeyField;
@@ -60,6 +60,9 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
     private void refreshContainers() {
         ctrlProvider.refreshContainers()
                 .subscribe();
+    }
+    
+    protected void customizeUI() {
     }
     
     @Override
@@ -202,14 +205,19 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
             }
         });
         
+        customizeUI();
         return container;
+    }
+    
+    protected void afterOkActionPerformed() {
+    	hdInsightModule.load(false);
     }
 
     @Override
     protected void okPressed() {
         ctrlProvider.validateAndAdd()
                 .subscribe(toUpdate -> {
-                    hdInsightModule.load(false);
+                	afterOkActionPerformed();
                     AppInsightsClient.create(Messages.HDInsightAddNewClusterAction, null);
 
                     super.okPressed();

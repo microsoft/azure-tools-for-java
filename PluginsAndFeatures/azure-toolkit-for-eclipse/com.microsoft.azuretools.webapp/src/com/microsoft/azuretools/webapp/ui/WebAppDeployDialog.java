@@ -645,7 +645,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     } catch (CanceledByUserException ex) {
                         Display.getDefault().asyncExec(() -> {
                             System.out.println("updateAndFillTable(): Canceled by user");
-                            cancelPressed();
                         });
                     } catch (Exception ex) {
                         ex.printStackTrace();

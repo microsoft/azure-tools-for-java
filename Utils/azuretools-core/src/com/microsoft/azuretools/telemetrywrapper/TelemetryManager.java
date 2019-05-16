@@ -65,8 +65,8 @@ public class TelemetryManager {
         }
     }
 
-    public static Operation createOperation(String eventName, String operationName) {
-        return new DefaultOperation(eventName, operationName);
+    public static Operation createOperation(String serviceName, String operationName) {
+        return new DefaultOperation(serviceName, operationName);
     }
 
 }

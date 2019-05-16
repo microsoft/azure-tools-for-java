@@ -26,6 +26,7 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.application.PermanentInstallationID;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -46,6 +47,8 @@ import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.ijidea.actions.GithubSurveyAction;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
@@ -54,6 +57,7 @@ import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import rx.Observable;
 
@@ -67,6 +71,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -92,15 +100,17 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private final AzureSettings azureSettings;
 
-    private String _hashmac = GetHashMac.GetHashMac();
+    private String installationID;
 
     private Boolean firstInstallationByVersion;
 
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
+        String hasMac = GetHashMac.GetHashMac();
+        this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
         CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
-                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
+            TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
     }
 
 
@@ -175,7 +185,8 @@ public class AzurePlugin extends AbstractProjectComponent {
                     } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
                         upgrade = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-                        DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
+
+                        DataOperations.updatePropertyValue(doc, message("instID"), installationID);
                         ParserXMLUtility.saveXMLFile(dataFile, doc);
                     }
                 } else {
@@ -193,11 +204,14 @@ public class AzurePlugin extends AbstractProjectComponent {
         AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
         if (install) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
+            EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
         }
         if (upgrade) {
             AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
+            EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
         }
         AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
+        EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_LOAD, null, null);
     }
 
     private void initializeAIRegistry() {
@@ -239,7 +253,7 @@ public class AzurePlugin extends AbstractProjectComponent {
             }
 
             DataOperations.updatePropertyValue(doc, message("pluginVersion"), PLUGIN_VERSION);
-            DataOperations.updatePropertyValue(doc, message("instID"), _hashmac);
+            DataOperations.updatePropertyValue(doc, message("instID"), installationID);
 
             ParserXMLUtility.saveXMLFile(dataFile, doc);
         } catch (Exception ex) {

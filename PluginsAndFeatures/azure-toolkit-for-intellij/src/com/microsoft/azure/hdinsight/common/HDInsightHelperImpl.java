@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewHDInsightReaderClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
@@ -178,8 +179,8 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public NodeActionListener createAddNewHDInsightReaderClusterAction(
             @NotNull HDInsightRootModule module,
-            @NotNull String clusterName) {
-        return new AddNewHDInsightReaderClusterAction(module, clusterName);
+            @NotNull ClusterDetail clusterDetail) {
+        return new AddNewHDInsightReaderClusterAction(module, clusterDetail);
     }
 
     @Override
@@ -189,7 +190,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             public void run() {
                 Project project = (Project)module.getProject();
                 String title = "Cluster Job Access Denied";
-                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please ‘Link this cluster’ through Ambari credentials to view the corresponding jobs.</pre></html>";
+                String warningText = "<html><pre>You have Read-only permission for this cluster. Please ask the cluster owner or<br>user access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or<br>‘Link this cluster’ through Ambari credentials to view the corresponding jobs.</pre></html>";
                 String okButtonText = "Link this cluster";
                 WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
                     @Override
@@ -212,7 +213,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
             public void run() {
                 Project project = (Project)node.getProject();
                 String title = "Storage Access Denied";
-                String warningText = "<html><pre>You have Read-only permission for this cluster.<br>Please use ‘Open Azure Storage Explorer’ to access the storage associated with this cluster.</pre></html>";
+                String warningText = "<html><pre>You have Read-only permission for this cluster. Please ask the cluster owner or <br>user access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or <br>use ‘Open Azure Storage Explorer’ to access the storages associated with this cluster.</pre></html>";
                 String okButtonText = "Open Azure Storage Explorer";
                 WarningMessageForm form = new WarningMessageForm(project, title, warningText, okButtonText) {
                     @Override

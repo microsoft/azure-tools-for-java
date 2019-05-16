@@ -26,6 +26,9 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.PushImageRunModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.container.utils.Constant;
@@ -103,6 +106,12 @@ public class PushImageRunState extends AzureRunProfileState<String> {
 
         return image;
     }
+
+    @Override
+    protected Operation createOperation() {
+        return TelemetryManager.createOperation(TelemetryConstants.ACR, TelemetryConstants.ACR_PUSHIMAGE);
+    }
+
 
     @Override
     protected void onSuccess(String image, @NotNull RunProcessHandler processHandler) {

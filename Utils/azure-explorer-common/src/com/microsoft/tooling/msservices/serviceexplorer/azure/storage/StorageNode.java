@@ -21,6 +21,9 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -91,12 +94,22 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
                 });
             } catch (Exception ex) {
                 DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete storage account.", ex,
-                        "MS Services - Error Deleting Storage Account", false, true);
+                    "MS Services - Error Deleting Storage Account", false, true);
             }
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return STORAGE;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_STORAGE_ACCOUNT;
         }
     }
 

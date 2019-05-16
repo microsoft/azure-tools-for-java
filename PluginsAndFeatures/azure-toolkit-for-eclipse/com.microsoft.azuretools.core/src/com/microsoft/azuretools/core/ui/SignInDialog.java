@@ -21,8 +21,17 @@
  */
 package com.microsoft.azuretools.core.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInDCProp;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInSPProp;
+
 import com.microsoft.azuretools.authmanage.DCAuthManager;
-import java.io.IOException;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -242,6 +251,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             authMethodDetailsResult.setAccountEmail(accountEmail);
         } else { // automated
             String authPath = textAuthenticationFilePath.getText();
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 this.setErrorMessage("Select authentication file");
                 return;
@@ -272,7 +282,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             }
             signInAsync(dcAuthManager);
             accountEmail = dcAuthManager.getAccountEmail();
-        } catch (InvocationTargetException | InterruptedException ex) {
+        } catch (Exception ex) {
             System.out.println("doSignIn@SingInDialog: " + ex.getMessage());
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doSignIn@SingInDialog", ex));
@@ -280,15 +290,22 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void signInAsync(final DCAuthManager dcAuthManager) throws InvocationTargetException, InterruptedException {
+        Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         IRunnableWithProgress op = (monitor) -> {
+            operation.start();
             monitor.beginTask("Signing In...", IProgressMonitor.UNKNOWN);
             try {
+                EventUtil.logEvent(EventType.info, operation, signInDCProp, null);
                 dcAuthManager.deviceLogin(null);
             } catch (AuthCanceledException ex) {
+                EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                 System.out.println(ex.getMessage());
-            } catch (IOException ex) {
+            } catch (Exception ex) {
+                EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                 System.out.println("run@ProgressDialog@signInAsync@SingInDialog: " + ex.getMessage());
                 Display.getDefault().asyncExec(() -> ErrorWindow.go(getShell(), ex.getMessage(), "Sign In Error"));
+            } finally {
+                operation.complete();
             }
         };
         new ProgressMonitorDialog(this.getShell()).run(true, false, op);

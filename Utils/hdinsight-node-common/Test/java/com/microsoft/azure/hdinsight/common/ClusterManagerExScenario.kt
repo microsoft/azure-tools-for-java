@@ -110,6 +110,8 @@ class ClusterManagerExScenario {
                     // FIXME: Hardcoded for spark version
                     doReturn("2.2").`when`(clusterMock).sparkVersion
                     doReturn(selectedSubscriptions[it.subscription]).`when`(clusterMock).subscription
+                    doReturn(false).`when`(clusterMock).isRoleTypeReader
+                    doReturn("Running").`when`(clusterMock).state
 
                     clusterMock
                 }

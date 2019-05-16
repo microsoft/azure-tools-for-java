@@ -26,19 +26,18 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URISyntaxException;
 
+// for cluster with adls account to deploy using webhdfs storage account type
 public class ADLSGen1HDFSDeploy extends WebHDFSDeploy {
-    public ADLSGen1HDFSDeploy(IClusterDetail cluster, HttpObservable http) {
-        super(cluster, http);
+    public ADLSGen1HDFSDeploy(IClusterDetail cluster, HttpObservable http, String destinationRootPath) {
+        super(cluster, http, destinationRootPath);
     }
 
     @Override

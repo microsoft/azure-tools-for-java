@@ -21,6 +21,9 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_TABLE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -95,6 +98,16 @@ public class TableNode extends Node implements TelemetryProperties {
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e)
                 throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return STORAGE;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_STORAGE_TABLE;
         }
     }
 

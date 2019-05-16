@@ -21,6 +21,9 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_BLOB_CONTAINER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -81,13 +84,22 @@ public class ContainerNode extends Node implements TelemetryProperties{
 
             try {
                 StorageClientSDKManager.getManager().deleteBlobContainer(storageAccount, blobContainer);
-
                 parent.removeAllChildNodes();
                 ((RefreshableNode) parent).load(false);
             } catch (AzureCmdException ex) {
                 DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete blob storage", ex,
-                        "MS Services - Error Deleting Blob Storage", false, true);
+                    "MS Services - Error Deleting Blob Storage", false, true);
             }
+        }
+
+        @Override
+        protected String getServiceName() {
+            return STORAGE;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_BLOB_CONTAINER;
         }
 
         @Override

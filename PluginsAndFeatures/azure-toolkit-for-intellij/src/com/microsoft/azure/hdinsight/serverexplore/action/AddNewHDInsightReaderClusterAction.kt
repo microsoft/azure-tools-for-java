@@ -23,14 +23,33 @@
 package com.microsoft.azure.hdinsight.serverexplore.action
 
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 
-class AddNewHDInsightReaderClusterAction(val module: HDInsightRootModule, val clusterName: String): NodeActionListener() {
+class AddNewHDInsightReaderClusterAction(val module: HDInsightRootModule, val selectedClusterDetail: ClusterDetail): NodeActionListener() {
     override fun actionPerformed(event: NodeActionEvent?) {
-        val form = AddNewHDInsightReaderClusterForm(module.project as Project, module, clusterName)
+        val defaultStorageRootPath = selectedClusterDetail.defaultStorageRootPath
+        val form = object: AddNewHDInsightReaderClusterForm(module.project as Project, module, selectedClusterDetail.name) {
+            override fun afterOkActionPerformed() {
+                val linkedCluster =
+                    ClusterManagerEx.getInstance().findClusterDetail({ clusterDetail ->
+                        clusterDetail is HDInsightAdditionalClusterDetail
+                                && clusterDetail.getName() == selectedClusterDetail.name
+                    }, true) as? HDInsightAdditionalClusterDetail
+
+                linkedCluster?.let {
+                    it.defaultStorageRootPath = defaultStorageRootPath
+                    ClusterManagerEx.getInstance().updateHdiAdditionalClusterDetail(it)
+                }
+
+                super.afterOkActionPerformed()
+            }
+        }
         form.show()
     }
 }

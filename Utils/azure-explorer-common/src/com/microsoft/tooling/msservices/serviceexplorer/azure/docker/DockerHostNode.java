@@ -42,6 +42,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azure.docker.model.DockerHost.DockerHostVMState.RUNNING;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DOCKER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_DOCKER_HOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHUTDOWN_DOCKER_HOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_DOCKER_HOST;
 
 public class DockerHostNode extends AzureRefreshableNode implements TelemetryProperties {
   //TODO: Replace the icons with the real Docker host icons
@@ -161,7 +165,8 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
 
   @Override
   protected void loadActions() {
-    addAction(ACTION_START, ACTION_START_ICON, new NodeActionListener() {
+    addAction(ACTION_START, ACTION_START_ICON, new WrappedTelemetryNodeActionListener(DOCKER, START_DOCKER_HOST,
+        new NodeActionListener() {
       @Override
       public void actionPerformed(NodeActionEvent e) {
         DefaultLoader.getIdeHelper().runInBackground(null, "Starting Docker Host", false, true, "Starting Docker Host...", new Runnable() {
@@ -183,7 +188,7 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
           }
         });
       }
-    });
+    }));
     addAction(ACTION_RESTART, ACTION_START_ICON, new RestartDockerHostAction());
     addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new ShutdownDockerHostAction());
     super.loadActions();
@@ -236,6 +241,16 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
     }
+
+    @Override
+    protected String getServiceName() {
+      return DOCKER;
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+      return RESTART_DOCKER_HOST;
+    }
   }
 
   public class ShutdownDockerHostAction extends AzureNodeActionPromptListener {
@@ -274,6 +289,16 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
 
     @Override
     protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+    }
+
+    @Override
+    protected String getServiceName() {
+      return DOCKER;
+    }
+
+    @Override
+    protected String getOperationName(NodeActionEvent event) {
+      return SHUTDOWN_DOCKER_HOST;
     }
   }
 

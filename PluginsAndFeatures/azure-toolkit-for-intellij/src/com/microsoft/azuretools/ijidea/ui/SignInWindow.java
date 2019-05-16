@@ -22,6 +22,11 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInDCProp;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInSPProp;
+
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -44,6 +49,11 @@ import com.microsoft.azuretools.authmanage.interact.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.NotNull;
@@ -194,17 +204,24 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void deviceLoginAsync(@NotNull final DCAuthManager dcAuthManager) {
+        Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         ProgressManager.getInstance().run(
             new Task.Modal(project, "Sign In Progress", false) {
                 @Override
                 public void run(ProgressIndicator indicator) {
                     try {
+                        EventUtil.logEvent(EventType.info, operation, signInDCProp);
+                        operation.start();
                         dcAuthManager.deviceLogin(null);
                     } catch (AuthCanceledException ex) {
+                        EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                         System.out.println(ex.getMessage());
                     } catch (Exception ex) {
+                        EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                         ApplicationManager.getApplication().invokeLater(
                             () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                    } finally {
+                        operation.complete();
                     }
                 }
             });
@@ -386,6 +403,7 @@ public class SignInWindow extends AzureDialogWrapper {
             authMethodDetailsResult.setAccountEmail(accountEmail);
             authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
         } else if (automatedRadioButton.isSelected()) { // automated
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 JOptionPane.showMessageDialog(

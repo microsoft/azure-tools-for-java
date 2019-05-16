@@ -37,6 +37,10 @@ import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStra
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessorBase;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
@@ -62,6 +66,8 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azuretools.authmanage.AuthMethodManager.getInstance;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_REDIS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class CreateRedisCacheForm extends AzureDialogWrapper {
@@ -208,7 +214,9 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     }
 
     private void onOK() {
+        final Operation operation = TelemetryManager.createOperation(REDIS, CREATE_REDIS);
         try {
+            operation.start();
             Azure azure = azureManager.getAzure(currentSub.getSubscriptionId());
             setSubscription(currentSub);
             ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, redisCacheNameValue, selectedLocationValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
@@ -221,11 +229,14 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
                 public void onSuccess(Void arg0) {
                     if (onCreate != null) {
                         onCreate.run();
+                        operation.complete();
                     }
                 }
                 @Override
                 public void onFailure(Throwable throwable) {
                     JOptionPane.showMessageDialog(null, throwable.getMessage(), "Error occurred when creating Redis Cache: " + redisCacheNameValue, JOptionPane.ERROR_MESSAGE, null);
+                    EventUtil.logError(operation, ErrorType.userError, new Exception(throwable), null, null);
+                    operation.complete();
                     try {
                         // notify the waitting thread the thread being waited incurred exception to clear blocking queue
                         processorInner.notifyCompletion();
@@ -238,6 +249,8 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             close(DialogWrapper.OK_EXIT_CODE, true);
         } catch (Exception ex) {
             ex.printStackTrace();
+            EventUtil.logError(operation, ErrorType.userError, ex, null, null);
+            operation.complete();
         }
     }
 

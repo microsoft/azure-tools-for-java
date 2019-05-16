@@ -19,6 +19,13 @@
  */
 package com.microsoft.azuretools.core.ui.startup;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.File;
 import java.util.Collection;
 
@@ -131,11 +138,14 @@ public class WACPStartUp implements IStartup {
 
 			AppInsightsClient.setAppInsightsConfiguration(new AppInsightsConfigurationImpl());
 			if (install) {
+				EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
                 AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
 			}
 	        if (upgrade) {
+				EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
 	            AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Upgrade, null, true);
 	        }
+			EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_LOAD, null, null);
 	        AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
 		} catch (Exception ex) {
 			Activator.getDefault().log(ex.getMessage(), ex);

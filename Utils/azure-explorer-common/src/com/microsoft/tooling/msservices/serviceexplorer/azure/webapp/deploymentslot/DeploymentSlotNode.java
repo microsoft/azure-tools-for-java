@@ -22,6 +22,16 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP_SLOT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPERN_WEBAPP_SLOT_BROWSER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_WEBAPP_SLOT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WEBAPP_SLOT_PROP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_WEBAPP_SLOT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_WEBAPP_SLOT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SWAP_WEBAPP_SLOT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import java.io.IOException;
 import java.util.List;
 
@@ -75,25 +85,29 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     protected void loadActions() {
         // todo: why only the stop action has icon?
         addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED),
-            createBackgroundActionListener("Stopping Deployment Slot", () -> stop()));
-        addAction(ACTION_START, createBackgroundActionListener("Starting Deployment Slot", () -> start()));
-        addAction(ACTION_RESTART,
-            createBackgroundActionListener("Restarting Deployment Slot", () -> restart()));
-        addAction(ACTION_SWAP_WITH_PRODUCTION,
-            createBackgroundActionListener("Swapping with Production", () -> swapWithProduction()));
-        addAction(ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
+            new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP_SLOT,
+                createBackgroundActionListener("Stopping Deployment Slot", () -> stop())));
+        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(WEBAPP, START_WEBAPP_SLOT,
+            createBackgroundActionListener("Starting Deployment Slot", () -> start())));
+        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP_SLOT,
+            createBackgroundActionListener("Restarting Deployment Slot", () -> restart())));
+        addAction(ACTION_SWAP_WITH_PRODUCTION, new WrappedTelemetryNodeActionListener(WEBAPP, SWAP_WEBAPP_SLOT,
+            createBackgroundActionListener("Swapping with Production", () -> swapWithProduction())));
+        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER,
+            new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
             }
-        });
+        }));
         addAction(ACTION_DELETE, new DeleteDeploymentSlotAction());
-        addAction(ACTION_SHOW_PROPERTY, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
-            }
-        });
+        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(WEBAPP, SHOW_WEBAPP_SLOT_PROP,
+            new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                    DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
+                }
+            }));
 
         super.loadActions();
     }
@@ -164,6 +178,16 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) {
+        }
+
+        @Override
+        protected String getServiceName() {
+            return WEBAPP;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_WEBAPP_SLOT;
         }
     }
 }

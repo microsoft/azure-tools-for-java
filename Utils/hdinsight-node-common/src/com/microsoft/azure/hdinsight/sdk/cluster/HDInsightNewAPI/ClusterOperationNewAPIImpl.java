@@ -32,6 +32,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.entity.StringEntity;
 import rx.Observable;
@@ -39,44 +40,97 @@ import rx.Observable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements ILogger {
     private static final String VERSION = "2015-03-01-preview";
     private HDInsightUserRoleType roleType;
+    @NotNull
+    private final SubscriptionDetail subscription;
+    @NotNull
+    private final AzureManagementHttpObservable http;
+
+    public ClusterOperationNewAPIImpl(@NotNull SubscriptionDetail subscription) {
+        this.subscription = subscription;
+        this.http = new AzureManagementHttpObservable(subscription, VERSION);
+    }
+
+    private AzureManagementHttpObservable getHttp() {
+        return this.http;
+    }
+
+    public Observable<Map> getClusterCoreSiteRequest(@NotNull final String clusterId) throws IOException {
+        String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
+        String url = URI.create(managementURI)
+                .resolve(clusterId.replaceAll("/+$", "") + "/configurations/core-site").toString();
+        return getHttp()
+                .withUuidUserAgent()
+                .get(url, null, null, Map.class);
+    }
 
     private Observable<ClusterConfiguration> getClusterConfigurationRequest(
-            @NotNull final SubscriptionDetail subscription,
             @NotNull final String clusterId) throws IOException {
         String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
-        AzureManagementHttpObservable httpObservable = new AzureManagementHttpObservable(subscription, VERSION);
         String url = URI.create(managementURI)
                 .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
         StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
         entity.setContentType("application/json");
-        return httpObservable
+        return getHttp()
                 .withUuidUserAgent()
                 .post(url, entity, null, null, ClusterConfiguration.class);
     }
 
-    public Observable<Boolean> isProbeGetConfigurationSucceed(
-            final SubscriptionDetail subscription,
-            final String clusterId) throws IOException {
-        return getClusterConfigurationRequest(subscription, clusterId)
-                .map(clusterConfiguration -> true)
-                .doOnNext(clusterConfiguration -> setRoleType(HDInsightUserRoleType.OWNER))
+    public Observable<Boolean> isProbeGetConfigurationSucceed(final String clusterId) throws IOException {
+        return getClusterConfigurationRequest(clusterId)
+                .map(clusterConfiguration -> {
+                    if (clusterConfiguration != null
+                            && clusterConfiguration.getConfigurations() != null
+                            && clusterConfiguration.getConfigurations().getGateway() != null
+                            && clusterConfiguration.getConfigurations().getGateway().getUsername() != null
+                            && clusterConfiguration.getConfigurations().getGateway().getPassword() != null) {
+                        setRoleType(HDInsightUserRoleType.OWNER);
+                        return true;
+                    } else {
+                        final Map<String, String> properties = new HashMap<>();
+                        properties.put("ClusterID", clusterId);
+                        properties.put("StatusCode", "200");
+                        properties.put("ErrorDetails", "Cluster credential is incomplete.");
+                        AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
+
+                        log().error("Cluster credential is incomplete even if successfully get cluster configuration.");
+                        return false;
+                    }
+                })
                 .onErrorResumeNext(err -> {
                     if (err instanceof ForbiddenHttpErrorStatus) {
                         setRoleType(HDInsightUserRoleType.READER);
                         log().info("HDInsight user role type is READER. Request cluster ID: " + clusterId);
+
+                        // Send telemetry when cluster role type is READER
+                        final Map<String, String> properties = new HashMap<>();
+                        properties.put("ClusterID", clusterId);
+                        properties.put("RoleType", "READER");
+                        properties.put("StatusCode", String.valueOf(((HttpErrorStatus) err).getStatusCode()));
+                        properties.put("ErrorDetails", ((HttpErrorStatus) err).getErrorDetails());
+                        AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
                         return Observable.just(true);
                     } else {
-                        HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
-                        log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
                         if (err instanceof HttpErrorStatus) {
+                            HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
+                            log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
                             log().warn(((HttpErrorStatus) err).getErrorDetails());
+
+                            final Map<String, String> properties = new HashMap<>();
+                            properties.put("ClusterID", clusterId);
+                            properties.put("StackTrace", ExceptionUtils.getStackTrace(err));
+                            properties.put("StatusCode", String.valueOf(((HttpErrorStatus) err).getStatusCode()));
+                            properties.put("ErrorDetails", ((HttpErrorStatus) err).getErrorDetails());
+                            AppInsightsClient.createByType(AppInsightsClient.EventType.Telemetry, this.getClass().getSimpleName(), null, properties);
                         }
-                        log().warn(ExceptionUtils.getStackTrace(err));
+
+                        log().warn("Error getting cluster configurations with NEW HDInsight API. " + ExceptionUtils.getStackTrace(err));
                         return Observable.just(false);
                     }
                 });
@@ -100,7 +154,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
         try {
             switch (roleType) {
                 case OWNER:
-                    return getClusterConfigurationRequest(subscription, clusterId)
+                    return getClusterConfigurationRequest(clusterId)
                             // As you can see, the response class is
                             // com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterConfiguration.
                             // However, if we want to override method getClusterConfiguration, the method return type should be

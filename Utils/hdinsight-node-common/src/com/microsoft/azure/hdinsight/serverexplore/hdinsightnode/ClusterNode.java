@@ -46,7 +46,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
     private IClusterDetail clusterDetail;
 
     public ClusterNode(Node parent, @NotNull IClusterDetail clusterDetail) {
-        super(CLUSTER_MODULE_ID, getTitleForClusterNode(clusterDetail), parent, ICON_PATH, true);
+        super(CLUSTER_MODULE_ID, clusterDetail.getTitle(), parent, ICON_PATH, true);
         this.clusterDetail = clusterDetail;
         this.loadActions();
     }
@@ -61,7 +61,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             HDInsightRootModule hdinsightRootModule = (HDInsightRootModule) this.getParent();
             NodeActionListener linkClusterActionListener =
                     HDInsightLoader.getHDInsightHelper().createAddNewHDInsightReaderClusterAction(hdinsightRootModule,
-                            clusterDetail.getName());
+                            (ClusterDetail) clusterDetail);
             addAction("Link this cluster", linkClusterActionListener);
         }
 
@@ -163,22 +163,6 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             RefreshableNode storageAccountNode = new StorageAccountFolderNode(this, clusterDetail);
             addChildNode(storageAccountNode);
         }
-    }
-
-    @NotNull
-    private static String getTitleForClusterNode(@NotNull IClusterDetail clusterDetail) {
-        StringBuilder titleStringBuilder = new StringBuilder(clusterDetail.getTitle());
-
-        if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
-            titleStringBuilder.append(" (Role: Reader)");
-        }
-
-        String state = clusterDetail.getState();
-        if (!StringHelper.isNullOrWhiteSpace(state) && !state.equalsIgnoreCase("Running")) {
-            titleStringBuilder.append(String.format(" (State: %s)", state));
-        }
-
-        return titleStringBuilder.toString();
     }
 
     private void openUrlLink(@NotNull String linkUrl) {

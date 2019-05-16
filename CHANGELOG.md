@@ -4,6 +4,9 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 - [Change Log](#change-log)
 
+  - [3.22.0](#3220)
+  - [3.21.1](#3211)
+  - [3.21.0](#3210)
   - [3.20.0](#3200)
   - [3.19.0](#3190)
   - [3.18.0](#3180)
@@ -31,6 +34,48 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.22.0
+
+### Added
+
+- Automaticly fill in Azure Blob account name or ADLS Gen1/Gen2 root path for linked HDInsight Reader role cluster in run configuration dialog
+
+### Changed
+
+- Improve app service data loading performance
+- Restrict upload storage type to cluster default storage type and spark interactive session storage type for linked HDInsight Reader role cluster
+
+### Fixed
+- [#3094](https://github.com/microsoft/azure-tools-for-java/issues/3094), [#3096](https://github.com/microsoft/azure-tools-for-java/issues/3096) Fix warning message spelling issue
+
+
+## 3.21.1
+
+### Fixed
+
+- Fix telemetry shares same installation id
+
+## 3.21.0
+
+### Added
+
+- Support Java 11 App Service
+- Add failure task debug feature for HDInsight cluster with Spark 2.3.2
+- Support linking cluster with ADLS GEN2 storage account
+- Add default storage type for cluster with ADLS GEN2 account
+
+### Changed
+
+- **Breaking change**: Users with cluster ‘**Reader**’ only role can no longer submit job to the HDInsight cluster nor access to the cluster storage. Please request the cluster owner or user access administrator to upgrade your role to **HDInsight Cluster Operator** or **Contributor** in the [Azure Portal](https://ms.portal.azure.com). Click [here](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#contributor) for more information. 
+- AadProvider.json file is no longer needed for Spark on Cosmos Serverless feature
+
+### Fixed
+
+- [#2866](https://github.com/Microsoft/azure-tools-for-java/issues/2866) Fix uncaught exception when remote debug in HDI 4.0
+- [#2958](https://github.com/Microsoft/azure-tools-for-java/issues/2958) Fix deleted cluster re-appeared issue for Spark on Cosmos cluster
+- [#2988](https://github.com/Microsoft/azure-tools-for-java/issues/2988) Fix toolkit installation failure with version incompatibility issue
+- [#2977](https://github.com/Microsoft/azure-tools-for-java/issues/2977) Fix "Report to Microsoft" button been disabled issue
 
 ## 3.20.0
 

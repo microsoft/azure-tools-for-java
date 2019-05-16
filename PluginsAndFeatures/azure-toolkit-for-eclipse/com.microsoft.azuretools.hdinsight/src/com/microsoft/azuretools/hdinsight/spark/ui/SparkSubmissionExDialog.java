@@ -21,10 +21,14 @@
  */
 package com.microsoft.azuretools.hdinsight.spark.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -579,6 +583,7 @@ public class SparkSubmissionExDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		AppInsightsClient.create(Messages.SparkSubmissionButtonClickEvent, null);
+		EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionButtonClickEvent, null);
 		submitModel.action(constructSubmissionParameter());
 		super.okPressed();
 	}

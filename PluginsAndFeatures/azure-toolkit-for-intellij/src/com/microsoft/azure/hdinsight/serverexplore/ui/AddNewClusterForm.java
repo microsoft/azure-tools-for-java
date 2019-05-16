@@ -43,6 +43,9 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.ui.HintTextField;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
@@ -252,7 +255,8 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 .subscribe(toUpdate -> {
                     afterOkActionPerformed();
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
-
+                    EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
+                        HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
                     super.doOKAction();
                 });
     }

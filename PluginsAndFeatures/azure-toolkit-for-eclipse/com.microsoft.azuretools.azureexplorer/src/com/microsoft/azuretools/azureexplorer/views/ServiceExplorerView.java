@@ -21,6 +21,7 @@ package com.microsoft.azuretools.azureexplorer.views;
 
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.azureexplorer.AzureModuleImpl;
 import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
@@ -136,11 +137,21 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                 return ((TreeNode) parent).getChildNodes().size() > 0;
                 return false;
         }
+        
+        private void setHDInsightRootModule(@NotNull AzureModule azureModule) {
+            HDInsightRootModuleImpl hdInsightRootModule =  new HDInsightRootModuleImpl(azureModule);
+        	azureModule.setHdInsightModule(hdInsightRootModule);
+        	
+            // Enable HDInsight new SDK for Eclipse
+            DefaultLoader.getIdeHelper().setApplicationProperty(
+                    com.microsoft.azure.hdinsight.common.CommonConst.ENABLE_HDINSIGHT_NEW_SDK, "true");
+
+        }
 
         private void initialize() {
             azureModule = new AzureModuleImpl();
-            HDInsightRootModuleImpl hdInsightRootModule =  new HDInsightRootModuleImpl(azureModule);
-            azureModule.setHdInsightModule(hdInsightRootModule);
+            
+            setHDInsightRootModule(azureModule);
             invisibleRoot = new TreeNode(null);
             invisibleRoot.add(createTreeNode(azureModule));
 

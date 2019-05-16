@@ -19,6 +19,14 @@
  */
 package com.microsoft.azuretools.azureexplorer.editors;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.BLOB_COPYURL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.BLOB_DELETE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.BLOB_SAVEAS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.BLOB_SEARCH;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.BLOB_UPLOAD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -161,40 +169,40 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
     
     private FileEditorVirtualNode<EditorPart> createVirtualNode(final String name){
     	final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
-    	node.addAction(COPY_URL, new NodeActionListener() {
+    	node.addAction(COPY_URL, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_COPYURL, new NodeActionListener() {
 			@Override
 			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
 				copyURLSelectedFile();				
 			}
-		});
+		}));
     	
-    	node.addAction(SAVE_AS, new NodeActionListener() {
+    	node.addAction(SAVE_AS, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_SAVEAS, new NodeActionListener() {
 			@Override
 			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
 				saveAsSelectedFile();				
 			}
-		});
+		}));
     	
-    	node.addAction(DELETE, new NodeActionListener() {
+    	node.addAction(DELETE, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_DELETE, new NodeActionListener() {
 			@Override
 			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
 				deleteSelectedFile();				
 			}
-		});
+		}));
     	
-    	node.addAction(SEARCH, new NodeActionListener() {
+    	node.addAction(SEARCH, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_SEARCH, new NodeActionListener() {
 			@Override
 			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
 				fillGrid();				
 			}
-		});
+		}));
     	
-    	node.addAction(UPLOAD_BLOB, new NodeActionListener() {
+    	node.addAction(UPLOAD_BLOB, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_UPLOAD, new NodeActionListener() {
 			@Override
 			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
 				uploadFile();				
 			}
-		});
+		}));
     	
     	return node;
     }

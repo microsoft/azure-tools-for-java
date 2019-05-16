@@ -39,15 +39,5 @@ public interface Deployable {
      *         Observable Error: IOException;
      */
     @NotNull
-    Observable<String> deploy(@NotNull File src, @NotNull URI dest);
-
-    @Nullable
-    default URI getUploadDir(String rootPath){
-        return null;
-    }
-
-    @Nullable
-    default String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        return null;
-    }
+    Observable<String> deploy(@NotNull File src);
 }

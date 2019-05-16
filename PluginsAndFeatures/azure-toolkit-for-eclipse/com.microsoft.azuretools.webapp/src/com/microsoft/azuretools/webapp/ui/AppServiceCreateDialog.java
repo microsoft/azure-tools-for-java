@@ -73,6 +73,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -114,6 +115,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import rx.Observable;
+import rx.exceptions.Exceptions;
+import rx.schedulers.Schedulers;
 
 public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
@@ -263,7 +267,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
     private String packaging = WebAppUtils.TYPE_WAR;
 
     private final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
-    private static Map<String, List<AppServicePlan>> sidAspMap = new HashMap<>();
+    private static Map<String, List<AppServicePlan>> sidAspMap = new ConcurrentHashMap<>();
     private Map<String, String> appSettings = new HashMap<>();
     protected WebAppSettingModel model = new WebAppSettingModel();
 
@@ -360,13 +364,21 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
+        String os = CommonUtils.getPreference(CommonUtils.RUNTIME_OS);
+        if (os.equalsIgnoreCase(OperatingSystem.LINUX.toString())) {
+            btnOSGroupLinux.setSelection(true);
+            btnOSGroupWin.setSelection(false);
+        } else if (os.equalsIgnoreCase(OperatingSystem.WINDOWS.toString())) {
+            btnOSGroupLinux.setSelection(false);
+            btnOSGroupWin.setSelection(true);
+        }
+        radioRuntimeLogic();
         fillResourceGroups();
         fillAppServicePlans();
         fillAppServicePlansDetails();
         fillAppServicePlanLocations();
         fillAppServicePlanPricingTiers();
         fillJavaVersion();
-        fillUserSettings();
         return scrolledComposite;
     }
 
@@ -851,6 +863,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                     comboWebContainer.select(i);
                 }
             }
+            String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
+            CommonUtils.selectComboIndex(comboWebContainer, webContainer);
         }
     }
 
@@ -918,6 +932,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             if (comboSubscription.getItemCount() > 0) {
                 comboSubscription.select(0);
             }
+            String subscription = CommonUtils.getPreference(CommonUtils.SUBSCRIPTION);
+            CommonUtils.selectComboIndex(comboSubscription, subscription);
         } catch (Exception ex) {
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doFillSubscriptions@AppServiceCreateDialog", ex));
@@ -947,6 +963,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         if (comboResourceGroup.getItemCount() > 0) {
             comboResourceGroup.select(0);
         }
+        String resourceGroup = CommonUtils.getPreference(CommonUtils.RG_NAME);
+        CommonUtils.selectComboIndex(comboResourceGroup, resourceGroup);
     }
 
     protected void fillAppServicePlans() {
@@ -981,6 +999,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         if (comboAppServicePlan.getItemCount() > 0) {
             comboAppServicePlan.select(0);
         }
+        String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
+        CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
         fillAppServicePlansDetails();
     }
 
@@ -1000,12 +1020,20 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
 
     public static void initAspCache() {
         try {
-            Map<String, List<AppServicePlan>> map = new HashMap<>();
+            Map<String, List<AppServicePlan>> map = new ConcurrentHashMap<>();
             Set<SubscriptionDetail> sdl = AzureModel.getInstance().getSubscriptionToResourceGroupMap().keySet();
-            for (SubscriptionDetail subscriptionDetail : sdl) {
-                List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
-                    .listAppServicePlanBySubscriptionId(subscriptionDetail.getSubscriptionId());
-                map.put(subscriptionDetail.getSubscriptionId(), appServicePlans);
+            if (sdl.size() > 0) {
+                Observable.from(sdl).flatMap((sd) ->
+                    Observable.create((subscriber) -> {
+                        try {
+                            List<AppServicePlan> appServicePlans = AzureWebAppMvpModel.getInstance()
+                                .listAppServicePlanBySubscriptionId(sd.getSubscriptionId());
+                            map.put(sd.getSubscriptionId(), appServicePlans);
+                            subscriber.onCompleted();
+                        } catch (Exception e) {
+                            Exceptions.propagate(e);
+                        }
+                    }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
             }
             sidAspMap = map;
         } catch (Exception ignore) {
@@ -1047,6 +1075,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             if (comboAppServicePlanLocation.getSelectionIndex() < 0 && comboAppServicePlanLocation.getItemCount() > 0) {
                 comboAppServicePlanLocation.select(0);
             }
+            String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
+            CommonUtils.selectComboIndex(comboAppServicePlanLocation, aspLocation);
         }
     }
 
@@ -1067,6 +1097,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 && comboAppServicePlanPricingTier.getItemCount() > 0) {
                 comboAppServicePlanPricingTier.select(0);
             }
+            String aspPricing = CommonUtils.getPreference(ASP_CREATE_PRICING);
+            CommonUtils.selectComboIndex(comboAppServicePlanPricingTier, aspPricing);
         } catch (Exception ex) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
                 "fillAppServicePlanPricingTiers@AppServiceCreateDialog", ex));
@@ -1082,6 +1114,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 comboLinuxRuntime.select(i);
             }
         }
+        String linuxRuntime = CommonUtils.getPreference(CommonUtils.RUNTIME_LINUX);
+        CommonUtils.selectComboIndex(comboLinuxRuntime, linuxRuntime);
     }
 
     protected void fillJavaVersion() {
@@ -1093,43 +1127,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                 cbJavaVersion.select(i);
             }
         }
-    }
-
-    private void fillUserSettings() {
-        try {
-            String os = CommonUtils.getPreference(CommonUtils.RUNTIME_OS);
-            if (os.equalsIgnoreCase(OperatingSystem.LINUX.toString())) {
-                btnOSGroupLinux.setSelection(true);
-                btnOSGroupWin.setSelection(false);
-            } else if (os.equalsIgnoreCase(OperatingSystem.WINDOWS.toString())) {
-                btnOSGroupLinux.setSelection(false);
-                btnOSGroupWin.setSelection(true);
-            }
-            String subscription = CommonUtils.getPreference(CommonUtils.SUBSCRIPTION);
-            CommonUtils.selectComboIndex(comboSubscription, subscription);
-
-            String linuxRuntime = CommonUtils.getPreference(CommonUtils.RUNTIME_LINUX);
-            CommonUtils.selectComboIndex(comboLinuxRuntime, linuxRuntime);
-
-            String javaversion = CommonUtils.getPreference(CommonUtils.RUNTIME_JAVAVERSION);
-            CommonUtils.selectComboIndex(cbJavaVersion, javaversion);
-
-            String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
-            CommonUtils.selectComboIndex(comboWebContainer, webContainer);
-
-            String aspName = CommonUtils.getPreference(CommonUtils.ASP_NAME);
-            CommonUtils.selectComboIndex(comboAppServicePlan, aspName);
-
-            String aspLocation = CommonUtils.getPreference(ASP_CREATE_LOCATION);
-            CommonUtils.selectComboIndex(comboAppServicePlanLocation, aspLocation);
-
-            String aspPricing = CommonUtils.getPreference(ASP_CREATE_PRICING);
-            CommonUtils.selectComboIndex(comboAppServicePlanPricingTier, aspPricing);
-
-            String resourceGroup = CommonUtils.getPreference(CommonUtils.RG_NAME);
-            CommonUtils.selectComboIndex(comboResourceGroup, resourceGroup);
-        } catch (Exception ignore) {
-        }
+        String javaversion = CommonUtils.getPreference(CommonUtils.RUNTIME_JAVAVERSION);
+        CommonUtils.selectComboIndex(cbJavaVersion, javaversion);
     }
 
     private void recordUserSettings() {
@@ -1193,6 +1192,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                         }
                         monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
                         AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
+                        initAspCache();
                         Display.getDefault().asyncExec(() -> AppServiceCreateDialog.super.okPressed());
                         if (AzureUIRefreshCore.listeners != null) {
                             AzureUIRefreshCore.execute(

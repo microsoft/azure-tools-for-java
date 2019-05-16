@@ -31,7 +31,6 @@ import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum
 import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")

@@ -26,6 +26,8 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
+
 public enum SparkSubmitStorageTypeOptionsForCluster {
     // cluster detail using blob as default storage type
     ClusterWithBlob(new SparkSubmitStorageType[]{
@@ -60,6 +62,13 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
             SparkSubmitStorageType.ADLS_GEN1,
             SparkSubmitStorageType.ADLS_GEN2
     }),
+
+    // for hdi additional cluster with reader role and default storage type is blob,adls or adls gen2
+    HdiAdditionalClusterForReaderWithBlob(StorageAccountType.BLOB),
+
+    HdiAdditionalClusterForReaderWithADLSGen1(StorageAccountType.ADLS),
+
+    HdiAdditionalClusterForReaderWithADLSGen2(StorageAccountType.ADLSGen2),
 
     // cosmos cluster on adl whose storage type is only default_storaget_account
     AzureSparkCosmosClusterWithDefaultStorage(new SparkSubmitStorageType[]{
@@ -100,6 +109,29 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
 
     SparkSubmitStorageTypeOptionsForCluster(SparkSubmitStorageType[] optionTypes) {
         this.optionTypes = optionTypes;
+    }
+
+    SparkSubmitStorageTypeOptionsForCluster(StorageAccountType type) {
+        switch (type) {
+            case BLOB:
+                this.optionTypes = new SparkSubmitStorageType[]{
+                        SparkSubmitStorageType.BLOB,
+                        SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
+                };
+                break;
+            case ADLS:
+                this.optionTypes = new SparkSubmitStorageType[]{
+                        SparkSubmitStorageType.ADLS_GEN1,
+                        SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
+                };
+                break;
+            case ADLSGen2:
+                this.optionTypes = new SparkSubmitStorageType[]{
+                        SparkSubmitStorageType.ADLS_GEN2,
+                        SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
+                };
+                break;
+        }
     }
 
     public SparkSubmitStorageType[] getOptionTypes() {

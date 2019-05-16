@@ -40,7 +40,7 @@ public abstract class AzureRefreshableNode extends RefreshableNode {
                 super.onNodeClick(e);
             }
         } catch (Exception ex) {
-            DefaultLoader.getUIHelper().logError("Error loading webapps", ex);
+            DefaultLoader.getUIHelper().logError("Error when expanding node.", ex);
         }
     }
 
