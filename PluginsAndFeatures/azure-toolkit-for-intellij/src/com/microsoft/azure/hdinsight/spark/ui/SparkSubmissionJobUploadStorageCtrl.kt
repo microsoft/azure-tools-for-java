@@ -127,10 +127,22 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
         view.storagePanel.adlsGen2Card.storageKeyField.addFocusListener(object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 saveAccesKey().subscribe(
-                        { model -> if(!StringUtils.isEmpty(model.gen2Account))
-                                      log().info("save new access key for account" + model.gen2Account) },
+                        { model ->
+                            if (!StringUtils.isEmpty(model.gen2Account)){
+                                val rootPath = view.storagePanel.adlsGen2Card.gen2RootPathField.text.trimEnd('/',' ')
+                                log().info("save new access key for account ${model.gen2Account} and root path $rootPath")
+                                view.viewModel.uploadPathFieldSubject.onNext(rootPath)
+                            }
+
+                        },
                         {}
                 )
+            }
+        })
+
+        view.storagePanel.adlsGen2Card.gen2RootPathField.addFocusListener(object : FocusAdapter() {
+            override fun focusLost(e: FocusEvent?) {
+                view.viewModel.uploadStorage.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS GEN2"))
             }
         })
     }

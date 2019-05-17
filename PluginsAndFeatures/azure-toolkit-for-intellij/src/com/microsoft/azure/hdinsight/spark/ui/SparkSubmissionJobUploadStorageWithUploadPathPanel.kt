@@ -74,7 +74,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
     private val jobUploadStorageTitle = "Job Upload Storage"
-    private val invalidUploadPath = "<Invalid Upload Path>"
+    val invalidUploadPath = "<Invalid Upload Path>"
     private val unsupportAccountType = "<Storage Account Type Is Not Supported>"
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
@@ -83,7 +83,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
         document.addDocumentListener(object : DocumentAdapter() {
             override fun textChanged(e: DocumentEvent) {
-                if(e.type == DocumentEvent.EventType.INSERT && text != invalidUploadPath){
+                if (e.type == DocumentEvent.EventType.INSERT) {
                     viewModel.uploadPathFieldSubject.onNext(text)
                 }
             }
@@ -281,6 +281,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 }
                             }
                             SparkSubmitStorageType.ADLS_GEN2 -> model.apply {
+//                                if(StringUtils.isBlank(accessKey)){
+//                                    uploadPath = invalidUploadPath
+//                                    errorMsg = "Accesskey for ADLS GEN2 Root Path is invalid"
+//                                }else
                                 if (gen2RootPath != null && !SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "ADLS GEN2 Root Path is invalid"

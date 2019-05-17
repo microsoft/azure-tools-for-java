@@ -54,7 +54,7 @@ public class ADLSGen2ParamsBuilder extends WebHdfsParamsBuilder {
         return this;
     }
 
-    public ADLSGen2ParamsBuilder setRecursive(@NotNull boolean value) {
+    public ADLSGen2ParamsBuilder enableRecursive(@NotNull boolean value) {
         params.add(new BasicNameValuePair("recursive", String.valueOf(value)));
         return this;
     }

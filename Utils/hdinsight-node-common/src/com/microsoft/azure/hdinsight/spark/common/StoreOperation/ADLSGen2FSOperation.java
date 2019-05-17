@@ -74,7 +74,7 @@ public class ADLSGen2FSOperation {
                 .build();
 
         this.listReqParams = new ADLSGen2ParamsBuilder()
-                .setRecursive(true)
+                .enableRecursive(true)
                 .setResource("filesystem")
                 .setDirectory("SparkSubmission")
                 .build();

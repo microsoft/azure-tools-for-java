@@ -1,44 +1,44 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
-import com.intellij.openapi.vfs.impl.http.HttpFileSystemBase;
-import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
-import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
+import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.apache.commons.lang3.StringUtils;
+import rx.Observable;
 
-import java.util.Optional;
-
-public class ADLSGen2FileSystem extends HttpFileSystemBase implements ILogger {
+public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     public static final String myProtocol = "https";
     public HttpObservable http;
-    public String rootPath;
 
-    public ADLSGen2FileSystem(@NotNull String rootPath, @Nullable String clusterName) {
+    public ADLSGen2FileSystem(@NotNull HttpObservable http) {
         super(myProtocol);
-        this.rootPath = rootPath;
+        this.http = http;
+    }
 
-        Optional<IClusterDetail> clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName);
-        if (clusterDetail.isPresent()) {
-            try {
-                clusterDetail.get().getConfigurationInfo();
-                IHDIStorageAccount storageAccount = clusterDetail.get().getStorageAccount();
-
-                if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
-                    String accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
-                    if (!StringUtils.isBlank(accessKey)) {
-                        this.http = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
-                    }
-                }
-            } catch (Exception e) {
-                log().warn("Initialize adls gen2 virtual file system encounters exception", e);
-            }
-        }
+    @Override
+    public Observable<AzureStorageVirtualFile> getAzureStorageVirtualFiles(String rootPath) {
+        ADLSGen2FSOperation op = new ADLSGen2FSOperation(http);
+        return op.list(rootPath)
+                .map(path -> new AdlsGen2VirtualFile(path.getName(), path.isDirectory(), rootPath, this));
     }
 }

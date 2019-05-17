@@ -11,21 +11,24 @@ import rx.Observable;
 
 public class ADLSGen2StorageAccount extends HDStorageAccount implements ILogger {
     public final static String DefaultScheme = "abfs";
+    private String accessKey;
 
     public ADLSGen2StorageAccount(IClusterDetail clusterDetail, String fullStorageBlobName, String key, boolean isDefault, String defaultFileSystem, String scheme) {
         super(clusterDetail, fullStorageBlobName, key, isDefault, defaultFileSystem);
         this.scheme = scheme;
-        key = getAccessKeyList(clusterDetail.getSubscription())
+        this.accessKey = getAccessKeyList(clusterDetail.getSubscription())
                 .toBlocking()
                 .firstOrDefault(new StorageAccountAccessKey())
                 .getValue();
-
-        this.setPrimaryKey(key);
     }
 
     @Override
     public StorageAccountType getAccountType() {
         return StorageAccountType.ADLSGen2;
+    }
+
+    public String getAccessKey(){
+        return this.accessKey;
     }
 
     private Observable<StorageAccountAccessKey> getAccessKeyList(SubscriptionDetail subscription) {

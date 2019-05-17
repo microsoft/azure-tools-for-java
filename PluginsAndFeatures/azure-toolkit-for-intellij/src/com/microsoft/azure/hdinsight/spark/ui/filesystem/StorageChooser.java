@@ -24,62 +24,60 @@ package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDialog;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ArrayUtil;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.awt.*;
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class StorageChooser {
-    public static StorageChooser instance = new StorageChooser(null);
-    private ADLSGen2FileSystem fileSystem;
+public class StorageChooser implements ILogger {
+    private AzureStorageVirtualFileSystem fileSystem;
 
-    private StorageChooser(@Nullable ADLSGen2FileSystem fileSystem) {
+    public StorageChooser(@Nullable AzureStorageVirtualFileSystem fileSystem) {
         this.fileSystem = fileSystem;
     }
 
-    public void setFileSystem(ADLSGen2FileSystem fileSystem) {
-        this.fileSystem = fileSystem;
-    }
-
-    public ADLSGen2FileSystem getFileSystem() {
-        return this.fileSystem;
-    }
-
-    public List<VirtualFile> setRoots() {
+    public List<VirtualFile> setRoots(String uploadRootPath) {
         if (fileSystem == null) {
-            return Arrays.asList(AdlsGen2VirtualFile.empty);
+            return Arrays.asList(AdlsGen2VirtualFile.Empty);
         }
 
-        String rootPath = fileSystem.rootPath.replace("/SparkSubmission/", "");
-        HashMap<String, AdlsGen2VirtualFile> parentFiles = new HashMap<>();
+        String rootPath = uploadRootPath.replace("/SparkSubmission/", "");
+
+        // key: path without prefix , value: virtual file (directory type)
+        HashMap<String, AzureStorageVirtualFile> parentFiles = new HashMap<>();
         AdlsGen2VirtualFile root = new AdlsGen2VirtualFile("SparkSubmission", true, rootPath, fileSystem);
-        parentFiles.put(root.getPath(), root);
-        ADLSGen2FSOperation op = new ADLSGen2FSOperation(fileSystem.http);
-        op.list(rootPath)
-                .map(path -> new AdlsGen2VirtualFile(path.getName(), path.isDirectory(), rootPath, fileSystem))
+        parentFiles.put(URI.create(root.getPath()).getPath(), root);
+
+        fileSystem.getAzureStorageVirtualFiles(rootPath)
                 .doOnNext(file -> {
+                    String fileNameWithoutPrefix = URI.create(file.getPath()).getPath();
                     if (file.isDirectory()) {
-                        parentFiles.put(file.getPath(), file);
+                        parentFiles.put(fileNameWithoutPrefix, file);
                     }
 
-                    String parentPath = file.getPath().substring(0, file.getPath().lastIndexOf("/"));
+                    String parentPath = Paths.get(fileNameWithoutPrefix).getParent().toString();
                     if (parentFiles.keySet().contains(parentPath)) {
                         parentFiles.get(parentPath).addChildren(file);
                         file.setParent(parentFiles.get(parentPath));
                     }
                 }).toBlocking().subscribe(ob -> {
-        });
+                },
+                err -> {
+                    log().warn("Listing files encounters exception", err);
+                });
 
         return Arrays.asList(root);
     }
 
-    public VirtualFile chooseFile(FileChooserDescriptor descriptor) {
+    public VirtualFile[] chooseFile(FileChooserDescriptor descriptor) {
         Component parentComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
         final FileChooserDialog chooser = new StorageChooserDialogImpl(descriptor, parentComponent, null);
-        return ArrayUtil.getFirstElement(chooser.choose(null, new AdlsGen2VirtualFile[]{null}));
+        return chooser.choose(null, new AdlsGen2VirtualFile[]{null});
     }
 }

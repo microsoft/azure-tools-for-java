@@ -47,13 +47,14 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus
+import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Error
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Warning
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.ADLSGen2FileSystem
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
 import com.microsoft.azuretools.authmanage.AuthMethodManager
@@ -68,6 +69,7 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ItemEvent
 import java.io.IOException
+import java.net.URI
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -115,6 +117,9 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             JLabel().apply { foreground = currentErrorColor }
             // Don't add more we won't like to add more message labels
     )
+
+    private var fileSystem: ADLSGen2FileSystem? = null
+    private var rootPath: String? = null
 
     open fun getErrorMessageClusterNameNull(isSignedIn : Boolean) : String {
         return when {
@@ -281,21 +286,23 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)"
     }
 
-    private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
+    private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER,ParametersListUtil.COLON_LINE_JOINER).apply {
         toolTipText = "Artifact from remote storage account."
-        isEnabled = false
+    }).apply {
+        setButtonEnabled(false)
         textField.document.addDocumentListener(documentValidationListener)
 
         button.addActionListener {
-            val chooserDescriptor = FileChooserDescriptor(true, true, true, false, true, false).apply {
+            val chooserDescriptor = FileChooserDescriptor(true, true, true, false, true, true).apply {
                 title = "Select remote artifact files as reference JARs classpath"
             }
 
-            chooserDescriptor.roots = StorageChooser.instance.setRoots()
-            val chooseFile = StorageChooser.instance.chooseFile(chooserDescriptor)
-            val path = chooseFile?.path ?: return@addActionListener
-            val normalizedPath = if (path.endsWith("!/")) path.substring(0, path.length - 2) else path
-            text = normalizedPath
+            val chooser = StorageChooser(fileSystem)
+            chooserDescriptor.roots = chooser.setRoots(rootPath)
+            val chooseFiles = chooser.chooseFile(chooserDescriptor)
+            var jarNames = ""
+            chooseFiles.forEach { file -> jarNames = jarNames + file.path +";" }
+            text = jarNames
         }
     }
 
@@ -498,15 +505,55 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
         val prepareFileSystem = storageWithUploadPathPanel.viewModel.uploadPathFieldSubject
                 .distinctUntilChanged()
-                .subscribe { value ->
+                .subscribe({ value ->
                     log().info("upload root path change to $value")
-                    StorageChooser.instance.fileSystem = ADLSGen2FileSystem(value,
-                            viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String)
-
-                    if (StorageChooser.instance.fileSystem ?.http != null) {
-                        referencedJarsTextField.isEnabled = true
+                    rootPath = value
+                    if (rootPath.equals(storageWithUploadPathPanel.invalidUploadPath)) {
+                        referencedJarsTextField.setButtonEnabled(false)
+                        return@subscribe
                     }
-                }
+
+                    fileSystem = null
+                    val clusterDetail = clusterSelection.clusterIsSelected.toBlocking().first() as? ClusterDetail
+                    var storageAccount: IHDIStorageAccount? = null
+                    try {
+                        clusterDetail?.getConfigurationInfo()
+                        storageAccount = clusterDetail?.storageAccount
+                    } catch (e: Exception) {
+                        log().warn("Initialize adls gen2 virtual file system encounters exception", e)
+                    }
+
+
+                    fileSystem = if (storageAccount?.accountType == StorageAccountType.ADLSGen2) {
+                        ADLSGen2FileSystem(SharedKeyHttpObservable(storageAccount.name,
+                                (storageAccount as? ADLSGen2StorageAccount)?.getAccessKey()))
+                    } else {
+                        val host = URI.create(rootPath).host
+                        if (StringUtils.isBlank(host)) {
+                            return@subscribe
+                        }
+
+                        val account = host.substring(0, host.indexOf("."))
+                        var accessKey = storageWithUploadPathPanel.storagePanel.adlsGen2Card.storageKeyField.text.trim()
+                        if (StringUtils.isBlank(accessKey)) {
+                            accessKey = storageWithUploadPathPanel.secureStore?.loadPassword(
+                                    SparkSubmitJobUploadStorageModel()
+                                            .getCredentialAccount(account, SparkSubmitStorageType.ADLS_GEN2), account)
+                                    ?: ""
+                        }
+
+                        if (StringUtils.isBlank(accessKey)) {
+                            return@subscribe
+                        }
+
+                        ADLSGen2FileSystem(SharedKeyHttpObservable(account, accessKey))
+                    }
+
+                    referencedJarsTextField.setButtonEnabled(fileSystem?.http != null)
+                }, { err ->
+                    log().info("encounter exception when preparing fileSystem $err")
+                    referencedJarsTextField.setButtonEnabled(false)
+                })
     }
 
     open val viewModel = ViewModel().apply { Disposer.register(this@SparkSubmissionContentPanel, this@apply) }
