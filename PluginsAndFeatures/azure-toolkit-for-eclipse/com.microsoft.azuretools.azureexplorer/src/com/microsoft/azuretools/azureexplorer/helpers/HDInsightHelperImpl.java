@@ -37,13 +37,15 @@ import com.microsoft.azure.hdinsight.common.JobViewManager;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.azureexplorer.actions.AddNewHDInsightReaderClusterAction;
 import com.microsoft.azuretools.azureexplorer.editors.JobViewInput;
+import com.microsoft.azuretools.azureexplorer.forms.AddNewHDInsightReaderClusterForm;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
 public class HDInsightHelperImpl implements HDInsightHelper {
@@ -122,7 +124,14 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     
     @NotNull
     public NodeActionListener createAddNewHDInsightReaderClusterAction(@NotNull HDInsightRootModule module, @NotNull ClusterDetail clusterDetail) {
-        return new AddNewHDInsightReaderClusterAction(module, clusterDetail);
+        return new NodeActionListener() {
+        	@Override
+            protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
+                AddNewHDInsightReaderClusterForm linkClusterForm =
+                        new AddNewHDInsightReaderClusterForm(PluginUtil.getParentShell(), module, clusterDetail);
+                linkClusterForm.open();
+            }
+        };
     }
 
 }
