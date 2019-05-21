@@ -22,6 +22,8 @@ package com.microsoft.azuretools.azureexplorer.helpers;
 import java.io.File;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
@@ -47,6 +49,7 @@ import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 public class HDInsightHelperImpl implements HDInsightHelper {
 	private static final String HDINSIHGT_BUNDLE_ID = "com.microsoft.azuretools.hdinsight";
@@ -58,7 +61,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 				Messages.commonPluginID);
 		final String dataFile = String.format("%s%s%s", pluginInstLoc, File.separator, Messages.dataFileName);
 		instID = DataOperations.getProperty(dataFile, Messages.instID);
-        isOptIn = Boolean.parseBoolean(DataOperations.getProperty(dataFile, Messages.prefVal));
+		isOptIn = Boolean.parseBoolean(DataOperations.getProperty(dataFile, Messages.prefVal));
 	}
 
 	public void openJobViewEditor(Object projectObject, @NotNull String clusterName) {
@@ -100,38 +103,101 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 	@Override
 	public String getInstallationId() {
 		if (isOptIn()) {
-		    return instID;
-        } else {
-		    return "";
-        }
+			return instID;
+		} else {
+			return "";
+		}
 	}
-	
-    @Override
-    public boolean isIntelliJPlugin() {
-        return false;
-    }
 
-    @Override
-    public boolean isOptIn() {
-        return isOptIn;
-    }
+	@Override
+	public boolean isIntelliJPlugin() {
+		return false;
+	}
 
-    public static synchronized void initHDInsightLoader() {
-        if (HDInsightLoader.getHDInsightHelper() == null) {
-            HDInsightLoader.setHHDInsightHelper(new com.microsoft.azuretools.azureexplorer.helpers.HDInsightHelperImpl());
-        }
-    }
-    
-    @NotNull
-    public NodeActionListener createAddNewHDInsightReaderClusterAction(@NotNull HDInsightRootModule module, @NotNull ClusterDetail clusterDetail) {
-        return new NodeActionListener() {
-        	@Override
-            protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-                AddNewHDInsightReaderClusterForm linkClusterForm =
-                        new AddNewHDInsightReaderClusterForm(PluginUtil.getParentShell(), module, clusterDetail);
-                linkClusterForm.open();
-            }
-        };
-    }
+	@Override
+	public boolean isOptIn() {
+		return isOptIn;
+	}
 
+	public static synchronized void initHDInsightLoader() {
+		if (HDInsightLoader.getHDInsightHelper() == null) {
+			HDInsightLoader
+					.setHHDInsightHelper(new com.microsoft.azuretools.azureexplorer.helpers.HDInsightHelperImpl());
+		}
+	}
+
+	@NotNull
+	public NodeActionListener createAddNewHDInsightReaderClusterAction(@NotNull HDInsightRootModule module,
+			@NotNull ClusterDetail clusterDetail) {
+		return new NodeActionListener() {
+			@Override
+			protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
+				AddNewHDInsightReaderClusterForm linkClusterForm = new AddNewHDInsightReaderClusterForm(
+						PluginUtil.getParentShell(), module, clusterDetail);
+				linkClusterForm.open();
+			}
+		};
+	}
+
+	public void createRefreshHdiReaderJobsWarningForm(@NotNull HDInsightRootModule module,
+			@NotNull ClusterDetail clusterDetail) {
+		Display.getDefault().asyncExec(() -> {
+			String title = "Cluster Job Access Denied";
+			String warningText = "You have Read-only permission for this cluster. Please ask the cluster owner or user "
+					+ "access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or "
+					+ "‘Link this cluster’ through Ambari credentials to view the corresponding jobs.";
+			String[] dialogButtonLabels = new String[] { "Link this cluster", "Cancel" };
+			MessageDialog warningDialog = new MessageDialog(PluginUtil.getParentShell(), title, null, warningText,
+					MessageDialog.WARNING, dialogButtonLabels, 0);
+			if (warningDialog.open() == 0) {
+				// First button pressed
+				AddNewHDInsightReaderClusterForm linkClusterForm = new AddNewHDInsightReaderClusterForm(
+						PluginUtil.getParentShell(), module, clusterDetail);
+				linkClusterForm.open();
+			}
+		});
+	}
+
+	public void createRefreshHdiReaderStorageAccountsWarningForm(@NotNull RefreshableNode node,
+			@NotNull String aseDeepLink) {
+		Display.getDefault().asyncExec(() -> {
+			String title = "Storage Access Denied";
+			String warningText = "You have Read-only permission for this cluster. Please ask the cluster owner or user "
+					+ "access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or "
+					+ "use Azure Storage Explorer to access the storages associated with this cluster.";
+//            String[] dialogButtonLabels = new String[] {"Link this cluster", "Cancel"};
+			String[] dialogButtonLabels = new String[] { "Ok" };
+			MessageDialog warningDialog = new MessageDialog(PluginUtil.getParentShell(), title, null, warningText,
+					MessageDialog.WARNING, dialogButtonLabels, 0);
+			warningDialog.open();
+//			if (warningDialog.open() == 0) {
+//				try {
+//					DefaultLoader.getIdeHelper().openLinkInBrowser(aseDeepLink);
+//				} catch (Exception ex) {
+//					DefaultLoader.getUIHelper().showError(ex.getMessage(), "HDInsight Explorer");
+//				}
+//			}
+		});
+	}
+
+	public void createRefreshHdiLinkedClusterStorageAccountsWarningForm(@NotNull RefreshableNode node,
+			@NotNull String aseDeepLink) {
+		Display.getDefault().asyncExec(() -> {
+			String title = "Storage Access Denied";
+			String warningText = "You are only linked to HDInsight cluster through Ambari credentials. Please use Azure "
+					+ "Storage Explorer to access the storage associated with this cluster.";
+//            String[] dialogButtonLabels = new String[] {"Open Azure Storage Explorer", "Cancel"};
+			String[] dialogButtonLabels = new String[] { "Ok" };
+			MessageDialog warningDialog = new MessageDialog(PluginUtil.getParentShell(), title, null, warningText,
+					MessageDialog.WARNING, dialogButtonLabels, 0);
+			warningDialog.open();
+//			if (warningDialog.open() == 0) {
+//				try {
+//					DefaultLoader.getIdeHelper().openLinkInBrowser(aseDeepLink);
+//				} catch (Exception ex) {
+//					DefaultLoader.getUIHelper().showError(ex.getMessage(), "HDInsight Explorer");
+//				}
+//			}
+		});
+	}
 }
