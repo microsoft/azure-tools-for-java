@@ -20,6 +20,8 @@ public class ADLSGen2StorageAccount extends HDStorageAccount implements ILogger 
                 .toBlocking()
                 .firstOrDefault(new StorageAccountAccessKey())
                 .getValue();
+        
+        this.setPrimaryKey(this.accessKey);
     }
 
     @Override

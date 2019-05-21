@@ -1,8 +1,11 @@
 package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
+import com.intellij.mock.MockVirtualFile;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.impl.http.HttpFileSystemImpl;
 import com.intellij.openapi.vfs.impl.http.HttpVirtualFile;
 import com.intellij.openapi.vfs.impl.http.RemoteFileInfo;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +13,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public abstract class AzureStorageVirtualFile extends HttpVirtualFile {
+public abstract class AzureStorageVirtualFile extends HttpVirtualFile implements ILogger {
+    public static VirtualFile Empty = new AdlsGen2VirtualFile("Invalid root", true, new ADLSGen2FileSystem(null)) {
+        @Override
+        public VirtualFile[] getChildren() {
+            return new VirtualFile[]{new AdlsGen2VirtualFile("<Preparing Azure virtual file system fail. Please check upload inputs>", false, new ADLSGen2FileSystem(null))};
+        }
+    };
+
     abstract public void setParent(VirtualFile parent);
 
     abstract public void addChildren(VirtualFile child);

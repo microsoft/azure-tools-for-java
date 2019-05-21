@@ -77,17 +77,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     val invalidUploadPath = "<Invalid Upload Path>"
     private val unsupportAccountType = "<Storage Account Type Is Not Supported>"
     private val uploadPathLabel = JLabel("Upload Path")
-    private val uploadPathField = JTextField().apply {
+    val uploadPathField = JTextField().apply {
         isEditable = false
         border = BorderFactory.createEmptyBorder()
-
-        document.addDocumentListener(object : DocumentAdapter() {
-            override fun textChanged(e: DocumentEvent) {
-                if (e.type == DocumentEvent.EventType.INSERT) {
-                    viewModel.uploadPathFieldSubject.onNext(text)
-                }
-            }
-        })
     }
 
     val storagePanel = SparkSubmissionJobUploadStoragePanel().apply {

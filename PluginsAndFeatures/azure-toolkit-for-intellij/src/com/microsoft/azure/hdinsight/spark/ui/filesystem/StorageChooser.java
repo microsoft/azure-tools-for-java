@@ -44,34 +44,16 @@ public class StorageChooser implements ILogger {
 
     public List<VirtualFile> setRoots(String uploadRootPath) {
         if (fileSystem == null) {
-            return Arrays.asList(AdlsGen2VirtualFile.Empty);
+            return Arrays.asList(AzureStorageVirtualFile.Empty);
         }
+
 
         String rootPath = uploadRootPath.replace("/SparkSubmission/", "");
 
-        // key: path without prefix , value: virtual file (directory type)
-        HashMap<String, AzureStorageVirtualFile> parentFiles = new HashMap<>();
-        AdlsGen2VirtualFile root = new AdlsGen2VirtualFile("SparkSubmission", true, rootPath, fileSystem);
-        parentFiles.put(URI.create(root.getPath()).getPath(), root);
-
-        fileSystem.getAzureStorageVirtualFiles(rootPath)
-                .doOnNext(file -> {
-                    String fileNameWithoutPrefix = URI.create(file.getPath()).getPath();
-                    if (file.isDirectory()) {
-                        parentFiles.put(fileNameWithoutPrefix, file);
-                    }
-
-                    String parentPath = Paths.get(fileNameWithoutPrefix).getParent().toString();
-                    if (parentFiles.keySet().contains(parentPath)) {
-                        parentFiles.get(parentPath).addChildren(file);
-                        file.setParent(parentFiles.get(parentPath));
-                    }
-                }).toBlocking().subscribe(ob -> {
-                },
-                err -> {
-                    log().warn("Listing files encounters exception", err);
-                });
-
+        // key:full path without / as end , value: virtual file (directory type)
+        AdlsGen2VirtualFile root = new AdlsGen2VirtualFile(rootPath, true, fileSystem);
+        fileSystem.setFSRoot(root);
+        fileSystem.fileCaches.put(root.getPath(), root);
         return Arrays.asList(root);
     }
 

@@ -21,29 +21,32 @@
  */
 package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
-import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import rx.Observable;
-
 import java.net.URI;
 
-public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
-    public static final String myProtocol = "https";
+public class PathHelper {
 
-    @Nullable
-    public HttpObservable http;
-    public URI root;
-
-    public ADLSGen2FileSystem(@NotNull HttpObservable http) {
-        super(myProtocol);
-        this.http = http;
+    // get http://hostname.suffix from  http://hostname.suffix/a/b/c
+    public static String getHost(URI uri) {
+        return URI.create(String.join("://", uri.getScheme(), uri.getHost())).toString();
     }
 
-    @Override
-    public void setFSRoot(AzureStorageVirtualFile vf){
-        root = URI.create(vf.getPath());
+    public static String getFullPath(URI uri, String path) {
+        return String.join("/", uri.toString(), path);
+    }
+
+    // get a/b/c from http://hostname.suffix/a/b/c
+    public static String getPath(URI uri) {
+        return uri.getPath().length() == 0 ? "/" : uri.getPath().substring(1);
+    }
+
+    // get http://hostname.suffix/a/b from http://hostname.suffix/a/b/c
+    public static String getParentPath(URI uri) {
+        String parent = uri.resolve(".").toString();
+        return parent.lastIndexOf("/") == parent.length() - 1 ? parent.substring(0, parent.length() - 1) : parent;
+    }
+
+    public static String getRelativePath(URI parent, URI child) {
+        String relative = parent.relativize(child).toString();
+        return relative.length() == 0 ? "/" : relative;
     }
 }

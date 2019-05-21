@@ -53,7 +53,7 @@ public class ADLSGen2FSOperation {
     private List<NameValuePair> appendReqParams;
 
     @NotNull
-    private List<NameValuePair> listReqParams;
+    private ADLSGen2ParamsBuilder listReqBuilder;
 
     @NotNull
     private ADLSGen2ParamsBuilder flushReqParamsBuilder;
@@ -73,11 +73,9 @@ public class ADLSGen2FSOperation {
                 .setPosition(0)
                 .build();
 
-        this.listReqParams = new ADLSGen2ParamsBuilder()
-                .enableRecursive(true)
-                .setResource("filesystem")
-                .setDirectory("SparkSubmission")
-                .build();
+        this.listReqBuilder = new ADLSGen2ParamsBuilder()
+                .enableRecursive(false)
+                .setResource("filesystem");
 
         this.flushReqParamsBuilder = new ADLSGen2ParamsBuilder()
                 .setAction("flush");
@@ -101,9 +99,9 @@ public class ADLSGen2FSOperation {
                 .flatMap(len -> flushData(destFilePath, len));
     }
 
-    public Observable<RemoteFile> list(String rootPath) {
-        return http.get(rootPath, listReqParams, null, GetRemoteFilesResponse.class)
-                 .flatMap(pathList -> Observable.from(pathList.getRemoteFiles()));
+    public Observable<RemoteFile> list(String rootPath, String relativePath) {
+        return http.get(rootPath, listReqBuilder.setDirectory(relativePath).build(), null, GetRemoteFilesResponse.class)
+                .flatMap(pathList -> Observable.from(pathList.getRemoteFiles()));
     }
 
     private Observable<Long> appendData(String filePath, File src) {

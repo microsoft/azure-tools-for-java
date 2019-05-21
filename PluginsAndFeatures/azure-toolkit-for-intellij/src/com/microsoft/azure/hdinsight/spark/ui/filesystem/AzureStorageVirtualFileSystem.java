@@ -2,14 +2,14 @@ package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
 import com.intellij.openapi.vfs.impl.http.HttpFileSystemBase;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import rx.Observable;
+import java.util.HashMap;
 
 public abstract class AzureStorageVirtualFileSystem extends HttpFileSystemBase implements ILogger {
+    public HashMap<String, AzureStorageVirtualFile> fileCaches = new HashMap<>();
+
     public AzureStorageVirtualFileSystem(String protocol) {
         super(protocol);
     }
 
-    @NotNull
-    public abstract Observable<AzureStorageVirtualFile> getAzureStorageVirtualFiles(String rootPath);
+    abstract public void setFSRoot(AzureStorageVirtualFile vf);
 }
