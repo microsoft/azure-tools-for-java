@@ -20,8 +20,6 @@
  
 package com.microsoft.azuretools.azureexplorer.forms;
 
-import java.util.function.Predicate;
-
 import org.eclipse.swt.widgets.Shell;
 
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
@@ -47,16 +45,17 @@ public class AddNewHDInsightReaderClusterForm extends AddNewClusterForm {
 		this.clusterNameField.setEditable(false);
 	}
 	
-	private Predicate<IClusterDetail> getSelectedLinkedHdiClusterPredicate(@NotNull String selectedClusterName) {
-		return clusterDetail -> clusterDetail instanceof HDInsightAdditionalClusterDetail
+	private boolean getSelectedLinkedHdiCluster(@NotNull IClusterDetail clusterDetail,
+														 @NotNull String selectedClusterName) {
+		return clusterDetail instanceof HDInsightAdditionalClusterDetail
 				&& clusterDetail.getName().equals(selectedClusterName);
 	}
 	
 	@Override
 	protected void afterOkActionPerformed() {
 		HDInsightAdditionalClusterDetail linkedCluster = 
-				(HDInsightAdditionalClusterDetail) ClusterManagerEx.getInstance().findClusterDetail(
-						getSelectedLinkedHdiClusterPredicate(selectedClusterDetail.getName()), true);
+				(HDInsightAdditionalClusterDetail) ClusterManagerEx.getInstance().findClusterDetail(clusterDetail ->
+						getSelectedLinkedHdiCluster(clusterDetail, selectedClusterDetail.getName()), true);
 		if (linkedCluster != null) {
 			linkedCluster.setDefaultStorageRootPath(defaultStorageRootPath);
 			ClusterManagerEx.getInstance().updateHdiAdditionalClusterDetail(linkedCluster);
