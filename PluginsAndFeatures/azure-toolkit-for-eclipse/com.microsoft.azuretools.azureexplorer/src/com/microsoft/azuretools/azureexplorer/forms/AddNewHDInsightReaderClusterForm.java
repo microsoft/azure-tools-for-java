@@ -46,7 +46,7 @@ public class AddNewHDInsightReaderClusterForm extends AddNewClusterForm {
 	}
 	
 	private boolean getSelectedLinkedHdiCluster(@NotNull IClusterDetail clusterDetail,
-														 @NotNull String selectedClusterName) {
+												@NotNull String selectedClusterName) {
 		return clusterDetail instanceof HDInsightAdditionalClusterDetail
 				&& clusterDetail.getName().equals(selectedClusterName);
 	}
