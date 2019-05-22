@@ -273,10 +273,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 }
                             }
                             SparkSubmitStorageType.ADLS_GEN2 -> model.apply {
-//                                if(StringUtils.isBlank(accessKey)){
-//                                    uploadPath = invalidUploadPath
-//                                    errorMsg = "Accesskey for ADLS GEN2 Root Path is invalid"
-//                                }else
                                 if (gen2RootPath != null && !SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "ADLS GEN2 Root Path is invalid"

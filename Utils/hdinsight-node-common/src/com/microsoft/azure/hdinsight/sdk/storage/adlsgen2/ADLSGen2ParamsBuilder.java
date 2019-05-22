@@ -28,7 +28,10 @@ package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2;
 
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+
+import java.util.Collections;
 
 public class ADLSGen2ParamsBuilder extends WebHdfsParamsBuilder {
     public ADLSGen2ParamsBuilder() {

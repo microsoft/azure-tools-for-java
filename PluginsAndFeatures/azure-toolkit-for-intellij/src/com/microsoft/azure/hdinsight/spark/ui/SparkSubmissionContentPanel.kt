@@ -298,10 +298,12 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 title = "Select remote artifact files as reference JARs classpath"
             }
 
-            val uploadPath = storageWithUploadPathPanel.uploadPathField.text.trim()
-            prepareFileSystem(uploadPath)
+            val uploadRootPath = storageWithUploadPathPanel.uploadPathField.text.trim()
+                    .replace("/SparkSubmission/", "")
+
+            prepareFileSystem(uploadRootPath)
             val chooser = StorageChooser(fileSystem)
-            chooserDescriptor.roots = chooser.setRoots(uploadPath)
+            chooserDescriptor.roots = chooser.setRoots()
             val chooseFiles = chooser.chooseFile(chooserDescriptor)
                     .filter { choose -> choose.path.endsWith(".jar") }
             text = chooseFiles.joinToString(";") { vf -> vf.path }
@@ -595,17 +597,19 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     override fun dispose() {
     }
 
-    fun prepareFileSystem(uploadPath: String?) {
+    fun prepareFileSystem(uploadRootPath: String?) {
         referencedJarsTextField.setButtonEnabled(false)
         fileSystem = null
         val cluster = clustersSelection.viewModel.clusterComboBoxSelection as? ClusterDetail
         var storageAccount: IHDIStorageAccount? = cluster?.storageAccount
         when (storageWithUploadPathPanel.storagePanel.viewModel.deployStorageTypeSelection) {
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT -> fileSystem = if (storageAccount?.accountType == StorageAccountType.ADLSGen2)
-                ADLSGen2FileSystem(SharedKeyHttpObservable(storageAccount.name, (storageAccount as? ADLSGen2StorageAccount)?.primaryKey)) else null
+                ADLSGen2FileSystem(SharedKeyHttpObservable(storageAccount.name,
+                        (storageAccount as? ADLSGen2StorageAccount)?.primaryKey),
+                        uploadRootPath) else null
 
             SparkSubmitStorageType.ADLS_GEN2 -> {
-                val host = URI.create(uploadPath).host
+                val host = URI.create(uploadRootPath).host
                 val account = host.substring(0, host.indexOf("."))
                 var accessKey = storageWithUploadPathPanel.storagePanel.adlsGen2Card.storageKeyField.text.trim()
 
@@ -613,14 +617,11 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     return
                 }
 
-                fileSystem = ADLSGen2FileSystem(SharedKeyHttpObservable(account, accessKey))
+                fileSystem = ADLSGen2FileSystem(SharedKeyHttpObservable(account, accessKey), uploadRootPath)
             }
-            else -> {
-                fileSystem = null
-            }
+            else -> {}
         }
     }
-
 }
 
 class SparkSubmissionContentPanelControl(private val jobUploadStorageCtrl: SparkSubmissionJobUploadStorageWithUploadPathPanel.Control)

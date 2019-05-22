@@ -129,11 +129,8 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                 saveAccesKey().subscribe(
                         { model ->
                             if (!StringUtils.isEmpty(model.gen2Account)){
-                                val rootPath = view.storagePanel.adlsGen2Card.gen2RootPathField.text.trimEnd('/',' ')
-                                log().info("save new access key for account ${model.gen2Account} and root path $rootPath")
-                                view.viewModel.uploadPathFieldSubject.onNext(rootPath)
+                                log().info("save new access key for account ${model.gen2Account}")
                             }
-
                         },
                         {}
                 )

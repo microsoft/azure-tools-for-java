@@ -14,16 +14,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public abstract class AzureStorageVirtualFile extends HttpVirtualFile implements ILogger {
-    public static VirtualFile Empty = new AdlsGen2VirtualFile("Invalid root", true, new ADLSGen2FileSystem(null)) {
+    public static VirtualFile Empty = new AdlsGen2VirtualFile("Invalid root", true, new ADLSGen2FileSystem(null, "https://account/filesystem")) {
         @Override
         public VirtualFile[] getChildren() {
-            return new VirtualFile[]{new AdlsGen2VirtualFile("<Preparing Azure virtual file system fail. Please check upload inputs>", false, new ADLSGen2FileSystem(null))};
+            return new VirtualFile[]{new AdlsGen2VirtualFile("<Preparing Azure virtual file system fail. Please check upload inputs>", false, new ADLSGen2FileSystem(null, "https://account/filesystem"))};
         }
     };
 
     abstract public void setParent(VirtualFile parent);
-
-    abstract public void addChildren(VirtualFile child);
 
     @Nullable
     @Override

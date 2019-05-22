@@ -42,18 +42,14 @@ public class StorageChooser implements ILogger {
         this.fileSystem = fileSystem;
     }
 
-    public List<VirtualFile> setRoots(String uploadRootPath) {
+    public List<VirtualFile> setRoots() {
         if (fileSystem == null) {
             return Arrays.asList(AzureStorageVirtualFile.Empty);
         }
 
-
-        String rootPath = uploadRootPath.replace("/SparkSubmission/", "");
-
         // key:full path without / as end , value: virtual file (directory type)
-        AdlsGen2VirtualFile root = new AdlsGen2VirtualFile(rootPath, true, fileSystem);
-        fileSystem.setFSRoot(root);
-        fileSystem.fileCaches.put(root.getPath(), root);
+        ADLSGen2FileSystem gen2FileSystem = (ADLSGen2FileSystem) fileSystem;
+        AdlsGen2VirtualFile root = new AdlsGen2VirtualFile(gen2FileSystem.root.toString(), true, fileSystem);
         return Arrays.asList(root);
     }
 

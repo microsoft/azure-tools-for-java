@@ -39,8 +39,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import java.net.URI;
 
 public class ADLSGen2FSOperation {
+    public UriHelper uriHelper = new UriHelper();
+
     private HttpObservable http;
 
     @NotNull
@@ -73,10 +76,6 @@ public class ADLSGen2FSOperation {
                 .setPosition(0)
                 .build();
 
-        this.listReqBuilder = new ADLSGen2ParamsBuilder()
-                .enableRecursive(false)
-                .setResource("filesystem");
-
         this.flushReqParamsBuilder = new ADLSGen2ParamsBuilder()
                 .setAction("flush");
 
@@ -100,6 +99,10 @@ public class ADLSGen2FSOperation {
     }
 
     public Observable<RemoteFile> list(String rootPath, String relativePath) {
+        this.listReqBuilder = new ADLSGen2ParamsBuilder()
+                .enableRecursive(false)
+                .setResource("filesystem");
+
         return http.get(rootPath, listReqBuilder.setDirectory(relativePath).build(), null, GetRemoteFilesResponse.class)
                 .flatMap(pathList -> Observable.from(pathList.getRemoteFiles()));
     }
@@ -133,5 +136,20 @@ public class ADLSGen2FSOperation {
 
         return http.executeReqAndCheckStatus(req, 200, flushReqParams)
                 .map(ignore -> true);
+    }
+
+
+    public class UriHelper {
+        //convert  https://accountname.dfs.core.windows.net/filesystem to abfs://filesystem@accountname.dfs.core.windows.net/
+        public String convertToFSUri(URI root) {
+            return String.format("%s://%s@%s/", "abfs", root.getPath().substring(1), root.getAuthority());
+        }
+
+        // get ab from abfs://filesystem@accountname.dfs.core.windows.net/ab
+        // get / from abfs://filesystem@accountname.dfs.core.windows.net/
+        public String getDirectoryParam(URI root) {
+            String path = root.getPath().substring(1);
+            return path.length() == 0 ? "/" : path;
+        }
     }
 }
