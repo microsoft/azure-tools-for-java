@@ -28,12 +28,13 @@ import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetai
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 public class AddNewHDInsightReaderClusterForm extends AddNewClusterForm {
 	private ClusterDetail selectedClusterDetail;
 	private String defaultStorageRootPath;
 	
-	public AddNewHDInsightReaderClusterForm(Shell parentShell, @NotNull HDInsightRootModule hdinsightRootModule, @NotNull ClusterDetail selectedClusterDetail) {
+	public AddNewHDInsightReaderClusterForm(Shell parentShell, @Nullable HDInsightRootModule hdinsightRootModule, @NotNull ClusterDetail selectedClusterDetail) {
 		super(parentShell, hdinsightRootModule);
 		this.selectedClusterDetail = selectedClusterDetail;
 		this.defaultStorageRootPath = selectedClusterDetail.getDefaultStorageRootPath();
@@ -45,8 +46,8 @@ public class AddNewHDInsightReaderClusterForm extends AddNewClusterForm {
 		this.clusterNameField.setEditable(false);
 	}
 	
-	private boolean getSelectedLinkedHdiCluster(@NotNull IClusterDetail clusterDetail,
-												@NotNull String selectedClusterName) {
+	protected boolean getSelectedLinkedHdiCluster(@NotNull IClusterDetail clusterDetail,
+												  @NotNull String selectedClusterName) {
 		return clusterDetail instanceof HDInsightAdditionalClusterDetail
 				&& clusterDetail.getName().equals(selectedClusterName);
 	}
@@ -63,6 +64,4 @@ public class AddNewHDInsightReaderClusterForm extends AddNewClusterForm {
 		
 		super.afterOkActionPerformed();
 	}
-
-
 }

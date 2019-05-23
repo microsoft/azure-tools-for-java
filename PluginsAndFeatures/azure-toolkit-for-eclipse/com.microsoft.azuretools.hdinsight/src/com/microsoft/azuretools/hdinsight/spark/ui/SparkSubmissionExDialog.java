@@ -23,12 +23,12 @@ package com.microsoft.azuretools.hdinsight.spark.ui;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
 
-import com.microsoft.azure.hdinsight.common.CommonConst;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -57,23 +57,39 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 
 import com.microsoft.azure.hdinsight.common.CallBack;
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.azureexplorer.forms.AddNewHDInsightReaderClusterForm;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.hdinsight.Activator;
 import com.microsoft.azuretools.hdinsight.projects.HDInsightProjectNature;
 import com.microsoft.azuretools.hdinsight.spark.common2.SparkSubmitModel;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 
 public class SparkSubmissionExDialog extends Dialog {
 
@@ -84,6 +100,9 @@ public class SparkSubmissionExDialog extends Dialog {
 	
 	private int row = 0;
 	private Combo clustersListComboBox;
+	private Button clusterListButton;
+	private Label hdiReaderErrorMsgLabel;
+	private Link hdiReaderLink;
 	private Combo selectedArtifactComboBox;
 	private Text selectedArtifactTextField;
 	private Button artifactBrowseButton;
@@ -110,6 +129,12 @@ public class SparkSubmissionExDialog extends Dialog {
 		this.callBack = callBack;
 		submitModel = new SparkSubmitModel(cachedClusterDetails);
 	}
+	
+	private void setRefreshButtonEnabled(boolean isEnabled) {
+		Display.getDefault().asyncExec(() -> {
+			clusterListButton.setEnabled(isEnabled);
+		});
+	}
 
 	@Override
 	protected void configureShell(Shell newShell) {
@@ -131,7 +156,7 @@ public class SparkSubmissionExDialog extends Dialog {
 		gridLayout.numColumns = 2;
 		container.setLayout(gridLayout);
 		GridData gridData = new GridData();
-		gridData.widthHint = 550;
+		gridData.widthHint = 600;
 		container.setLayoutData(gridData);
 
 		Label clusterListLabel = new Label(container, SWT.LEFT);
@@ -159,10 +184,77 @@ public class SparkSubmissionExDialog extends Dialog {
 		if (cachedClusterDetails.size() > 0) {
 			clustersListComboBox.select(0);
 		}
-		Button clusterListButton = new Button(composite, SWT.PUSH);
+		clustersListComboBox.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IClusterDetail clusterDetail = getSelectedCluster(clustersListComboBox.getText());
+				if (clusterDetail != null && ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
+					showHdiReaderErrors(true);
+				} else {
+					showHdiReaderErrors(false);
+				}
+			}
+		});
+		clusterListButton = new Button(composite, SWT.PUSH);
 		clusterListButton.setToolTipText("Refresh");
 		clusterListButton.setImage(Activator.getImageDescriptor(CommonConst.RefreshIConPath).createImage());
 
+		//Add blank label as a placeholder
+		Label placeholderLabel = new Label(container, SWT.LEFT);
+		placeholderLabel.setVisible(false);
+		gridLayout = new GridLayout();
+		gridLayout.numColumns = 2;
+		gridData = new GridData();
+		gridData.horizontalAlignment = SWT.FILL;
+		gridData.grabExcessHorizontalSpace = true;
+		composite = new Composite(container, SWT.NONE);
+		composite.setLayout(gridLayout);
+		composite.setLayoutData(gridData);
+		
+		// Add warning message and link cluster button composite
+		gridData = new GridData(); 
+		gridData.horizontalAlignment = SWT.FILL;
+		gridData.grabExcessHorizontalSpace = true;
+		hdiReaderErrorMsgLabel = new Label(composite, SWT.LEFT);
+		hdiReaderErrorMsgLabel.setText(
+				"No Ambari permission to submit job to the selected cluster...");
+		hdiReaderErrorMsgLabel.setToolTipText(
+				"No Ambari permission to submit job to the selected cluster. Please ask the cluster owner or user "
+				+ "access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or "
+				+ "link to the selected cluster.");
+		hdiReaderLink = new Link(composite, SWT.NONE);
+		hdiReaderLink.setText("<a href=\" \">Link this cluster</a>");
+		hdiReaderLink.addListener(SWT.Selection, e -> {
+			IClusterDetail selectedClusterDetail = getSelectedCluster(clustersListComboBox.getText());
+			if (selectedClusterDetail != null && ClusterManagerEx.getInstance().isHdiReaderCluster(selectedClusterDetail)) {
+				String defaultStorageRootPath = ((ClusterDetail) selectedClusterDetail).getDefaultStorageRootPath();
+				
+				AddNewHDInsightReaderClusterForm linkClusterForm = new AddNewHDInsightReaderClusterForm(
+						PluginUtil.getParentShell(), null, (ClusterDetail) selectedClusterDetail) {
+					protected void afterOkActionPerformed() {
+						showHdiReaderErrors(false);
+						HDInsightAdditionalClusterDetail linkedCluster = 
+								(HDInsightAdditionalClusterDetail) ClusterManagerEx.getInstance().findClusterDetail(clusterDetail ->
+										getSelectedLinkedHdiCluster(clusterDetail, selectedClusterDetail.getName()), true);
+						if (linkedCluster != null) {
+							linkedCluster.setDefaultStorageRootPath(defaultStorageRootPath);
+							ClusterManagerEx.getInstance().updateHdiAdditionalClusterDetail(linkedCluster);
+							
+							// Display the HDI reader cluster as linked cluster
+							Display.getDefault().asyncExec(() -> {
+								int selectedClusterIndex = clustersListComboBox.indexOf(selectedClusterDetail.getTitle());
+								clustersListComboBox.setItem(selectedClusterIndex, linkedCluster.getTitle());
+								clustersListComboBox.setData(linkedCluster.getTitle(), linkedCluster);
+							});
+						}							
+					}
+				};
+				linkClusterForm.open();
+			}
+		});
+		// Hide HDInsight reader cluster error when dialog open at first time
+		showHdiReaderErrors(false);
+		
 		String tipInfo = "The Artifact you want to use.";
 		Label artifactSelectLabel = new Label(container, SWT.LEFT);
 		artifactSelectLabel.setText("Select an Artifact to submit");
@@ -373,6 +465,11 @@ public class SparkSubmissionExDialog extends Dialog {
 
 		return super.createContents(parent);
 	}
+	
+	private void showHdiReaderErrors(boolean isVisible) {
+		hdiReaderErrorMsgLabel.setVisible(isVisible);
+		hdiReaderLink.setVisible(isVisible);
+	}
 
 	private class JobConfigurationContentProvider implements IStructuredContentProvider {
 		@Override
@@ -468,9 +565,13 @@ public class SparkSubmissionExDialog extends Dialog {
 		tableViewer.setInput(jobConfigMap.entrySet());
 	}
 
+	@Nullable
+	private IClusterDetail getSelectedCluster(@NotNull String title) {
+		return (IClusterDetail) clustersListComboBox.getData(title);
+	}
+	
 	private SparkSubmissionParameter constructSubmissionParameter() {
-		IClusterDetail selectedClusterDetail = (IClusterDetail) clustersListComboBox
-				.getData(clustersListComboBox.getText());
+		IClusterDetail selectedClusterDetail = getSelectedCluster(clustersListComboBox.getText());
 
 		String selectedArtifactName = selectedArtifactComboBox.getText();
 		String className = mainClassCombo.getText().trim();
