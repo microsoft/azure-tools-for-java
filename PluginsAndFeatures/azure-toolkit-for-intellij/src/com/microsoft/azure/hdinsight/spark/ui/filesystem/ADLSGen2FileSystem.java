@@ -30,6 +30,8 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     public static final String myProtocol = "abfs";
@@ -38,23 +40,39 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     private HttpObservable http;
 
     // abfs://file_system@account_name.dfs.core.windows.net/
-    public URI root;
-    public ADLSGen2FSOperation op;
+    private URI root;
+    private ADLSGen2FSOperation op;
 
     // https://account_name.dfs.core.windows.net/file_system
-    public String restApiRoot;
+    private String restApiRoot;
 
     public ADLSGen2FileSystem(@NotNull HttpObservable http, @NotNull String restApiRoot) {
         this.http = http;
         this.op = new ADLSGen2FSOperation(this.http);
         this.restApiRoot = restApiRoot;
-        this.root = URI.create(op.uriHelper.convertToFSUri(URI.create(restApiRoot)));
+        this.root = URI.create(op.uriHelper.convertToGen2Uri(URI.create(restApiRoot)));
     }
 
     @NotNull
     @Override
     public String getProtocol() {
         return myProtocol;
+    }
+
+    public URI getRoot() {return root;}
+
+    @NotNull
+    public VirtualFile[] listFiles(AdlsGen2VirtualFile vf) {
+        List<AdlsGen2VirtualFile> childrenList = new ArrayList<>();
+        if (vf.isDirectory()) {
+            childrenList = this.op.list(this.restApiRoot, this.op.uriHelper.getDirectoryParam(vf.getUri()))
+                    .map(path -> new AdlsGen2VirtualFile(this.root.resolve(path.getName()),
+                            path.isDirectory(), this))
+                    .doOnNext(file -> file.setParent(vf))
+                    .toList().toBlocking().lastOrDefault(new ArrayList<>());
+        }
+
+        return childrenList.toArray(new VirtualFile[0]);
     }
 
     @Nullable
@@ -90,30 +108,36 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     }
 
     @Override
-    protected void moveFile(Object requestor, @NotNull VirtualFile vFile, @NotNull VirtualFile newParent) throws IOException {
+    protected void moveFile(Object requestor, @NotNull VirtualFile vFile, @NotNull VirtualFile newParent) throws
+            IOException {
 
     }
 
     @Override
-    protected void renameFile(Object requestor, @NotNull VirtualFile vFile, @NotNull String newName) throws IOException {
+    protected void renameFile(Object requestor, @NotNull VirtualFile vFile, @NotNull String newName) throws
+            IOException {
 
     }
 
     @NotNull
     @Override
-    protected VirtualFile createChildFile(Object requestor, @NotNull VirtualFile vDir, @NotNull String fileName) throws IOException {
+    protected VirtualFile createChildFile(Object requestor, @NotNull VirtualFile vDir, @NotNull String fileName) throws
+            IOException {
         throw new UnsupportedOperationException("unimplemented method for Adls Gen2 FileSystem");
     }
 
     @NotNull
     @Override
-    protected VirtualFile createChildDirectory(Object requestor, @NotNull VirtualFile vDir, @NotNull String dirName) throws IOException {
+    protected VirtualFile createChildDirectory(Object requestor, @NotNull VirtualFile vDir, @NotNull String dirName) throws
+            IOException {
         throw new UnsupportedOperationException("unimplemented method for Adls Gen2 FileSystem");
     }
 
     @NotNull
     @Override
-    protected VirtualFile copyFile(Object requestor, @org.jetbrains.annotations.NotNull VirtualFile virtualFile, @org.jetbrains.annotations.NotNull VirtualFile newParent, @org.jetbrains.annotations.NotNull String copyName) throws IOException {
+    protected VirtualFile copyFile(Object requestor, @org.jetbrains.annotations.NotNull VirtualFile
+            virtualFile, @NotNull VirtualFile newParent, @org.jetbrains.annotations.NotNull String copyName) throws
+            IOException {
         throw new UnsupportedOperationException("unimplemented method for Adls Gen2 FileSystem");
     }
 

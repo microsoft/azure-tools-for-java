@@ -21,12 +21,14 @@
  */
 package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDialog;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.intellij.forms.ErrorMessageForm;
 
 import java.awt.*;
 import java.net.URI;
@@ -36,26 +38,20 @@ import java.util.HashMap;
 import java.util.List;
 
 public class StorageChooser implements ILogger {
-    private AzureStorageVirtualFileSystem fileSystem;
+    FileChooserDescriptor descriptor;
 
-    public StorageChooser(@Nullable AzureStorageVirtualFileSystem fileSystem) {
-        this.fileSystem = fileSystem;
-    }
+    public StorageChooser(@Nullable AzureStorageVirtualFile vf) {
+        descriptor = new FileChooserDescriptor(true, false, true, false, false, true)
+                .withFileFilter(file -> file.isDirectory() || file.getName().endsWith(".jar"));
 
-    public List<VirtualFile> setRoots() {
-        if (fileSystem == null) {
-            return Arrays.asList(AzureStorageVirtualFile.Empty);
+        if (vf != null) {
+            descriptor.setRoots(vf);
         }
-
-        // key:full path without / as end , value: virtual file (directory type)
-        ADLSGen2FileSystem gen2FileSystem = (ADLSGen2FileSystem) fileSystem;
-        AdlsGen2VirtualFile root = new AdlsGen2VirtualFile(gen2FileSystem.root.toString(), true, fileSystem);
-        return Arrays.asList(root);
     }
 
-    public VirtualFile[] chooseFile(FileChooserDescriptor descriptor) {
+    public VirtualFile[] chooseFile() {
         Component parentComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-        final FileChooserDialog chooser = new StorageChooserDialogImpl(descriptor, parentComponent, null);
+        final FileChooserDialog chooser = new StorageChooserDialogImpl(this.descriptor, parentComponent, null);
         return chooser.choose(null, new AdlsGen2VirtualFile[]{null});
     }
 }

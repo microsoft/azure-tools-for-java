@@ -29,8 +29,8 @@ public class RemoteFile {
     @JsonProperty(value = "name")
     private String name;
 
-    @JsonProperty(value = "isDirectory", defaultValue = "false")
-    private Boolean isDirectory = false;
+    @JsonProperty(value = "isDirectory")
+    private boolean isDirectory;
 
     public String getName() {
         return name;

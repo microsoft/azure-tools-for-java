@@ -122,7 +122,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
         private var isRefreshButtonEnabled: Boolean by ComponentWithBrowseButtonEnabledDelegated(clustersSelection)
 
         @Suppress("UNCHECKED_CAST")
-        val clusterComboBoxSelection: IClusterDetail? by ComboBoxSelectionDelegated(
+        private val clusterComboBoxSelection: IClusterDetail? by ComboBoxSelectionDelegated(
                 clustersSelection.comboBox as JComboBox<IClusterDetail>)
 
         // Only getter here since the select setter has a special behavior

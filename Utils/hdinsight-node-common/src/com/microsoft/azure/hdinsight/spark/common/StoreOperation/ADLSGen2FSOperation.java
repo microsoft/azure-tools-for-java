@@ -78,7 +78,6 @@ public class ADLSGen2FSOperation {
 
         this.flushReqParamsBuilder = new ADLSGen2ParamsBuilder()
                 .setAction("flush");
-
     }
 
     public Observable<Boolean> createDir(String dirpath) {
@@ -141,7 +140,7 @@ public class ADLSGen2FSOperation {
 
     public class UriHelper {
         //convert  https://accountname.dfs.core.windows.net/filesystem to abfs://filesystem@accountname.dfs.core.windows.net/
-        public String convertToFSUri(URI root) {
+        public String convertToGen2Uri(URI root) {
             return String.format("%s://%s@%s/", "abfs", root.getPath().substring(1), root.getAuthority());
         }
 

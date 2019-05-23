@@ -74,7 +74,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
     private val jobUploadStorageTitle = "Job Upload Storage"
-    val invalidUploadPath = "<Invalid Upload Path>"
+    private val invalidUploadPath = "<Invalid Upload Path>"
     private val unsupportAccountType = "<Storage Account Type Is Not Supported>"
     private val uploadPathLabel = JLabel("Upload Path")
     val uploadPathField = JTextField().apply {
@@ -115,8 +115,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     val control: Control = SparkSubmissionJobUploadStorageCtrl(this)
 
     inner class ViewModel : DisposableObservers() {
-        val uploadPathFieldSubject:PublishSubject<String> = PublishSubject.create()
-
         val uploadStorage = storagePanel.viewModel.apply {
             // check storage info when cluster selection changes
             storageCheckSubject
