@@ -42,8 +42,6 @@ import java.util.List;
 import java.net.URI;
 
 public class ADLSGen2FSOperation {
-    public UriHelper uriHelper = new UriHelper();
-
     private HttpObservable http;
 
     @NotNull
@@ -138,17 +136,16 @@ public class ADLSGen2FSOperation {
     }
 
 
-    public class UriHelper {
-        //convert  https://accountname.dfs.core.windows.net/filesystem to abfs://filesystem@accountname.dfs.core.windows.net/
-        public String convertToGen2Uri(URI root) {
-            return String.format("%s://%s@%s/", "abfs", root.getPath().substring(1), root.getAuthority());
-        }
+    //convert  https://accountname.dfs.core.windows.net/filesystem to abfs://filesystem@accountname.dfs.core.windows.net/
+    public static String convertToGen2Uri(URI root) {
+        return String.format("%s://%s@%s/", "abfs", root.getPath().substring(1), root.getAuthority());
+    }
 
-        // get ab from abfs://filesystem@accountname.dfs.core.windows.net/ab
-        // get / from abfs://filesystem@accountname.dfs.core.windows.net/
-        public String getDirectoryParam(URI root) {
-            String path = root.getPath().substring(1);
-            return path.length() == 0 ? "/" : path;
-        }
+    // get ab from abfs://filesystem@accountname.dfs.core.windows.net/ab
+    // get / from abfs://filesystem@accountname.dfs.core.windows.net/
+    public static String getDirectoryParam(URI root) {
+        String path = root.getPath().substring(1);
+        return path.length() == 0 ? "/" : path;
+
     }
 }

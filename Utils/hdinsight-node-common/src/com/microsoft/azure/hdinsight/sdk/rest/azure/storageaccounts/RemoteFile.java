@@ -36,7 +36,7 @@ public class RemoteFile {
         return name;
     }
 
-    public Boolean isDirectory() {
+    public boolean isDirectory() {
         return isDirectory;
     }
 }

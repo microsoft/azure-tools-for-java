@@ -50,7 +50,7 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
         this.http = http;
         this.op = new ADLSGen2FSOperation(this.http);
         this.restApiRoot = restApiRoot;
-        this.root = URI.create(op.uriHelper.convertToGen2Uri(URI.create(restApiRoot)));
+        this.root = URI.create(op.convertToGen2Uri(URI.create(restApiRoot)));
     }
 
     @NotNull
@@ -65,7 +65,7 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     public VirtualFile[] listFiles(AdlsGen2VirtualFile vf) {
         List<AdlsGen2VirtualFile> childrenList = new ArrayList<>();
         if (vf.isDirectory()) {
-            childrenList = this.op.list(this.restApiRoot, this.op.uriHelper.getDirectoryParam(vf.getUri()))
+            childrenList = this.op.list(this.restApiRoot, this.op.getDirectoryParam(vf.getUri()))
                     .map(path -> new AdlsGen2VirtualFile(this.root.resolve(path.getName()),
                             path.isDirectory(), this))
                     .doOnNext(file -> file.setParent(vf))

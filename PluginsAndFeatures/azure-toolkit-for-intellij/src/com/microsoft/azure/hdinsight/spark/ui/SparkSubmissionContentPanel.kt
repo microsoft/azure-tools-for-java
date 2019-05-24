@@ -66,6 +66,7 @@ import com.microsoft.intellij.lang.containsInvisibleChars
 import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
+import com.microsoft.intellij.util.PluginUtil
 import org.apache.commons.lang3.StringUtils
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -299,17 +300,17 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }).apply {
         textField.document.addDocumentListener(documentValidationListener)
         button.addActionListener {
-            val uploadRootPath = storageWithUploadPathPanel.uploadPathField.text.trim()
-                    .replace("/${Constants.submissionFolder}/", "")
+            val uploadRootPath = storageWithUploadPathPanel.viewModel.getCurrentUploadFieldText()
+                    ?.replace("/${Constants.submissionFolder}/", "")
 
-            val chooser = StorageChooser(prepareFileSystem(uploadRootPath))
-            if (fileSystem == null) {
-                ApplicationManager.getApplication().invokeLater {
-                    val toolErrorDialog = ErrorMessageForm("Prepare Azure Virtual File System Error")
-                    toolErrorDialog.showErrorMessageForm("Only support cluster with ADLS Gen2 account. Please check upload inputs", "")
-                    toolErrorDialog.show()
-                }
+            val root = prepareFileSystem(uploadRootPath)
+            if (fileSystem == null || root == null) {
+                PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
+                        """Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 cluster.
+                                    Please manually specify the reference file paths for other type of clusters and check upload inputs
+                                 """)
             } else {
+                val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
                 val chooseFiles = chooser.chooseFile()
                 text = chooseFiles.joinToString(";") { vf -> vf.url }
             }
@@ -604,8 +605,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     fun prepareFileSystem(uploadRootPath: String?): AzureStorageVirtualFile? {
         referencedJarsTextField.setButtonEnabled(false)
         fileSystem = null
-        //val cluster = clustersSelection.viewModel.clusterComboBoxSelection as? ClusterDetail
-
         val cluster = clustersSelection.viewModel.clusterIsSelected
                 .toBlocking()
                 .firstOrDefault(null)

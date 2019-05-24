@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDialog;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
@@ -39,19 +40,18 @@ import java.util.List;
 
 public class StorageChooser implements ILogger {
     FileChooserDescriptor descriptor;
+    AzureStorageVirtualFile root;
 
-    public StorageChooser(@Nullable AzureStorageVirtualFile vf) {
+    public StorageChooser(@Nullable AzureStorageVirtualFile vf, Condition<VirtualFile> filter) {
         descriptor = new FileChooserDescriptor(true, false, true, false, false, true)
-                .withFileFilter(file -> file.isDirectory() || file.getName().endsWith(".jar"));
-
-        if (vf != null) {
-            descriptor.setRoots(vf);
-        }
+                .withFileFilter(filter);
+        root = vf;
+        descriptor.setRoots(vf);
     }
 
     public VirtualFile[] chooseFile() {
         Component parentComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
         final FileChooserDialog chooser = new StorageChooserDialogImpl(this.descriptor, parentComponent, null);
-        return chooser.choose(null, new AdlsGen2VirtualFile[]{null});
+        return chooser.choose(null, this.root);
     }
 }
