@@ -32,6 +32,7 @@ import cucumber.api.DataTable
 import cucumber.api.java.Before
 import cucumber.api.java.en.Given
 import org.assertj.core.api.Assertions.assertThat
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.util.*
@@ -116,8 +117,8 @@ class ClusterManagerExScenario {
                     clusterMock
                 }
 
-        doReturn(Optional.of(subscriptionClusters)).`when`(clusterMagr!!)
-                .getSubscriptionHDInsightClustersOfType(selectedSubscriptions.values.toList())
+        doReturn(subscriptionClusters).`when`(clusterMagr!!)
+                .getSubscriptionHDInsightClusters(ArgumentMatchers.any())
     }
 
     @Given("^subscriptions mocked are:$")

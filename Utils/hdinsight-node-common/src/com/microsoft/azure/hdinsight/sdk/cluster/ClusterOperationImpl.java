@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationErrorHandler;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.RequestCallback;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.Environment;
@@ -50,7 +49,7 @@ public class ClusterOperationImpl implements IClusterOperation {
       * @return cluster raw data info
       * @throws IOException
       */
-     public List<ClusterRawInfo> listCluster(final SubscriptionDetail subscription) throws IOException, HDIException, AzureCmdException {
+     public List<ClusterRawInfo> listCluster(final SubscriptionDetail subscription) throws AzureCmdException {
           try {
               String response = requestWithToken(subscription.getTenantId(), (accessToken) -> {
                       Environment environment = AuthMethodManager.getInstance().getAzureManager().getEnvironment();
@@ -86,7 +85,7 @@ public class ClusterOperationImpl implements IClusterOperation {
       * @return cluster configuration info
       * @throws IOException
       */
-     public ClusterConfiguration getClusterConfiguration(final SubscriptionDetail subscription, final String clusterId) throws IOException, HDIException, AzureCmdException {
+     public ClusterConfiguration getClusterConfiguration(final SubscriptionDetail subscription, final String clusterId) throws AzureCmdException {
           try {
                String response = requestWithToken(subscription.getTenantId(), new RequestCallback<String>() {
                     @Override

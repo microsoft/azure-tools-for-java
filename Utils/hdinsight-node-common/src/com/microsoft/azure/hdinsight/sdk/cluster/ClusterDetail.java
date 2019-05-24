@@ -31,6 +31,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.StringUtils;
@@ -161,14 +162,18 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         return clusterProperties == null ? null : clusterProperties.getCreatedDate();
     }
 
-    public ClusterType getType(){
+    public static ClusterType getType(@NotNull ClusterRawInfo clusterRawInfo) {
         ClusterType type =  null;
         try {
-            type = ClusterType.valueOf(this.clusterRawInfo.getProperties().getClusterDefinition().getKind().toLowerCase());
+            type = ClusterType.valueOf(clusterRawInfo.getProperties().getClusterDefinition().getKind().toLowerCase());
         } catch (IllegalArgumentException e) {
             type = ClusterType.unkown;
         }
         return type == null ? ClusterType.unkown : type;
+    }
+
+    public ClusterType getType(){
+        return getType(this.clusterRawInfo);
     }
 
     public String getResourceGroup(){
@@ -220,9 +225,13 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
     }
 
-    public String getOSType(){
-        ClusterProperties clusterProperties = this.clusterRawInfo.getProperties();
+    public static String getOSType(@NotNull ClusterRawInfo clusterRawInfo) {
+        ClusterProperties clusterProperties = clusterRawInfo.getProperties();
         return clusterProperties == null ? null : clusterProperties.getOsType();
+    }
+
+    public String getOSType(){
+        return getOSType(this.clusterRawInfo);
     }
 
     @Nullable

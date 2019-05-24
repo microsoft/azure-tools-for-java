@@ -71,18 +71,24 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
     }
 
     private Observable<ClusterConfiguration> getClusterConfigurationRequest(
-            @NotNull final String clusterId) throws IOException {
-        String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
-        String url = URI.create(managementURI)
-                .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
-        StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
-        entity.setContentType("application/json");
-        return getHttp()
-                .withUuidUserAgent()
-                .post(url, entity, null, null, ClusterConfiguration.class);
+            @NotNull final String clusterId) {
+        try {
+            String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
+            String url = URI.create(managementURI)
+                    .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
+            StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
+            entity.setContentType("application/json");
+            return getHttp()
+                    .withUuidUserAgent()
+                    .post(url, entity, null, null, ClusterConfiguration.class);
+        } catch (IOException ex) {
+            log().info("Cluster ID: " + clusterId);
+            log().warn("Error getting Azure Manager when probe new HDInsight API. " + ExceptionUtils.getStackTrace(ex));
+            return Observable.empty();
+        }
     }
 
-    public Observable<Boolean> isProbeGetConfigurationSucceed(final String clusterId) throws IOException {
+    public Observable<Boolean> isProbeGetConfigurationSucceed(final String clusterId) {
         return getClusterConfigurationRequest(clusterId)
                 .map(clusterConfiguration -> {
                     if (clusterConfiguration != null
