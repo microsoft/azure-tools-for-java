@@ -80,6 +80,8 @@ public class ClusterManager implements ILogger {
                 .flatMap(subscriptionDetail ->
                         Observable.fromCallable(() ->
                                 new ClusterOperationImpl().listCluster(subscriptionDetail))
+                                // Run time-consuming list clusters job in IO thread
+                                .subscribeOn(Schedulers.io())
                                 // Remove duplicate clusters that share the same cluster name
                                 .map(this::deduplicateClusters)
                                 .flatMap(Observable::from)
