@@ -306,9 +306,9 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             val root = prepareFileSystem(uploadRootPath)
             if (fileSystem == null || root == null) {
                 PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
-                        """Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 cluster.
-                                    Please manually specify the reference file paths for other type of clusters and check upload inputs
-                                 """)
+                        "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
+                                "cluster. Please\n manually specify the reference file paths for other type of " +
+                                "clusters and check upload inputs")
             } else {
                 val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
                 val chooseFiles = chooser.chooseFile()
