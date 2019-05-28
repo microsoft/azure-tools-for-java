@@ -59,7 +59,7 @@ public class StorageChooserDialogImpl extends FileChooserDialogImpl {
         myChosenFiles = myFileSystemTree.getSelectedFiles();
         if (getOKAction().isEnabled()) {
             // FIXME: Must update operation name if VFS for Blob or Gen1 are supported in the future
-            EventUtil.logEvent(EventType.info, TelemetryConstants.VFS, TelemetryConstants.SELECT_PATH_GEN2, null);
+            EventUtil.logEvent(EventType.info, TelemetryConstants.VFS, TelemetryConstants.CHOOSE_REFERENCE_JAR_GEN2, null);
 
             close(OK_EXIT_CODE);
         }
