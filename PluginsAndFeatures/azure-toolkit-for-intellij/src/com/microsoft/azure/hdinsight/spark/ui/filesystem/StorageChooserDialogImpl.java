@@ -25,6 +25,9 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.ex.FileChooserDialogImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,6 +58,9 @@ public class StorageChooserDialogImpl extends FileChooserDialogImpl {
 
         myChosenFiles = myFileSystemTree.getSelectedFiles();
         if (getOKAction().isEnabled()) {
+            // FIXME: Must update operation name if VFS for Blob or Gen1 are supported in the future
+            EventUtil.logEvent(EventType.info, TelemetryConstants.VFS, TelemetryConstants.SELECT_PATH_GEN2, null);
+
             close(OK_EXIT_CODE);
         }
     }

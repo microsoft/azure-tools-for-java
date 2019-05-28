@@ -39,6 +39,7 @@ public class TelemetryConstants {
     public static final String ACTION = "action";
     public static final String DIALOG = "dialog";
     public static final String HDINSIGHT = "hdinsight";
+    public static final String VFS = "vfs";    // virtual file system
 
     // operation value
     public static final String FEEDBACK = "feedback";
@@ -119,6 +120,7 @@ public class TelemetryConstants {
     public static final String ACR_READPROP = "readprop-acr";
     public static final String SIGNIN_DC = "dc";
     public static final String SIGNIN_SP = "sp";
+    public static final String SELECT_PATH_GEN2 = "select-path-gen2";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
