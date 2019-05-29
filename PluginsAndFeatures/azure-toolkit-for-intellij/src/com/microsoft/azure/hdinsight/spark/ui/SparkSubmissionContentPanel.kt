@@ -312,7 +312,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             } else {
                 val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
                 val chooseFiles = chooser.chooseFile()
-                text = chooseFiles.joinToString(";") { vf -> vf.url }
+                // Only override reference jar text field when jar file is selected and ok button is clicked
+                if(chooseFiles.isNotEmpty()) {
+                    text = chooseFiles.joinToString(";") { vf -> vf.url }
+                }
             }
         }
     }
