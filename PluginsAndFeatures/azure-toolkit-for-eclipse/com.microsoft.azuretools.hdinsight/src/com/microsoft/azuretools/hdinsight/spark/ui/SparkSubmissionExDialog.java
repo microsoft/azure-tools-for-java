@@ -177,22 +177,23 @@ public class SparkSubmissionExDialog extends Dialog {
 		clustersListComboBox.setLayoutData(gridData);
 		clustersListComboBox.setToolTipText(
 				"The HDInsight Spark cluster you want to submit your application to. Only Linux cluster is supported.");
-		for (IClusterDetail clusterDetail : cachedClusterDetails) {
-            clustersListComboBox.add(clusterDetail.getTitle());
-            clustersListComboBox.setData(clusterDetail.getTitle(), clusterDetail);
-		}
-		if (cachedClusterDetails.size() > 0) {
-			clustersListComboBox.select(0);
-		}
-		clustersListComboBox.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				IClusterDetail clusterDetail = getSelectedCluster(clustersListComboBox.getText());
-				if (clusterDetail != null && ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
-					showHdiReaderErrors(true);
-				} else {
-					showHdiReaderErrors(false);
-				}
+		clustersListComboBox.addModifyListener(event -> {
+			IClusterDetail clusterDetail = getSelectedCluster(clustersListComboBox.getText());
+			if (clusterDetail != null && ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
+				showHdiReaderErrors(true);
+			} else {
+				showHdiReaderErrors(false);
+			}
+		});
+		// Execute "select the first item" operation after the dialog opened
+		Display.getDefault().asyncExec(() -> {
+			for (IClusterDetail clusterDetail : cachedClusterDetails) {
+	            clustersListComboBox.add(clusterDetail.getTitle());
+	            clustersListComboBox.setData(clusterDetail.getTitle(), clusterDetail);
+			}
+			if (cachedClusterDetails.size() > 0) {
+				// Send SWT.Modify event after select the first item
+				clustersListComboBox.select(0);
 			}
 		});
 		clusterListButton = new Button(composite, SWT.PUSH);
