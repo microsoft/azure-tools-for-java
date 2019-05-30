@@ -67,6 +67,7 @@ import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
 import com.microsoft.intellij.util.PluginUtil
+import com.sun.glass.ui.Application
 import org.apache.commons.lang3.StringUtils
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -305,15 +306,17 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
             val root = prepareFileSystem(uploadRootPath)
             if (fileSystem == null || root == null) {
-                PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
-                        "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
-                                "cluster. Please\n manually specify the reference file paths for other type of " +
-                                "clusters and check upload inputs")
+                ApplicationManager.getApplication().invokeAndWait({
+                    PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
+                            "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
+                                    "cluster. Please\n manually specify the reference file paths for other type of " +
+                                    "clusters and check upload inputs")
+                }, ModalityState.any())
             } else {
                 val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
                 val chooseFiles = chooser.chooseFile()
                 // Only override reference jar text field when jar file is selected and ok button is clicked
-                if(chooseFiles.isNotEmpty()) {
+                if (chooseFiles.isNotEmpty()) {
                     text = chooseFiles.joinToString(";") { vf -> vf.url }
                 }
             }
