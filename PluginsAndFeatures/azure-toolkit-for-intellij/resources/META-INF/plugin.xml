@@ -20,23 +20,21 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.22.0</h3>
+    <h3>3.23.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Automaticly fill in Azure Blob account name or ADLS Gen1/Gen2 root path for linked HDInsight Reader role cluster
-            in run configuration dialog</li>
+        <li>Support Azure Resource Manager, you can deploy and manage azure resource template with toolkit</li>
+        <li>Support choosing remote reference jars through folder browser button for HDI cluster with ADLS Gen2 account</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Improve app service data loading performance</li>
-        <li>Restrict upload storage type to cluster default storage type and spark interactive session storage type for
-            linked HDInsight Reader role cluster</li>
+        <li>Optimize refreshing HDInsight clusters performance</li>
+        <li>Handle access related exceptions for linked reader role cluster</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3094">#3094</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3096">#3096</a> Fix warning message spelling
-            issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3104">#3104</a> Fix linked role reader cluster issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3094">#3094</a> Fix warning message issue</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

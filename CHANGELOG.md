@@ -4,6 +4,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 - [Change Log](#change-log)
 
+  - [3.23.0](#3230)
   - [3.22.0](#3220)
   - [3.21.1](#3211)
   - [3.21.0](#3210)
@@ -34,6 +35,22 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.23.0
+
+### Added
+
+- Support Azure Resource Manager, you can deploy and manage azure resource template with toolkit
+- Support choosing remote reference jars through folder browser button for HDI cluster with ADLS Gen2 account
+
+### Changed
+
+- Optimize refreshing HDInsight clusters performance
+- Handle access related exceptions for linked reader role cluster
+
+### Fixed
+- [#3104](https://github.com/microsoft/azure-tools-for-java/issues/3104) Fix linked role reader cluster issue
+- [#3094](https://github.com/microsoft/azure-tools-for-java/issues/3094) Fix warning message issue
 
 ## 3.22.0
 
