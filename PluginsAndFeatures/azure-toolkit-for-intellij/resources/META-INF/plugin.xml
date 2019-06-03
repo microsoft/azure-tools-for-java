@@ -34,7 +34,7 @@
     <h4>Fixed</h4>
     <ul>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3104">#3104</a> Fix linked role reader cluster issue</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3094">#3094</a> Fix warning message issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2895">#2895</a> Fix unnecessarily killing finalizing or ended state job for serverless job</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

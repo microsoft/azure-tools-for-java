@@ -50,7 +50,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Fixed
 - [#3104](https://github.com/microsoft/azure-tools-for-java/issues/3104) Fix linked role reader cluster issue
-- [#3094](https://github.com/microsoft/azure-tools-for-java/issues/3094) Fix warning message issue
+- [#2895](https://github.com/microsoft/azure-tools-for-java/issues/2895) Fix unnecessarily killing finalizing or ended state job for serverless job
 
 ## 3.22.0
 
