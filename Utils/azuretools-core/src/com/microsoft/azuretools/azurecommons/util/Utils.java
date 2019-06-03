@@ -20,6 +20,11 @@
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -224,5 +229,16 @@ public class Utils {
             return false;
         }
         return true;
+    }
+
+    public static String getPrettyJson(String jsonString) {
+        try {
+            Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+            JsonParser parser = new JsonParser();
+            JsonElement je = parser.parse(jsonString);
+            return gson.toJson(je);
+        } catch (Exception ignore) {
+            return jsonString;
+        }
     }
 }

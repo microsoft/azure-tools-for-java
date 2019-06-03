@@ -25,6 +25,7 @@ package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
@@ -32,12 +33,19 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
+import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.utils.CanceledByUserException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import rx.Observable;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 public class AzureMvpModel {
 
@@ -101,6 +109,40 @@ public class AzureMvpModel {
     }
 
     /**
+     * List all the resource groups in selected subscriptions.
+     * @return
+     */
+    public List<ResourceEx<ResourceGroup>> getResourceGroups(boolean forceUpdate) throws IOException, CanceledByUserException {
+        List<ResourceEx<ResourceGroup>> resourceGroups = new ArrayList<>();
+        Map<SubscriptionDetail, List<ResourceGroup>> srgMap = AzureModel.getInstance()
+            .getSubscriptionToResourceGroupMap();
+        if (srgMap == null || srgMap.size() < 1 || forceUpdate) {
+            AzureModelController.updateSubscriptionMaps(null);
+        }
+        srgMap = AzureModel.getInstance().getSubscriptionToResourceGroupMap();
+        if (srgMap == null) {
+            return resourceGroups;
+        }
+        for (SubscriptionDetail sd : srgMap.keySet()) {
+            resourceGroups.addAll(srgMap.get(sd).stream().map(
+                resourceGroup -> new ResourceEx<>(resourceGroup, sd.getSubscriptionId())).collect(Collectors.toList()));
+        }
+        return resourceGroups;
+    }
+
+    /**
+     *
+     * @param rgName resource group name
+     * @param sid subscription id
+     * @return
+     */
+    public void deleteResourceGroup(String rgName, String sid) throws IOException {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        Azure azure = azureManager.getAzure(sid);
+        azure.resourceGroups().deleteByName(rgName);
+    }
+
+    /**
      * List Resource Group by Subscription ID.
      *
      * @param sid subscription Id
@@ -133,6 +175,42 @@ public class AzureMvpModel {
         }
         return resourceGroup;
     }
+
+    public List<Deployment> listAllDeployments() {
+        List<Deployment> deployments = new ArrayList<>();
+        List<Subscription> subs = getSelectedSubscriptions();
+        Observable.from(subs).flatMap((sub) ->
+            Observable.create((subscriber) -> {
+                try {
+                    List<Deployment> sidDeployments = listDeploymentsBySid(sub.subscriptionId());
+                    synchronized (deployments) {
+                        deployments.addAll(sidDeployments);
+                    }
+                } catch (IOException e) {
+                }
+                subscriber.onCompleted();
+            }).subscribeOn(Schedulers.io()), subs.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
+        return deployments;
+    }
+
+    public List<Deployment> listDeploymentsBySid(String sid) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        return azure.deployments().list();
+    }
+
+    /**
+     * Get deployment by resource group name
+     * @param rgName
+     * @return
+     */
+    public List<ResourceEx<Deployment>> getDeploymentByRgName(String sid, String rgName) throws IOException {
+        List<ResourceEx<Deployment>> res = new ArrayList<>();
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        res.addAll(azure.deployments().listByResourceGroup(rgName).stream().
+            map(deployment -> new ResourceEx<>(deployment, sid)).collect(Collectors.toList()));
+        return res;
+    }
+
 
     /**
      * List Location by Subscription ID.

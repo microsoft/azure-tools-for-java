@@ -251,6 +251,11 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             case add:
                 // create child tree nodes for the new nodes
                 for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                    // Eclipse do no support arm, so here need to skip resource management node
+					if (childNode.getClass().getName().equals(
+							"com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule")) {
+						continue;
+					}
                     treeNode.add(createTreeNode(childNode));
                 }
                 break;
