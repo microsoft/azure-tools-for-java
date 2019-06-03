@@ -30,6 +30,7 @@ public class TelemetryConstants {
     // production name
     public static final String WEBAPP = "webapp";
     public static final String ACR = "acr";
+    public static final String ARM = "arm";
     public static final String DOCKER = "docker";
     public static final String VM = "vm";
     public static final String REDIS = "redis";
@@ -121,6 +122,16 @@ public class TelemetryConstants {
     public static final String SIGNIN_DC = "dc";
     public static final String SIGNIN_SP = "sp";
     public static final String CHOOSE_REFERENCE_JAR_GEN2 = "choose-reference-jar-gen2";
+    public static final String CREATE_DEPLOYMENT = "create-deployment";
+    public static final String UPDATE_DEPLOYMENT = "update-deployment";
+    public static final String DELETE_DEPLOYMENT = "delete-deployment";
+    public static final String DELETE_RESOURCE_GROUP = "delete-resource-group";
+    public static final String EXPORT_TEMPALTE_FILE = "export-template-file";
+    public static final String SHOW_DEPLOYMENT_PROPERTY = "show-deployment-property";
+    public static final String VIEW_TEMPALTE_FILE = "view-template-file";
+    public static final String UPDATE_DEPLOYMENT_SHORTCUT = "update-deployment-shortcut";
+    public static final String BROWSE_TEMPLATE_SAMPLES = "browse-template-samples";
+    public static final String ACTIVATE_TEMPLATE_DEITING = "activate-template-editing";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
