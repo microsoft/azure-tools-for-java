@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.projects;
 
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.ComboBox;
-import org.jetbrains.plugins.scala.project.Versions$;
 
 import javax.swing.JPanel;
 import java.awt.*;
@@ -51,7 +50,8 @@ public class SbtVersionOptionsPanel extends JPanel {
     public void updateSbtVersions() {
         final String[][] versions = new String[1][1];
         ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
-            versions[0] = Versions$.MODULE$.loadSbtVersions();
+            // TODO - fetch latest from microsoft upstream
+            // https://github.com/microsoft/azure-tools-for-java/blob/master/PluginsAndFeatures/azure-toolkit-for-intellij/src/com/microsoft/azure/hdinsight/projects/SbtVersionOptionsPanel.java
         }, "Fetch SBT versions", false, null);
 
         for (String version : versions[0]) {
