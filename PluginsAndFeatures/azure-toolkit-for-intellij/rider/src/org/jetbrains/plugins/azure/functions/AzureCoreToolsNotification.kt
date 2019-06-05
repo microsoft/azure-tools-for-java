@@ -24,6 +24,7 @@ package org.jetbrains.plugins.azure.functions
 
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.*
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createLifetime
@@ -46,45 +47,47 @@ class AzureCoreToolsNotification : StartupActivity {
         project.solution.runnableProjectsModel.projects.adviseOnce(project.createLifetime()) { runnableProjects ->
             if (runnableProjects.none { it.kind == RunnableProjectKind.AzureFunctions }) return@adviseOnce
 
-            val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.retrieve()
+            ApplicationManager.getApplication().executeOnPooledThread {
+                val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.retrieve()
 
-            val local = FunctionsCoreToolsManager.determineVersion(funcCoreToolsInfo?.coreToolsPath)
-            val remote = FunctionsCoreToolsManager.determineLatestRemote()
+                val local = FunctionsCoreToolsManager.determineVersion(funcCoreToolsInfo?.coreToolsPath)
+                val remote = FunctionsCoreToolsManager.determineLatestRemote()
 
-            if (local == null || remote != null && local < remote) {
-                val title = if (local == null) {
-                    "Install Azure Functions Core Tools"
-                } else {
-                    "Update Azure Functions Core Tools"
-                }
+                if (local == null || remote != null && local < remote) {
+                    val title = if (local == null) {
+                        "Install Azure Functions Core Tools"
+                    } else {
+                        "Update Azure Functions Core Tools"
+                    }
 
-                val description = if (local == null) {
-                    "<a href='install'>Install the Azure Functions Core Tools</a> to develop, run and debug Azure Functions locally."
-                } else {
-                    "A newer version of the Azure Functions Core Tools is available. <a href='install'>Update now</a>"
-                }
+                    val description = if (local == null) {
+                        "<a href='install'>Install the Azure Functions Core Tools</a> to develop, run and debug Azure Functions locally."
+                    } else {
+                        "A newer version of the Azure Functions Core Tools is available. <a href='install'>Update now</a>"
+                    }
 
-                val notification = notificationGroup.createNotification(
-                        title, null, description,
-                        NotificationType.INFORMATION,
-                        object : NotificationListener.Adapter() {
-                            override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
-                                if (!project.isDisposed) {
-                                    when (e.description) {
-                                        "install" -> {
-                                            ProgressManager.getInstance().run(
-                                                    FunctionsCoreToolsManager.downloadLatestRelease(project) {
-                                                        PropertiesComponent.getInstance().setValue(
-                                                                AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, it)
-                                                        notification.expire()
-                                                    })
+                    val notification = notificationGroup.createNotification(
+                            title, null, description,
+                            NotificationType.INFORMATION,
+                            object : NotificationListener.Adapter() {
+                                override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
+                                    if (!project.isDisposed) {
+                                        when (e.description) {
+                                            "install" -> {
+                                                ProgressManager.getInstance().run(
+                                                        FunctionsCoreToolsManager.downloadLatestRelease(project) {
+                                                            PropertiesComponent.getInstance().setValue(
+                                                                    AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, it)
+                                                            notification.expire()
+                                                        })
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        })
+                            })
 
-                Notifications.Bus.notify(notification, project)
+                    Notifications.Bus.notify(notification, project)
+                }
             }
         }
     }
