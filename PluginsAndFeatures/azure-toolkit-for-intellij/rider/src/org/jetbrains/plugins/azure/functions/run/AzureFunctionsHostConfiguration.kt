@@ -24,7 +24,7 @@ package org.jetbrains.plugins.azure.functions.run
 
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.debugger.IDotNetDebuggable
+import com.jetbrains.rider.debugger.IRiderDebuggable
 import com.jetbrains.rider.run.configurations.RiderRunConfiguration
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.util.idea.getComponent
@@ -43,7 +43,7 @@ class AzureFunctionsHostConfiguration(
         AzureFunctionsHostExecutorFactory(
                 parameters
         )
-), IDotNetDebuggable {
+), IRiderDebuggable {
 
     private val riderDotNetActiveRuntimeHost = project.getComponent<RiderDotNetActiveRuntimeHost>()
 
