@@ -34,11 +34,11 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.ZipUtil
+import com.intellij.util.text.VersionComparatorUtil
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.string.printToString
 import com.jetbrains.rd.util.warn
-import com.jetbrains.rider.projectView.actions.projectTemplating.backend.ReSharperProjectTemplateProvider
 import org.jetbrains.plugins.azure.functions.GitHubReleasesService
 import java.io.File
 import java.io.IOException
@@ -47,7 +47,7 @@ import java.net.UnknownHostException
 object FunctionsCoreToolsManager {
     private const val DOWNLOADTASK_TITLE = "Downloading latest Azure Functions Core Tools..."
     private const val CORETOOLS_DIR = "azure-functions-coretools"
-    private const val LATEST_RELEASE_URL = "repos/Azure/azure-functions-core-tools/releases/latest"
+    private const val API_URL_RELEASES = "repos/Azure/azure-functions-core-tools/releases?per_page=100"
 
     private val downloadPath = PathManager.getConfigPath() + File.separator + FunctionsCoreToolsManager.CORETOOLS_DIR
 
@@ -211,32 +211,40 @@ object FunctionsCoreToolsManager {
     }
 
     fun determineLatestRemote(): AzureFunctionsCoreToolsRemoteAsset? {
+        val expectedFileNamePrefix = "Azure.Functions.Cli." + if (SystemInfo.isWindows && SystemInfo.is64Bit) {
+            "win-x64"
+        } else if (SystemInfo.isWindows) {
+            "win-x86"
+        } else if (SystemInfo.isMac) {
+            "osx-x64"
+        } else if (SystemInfo.isLinux) {
+            "linux-x64"
+        } else {
+            "unknown"
+        }
+
         try {
-            val latestGitHubRelease = GitHubReleasesService.createInstance()
-                    .getLatestRelease(LATEST_RELEASE_URL)
+            val gitHubReleases = GitHubReleasesService.createInstance()
+                    .getReleases(API_URL_RELEASES)
                     .execute()
                     .body()
 
-            if (latestGitHubRelease != null) {
-                val expectedFileNamePrefix = "Azure.Functions.Cli." + if (SystemInfo.isWindows && SystemInfo.is64Bit) {
-                    "win-x64"
-                } else if (SystemInfo.isWindows) {
-                    "win-x86"
-                } else if (SystemInfo.isMac) {
-                    "osx-x64"
-                } else if (SystemInfo.isLinux) {
-                    "linux-x64"
-                } else {
-                    "unknown"
+            if (gitHubReleases != null) {
+                for (gitHubRelease in gitHubReleases
+                        .filter { !it.tagName.isNullOrEmpty() }
+                        .sortedWith(Comparator { o1, o2 ->
+                            VersionComparatorUtil.compare(o2.tagName!!.trimStart('v'), o1.tagName!!.trimStart('v')) // latest versions on top
+                        })) {
+                    val latestReleaseVersion = gitHubRelease.tagName!!.trimStart('v')
+
+                    val latestAsset = gitHubRelease.assets.firstOrNull {
+                        it.name!!.startsWith(expectedFileNamePrefix, true) && it.name.endsWith(".zip")
+                    }
+
+                    if (latestAsset != null) {
+                        return AzureFunctionsCoreToolsRemoteAsset(latestReleaseVersion, latestAsset.name!!, latestAsset.browserDownloadUrl!!)
+                    }
                 }
-
-                val latestReleaseVersion = latestGitHubRelease.tagName!!.trimStart('v')
-
-                val latestAsset = latestGitHubRelease.assets.first {
-                    it.name!!.startsWith(expectedFileNamePrefix, true) && it.name.endsWith(".zip")
-                }
-
-                return AzureFunctionsCoreToolsRemoteAsset(latestReleaseVersion, latestAsset.name!!, latestAsset.browserDownloadUrl!!)
             }
         } catch (e: UnknownHostException) {
             logger.warn { "Could not determine latest remote: " + e.printToString() }

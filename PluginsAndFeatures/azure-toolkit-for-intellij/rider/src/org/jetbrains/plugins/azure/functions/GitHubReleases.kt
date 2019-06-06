@@ -42,7 +42,7 @@ interface GitHubReleasesService {
 
     @GET
     @Headers("Accept: application/json")
-    fun getLatestRelease(@Url latestReleaseUrl: String): Call<GitHubRelease>
+    fun getReleases(@Url releasesUrl: String): Call<List<GitHubRelease>>
 }
 
 class GitHubRelease(val url: String?,
