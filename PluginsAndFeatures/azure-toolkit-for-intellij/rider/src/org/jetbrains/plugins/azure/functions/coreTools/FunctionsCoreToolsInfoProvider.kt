@@ -60,6 +60,6 @@ object FunctionsCoreToolsInfoProvider {
             }
         }
 
-        return FunctionsCoreToolsInfo(funcCoreToolsPath!!, coreToolsExecutablePath.path)
+        return FunctionsCoreToolsInfo(funcCoreToolsPath, coreToolsExecutablePath.path)
     }
 }

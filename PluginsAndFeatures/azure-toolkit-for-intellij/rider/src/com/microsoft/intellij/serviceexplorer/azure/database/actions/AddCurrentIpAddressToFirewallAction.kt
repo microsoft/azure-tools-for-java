@@ -96,7 +96,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
 
         if (ipAddressInput.isNullOrEmpty()) return
 
-        val ipAddressForRule = ipAddressInput!!.trim()
+        val ipAddressForRule = ipAddressInput.trim()
 
         // Add IP address
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Adding firewall rule for current public IP address...", true, PerformInBackgroundOption.DEAF) {

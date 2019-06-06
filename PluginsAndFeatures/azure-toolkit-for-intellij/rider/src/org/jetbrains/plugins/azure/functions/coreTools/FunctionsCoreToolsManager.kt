@@ -184,7 +184,7 @@ object FunctionsCoreToolsManager {
                 val output = processHandler.runProcess(15000, true)
                 val version = output.stdoutLines.firstOrNull()?.trim('\r', '\n')
                 if (!version.isNullOrEmpty()) {
-                    return AzureFunctionsCoreToolsLocalAsset(version!!, coreToolsPath)
+                    return AzureFunctionsCoreToolsLocalAsset(version, coreToolsPath)
                 }
             }
         } catch (e: Exception) {

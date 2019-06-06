@@ -39,7 +39,7 @@ class AzureFunctionsHostConfigurationEditor(private val project: Project)
     : SettingsEditor<AzureFunctionsHostConfiguration>() {
 
     lateinit var viewModel: AzureFunctionsHostConfigurationViewModel
-    private val lifetimeDefinition = Lifetime.create(Lifetime.Eternal)
+    private val lifetimeDefinition = Lifetime.Eternal.createNested()
     private val editorLifetime = SequentialLifetimes(lifetimeDefinition.lifetime)
 
     override fun disposeEditor() {
