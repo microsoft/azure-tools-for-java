@@ -38,6 +38,7 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Deployment.DefinitionStages.WithTemplate;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azure.management.resources.Location;
@@ -45,6 +46,8 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -153,6 +156,13 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
                                 ((ElementWrapper<Region>) regionCb.getSelectedItem()).getValue());
                     } else {
                         ResourceGroup rg = ((ElementWrapper<ResourceGroup>) rgNameCb.getSelectedItem()).getValue();
+                        List<ResourceEx<Deployment>> deployments = AzureMvpModel.getInstance()
+                                .getDeploymentByRgName(subs.getSubscriptionId(), rg.name());
+                        boolean isExist = deployments.parallelStream()
+                                .anyMatch(deployment -> deployment.getResource().name().equals(deploymentName));
+                        if (isExist) {
+                            throw new RuntimeException("There has been deployment with the same name.");
+                        }
                         rgName = rg.name();
                         template = azure.deployments().define(deploymentName).withExistingResourceGroup(rg);
                     }
