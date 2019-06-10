@@ -36,6 +36,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentPropertyViewPresenter;
+
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -48,10 +49,15 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import org.jdesktop.swingx.JXLabel;
 import org.jetbrains.annotations.NotNull;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 public class DeploymentPropertyView extends BaseEditor implements DeploymentPropertyMvpView {
 
     public static final String ID = "com.microsoft.intellij.helpers.arm.DeploymentPropertyView";
+    public static final String DATETIME_FORMAT = "M/d/yyyy, h:mm:ss a";
+    public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormat.forPattern(DATETIME_FORMAT);
     private final DeploymentPropertyViewPresenter<DeploymentPropertyView> deploymentPropertyViewPresenter;
     private JPanel contentPane;
     private JPanel pnlOverviewHolder;
@@ -108,7 +114,7 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
     public void onLoadProperty(DeploymentProperty deploymentProperty) {
         final Deployment deployment = deploymentProperty.getDeployment();
         deploymenNameLabel.setText(deployment.name());
-        lastModifiedLabel.setText(deployment.timestamp().toString());
+        lastModifiedLabel.setText(DATETIME_FORMATTER.print(deployment.timestamp().withZone(DateTimeZone.getDefault())));
         statusLabel.setText(deployment.provisioningState());
         deploymentModeLabel.setText(deployment.mode().name());
         StringBuffer sb = new StringBuffer();

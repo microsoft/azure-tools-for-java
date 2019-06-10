@@ -76,7 +76,7 @@ public class ResourceTemplateView extends BaseEditor {
         final String prettyTemplate = Utils.getPrettyJson(template);
         fileEditor = createEditor(prettyTemplate);
         GridConstraints constraints = new GridConstraints();
-        constraints.setFill(GridConstraints.FILL_NONE);
+        constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setAnchor(GridConstraints.ANCHOR_WEST);
         editorPanel.add(fileEditor.getComponent(), constraints);
 
