@@ -37,6 +37,7 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -80,19 +81,23 @@ public class ResourceTemplateView extends BaseEditor {
         constraints.setAnchor(GridConstraints.ANCHOR_WEST);
         editorPanel.add(fileEditor.getComponent(), constraints);
 
-        project.getMessageBus().connect(fileEditor).
-                subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
+        final MessageBusConnection messageBusConnection = project.getMessageBus().connect(fileEditor);
+        messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
             @Override
             public void beforeFileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
                 if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) &&
                         file.getName().equals(node.getName())) {
-                    String editorText = ((PsiAwareTextEditorImpl) fileEditor).getEditor().getDocument().getText();
-                    if (editorText.equals(prettyTemplate)) {
-                        return;
-                    }
-                    if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_TEMPALTE, "Azure Explorer",
-                            new String[]{"Yes", "No"}, null)) {
-                        new ExportTemplate(node).doExport(editorText);
+                    try {
+                        String editorText = ((PsiAwareTextEditorImpl) fileEditor).getEditor().getDocument().getText();
+                        if (editorText.equals(prettyTemplate)) {
+                            return;
+                        }
+                        if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_TEMPALTE, "Azure Explorer",
+                                new String[]{"Yes", "No"}, null)) {
+                            new ExportTemplate(node).doExport(editorText);
+                        }
+                    } finally {
+                        messageBusConnection.disconnect();
                     }
                 }
             }
