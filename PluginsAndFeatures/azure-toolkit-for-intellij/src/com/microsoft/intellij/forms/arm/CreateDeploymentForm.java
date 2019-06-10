@@ -75,6 +75,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class CreateDeploymentForm extends DeploymentBaseForm {
 
+    private static final String DUPLICATED_DEPLOYMENT_NAME = "A deployment with the same name already exists";
+
     private JPanel contentPane;
     private JTextField rgNameTextFiled;
     private JComboBox rgNameCb;
@@ -161,7 +163,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
                         boolean isExist = deployments.parallelStream()
                                 .anyMatch(deployment -> deployment.getResource().name().equals(deploymentName));
                         if (isExist) {
-                            throw new RuntimeException("There has been deployment with the same name.");
+                            throw new RuntimeException(DUPLICATED_DEPLOYMENT_NAME);
                         }
                         rgName = rg.name();
                         template = azure.deployments().define(deploymentName).withExistingResourceGroup(rg);
