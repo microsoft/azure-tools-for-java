@@ -44,6 +44,8 @@ import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
+import com.microsoft.intellij.serviceexplorer.azure.webapp.StartStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.webapp.StopStreamingLogsAction;
 import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -61,6 +63,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageMod
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,5 +125,8 @@ public class NodeActionsMap {
 
         node2Actions.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .add(CreateDeploymentAction.class).build());
+
+        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 }

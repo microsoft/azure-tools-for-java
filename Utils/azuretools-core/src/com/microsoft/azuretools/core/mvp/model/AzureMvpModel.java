@@ -37,6 +37,8 @@ import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -211,6 +213,18 @@ public class AzureMvpModel {
         return res;
     }
 
+    /**
+     * Get Log Streaming by Subscription and AppServiceId
+     *
+     * @param sid subscription
+     * @param appServiceId appServiceId
+     * @return Log Streaming
+     * @throws IOException
+     */
+    public Observable<String> getAppServiceStreamingLogs(String sid, String appServiceId) throws IOException{
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        return azure.webApps().getById(appServiceId).streamAllLogsAsync();
+    }
 
     /**
      * List Location by Subscription ID.

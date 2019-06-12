@@ -32,6 +32,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.Consumer;
 
 import org.jetbrains.annotations.NotNull;
@@ -151,5 +152,10 @@ public class UIUtils {
                 .setFadeoutTime(10 * 1000) // fade out after 10 seconds
                 .createBalloon()
                 .showInCenterOf(statusBar.getComponent());
+    }
+
+    public static void showNotification(@NotNull Project project, String message, MessageType type) {
+        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+        showNotification(statusBar, message, type);
     }
 }

@@ -96,6 +96,12 @@
         id="Cosmos Serverless Spark Jobs"
         canCloseContents="true"/>
 
+    <toolWindow
+            anchor="bottom"
+            factoryClass="com.microsoft.azure.webapp.ui.WebAppStreamingLogToolWindowFactory"
+            id="Azure Streaming Log"
+            canCloseContents="true"/>
+
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
     <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
