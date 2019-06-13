@@ -21,40 +21,54 @@
  */
 package com.microsoft.intellij.serviceexplorer.azure.webapp;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.webapp.WebAppStreamingLogConsoleViewProvider;
-import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
-
-import java.io.IOException;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 @Name("Start Streaming Logs")
 public class StartStreamingLogsAction extends NodeActionListener {
 
-    private final WebAppNode webAppNode;
+    private Node node;
+    private Project project;
+    private String subscriptionId;
+    private String webAppId;
+    private String webAppName;
+    private String deploymentSlotName;
+
 
     public StartStreamingLogsAction(WebAppNode webAppNode) {
         super(webAppNode);
-        this.webAppNode = webAppNode;
+        this.node = webAppNode;
+        this.project = (Project) webAppNode.getProject();
+        this.subscriptionId = webAppNode.getSubscriptionId();
+        this.webAppId = webAppNode.getWebAppId();
+        this.webAppName = webAppNode.getWebAppName();
+    }
+
+    public StartStreamingLogsAction(DeploymentSlotNode deploymentSlotNode) {
+        super(deploymentSlotNode);
+        this.node = deploymentSlotNode;
+        this.project = (Project) deploymentSlotNode.getProject();
+        this.subscriptionId = deploymentSlotNode.getSubscriptionId();
+        this.webAppId = deploymentSlotNode.getWebAppId();
+        this.webAppName = deploymentSlotNode.getWebAppName();
+        this.deploymentSlotName = deploymentSlotNode.getName();
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        EventUtil.executeWithLog(WEBAPP, "Test", operation -> {
+        EventUtil.executeWithLog(WEBAPP, "StartStreamingLog", operation -> {
             new Thread(() -> WebAppStreamingLogConsoleViewProvider.INSTANCE
-                    .startStreamingLogs((Project) webAppNode.getProject(), webAppNode.getSubscriptionId(),
-                            webAppNode.getWebAppId(), webAppNode.getWebAppName())).start();
+                    .startStreamingLogs(project,subscriptionId,webAppId,webAppName,deploymentSlotName)).start();
         });
     }
 }

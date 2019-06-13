@@ -64,6 +64,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNod
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,6 +128,9 @@ public class NodeActionsMap {
             .add(CreateDeploymentAction.class).build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 }

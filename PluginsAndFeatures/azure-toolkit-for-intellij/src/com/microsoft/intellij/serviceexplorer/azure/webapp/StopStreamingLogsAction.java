@@ -28,30 +28,42 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.webapp.WebAppStreamingLogConsoleViewProvider;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 @Name("Stop Streaming Logs")
 public class StopStreamingLogsAction extends NodeActionListener {
 
-    private final WebAppNode webAppNode;
+    private final Node node;
+    private String webAppId;
+    private String deploymentSlotName;
 
     public StopStreamingLogsAction(WebAppNode webAppNode) {
         super(webAppNode);
-        this.webAppNode = webAppNode;
+        this.node = webAppNode;
+        this.webAppId = webAppNode.getWebAppId();
+    }
+
+    public StopStreamingLogsAction(DeploymentSlotNode deploymentSlotNode) {
+        super(deploymentSlotNode);
+        this.node = deploymentSlotNode;
+        this.webAppId = deploymentSlotNode.getWebAppId();
+        this.deploymentSlotName = deploymentSlotNode.getName();
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        EventUtil.executeWithLog(WEBAPP, "Test",
+        EventUtil.executeWithLog(WEBAPP, "StopStreamingLog",
                 (operation) -> {
-                    WebAppStreamingLogConsoleViewProvider.INSTANCE.stopStreamingLogs(webAppNode.getWebAppId());
+                    WebAppStreamingLogConsoleViewProvider.INSTANCE.stopStreamingLogs(webAppId, deploymentSlotName);
                 },
                 (exception)->{
-                    UIUtils.showNotification((Project) webAppNode.getProject(),exception.getMessage(), MessageType.ERROR);
+                    UIUtils.showNotification((Project) node.getProject(),exception.getMessage(), MessageType.ERROR);
                 });
     }
 }

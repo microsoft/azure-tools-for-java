@@ -24,7 +24,10 @@
 package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -51,7 +54,8 @@ import rx.schedulers.Schedulers;
 
 public class AzureMvpModel {
 
-    private static final String CANNOT_GET_RESOURCE_GROUP = "Cannot get Resource Group.";
+    public static final String CANNOT_GET_RESOURCE_GROUP = "Cannot get Resource Group.";
+    public static final String APPLICATION_LOG_NOT_ENABLED = "Application log is not enabled.";
 
     private AzureMvpModel() {
     }
@@ -218,12 +222,49 @@ public class AzureMvpModel {
      *
      * @param sid subscription
      * @param appServiceId appServiceId
-     * @return Log Streaming
+     * @return
      * @throws IOException
      */
     public Observable<String> getAppServiceStreamingLogs(String sid, String appServiceId) throws IOException{
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        return azure.webApps().getById(appServiceId).streamAllLogsAsync();
+        WebApp webApp = azure.webApps().getById(appServiceId);
+        if (webApp.diagnosticLogsConfig().applicationLoggingFileSystemLogLevel() != LogLevel.OFF) {
+            return webApp.streamAllLogsAsync();
+        } else {
+            throw new IOException(APPLICATION_LOG_NOT_ENABLED);
+        }
+    }
+
+    public void enableAppServiceContainerLogging(String sid, String appServiceId) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        WebApp webApp = azure.webApps().getById(appServiceId);
+        webApp.update().withContainerLoggingEnabled().apply();
+    }
+
+    /**
+     * Get Log Streaming of AppService Deployment Slots
+     *
+     * @param sid subscription
+     * @param appServiceId appServiceId
+     * @return
+     * @throws IOException
+     */
+    public Observable<String> getAppServiceSlotStreamingLogs(String sid, String appServiceId, String slotName) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        WebApp webApp = azure.webApps().getById(appServiceId);
+        DeploymentSlot deploymentSlot = webApp.deploymentSlots().getByName(slotName);
+        if (deploymentSlot.diagnosticLogsConfig().applicationLoggingFileSystemLogLevel() != LogLevel.OFF) {
+            return deploymentSlot.streamAllLogsAsync();
+        } else {
+            throw new IOException(APPLICATION_LOG_NOT_ENABLED);
+        }
+    }
+
+    public void enableDeploymentSlotLogging(String sid, String appServiceId, String slotName) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        WebApp webApp = azure.webApps().getById(appServiceId);
+        DeploymentSlot deploymentSlot = webApp.deploymentSlots().getByName(slotName);
+        deploymentSlot.update().withContainerLoggingEnabled().apply();
     }
 
     /**

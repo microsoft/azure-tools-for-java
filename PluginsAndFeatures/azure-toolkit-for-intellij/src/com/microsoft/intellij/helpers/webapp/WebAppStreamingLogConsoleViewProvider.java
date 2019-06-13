@@ -33,13 +33,17 @@ import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.intellij.ui.util.UIUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.microsoft.azuretools.core.mvp.model.AzureMvpModel.APPLICATION_LOG_NOT_ENABLED;
 
 public enum WebAppStreamingLogConsoleViewProvider {
     INSTANCE;
@@ -50,24 +54,50 @@ public enum WebAppStreamingLogConsoleViewProvider {
     private Map<String, WebAppStreamingLogConsoleView> consoleViewMap = new HashMap<>();
     private Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
 
-    public void startStreamingLogs(Project project, String subscriptionId, String webAppId, String webAppName) {
+    public void startStreamingLogs(Project project, String subscriptionId, String webAppId, String webAppName, String slotName) {
         ApplicationManager.getApplication().invokeLater(() -> {
             try {
+                String id = getConsoleId(webAppId, slotName);
                 ToolWindow toolWindow = getToolWindow(project);
-                WebAppStreamingLogConsoleView consoleView = consoleViewMap.containsKey(webAppId) ?
-                        consoleViewMap.get(webAppId) :
-                        createConsoleView(toolWindow, project, subscriptionId, webAppId, webAppName);
+                WebAppStreamingLogConsoleView consoleView = consoleViewMap.containsKey(id) ?
+                        consoleViewMap.get(id) :
+                        createConsoleView(toolWindow, project, subscriptionId, webAppId, webAppName, slotName);
                 consoleView.startStreamingLog();
                 showConsoleView(toolWindow, webAppId);
             } catch (Exception e) {
-                UIUtils.showNotification(project, e.getMessage(), MessageType.ERROR);
+                if (e instanceof IOException && e.getMessage().equals(APPLICATION_LOG_NOT_ENABLED)) {
+                    enableStreamingLog(project, subscriptionId, webAppId, webAppName, slotName);
+                } else {
+                    UIUtils.showNotification(project, e.getMessage(), MessageType.ERROR);
+                }
             }
         });
     }
 
-    public void stopStreamingLogs(String webAppId) {
-        if (consoleViewMap.containsKey(webAppId)) {
-            consoleViewMap.get(webAppId).closeStreamingLog();
+    private void enableStreamingLog(Project project, String subscriptionId, String webAppId, String webAppName, String slotName) {
+        int res = JOptionPane.showConfirmDialog(null,
+                String.format("Do you want to enable file logging for %s", getConsoleName(webAppName, slotName)),
+                "Enable logging",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (res == JOptionPane.OK_OPTION) {
+            try {
+                if (StringUtils.isEmpty(slotName)) {
+                    AzureMvpModel.getInstance().enableAppServiceContainerLogging(subscriptionId, webAppId);
+                } else {
+                    AzureMvpModel.getInstance().enableDeploymentSlotLogging(subscriptionId, webAppId, slotName);
+                }
+                startStreamingLogs(project, subscriptionId, webAppId, webAppName, slotName);
+            } catch (Exception e) {
+                UIUtils.showNotification(project, e.getMessage(), MessageType.ERROR);
+            }
+        }
+    }
+
+    public void stopStreamingLogs(String webAppId, String slotName) {
+        String id = getConsoleId(webAppId, slotName);
+        WebAppStreamingLogConsoleView consoleView = consoleViewMap.get(id);
+        if (id != null && consoleView.isEnable()) {
+            consoleViewMap.get(id).closeStreamingLog();
         } else {
             throw new RuntimeException(STREAMING_LOG_NOT_STARTED);
         }
@@ -75,15 +105,19 @@ public enum WebAppStreamingLogConsoleViewProvider {
 
     private WebAppStreamingLogConsoleView createConsoleView(ToolWindow toolWindow, Project project,
                                                             String subscriptionId, String webAppId,
-                                                            String webAppName) throws IOException {
+                                                            String webAppName, String slotName) throws IOException {
+        Observable<String> streamingLogs = StringUtils.isEmpty(slotName) ?
+                AzureMvpModel.getInstance().getAppServiceStreamingLogs(subscriptionId, webAppId) :
+                AzureMvpModel.getInstance().getAppServiceSlotStreamingLogs(subscriptionId, webAppId, slotName);
+
+        String consoleName = getConsoleName(webAppName, slotName);
         ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
         Content content = toolWindow.getContentManager().getFactory()
-                .createContent(consoleView.getComponent(), webAppName, false);
-        content.setDescription(webAppId);
+                .createContent(consoleView.getComponent(), consoleName, false);
+        // Set id to content description, in order to find and close it
+        content.setDescription(getConsoleId(webAppId, slotName));
         toolWindow.getContentManager().addContent(content);
 
-        Observable<String> streamingLogs = AzureMvpModel.getInstance()
-                .getAppServiceStreamingLogs(subscriptionId, webAppId);
         WebAppStreamingLogConsoleView logConsoleView = new WebAppStreamingLogConsoleView(streamingLogs, consoleView);
         consoleViewMap.put(webAppId, logConsoleView);
         return logConsoleView;
@@ -95,8 +129,7 @@ public enum WebAppStreamingLogConsoleViewProvider {
         Content consoleViewContent = Arrays.stream(toolWindow.getContentManager().getContents())
                 .filter(content -> content.getDescription().equals(webAppId))
                 .findAny().orElse(null);
-        ApplicationManager.getApplication().invokeLater(
-                () -> toolWindow.getContentManager().setSelectedContent(consoleViewContent));
+        toolWindow.getContentManager().setSelectedContent(consoleViewContent);
     }
 
     private ToolWindow getToolWindow(Project project) {
@@ -111,11 +144,18 @@ public enum WebAppStreamingLogConsoleViewProvider {
                 Content content = contentManagerEvent.getContent();
                 if (consoleViewMap.containsKey(content.getDescription())) {
                     consoleViewMap.get(content.getDescription()).closeStreamingLog();
-                    consoleViewMap.remove(content.getDescription());
                 }
             }
         });
         return toolWindow;
+    }
+
+    private String getConsoleId(String webappId, String slotName) {
+        return StringUtils.isEmpty(slotName) ? webappId : String.format("%s-%s", webappId, slotName);
+    }
+
+    private String getConsoleName(String webappName, String slotName) {
+        return StringUtils.isEmpty(slotName) ? webappName : String.format("%s-%s", webappName, slotName);
     }
 
 }
