@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.microsoft.azuretools.core.mvp.model.AzureMvpModel.APPLICATION_LOG_NOT_ENABLED;
+//import static com.microsoft.azuretools.core.mvp.model.AzureMvpModel.APPLICATION_LOG_NOT_ENABLED;
 
 public enum WebAppStreamingLogConsoleViewProvider {
     INSTANCE;
@@ -50,7 +50,7 @@ public enum WebAppStreamingLogConsoleViewProvider {
     public static final String LOG_TOOL_WINDOW = "Azure Streaming Log";
     public static final String STREAMING_LOG_NOT_STARTED = "Streaming log is not started.";
 
-    private Map<String, WebAppStreamingLogConsoleView> consoleViewMap = new  HashMap<>();
+    private Map<String, WebAppStreamingLogConsoleView> consoleViewMap = new HashMap<>();
     private Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
 
     public void startStreamingLogs(Project project, String subscriptionId, String webAppId, String webAppName, String slotName) {
@@ -63,32 +63,32 @@ public enum WebAppStreamingLogConsoleViewProvider {
             consoleView.startStreamingLog();
             showConsoleView(toolWindow, consoleView.getLogConsole());
         } catch (IOException e) {
-            if (e instanceof IOException && e.getMessage().equals(APPLICATION_LOG_NOT_ENABLED)) {
-                enableStreamingLog(project, subscriptionId, webAppId, webAppName, slotName);
-            } else {
-                UIUtils.showNotification(project, e.getMessage(), MessageType.ERROR);
-            }
+//            if (e instanceof IOException && e.getMessage().equals(APPLICATION_LOG_NOT_ENABLED)) {
+//                enableStreamingLog(project, subscriptionId, webAppId, webAppName, slotName);
+//            } else {
+            UIUtils.showNotification(project, e.getMessage(), MessageType.ERROR);
+//            }
         }
     }
 
-    private void enableStreamingLog(Project project, String subscriptionId, String webAppId, String webAppName, String slotName) {
-        int res = JOptionPane.showConfirmDialog(null,
-                String.format("Do you want to enable file logging for %s", getConsoleName(webAppName, slotName)),
-                "Enable logging",
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-        if (res == JOptionPane.OK_OPTION) {
-            try {
-                if (StringUtils.isEmpty(slotName)) {
-                    AzureMvpModel.getInstance().enableAppServiceContainerLogging(subscriptionId, webAppId);
-                } else {
-                    AzureMvpModel.getInstance().enableDeploymentSlotLogging(subscriptionId, webAppId, slotName);
-                }
-                startStreamingLogs(project, subscriptionId, webAppId, webAppName, slotName);
-            } catch (Exception e) {
-                UIUtils.showNotification(project, e.getMessage(), MessageType.ERROR);
-            }
-        }
-    }
+//    private void enableStreamingLog(Project project, String subscriptionId, String webAppId, String webAppName, String slotName) {
+//        int res = JOptionPane.showConfirmDialog(null,
+//                String.format("Do you want to enable file logging for %s", getConsoleName(webAppName, slotName)),
+//                "Enable logging",
+//                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+//        if (res == JOptionPane.OK_OPTION) {
+//            try {
+//                if (StringUtils.isEmpty(slotName)) {
+//                    AzureMvpModel.getInstance().enableAppServiceContainerLogging(subscriptionId, webAppId);
+//                } else {
+//                    AzureMvpModel.getInstance().enableDeploymentSlotLogging(subscriptionId, webAppId, slotName);
+//                }
+//                startStreamingLogs(project, subscriptionId, webAppId, webAppName, slotName);
+//            } catch (Exception e) {
+//                UIUtils.showNotification(project, e.getMessage(), MessageType.ERROR);
+//            }
+//        }
+//    }
 
     public void stopStreamingLogs(String webAppId, String slotName) {
         String id = getConsoleViewId(webAppId, slotName);
@@ -123,7 +123,7 @@ public enum WebAppStreamingLogConsoleViewProvider {
     }
 
     private void showConsoleView(ToolWindow toolWindow, ConsoleView consoleView) {
-        ApplicationManager.getApplication().invokeLater(()->{
+        ApplicationManager.getApplication().invokeLater(() -> {
             toolWindow.show(() -> {
             });
             Content consoleViewContent = toolWindow.getContentManager().getContent((JComponent) consoleView);

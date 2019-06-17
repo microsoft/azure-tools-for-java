@@ -23,7 +23,6 @@ package com.microsoft.intellij.helpers.webapp;
 
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.application.ApplicationManager;
 import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
