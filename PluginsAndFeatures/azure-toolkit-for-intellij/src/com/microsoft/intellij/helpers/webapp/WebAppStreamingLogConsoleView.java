@@ -24,31 +24,23 @@ package com.microsoft.intellij.helpers.webapp;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.colors.TextAttributesKey;
 import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import static com.intellij.execution.ui.ConsoleViewContentType.NORMAL_OUTPUT;
+import static com.intellij.execution.ui.ConsoleViewContentType.SYSTEM_OUTPUT;
 
 public class WebAppStreamingLogConsoleView {
 
     private static final String SEPARATOR = System.getProperty("line.separator");
-    private static final Map<String, ConsoleViewContentType> LOG_LEVEL = new HashMap<>();
+    private static final String START_LOG_STREAMING = "Connecting to log stream...";
+    private static final String STOP_LOG_STREAMING = "Disconnected from log-streaming service.";
 
     private Observable<String> logStreaming;
     private Subscription subscription;
     private ConsoleView logConsole;
-    private boolean enable = false;
 
-    static {
-        LOG_LEVEL.put("INFO", ConsoleViewContentType.LOG_INFO_OUTPUT);
-        LOG_LEVEL.put("WARNING", ConsoleViewContentType.LOG_WARNING_OUTPUT);
-        LOG_LEVEL.put("ERROR", ConsoleViewContentType.LOG_ERROR_OUTPUT);
-        LOG_LEVEL.put("DEBUG", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
-    }
 
     public WebAppStreamingLogConsoleView(Observable<String> logStreaming, ConsoleView logConsole) {
         this.logStreaming = logStreaming;
@@ -56,25 +48,28 @@ public class WebAppStreamingLogConsoleView {
     }
 
     public void startStreamingLog() {
-        if (!enable) {
+        if (!isEnable()) {
+            printlnToConsole(START_LOG_STREAMING, SYSTEM_OUTPUT);
             subscription = logStreaming.subscribeOn(Schedulers.io())
-                    .doAfterTerminate(() -> logConsole.print("Disconnected from log-streaming service." + SEPARATOR, ConsoleViewContentType.SYSTEM_OUTPUT))
-                    .subscribe((log) -> {
-                        String logLevel = LOG_LEVEL.keySet().stream().filter(level -> log.contains(level)).findAny().orElse(null);
-                        ConsoleViewContentType type = logLevel == null ? ConsoleViewContentType.NORMAL_OUTPUT : LOG_LEVEL.get(logLevel);
-                        ApplicationManager.getApplication().invokeLater(() -> logConsole.print(log + SEPARATOR, type));
-                    });
-            enable = true;
+                    .doAfterTerminate(() -> printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT))
+                    .subscribe((log) -> printlnToConsole(log, NORMAL_OUTPUT));
         }
     }
 
     public void closeStreamingLog() {
         subscription.unsubscribe();
-        logConsole.print("Disconnected from log-streaming service." + SEPARATOR, ConsoleViewContentType.SYSTEM_OUTPUT);
-        enable = false;
+        printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT);
     }
 
     public boolean isEnable() {
-        return enable;
+        return subscription != null && !subscription.isUnsubscribed();
+    }
+
+    public ConsoleView getLogConsole(){
+        return logConsole;
+    }
+
+    private void printlnToConsole(String message, ConsoleViewContentType consoleViewContentType) {
+        logConsole.print(message + SEPARATOR, consoleViewContentType);
     }
 }

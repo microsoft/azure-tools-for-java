@@ -21,6 +21,9 @@
  */
 package com.microsoft.intellij.serviceexplorer.azure.webapp;
 
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -31,6 +34,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+import org.jetbrains.annotations.NotNull;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
@@ -67,8 +71,13 @@ public class StartStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(WEBAPP, "StartStreamingLog", operation -> {
-            new Thread(() -> WebAppStreamingLogConsoleViewProvider.INSTANCE
-                    .startStreamingLogs(project,subscriptionId,webAppId,webAppName,deploymentSlotName)).start();
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Start Streaming Logs", true) {
+                @Override
+                public void run(@NotNull ProgressIndicator progressIndicator) {
+                    WebAppStreamingLogConsoleViewProvider.INSTANCE
+                            .startStreamingLogs(project, subscriptionId, webAppId, webAppName, deploymentSlotName);
+                }
+            });
         });
     }
 }

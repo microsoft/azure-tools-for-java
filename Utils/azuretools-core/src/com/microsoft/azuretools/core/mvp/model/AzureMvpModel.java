@@ -28,6 +28,7 @@ import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -228,7 +229,7 @@ public class AzureMvpModel {
     public Observable<String> getAppServiceStreamingLogs(String sid, String appServiceId) throws IOException{
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         WebApp webApp = azure.webApps().getById(appServiceId);
-        if (webApp.diagnosticLogsConfig().applicationLoggingFileSystemLogLevel() != LogLevel.OFF) {
+        if (isServerLogEnabled(webApp.diagnosticLogsConfig())) {
             return webApp.streamAllLogsAsync();
         } else {
             throw new IOException(APPLICATION_LOG_NOT_ENABLED);
@@ -252,9 +253,10 @@ public class AzureMvpModel {
     public Observable<String> getAppServiceSlotStreamingLogs(String sid, String appServiceId, String slotName) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         WebApp webApp = azure.webApps().getById(appServiceId);
+
         DeploymentSlot deploymentSlot = webApp.deploymentSlots().getByName(slotName);
-        if (deploymentSlot.diagnosticLogsConfig().applicationLoggingFileSystemLogLevel() != LogLevel.OFF) {
-            return deploymentSlot.streamAllLogsAsync();
+        if (isServerLogEnabled(deploymentSlot.diagnosticLogsConfig())) {
+            return deploymentSlot.streamHttpLogsAsync();
         } else {
             throw new IOException(APPLICATION_LOG_NOT_ENABLED);
         }
@@ -265,6 +267,10 @@ public class AzureMvpModel {
         WebApp webApp = azure.webApps().getById(appServiceId);
         DeploymentSlot deploymentSlot = webApp.deploymentSlots().getByName(slotName);
         deploymentSlot.update().withContainerLoggingEnabled().apply();
+    }
+
+    private boolean isServerLogEnabled(WebAppDiagnosticLogs webAppDiagnosticLogs){
+        return webAppDiagnosticLogs.inner().httpLogs().fileSystem().enabled();
     }
 
     /**
