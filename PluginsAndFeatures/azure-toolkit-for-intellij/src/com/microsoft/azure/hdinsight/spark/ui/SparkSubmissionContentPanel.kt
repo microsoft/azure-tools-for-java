@@ -47,32 +47,28 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm
-import com.microsoft.azure.hdinsight.spark.common.*
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Error
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Warning
-import com.microsoft.azure.hdinsight.spark.ui.filesystem.*
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
-import com.microsoft.intellij.forms.ErrorMessageForm
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.lang.containsInvisibleChars
 import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
-import com.microsoft.intellij.util.PluginUtil
-import com.sun.glass.ui.Application
 import org.apache.commons.lang3.StringUtils
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ItemEvent
 import java.io.IOException
-import java.net.URI
-import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -324,7 +320,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             if (root == null) {
                 StorageChooser.handleInvalidUploadInfo()
             } else {
-                val chooser = StorageChooser(root) { file -> file.isDirectory || !file.name.endsWith(".jar") }
+                val chooser = StorageChooser(root, StorageChooser.ALL_DIRS_AND_FILES)
                 val chooseFiles = chooser.chooseFile()
                 if (chooseFiles.isNotEmpty()) {
                     text = chooseFiles.joinToString(";") { vf -> vf.url }

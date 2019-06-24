@@ -27,17 +27,18 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.uiDesigner.core.GridConstraints.*
-import com.intellij.util.io.storage.Storage
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxModelDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.*
-import com.microsoft.azure.hdinsight.spark.ui.filesystem.*
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.ADLSGen2FileSystem
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AdlsGen2VirtualFile
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFileSystem
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
@@ -157,13 +158,13 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
             var fileSystem: AzureStorageVirtualFileSystem? = null
             var account: String? = null
             var accessKey: String? = null
-            var fsType: VFSSupportStorageType? = null
+            var fsType: AzureStorageVirtualFileSystem.VFSSupportStorageType? = null
             try {
                 when (viewModel.deployStorageTypeSelection) {
                     SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT -> {
                         when (storageAccount) {
                             is ADLSGen2StorageAccount -> {
-                                fsType = VFSSupportStorageType.ADLSGen2
+                                fsType = AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2
                                 account = storageAccount.name
                                 accessKey = storageAccount.primaryKey
                             }
@@ -171,7 +172,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
                     }
 
                     SparkSubmitStorageType.ADLS_GEN2 -> {
-                        fsType = VFSSupportStorageType.ADLSGen2
+                        fsType = AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2
                         val host = URI.create(uploadRootPath).host
                         val account = host.substring(0, host.indexOf("."))
                         var accessKey = adlsGen2Card.storageKeyField.text.trim()
@@ -185,14 +186,13 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
             }
 
             when (fsType) {
-                VFSSupportStorageType.ADLSGen2 -> {
+                AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2 -> {
                     if (StringUtils.isBlank(account) || StringUtils.isBlank(accessKey)) {
                         return null
                     }
 
                     fileSystem = ADLSGen2FileSystem(SharedKeyHttpObservable(account, accessKey), uploadRootPath)
-                    return if (fileSystem != null) AdlsGen2VirtualFile(fileSystem.root, true, fileSystem)
-                    else null
+                    return fileSystem?.let { AdlsGen2VirtualFile((it as ADLSGen2FileSystem).root, true, fileSystem) }
                 }
                 else -> {
                     return null
