@@ -116,7 +116,7 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
   }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.DOCKER;
     }
 

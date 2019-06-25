@@ -30,6 +30,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSpa
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetry.TelemetryConstants
 import com.microsoft.intellij.common.CommonConst
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
@@ -71,6 +72,14 @@ abstract class SelectSparkApplicationTypeAction
             presentation.icon = null
         }
     }
+
+    override fun getOperationName(event: AnActionEvent?): String {
+        return TelemetryConstants.SELECT_DEFAULT_SPARK_APPLICATION_TYPE
+    }
+
+    override fun getServiceName(event: AnActionEvent?): String {
+        return getSparkApplicationType().value
+    }
 }
 
 class SelectNoneSparkTypeAction : SelectSparkApplicationTypeAction() {
@@ -103,10 +112,10 @@ class SelectArisSparkTypeAction : SelectSparkApplicationTypeAction() {
     }
 }
 
-enum class SparkApplicationType {
-    None,
-    HDInsight,
-    CosmosSpark,
-    CosmosServerlessSpark,
-    ArisSpark,
+enum class SparkApplicationType(val value: String) {
+    None("none"),
+    HDInsight(TelemetryConstants.HDINSIGHT),
+    CosmosSpark(TelemetryConstants.SPARK_ON_COSMOS),
+    CosmosServerlessSpark(TelemetryConstants.SPARK_ON_COSMOS_SERVERLESS),
+    ArisSpark(TelemetryConstants.SPARK_ON_SQL_SERVER),
 }

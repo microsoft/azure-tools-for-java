@@ -24,10 +24,12 @@ package com.microsoft.azure.hdinsight.common.classifiedexception
 import com.microsoft.azure.datalake.store.ADLException
 import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import java.io.FileNotFoundException
 
 class SparkUserException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Spark User Error"
+    override val errorType = ErrorType.userError
 
     override fun handleByUser() {
     }

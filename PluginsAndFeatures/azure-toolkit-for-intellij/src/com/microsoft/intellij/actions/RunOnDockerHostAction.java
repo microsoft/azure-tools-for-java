@@ -65,7 +65,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.WEBAPP;
     }
 

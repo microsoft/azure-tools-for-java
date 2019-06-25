@@ -31,10 +31,14 @@ interface RunProfileStateWithAppInsightsEvent : RunProfileState {
 
     val appInsightsMessage: String
 
+    fun getPostEventProperties(executor: Executor, addedEventProps: Map<String, String>?): Map<String, String> {
+        return mapOf(
+            "Executor" to executor.id,
+            "ActionUuid" to uuid).plus(addedEventProps ?: emptyMap())
+    }
+
     fun createAppInsightEvent(executor: Executor, addedEventProps: Map<String, String>?): RunProfileState {
-        val postEventProps = mapOf(
-                "Executor" to executor.id,
-                "ActionUuid" to uuid).plus(addedEventProps ?: emptyMap())
+        val postEventProps = getPostEventProperties(executor, addedEventProps)
 
         AppInsightsClient.create(appInsightsMessage, null, postEventProps)
 

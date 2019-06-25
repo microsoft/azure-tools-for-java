@@ -117,9 +117,6 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<> ();
         final SparkBatchRemoteDebugState submissionState = (SparkBatchRemoteDebugState) state;
 
-        // Check parameters before starting
-        submissionState.checkSubmissionParameter();
-
         final SparkSubmitModel submitModel = submissionState.getSubmitModel();
         // Create SSH debug session firstly
         SparkBatchDebugSession session;

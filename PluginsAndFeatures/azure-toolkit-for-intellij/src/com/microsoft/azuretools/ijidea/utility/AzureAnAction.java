@@ -22,7 +22,8 @@
 
 package com.microsoft.azuretools.ijidea.utility;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -57,7 +58,7 @@ public abstract class AzureAnAction extends AnAction {
     @Override
     public final void actionPerformed(AnActionEvent anActionEvent) {
         sendTelemetryOnAction(anActionEvent, "Execute", null);
-        String serviceName = transformHDInsight(getServiceName(), anActionEvent);
+        String serviceName = transformHDInsight(getServiceName(anActionEvent), anActionEvent);
         String operationName = getOperationName(anActionEvent);
         EventUtil.executeWithLog(serviceName, operationName, (operation) -> {
             EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
@@ -85,7 +86,7 @@ public abstract class AzureAnAction extends AnAction {
         return properties;
     }
 
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.ACTION;
     }
 

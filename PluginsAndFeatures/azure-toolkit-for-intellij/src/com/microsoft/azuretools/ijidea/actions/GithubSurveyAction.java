@@ -35,7 +35,7 @@ public class GithubSurveyAction extends NewGithubIssueAction {
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.SYSTEM;
     }
 

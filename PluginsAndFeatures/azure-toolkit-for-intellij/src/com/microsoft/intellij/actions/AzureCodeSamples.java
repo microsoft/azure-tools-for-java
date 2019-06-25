@@ -19,7 +19,7 @@ public class AzureCodeSamples extends AzureAnAction {
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.SYSTEM;
     }
 

@@ -25,7 +25,6 @@ import com.intellij.compiler.options.CompileStepBeforeRun;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaExecutionUtil;
-import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
@@ -45,6 +44,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.*;
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -63,6 +63,10 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         LOCAL,
         REMOTE,
         REMOTE_DEBUG_EXECUTOR
+    }
+
+    public SparkApplicationType getSparkApplicationType() {
+        return SparkApplicationType.HDInsight;
     }
 
     @NotNull

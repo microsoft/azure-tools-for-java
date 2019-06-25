@@ -134,7 +134,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         notifyInfo(notificationContent);
     }
 
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.DOCKER;
     }
 

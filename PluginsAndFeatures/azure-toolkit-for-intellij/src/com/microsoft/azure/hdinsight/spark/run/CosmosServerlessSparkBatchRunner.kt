@@ -58,6 +58,7 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         }
         val storageRootPath = account.storageRootPath ?: throw ExecutionException("Error getting ADLS storage root path for account ${account.name}")
 
-        return CosmosServerlessSparkBatchJob(account, AdlsDeploy(storageRootPath, accessToken),submissionParameter, SparkBatchSubmission.getInstance(), ctrlSubject)
+        this.sparkBatchJob = CosmosServerlessSparkBatchJob(account, AdlsDeploy(storageRootPath, accessToken),submissionParameter, SparkBatchSubmission.getInstance(), ctrlSubject)
+        return this.sparkBatchJob as CosmosServerlessSparkBatchJob
     }
 }

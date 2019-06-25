@@ -22,12 +22,14 @@
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import org.apache.commons.lang.exception.ExceptionUtils
 
 abstract class ClassifiedException(exp: Throwable?) : Throwable(exp), ILogger {
     abstract val title: String
     override val message: String
         get() = cause?.message ?: EmptyLog
+    abstract val errorType: ErrorType
 
     fun getStackTrace(): String {
         return if (cause != null) ExceptionUtils.getStackTrace(cause) else message

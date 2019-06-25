@@ -76,7 +76,7 @@ public class EventUtil {
         logEvent(eventType, operation, properties, null);
     }
 
-    public static void logError(Operation operation, ErrorType errorType, Exception e,
+    public static void logError(Operation operation, ErrorType errorType, Throwable e,
         Map<String, String> properties, Map<String, Double> metrics) {
         ((DefaultOperation) operation).logError(errorType, e, properties, metrics);
     }

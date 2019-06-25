@@ -39,40 +39,32 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping;
-import com.microsoft.azure.hdinsight.sdk.common.*;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import rx.Observer;
 import rx.subjects.PublishSubject;
 
-import java.io.IOException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
+    @Nullable
+    protected ISparkBatchJob sparkBatchJob = null;
+    @Nullable
+    protected Operation operation = null;
+
     @NotNull
     @Override
     public String getRunnerId() {
@@ -95,7 +87,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
         Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, ctrlSubject);
-        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
+        this.sparkBatchJob = new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
+        return this.sparkBatchJob;
     }
 
     @Nullable
@@ -103,19 +96,23 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) throws ExecutionException {
         SparkBatchRemoteRunProfileState submissionState = (SparkBatchRemoteRunProfileState) state;
 
-        // Check parameters before starting
-        submissionState.checkSubmissionParameter();
+        submissionState.setOperation(getOperation());
 
         SparkSubmitModel submitModel = submissionState.getSubmitModel();
         Project project = submitModel.getProject();
 
         // Prepare the run table console view UI
         SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
-        PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
+
+        String artifactPath = submitModel.getArtifactPath().orElse(null);
+        assert artifactPath != null : "artifactPath should be checked in LivySparkBatchJobRunConfiguration::checkSubmissionConfigurationBeforeRun";
+        assert this.sparkBatchJob != null : "sparkBatchJob should be initialized in buildSparkBatchJob()";
+
+        PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = (PublishSubject) this.sparkBatchJob.getCtrlSubject();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
-                buildSparkBatchJob(submitModel, ctrlSubject),
-                submitModel.getArtifactPath().orElseThrow(() -> new ExecutionException("No artifact selected")),
+                this.sparkBatchJob,
+                artifactPath,
                 submitModel.getSubmissionParameter().getMainClassName(),
                 ctrlSubject);
         SparkBatchJobRunProcessHandler processHandler = new SparkBatchJobRunProcessHandler(remoteProcess, "Package and deploy the job to Spark cluster", null);
@@ -167,5 +164,15 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             LivySparkBatchJobRunConfiguration livyRunConfig = (LivySparkBatchJobRunConfiguration) runConfiguration;
             livyRunConfig.getModel().setFocusedTabIndex(1);
         }
+    }
+
+    @NotNull
+    public Operation getOperation() {
+        assert operation != null : "setOperation should be called first before calling getOperation";
+        return operation;
+    }
+
+    public void setOperation(@NotNull Operation operation) {
+        this.operation = operation;
     }
 }

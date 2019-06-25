@@ -80,7 +80,7 @@ public class DefaultOperation implements Operation {
         }
     }
 
-    public synchronized void logError(ErrorType errorType, Exception e, Map<String, String> properties,
+    public synchronized void logError(ErrorType errorType, Throwable e, Map<String, String> properties,
         Map<String, Double> metrics) {
         try {
             if (isComplete) {
