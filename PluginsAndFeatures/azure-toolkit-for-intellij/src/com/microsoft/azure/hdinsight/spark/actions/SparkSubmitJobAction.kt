@@ -39,7 +39,6 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetry.TelemetryConstants
 import com.microsoft.azuretools.telemetrywrapper.Operation
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager
 
 
 open class SparkSubmitJobAction : AzureAnAction() {
@@ -52,23 +51,22 @@ open class SparkSubmitJobAction : AzureAnAction() {
             false
         }
     }
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+
+    override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
         if (anActionEvent == null) {
-            return
+            return true
         }
         if (submitWithPopupMenu(anActionEvent)) {
-            return
+            return true
         }
 
-        val operation = TelemetryManager.createOperation(getServiceName(anActionEvent), getOperationName(anActionEvent))
-        operation.start()
-
         val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING) ?:
-                getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return
+                getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return true
         val clusterName = anActionEvent.dataContext.getData(CLUSTER)?.name
         val mainClassName = anActionEvent.dataContext.getData(MAIN_CLASS_NAME)
 
         submit(runConfigurationSetting, clusterName, mainClassName, operation)
+        return false
     }
 
     override fun update(event: AnActionEvent) {
@@ -87,7 +85,7 @@ open class SparkSubmitJobAction : AzureAnAction() {
     private fun submit(runConfigurationSetting: RunnerAndConfigurationSettings,
                        clusterName: String?,
                        mainClassName: String?,
-                       operation: Operation) {
+                       operation: Operation?) {
         val executor = ExecutorRegistry.getInstance().getExecutorById(SparkBatchJobRunExecutor.EXECUTOR_ID)
 
         runConfigurationSetting.isEditBeforeRun = true

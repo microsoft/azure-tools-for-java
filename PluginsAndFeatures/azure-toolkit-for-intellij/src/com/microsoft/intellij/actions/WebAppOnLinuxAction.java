@@ -38,10 +38,11 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
-import com.microsoft.intellij.runner.container.utils.Constant;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,10 +58,10 @@ public class WebAppOnLinuxAction extends AzureAnAction {
 
 
     @Override
-    public void onActionPerformed(AnActionEvent event) {
+    public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
-            return;
+            return true;
         }
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
@@ -69,6 +70,8 @@ public class WebAppOnLinuxAction extends AzureAnAction {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return true;
     }
 
     @Override

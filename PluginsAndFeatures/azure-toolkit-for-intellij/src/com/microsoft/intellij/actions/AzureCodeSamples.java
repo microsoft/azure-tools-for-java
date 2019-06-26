@@ -3,7 +3,10 @@ package com.microsoft.intellij.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jdesktop.swingx.JXHyperlink;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
 
@@ -12,10 +15,11 @@ import java.net.URI;
  */
 public class AzureCodeSamples extends AzureAnAction {
     @Override
-    public void onActionPerformed(AnActionEvent anActionEvent) {
+    public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         JXHyperlink portalLing = new JXHyperlink();
         portalLing.setURI(URI.create("https://azure.microsoft.com/en-us/documentation/samples/?platform=java"));
         portalLing.doClick();
+        return true;
     }
 
     @Override

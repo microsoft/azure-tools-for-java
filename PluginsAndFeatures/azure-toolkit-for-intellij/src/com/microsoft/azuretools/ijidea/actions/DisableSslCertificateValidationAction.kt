@@ -27,10 +27,11 @@ import com.intellij.openapi.actionSystem.Toggleable
 import com.microsoft.azure.hdinsight.common.CommonConst
 import com.microsoft.azuretools.ijidea.ui.BypassCertificateVerificationWarningForm
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 class DisableSslCertificateValidationAction : AzureAnAction(), Toggleable {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+    override fun onActionPerformed(anActionEvent: AnActionEvent?, operation: Operation?): Boolean {
         if (!isActionEnabled()) {
             val form = object : BypassCertificateVerificationWarningForm(anActionEvent?.project) {
                 override fun doOKAction() {
@@ -44,7 +45,7 @@ class DisableSslCertificateValidationAction : AzureAnAction(), Toggleable {
             anActionEvent!!.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
             DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
         }
-
+        return true
     }
 
     companion object {

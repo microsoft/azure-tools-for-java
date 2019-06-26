@@ -69,16 +69,48 @@ public class EventUtil {
 
     public static void logEvent(EventType eventType, Operation operation, Map<String, String> properties,
         Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
         ((DefaultOperation) operation).logEvent(eventType, properties, metrics);
     }
 
+    public static void logEventWithComplete(EventType eventType, Operation operation, Map<String, String> properties,
+                                Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
+        logEvent(eventType, operation, properties, metrics);
+        operation.complete();
+    }
+
     public static void logEvent(EventType eventType, Operation operation, Map<String, String> properties) {
+        if (operation == null) {
+            return;
+        }
+
         logEvent(eventType, operation, properties, null);
     }
 
     public static void logError(Operation operation, ErrorType errorType, Throwable e,
         Map<String, String> properties, Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
         ((DefaultOperation) operation).logError(errorType, e, properties, metrics);
+    }
+
+    public static void logErrorWithComplete(Operation operation, ErrorType errorType, Throwable e,
+                                Map<String, String> properties, Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
+        logError(operation, errorType, e, properties, metrics);
+        operation.complete();
     }
 
     public static void executeWithLog(String serviceName, String operName, Map<String, String> properties,

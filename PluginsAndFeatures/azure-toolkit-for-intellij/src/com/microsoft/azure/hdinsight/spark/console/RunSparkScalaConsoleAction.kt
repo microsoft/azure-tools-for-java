@@ -41,7 +41,6 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager
 import com.microsoft.intellij.util.runInReadAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
@@ -67,28 +66,25 @@ abstract class RunSparkScalaConsoleAction
         return super.getOperationName(event)
     }
 
-    override fun onActionPerformed(event: AnActionEvent) {
+    override fun onActionPerformed(event: AnActionEvent, operation: Operation?): Boolean {
         val dataContext = event.dataContext
-        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return
+        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return true
 
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration
 
-        val operation = TelemetryManager.createOperation(getServiceName(event), getOperationName(event))
-        operation.start()
-
         // Try current selected Configuration
         (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.run {
             runExisting(selectedConfigSettings, runManagerEx, operation)
-            return
+            return false
         }
 
         val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
         if (batchConfigurationType == null) {
             val action = ActionManagerEx.getInstance().getAction(selectedMenuActionId)
             action?.actionPerformed(event)
-            operation.complete()
-            return
+            operation?.complete()
+            return false
         }
 
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
@@ -99,6 +95,7 @@ abstract class RunSparkScalaConsoleAction
             // Create a new one to run
             createAndRun(batchConfigurationType, runManagerEx, project, newSettingName, runConfigurationHandler, operation)
         }
+        return false
     }
 
     private fun createAndRun(
@@ -107,7 +104,7 @@ abstract class RunSparkScalaConsoleAction
             project: Project,
             name: String,
             handler: Function1<RunConfiguration, BoxedUnit>,
-            operation: Operation) {
+            operation: Operation?) {
         runInReadAction {
             val factory = configurationType.configurationFactories[0]
             val setting = RunManager.getInstance(project).createConfiguration(name, factory)
@@ -124,7 +121,7 @@ abstract class RunSparkScalaConsoleAction
 
     private fun runExisting(setting: RunnerAndConfigurationSettings,
                             runManagerEx: RunManagerEx,
-                            operation: Operation) {
+                            operation: Operation?) {
         runInReadAction {
             runFromSetting(setting, runManagerEx, operation)
         }
@@ -136,7 +133,7 @@ abstract class RunSparkScalaConsoleAction
 
     private fun runFromSetting(setting: RunnerAndConfigurationSettings,
                                runManagerEx: RunManagerEx,
-                               operation: Operation) {
+                               operation: Operation?) {
         val configuration = setting.configuration
         runManagerEx.setTemporaryConfiguration(setting)
 

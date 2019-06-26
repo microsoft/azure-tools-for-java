@@ -39,7 +39,6 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager
 import com.microsoft.intellij.util.runInReadAction
 import javax.swing.Icon
 
@@ -102,11 +101,8 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
         }
     }
 
-    override fun onActionPerformed(actionEvent: AnActionEvent?) {
-        val operation = TelemetryManager.createOperation(getServiceName(actionEvent), getOperationName(actionEvent))
-        operation.start()
-
-        val project = actionEvent?.project ?: return
+    override fun onActionPerformed(actionEvent: AnActionEvent, operation: Operation?): Boolean {
+        val project = actionEvent?.project ?: return true
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration
 
@@ -117,8 +113,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
                     if (canRun(it)) {
                         runExisting(it, operation)
                     } else {
-                        EventUtil.logError(operation, ErrorType.userError, Exception("Not a runnable configuration"), null, null)
-                        operation.complete()
+                        EventUtil.logErrorWithComplete(operation, ErrorType.userError, Exception("Not a runnable configuration"), null, null)
                     }
                 }
             }
@@ -126,9 +121,8 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
                 // From context menu or Line marker action menu
                 if (!actionEvent.dataContext.isSparkContext()) {
                     // No action for out of Spark Context
-                    EventUtil.logError(operation, ErrorType.userError, Exception("Not in Spark context"), null, null)
-                    operation.complete()
-                    return
+                    EventUtil.logErrorWithComplete(operation, ErrorType.userError, Exception("Not in Spark context"), null, null)
+                    return false
                 }
 
                 // In Spark Context
@@ -150,8 +144,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
 
                     selectedConfigSettings.isEditBeforeRun = savedIsEditBeforeRun
                 } else {
-                    EventUtil.logError(operation, ErrorType.userError, Exception("Not a runnable configuration"), null, null)
-                    operation.complete()
+                    EventUtil.logErrorWithComplete(operation, ErrorType.userError, Exception("Not a runnable configuration"), null, null)
 
                     /**
                      * FIXME with [LivySparkBatchJobRunConfiguration.suggestedName]
@@ -160,15 +153,16 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
                 }
             }
         }
+        return false
     }
 
-    private fun runExisting(setting: RunnerAndConfigurationSettings, operation: Operation) {
+    private fun runExisting(setting: RunnerAndConfigurationSettings, operation: Operation?) {
         runInReadAction {
             runFromSetting(setting, operation)
         }
     }
 
-    private fun runFromSetting(setting: RunnerAndConfigurationSettings, operation: Operation) {
+    private fun runFromSetting(setting: RunnerAndConfigurationSettings, operation: Operation?) {
         val environment = ExecutionEnvironmentBuilder.create(runExecutor, setting).build()
 
         RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment, operation)

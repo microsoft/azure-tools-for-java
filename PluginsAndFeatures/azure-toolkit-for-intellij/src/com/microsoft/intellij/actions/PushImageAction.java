@@ -39,8 +39,11 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
 import com.microsoft.intellij.runner.container.utils.Constant;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,13 +55,15 @@ public class PushImageAction extends AzureAnAction {
 
 
     @Override
-    public void onActionPerformed(AnActionEvent event) {
+    public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
+
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
-            return;
+            return true;
         }
         ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+        return true;
     }
 
     @Override

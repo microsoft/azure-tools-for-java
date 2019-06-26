@@ -86,13 +86,12 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                             "IsSubmitSucceed" to "false",
                             "SubmitFailedReason" to HDInsightUtil.normalizeTelemetryMessage(errMessage))
                         createAppInsightEvent(it, additionalProperties)
-                        EventUtil.logError(
+                        EventUtil.logErrorWithComplete(
                             operation,
                             classifiedEx.errorType,
                             classifiedEx,
                             getPostEventProperties(it, additionalProperties),
                             null)
-                        operation?.complete()
 
                         consoleView!!.print("ERROR: $errMessage", ConsoleViewContentType.ERROR_OUTPUT)
                         classifiedEx.handleByUser()
@@ -112,7 +111,6 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
     open fun onSuccess(executor: Executor) {
         val additionalProperties = mapOf("IsSubmitSucceed" to "true")
         createAppInsightEvent(executor, additionalProperties)
-        EventUtil.logEvent(EventType.info, operation, getPostEventProperties(executor, additionalProperties))
-        operation?.complete()
+        EventUtil.logEventWithComplete(EventType.info, operation, getPostEventProperties(executor, additionalProperties), null)
     }
 }

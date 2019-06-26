@@ -21,9 +21,6 @@
  */
 package com.microsoft.azuretools.ijidea.actions;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
-
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
@@ -38,12 +35,16 @@ import com.microsoft.azuretools.ijidea.ui.SignInWindow;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
 
 public class AzureSignInAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
@@ -59,9 +60,10 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     @Override
-    public void onActionPerformed(AnActionEvent e) {
+    public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
         Project project = DataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
+        return true;
     }
 
     @Override

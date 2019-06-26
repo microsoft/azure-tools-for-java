@@ -53,7 +53,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
         val clusterId = submitModel.clusterId
         try {
             val clusterDetail = AzureSparkCosmosClusterManager.getInstance().findCluster(accountName, clusterId)
-                .toBlocking().singleOrDefault(null) ?: throw Exception("Can't get Spark on Cosmos cluster")
+                .toBlocking().singleOrDefault(null) ?: throw ExecutionException("Can't get Spark on Cosmos cluster")
 
             val livyUri = submitModel.livyUri?.let { URI.create(it) }
                 ?: clusterDetail.get().toBlocking().singleOrDefault(clusterDetail).livyUri

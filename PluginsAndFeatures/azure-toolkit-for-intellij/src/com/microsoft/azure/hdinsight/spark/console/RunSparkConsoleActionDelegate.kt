@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import java.lang.reflect.Method
 
 // The Action is a bridge to connect Scala related actions with dependent Scala Plugin actions by reflection
@@ -52,8 +53,10 @@ open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : Az
         }
     }
 
-    override fun onActionPerformed(actionEvent: AnActionEvent) {
+    override fun onActionPerformed(actionEvent: AnActionEvent, operation: Operation?): Boolean {
         actionPerformedMethod?.invoke(delegate.sparkScalaObj, actionEvent)
+        // FIXME: We should pass the operation object to the real method and send telemtry in the method
+        return true
     }
 }
 

@@ -26,9 +26,13 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitResponse
 import com.microsoft.azure.hdinsight.spark.common.SparkUITest
-import com.microsoft.azure.hdinsight.spark.ui.livy.batch.*
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableModel
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableModel.JobPage
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableViewport
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobViewer
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.UniqueColumnNameTableSchema
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import org.junit.Ignore
 import org.junit.Test
 import rx.Observable
@@ -37,14 +41,16 @@ import java.awt.event.WindowEvent
 import java.util.concurrent.TimeUnit
 
 class KillLivyJobAction : AzureAnAction(AllIcons.Actions.Cancel) {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+    override fun onActionPerformed(anActionEvent: AnActionEvent?, operation: Operation?): Boolean {
         System.out.println("Clicked ${anActionEvent?.place} kill job button")
+        return true
     }
 }
 
 class RestartLivyJobAction : AzureAnAction(AllIcons.Actions.Restart) {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+    override fun onActionPerformed(anActionEvent: AnActionEvent?, operation: Operation?): Boolean {
         System.out.println("Clicked ${anActionEvent?.place} restart job button")
+        return true
     }
 }
 

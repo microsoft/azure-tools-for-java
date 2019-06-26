@@ -40,20 +40,19 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
 
 object RunConfigurationActionUtils: ILogger {
-    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment, operation: Operation) {
+    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment, asyncOperation: Operation?) {
         val runner = ProgramRunner.getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
 
         try {
             if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
-                EventUtil.logError(operation, ErrorType.userError, ExecutionException("run config dialog closed"), null, null)
-                operation.complete()
+                EventUtil.logErrorWithComplete(asyncOperation, ErrorType.userError, ExecutionException("run config dialog closed"), null, null)
                 return
             }
 
             var configError = getRunConfigurationError(environment.runProfile, runner)
             while (configError != null) {
-                EventUtil.logError(operation, ErrorType.userError, ExecutionException(configError), null, null)
+                EventUtil.logError(asyncOperation, ErrorType.userError, ExecutionException(configError), null, null)
 
                 if (Messages.YES == Messages.showYesNoDialog(
                                 environment.project,
@@ -63,8 +62,7 @@ object RunConfigurationActionUtils: ILogger {
                                 "Continue Anyway",
                                 Messages.getErrorIcon())) {
                     if (!RunDialog.editConfiguration(environment, "Edit configuration")) {
-                        EventUtil.logError(operation, ErrorType.userError, ExecutionException("run config dialog closed"), null, null)
-                        operation.complete()
+                        EventUtil.logErrorWithComplete(asyncOperation, ErrorType.userError, ExecutionException("run config dialog closed"), null, null)
                         return
                     }
                 } else {
@@ -77,12 +75,13 @@ object RunConfigurationActionUtils: ILogger {
             environment.assignNewExecutionId()
 
             if (runner is SparkBatchJobRunner) {
-                runner.operation = operation
+                runner.operation = asyncOperation
             }
+
+            // asyncOperation is completed at class SparkBatchRemoteRunState
             runner.execute(environment)
         } catch (e: ExecutionException) {
-            EventUtil.logError(operation, ErrorType.userError, e, null, null)
-            operation.complete()
+            EventUtil.logErrorWithComplete(asyncOperation, ErrorType.userError, e, null, null)
 
             ProgramRunnerUtil.handleExecutionError(environment.project, environment, e, setting.configuration)
         }

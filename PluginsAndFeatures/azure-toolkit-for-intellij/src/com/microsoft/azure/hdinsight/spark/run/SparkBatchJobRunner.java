@@ -166,9 +166,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         }
     }
 
-    @NotNull
+    @Nullable
     public Operation getOperation() {
-        assert operation != null : "setOperation should be called first before calling getOperation";
         return operation;
     }
 
