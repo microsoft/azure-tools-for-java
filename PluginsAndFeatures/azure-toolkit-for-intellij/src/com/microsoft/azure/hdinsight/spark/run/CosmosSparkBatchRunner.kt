@@ -58,11 +58,10 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
             val livyUri = submitModel.livyUri?.let { URI.create(it) }
                 ?: clusterDetail.get().toBlocking().singleOrDefault(clusterDetail).livyUri
 
-             this.sparkBatchJob = CosmosSparkBatchJob(
-                    submitModel.submissionParameter,
-                    SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri),
-                    ctrlSubject)
-            return this.sparkBatchJob as CosmosSparkBatchJob
+            return CosmosSparkBatchJob(
+                submitModel.submissionParameter,
+                SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri),
+                ctrlSubject)
         } catch (e: Exception) {
             throw ExecutionException("Can't get Spark on Cosmos cluster, please sign in and refresh.", e)
         }

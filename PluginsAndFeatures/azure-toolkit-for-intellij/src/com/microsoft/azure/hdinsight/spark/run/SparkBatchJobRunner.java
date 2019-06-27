@@ -61,8 +61,6 @@ import java.util.regex.Pattern;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
     @Nullable
-    protected ISparkBatchJob sparkBatchJob = null;
-    @Nullable
     protected Operation operation = null;
 
     @NotNull
@@ -87,8 +85,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
         Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, ctrlSubject);
-        this.sparkBatchJob = new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
-        return this.sparkBatchJob;
+        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
     }
 
     @Nullable
@@ -106,12 +103,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         String artifactPath = submitModel.getArtifactPath().orElse(null);
         assert artifactPath != null : "artifactPath should be checked in LivySparkBatchJobRunConfiguration::checkSubmissionConfigurationBeforeRun";
-        assert this.sparkBatchJob != null : "sparkBatchJob should be initialized in buildSparkBatchJob()";
 
-        PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = (PublishSubject) this.sparkBatchJob.getCtrlSubject();
+        PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
-                this.sparkBatchJob,
+                buildSparkBatchJob(submitModel, ctrlSubject),
                 artifactPath,
                 submitModel.getSubmissionParameter().getMainClassName(),
                 ctrlSubject);
