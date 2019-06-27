@@ -39,6 +39,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetry.TelemetryConstants
 import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.telemetry.TelemetryKeys
 
 
 open class SparkSubmitJobAction : AzureAnAction() {
@@ -53,9 +54,6 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 
     override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
-        if (anActionEvent == null) {
-            return true
-        }
         if (submitWithPopupMenu(anActionEvent)) {
             return true
         }
@@ -108,7 +106,9 @@ open class SparkSubmitJobAction : AzureAnAction() {
         model.isLocalRunConfigEnabled = false   // Disable local run configuration tab
 
         val environment = ExecutionEnvironmentBuilder.create(executor, runConfigurationSetting).build()
-        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment, operation)
+        environment.putUserData(TelemetryKeys.OPERATION, operation)
+
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
 
         // Restore for common run configuration editor
         runConfigurationSetting.isEditBeforeRun = false

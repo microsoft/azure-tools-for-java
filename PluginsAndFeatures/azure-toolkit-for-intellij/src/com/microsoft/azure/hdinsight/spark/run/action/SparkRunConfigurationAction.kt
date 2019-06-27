@@ -39,6 +39,7 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.util.runInReadAction
 import javax.swing.Icon
 
@@ -102,7 +103,7 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
     }
 
     override fun onActionPerformed(actionEvent: AnActionEvent, operation: Operation?): Boolean {
-        val project = actionEvent?.project ?: return true
+        val project = actionEvent.project ?: return true
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration
 
@@ -164,7 +165,8 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
 
     private fun runFromSetting(setting: RunnerAndConfigurationSettings, operation: Operation?) {
         val environment = ExecutionEnvironmentBuilder.create(runExecutor, setting).build()
+        environment.putUserData(TelemetryKeys.OPERATION, operation)
 
-        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment, operation)
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
     }
 }

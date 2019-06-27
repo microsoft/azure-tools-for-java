@@ -48,7 +48,6 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import rx.Observer;
 import rx.subjects.PublishSubject;
@@ -60,9 +59,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
-    @Nullable
-    protected Operation operation = null;
-
     @NotNull
     @Override
     public String getRunnerId() {
@@ -92,8 +88,6 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     @Override
     protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) throws ExecutionException {
         SparkBatchRemoteRunProfileState submissionState = (SparkBatchRemoteRunProfileState) state;
-
-        submissionState.setOperation(getOperation());
 
         SparkSubmitModel submitModel = submissionState.getSubmitModel();
         Project project = submitModel.getProject();
@@ -160,14 +154,5 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             LivySparkBatchJobRunConfiguration livyRunConfig = (LivySparkBatchJobRunConfiguration) runConfiguration;
             livyRunConfig.getModel().setFocusedTabIndex(1);
         }
-    }
-
-    @Nullable
-    public Operation getOperation() {
-        return operation;
-    }
-
-    public void setOperation(@NotNull Operation operation) {
-        this.operation = operation;
     }
 }

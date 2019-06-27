@@ -40,16 +40,21 @@ import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel
 import com.microsoft.azure.hdinsight.spark.mock.SparkLocalRunner
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView
 import com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunParamsPanel
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import org.apache.commons.lang3.SystemUtils
 import java.io.File
 import java.nio.file.Paths
 import java.util.*
 
-open class SparkBatchLocalRunState(val myProject: Project, val model: SparkLocalRunConfigurableModel)
-    : RunProfileStateWithAppInsightsEvent {
-    override val uuid = UUID.randomUUID().toString()
-    override val appInsightsMessage = HDInsightBundle.message("SparkRunConfigLocalRunButtonClick")!!
+open class SparkBatchLocalRunState(val myProject: Project,
+                                   val model: SparkLocalRunConfigurableModel,
+                                   operation: Operation?,
+                                   appInsightsMessage: String) :
+    RunProfileStateWithAppInsightsEvent(UUID.randomUUID().toString(), appInsightsMessage, operation) {
+
+    constructor(myProject: Project, model: SparkLocalRunConfigurableModel, operation: Operation?) :
+            this(myProject, model, operation, HDInsightBundle.message("SparkRunConfigLocalRunButtonClick")!!)
 
     @Throws(ExecutionException::class)
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {

@@ -27,13 +27,17 @@ import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RemoteState
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 
-class SparkBatchLocalDebugState(myProject: Project, model: SparkLocalRunConfigurableModel)
-    : SparkBatchLocalRunState(myProject, model), RemoteState {
+class SparkBatchLocalDebugState(myProject: Project, model: SparkLocalRunConfigurableModel, operation: Operation?) :
+    SparkBatchLocalRunState(
+        myProject,
+        model,
+        operation,
+        HDInsightBundle.message("SparkRunConfigLocalDebugButtonClick")!!
+    ), RemoteState {
     private val remoteConnection = RemoteConnection(true, "127.0.0.1", "0", true)
-
-    override val appInsightsMessage = HDInsightBundle.message("SparkRunConfigLocalDebugButtonClick")!!
 
     override fun getRemoteConnection(): RemoteConnection = remoteConnection
 

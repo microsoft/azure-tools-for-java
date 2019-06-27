@@ -34,15 +34,15 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.ui.Messages
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.azuretools.telemetrywrapper.EventUtil
-import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.telemetry.TelemetryKeys
 
 object RunConfigurationActionUtils: ILogger {
-    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment, asyncOperation: Operation?) {
+    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment) {
         val runner = ProgramRunner.getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
+        val asyncOperation = environment.getUserData(TelemetryKeys.OPERATION)
 
         try {
             if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
@@ -73,10 +73,6 @@ object RunConfigurationActionUtils: ILogger {
             }
 
             environment.assignNewExecutionId()
-
-            if (runner is SparkBatchJobRunner) {
-                runner.operation = asyncOperation
-            }
 
             // asyncOperation is completed at class SparkBatchRemoteRunState
             runner.execute(environment)

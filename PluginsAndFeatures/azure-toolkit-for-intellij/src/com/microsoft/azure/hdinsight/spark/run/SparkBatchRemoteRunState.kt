@@ -41,14 +41,15 @@ import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import java.net.URI
 import java.util.*
 
-open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel)
-    : RunProfileStateWithAppInsightsEvent, SparkBatchRemoteRunProfileState  {
+open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel, operation: Operation?) :
+    RunProfileStateWithAppInsightsEvent(
+        UUID.randomUUID().toString(),
+        HDInsightBundle.message("SparkRunConfigRunButtonClick")!!,
+        operation
+    ), SparkBatchRemoteRunProfileState {
     override var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut? = null
     override var executionResult: ExecutionResult? = null
     override var consoleView: ConsoleView? = null
-    override val uuid = UUID.randomUUID().toString()
-    override val appInsightsMessage = HDInsightBundle.message("SparkRunConfigRunButtonClick")!!
-    override var operation: Operation? = null
 
     override fun execute(executor: Executor?, programRunner: ProgramRunner<*>): ExecutionResult? {
         if (remoteProcessCtrlLogHandler == null || executionResult == null || consoleView == null) {

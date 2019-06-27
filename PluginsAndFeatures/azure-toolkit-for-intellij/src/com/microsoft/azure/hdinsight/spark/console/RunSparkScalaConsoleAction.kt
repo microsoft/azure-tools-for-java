@@ -41,6 +41,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.util.runInReadAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
@@ -146,8 +147,9 @@ abstract class RunSparkScalaConsoleAction
         val environment = ExecutionEnvironmentBuilder.create(runExecutor, setting)
                 .runProfile(consoleRunConfigurationFactory.createConfiguration(configuration.name, configuration))
                 .build()
+        environment.putUserData(TelemetryKeys.OPERATION, operation)
 
-        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment, operation)
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
 
         if (configuration is LivySparkBatchJobRunConfiguration) {
             configuration.model.isLocalRunConfigEnabled = true

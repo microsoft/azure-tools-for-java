@@ -20,27 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run
+package com.microsoft.intellij.telemetry
 
-import com.intellij.execution.Executor
-import com.intellij.execution.configurations.RunProfileState
-import com.microsoft.azuretools.telemetry.AppInsightsClient
+import com.intellij.openapi.util.Key
 import com.microsoft.azuretools.telemetrywrapper.Operation
 
-abstract class RunProfileStateWithAppInsightsEvent(val uuid: String,
-                                                   val appInsightsMessage: String,
-                                                   val operation: Operation?) : RunProfileState {
-    fun getPostEventProperties(executor: Executor, addedEventProps: Map<String, String>?): Map<String, String> {
-        return mapOf(
-            "Executor" to executor.id,
-            "ActionUuid" to uuid).plus(addedEventProps ?: emptyMap())
-    }
-
-    fun createAppInsightEvent(executor: Executor, addedEventProps: Map<String, String>?): RunProfileState {
-        val postEventProps = getPostEventProperties(executor, addedEventProps)
-
-        AppInsightsClient.create(appInsightsMessage, null, postEventProps)
-
-        return this
+class TelemetryKeys {
+    companion object {
+        @JvmField val OPERATION: Key<Operation> = Key.create("operation")
     }
 }

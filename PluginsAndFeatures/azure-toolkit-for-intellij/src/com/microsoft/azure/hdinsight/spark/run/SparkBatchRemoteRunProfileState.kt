@@ -31,7 +31,6 @@ interface SparkBatchRemoteRunProfileState {
     var executionResult: ExecutionResult?
     var consoleView: ConsoleView?
     var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut?
-    var operation: Operation?
 
     fun getSubmitModel(): SparkSubmitModel
 }
