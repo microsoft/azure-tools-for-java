@@ -22,12 +22,13 @@
 
 package com.microsoft.azuretools.ijidea.utility;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -52,17 +53,34 @@ public abstract class AzureAnAction extends AnAction {
         super(text, description, icon);
     }
 
-    public abstract void onActionPerformed(AnActionEvent anActionEvent);
+    /**
+     * @param anActionEvent action event
+     * @param operation operation for sending telemetry
+     * @return if the action is a synchronous action, you should return true and let us complete the operation
+     * if the action is an asynchronous action, you should return false and control the operation completion by yourself
+     */
+    public abstract boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation);
 
     @Override
-    public final void actionPerformed(AnActionEvent anActionEvent) {
+    public final void actionPerformed(@NotNull AnActionEvent anActionEvent) {
         sendTelemetryOnAction(anActionEvent, "Execute", null);
-        String serviceName = transformHDInsight(getServiceName(), anActionEvent);
+        String serviceName = transformHDInsight(getServiceName(anActionEvent), anActionEvent);
         String operationName = getOperationName(anActionEvent);
-        EventUtil.executeWithLog(serviceName, operationName, (operation) -> {
+
+        Operation operation = TelemetryManager.createOperation(serviceName, operationName);
+        boolean actionReturnVal = true;
+        try {
+            operation.start();
             EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
-            onActionPerformed(anActionEvent);
-        });
+            actionReturnVal = onActionPerformed(anActionEvent, operation);
+        } catch (RuntimeException ex) {
+            EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
+            throw ex;
+        } finally {
+            if (actionReturnVal) {
+                operation.complete();
+            }
+        }
     }
 
     public void sendTelemetryOnAction(AnActionEvent anActionEvent, final String action, Map<String, String> extraInfo) {
@@ -85,7 +103,7 @@ public abstract class AzureAnAction extends AnAction {
         return properties;
     }
 
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.ACTION;
     }
 

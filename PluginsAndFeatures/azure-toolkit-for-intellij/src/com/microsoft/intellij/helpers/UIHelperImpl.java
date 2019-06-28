@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.helpers;
 
+import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
+
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -31,10 +33,13 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
+import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -47,6 +52,9 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.ErrorMessageForm;
 import com.microsoft.intellij.forms.OpenSSLFinderForm;
+import com.microsoft.intellij.helpers.arm.DeploymentPropertyView;
+import com.microsoft.intellij.helpers.arm.ResourceTemplateView;
+import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
@@ -55,10 +63,13 @@ import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
 import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -133,6 +144,21 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
+    public void showInfo(Node node, String s) {
+        showNotification(node, s, MessageType.INFO);
+    }
+
+    @Override
+    public void showError(Node node, String s) {
+        showNotification(node, s, MessageType.ERROR);
+    }
+
+    private void showNotification(Node node, String s, MessageType type) {
+        StatusBar statusBar = WindowManager.getInstance().getStatusBar((Project) node.getProject());
+        UIUtils.showNotification(statusBar, s, type);
+    }
+
+    @Override
     public void logError(String message, Throwable ex) {
         AzurePlugin.log(message, ex);
     }
@@ -143,9 +169,14 @@ public class UIHelperImpl implements UIHelper {
      */
     @Override
     public File showFileChooser(String title) {
+        return showFileSaver(title, "");
+    }
+
+    @Override
+    public File showFileSaver(String title, String fileName) {
         FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(title, "");
         final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, (Project) null);
-        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), "");
+        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), fileName);
 
         if (save != null) {
             return save.getFile();
@@ -356,6 +387,50 @@ public class UIHelperImpl implements UIHelper {
         }
         fileEditorManager.openFile( itemVirtualFile, true, true);
     }
+
+    @Override
+    public void openDeploymentPropertyView(DeploymentNode node) {
+        Project project = (Project) node.getProject();
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager == null) {
+            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
+            return;
+        }
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, TYPE, node.getId());
+        if (itemVirtualFile == null) {
+            itemVirtualFile = createVirtualFile(node.getName(), TYPE,
+                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+        }
+        FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
+        for (FileEditor fileEditor : fileEditors) {
+            if (fileEditor.getName().equals(DeploymentPropertyView.ID) && fileEditor instanceof DeploymentPropertyView) {
+                ((DeploymentPropertyView) fileEditor).onLoadProperty(node);
+            }
+        }
+    }
+
+    @Override
+    public void openResourceTemplateView(DeploymentNode node, String template) {
+        Project project = (Project) node.getProject();
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+        if (fileEditorManager == null) {
+            showError(CANNOT_GET_FILE_EDITOR_MANAGER, UNABLE_TO_OPEN_EDITOR_WINDOW);
+            return;
+        }
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, ResourceTemplateViewProvider.TYPE,
+            node.getId());
+        if (itemVirtualFile == null) {
+            itemVirtualFile = createVirtualFile(node.getName(), ResourceTemplateViewProvider.TYPE,
+                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+        }
+        FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
+        for (FileEditor fileEditor : fileEditors) {
+            if (fileEditor.getName().equals(ResourceTemplateView.ID) && fileEditor instanceof ResourceTemplateView) {
+                ((ResourceTemplateView) fileEditor).loadTemplate(node, template);
+            }
+        }
+    }
+
 
     @Override
     public void openInBrowser(String link) {

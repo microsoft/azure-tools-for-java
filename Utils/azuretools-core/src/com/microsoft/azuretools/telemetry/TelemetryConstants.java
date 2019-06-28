@@ -30,6 +30,7 @@ public class TelemetryConstants {
     // production name
     public static final String WEBAPP = "webapp";
     public static final String ACR = "acr";
+    public static final String ARM = "arm";
     public static final String DOCKER = "docker";
     public static final String VM = "vm";
     public static final String REDIS = "redis";
@@ -39,7 +40,10 @@ public class TelemetryConstants {
     public static final String ACTION = "action";
     public static final String DIALOG = "dialog";
     public static final String HDINSIGHT = "hdinsight";
-    public static final String VFS = "vfs";    // virtual file system
+    public static final String SPARK_ON_COSMOS = "sparkOnCosmos";
+    public static final String SPARK_ON_COSMOS_SERVERLESS = "sparkOnCosmosServerless";
+    public static final String SPARK_ON_SQL_SERVER = "sparkOnSqlServer";
+    public static final String VFS = "virtualFileSystem";
 
     // operation value
     public static final String FEEDBACK = "feedback";
@@ -121,6 +125,18 @@ public class TelemetryConstants {
     public static final String SIGNIN_DC = "dc";
     public static final String SIGNIN_SP = "sp";
     public static final String CHOOSE_REFERENCE_JAR_GEN2 = "choose-reference-jar-gen2";
+    public static final String CREATE_DEPLOYMENT = "create-deployment";
+    public static final String UPDATE_DEPLOYMENT = "update-deployment";
+    public static final String DELETE_DEPLOYMENT = "delete-deployment";
+    public static final String DELETE_RESOURCE_GROUP = "delete-resource-group";
+    public static final String EXPORT_TEMPALTE_FILE = "export-template-file";
+    public static final String SHOW_DEPLOYMENT_PROPERTY = "show-deployment-property";
+    public static final String VIEW_TEMPALTE_FILE = "view-template-file";
+    public static final String UPDATE_DEPLOYMENT_SHORTCUT = "update-deployment-shortcut";
+    public static final String BROWSE_TEMPLATE_SAMPLES = "browse-template-samples";
+    public static final String ACTIVATE_TEMPLATE_DEITING = "activate-template-editing";
+    public static final String RUN_REMOTE_SPARK_JOB = "run-remote-spark-job";
+    public static final String SELECT_DEFAULT_SPARK_APPLICATION_TYPE = "select-default-spark-application-type";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";

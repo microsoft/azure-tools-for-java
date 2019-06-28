@@ -22,11 +22,13 @@
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.microsoft.azure.datalake.store.ADLException
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import java.io.FileNotFoundException
 import java.io.IOException
 
 class SparkServiceException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Spark Service Error"
+    override val errorType = ErrorType.serviceError
 }
 
 object SparkServiceExceptionFactory : ClassifiedExceptionFactory() {

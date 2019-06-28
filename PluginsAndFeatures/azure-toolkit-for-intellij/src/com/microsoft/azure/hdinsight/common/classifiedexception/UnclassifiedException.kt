@@ -21,6 +21,9 @@
  */
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+
 class UnclassifiedException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Unclassified Error"
+    override val errorType = ErrorType.unclassifiedError
 }

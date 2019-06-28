@@ -24,9 +24,10 @@ package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.execution.Executor
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azuretools.telemetrywrapper.Operation
 
-class SparkBatchRemoteDebugExecutorState(serverlessSparkSubmitModel: SparkSubmitModel)
-    : SparkBatchRemoteDebugState(serverlessSparkSubmitModel) {
+class SparkBatchRemoteDebugExecutorState(serverlessSparkSubmitModel: SparkSubmitModel, operation: Operation?)
+    : SparkBatchRemoteDebugState(serverlessSparkSubmitModel, operation) {
 
     override fun onSuccess(executor: Executor) {
     }

@@ -29,7 +29,6 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
@@ -40,6 +39,9 @@ import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtil
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
+import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.util.runInReadAction
 import org.jetbrains.plugins.scala.console.RunConsoleAction
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
@@ -48,41 +50,53 @@ import scala.Function1
 import scala.runtime.BoxedUnit
 
 abstract class RunSparkScalaConsoleAction
-    : AnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
+    : AzureAnAction(), RunConsoleAction.RunActionBase<LivySparkBatchJobRunConfigurationType>, ILogger {
     abstract val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
 
     abstract val selectedMenuActionId: String
 
-    override fun actionPerformed(event: AnActionEvent) {
+    override fun getServiceName(event: AnActionEvent?): String {
+        val project = event?.project ?: return super.getServiceName(event)
+        val runManagerEx = RunManagerEx.getInstanceEx(project)
+        val selectedConfigSettings = runManagerEx.selectedConfiguration
+        return (selectedConfigSettings?.configuration as LivySparkBatchJobRunConfiguration).sparkApplicationType.value
+    }
+
+    override fun getOperationName(event: AnActionEvent?): String {
+        // FIXME: set operation name
+        return super.getOperationName(event)
+    }
+
+    override fun onActionPerformed(event: AnActionEvent, operation: Operation?): Boolean {
         val dataContext = event.dataContext
-        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return
+        val project = CommonDataKeys.PROJECT.getData(dataContext) ?: return true
 
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration
 
         // Try current selected Configuration
         (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.run {
-            runExisting(selectedConfigSettings, runManagerEx)
-            return
+            runExisting(selectedConfigSettings, runManagerEx, operation)
+            return false
         }
 
         val batchConfigurationType = SelectSparkApplicationTypeAction.getRunConfigurationType()
         if (batchConfigurationType == null) {
             val action = ActionManagerEx.getInstance().getAction(selectedMenuActionId)
             action?.actionPerformed(event)
-            return
+            operation?.complete()
+            return false
         }
 
         val batchConfigSettings = runManagerEx.getConfigurationSettingsList(batchConfigurationType)
-
-        // Try to find one from the same type list
-        batchConfigSettings.forEach {
-            runExisting(it, runManagerEx)
-            return
+        if (batchConfigSettings.isNotEmpty()) {
+            // Find one from the same type list
+            runExisting(batchConfigSettings[0], runManagerEx, operation)
+        } else {
+            // Create a new one to run
+            createAndRun(batchConfigurationType, runManagerEx, project, newSettingName, runConfigurationHandler, operation)
         }
-
-        // Create a new one to run
-        createAndRun(batchConfigurationType, runManagerEx, project, newSettingName, runConfigurationHandler)
+        return false
     }
 
     private fun createAndRun(
@@ -90,7 +104,8 @@ abstract class RunSparkScalaConsoleAction
             runManagerEx: RunManagerEx,
             project: Project,
             name: String,
-            handler: Function1<RunConfiguration, BoxedUnit>) {
+            handler: Function1<RunConfiguration, BoxedUnit>,
+            operation: Operation?) {
         runInReadAction {
             val factory = configurationType.configurationFactories[0]
             val setting = RunManager.getInstance(project).createConfiguration(name, factory)
@@ -98,16 +113,18 @@ abstract class RunSparkScalaConsoleAction
             // Newly created config should let the user to edit
             setting.isEditBeforeRun = true
             handler.apply(setting.configuration)
-            runFromSetting(setting, runManagerEx)
+            runFromSetting(setting, runManagerEx, operation)
 
             // Skip edit the next time
             setting.isEditBeforeRun = false
         }
     }
 
-    private fun runExisting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx) {
+    private fun runExisting(setting: RunnerAndConfigurationSettings,
+                            runManagerEx: RunManagerEx,
+                            operation: Operation?) {
         runInReadAction {
-            runFromSetting(setting, runManagerEx)
+            runFromSetting(setting, runManagerEx, operation)
         }
     }
 
@@ -115,7 +132,9 @@ abstract class RunSparkScalaConsoleAction
 
     abstract val isLocalRunConfigEnabled: Boolean
 
-    private fun runFromSetting(setting: RunnerAndConfigurationSettings, runManagerEx: RunManagerEx) {
+    private fun runFromSetting(setting: RunnerAndConfigurationSettings,
+                               runManagerEx: RunManagerEx,
+                               operation: Operation?) {
         val configuration = setting.configuration
         runManagerEx.setTemporaryConfiguration(setting)
 
@@ -128,6 +147,7 @@ abstract class RunSparkScalaConsoleAction
         val environment = ExecutionEnvironmentBuilder.create(runExecutor, setting)
                 .runProfile(consoleRunConfigurationFactory.createConfiguration(configuration.name, configuration))
                 .build()
+        environment.putUserData(TelemetryKeys.OPERATION, operation)
 
         RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
 

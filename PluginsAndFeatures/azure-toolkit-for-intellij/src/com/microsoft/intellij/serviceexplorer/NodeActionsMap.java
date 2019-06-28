@@ -27,6 +27,9 @@ import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportTemplateAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.CreateNewDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.DeleteDockerHostAction;
@@ -41,9 +44,14 @@ import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
+import com.microsoft.intellij.serviceexplorer.azure.webapp.StartStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.webapp.StopStreamingLogsAction;
 import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
@@ -55,8 +63,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageMod
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NodeActionsMap {
@@ -101,5 +114,23 @@ public class NodeActionsMap {
         node2Actions.put(DockerHostModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
+
+        List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>();
+        deploymentNodeList.addAll(Arrays.asList(ExportTemplateAction.class, UpdateDeploymentAction.class));
+
+        node2Actions.put(DeploymentNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .addAll(deploymentNodeList).build());
+
+        node2Actions.put(ResourceManagementModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(CreateDeploymentAction.class).build());
+
+        node2Actions.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(CreateDeploymentAction.class).build());
+
+        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 }

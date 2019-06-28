@@ -24,10 +24,12 @@ package com.microsoft.intellij.feedback
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 
 open class NewGithubIssueAction(private val issue: GithubIssue<out Reportable>, actionTitle: String)
         : AzureAnAction(actionTitle) {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+    override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
         issue.report()
+        return true
     }
 }

@@ -76,7 +76,7 @@ class SparkScalaLocalConsoleRunConfiguration(
             isMockFs = true
         }
 
-        val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel)
+        val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel, null)
                 .createParams(hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
         val params = super.createParams()
         params.classPath.clear()

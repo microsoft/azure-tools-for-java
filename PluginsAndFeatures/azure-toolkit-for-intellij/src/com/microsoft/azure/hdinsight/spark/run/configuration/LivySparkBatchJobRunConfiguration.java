@@ -25,7 +25,6 @@ import com.intellij.compiler.options.CompileStepBeforeRun;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaExecutionUtil;
-import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
@@ -45,7 +44,10 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.*;
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +65,10 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         LOCAL,
         REMOTE,
         REMOTE_DEBUG_EXECUTOR
+    }
+
+    public SparkApplicationType getSparkApplicationType() {
+        return SparkApplicationType.HDInsight;
     }
 
     @NotNull
@@ -244,6 +250,7 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
+        final Operation operation = executionEnvironment.getUserData(TelemetryKeys.OPERATION);
         final String debugTarget = executionEnvironment.getUserData(SparkBatchJobDebuggerRunner.DebugTargetKey);
         final boolean isExecutor = StringUtils.equals(debugTarget, SparkBatchJobDebuggerRunner.DebugExecutor);
         RunProfileStateWithAppInsightsEvent state = null;
@@ -254,14 +261,14 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         if (executor instanceof SparkBatchJobDebugExecutor) {
             if (isExecutor) {
                 setRunMode(RunMode.REMOTE_DEBUG_EXECUTOR);
-                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel());
+                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel(), operation);
             } else {
                 if (selectedArtifact != null) {
                     BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, selectedArtifact);
                 }
 
                 setRunMode(RunMode.REMOTE);
-                state = new SparkBatchRemoteDebugState(getModel().getSubmitModel());
+                state = new SparkBatchRemoteDebugState(getModel().getSubmitModel(), operation);
             }
         } else if (executor instanceof SparkBatchJobRunExecutor) {
             if (selectedArtifact != null) {
@@ -269,13 +276,13 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
             }
 
             setRunMode(RunMode.REMOTE);
-            state = new SparkBatchRemoteRunState(getModel().getSubmitModel());
+            state = new SparkBatchRemoteRunState(getModel().getSubmitModel(), operation);
         } else if (executor instanceof DefaultDebugExecutor) {
             setRunMode(RunMode.LOCAL);
-            state = new SparkBatchLocalDebugState(getProject(), getModel().getLocalRunConfigurableModel());
+            state = new SparkBatchLocalDebugState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         } else if (executor instanceof DefaultRunExecutor) {
             setRunMode(RunMode.LOCAL);
-            state = new SparkBatchLocalRunState(getProject(), getModel().getLocalRunConfigurableModel());
+            state = new SparkBatchLocalRunState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         }
 
         if (state != null) {
