@@ -28,10 +28,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -71,10 +68,18 @@ public abstract class AzureAnAction extends AnAction {
         String operationName = getOperationName(anActionEvent);
 
         Operation operation = TelemetryManager.createOperation(serviceName, operationName);
-        operation.start();
-        EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
-        if (onActionPerformed(anActionEvent, operation)) {
-            operation.complete();
+        boolean actionReturnVal = true;
+        try {
+            operation.start();
+            EventUtil.logEvent(EventType.info, operation, buildProp(anActionEvent, null));
+            actionReturnVal = onActionPerformed(anActionEvent, operation);
+        } catch (RuntimeException ex) {
+            EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
+            throw ex;
+        } finally {
+            if (actionReturnVal) {
+                operation.complete();
+            }
         }
     }
 
