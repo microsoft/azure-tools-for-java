@@ -22,23 +22,19 @@
 package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDialog;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.forms.ErrorMessageForm;
+import com.microsoft.intellij.util.PluginUtil;
 
 import java.awt.*;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 
 public class StorageChooser implements ILogger {
+    public static final Condition<VirtualFile> ALL_DIRS_AND_FILES = (vf) -> true;
     FileChooserDescriptor descriptor;
     AzureStorageVirtualFile root;
 
@@ -53,5 +49,14 @@ public class StorageChooser implements ILogger {
         Component parentComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
         final FileChooserDialog chooser = new StorageChooserDialogImpl(this.descriptor, parentComponent, null);
         return chooser.choose(null, this.root);
+    }
+
+    public static void handleInvalidUploadInfo() {
+        ApplicationManager.getApplication().invokeAndWait(() ->
+                        PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
+                                "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
+                                        "cluster. Please\n manually specify the reference file paths for other type of " +
+                                        "clusters and check upload inputs")
+                , ModalityState.any());
     }
 }

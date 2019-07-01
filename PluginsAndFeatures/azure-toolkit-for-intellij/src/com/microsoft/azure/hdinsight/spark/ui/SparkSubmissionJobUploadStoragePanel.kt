@@ -27,24 +27,34 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.ListCellRendererWrapper
 import com.intellij.uiDesigner.core.GridConstraints.*
+import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxModelDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
+import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.*
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.ADLSGen2FileSystem
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AdlsGen2VirtualFile
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFileSystem
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
+import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import java.awt.CardLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
+import java.net.URI
 import javax.swing.ComboBoxModel
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JPanel
 
-open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
+open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
 
     private val notFinishCheckMessage = "job upload storage validation check is not finished"
     private val storageTypeLabel = JLabel("Storage Type")
@@ -143,6 +153,52 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable {
         var deployStorageTypesModel: ComboBoxModel<SparkSubmitStorageType> by ComboBoxModelDelegated(storageTypeComboBox)
 
         val storageCheckSubject: PublishSubject<StorageCheckEvent> = disposableSubjectOf { PublishSubject.create() }
+
+        fun prepareVFSRoot(uploadRootPath: String?, storageAccount: IHDIStorageAccount?): AzureStorageVirtualFile? {
+            var fileSystem: AzureStorageVirtualFileSystem? = null
+            var account: String? = null
+            var accessKey: String? = null
+            var fsType: AzureStorageVirtualFileSystem.VFSSupportStorageType? = null
+            try {
+                when (viewModel.deployStorageTypeSelection) {
+                    SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT -> {
+                        when (storageAccount) {
+                            is ADLSGen2StorageAccount -> {
+                                fsType = AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2
+                                account = storageAccount.name
+                                accessKey = storageAccount.primaryKey
+                            }
+                        }
+                    }
+
+                    SparkSubmitStorageType.ADLS_GEN2 -> {
+                        fsType = AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2
+                        val host = URI.create(uploadRootPath).host
+                        val account = host.substring(0, host.indexOf("."))
+                        var accessKey = adlsGen2Card.storageKeyField.text.trim()
+                    }
+
+                    else -> {
+                    }
+                }
+            } catch (ex: IllegalArgumentException) {
+                log().warn("Preparing file system encounter ", ex)
+            }
+
+            when (fsType) {
+                AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2 -> {
+                    if (StringUtils.isBlank(account) || StringUtils.isBlank(accessKey)) {
+                        return null
+                    }
+
+                    fileSystem = ADLSGen2FileSystem(SharedKeyHttpObservable(account, accessKey), uploadRootPath)
+                    return fileSystem?.let { AdlsGen2VirtualFile((it as ADLSGen2FileSystem).root, true, fileSystem) }
+                }
+                else -> {
+                    return null
+                }
+            }
+        }
     }
 
     val viewModel = ViewModel().apply {

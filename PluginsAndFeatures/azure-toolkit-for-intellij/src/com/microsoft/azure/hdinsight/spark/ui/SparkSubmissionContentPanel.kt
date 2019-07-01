@@ -31,8 +31,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileSystem
 import com.intellij.packaging.artifacts.Artifact
 import com.intellij.packaging.impl.artifacts.ArtifactUtil
 import com.intellij.ui.ListCellRendererWrapper
@@ -49,32 +47,28 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm
-import com.microsoft.azure.hdinsight.spark.common.*
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Error
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Warning
-import com.microsoft.azure.hdinsight.spark.ui.filesystem.*
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
-import com.microsoft.intellij.forms.ErrorMessageForm
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.lang.containsInvisibleChars
 import com.microsoft.intellij.lang.tagInvisibleChars
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
-import com.microsoft.intellij.util.PluginUtil
-import com.sun.glass.ui.Application
 import org.apache.commons.lang3.StringUtils
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ItemEvent
 import java.io.IOException
-import java.net.URI
-import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -122,8 +116,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             JLabel().apply { foreground = currentErrorColor }
             // Don't add more we won't like to add more message labels
     )
-
-    private var fileSystem: AzureStorageVirtualFileSystem? = null
 
     class Constants {
         companion object {
@@ -301,17 +293,9 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }).apply {
         textField.document.addDocumentListener(documentValidationListener)
         button.addActionListener {
-            val uploadRootPath = storageWithUploadPathPanel.viewModel.getCurrentUploadFieldText()
-                    ?.replace("/${Constants.submissionFolder}/", "")
-
-            val root = prepareFileSystem(uploadRootPath)
-            if (fileSystem == null || root == null) {
-                ApplicationManager.getApplication().invokeAndWait({
-                    PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
-                            "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
-                                    "cluster. Please\n manually specify the reference file paths for other type of " +
-                                    "clusters and check upload inputs")
-                }, ModalityState.any())
+            val root = viewModel.prepareVFSRoot()
+            if (root == null) {
+               StorageChooser.handleInvalidUploadInfo()
             } else {
                 val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
                 val chooseFiles = chooser.chooseFile()
@@ -327,8 +311,22 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Files to be placed in executor working directory. The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) "
     }
 
-    private val referencedFilesTextField: ExpandableTextField = ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
+    private val referencedFilesTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
         toolTipText = refFilesPrompt.toolTipText
+    }).apply {
+        textField.document.addDocumentListener(documentValidationListener)
+        button.addActionListener {
+            val root = viewModel.prepareVFSRoot()
+            if (root == null) {
+                StorageChooser.handleInvalidUploadInfo()
+            } else {
+                val chooser = StorageChooser(root, StorageChooser.ALL_DIRS_AND_FILES)
+                val chooseFiles = chooser.chooseFile()
+                if (chooseFiles.isNotEmpty()) {
+                    text = chooseFiles.joinToString(";") { vf -> vf.url }
+                }
+            }
+        }
     }
 
     private val storageWithUploadPathPanel: SparkSubmissionJobUploadStorageWithUploadPathPanel =
@@ -519,6 +517,18 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 checkHdiReaderCluster(it)
             }
         }}
+
+        fun prepareVFSRoot(): AzureStorageVirtualFile? {
+            val uploadRootPath = storageWithUploadPathPanel.viewModel.getCurrentUploadFieldText()
+                    ?.replace("/${Constants.submissionFolder}/?$".toRegex(), "")
+
+            val cluster = clustersSelection.viewModel.clusterIsSelected
+                    .toBlocking()
+                    .firstOrDefault(null)
+
+            var storageAccount: IHDIStorageAccount? = cluster?.storageAccount
+            return storageWithUploadPathPanel.viewModel.uploadStorage.prepareVFSRoot(uploadRootPath, storageAccount)
+        }
     }
 
     open val viewModel = ViewModel().apply { Disposer.register(this@SparkSubmissionContentPanel, this@apply) }
@@ -606,44 +616,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }
 
     override fun dispose() {
-    }
-
-    fun prepareFileSystem(uploadRootPath: String?): AzureStorageVirtualFile? {
-        referencedJarsTextField.setButtonEnabled(false)
-        fileSystem = null
-        val cluster = clustersSelection.viewModel.clusterIsSelected
-                .toBlocking()
-                .firstOrDefault(null)
-
-        var storageAccount: IHDIStorageAccount? = cluster?.storageAccount
-        try {
-            when (storageWithUploadPathPanel.storagePanel.viewModel.deployStorageTypeSelection) {
-                SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT -> fileSystem = if (storageAccount?.accountType == StorageAccountType.ADLSGen2)
-                    ADLSGen2FileSystem(SharedKeyHttpObservable(storageAccount.name,
-                            (storageAccount as? ADLSGen2StorageAccount)?.primaryKey),
-                            uploadRootPath) else null
-
-                SparkSubmitStorageType.ADLS_GEN2 -> {
-                    val host = URI.create(uploadRootPath).host
-                    val account = host.substring(0, host.indexOf("."))
-                    var accessKey = storageWithUploadPathPanel.storagePanel.adlsGen2Card.storageKeyField.text.trim()
-
-                    if (StringUtils.isBlank(host) || StringUtils.isBlank(accessKey)) {
-                        return null
-                    }
-
-                    fileSystem = ADLSGen2FileSystem(SharedKeyHttpObservable(account, accessKey), uploadRootPath)
-                }
-                else -> {
-                }
-            }
-        } catch (ex: IllegalArgumentException) {
-            log().warn("Preparing file system encounter ", ex)
-        }
-
-        val gen2System = fileSystem as? ADLSGen2FileSystem
-        return if (gen2System != null) AdlsGen2VirtualFile(gen2System.root, true, gen2System)
-        else null
     }
 }
 
