@@ -47,6 +47,8 @@ import javax.swing.border.BevelBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+
+import org.codehaus.jackson.schema.JsonSchema;
 import org.jdesktop.swingx.JXLabel;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTimeZone;
@@ -84,7 +86,9 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
         pnlOverview.setBorder(BorderFactory.createCompoundBorder());
 
         exportTemplateFileButton.addActionListener((e) -> {
-            new ExportTemplate(deploymentNode).doExport();
+            ExportTemplate exportTemplate = new ExportTemplate(deploymentNode);
+            exportTemplate.doExport();
+            exportTemplate.doExportParameters();
         });
     }
 

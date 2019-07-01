@@ -22,6 +22,8 @@
 
 package com.microsoft.intellij.helpers.arm;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -38,6 +40,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
+import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -46,12 +49,10 @@ import com.microsoft.intellij.language.arm.ARMLanguage;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
+
+import javax.swing.*;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ARM;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.UPDATE_DEPLOYMENT_SHORTCUT;
@@ -65,21 +66,36 @@ public class ResourceTemplateView extends BaseEditor {
     private JButton updateDeploymentButton;
     private JPanel contentPane;
     private JPanel editorPanel;
+    private JPanel editorPanels;
+    private JPanel parameterPanel;
+    private JLabel lblEditorPanel;
+    private JLabel lblParametersPanel;
     private DeploymentNode node;
     private Project project;
     private static final String PROMPT_MESSAGE_SAVE_TEMPALTE = "Would you like to save the template file before you exit";
+    private static final String PROMPT_MESSAGE_SAVE_PARAMETERS = "Would you like to save the parameters file before you exit";
     private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure you want to update the deployment with the modified template";
     private FileEditor fileEditor;
+    private FileEditor parameterEditor;
+
+    private String originTemplate;
+    private String originParameters;
 
     public void loadTemplate(DeploymentNode node, String template) {
         this.node = node;
         this.project = (Project) node.getProject();
-        final String prettyTemplate = Utils.getPrettyJson(template);
-        fileEditor = createEditor(prettyTemplate);
         GridConstraints constraints = new GridConstraints();
         constraints.setFill(GridConstraints.FILL_BOTH);
         constraints.setAnchor(GridConstraints.ANCHOR_WEST);
+
+        originTemplate = Utils.getPrettyJson(template);
+        fileEditor = createEditor(originTemplate);
         editorPanel.add(fileEditor.getComponent(), constraints);
+
+        originParameters = DeploymentUtils.serializeParameters(node.getDeployment());
+        parameterEditor = createEditor(originParameters);
+        parameterPanel.add(parameterEditor.getComponent(),constraints);
+
 
         final MessageBusConnection messageBusConnection = project.getMessageBus().connect(fileEditor);
         messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
@@ -88,13 +104,17 @@ public class ResourceTemplateView extends BaseEditor {
                 if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) &&
                         file.getName().equals(node.getName())) {
                     try {
-                        String editorText = ((PsiAwareTextEditorImpl) fileEditor).getEditor().getDocument().getText();
-                        if (editorText.equals(prettyTemplate)) {
-                            return;
+                        if(isTemplateUpdate()){
+                            if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_TEMPALTE, "Azure Explorer",
+                                    new String[]{"Yes", "No"}, null)) {
+                                new ExportTemplate(node).doExport(getTemplate());
+                            }
                         }
-                        if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_TEMPALTE, "Azure Explorer",
-                                new String[]{"Yes", "No"}, null)) {
-                            new ExportTemplate(node).doExport(editorText);
+                        if(isPropertiesUpdate()){
+                            if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_PARAMETERS, "Azure Explorer",
+                                    new String[]{"Yes", "No"}, null)) {
+                                new ExportTemplate(node).doExport(getParameters());
+                            }
                         }
                     } finally {
                         messageBusConnection.disconnect();
@@ -103,10 +123,11 @@ public class ResourceTemplateView extends BaseEditor {
             }
         });
 
-        saveAsTemplateButton.addActionListener((e) ->
-                new ExportTemplate(node).doExport(((PsiAwareTextEditorImpl) fileEditor).
-                        getEditor().getDocument().getText())
-        );
+        saveAsTemplateButton.addActionListener((e) ->{
+            ExportTemplate exportTemplate = new ExportTemplate(node);
+            exportTemplate.doExport(getTemplate());
+            exportTemplate.doExportParameters(getParameters());
+        });
 
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         updateDeploymentButton.addActionListener((e) -> {
@@ -118,11 +139,9 @@ public class ResourceTemplateView extends BaseEditor {
                         @Override
                         public void run(@NotNull ProgressIndicator indicator) {
                             EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
-                                String template = ((PsiAwareTextEditorImpl) fileEditor).getEditor()
-                                        .getDocument().getText();
                                 node.getDeployment().update()
-                                        .withTemplate(template)
-                                        .withParameters("{}")
+                                        .withTemplate(getTemplate())
+                                        .withParameters(getParameters())
                                         .withMode(DeploymentMode.INCREMENTAL).apply();
                                 UIUtils.showNotification(statusBar, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
                             }), (e) -> {
@@ -142,6 +161,23 @@ public class ResourceTemplateView extends BaseEditor {
     private FileEditor createEditor(String template) {
         return PsiAwareTextEditorProvider.getInstance()
                 .createEditor(project, new LightVirtualFile(node.getName() + ".json", ARMLanguage.INSTANCE, template));
+    }
+
+    public boolean isTemplateUpdate(){
+        return !originTemplate.equals(getTemplate());
+    }
+
+    public boolean isPropertiesUpdate(){
+        return !originParameters.equals(getParameters());
+    }
+
+    public String getTemplate(){
+        return ((PsiAwareTextEditorImpl) fileEditor).getEditor().getDocument().getText();
+    }
+
+    public String getParameters(){
+        final String parameters = ((PsiAwareTextEditorImpl) parameterEditor).getEditor().getDocument().getText();
+        return DeploymentUtils.parseParameters(parameters);
     }
 
     @NotNull

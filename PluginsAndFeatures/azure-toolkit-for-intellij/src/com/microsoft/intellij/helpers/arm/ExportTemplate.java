@@ -34,6 +34,8 @@ public class ExportTemplate {
     private final DeploymentNode deploymentNode;
     private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Azure Resource Manager "
             + "Template.";
+    private static final String PARAMETERS_SELECTOR_TITLE = "Choose Where You Want to Save the Azure Resource Manager "
+            + "Parameters.";
     private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
 
     public ExportTemplate(DeploymentNode deploymentNode) {
@@ -51,10 +53,29 @@ public class ExportTemplate {
         }
     }
 
+    public void doExportParameters(){
+        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE, deploymentNode.getName() + ".json");
+        if (file != null) {
+            final String parameters = DeploymentUtils.serializeParameters(deploymentNode.getDeployment());
+            deploymentNode.getDeployment().exportTemplateAsync().subscribeOn(Schedulers.io()).subscribe(
+                    res -> DefaultLoader.getIdeHelper()
+                            .invokeLater(() -> deploymentNode.getDeploymentNodePresenter()
+                                    .onGetExportTemplateRes(parameters, file)),
+                    ex -> DefaultLoader.getUIHelper().showError(ex.getMessage(), EXPORT_TEMPLATE_FAIL));
+        }
+    }
+
     public void doExport(String template) {
         File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE, deploymentNode.getName() + ".json");
         if (file != null) {
             deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(template), file);
+        }
+    }
+
+    public void doExportParameters(String parameters){
+        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE, deploymentNode.getName() + ".json");
+        if (file != null) {
+            deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(parameters), file);
         }
     }
 
