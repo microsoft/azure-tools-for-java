@@ -36,15 +36,16 @@ public class DeploymentUtils {
 
     private static final String[] VALID_PARAMETER_ATTRIBUTES = {"value", "reference", ",metadata"};
 
-    public static String serializeParameters(Deployment deployment){
+    public static String serializeParameters(Deployment deployment) {
         Map<String, Map<String, String>> parameters = (Map<String, Map<String, String>>) deployment.parameters();
         // Remove extra attributes in parameters
         // Refers https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#
         parameters.values().forEach(value -> {
             Iterator<Map.Entry<String, String>> iterator = value.entrySet().iterator();
             while (iterator.hasNext()) {
+                final String parameterKey = iterator.next().getKey();
                 if (!Arrays.stream(VALID_PARAMETER_ATTRIBUTES)
-                        .anyMatch(attribute -> attribute.equals(iterator.next().getKey()))) {
+                        .anyMatch(attribute -> attribute.equals(parameterKey))) {
                     iterator.remove();
                 }
             }
@@ -52,7 +53,7 @@ public class DeploymentUtils {
         return Utils.getPrettyJson(new Gson().toJson(parameters));
     }
 
-    public static String parseParameters(String parameters){
+    public static String parseParameters(String parameters) {
         Gson gson = new Gson();
         JsonElement parametersElement = gson.fromJson(parameters, JsonElement.class).getAsJsonObject().get("parameters");
         return parametersElement == null ? parameters : parametersElement.toString();
