@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.openapi.util.Key;
 import com.intellij.remote.ColoredRemoteProcessHandler;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +64,11 @@ public class SparkBatchJobRunProcessHandler extends ColoredRemoteProcessHandler<
     @Override
     public PublishSubject<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
         return getProcess().getSparkJobProcess().getCtrlSubject();
+    }
+
+    @Nullable
+    public <T> T getUserDataDelegate(Key<T> key) {
+        return this.getUserData(key);
     }
 }
 

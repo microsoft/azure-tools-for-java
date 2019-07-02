@@ -135,7 +135,10 @@ public class TelemetryConstants {
     public static final String UPDATE_DEPLOYMENT_SHORTCUT = "update-deployment-shortcut";
     public static final String BROWSE_TEMPLATE_SAMPLES = "browse-template-samples";
     public static final String ACTIVATE_TEMPLATE_DEITING = "activate-template-editing";
+    public static final String RUN_LOCAL_SPARK_JOB = "run-local-spark-job";
     public static final String RUN_REMOTE_SPARK_JOB = "run-remote-spark-job";
+    public static final String DEBUG_LOCAL_SPARK_JOB = "debug-local-spark-job";
+    public static final String DEBUG_REMOTE_SPARK_JOB = "debug-remote-spark-job";
     public static final String SELECT_DEFAULT_SPARK_APPLICATION_TYPE = "select-default-spark-application-type";
 
     // property name

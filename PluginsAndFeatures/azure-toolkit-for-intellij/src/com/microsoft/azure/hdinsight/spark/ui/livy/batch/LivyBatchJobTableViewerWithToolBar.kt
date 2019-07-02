@@ -35,7 +35,7 @@ import javax.swing.JPanel
 class LivyBatchJobTableViewerWithToolBar(private val jobTableViewport : LivyBatchJobTableViewport,
                                          private val refreshActionPerformed: (anActionEvent: AnActionEvent?) -> Unit) : JPanel() {
     private val refreshAction = object: AzureAnAction(AllIcons.Actions.Refresh) {
-        override fun onActionPerformed(anActionEvent: AnActionEvent?, operation: Operation?): Boolean {
+        override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
             refreshActionPerformed(anActionEvent)
             return true
         }

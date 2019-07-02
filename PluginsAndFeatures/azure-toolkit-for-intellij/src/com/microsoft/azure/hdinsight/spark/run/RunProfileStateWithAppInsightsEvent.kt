@@ -25,6 +25,8 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.microsoft.azuretools.telemetry.AppInsightsClient
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
 
 abstract class RunProfileStateWithAppInsightsEvent(val uuid: String,
@@ -42,5 +44,10 @@ abstract class RunProfileStateWithAppInsightsEvent(val uuid: String,
         AppInsightsClient.create(appInsightsMessage, null, postEventProps)
 
         return this
+    }
+
+    fun createErrorEventWithComplete(executor: Executor?, exp: Throwable, errorType: ErrorType, addedEventProps: Map<String, String>?) {
+        val postEventProps = executor?.let { getPostEventProperties(it, addedEventProps) }
+        EventUtil.logErrorWithComplete(operation, errorType, exp, postEventProps, null)
     }
 }
