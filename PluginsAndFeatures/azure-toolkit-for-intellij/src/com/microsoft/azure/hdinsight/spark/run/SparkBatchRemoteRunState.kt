@@ -107,7 +107,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
 
     open fun onSuccess(executor: Executor) {
         val additionalProperties = mutableMapOf("IsSubmitSucceed" to "true")
-        if (remoteProcessCtrlLogHandler?.getUserDataDelegate(ProcessHandler.TERMINATION_REQUESTED) == true) {
+        if (remoteProcessCtrlLogHandler?.getUserData(ProcessHandler.TERMINATION_REQUESTED) == true) {
             additionalProperties["isStopButtonClicked"] = "true"
         }
         createAppInsightEvent(executor, additionalProperties)

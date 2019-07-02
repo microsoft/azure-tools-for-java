@@ -28,7 +28,6 @@ import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessOutputTypes.STDERR
 import com.intellij.execution.process.ProcessOutputTypes.STDOUT
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import rx.subjects.PublishSubject
 import java.util.AbstractMap.SimpleImmutableEntry
@@ -109,8 +108,4 @@ class SparkBatchJobDebugProcessHandler(project: Project,
     }
 
     override fun detachIsDefault(): Boolean = false
-
-    override fun <T> getUserDataDelegate(key: Key<T>): T? {
-        return this.getUserData(key)
-    }
 }
