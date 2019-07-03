@@ -42,7 +42,6 @@ import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -992,7 +991,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
                     PublishingProfile pp = webApp.getPublishingProfile();
-                    WebAppUtils.deployArtifactsToAppService(webApp, new File(artifactPath), isDeployToRoot, new UpdateProgressIndicator(monitor));
+                    WebAppUtils.deployArtifactsToAppService(webApp, new File(artifactPath),
+                            isDeployToRoot, new UpdateProgressIndicator(monitor));
 
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,
