@@ -43,7 +43,7 @@ class SparkJobRunAction
         get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
 
     override fun getServiceName(event: AnActionEvent): String {
-        val project = event?.project ?: return super.getServiceName(event)
+        val project = event.project ?: return super.getServiceName(event)
         val runManagerEx = RunManagerEx.getInstanceEx(project)
         val selectedConfigSettings = runManagerEx.selectedConfiguration
         return (selectedConfigSettings?.configuration as LivySparkBatchJobRunConfiguration).sparkApplicationType.value

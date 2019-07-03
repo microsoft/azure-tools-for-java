@@ -40,6 +40,9 @@ import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel
 import com.microsoft.azure.hdinsight.spark.mock.SparkLocalRunner
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView
 import com.microsoft.azure.hdinsight.spark.ui.SparkLocalRunParamsPanel
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import org.apache.commons.lang3.SystemUtils
@@ -60,14 +63,16 @@ open class SparkBatchLocalRunState(val myProject: Project,
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         // Spark Local Run/Debug
         val consoleView = SparkJobLogConsoleView(myProject)
-        val processHandler = KillableColoredProcessHandler(createCommandlineForLocal())
+        val processHandler = KillableColoredProcessHandler(createCommandlineForLocal(executor))
 
         return executor?.let {
             processHandler.addProcessListener(object : ProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
-                    createAppInsightEvent(it, mapOf(
-                            "IsSubmitSucceed" to "true",
-                            "ExitCode" to event.exitCode.toString()))
+                    val props = mapOf(
+                        "IsSubmitSucceed" to "true",
+                        "ExitCode" to event.exitCode.toString())
+                    createAppInsightEvent(it, props)
+                    EventUtil.logEventWithComplete(EventType.info, operation, getPostEventProperties(it, props), null)
                 }
             })
 
@@ -77,12 +82,16 @@ open class SparkBatchLocalRunState(val myProject: Project,
         }
     }
 
-    open fun getCommandLineVmParameters(params: JavaParameters, moduleName: String): List<String> {
+    open fun getCommandLineVmParameters(executor: Executor?, params: JavaParameters, moduleName: String): List<String> {
         // Add jmockit as -javaagent
         val jmockitJarPath = params.classPath.pathList.stream()
                 .filter { path -> path.toLowerCase().matches(".*\\Wjmockit-.*\\.jar".toRegex()) }
                 .findFirst()
-                .orElseThrow { ExecutionException("Dependency jmockit hasn't been found in module `$moduleName` classpath") }
+                .orElseThrow {
+                    val exp = ExecutionException("Dependency jmockit hasn't been found in module `$moduleName` classpath")
+                    createErrorEventWithComplete(executor, exp, ErrorType.userError, null)
+                    exp
+                }
 
         val javaAgentParam = "-javaagent:$jmockitJarPath"
 
@@ -90,11 +99,12 @@ open class SparkBatchLocalRunState(val myProject: Project,
     }
 
     @Throws(ExecutionException::class)
-    open fun createCommandlineForLocal(): GeneralCommandLine {
-        return createParams().toCommandLine()
+    open fun createCommandlineForLocal(executor: Executor?): GeneralCommandLine {
+        return createParams(executor).toCommandLine()
     }
 
-    fun createParams(hasClassPath: Boolean = true,
+    fun createParams(executor: Executor? = null,
+                     hasClassPath: Boolean = true,
                      hasMainClass: Boolean = true,
                      hasJmockit: Boolean = true): JavaParameters {
         val params = JavaParameters()
@@ -114,7 +124,7 @@ open class SparkBatchLocalRunState(val myProject: Project,
         params.workingDirectory = Paths.get(model.dataRootDirectory, "__default__", "user", "current").toString()
 
         if (hasJmockit) {
-            params.vmParametersList.addAll(getCommandLineVmParameters(params, mainModule.name))
+            params.vmParametersList.addAll(getCommandLineVmParameters(executor, params, mainModule.name))
         }
 
         if (hasClassPath) {
@@ -126,7 +136,11 @@ open class SparkBatchLocalRunState(val myProject: Project,
                     .addAt(0,
                             Optional.ofNullable(model.runClass)
                                     .filter { mainClass -> !mainClass.trim().isEmpty() }
-                                    .orElseThrow { ExecutionException("Spark job's main class isn't set") })
+                                    .orElseThrow {
+                                        val exp = ExecutionException("Spark job's main class isn't set")
+                                        createErrorEventWithComplete(executor, exp, ErrorType.userError, null)
+                                        exp
+                                    })
         }
 
         params.programParametersList
@@ -138,8 +152,10 @@ open class SparkBatchLocalRunState(val myProject: Project,
                             .map { File(it) }
                             .map { it.exists() }
                             .orElse(false)) {
-                throw ExecutionException(
+                val exp = ExecutionException(
                         "winutils.exe should be in %HADOOP_HOME%\\bin\\ directory for Windows platform, please config it at 'Run/Debug Configuration -> Locally Run -> WINUTILS.exe location'.")
+                createErrorEventWithComplete(executor, exp, ErrorType.userError, null)
+                throw exp
             }
         }
 

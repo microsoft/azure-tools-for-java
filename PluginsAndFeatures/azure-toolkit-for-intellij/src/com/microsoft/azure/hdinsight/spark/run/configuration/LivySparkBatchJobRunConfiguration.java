@@ -46,7 +46,9 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
@@ -250,7 +252,7 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
-        final Operation operation = executionEnvironment.getUserData(TelemetryKeys.OPERATION);
+        Operation operation = executionEnvironment.getUserData(TelemetryKeys.OPERATION);
         final String debugTarget = executionEnvironment.getUserData(SparkBatchJobDebuggerRunner.DebugTargetKey);
         final boolean isExecutor = StringUtils.equals(debugTarget, SparkBatchJobDebuggerRunner.DebugExecutor);
         RunProfileStateWithAppInsightsEvent state = null;
@@ -279,9 +281,17 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
             state = new SparkBatchRemoteRunState(getModel().getSubmitModel(), operation);
         } else if (executor instanceof DefaultDebugExecutor) {
             setRunMode(RunMode.LOCAL);
+            if (operation == null) {
+                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT, TelemetryConstants.DEBUG_LOCAL_SPARK_JOB);
+                operation.start();
+            }
             state = new SparkBatchLocalDebugState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         } else if (executor instanceof DefaultRunExecutor) {
             setRunMode(RunMode.LOCAL);
+            if (operation == null) {
+                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT, TelemetryConstants.RUN_LOCAL_SPARK_JOB);
+                operation.start();
+            }
             state = new SparkBatchLocalRunState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         }
 

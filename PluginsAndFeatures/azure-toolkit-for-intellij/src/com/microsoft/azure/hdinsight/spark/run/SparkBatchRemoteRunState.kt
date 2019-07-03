@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
+import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
@@ -87,12 +88,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                             "IsSubmitSucceed" to "false",
                             "SubmitFailedReason" to HDInsightUtil.normalizeTelemetryMessage(errMessage))
                         createAppInsightEvent(it, additionalProperties)
-                        EventUtil.logErrorWithComplete(
-                            operation,
-                            classifiedEx.errorType,
-                            classifiedEx,
-                            getPostEventProperties(it, additionalProperties),
-                            null)
+                        createErrorEventWithComplete(it, classifiedEx, classifiedEx.errorType, additionalProperties)
 
                         consoleView!!.print("ERROR: $errMessage", ConsoleViewContentType.ERROR_OUTPUT)
                         classifiedEx.handleByUser()
@@ -110,7 +106,10 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
     }
 
     open fun onSuccess(executor: Executor) {
-        val additionalProperties = mapOf("IsSubmitSucceed" to "true")
+        val additionalProperties = mutableMapOf("IsSubmitSucceed" to "true")
+        if (remoteProcessCtrlLogHandler?.getUserData(ProcessHandler.TERMINATION_REQUESTED) == true) {
+            additionalProperties["isStopButtonClicked"] = "true"
+        }
         createAppInsightEvent(executor, additionalProperties)
         EventUtil.logEventWithComplete(EventType.info, operation, getPostEventProperties(executor, additionalProperties), null)
     }

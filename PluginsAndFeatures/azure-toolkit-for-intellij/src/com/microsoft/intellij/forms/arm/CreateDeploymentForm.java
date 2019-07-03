@@ -22,10 +22,6 @@
 
 package com.microsoft.intellij.forms.arm;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.BROWSE_TEMPLATE_SAMPLES;
-import static com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction.NOTIFY_CREATE_DEPLOYMENT_FAIL;
-import static com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction.NOTIFY_CREATE_DEPLOYMENT_SUCCESS;
-
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -51,27 +47,30 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.*;
+import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.helpers.arm.DeploymentUtils;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.ui.util.UIUtils.ElementWrapper;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
 import java.io.FileReader;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.swing.ButtonGroup;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 
-import org.apache.commons.io.IOUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.BROWSE_TEMPLATE_SAMPLES;
+import static com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction.NOTIFY_CREATE_DEPLOYMENT_FAIL;
+import static com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction.NOTIFY_CREATE_DEPLOYMENT_SUCCESS;
 
 public class CreateDeploymentForm extends DeploymentBaseForm {
 
@@ -90,6 +89,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     private JComboBox subscriptionCb;
     private TextFieldWithBrowseButton templateTextField;
     private HyperlinkLabel lblTemplateHover;
+    private TextFieldWithBrowseButton parametersTextField;
     private Project project;
     private StatusBar statusBar;
     private String rgName;
@@ -171,8 +171,12 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
 
                     String fileText = templateTextField.getText();
                     String content = IOUtils.toString(new FileReader(fileText));
+                    String parametersPath = parametersTextField.getText();
+                    String parameters = StringUtils.isEmpty(parametersPath) ? "{}" :
+                            IOUtils.toString(new FileReader(parametersPath));
+                    parameters = DeploymentUtils.parseParameters(parameters);
                     template.withTemplate(content)
-                            .withParameters("{}")
+                            .withParameters(parameters)
                             .withMode(DeploymentMode.INCREMENTAL)
                             .create();
 
@@ -199,6 +203,9 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
         templateTextField.addActionListener(
             UIUtils.createFileChooserListener(templateTextField, project,
                 FileChooserDescriptorFactory.createSingleLocalFileDescriptor()));
+        parametersTextField.addActionListener(
+                UIUtils.createFileChooserListener(parametersTextField, project,
+                        FileChooserDescriptorFactory.createSingleLocalFileDescriptor()));
     }
 
     private void fill() {

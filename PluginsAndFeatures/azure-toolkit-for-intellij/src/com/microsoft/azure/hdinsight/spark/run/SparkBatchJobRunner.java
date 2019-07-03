@@ -48,7 +48,9 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.intellij.telemetry.TelemetryKeys;
 import rx.Observer;
 import rx.subjects.PublishSubject;
 
@@ -111,7 +113,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         jobOutputView.attachToProcess(processHandler);
 
         remoteProcess.start();
-        SparkBatchJobDisconnectAction disconnectAction = new SparkBatchJobDisconnectAction(remoteProcess);
+        Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
+        SparkBatchJobDisconnectAction disconnectAction = new SparkBatchJobDisconnectAction(remoteProcess, operation);
 
         ExecutionResult result = new DefaultExecutionResult(jobOutputView, processHandler, Separator.getInstance(), disconnectAction);
         submissionState.setExecutionResult(result);
