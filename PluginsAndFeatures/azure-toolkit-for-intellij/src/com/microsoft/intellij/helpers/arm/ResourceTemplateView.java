@@ -74,7 +74,7 @@ public class ResourceTemplateView extends BaseEditor {
     private Project project;
     private static final String PROMPT_MESSAGE_SAVE_TEMPALTE = "Would you like to save the template file before you exit";
     private static final String PROMPT_MESSAGE_SAVE_PARAMETERS = "Would you like to save the parameters file before you exit";
-    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure you want to update the deployment with the modified template";
+    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure you want to update the deployment";
     private FileEditor fileEditor;
     private FileEditor parameterEditor;
 
@@ -113,7 +113,7 @@ public class ResourceTemplateView extends BaseEditor {
                         if(isPropertiesUpdate()){
                             if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_PARAMETERS, "Azure Explorer",
                                     new String[]{"Yes", "No"}, null)) {
-                                new ExportTemplate(node).doExport(getParameters());
+                                new ExportTemplate(node).doExportParameters(getParameters());
                             }
                         }
                     } finally {
