@@ -37,6 +37,7 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.impl.libraries.LibraryEx
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable
 import com.intellij.openapi.roots.libraries.Library
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.roots.libraries.NewLibraryConfiguration
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.NewLibraryEditor
 import com.intellij.openapi.ui.Messages
@@ -136,7 +137,7 @@ class SparkScalaLocalConsoleRunConfiguration(
     }
 
     private fun findReplCoord(): String? {
-        val iterator = ProjectLibraryTable.getInstance(project).libraryIterator
+        val iterator = LibraryTablesRegistrar.getInstance().getLibraryTable(project).libraryIterator
 
         while (iterator.hasNext()) {
             val libEntryName = iterator.next().name ?: continue
@@ -201,7 +202,7 @@ class SparkScalaLocalConsoleRunConfiguration(
             val newLibConf: NewLibraryConfiguration = JarRepositoryManager.resolveAndDownload(
                     project, libraryCoord, false, false, true, null, projectRepositories) ?: return@runInWriteAction
             val libraryType = newLibConf.libraryType
-            val library = ProjectLibraryTable.getInstance(project).createLibrary("Spark Console(auto-fix): $libraryCoord")
+            val library = LibraryTablesRegistrar.getInstance().getLibraryTable(project).createLibrary("Spark Console(auto-fix): $libraryCoord")
 
             val editor = NewLibraryEditor(libraryType, newLibConf.properties)
             newLibConf.addRoots(editor)
@@ -211,7 +212,7 @@ class SparkScalaLocalConsoleRunConfiguration(
         }
     }
 
-    private fun getLibraryByCoord(libraryCoord: String): Library? = ProjectLibraryTable.getInstance(project)
+    private fun getLibraryByCoord(libraryCoord: String): Library? = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
             .libraries.firstOrNull { it.name?.endsWith(libraryCoord) == true }
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {

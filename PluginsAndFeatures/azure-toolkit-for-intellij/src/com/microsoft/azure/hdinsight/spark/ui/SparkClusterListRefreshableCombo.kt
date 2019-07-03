@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.ComboboxWithBrowseButton
-import com.intellij.ui.ListCellRendererWrapper
+import com.intellij.ui.SimpleListCellRenderer
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
@@ -63,20 +63,16 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
         setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH))
 
         comboBox.apply {
-            setRenderer(object : ListCellRendererWrapper<IClusterDetail>() {
-                override fun customize(list: JList<*>?,
-                                       cluster: IClusterDetail?,
-                                       index: Int,
-                                       selected: Boolean,
-                                       hasFocus: Boolean) {
+            setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {
+                override fun customize(list: JList<out IClusterDetail>?, cluster: IClusterDetail?, index: Int, selected: Boolean, hasFocus: Boolean) {
                     font = if (cluster != null) {
-                        setText(cluster.title)
+                        text = cluster.title
                         font.deriveFont(Font.PLAIN)
                     } else {
-                        setText((viewModel.toSelectClusterByIdBehavior.value as? String)
+                        text = (viewModel.toSelectClusterByIdBehavior.value as? String)
                                 ?.takeIf { it.isNotBlank() }
                                 ?.let { "$it (saved in configuration${if (comboBox.itemCount > 0) ", but not found" else ""})" }
-                                ?: "<No selection>")
+                                ?: "<No selection>"
                         font.deriveFont(Font.ITALIC)
                     }
                 }

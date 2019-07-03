@@ -27,7 +27,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
@@ -56,12 +55,10 @@ import rx.Observable
 import rx.Observable.empty
 import rx.Observable.just
 import rx.schedulers.Schedulers
-import rx.subjects.PublishSubject
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
 import javax.swing.*
-import javax.swing.event.DocumentEvent
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel
     : JPanel(), Disposable, SettableControl<SparkSubmitJobUploadStorageModel>, ILogger {
@@ -454,7 +451,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
     private fun getAccount(pattern: String, rootPath: String?): String? {
         return rootPath?.let {
-            SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex().find(rootPath)?.groupValues?.get(2)
+            pattern.toRegex().find(rootPath)?.groupValues?.get(2)
         }
     }
 
