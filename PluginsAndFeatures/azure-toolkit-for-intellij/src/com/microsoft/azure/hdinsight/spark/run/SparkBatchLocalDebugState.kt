@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.run
 
+import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RemoteState
@@ -41,10 +42,10 @@ class SparkBatchLocalDebugState(myProject: Project, model: SparkLocalRunConfigur
 
     override fun getRemoteConnection(): RemoteConnection = remoteConnection
 
-    override fun getCommandLineVmParameters(params: JavaParameters, moduleName: String): List<String> {
+    override fun getCommandLineVmParameters(executor: Executor?, params: JavaParameters, moduleName: String): List<String> {
         // TODO: Add onthrow and onuncaught with Breakpoint UI settings later
         val debugConnection = "-agentlib:jdwp=transport=dt_socket,server=n,address=127.0.0.1:${remoteConnection.address},suspend=y"
 
-        return super.getCommandLineVmParameters(params, moduleName).plus(debugConnection)
+        return super.getCommandLineVmParameters(executor, params, moduleName).plus(debugConnection)
     }
 }

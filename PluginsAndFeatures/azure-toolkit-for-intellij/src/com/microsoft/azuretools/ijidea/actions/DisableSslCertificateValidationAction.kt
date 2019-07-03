@@ -31,18 +31,18 @@ import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 class DisableSslCertificateValidationAction : AzureAnAction(), Toggleable {
-    override fun onActionPerformed(anActionEvent: AnActionEvent?, operation: Operation?): Boolean {
+    override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
         if (!isActionEnabled()) {
-            val form = object : BypassCertificateVerificationWarningForm(anActionEvent?.project) {
+            val form = object : BypassCertificateVerificationWarningForm(anActionEvent.project) {
                 override fun doOKAction() {
-                    anActionEvent!!.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
+                    anActionEvent.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
                     DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
                     super.doOKAction()
                 }
             }
             form.show()
         } else {
-            anActionEvent!!.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
+            anActionEvent.presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, !isActionEnabled())
             DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.DISABLE_SSL_CERTIFICATE_VALIDATION, (!isActionEnabled()).toString())
         }
         return true
