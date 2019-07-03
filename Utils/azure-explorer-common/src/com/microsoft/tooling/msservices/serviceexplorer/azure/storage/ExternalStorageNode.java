@@ -58,7 +58,7 @@ public class ExternalStorageNode extends ClientStorageNode {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return STORAGE;
         }
 

@@ -35,6 +35,7 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
@@ -141,6 +142,11 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
         return properties;
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.HDINSIGHT;
     }
 }
 

@@ -27,11 +27,9 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.awt.*;
 import java.io.IOException;
@@ -74,7 +72,7 @@ public class SqlBigDataClusterNode extends RefreshableNode {
             }
         });
 
-        addAction("Unlink", new NodeActionListener() {
+        NodeActionListener listener = new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the SQL Server big data cluster?",
@@ -84,10 +82,17 @@ public class SqlBigDataClusterNode extends RefreshableNode {
                     ((RefreshableNode) getParent()).load(false);
                 }
             }
-        });
+        };
+        addAction("Unlink", new WrappedTelemetryNodeActionListener(
+                getServiceName(), TelemetryConstants.UNLINK_SPARK_CLUSTER, listener));
     }
 
     @Override
     protected void refreshItems() throws AzureCmdException {
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.SPARK_ON_SQL_SERVER;
     }
 }

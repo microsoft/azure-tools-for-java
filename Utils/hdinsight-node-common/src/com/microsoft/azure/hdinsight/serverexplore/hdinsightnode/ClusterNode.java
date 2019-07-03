@@ -27,12 +27,10 @@ import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +60,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
             NodeActionListener linkClusterActionListener =
                     HDInsightLoader.getHDInsightHelper().createAddNewHDInsightReaderClusterAction(hdinsightRootModule,
                             (ClusterDetail) clusterDetail);
-            addAction("Link this cluster", linkClusterActionListener);
+            addAction("Link This Cluster", linkClusterActionListener);
         }
 
         if (clusterDetail instanceof ClusterDetail || clusterDetail instanceof HDInsightAdditionalClusterDetail ||
@@ -123,7 +121,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         }
 
         if (clusterDetail instanceof HDInsightAdditionalClusterDetail || clusterDetail instanceof HDInsightLivyLinkClusterDetail) {
-            addAction("Unlink", new NodeActionListener() {
+            NodeActionListener listener = new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the HDInsight cluster?",
@@ -133,9 +131,11 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
                         ((RefreshableNode) getParent()).load(false);
                     }
                 }
-            });
+            };
+            addAction("Unlink", new WrappedTelemetryNodeActionListener(
+                    getServiceName(), TelemetryConstants.UNLINK_SPARK_CLUSTER, listener));
         } else if (clusterDetail instanceof EmulatorClusterDetail) {
-            addAction("Unlink", new NodeActionListener() {
+            NodeActionListener listener = new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the Emulator cluster?",
@@ -145,7 +145,9 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
                         ((RefreshableNode) getParent()).load(false);
                     }
                 }
-            });
+            };
+            addAction("Unlink", new WrappedTelemetryNodeActionListener(
+                    getServiceName(), TelemetryConstants.UNLINK_SPARK_CLUSTER, listener));
         }
     }
 
@@ -181,5 +183,11 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties,
         properties.put(AppInsightsConstants.SubscriptionId, this.clusterDetail.getSubscription().getSubscriptionId());
         properties.put(AppInsightsConstants.Region, this.clusterDetail.getLocation());
         return properties;
+    }
+
+    @Override
+    @NotNull
+    public String getServiceName() {
+        return TelemetryConstants.HDINSIGHT;
     }
 }
