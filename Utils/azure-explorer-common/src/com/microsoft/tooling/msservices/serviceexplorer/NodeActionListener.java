@@ -34,14 +34,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class NodeActionListener implements EventListener {
-    protected static String name;
-
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
-    }
-
-    public NodeActionListener(Node node) {
     }
 
     protected void beforeActionPerformed(NodeActionEvent e) {
