@@ -127,7 +127,7 @@ public abstract class NodeActionListener implements EventListener {
 
     protected String getOperationName(NodeActionEvent event) {
         try {
-            return event.getAction().getName().replace(" ", "");
+            return event.getAction().getName().toLowerCase().trim().replace(" ", "-");
         } catch (Exception ignore) {
             return "";
         }

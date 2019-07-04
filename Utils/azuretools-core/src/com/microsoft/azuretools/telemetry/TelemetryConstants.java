@@ -141,6 +141,9 @@ public class TelemetryConstants {
     public static final String DEBUG_REMOTE_SPARK_JOB = "debug-remote-spark-job";
     public static final String SELECT_DEFAULT_SPARK_APPLICATION_TYPE = "select-default-spark-application-type";
     public static final String UNLINK_SPARK_CLUSTER = "unlink-spark-cluster";
+    public static final String REFRESH_JOB_VIEW_TABLE = "refresh-job-view-table";
+    public static final String CLOSE_JOB_VIEW_WINDOW = "close-job-view-window";
+    public static final String SELECT_JOB_IN_JOB_VIEW_WINDOW = "select-job-in-job-view-window";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
