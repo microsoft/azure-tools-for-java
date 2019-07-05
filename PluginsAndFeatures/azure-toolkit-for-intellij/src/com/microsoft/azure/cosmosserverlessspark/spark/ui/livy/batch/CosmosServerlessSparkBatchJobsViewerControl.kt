@@ -26,6 +26,11 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableModel
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobViewer
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.UniqueColumnNameTableSchema
+import com.microsoft.azuretools.telemetry.TelemetryConstants
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager
 import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observable
 
@@ -39,6 +44,8 @@ class CosmosServerlessSparkBatchJobsViewerControl(private val view: CosmosServer
         val jobDesc = (jobSelected as? CosmosServerlessSparkBatchJobsTableSchema.CosmosServerlessSparkJobDescriptor)?.let { arrayOf(it) }
             ?: emptyArray()
 
+        val operation = TelemetryManager.createOperation(TelemetryConstants.SPARK_ON_COSMOS_SERVERLESS, TelemetryConstants.SELECT_JOB_IN_JOB_VIEW_WINDOW)
+        operation.start()
         Observable.from(jobDesc)
             .flatMap { view.account.getSparkBatchJobWithRawHttpResponse(it[jobUuidColName].toString()) }
             .doOnNext {
@@ -48,8 +55,12 @@ class CosmosServerlessSparkBatchJobsViewerControl(private val view: CosmosServer
                     })
             }
             .subscribe(
-                {},
-                { err -> log().warn("Get Cosmos Serverless Spark batch job detail failed. " + ExceptionUtils.getStackTrace(err)) }
+                    {},
+                    { err ->
+                        log().warn("Get Cosmos Serverless Spark batch job detail failed. " + ExceptionUtils.getStackTrace(err))
+                        EventUtil.logErrorWithComplete(operation, ErrorType.serviceError, err, mapOf("isGetJobDetailsSucceed" to "false"), null)
+                    },
+                    { EventUtil.logEventWithComplete(EventType.info, operation, mapOf("isGetJobDetailsSucceed" to "true"), null) }
             )
     }
 }

@@ -109,7 +109,7 @@ public abstract class AzureAnAction extends AnAction {
 
     protected String getOperationName(AnActionEvent event) {
         try {
-            return event.getPresentation().getText().replace(" ", "");
+            return event.getPresentation().getText().toLowerCase().trim().replace(" ", "-");
         } catch (Exception ignore) {
             return "";
         }

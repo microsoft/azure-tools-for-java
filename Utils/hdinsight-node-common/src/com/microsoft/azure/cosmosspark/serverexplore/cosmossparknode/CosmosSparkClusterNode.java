@@ -28,6 +28,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmo
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.awt.*;
@@ -128,5 +129,10 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
     @NotNull
     public String getClusterName() {
         return cluster.getName();
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.SPARK_ON_COSMOS;
     }
 }

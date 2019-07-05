@@ -181,7 +181,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return WEBAPP;
         }
 
