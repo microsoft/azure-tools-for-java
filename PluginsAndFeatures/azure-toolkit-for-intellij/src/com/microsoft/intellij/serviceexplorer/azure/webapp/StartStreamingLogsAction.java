@@ -50,7 +50,7 @@ public class StartStreamingLogsAction extends NodeActionListener {
 
 
     public StartStreamingLogsAction(WebAppNode webAppNode) {
-        super(webAppNode);
+        super();
         this.node = webAppNode;
         this.project = (Project) webAppNode.getProject();
         this.subscriptionId = webAppNode.getSubscriptionId();
@@ -59,7 +59,7 @@ public class StartStreamingLogsAction extends NodeActionListener {
     }
 
     public StartStreamingLogsAction(DeploymentSlotNode deploymentSlotNode) {
-        super(deploymentSlotNode);
+        super();
         this.node = deploymentSlotNode;
         this.project = (Project) deploymentSlotNode.getProject();
         this.subscriptionId = deploymentSlotNode.getSubscriptionId();

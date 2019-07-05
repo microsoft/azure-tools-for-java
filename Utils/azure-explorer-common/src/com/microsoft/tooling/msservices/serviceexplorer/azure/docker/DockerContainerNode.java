@@ -256,7 +256,7 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(NodeActionEvent event) {
       return DOCKER;
     }
 

@@ -50,7 +50,7 @@ public class CosmosSparkDestroyAction extends NodeActionListener {
                                                 AzureSparkServerlessAccount,
                                                 DestroyableCluster,
                                                 CosmosSparkClusterNode>> destroyAction) {
-        super(clusterNode);
+        super();
         this.clusterNode = clusterNode;
         this.adlAccount = adlAccount;
         this.cluster = cluster;

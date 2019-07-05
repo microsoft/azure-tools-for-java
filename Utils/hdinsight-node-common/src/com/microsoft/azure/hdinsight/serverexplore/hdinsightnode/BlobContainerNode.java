@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.common.CommonConst;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -30,7 +31,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class BlobContainerNode extends Node{
@@ -82,5 +82,10 @@ public class BlobContainerNode extends Node{
                 "Refresh", RefreshAction.class,
                 "View Blob Container", ViewBlobContainer.class
                 );
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.HDINSIGHT;
     }
 }

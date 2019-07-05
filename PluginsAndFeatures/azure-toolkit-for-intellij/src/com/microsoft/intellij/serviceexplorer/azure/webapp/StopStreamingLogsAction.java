@@ -44,13 +44,13 @@ public class StopStreamingLogsAction extends NodeActionListener {
     private String deploymentSlotName;
 
     public StopStreamingLogsAction(WebAppNode webAppNode) {
-        super(webAppNode);
+        super();
         this.node = webAppNode;
         this.webAppId = webAppNode.getWebAppId();
     }
 
     public StopStreamingLogsAction(DeploymentSlotNode deploymentSlotNode) {
-        super(deploymentSlotNode);
+        super();
         this.node = deploymentSlotNode;
         this.webAppId = deploymentSlotNode.getWebAppId();
         this.deploymentSlotName = deploymentSlotNode.getName();

@@ -92,7 +92,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return VM;
         }
 
@@ -121,7 +121,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return VM;
         }
 
@@ -150,7 +150,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return VM;
         }
 
@@ -180,7 +180,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return VM;
         }
 
