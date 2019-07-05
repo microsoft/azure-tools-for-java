@@ -42,7 +42,7 @@ public class WrappedTelemetryNodeActionListener extends NodeActionListener {
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(NodeActionEvent event) {
         return this.serviceName;
     }
 

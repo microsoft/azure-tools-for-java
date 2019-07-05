@@ -29,8 +29,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 import java.util.List;
@@ -67,5 +66,10 @@ public class SqlBigDataClusterModule extends RefreshableNode implements ILogger 
     @Override
     public Object getProject() {
         return project;
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.SPARK_ON_SQL_SERVER;
     }
 }

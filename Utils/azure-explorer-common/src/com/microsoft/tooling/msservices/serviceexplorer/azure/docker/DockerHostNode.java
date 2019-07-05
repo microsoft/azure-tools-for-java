@@ -243,7 +243,7 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(NodeActionEvent event) {
       return DOCKER;
     }
 
@@ -292,7 +292,7 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(NodeActionEvent event) {
       return DOCKER;
     }
 

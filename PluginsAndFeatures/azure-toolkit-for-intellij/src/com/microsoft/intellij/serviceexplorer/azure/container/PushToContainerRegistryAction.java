@@ -62,7 +62,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
     private final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
 
     public PushToContainerRegistryAction(ContainerRegistryNode node) {
-        super(node);
+        super();
         this.currentNode = node;
     }
 

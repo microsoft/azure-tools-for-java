@@ -20,20 +20,11 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.cosmosserverlessspark.spark.ui.livy.batch
+package com.microsoft.azuretools.telemetry;
 
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
-import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobViewer
-import com.microsoft.azuretools.telemetry.TelemetryConstants
-import com.microsoft.azuretools.telemetrywrapper.EventType
-import com.microsoft.azuretools.telemetrywrapper.EventUtil
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-open class CosmosServerlessSparkBatchJobsViewer(val account: AzureSparkServerlessAccount) : LivyBatchJobViewer() {
-    override val jobViewerControl: Control by lazy { CosmosServerlessSparkBatchJobsViewerControl(this@CosmosServerlessSparkBatchJobsViewer) }
-
-    override fun dispose() {
-        super.dispose()
-
-        EventUtil.logEvent(EventType.info, TelemetryConstants.SPARK_ON_COSMOS_SERVERLESS, TelemetryConstants.CLOSE_JOB_VIEW_WINDOW, null)
-    }
+public interface BasicTelemetryProperty {
+    @NotNull
+    String getServiceName();
 }

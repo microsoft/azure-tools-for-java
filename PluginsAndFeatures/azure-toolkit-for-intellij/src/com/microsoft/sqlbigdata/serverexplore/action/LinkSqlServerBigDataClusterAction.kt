@@ -30,7 +30,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 
 @Name("Link SQL Server Big Data Cluster")
-class LinkSqlServerBigDataClusterAction(private val sqlBigDataClusterModule: SqlBigDataClusterModule): NodeActionListener(sqlBigDataClusterModule) {
+class LinkSqlServerBigDataClusterAction(private val sqlBigDataClusterModule: SqlBigDataClusterModule): NodeActionListener() {
     override fun actionPerformed(e: NodeActionEvent?) {
         val form = AddNewSqlBigDataClusterForm(sqlBigDataClusterModule.project as Project, sqlBigDataClusterModule)
         form.show()

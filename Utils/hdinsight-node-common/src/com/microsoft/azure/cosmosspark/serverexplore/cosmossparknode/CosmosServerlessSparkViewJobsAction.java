@@ -43,7 +43,7 @@ public class CosmosServerlessSparkViewJobsAction extends NodeActionListener {
                                                @NotNull PublishSubject<Pair<
                                                        AzureSparkServerlessAccount,
                                                        CosmosSparkADLAccountNode>> viewJobsAction) {
-        super(adlAccountNode);
+        super();
         this.adlAccount = adlAccount;
         this.viewJobsAction = viewJobsAction;
         this.adlAccountNode = adlAccountNode;

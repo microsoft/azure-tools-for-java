@@ -143,7 +143,7 @@ public class DockerImageNode extends AzureRefreshableNode implements TelemetryPr
     }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(NodeActionEvent event) {
       return DOCKER;
     }
 

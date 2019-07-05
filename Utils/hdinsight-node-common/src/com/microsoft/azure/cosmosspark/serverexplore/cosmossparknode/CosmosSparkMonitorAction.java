@@ -21,7 +21,7 @@ public class CosmosSparkMonitorAction extends NodeActionListener {
                                     @NotNull PublishSubject<Pair<
                                             AzureSparkCosmosCluster,
                                                 CosmosSparkClusterNode>> monitorAction) {
-        super(clusterNode);
+        super();
         this.cluster = cluster;
         this.clusterNode = clusterNode;
         this.monitorAction = monitorAction;
