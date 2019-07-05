@@ -70,7 +70,7 @@ public class ResourceTemplateView extends BaseEditor {
     private Project project;
     private static final String PROMPT_MESSAGE_SAVE_TEMPALTE = "Would you like to save the template file before you exit";
     private static final String PROMPT_MESSAGE_SAVE_PARAMETERS = "Would you like to save the parameters file before you exit";
-    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure you want to update the deployment";
+    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment";
     private FileEditor fileEditor;
     private FileEditor parameterEditor;
 
