@@ -44,6 +44,8 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 
 import java.nio.file.Files;
 import java.util.ArrayList;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -82,8 +84,10 @@ public class WebAppUtils {
     private static final int SLEEP_TIME = 5000; // milliseconds
     private static final String DEFAULT_VALUE_WHEN_VERSION_INVALID = "";
 
-    public static final String STOP_APP_SERVICE = "Stopping app services.";
-    public static final String DEPLOY_SUCCESS = "Deploy succeed, restarting app services.";
+    public static final String STOP_WEB_APP = "Stopping web app...";
+    public static final String STOP_DEPLOYMENT_SLOT = "Stopping deployment slot...";
+    public static final String DEPLOY_SUCCESS_WEB_APP = "Deploy succeed, restarting web app...";
+    public static final String DEPLOY_SUCCESS_DEPLOYMENT_SLOT = "Deploy succeed, restarting deployment slot...";
     public static final String PREPARING_WEB_CONFIG = "Preparing web.config (check more details at: " +
             "https://aka.ms/spring-boot)...";
     public static final String RETRY_MESSAGE = "Exception occurred while deploying to app service:" +
@@ -303,15 +307,21 @@ public class WebAppUtils {
      */
     public static void deployArtifactsToAppService(WebAppBase deployTarget
             , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
+        if (!(deployTarget instanceof WebApp || deployTarget instanceof DeploymentSlot)) {
+            throw new WebAppException("Illegal deploy target.");
+        }
         // stop target app service
-        progressIndicator.setText(STOP_APP_SERVICE);
+        String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
+        progressIndicator.setText(stopMessage);
         deployTarget.stop();
         // deploy with zip/war deploy according to file type
         boolean deployResult = isJarBaseOnFileName(artifact.getPath()) ?
                 deployWebAppToJavaSERuntime(deployTarget, artifact, progressIndicator) :
                 deployWebAppToWebContainer(deployTarget, artifact, isDeployToRoot, progressIndicator);
         if (deployResult) {
-            progressIndicator.setText(DEPLOY_SUCCESS);
+            String successMessage = deployTarget instanceof WebApp ?
+                    DEPLOY_SUCCESS_WEB_APP : DEPLOY_SUCCESS_DEPLOYMENT_SLOT;
+            progressIndicator.setText(successMessage);
             deployTarget.start();
         }
     }
