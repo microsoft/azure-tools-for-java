@@ -390,7 +390,7 @@ public class WebAppUtils {
     public static boolean deployWebAppToWebContainer(WebAppBase deployTarget
             , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
         int retryCount = 0;
-        String webappPath = isDeployToRoot ? null : artifact.getName();
+        String webappPath = isDeployToRoot ? null : FilenameUtils.getBaseName(artifact.getName());
         while (retryCount++ < DEPLOY_MAX_TRY) {
             try {
                 if (deployTarget instanceof WebApp) {
