@@ -225,6 +225,14 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                         GetAccountsListResponse.class)))
                 // account basic list -> account basic
                 .flatMap(subAccountsObPair -> subAccountsObPair.getRight()
+                                .onErrorResumeNext(err -> {
+                                    log().warn(String.format("Ignore subscription %s(%s) with exception",
+                                                             subAccountsObPair.getLeft().getSubscriptionName(),
+                                                             subAccountsObPair.getLeft().getSubscriptionId()),
+                                            err);
+
+                                    return empty();
+                                })
                                 .flatMap(accountsResp -> Observable.from(accountsResp.items()))
                                 .map(accountBasic -> Pair.of(subAccountsObPair.getLeft(), accountBasic)))
                 .flatMap(subAccountBasicPair -> {
