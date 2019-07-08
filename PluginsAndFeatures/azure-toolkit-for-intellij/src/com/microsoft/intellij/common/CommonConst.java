@@ -23,8 +23,7 @@
 package com.microsoft.intellij.common;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.extensions.PluginId;
+import com.microsoft.intellij.util.PluginUtil;
 
 public class CommonConst {
     public static final String SPARK_SUBMISSION_WINDOW_ID = "HDInsight Spark Submission";
@@ -36,7 +35,7 @@ public class CommonConst {
     public static final String SPARK_APPLICATION_TYPE = "com.microsoft.azure.hdinsight.DefaultSparkApplicationType";
 
     private static String getPluginVersion() {
-        IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId(PLUGIN_ID));
+        IdeaPluginDescriptor descriptor = PluginUtil.getPluginDescriptor();
         if (descriptor == null)
             return "";
 

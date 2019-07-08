@@ -21,6 +21,7 @@
   <idea-version since-build="173.*" until-build="181.*"/>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true">org.intellij.scala</depends>
+  <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
@@ -130,7 +131,7 @@
 
     <group id="AzureToolkit.Survey">
       <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction"
-              id="AzureToolkit.Survey"
+              id="AzureToolkit.Survey.Feedback"
               text="Provide Feedback..."/>
       <add-to-group group-id="AzureToolkit.AzureActionGroup" />
     </group>

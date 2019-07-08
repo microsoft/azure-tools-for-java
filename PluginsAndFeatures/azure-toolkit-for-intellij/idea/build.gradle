@@ -49,6 +49,8 @@ test.dependsOn cucumber
 
 intellij {
     pluginName = 'azure-toolkit-for-intellij'
-    plugins = ['maven', dep_plugins]
+    plugins = ['java', 'maven', dep_plugins]
     version = idea_version
 }
+
+buildSearchableOptions.enabled = false

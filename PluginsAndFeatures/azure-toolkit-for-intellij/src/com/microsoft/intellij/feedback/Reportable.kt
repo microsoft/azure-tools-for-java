@@ -23,13 +23,11 @@
 
 package com.microsoft.intellij.feedback
 
-import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.application.ApplicationInfo
-import com.intellij.openapi.extensions.PluginId
-import com.microsoft.intellij.common.CommonConst
+import com.microsoft.intellij.util.PluginUtil
 
 open class Reportable(private val shortMessage: String) {
-    val plugin = PluginManager.getPlugin(PluginId.getId(CommonConst.PLUGIN_ID))!!
+    val plugin = PluginUtil.getPluginDescriptor()!!
     private val appInfo = ApplicationInfo.getInstance()
 
     private val platformInfo = mutableMapOf<String, String>(

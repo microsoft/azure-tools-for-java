@@ -174,8 +174,14 @@ public class PluginUtil {
         return null;
     }
 
-    public static String getPluginRootDirectory() {
+    public static IdeaPluginDescriptor getPluginDescriptor() {
         IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID));
+        if (pluginDescriptor == null) pluginDescriptor = PluginManager.getPlugin(PluginManager.getPluginByClassName(PluginUtil.class.getName()));
+        return pluginDescriptor;
+    }
+
+    public static String getPluginRootDirectory() {
+        IdeaPluginDescriptor pluginDescriptor = getPluginDescriptor();
         if (pluginDescriptor == null) return "";
         return pluginDescriptor.getPath().getAbsolutePath();
     }
