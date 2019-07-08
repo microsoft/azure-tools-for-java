@@ -24,4 +24,8 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 public interface YarnCluster {
     String getYarnNMConnectionUrl();
+
+    default String getYarnUIUrl() {
+        return null;
+    }
 }
