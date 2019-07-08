@@ -35,6 +35,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration
+import com.microsoft.azure.sqlbigdata.spark.common.ArisSparkBatchJob
 import rx.Observer
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
@@ -83,7 +84,7 @@ class ArisSparkBatchRunner : SparkBatchJobRunner() {
             .orElseThrow { ExecutionException("Can't find cluster named $clusterName") }
 
         val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, ctrlSubject)
-        return SparkBatchJob(
+        return ArisSparkBatchJob(
             clusterDetail,
             // In the latest 0.6.0-incubating livy, livy prevents user from creating sessions that have the same session name
             // Livy release notes: https://livy.apache.org/history/
