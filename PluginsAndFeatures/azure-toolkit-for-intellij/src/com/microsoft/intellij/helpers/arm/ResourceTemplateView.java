@@ -68,8 +68,7 @@ public class ResourceTemplateView extends BaseEditor {
     private JSplitPane armSplitPanel;
     private DeploymentNode node;
     private Project project;
-    private static final String PROMPT_MESSAGE_SAVE_TEMPALTE = "Would you like to save the template file before you exit";
-    private static final String PROMPT_MESSAGE_SAVE_PARAMETERS = "Would you like to save the parameters file before you exit";
+    private static final String PROMPT_MESSAGE_SAVE = "Would you like to save the changes before you exit";
     private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment";
     private FileEditor fileEditor;
     private FileEditor parameterEditor;
@@ -102,16 +101,20 @@ public class ResourceTemplateView extends BaseEditor {
                 if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) &&
                         file.getName().equals(node.getName())) {
                     try {
-                        if(isTemplateUpdate()){
-                            if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_TEMPALTE, "Azure Explorer",
-                                    new String[]{"Yes", "No"}, null)) {
-                                new ExportTemplate(node).doExport(getTemplate());
-                            }
+                        boolean templateUpdate = isTemplateUpdate();
+                        boolean propertiesUpdate = isPropertiesUpdate();
+                        if (!templateUpdate && !propertiesUpdate) {
+                            return;
                         }
-                        if(isPropertiesUpdate()){
-                            if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_PARAMETERS, "Azure Explorer",
-                                    new String[]{"Yes", "No"}, null)) {
-                                new ExportTemplate(node).doExportParameters(getParameters());
+                        if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE, "Azure Explorer",
+                                new String[]{"Yes", "No"}, null)) {
+                            ExportTemplate exportTemplate = new ExportTemplate(node);
+                            if (templateUpdate && propertiesUpdate) {
+                                exportTemplate.doExport(getTemplate(), getParameters());
+                            } else if (templateUpdate) {
+                                exportTemplate.doExportTemplate(getTemplate());
+                            } else {
+                                exportTemplate.doExportParameters(getParameters());
                             }
                         }
                     } finally {
@@ -123,8 +126,7 @@ public class ResourceTemplateView extends BaseEditor {
 
         saveAsTemplateButton.addActionListener((e) ->{
             ExportTemplate exportTemplate = new ExportTemplate(node);
-            exportTemplate.doExport(getTemplate());
-            exportTemplate.doExportParameters(getParameters());
+            exportTemplate.doExport(getTemplate(), getParameters());
         });
 
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);

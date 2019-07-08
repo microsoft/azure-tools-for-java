@@ -88,7 +88,6 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
         exportTemplateFileButton.addActionListener((e) -> {
             ExportTemplate exportTemplate = new ExportTemplate(deploymentNode);
             exportTemplate.doExport();
-            exportTemplate.doExportParameters();
         });
     }
 

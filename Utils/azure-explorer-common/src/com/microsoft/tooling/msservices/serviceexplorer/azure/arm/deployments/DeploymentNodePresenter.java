@@ -29,7 +29,9 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import org.apache.commons.io.IOUtils;
 import rx.Observable;
@@ -40,11 +42,12 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.EXPORT_TEMPA
 
 public class DeploymentNodePresenter<V extends DeploymentNodeView> extends MvpPresenter<V> {
 
-    public void onGetExportTemplateRes(String template, File file) {
+    public void onGetExportTemplateRes(String template, File templateFile, String parameter, File parameterFile) {
         Operation operation = TelemetryManager.createOperation(ARM, EXPORT_TEMPALTE_FILE);
         Observable.fromCallable(() -> {
             operation.start();
-            IOUtils.write(template, new FileOutputStream(file), Charset.defaultCharset());
+            writeFile(template,templateFile);
+            writeFile(parameter,parameterFile);
             return true;
         }).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
             operation.complete();
@@ -58,5 +61,19 @@ public class DeploymentNodePresenter<V extends DeploymentNodeView> extends MvpPr
                 getMvpView().showExportTemplateResult(false, ex);
             }
         });
+    }
+
+    public void onGetExportTemplateFile(String template, File file) {
+        onGetExportTemplateRes(template, file, null, null);
+    }
+
+    public void onGetExportParameterFile(String parameter, File parameterFile) {
+        onGetExportTemplateRes(null, null, parameter, parameterFile);
+    }
+
+    private void writeFile(String data, File file) throws IOException {
+        if (file != null && data != null) {
+            IOUtils.write(data, new FileOutputStream(file), Charset.defaultCharset());
+        }
     }
 }

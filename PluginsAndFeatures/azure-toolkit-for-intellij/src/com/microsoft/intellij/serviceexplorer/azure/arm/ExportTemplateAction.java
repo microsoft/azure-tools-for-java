@@ -41,6 +41,5 @@ public class ExportTemplateAction extends NodeActionListener {
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         ExportTemplate exportTemplate = new ExportTemplate(deploymentNode);
         exportTemplate.doExport();
-        exportTemplate.doExportParameters();
     }
 }

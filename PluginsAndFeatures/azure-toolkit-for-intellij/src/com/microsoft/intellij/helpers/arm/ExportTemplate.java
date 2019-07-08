@@ -23,20 +23,18 @@
 package com.microsoft.intellij.helpers.arm;
 
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import rx.schedulers.Schedulers;
 
 import java.io.File;
 
 public class ExportTemplate {
 
     private final DeploymentNode deploymentNode;
-    private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Azure Resource Manager "
-            + "Template.";
-    private static final String PARAMETERS_SELECTOR_TITLE = "Choose Where You Want to Save the Azure Resource Manager "
-            + "Parameters.";
-    private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
+    private static final String FOLDER_SELECTOR_TITLE = "Choose Where You Want to Save the ARM Templates";
+    private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Template File";
+    private static final String PARAMETERS_SELECTOR_TITLE = "Choose Where You Want to Save the Parameter File";
 
     private static final String TEMPLATE_FILE_NAME = "%s.json";
 
@@ -47,35 +45,25 @@ public class ExportTemplate {
     }
 
     public void doExport() {
+        String template = deploymentNode.getDeployment().exportTemplate().templateAsJson();
+        String parameters = DeploymentUtils.serializeParameters(deploymentNode.getDeployment());
+        doExport(template, parameters);
+    }
+
+    public void doExport(String template, String parameters) {
+        UIUtils.showSingleFolderChooser(FOLDER_SELECTOR_TITLE, (File folder) -> {
+            String templateFile = String.format(TEMPLATE_FILE_NAME, deploymentNode.getName());
+            String parameterFile = String.format(PARAMETERS_FILE_NAME, deploymentNode.getName());
+            deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(template),
+                    new File(folder, templateFile), Utils.getPrettyJson(parameters), new File(folder, parameterFile));
+        });
+    }
+
+    public void doExportTemplate(String template) {
         File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE,
                 String.format(TEMPLATE_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
-            deploymentNode.getDeployment().exportTemplateAsync().subscribeOn(Schedulers.io()).subscribe(
-                    res -> DefaultLoader.getIdeHelper()
-                            .invokeLater(() -> deploymentNode.getDeploymentNodePresenter()
-                                    .onGetExportTemplateRes(Utils.getPrettyJson(res.templateAsJson()), file)),
-                    ex -> DefaultLoader.getUIHelper().showError(ex.getMessage(), EXPORT_TEMPLATE_FAIL));
-        }
-    }
-
-    public void doExportParameters() {
-        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE,
-                String.format(PARAMETERS_FILE_NAME, deploymentNode.getName()));
-        if (file != null) {
-            final String parameters = DeploymentUtils.serializeParameters(deploymentNode.getDeployment());
-            deploymentNode.getDeployment().exportTemplateAsync().subscribeOn(Schedulers.io()).subscribe(
-                    res -> DefaultLoader.getIdeHelper()
-                            .invokeLater(() -> deploymentNode.getDeploymentNodePresenter()
-                                    .onGetExportTemplateRes(parameters, file)),
-                    ex -> DefaultLoader.getUIHelper().showError(ex.getMessage(), EXPORT_TEMPLATE_FAIL));
-        }
-    }
-
-    public void doExport(String template) {
-        File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE,
-                String.format(TEMPLATE_FILE_NAME, deploymentNode.getName()));
-        if (file != null) {
-            deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(template), file);
+            deploymentNode.getDeploymentNodePresenter().onGetExportTemplateFile(Utils.getPrettyJson(template), file);
         }
     }
 
@@ -83,7 +71,7 @@ public class ExportTemplate {
         File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE,
                 String.format(PARAMETERS_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
-            deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(parameters), file);
+            deploymentNode.getDeploymentNodePresenter().onGetExportParameterFile(Utils.getPrettyJson(parameters), file);
         }
     }
 }

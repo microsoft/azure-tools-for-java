@@ -24,6 +24,9 @@ package com.microsoft.intellij.ui.util;
 
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.fileChooser.FileChooserFactory;
+import com.intellij.openapi.fileChooser.PathChooserDialog;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -33,6 +36,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.ui.PathChooserDialogHelper;
 import com.intellij.util.Consumer;
 
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
+import java.util.Observable;
 
 public class UIUtils {
 
@@ -157,5 +162,19 @@ public class UIUtils {
     public static void showNotification(@NotNull Project project, String message, MessageType type) {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         showNotification(statusBar, message, type);
+    }
+
+    public static void showSingleFolderChooser(String title, Consumer<File> callBack) {
+        FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
+        descriptor.setTitle(title);
+        PathChooserDialog pathChooserDialog = FileChooserFactory.getInstance().createPathChooser(descriptor, null, null);
+        pathChooserDialog.choose(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")),
+                (List<VirtualFile> files) -> {
+                    if (files != null) {
+                        // Just get the first file as we use single folder descriptor
+                        File path = new File(files.get(0).getPath());
+                        callBack.consume(path);
+                    }
+                });
     }
 }
