@@ -40,7 +40,8 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
-import java.io.InputStream;
+
+import java.io.File;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -990,30 +991,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
                     PublishingProfile pp = webApp.getPublishingProfile();
-                    boolean isJar = isJarBaseOnFileName(artifactPath);
-                    int uploadingTryCount;
-                    webApp.stop();
-
-                    if (isJar) {
-                        if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
-                            // We use root.jar in web.config before, now we use app.jar
-                            // for backward compatibility, here need upload web.config when we deploy the code.
-                            try (InputStream webConfigInput = WebAppUtils.class
-                                .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                                WebAppUtils.uploadToRemoteServer(webApp, WEB_CONFIG_DEFAULT, webConfigInput,
-                                    new UpdateProgressIndicator(monitor), WEB_CONFIG_REMOTE_PATH);
-                            } catch (Exception ignore) {
-                            }
-                        }
-                        uploadingTryCount = WebAppUtils.deployArtifactForJavaSE(artifactPath, pp,
-                            new UpdateProgressIndicator(monitor));
-                    } else {
-                        uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
-                            new UpdateProgressIndicator(monitor));
-                    }
-                    postEventProperties
-                        .put(TelemetryConstants.ARTIFACT_UPLOAD_COUNT, String.valueOf(uploadingTryCount));
-                    webApp.start();
+                    WebAppUtils.deployArtifactsToAppService(webApp, new File(artifactPath),
+                            isDeployToRoot, new UpdateProgressIndicator(monitor));
 
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,

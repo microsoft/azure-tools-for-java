@@ -101,7 +101,7 @@ public class TableNode extends Node implements TelemetryProperties {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return STORAGE;
         }
 

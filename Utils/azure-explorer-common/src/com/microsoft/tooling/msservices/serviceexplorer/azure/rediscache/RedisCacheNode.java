@@ -117,7 +117,7 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return REDIS;
         }
 

@@ -28,6 +28,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmo
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import rx.Observable;
@@ -90,4 +91,8 @@ public class CosmosSparkADLAccountNode extends AzureRefreshableNode implements I
         return adlAccount;
     }
 
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.SPARK_ON_COSMOS;
+    }
 }

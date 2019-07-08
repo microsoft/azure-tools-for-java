@@ -164,7 +164,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return WEBAPP;
         }
 

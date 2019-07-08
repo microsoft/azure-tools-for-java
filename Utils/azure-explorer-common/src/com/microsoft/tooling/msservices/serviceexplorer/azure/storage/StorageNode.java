@@ -21,9 +21,6 @@
  */
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
-
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -43,6 +40,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
 public class StorageNode extends RefreshableNode implements TelemetryProperties {
     private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount_16.png";
@@ -103,7 +103,7 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return STORAGE;
         }
 

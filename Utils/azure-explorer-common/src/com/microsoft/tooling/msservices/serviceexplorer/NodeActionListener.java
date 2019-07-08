@@ -27,25 +27,16 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.*;
 
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class NodeActionListener implements EventListener {
-    protected static String name;
-
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
-    }
-
-    public NodeActionListener(Node node) {
     }
 
     protected void beforeActionPerformed(NodeActionEvent e) {
@@ -78,7 +69,7 @@ public abstract class NodeActionListener implements EventListener {
             throws AzureCmdException;
 
     public ListenableFuture<Void> actionPerformedAsync(NodeActionEvent e) {
-        String serviceName = transformHDInsight(getServiceName(), e.getAction().getNode());
+        String serviceName = transformHDInsight(getServiceName(e), e.getAction().getNode());
         String operationName = getOperationName(e);
         Operation operation = TelemetryManager.createOperation(serviceName, operationName);
         try {
@@ -121,13 +112,17 @@ public abstract class NodeActionListener implements EventListener {
         return serviceName;
     }
 
-    protected String getServiceName() {
-        return TelemetryConstants.ACTION;
+    protected String getServiceName(NodeActionEvent event) {
+        try {
+            return event.getAction().getNode().getServiceName();
+        } catch (Exception ignore) {
+            return TelemetryConstants.ACTION;
+        }
     }
 
     protected String getOperationName(NodeActionEvent event) {
         try {
-            return event.getAction().getName().replace(" ", "");
+            return event.getAction().getName().toLowerCase().trim().replace(" ", "-");
         } catch (Exception ignore) {
             return "";
         }

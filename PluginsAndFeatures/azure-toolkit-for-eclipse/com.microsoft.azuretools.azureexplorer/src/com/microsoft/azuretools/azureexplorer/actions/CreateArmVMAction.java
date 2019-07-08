@@ -33,7 +33,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 @Name("Create VM")
 public class CreateArmVMAction extends NodeActionListener {
     public CreateArmVMAction(VMArmModule node) {
-        super(node);
+        super();
     }
 
     @Override
