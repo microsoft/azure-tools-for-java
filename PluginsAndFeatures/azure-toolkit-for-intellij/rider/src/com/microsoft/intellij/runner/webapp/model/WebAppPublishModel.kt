@@ -24,9 +24,9 @@ package com.microsoft.intellij.runner.webapp.model
 
 import com.intellij.ide.browsers.WebBrowserReferenceConverter
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.util.xmlb.annotations.Attribute
-import com.jetbrains.rdclient.util.idea.createLifetime
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution

@@ -22,10 +22,10 @@
 
 package com.microsoft.intellij.ui.extension
 
+import com.intellij.openapi.rd.createNestedDisposable
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.jetbrains.rd.util.lifetime.Lifetime
-import com.jetbrains.rdclient.util.idea.createNestedDisposable
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import javax.swing.JTextField
 

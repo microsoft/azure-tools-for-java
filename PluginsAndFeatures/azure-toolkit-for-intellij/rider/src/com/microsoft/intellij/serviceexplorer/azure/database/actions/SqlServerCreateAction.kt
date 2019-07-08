@@ -22,7 +22,7 @@
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
 import com.intellij.openapi.project.Project
-import com.jetbrains.rdclient.util.idea.defineNestedLifetime
+import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.ui.forms.sqlserver.CreateSqlServerDialog

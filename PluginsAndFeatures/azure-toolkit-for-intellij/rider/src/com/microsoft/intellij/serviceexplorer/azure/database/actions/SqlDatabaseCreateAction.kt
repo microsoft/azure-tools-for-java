@@ -23,7 +23,7 @@
 package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
 import com.intellij.openapi.project.Project
-import com.jetbrains.rdclient.util.idea.defineNestedLifetime
+import com.intellij.openapi.rd.defineNestedLifetime
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.intellij.ui.forms.sqldatabase.CreateSqlDatabaseOnServerDialog
 import com.microsoft.tooling.msservices.helpers.Name

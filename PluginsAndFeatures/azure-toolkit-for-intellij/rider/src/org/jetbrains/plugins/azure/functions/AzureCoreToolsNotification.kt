@@ -26,9 +26,9 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.*
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.startup.StartupActivity
 import com.jetbrains.rd.util.reactive.adviseOnce
-import com.jetbrains.rdclient.util.idea.createLifetime
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution

@@ -23,8 +23,8 @@
 package com.microsoft.intellij.runner.functionapp.model
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.util.JDOMExternalizerUtil
-import com.jetbrains.rdclient.util.idea.createLifetime
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
