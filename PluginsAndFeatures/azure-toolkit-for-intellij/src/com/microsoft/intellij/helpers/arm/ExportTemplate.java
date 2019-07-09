@@ -38,12 +38,17 @@ public class ExportTemplate {
             + "Parameters.";
     private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
 
+    private static final String TEMPLATE_FILE_NAME = "%s.json";
+
+    private static final String PARAMETERS_FILE_NAME = "%s_parameters.json";
+
     public ExportTemplate(DeploymentNode deploymentNode) {
         this.deploymentNode = deploymentNode;
     }
 
     public void doExport() {
-        File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE, deploymentNode.getName() + ".json");
+        File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE,
+                String.format(TEMPLATE_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
             deploymentNode.getDeployment().exportTemplateAsync().subscribeOn(Schedulers.io()).subscribe(
                     res -> DefaultLoader.getIdeHelper()
@@ -53,8 +58,9 @@ public class ExportTemplate {
         }
     }
 
-    public void doExportParameters(){
-        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE, deploymentNode.getName() + ".json");
+    public void doExportParameters() {
+        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE,
+                String.format(PARAMETERS_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
             final String parameters = DeploymentUtils.serializeParameters(deploymentNode.getDeployment());
             deploymentNode.getDeployment().exportTemplateAsync().subscribeOn(Schedulers.io()).subscribe(
@@ -66,17 +72,18 @@ public class ExportTemplate {
     }
 
     public void doExport(String template) {
-        File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE, deploymentNode.getName() + ".json");
+        File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE,
+                String.format(TEMPLATE_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
             deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(template), file);
         }
     }
 
-    public void doExportParameters(String parameters){
-        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE, deploymentNode.getName() + ".json");
+    public void doExportParameters(String parameters) {
+        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE,
+                String.format(PARAMETERS_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
             deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(parameters), file);
         }
     }
-
 }

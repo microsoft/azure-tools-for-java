@@ -44,7 +44,7 @@ intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['maven', dep_plugins, "properties"]
+    plugins = intellij_version == "IC-2019.1" ? ['maven', dep_plugins, "properties"] : ['java', 'maven', dep_plugins, "properties"]
 	downloadSources = Boolean.valueOf(sources)
 }
 

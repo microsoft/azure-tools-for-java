@@ -22,8 +22,6 @@
 
 package com.microsoft.intellij.helpers.arm;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -40,7 +38,6 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
-import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -50,7 +47,6 @@ import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
 import javax.swing.*;
 
@@ -66,15 +62,15 @@ public class ResourceTemplateView extends BaseEditor {
     private JButton updateDeploymentButton;
     private JPanel contentPane;
     private JPanel editorPanel;
-    private JPanel editorPanels;
     private JPanel parameterPanel;
     private JLabel lblEditorPanel;
     private JLabel lblParametersPanel;
+    private JSplitPane armSplitPanel;
     private DeploymentNode node;
     private Project project;
     private static final String PROMPT_MESSAGE_SAVE_TEMPALTE = "Would you like to save the template file before you exit";
     private static final String PROMPT_MESSAGE_SAVE_PARAMETERS = "Would you like to save the parameters file before you exit";
-    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure you want to update the deployment with the modified template";
+    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment";
     private FileEditor fileEditor;
     private FileEditor parameterEditor;
 
@@ -96,6 +92,8 @@ public class ResourceTemplateView extends BaseEditor {
         parameterEditor = createEditor(originParameters);
         parameterPanel.add(parameterEditor.getComponent(),constraints);
 
+        // Init the split panel
+        armSplitPanel.setDividerLocation(0.6); // template : parameter = 6:4
 
         final MessageBusConnection messageBusConnection = project.getMessageBus().connect(fileEditor);
         messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
@@ -113,7 +111,7 @@ public class ResourceTemplateView extends BaseEditor {
                         if(isPropertiesUpdate()){
                             if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_PARAMETERS, "Azure Explorer",
                                     new String[]{"Yes", "No"}, null)) {
-                                new ExportTemplate(node).doExport(getParameters());
+                                new ExportTemplate(node).doExportParameters(getParameters());
                             }
                         }
                     } finally {
