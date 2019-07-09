@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.run.action
 
 import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType
@@ -70,7 +71,7 @@ abstract class SelectSparkApplicationTypeAction
         val selected = isSelected()
         val presentation = e.presentation
         presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, selected)
-        if (e.isFromContextMenu) {
+        if (ActionPlaces.isPopupPlace(e.place)) {
             presentation.icon = null
         }
     }

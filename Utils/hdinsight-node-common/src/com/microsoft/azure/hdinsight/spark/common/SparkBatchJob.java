@@ -650,7 +650,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @return Yarn Application Attempt info Observable
      */
-    Observable<AppAttempt> getSparkJobYarnCurrentAppAttempt() {
+    protected Observable<AppAttempt> getSparkJobYarnCurrentAppAttempt() {
         if (getConnectUri() == null) {
             return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
                     "please configure Spark cluster which the Spark job will be submitted."));
@@ -973,7 +973,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @return Job Driver log URL observable
      */
-    Observable<String> getSparkJobDriverLogUrlObservable() {
+    protected Observable<String> getSparkJobDriverLogUrlObservable() {
         return getSparkJobYarnCurrentAppAttempt()
                 .map(AppAttempt::getLogsLink)
                 .map(URI::create)

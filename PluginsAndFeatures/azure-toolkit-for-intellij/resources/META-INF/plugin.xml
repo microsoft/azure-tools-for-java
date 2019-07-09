@@ -96,11 +96,11 @@
         id="Cosmos Serverless Spark Jobs"
         canCloseContents="true"/>
 
-    <toolWindow
-            anchor="bottom"
-            factoryClass="com.microsoft.azure.webapp.ui.WebAppStreamingLogToolWindowFactory"
-            id="Azure Streaming Log"
-            canCloseContents="true"/>
+<!--    <toolWindow-->
+<!--            anchor="bottom"-->
+<!--            factoryClass="com.microsoft.azure.webapp.ui.WebAppStreamingLogToolWindowFactory"-->
+<!--            id="Azure Streaming Log"-->
+<!--            canCloseContents="true"/>-->
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
@@ -120,6 +120,7 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
+    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 

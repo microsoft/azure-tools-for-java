@@ -84,11 +84,10 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     var webHdfsAuthUser:String? = null
 
     fun getCredentialAccount(account: String?, type: SparkSubmitStorageType?): String? {
-        when (type) {
+        return when (type) {
             SparkSubmitStorageType.BLOB -> return account?.let { SERVICE_NAME_PREFIX_BLOB + account }
             SparkSubmitStorageType.ADLS_GEN2 -> return account?.let { SERVICE_NAME_PREFIX_GEN2 + account }
+            else -> null
         }
-
-        return null;
     }
 }
