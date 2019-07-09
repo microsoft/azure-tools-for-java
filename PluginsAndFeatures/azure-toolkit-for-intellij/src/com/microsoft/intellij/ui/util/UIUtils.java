@@ -26,6 +26,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.io.FileUtil;
@@ -34,7 +35,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.Consumer;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -157,5 +157,9 @@ public class UIUtils {
     public static void showNotification(@NotNull Project project, String message, MessageType type) {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         showNotification(statusBar, message, type);
+    }
+
+    public static boolean showYesNoDialog(String title, String prompt){
+        return Messages.showYesNoDialog(null, prompt, title, "Yes", "No", null) == 0;
     }
 }

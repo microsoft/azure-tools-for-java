@@ -33,8 +33,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.StatusBar;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
@@ -58,7 +56,7 @@ import static com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentA
 public class ResourceTemplateView extends BaseEditor {
 
     public static final String ID = "com.microsoft.intellij.helpers.arm.ResourceTemplateView";
-    private JButton saveAsTemplateButton;
+    private JButton exportTemplateButton;
     private JButton updateDeploymentButton;
     private JPanel contentPane;
     private JPanel editorPanel;
@@ -66,10 +64,11 @@ public class ResourceTemplateView extends BaseEditor {
     private JLabel lblEditorPanel;
     private JLabel lblParametersPanel;
     private JSplitPane armSplitPanel;
+    private JButton exportParameterFileButton;
     private DeploymentNode node;
     private Project project;
-    private static final String PROMPT_MESSAGE_SAVE_TEMPALTE = "Would you like to save the template file before you exit";
-    private static final String PROMPT_MESSAGE_SAVE_PARAMETERS = "Would you like to save the parameters file before you exit";
+    private static final String PROMPT_TITLE = "Azure Explorer";
+    private static final String PROMPT_MESSAGE_CLOSE = "Would you like to update the deployment before you exit?";
     private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment";
     private FileEditor fileEditor;
     private FileEditor parameterEditor;
@@ -102,16 +101,9 @@ public class ResourceTemplateView extends BaseEditor {
                 if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) &&
                         file.getName().equals(node.getName())) {
                     try {
-                        if(isTemplateUpdate()){
-                            if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_TEMPALTE, "Azure Explorer",
-                                    new String[]{"Yes", "No"}, null)) {
-                                new ExportTemplate(node).doExport(getTemplate());
-                            }
-                        }
-                        if(isPropertiesUpdate()){
-                            if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE_PARAMETERS, "Azure Explorer",
-                                    new String[]{"Yes", "No"}, null)) {
-                                new ExportTemplate(node).doExportParameters(getParameters());
+                        if (isTemplateUpdate() || isPropertiesUpdate()) {
+                            if (UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_CLOSE)) {
+                                updateDeployment();
                             }
                         }
                     } finally {
@@ -121,36 +113,21 @@ public class ResourceTemplateView extends BaseEditor {
             }
         });
 
-        saveAsTemplateButton.addActionListener((e) ->{
-            ExportTemplate exportTemplate = new ExportTemplate(node);
-            exportTemplate.doExport(getTemplate());
-            exportTemplate.doExportParameters(getParameters());
+        exportTemplateButton.addActionListener((e) -> {
+            new ExportTemplate(node).doExportTemplate(getTemplate());
         });
 
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+        exportParameterFileButton.addActionListener((e) -> {
+            new ExportTemplate(node).doExportParameters(getParameters());
+        });
+
         updateDeploymentButton.addActionListener((e) -> {
             try {
-                if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_UPDATE_DEPLOYMENT, "Azure Explorer",
-                        new String[]{"Yes", "No"}, null)) {
-                    ProgressManager.getInstance().run(new Task.Backgroundable(project,
-                            "Update your azure resource " + node.getDeployment().name() + "...", false) {
-                        @Override
-                        public void run(@NotNull ProgressIndicator indicator) {
-                            EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
-                                node.getDeployment().update()
-                                        .withTemplate(getTemplate())
-                                        .withParameters(getParameters())
-                                        .withMode(DeploymentMode.INCREMENTAL).apply();
-                                UIUtils.showNotification(statusBar, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
-                            }), (e) -> {
-                                UIUtils.showNotification(statusBar,
-                                        NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + e.getMessage(), MessageType.ERROR);
-                            });
-                        }
-                    });
+                if (UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_UPDATE_DEPLOYMENT)) {
+                    updateDeployment();
                 }
             } catch (Exception ex) {
-                UIUtils.showNotification(statusBar, NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
+                UIUtils.showNotification(project, NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
                         MessageType.ERROR);
             }
         });
@@ -159,6 +136,25 @@ public class ResourceTemplateView extends BaseEditor {
     private FileEditor createEditor(String template) {
         return PsiAwareTextEditorProvider.getInstance()
                 .createEditor(project, new LightVirtualFile(node.getName() + ".json", ARMLanguage.INSTANCE, template));
+    }
+
+    private void updateDeployment() {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project,
+                "Update your azure resource " + node.getDeployment().name() + "...", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
+                    node.getDeployment().update()
+                            .withTemplate(getTemplate())
+                            .withParameters(getParameters())
+                            .withMode(DeploymentMode.INCREMENTAL).apply();
+                    UIUtils.showNotification(project, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
+                }), (e) -> {
+                    UIUtils.showNotification(project,
+                            NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + e.getMessage(), MessageType.ERROR);
+                });
+            }
+        });
     }
 
     public boolean isTemplateUpdate(){

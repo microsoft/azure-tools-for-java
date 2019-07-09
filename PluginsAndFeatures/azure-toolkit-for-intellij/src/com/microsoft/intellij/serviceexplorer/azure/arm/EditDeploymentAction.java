@@ -22,24 +22,23 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.arm;
 
-import com.microsoft.intellij.helpers.arm.ExportTemplate;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 
-@Name("Export Template File")
-public class ExportTemplateAction extends NodeActionListener {
-
+@Name("Edit Deployment")
+public class EditDeploymentAction extends NodeActionListener {
     private final DeploymentNode deploymentNode;
 
-    public ExportTemplateAction(DeploymentNode deploymentNode) {
+    public EditDeploymentAction(DeploymentNode deploymentNode) {
         this.deploymentNode = deploymentNode;
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
-        ExportTemplate exportTemplate = new ExportTemplate(deploymentNode);
-        exportTemplate.doExportTemplate();
+        DefaultLoader.getUIHelper().openResourceTemplateView(deploymentNode,
+                deploymentNode.getDeployment().exportTemplate().templateAsJson());
     }
 }

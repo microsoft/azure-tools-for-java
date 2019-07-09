@@ -48,7 +48,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 
-import org.codehaus.jackson.schema.JsonSchema;
 import org.jdesktop.swingx.JXLabel;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTimeZone;
@@ -72,6 +71,7 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
     private JXLabel statusReasonLabel;
     private JButton viewResourceTemplateButton;
     private JButton exportTemplateFileButton;
+    private JButton exportParameterFileButton;
     private DeploymentNode deploymentNode;
     private static final String PNL_OVERVIEW = "Overview";
 
@@ -86,9 +86,11 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
         pnlOverview.setBorder(BorderFactory.createCompoundBorder());
 
         exportTemplateFileButton.addActionListener((e) -> {
-            ExportTemplate exportTemplate = new ExportTemplate(deploymentNode);
-            exportTemplate.doExport();
-            exportTemplate.doExportParameters();
+            new ExportTemplate(deploymentNode).doExportTemplate();
+        });
+
+        exportParameterFileButton.addActionListener((e) -> {
+            new ExportTemplate(deploymentNode).doExportParameters();
         });
     }
 
@@ -166,5 +168,12 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
         deploymentProperty.getResources().stream().forEach((resource) -> {
             nodeResources.add(new DefaultMutableTreeNode(resource));
         });
+        expandTree();
+    }
+
+    private void expandTree() {
+        for (int i = 0; i < templateTree.getRowCount(); i++) {
+            templateTree.expandRow(i);
+        }
     }
 }

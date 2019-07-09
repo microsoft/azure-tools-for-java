@@ -25,53 +25,34 @@ package com.microsoft.intellij.helpers.arm;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import rx.schedulers.Schedulers;
 
 import java.io.File;
 
 public class ExportTemplate {
 
     private final DeploymentNode deploymentNode;
-    private static final String FILE_SELECTOR_TITLE = "Choose Where You Want to Save the Azure Resource Manager "
-            + "Template.";
-    private static final String PARAMETERS_SELECTOR_TITLE = "Choose Where You Want to Save the Azure Resource Manager "
-            + "Parameters.";
-    private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
+
+    private static final String FILE_SELECTOR_TITLE = "Choose Where to Save the ARM Template File.";
+    private static final String PARAMETERS_SELECTOR_TITLE = "Choose Where to Save the ARM Parameter File.";
 
     private static final String TEMPLATE_FILE_NAME = "%s.json";
-
-    private static final String PARAMETERS_FILE_NAME = "%s_parameters.json";
+    private static final String PARAMETERS_FILE_NAME = "%s.parameters.json";
 
     public ExportTemplate(DeploymentNode deploymentNode) {
         this.deploymentNode = deploymentNode;
     }
 
-    public void doExport() {
-        File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE,
-                String.format(TEMPLATE_FILE_NAME, deploymentNode.getName()));
-        if (file != null) {
-            deploymentNode.getDeployment().exportTemplateAsync().subscribeOn(Schedulers.io()).subscribe(
-                    res -> DefaultLoader.getIdeHelper()
-                            .invokeLater(() -> deploymentNode.getDeploymentNodePresenter()
-                                    .onGetExportTemplateRes(Utils.getPrettyJson(res.templateAsJson()), file)),
-                    ex -> DefaultLoader.getUIHelper().showError(ex.getMessage(), EXPORT_TEMPLATE_FAIL));
-        }
+    public void doExportTemplate() {
+        final String template = deploymentNode.getDeployment().exportTemplate().templateAsJson();
+        doExportTemplate(template);
     }
 
     public void doExportParameters() {
-        File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE,
-                String.format(PARAMETERS_FILE_NAME, deploymentNode.getName()));
-        if (file != null) {
-            final String parameters = DeploymentUtils.serializeParameters(deploymentNode.getDeployment());
-            deploymentNode.getDeployment().exportTemplateAsync().subscribeOn(Schedulers.io()).subscribe(
-                    res -> DefaultLoader.getIdeHelper()
-                            .invokeLater(() -> deploymentNode.getDeploymentNodePresenter()
-                                    .onGetExportTemplateRes(parameters, file)),
-                    ex -> DefaultLoader.getUIHelper().showError(ex.getMessage(), EXPORT_TEMPLATE_FAIL));
-        }
+        final String parameters = DeploymentUtils.serializeParameters(deploymentNode.getDeployment());
+        doExportParameters(parameters);
     }
 
-    public void doExport(String template) {
+    public void doExportTemplate(String template) {
         File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE,
                 String.format(TEMPLATE_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
