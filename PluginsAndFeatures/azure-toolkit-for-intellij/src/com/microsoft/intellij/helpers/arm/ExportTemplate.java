@@ -54,7 +54,7 @@ public class ExportTemplate {
         UIUtils.showSingleFolderChooser(FOLDER_SELECTOR_TITLE, (File folder) -> {
             String templateFile = String.format(TEMPLATE_FILE_NAME, deploymentNode.getName());
             String parameterFile = String.format(PARAMETERS_FILE_NAME, deploymentNode.getName());
-            deploymentNode.getDeploymentNodePresenter().onGetExportTemplateRes(Utils.getPrettyJson(template),
+            deploymentNode.getDeploymentNodePresenter().onExportTemplateRes(Utils.getPrettyJson(template),
                     new File(folder, templateFile), Utils.getPrettyJson(parameters), new File(folder, parameterFile));
         });
     }
@@ -63,7 +63,7 @@ public class ExportTemplate {
         File file = DefaultLoader.getUIHelper().showFileSaver(FILE_SELECTOR_TITLE,
                 String.format(TEMPLATE_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
-            deploymentNode.getDeploymentNodePresenter().onGetExportTemplateFile(Utils.getPrettyJson(template), file);
+            deploymentNode.getDeploymentNodePresenter().onExportTemplateFile(Utils.getPrettyJson(template), file);
         }
     }
 
@@ -71,7 +71,7 @@ public class ExportTemplate {
         File file = DefaultLoader.getUIHelper().showFileSaver(PARAMETERS_SELECTOR_TITLE,
                 String.format(PARAMETERS_FILE_NAME, deploymentNode.getName()));
         if (file != null) {
-            deploymentNode.getDeploymentNodePresenter().onGetExportParameterFile(Utils.getPrettyJson(parameters), file);
+            deploymentNode.getDeploymentNodePresenter().onExportParameterFile(Utils.getPrettyJson(parameters), file);
         }
     }
 }

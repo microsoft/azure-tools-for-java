@@ -29,6 +29,7 @@ import com.intellij.openapi.fileChooser.FileChooserFactory;
 import com.intellij.openapi.fileChooser.PathChooserDialog;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.io.FileUtil;
@@ -176,5 +177,9 @@ public class UIUtils {
                         callBack.consume(path);
                     }
                 });
+    }
+
+    public static boolean showYesNoDialog(String title, String prompt){
+        return Messages.showYesNoDialog(null, prompt, title, "Yes", "No", null) == 0;
     }
 }

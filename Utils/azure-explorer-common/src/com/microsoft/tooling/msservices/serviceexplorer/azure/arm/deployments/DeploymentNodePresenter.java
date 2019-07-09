@@ -22,32 +22,29 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments;
 
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import org.apache.commons.io.IOUtils;
 import rx.Observable;
 import rx.exceptions.Exceptions;
+
+import java.io.File;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ARM;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.EXPORT_TEMPALTE_FILE;
 
 public class DeploymentNodePresenter<V extends DeploymentNodeView> extends MvpPresenter<V> {
 
-    public void onGetExportTemplateRes(String template, File templateFile, String parameter, File parameterFile) {
+    public void onExportTemplateRes(String template, File templateFile, String parameter, File parameterFile) {
         Operation operation = TelemetryManager.createOperation(ARM, EXPORT_TEMPALTE_FILE);
         Observable.fromCallable(() -> {
             operation.start();
-            writeFile(template,templateFile);
-            writeFile(parameter,parameterFile);
+            FileUtil.writeStringToFile(template,templateFile);
+            FileUtil.writeStringToFile(parameter,parameterFile);
             return true;
         }).subscribe(res -> DefaultLoader.getIdeHelper().invokeLater(() -> {
             operation.complete();
@@ -63,17 +60,11 @@ public class DeploymentNodePresenter<V extends DeploymentNodeView> extends MvpPr
         });
     }
 
-    public void onGetExportTemplateFile(String template, File file) {
-        onGetExportTemplateRes(template, file, null, null);
+    public void onExportTemplateFile(String template, File file) {
+        onExportTemplateRes(template, file, null, null);
     }
 
-    public void onGetExportParameterFile(String parameter, File parameterFile) {
-        onGetExportTemplateRes(null, null, parameter, parameterFile);
-    }
-
-    private void writeFile(String data, File file) throws IOException {
-        if (file != null && data != null) {
-            IOUtils.write(data, new FileOutputStream(file), Charset.defaultCharset());
-        }
+    public void onExportParameterFile(String parameter, File parameterFile) {
+        onExportTemplateRes(null, null, parameter, parameterFile);
     }
 }

@@ -68,8 +68,8 @@ public class ResourceTemplateView extends BaseEditor {
     private JSplitPane armSplitPanel;
     private DeploymentNode node;
     private Project project;
-    private static final String PROMPT_MESSAGE_SAVE = "Would you like to save the changes before you exit";
-    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment";
+    private static final String PROMPT_MESSAGE_SAVE = "Would you like to save the changes before you exit?";
+    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment?";
     private FileEditor fileEditor;
     private FileEditor parameterEditor;
 
@@ -106,8 +106,7 @@ public class ResourceTemplateView extends BaseEditor {
                         if (!templateUpdate && !propertiesUpdate) {
                             return;
                         }
-                        if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_SAVE, "Azure Explorer",
-                                new String[]{"Yes", "No"}, null)) {
+                        if (UIUtils.showYesNoDialog("Azure Explorer", PROMPT_MESSAGE_SAVE)) {
                             ExportTemplate exportTemplate = new ExportTemplate(node);
                             if (templateUpdate && propertiesUpdate) {
                                 exportTemplate.doExport(getTemplate(), getParameters());
@@ -132,8 +131,7 @@ public class ResourceTemplateView extends BaseEditor {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         updateDeploymentButton.addActionListener((e) -> {
             try {
-                if (DefaultLoader.getUIHelper().showConfirmation(PROMPT_MESSAGE_UPDATE_DEPLOYMENT, "Azure Explorer",
-                        new String[]{"Yes", "No"}, null)) {
+                if (UIUtils.showYesNoDialog("Azure Explorer", PROMPT_MESSAGE_UPDATE_DEPLOYMENT)) {
                     ProgressManager.getInstance().run(new Task.Backgroundable(project,
                             "Update your azure resource " + node.getDeployment().name() + "...", false) {
                         @Override

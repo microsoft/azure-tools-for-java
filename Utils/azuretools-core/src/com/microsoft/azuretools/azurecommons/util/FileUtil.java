@@ -21,6 +21,8 @@
 package com.microsoft.azuretools.azurecommons.util;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.commons.io.IOUtils;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -36,7 +39,13 @@ import java.util.zip.ZipOutputStream;
 public class FileUtil {
 	
 	private static final int BUFF_SIZE = 1024;
-    
+
+    public static void writeStringToFile(String data, File file) throws IOException {
+        if (file != null && data != null) {
+            IOUtils.write(data, new FileOutputStream(file), Charset.defaultCharset());
+        }
+    }
+
     /**
      * Method writes contents of file.
      * @param inStream
