@@ -33,6 +33,7 @@ import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegate
 import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.*
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.ADLSGen2FileSystem
@@ -163,7 +164,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
                 when (viewModel.deployStorageTypeSelection) {
                     SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT -> {
                         when (storageAccount) {
-                            is ADLSGen2StorageAccount -> {
+                            is ADLSGen2StorageAccount  -> {
                                 fsType = AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2
                                 account = storageAccount.name
                                 accessKey = storageAccount.primaryKey
@@ -187,7 +188,12 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
 
             when (fsType) {
                 AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2 -> {
-                    if (StringUtils.isBlank(account) || StringUtils.isBlank(accessKey)) {
+                    // for issue #3159, upload path maybe not ready if switching cluster fast so path is the last cluster's path
+                    // if switching between gen2 clusters, need to check account is matched
+                    val isPathValid = uploadRootPath?.matches(SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex())
+                            ?: false
+                    val isAccountMatch = uploadRootPath?.contains(account ?: "") ?: false
+                    if (!isPathValid || !isAccountMatch || StringUtils.isBlank(account) || StringUtils.isBlank(accessKey)) {
                         return null
                     }
 
