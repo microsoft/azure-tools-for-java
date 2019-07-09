@@ -132,7 +132,7 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
     }
 
     @Override
-    Observable<String> getSparkJobDriverLogUrlObservable() {
+    protected Observable<String> getSparkJobDriverLogUrlObservable() {
         return Observable.just(Objects.requireNonNull(getConnectUri()).toString() + "/" + getBatchId() + "/log");
     }
 
