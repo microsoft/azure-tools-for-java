@@ -56,7 +56,7 @@ public class StorageChooser implements ILogger {
                         PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
                                 "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
                                         "cluster. Please\n manually specify the reference file paths for other type of " +
-                                        "clusters and check upload inputs")
+                                        "clusters and check upload inputs. Or\n preparing upload path has a delay, please retry.")
                 , ModalityState.any());
     }
 }

@@ -287,7 +287,23 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
                         ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
                         if (coresSiteMap != null) {
                             this.coresiteMap = coresSiteMap;
-                            this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
+                            try {
+                                this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
+                            } catch (HDIException exp) {
+                                String errMsg = String.format("Encounter exception when getting storage configuration for cluster name:%s,type:%s,location:%s," +
+                                                "state:%s,version:%s,osType:%s,kind:%s,spark version:%s",
+                                        clusterRawInfo.getName(),
+                                        clusterRawInfo.getType(),
+                                        clusterRawInfo.getLocation(),
+                                        clusterRawInfo.getProperties().getClusterState(),
+                                        clusterRawInfo.getProperties().getClusterVersion(),
+                                        clusterRawInfo.getProperties().getOsType(),
+                                        clusterRawInfo.getProperties().getClusterDefinition().getKind(),
+                                        clusterRawInfo.getProperties().getClusterDefinition().getComponentVersion().getSpark());
+                                log().warn(errMsg, exp);
+                                throw new HDIException(errMsg, exp);
+                            }
+
                             this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
                         }
                     }
@@ -377,7 +393,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             case BLOB:
                 String storageAccountName = pathInfo.path.getHost();
                 if (StringUtils.isBlank(storageAccountName)) {
-                    throw new HDIException("Failed to get default storage account name");
+                    throw new HDIException(String.format("Failed to get default storage account name from root path %s with %s storage type",
+                            defaultStorageRootPath, pathInfo.storageType));
                 }
 
                 String defaultContainerName = pathInfo.path.getUserInfo();
@@ -396,7 +413,8 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             case ADLSGen2:
                 String accountName = pathInfo.path.getHost();
                 if (StringUtils.isBlank(accountName)) {
-                    throw new HDIException("Failed to get default storage account name");
+                    throw new HDIException(String.format("Failed to get default storage account name from root path %s with %s storage type",
+                            defaultStorageRootPath, pathInfo.storageType));
                 }
 
                 String fileSystem = pathInfo.path.getUserInfo();
