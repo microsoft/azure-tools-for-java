@@ -127,10 +127,10 @@ public class NodeActionsMap {
         node2Actions.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .add(CreateDeploymentAction.class).build());
 
-        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
-
-        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+//        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+//
+//        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 }
