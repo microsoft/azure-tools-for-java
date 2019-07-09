@@ -22,9 +22,12 @@
 
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+
 public interface YarnCluster {
     String getYarnNMConnectionUrl();
 
+    @Nullable
     default String getYarnUIUrl() {
         return null;
     }

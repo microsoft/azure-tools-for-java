@@ -81,12 +81,6 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     protected void addConsoleViewFilter(@NotNull ISparkBatchJob job, @NotNull ConsoleView consoleView) {
     }
 
-    @NotNull
-    protected ISparkBatchJob buildSparkBatchJobForExecution(@NotNull SparkSubmitModel submitModel,
-                                                            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
-        return buildSparkBatchJob(submitModel, ctrlSubject);
-    }
-
     @Nullable
     @Override
     protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) throws ExecutionException {
@@ -104,7 +98,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
-                buildSparkBatchJobForExecution(submitModel, ctrlSubject),
+                buildSparkBatchJob(submitModel, ctrlSubject),
                 artifactPath,
                 submitModel.getSubmissionParameter().getMainClassName(),
                 ctrlSubject);
