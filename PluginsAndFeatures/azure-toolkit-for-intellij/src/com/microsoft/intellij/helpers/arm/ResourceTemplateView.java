@@ -75,7 +75,7 @@ public class ResourceTemplateView extends BaseEditor {
     private Project project;
     private static final String PROMPT_TITLE = "Azure Explorer";
     private static final String PROMPT_MESSAGE_CLOSE = "Would you like to update the deployment before you exit?";
-    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment";
+    private static final String PROMPT_MESSAGE_UPDATE_DEPLOYMENT = "Are you sure to update the deployment?";
     private FileEditor fileEditor;
     private FileEditor parameterEditor;
 
