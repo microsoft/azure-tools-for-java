@@ -22,17 +22,11 @@
 
 package com.microsoft.intellij.helpers.arm;
 
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl;
-import com.intellij.openapi.fileEditor.impl.FileEditorProviderManagerImpl;
-import com.intellij.openapi.fileEditor.impl.PsiAwareFileEditorManagerImpl;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorImpl;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorProvider;
-import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -48,7 +42,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.language.arm.ARMLanguage;
 import com.microsoft.intellij.ui.util.UIUtils;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import org.jetbrains.annotations.NotNull;
 
