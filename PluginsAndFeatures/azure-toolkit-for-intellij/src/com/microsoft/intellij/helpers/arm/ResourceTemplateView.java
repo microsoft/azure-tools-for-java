@@ -22,11 +22,17 @@
 
 package com.microsoft.intellij.helpers.arm;
 
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl;
+import com.intellij.openapi.fileEditor.impl.FileEditorProviderManagerImpl;
+import com.intellij.openapi.fileEditor.impl.PsiAwareFileEditorManagerImpl;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorImpl;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorProvider;
+import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -89,7 +95,7 @@ public class ResourceTemplateView extends BaseEditor {
 
         originParameters = DeploymentUtils.serializeParameters(node.getDeployment());
         parameterEditor = createEditor(originParameters);
-        parameterPanel.add(parameterEditor.getComponent(),constraints);
+        parameterPanel.add(parameterEditor.getComponent(), constraints);
 
         // Init the split panel
         armSplitPanel.setDividerLocation(0.6); // template : parameter = 6:4
@@ -107,6 +113,8 @@ public class ResourceTemplateView extends BaseEditor {
                             }
                         }
                     } finally {
+                        PsiAwareTextEditorProvider.getInstance().disposeEditor(fileEditor);
+                        PsiAwareTextEditorProvider.getInstance().disposeEditor(parameterEditor);
                         messageBusConnection.disconnect();
                     }
                 }
