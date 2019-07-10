@@ -37,7 +37,6 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
-import org.scalameta.logger;
 import rx.Observer;
 
 import java.io.IOException;
@@ -110,7 +109,11 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     storageAccount = clusterDetail.getStorageAccount();
 
                     if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
-                        destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
+                        destinationRootPath = String.join("/",
+                                "https://" + ((ADLSGen2StorageAccount) storageAccount).getFullStorageBlobName(),
+                                storageAccount.getDefaultContainerOrRootPath(),
+                                "SparkSubmission/");
+
                         accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
                         if (StringUtils.isBlank(accessKey)) {
                             throw new ExecutionException("Cannot get valid access key for storage account");
