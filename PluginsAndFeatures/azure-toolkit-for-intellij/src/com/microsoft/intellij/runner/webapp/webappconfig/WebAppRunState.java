@@ -61,13 +61,13 @@ import java.util.Map;
 
 public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
-    private static final String CREATE_WEBAPP = "Creating new Web App...";
-    private static final String CREATE_DEPLOYMENT_SLOT = "Creating new Deployment Slot...";
-    private static final String CREATE_FAILED = "Failed to create Web App. Error: %s ...";
-    private static final String CREATE_SLOT_FAILED = "Failed to create Deployment Slot. Error: %s ...";
+    private static final String CREATE_WEBAPP = "Creating new web app...";
+    private static final String CREATE_DEPLOYMENT_SLOT = "Creating new deployment slot...";
+    private static final String CREATE_FAILED = "Failed to create web app. Error: %s ...";
+    private static final String CREATE_SLOT_FAILED = "Failed to create deployment slot. Error: %s ...";
 
     private static final String DEPLOY_SUCCESSFUL = "Deploy successfully!";
-    private static final String STOP_DEPLOY = "Deploy Failed!";
+    private static final String STOP_DEPLOY = "Deploy failed!";
 
     private static final String NO_WEB_APP = "Cannot get webapp for deploy.";
     private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
