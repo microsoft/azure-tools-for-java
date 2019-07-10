@@ -30,7 +30,9 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.*;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.storage.*;
+import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -40,6 +42,7 @@ import org.jetbrains.annotations.NotNull;
 import rx.Observer;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.AbstractMap;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -109,11 +112,9 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     storageAccount = clusterDetail.getStorageAccount();
 
                     if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
-                        destinationRootPath = String.join("/",
-                                "https://" + ((ADLSGen2StorageAccount) storageAccount).getFullStorageBlobName(),
-                                storageAccount.getDefaultContainerOrRootPath(),
-                                "SparkSubmission/");
-
+                        String rawStoragePath = ((ClusterDetail) clusterDetail).getDefaultStorageRootPath();
+                        destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
+                                SparkSubmissionContentPanel.Constants.submissionFolder);
                         accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
                         if (StringUtils.isBlank(accessKey)) {
                             throw new ExecutionException("Cannot get valid access key for storage account");

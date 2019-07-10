@@ -37,6 +37,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.storage.blob.BlobRequestOptions
@@ -51,6 +52,7 @@ import rx.schedulers.Schedulers
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
+import java.net.URI
 import java.util.stream.Collectors
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.DocumentEvent
@@ -282,10 +284,13 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
     }
 
     override fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?, scheme: String): String? {
-        return if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container) || scheme.isNullOrBlank())
+        if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container) || scheme.isNullOrBlank())
             throw IllegalArgumentException("Blob Name ,container and scheme name cannot be empty")
-        else if (scheme!!.startsWith(ADLSGen2StorageAccount.DefaultScheme)) "https://$fullStorageBlobName/$container/SparkSubmission/"
-        else "$scheme://$container@$fullStorageBlobName/SparkSubmission/"
+
+        val rawStoragePath = "$scheme://$container@$fullStorageBlobName"
+        return if (scheme!!.startsWith(ADLSGen2StorageAccount.DefaultScheme))
+            "${ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath))}/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
+        else  "$rawStoragePath/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
     }
 
     override fun getUploadPath(account: IHDIStorageAccount): String? =

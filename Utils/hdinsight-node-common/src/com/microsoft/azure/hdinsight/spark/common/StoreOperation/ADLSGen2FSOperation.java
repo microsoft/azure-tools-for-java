@@ -141,6 +141,11 @@ public class ADLSGen2FSOperation {
         return String.format("%s://%s@%s/", "abfs", root.getPath().substring(1), root.getAuthority());
     }
 
+    //convert  abfs://filesystem@accountname.dfs.core.windows.net/ to https://accountname.dfs.core.windows.net/filesystem
+    public static String converToGen2Path(URI root) {
+        return String.format("%s://%s/%s", "https", root.getHost(), root.getUserInfo());
+    }
+
     // get ab from abfs://filesystem@accountname.dfs.core.windows.net/ab
     // get / from abfs://filesystem@accountname.dfs.core.windows.net/
     public static String getDirectoryParam(URI root) {
