@@ -34,9 +34,14 @@ import java.util.Map;
 
 public class DeploymentUtils {
 
+    private static final String EMPTY_PARAMETER = "{}";
     private static final String[] VALID_PARAMETER_ATTRIBUTES = {"value", "reference", ",metadata"};
 
     public static String serializeParameters(Deployment deployment) {
+        Object parameterObject = deployment.parameters();
+        if (!(parameterObject != null && parameterObject instanceof Map)) {
+            return EMPTY_PARAMETER;
+        }
         Map<String, Map<String, String>> parameters = (Map<String, Map<String, String>>) deployment.parameters();
         // Remove extra attributes in parameters
         // Refers https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#

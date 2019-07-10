@@ -40,7 +40,6 @@ public class ExportTemplateAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         ExportTemplate exportTemplate = new ExportTemplate(deploymentNode);
-        exportTemplate.doExport();
-        exportTemplate.doExportParameters();
+        exportTemplate.doExportTemplate();
     }
 }

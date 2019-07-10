@@ -28,6 +28,8 @@ import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.EditDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportParameterAction;
 import com.microsoft.intellij.serviceexplorer.azure.arm.ExportTemplateAction;
 import com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
@@ -116,7 +118,8 @@ public class NodeActionsMap {
                         .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
 
         List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>();
-        deploymentNodeList.addAll(Arrays.asList(ExportTemplateAction.class, UpdateDeploymentAction.class));
+        deploymentNodeList.addAll(Arrays.asList(ExportTemplateAction.class, ExportParameterAction.class,
+                UpdateDeploymentAction.class, EditDeploymentAction.class));
 
         node2Actions.put(DeploymentNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .addAll(deploymentNodeList).build());
