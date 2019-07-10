@@ -196,7 +196,7 @@
               class="com.microsoft.azuretools.ijidea.actions.DisableSslCertificateValidationAction"
               text="Disable"/>
     </group>
-    <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
+    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
             text="Deploy to Azure" description="Deploy to Azure"
             icon="/icons/PublishWebApp_16.png">

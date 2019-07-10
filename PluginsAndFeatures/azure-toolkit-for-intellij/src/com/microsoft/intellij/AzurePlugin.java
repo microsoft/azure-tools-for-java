@@ -44,12 +44,12 @@ import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import com.microsoft.azuretools.ijidea.actions.GithubSurveyAction;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
+import com.microsoft.intellij.actions.QualtricsSurveyAction;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
@@ -127,10 +127,11 @@ public class AzurePlugin extends AbstractProjectComponent {
         Notification feedbackNotification = new Notification(
                 "Azure Toolkit plugin",
                 "We're listening",
-                "Thanks for helping Microsoft improve Azure Toolkit experience!\nYour feedback is important. Please take a minute to fill out our",
+                "Thanks for helping Microsoft improve Azure Toolkit experience!\n" +
+                        "Your feedback is important. Please take a minute to fill out our survey.",
                 NotificationType.INFORMATION);
 
-        feedbackNotification.addAction(new GithubSurveyAction());
+        feedbackNotification.addAction(new QualtricsSurveyAction());
 
         Observable.timer(30, TimeUnit.SECONDS)
                 .take(1)
