@@ -93,7 +93,7 @@ public class WebAppUtils {
     public static final String RETRY_MESSAGE = "Exception occurred while deploying to app service:" +
             " %s, retrying immediately (%d/%d)";
     public static final String RETRY_FAIL_MESSAGE = "Failed to deploy after %d times of retry.";
-    public static final String COPYING_RESOURCES = "Copying resources to staging folder.";
+    public static final String COPYING_RESOURCES = "Copying resources to staging folder...";
 
 
     @NotNull
