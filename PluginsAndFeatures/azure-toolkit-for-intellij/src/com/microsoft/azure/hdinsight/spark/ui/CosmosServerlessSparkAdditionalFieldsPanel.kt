@@ -41,6 +41,7 @@ class CosmosServerlessSparkAdditionalFieldsPanel: JPanel() {
         toolTipText = sparkEventsTip
     }
     val sparkEventsDirectoryField = JTextField("spark-events/").apply {
+        name = "sparkEventsDirectoryField"
         toolTipText = sparkEventsTip
     }
     private var sparkEventsDirectory = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
@@ -52,6 +53,7 @@ class CosmosServerlessSparkAdditionalFieldsPanel: JPanel() {
         toolTipText = extendedPropertiesTip
     }
     val extendedPropertiesField = JsonEnvPropertiesField().apply {
+        name = "extendedPropertiesField"
         toolTipText = extendedPropertiesTip
     }
 

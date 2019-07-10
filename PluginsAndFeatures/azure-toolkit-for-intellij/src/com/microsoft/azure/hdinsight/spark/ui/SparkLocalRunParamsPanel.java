@@ -34,6 +34,8 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.MacroAwareTextBrowseFolderListener;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.intellij.telemetry.IdeaTelemetryUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -107,6 +109,12 @@ public class SparkLocalRunParamsPanel {
         } else {
             myWinutilsLocationPanel.setVisible(false);
         }
+
+        // Set name for telemetry listener purpose
+        myWinutilsPathTextFieldWithBrowserButton.getTextField().setName("winUtilsText");
+        myWinutilsPathTextFieldWithBrowserButton.getButton().setName("winUtilsButton");
+        myDataRootDirectoryFieldWithBrowseButton.getTextField().setName("dataRootPathText");
+        myDataRootDirectoryFieldWithBrowseButton.getButton().setName("dataRootPathButton");
     }
 
     public SparkLocalRunParamsPanel withInitialize() {
