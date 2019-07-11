@@ -20,22 +20,16 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.23.0</h3>
+    <h3>3.24.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Support Azure Resource Manager, you can deploy and manage azure resource template with toolkit</li>
-        <li>Support choosing remote reference jars through folder browser button for HDI cluster with ADLS Gen2 account</li>
+        <li>Support parameter file for Azure Resource Manager</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Optimize refreshing HDInsight clusters performance</li>
-        <li>Handle access related exceptions for linked reader role cluster</li>
+        <li>Change app service deploy method to war/jar deploy.</li>
     </ul>
     <h4>Fixed</h4>
-    <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3104">#3104</a> Fix linked role reader cluster issue</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2895">#2895</a> Fix unnecessarily killing finalizing or ended state job for serverless job</li>
-    </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
