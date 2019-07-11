@@ -123,8 +123,8 @@ fun createLogEvent(serviceName: String, operationName: String, componentName: St
             putAll(additionalProps)
         }
     }
-    // For debug purpose
-    println("""serviceName: $serviceName    operationName: $operationName   properties: $props""")
+    // If you need to debug telemetry feature, please uncomment the following line
+    // println("""serviceName: $serviceName    operationName: $operationName   properties: $props""")
 
     EventUtil.logEvent(EventType.info, serviceName, operationName, props, null)
 }
