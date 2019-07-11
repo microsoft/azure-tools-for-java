@@ -155,7 +155,7 @@ class IdeaTelemetryUtilsTest : LightProjectDescriptor() {
         // Set up the content pane
         addComponentsToPane(frame.contentPane)
 
-        IdeaTelemetryUtils.addTelemetryListener(frame, "TestServiceName")
+        frame.addTelemetryListener("TestServiceName")
 
         // Display the window.
         frame.pack()

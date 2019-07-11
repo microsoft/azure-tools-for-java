@@ -34,6 +34,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAut
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
+import com.microsoft.intellij.telemetry.addTelemetryListener
 import javax.swing.JComponent
 
 class LivySparkRunConfigurationSettingsEditor(val jobConfigurable: SparkBatchJobConfigurable) : SettingsEditor<LivySparkBatchJobRunConfiguration>() {
@@ -86,6 +87,9 @@ class LivySparkRunConfigurationSettingsEditor(val jobConfigurable: SparkBatchJob
     }
 
     override fun createEditor(): JComponent {
+        // Create telemetry listener for the whole panel
+        jobConfigurable.component.addTelemetryListener(jobConfigurable.serviceName)
+
         return jobConfigurable.component
     }
 

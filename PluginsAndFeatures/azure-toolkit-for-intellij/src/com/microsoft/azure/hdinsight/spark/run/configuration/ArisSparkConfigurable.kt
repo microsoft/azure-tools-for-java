@@ -32,6 +32,6 @@ class ArisSparkConfigurable(project: Project) : SparkBatchJobConfigurable(projec
             ArisSparkSubmissionContentPanel(project)
 
     override fun getServiceName(): String {
-        return TelemetryConstants.SPARK_ON_SQL_SERVER;
+        return TelemetryConstants.SPARK_ON_SQL_SERVER
     }
 }
