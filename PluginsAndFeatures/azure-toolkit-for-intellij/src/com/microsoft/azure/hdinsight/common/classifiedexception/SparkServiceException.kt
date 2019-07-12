@@ -25,6 +25,7 @@ import com.microsoft.azure.datalake.store.ADLException
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.net.UnknownHostException
 
 class SparkServiceException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Spark Service Error"
@@ -33,9 +34,11 @@ class SparkServiceException(exp: Throwable?) : ClassifiedException(exp) {
 
 object SparkServiceExceptionFactory : ClassifiedExceptionFactory() {
     override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
-        return if (exp is IOException
-                && exp !is FileNotFoundException
-                && (exp is ADLException && exp.httpResponseCode != 403))
+        return if (exp is UnknownHostException) {
+            val hintMsg = "\nPlease make sure that the cluster exists"
+            SparkServiceException(UnknownHostException("${exp.message}$hintMsg"))
+        } else if ((exp is IOException && exp !is FileNotFoundException && exp !is ADLException)
+                || (exp is ADLException && exp.httpResponseCode != 403))
             SparkServiceException(exp) else null
     }
 }
