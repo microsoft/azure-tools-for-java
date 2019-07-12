@@ -29,7 +29,6 @@ import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JLabel
-import javax.swing.JTextArea
 import javax.swing.JTextField
 
 class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStorageBasicCard() {
@@ -37,11 +36,13 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
     private val storageAccountTip = "The default storage account of the HDInsight cluster, which can be found from HDInsight cluster properties of Azure portal."
     private val storageKeyTip = "The storage key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal."
     private val storageAccountLabel = JLabel("Storage Account").apply { toolTipText = storageAccountTip }
-    val storageAccountField = JTextField().apply { toolTipText = storageAccountTip }
+    val storageAccountField = JTextField().apply { toolTipText = storageAccountTip; name = "blobCardStorageAccountField" }
     private val storageKeyLabel = JLabel("Storage Key").apply { toolTipText = storageKeyTip }
-    val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip }
+    val storageKeyField = ExpandableTextField().apply { toolTipText = storageKeyTip; name = "blobCardStorageKeyField" }
     private val storageContainerLabel = JLabel("Storage Container")
     val storageContainerUI = ComboboxWithBrowseButton().apply {
+        comboBox.name = "blobCardStorageContainerComboBoxCombo"
+        button.name = "blobCardStorageContainerComboBoxButton"
         button.toolTipText = "Refresh"
         button.icon = StreamUtil.getImageResourceFile(refreshButtonIconPath)
     }

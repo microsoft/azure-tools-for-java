@@ -95,6 +95,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
 
 
     private val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(arrayOf()).apply {
+        name = "storageTypeComboBox"
         // validate storage info after storage type is selected
         addItemListener { itemEvent ->
             // change panel
