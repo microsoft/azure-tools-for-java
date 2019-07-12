@@ -33,6 +33,9 @@ import com.intellij.openapi.options.SettingsEditor
 import com.microsoft.azure.hdinsight.spark.common.SparkFailureTaskDebugConfigurableModel
 import com.microsoft.azure.hdinsight.spark.run.SparkFailureTaskDebugProfileState
 import com.microsoft.azure.hdinsight.spark.run.SparkFailureTaskRunProfileState
+import com.microsoft.azuretools.telemetry.TelemetryConstants
+import com.microsoft.azuretools.telemetrywrapper.EventType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import org.jdom.Element
 
 class SparkFailureTaskDebugConfiguration(name: String,
@@ -44,6 +47,9 @@ class SparkFailureTaskDebugConfiguration(name: String,
     }
 
     override fun getState(executor: Executor, executionEnvironment: ExecutionEnvironment): RunProfileState? {
+        val configurationId = executionEnvironment.runnerAndConfigurationSettings?.type?.id ?: ""
+        EventUtil.logEvent(EventType.info, TelemetryConstants.SPARK_FAILURE_TASK_DEBUG, TelemetryConstants.DEBUG_LOCAL_SPARK_JOB, mapOf("configurationId" to configurationId))
+
         if (executor is DefaultRunExecutor) {
             return SparkFailureTaskRunProfileState(name, module)
         } else if (executor is DefaultDebugExecutor) {
