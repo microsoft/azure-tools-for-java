@@ -40,6 +40,8 @@ class SparkCommonRunParametersPanel(private val myProject: Project, private val 
     }
 
     private val mainClassTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
+        textField.name = "mainClassTextFieldText"
+        button.name = "mainClassTextFieldButton"
         toolTipText = mainClassPrompt.toolTipText
 
         // Button actions

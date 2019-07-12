@@ -58,6 +58,8 @@ class LivyBatchJobTableViewerWithToolBar(private val jobTableViewport : LivyBatc
             }
         }
 
+        // We don't need to send telemetry in this panel.
+        // For refresh action, the telemetry is already sent in class CosmosSparkClusterOpsCtrl
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }

@@ -26,9 +26,9 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.ComboboxWithBrowseButton
 import com.intellij.uiDesigner.core.GridConstraints
 import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
+import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azuretools.ijidea.ui.HintTextField
-import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.CardLayout
 import javax.swing.JLabel
@@ -39,11 +39,13 @@ class SparkSubmissionJobUploadStorageAdlsCard: SparkSubmissionJobUploadStorageBa
     override val title: String = SparkSubmitStorageType.ADLS_GEN1.description
     private val adlsRootPathTip = "e.g. adl://myaccount.azuredatalakestore.net/<root path>"
     private val adlsRootPathLabel = JLabel("ADLS Root Path").apply { toolTipText = adlsRootPathTip }
-    val adlsRootPathField = HintTextField(adlsRootPathTip)
+    val adlsRootPathField = HintTextField(adlsRootPathTip).apply { name = "adlsCardRootPathField" }
     private val authMethodLabel = JLabel("Authentication Method")
-    private val authMethodComboBox = ComboBox<String>(arrayOf("Azure Account"))
+    private val authMethodComboBox = ComboBox<String>(arrayOf("Azure Account")).apply { name = "adlsCardAuthMethodComboBox" }
     private val subscriptionsLabel = JLabel("Subscription List")
     val subscriptionsComboBox  = ComboboxWithBrowseButton().apply {
+        comboBox.name = "adlsCardSubscriptionsComboBoxCombo"
+        button.name = "adlsCardSubscriptionsComboBoxButton"
         button.toolTipText = "Refresh"
         button.icon = StreamUtil.getImageResourceFile(refreshButtonIconPath)
     }
@@ -80,6 +82,7 @@ class SparkSubmissionJobUploadStorageAdlsCard: SparkSubmissionJobUploadStorageBa
                 c(subscriptionsLabel); c(subscriptionsComboBox)
             }
         }
+
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }

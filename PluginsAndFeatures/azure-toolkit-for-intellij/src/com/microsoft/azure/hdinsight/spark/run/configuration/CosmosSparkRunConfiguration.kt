@@ -26,7 +26,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
-import com.microsoft.azure.hdinsight.spark.ui.ServerlessSparkConfigurable
+import com.microsoft.azure.hdinsight.spark.ui.CosmosSparkConfigurable
 
 open class CosmosSparkRunConfiguration (name: String,
                                         open val module: CosmosSparkConfigurationModule,
@@ -37,7 +37,7 @@ open class CosmosSparkRunConfiguration (name: String,
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        return LivySparkRunConfigurationSettingsEditor(ServerlessSparkConfigurable(module.project))
+        return LivySparkRunConfigurationSettingsEditor(CosmosSparkConfigurable(module.project))
     }
 
     override fun getSuggestedNamePrefix(): String = "[Spark on Cosmos]"
