@@ -53,6 +53,7 @@ public class TelemetryConstants {
     public static final String PLUGIN_INSTALL = "install-plugin";
     public static final String PLUGIN_LOAD = "load-plugin";
     public static final String PLUGIN_UPGRADE = "upgrade-plugin";
+    public static final String PLUGIN_UNINSTALL = "uninstall-plugin";
     public static final String TELEMETRY_ALLOW = "allow-telemetry";
     public static final String TELEMETRY_DENY = "deny-telemetry";
     public static final String CREATE_WEBAPP = "create-webapp";
