@@ -22,19 +22,11 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.DURATION;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CLASSNAME;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CODE;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_MSG;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_TYPE;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_ID;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_NAME;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.mergeProperties;
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.*;
 
 public class DefaultOperation implements Operation {
 
@@ -63,19 +55,15 @@ public class DefaultOperation implements Operation {
             if (eventType == EventType.opStart || eventType == EventType.opEnd) {
                 return;
             }
-            if (properties == null) {
-                properties = new HashMap<>();
-            }
-            if (metrics == null) {
-                metrics = new HashMap<>();
-            }
-            properties.put(OPERATION_ID, operationId);
-            properties.put(OPERATION_NAME, operationName);
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+            mutableProps.put(OPERATION_ID, operationId);
+            mutableProps.put(OPERATION_NAME, operationName);
 
+            Map<String, Double> mutableMetrics = properties == null ? new HashMap<>() : new HashMap<>(metrics);
             if (eventType == EventType.step) {
-                metrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
+                mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
             }
-            sendTelemetry(eventType, serviceName, mergeProperties(properties), metrics);
+            sendTelemetry(eventType, serviceName, mergeProperties(mutableProps), mutableMetrics);
         } catch (Exception ignore) {
         }
     }
@@ -86,26 +74,23 @@ public class DefaultOperation implements Operation {
             if (isComplete) {
                 return;
             }
-            if (properties == null) {
-                properties = new HashMap<>();
-            }
-            if (metrics == null) {
-                metrics = new HashMap<>();
-            }
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+            Map<String, Double> mutableMetrics = properties == null ? new HashMap<>() : new HashMap<>(metrics);
+
             error = new Error();
             error.errorType = errorType == null ? ErrorType.systemError : errorType;
             error.errMsg = e == null ? "" : e.getMessage();
             error.className = e == null ? "" : e.getClass().getName();
 
-            properties.put(ERROR_CODE, "1");
-            properties.put(ERROR_MSG, error.errMsg);
-            properties.put(ERROR_TYPE, error.errorType.name());
-            properties.put(ERROR_CLASSNAME, error.className);
-            properties.put(OPERATION_ID, operationId);
-            properties.put(OPERATION_NAME, operationName);
+            mutableProps.put(ERROR_CODE, "1");
+            mutableProps.put(ERROR_MSG, error.errMsg);
+            mutableProps.put(ERROR_TYPE, error.errorType.name());
+            mutableProps.put(ERROR_CLASSNAME, error.className);
+            mutableProps.put(OPERATION_ID, operationId);
+            mutableProps.put(OPERATION_NAME, operationName);
 
-            metrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
-            sendTelemetry(EventType.error, serviceName, mergeProperties(properties), metrics);
+            mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
+            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
         } catch (Exception ignore) {
         }
     }

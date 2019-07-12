@@ -134,7 +134,7 @@ class FormBuilderPanel {
     }
 }
 
-class IdeaTelemetryUtilsTest : LightProjectDescriptor() {
+class ContainerTelemetryExtensionTest : LightProjectDescriptor() {
     override fun getSdk(): Sdk? {
         return IdeaTestUtil.getMockJdk18()
     }
