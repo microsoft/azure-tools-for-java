@@ -41,14 +41,22 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Added
 
+- Support EAP 2019.2
 - Support parameter file for Azure Resource Manager
+- Integrate intelliJ virtual file system with ADLS Gen2 storage on reference text field in HDI configuration
+- Show Yarn log for jobs submitted to Spark on SQL Server cluster
 
 ### Changed
 
 - Change app service deploy method to war/jar deploy.
+- Given more cluster detail when refreshing Azure explorer encounters exceptions on report dialog
+- Better format JSON text of Spark serverless job detail
 
 ### Fixed
-
+- [#3230](https://github.com/microsoft/azure-tools-for-java/issues/3230),[#3159](https://github.com/microsoft/azure-tools-for-java/issues/3159) Fix related issues for upload path refresh is not ready scenario
+- [#3223](https://github.com/microsoft/azure-tools-for-java/issues/3223),[#3256](https://github.com/microsoft/azure-tools-for-java/issues/3256) Fix main class and cluster info missing on Aris configuration after reopen
+- [#3190](https://github.com/microsoft/azure-tools-for-java/issues/3190)，[#3234](https://github.com/microsoft/azure-tools-for-java/issues/3234) Fix Spark on Cosmos node disappear after sign in account of dogfood environment
+- [#3198](https://github.com/microsoft/azure-tools-for-java/issues/3198) Fix misclassified service exception
 
 ## 3.23.0
 

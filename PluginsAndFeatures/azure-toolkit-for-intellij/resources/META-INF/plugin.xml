@@ -23,13 +23,31 @@
     <h3>3.24.0</h3>
     <h4>Added</h4>
     <ul>
+        <li>Support EAP 2019.2</li>
         <li>Support parameter file for Azure Resource Manager</li>
+        <li>Integrate intelliJ virtual file system with ADLS Gen2 storage on reference text field in HDI configuration</li>
+        <li>Show Yarn log for jobs submitted to Spark on SQL Server cluster</li>
     </ul>
     <h4>Changed</h4>
     <ul>
         <li>Change app service deploy method to war/jar deploy.</li>
+        <li>Given more cluster detail when refreshing Azure explorer encounters exceptions on report dialog</li>
+        <li>Better format JSON text of Spark serverless job detail</li>
     </ul>
     <h4>Fixed</h4>
+    <ul>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3230">#3230</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3159">#3159</a> Fix related issues for upload
+            path refresh is not ready scenario</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3223">#3223</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3256">#3256</a> Fix main class and cluster
+            info missing on Aris configuration after reopen</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3190">#3190</a>，<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3234">#3234</a> Fix Spark on Cosmos node
+            disappear after sign in account of dogfood environment</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3198">#3198</a> Fix misclassified service
+            exception</li>
+    </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
