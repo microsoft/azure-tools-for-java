@@ -144,6 +144,7 @@ public class TelemetryConstants {
     public static final String REFRESH_JOB_VIEW_TABLE = "refresh-job-view-table";
     public static final String CLOSE_JOB_VIEW_WINDOW = "close-job-view-window";
     public static final String SELECT_JOB_IN_JOB_VIEW_WINDOW = "select-job-in-job-view-window";
+    public static final String CREATE_NEW_RUN_CONFIG = "create-new-run-config";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";

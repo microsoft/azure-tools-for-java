@@ -36,10 +36,10 @@ class SparkSubmissionJobUploadStorageWebHdfsCard: SparkSubmissionJobUploadStorag
     override val title: String =  SparkSubmitStorageType.WEBHDFS.description
     private val webHdfsRootPathTip = "e.g. http(s)://hdfsnamenode:port/webhdfs/v1/<cluster root directory>"
     private val webHdfsRootPathLabel = JLabel("WEBHDFS Root Path").apply { toolTipText = webHdfsRootPathTip }
-    val webHdfsRootPathField = HintTextField(webHdfsRootPathTip)
+    val webHdfsRootPathField = HintTextField(webHdfsRootPathTip).apply { name = "webHdfsCardRootPathTextField" }
 
     private val authMethodLabel = JLabel("Authentication Method")
-    private val authMethodComboBox = ComboBox<String>(arrayOf("Basic Authorization"))
+    private val authMethodComboBox = ComboBox<String>(arrayOf("Basic Authorization")).apply { name = "webHdfsCardAuthMethodComboBox" }
     val signOutCard = SparkSubmissionJobUploadWebHdfsSignOutCard()
     val authAccountForWebHdfsCards = JPanel(CardLayout()).apply {
         add(signOutCard, signOutCard.title)

@@ -116,6 +116,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
     private val useKeyFileToolTip = "For secure shell (SSH) password, use the key file specified here"
 
     private val enableRemoteDebugCheckBox = JCheckBox("Enable Spark remote debug", true).apply {
+        name = "enableRemoteDebugCheckBox"
         toolTipText = enableRemoteDebugTip
         isSelected = false
     }
@@ -124,6 +125,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         toolTipText = sshUserNameTip
     }
     private val sshUserNameTextField = JTextField("sshuser").apply {
+        name = "sshUserNameTextField"
         toolTipText = sshUserNameTip
     }
 
@@ -133,19 +135,24 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
 
     // Password inputs
     private val sshUsePasswordRadioButton = JRadioButton("Use SSH password:", false).apply {
+        name = "sshUsePasswordRadioButton"
         toolTipText = usePasswordTip
         isSelected = true
     }
     private val sshPasswordField = JPasswordField().apply {
+        name = "sshPasswordField"
         toolTipText = usePasswordTip
     }
 
     // Key file inputs
     private val sshUseKeyFileRadioButton = JRadioButton("Use private key file:", false).apply {
+        name = "sshUseKeyFileRadioButton"
         toolTipText = useKeyFileToolTip
         isSelected = false
     }
     private val sshKeyFileTextField = TextFieldWithBrowseButton().apply {
+        textField.name = "sshKeyFileTextFieldText"
+        button.name = "sshKeyFileTextFieldButton"
         toolTipText = useKeyFileToolTip
     }
 
@@ -159,7 +166,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
 
     private val helpButton = InplaceButton(IconButton("Help about connection to HDInsight using SSH", Help)) {
         BrowserUtil.browse(helpUrl)
-    }
+    }.apply { name = "remoteDebugHelpButton" }
 
     private val formBuilder = panel {
         columnTemplate {

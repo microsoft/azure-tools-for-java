@@ -146,6 +146,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         }
 
     private val linkClusterHyperLink = JXHyperLinkWithUri().apply {
+        name = "linkClusterHyperLink"
         text = "Link the cluster"
         isVisible = false
 
@@ -201,6 +202,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     private val selectedArtifactComboBox: ComboBox<Artifact> = ComboBox<Artifact>(
             ArtifactUtil.getArtifactWithOutputPaths(myProject).toTypedArray()
     ).apply {
+        name = "ideaArtifactComboBox"
         toolTipText = artifactSelectLabel.toolTipText
 
         if (itemCount > 0) {
@@ -219,6 +221,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }
 
     internal val localArtifactTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
+        textField.name = "localArtifactTextFieldText"
+        button.name = "localArtifactTextFieldButton"
         toolTipText = "Artifact from local jar package."
         isEnabled = false
         textField.document.addDocumentListener(documentValidationListener)
@@ -242,6 +246,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             checkInputsWithErrorLabels()
         }
 
+        name = "ideaArtifactRadioButton"
         isSelected = true
     }
 
@@ -251,6 +256,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             checkInputsWithErrorLabels()
         }
 
+        name = "localArtifactRadioButton"
         isSelected = false
     }
 
@@ -262,6 +268,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     private val jobConfigPrompt: JLabel = JLabel("Job configurations")
 
     private val jobConfigurationTable: JBTable = JBTable(SubmissionTableModel()).apply {
+        name = "jobConfigurationTable"
         preferredScrollableViewportSize = Dimension(580, 100)
 
         surrendersFocusOnKeystroke = true
@@ -281,6 +288,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }
 
     private val commandLineTextField: ExpandableTextField = ExpandableTextField().apply {
+        name = "commandLineTextField"
         toolTipText = commandLineArgsPrompt.toolTipText
     }
 
@@ -291,6 +299,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
         toolTipText = "Artifact from remote storage account."
     }).apply {
+        textField.name = "referencedJarsTextFieldText"
+        button.name = "referencedJarsTextFieldButton"
         textField.document.addDocumentListener(documentValidationListener)
         button.addActionListener {
             val root = viewModel.prepareVFSRoot()
@@ -314,6 +324,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     private val referencedFilesTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
         toolTipText = refFilesPrompt.toolTipText
     }).apply {
+        textField.name = "referencedFilesTextFieldText"
+        button.name = "referencedFilesTextFieldButton"
         textField.document.addDocumentListener(documentValidationListener)
         button.addActionListener {
             val root = viewModel.prepareVFSRoot()
