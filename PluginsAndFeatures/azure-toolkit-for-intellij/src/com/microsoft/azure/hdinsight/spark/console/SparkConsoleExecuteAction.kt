@@ -29,6 +29,7 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.util.runInWriteAction
@@ -57,8 +58,12 @@ class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
         e.presentation.isEnabled = isEnabled
     }
 
+    override fun getServiceName(event: AnActionEvent?): String {
+        return SelectSparkApplicationTypeAction.getSelectedSparkApplicationType().value
+    }
+
     override fun onActionPerformed(actionEvent: AnActionEvent, operation: Operation?): Boolean {
-        val editor = actionEvent?.getData(EDITOR) ?: return true
+        val editor = actionEvent.getData(EDITOR) ?: return true
 
         val consoleDetail = SparkConsoleManager.get(editor) ?: return true
         val outputStream = consoleDetail.processHandler?.processInput ?: return true
