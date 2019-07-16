@@ -59,7 +59,7 @@ public class DefaultOperation implements Operation {
             mutableProps.put(OPERATION_ID, operationId);
             mutableProps.put(OPERATION_NAME, operationName);
 
-            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
+            Map<String, Double> mutableMetrics = properties == null ? new HashMap<>() : new HashMap<>(metrics);
             if (eventType == EventType.step) {
                 mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
             }
@@ -75,7 +75,7 @@ public class DefaultOperation implements Operation {
                 return;
             }
             Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
-            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
+            Map<String, Double> mutableMetrics = properties == null ? new HashMap<>() : new HashMap<>(metrics);
 
             error = new Error();
             error.errorType = errorType == null ? ErrorType.systemError : errorType;
