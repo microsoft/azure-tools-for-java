@@ -48,7 +48,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Changed
 
-- Change app service deploy method to war/jar deploy.
+- Change app service deploy method to war/zip deploy.
 - Given more cluster detail when refreshing Azure explorer encounters exceptions on report dialog
 - Better format JSON text of Spark serverless job detail
 

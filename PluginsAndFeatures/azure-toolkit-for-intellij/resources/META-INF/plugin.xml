@@ -30,7 +30,7 @@
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Change app service deploy method to war/jar deploy.</li>
+        <li>Change app service deploy method to war/zip deploy.</li>
         <li>Given more cluster detail when refreshing Azure explorer encounters exceptions on report dialog</li>
         <li>Better format JSON text of Spark serverless job detail</li>
     </ul>
