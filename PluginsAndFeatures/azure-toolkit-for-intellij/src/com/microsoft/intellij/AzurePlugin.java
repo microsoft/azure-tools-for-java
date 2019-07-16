@@ -164,7 +164,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void initializeTelemetry() throws Exception {
+    private synchronized void initializeTelemetry() throws Exception {
         boolean install = false;
         boolean upgrade = false;
 
@@ -224,7 +224,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 @Override
                 public void uninstall(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
                     String pluginId = ideaPluginDescriptor.getPluginId().toString();
-                    if (pluginId.equalsIgnoreCase("com.microsoft.tooling.msservices.intellij.azure")) {
+                    if (pluginId.equalsIgnoreCase(CommonConst.PLUGIN_ID)) {
                         EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UNINSTALL, null, null);
                     }
                 }
