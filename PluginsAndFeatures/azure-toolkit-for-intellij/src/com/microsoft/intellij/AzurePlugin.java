@@ -22,6 +22,9 @@
 
 package com.microsoft.intellij;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginInstaller;
+import com.intellij.ide.plugins.PluginStateListener;
 import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -58,6 +61,7 @@ import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import rx.Observable;
 
@@ -71,10 +75,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -84,6 +85,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
+    private static PluginStateListener pluginStateListener = null;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
@@ -163,7 +165,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void initializeTelemetry() throws Exception {
+    private synchronized void initializeTelemetry() throws Exception {
         boolean install = false;
         boolean upgrade = false;
 
@@ -213,6 +215,23 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
         AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
         EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_LOAD, null, null);
+
+        if (pluginStateListener == null) {
+            pluginStateListener = new PluginStateListener() {
+                @Override
+                public void install(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
+                }
+
+                @Override
+                public void uninstall(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
+                    String pluginId = ideaPluginDescriptor.getPluginId().toString();
+                    if (pluginId.equalsIgnoreCase(CommonConst.PLUGIN_ID)) {
+                        EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UNINSTALL, null, null);
+                    }
+                }
+            };
+            PluginInstaller.addStateListener(pluginStateListener);
+        }
     }
 
     private void initializeAIRegistry() {

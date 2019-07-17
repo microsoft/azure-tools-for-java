@@ -47,6 +47,8 @@ import com.microsoft.azure.hdinsight.spark.run.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
@@ -95,6 +97,8 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         super(name, configurationModule, factory);
 
         this.jobModel = jobModel;
+        // FIXME: Too many telemetries will be sent if we uncomment the following code
+        // EventUtil.logEvent(EventType.info, getSparkApplicationType().getValue(), TelemetryConstants.CREATE_NEW_RUN_CONFIG, null, null);
     }
 
     @Override
@@ -296,10 +300,17 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         }
 
         if (state != null) {
-            state.createAppInsightEvent(executor, getActionProperties().entrySet().stream().collect(Collectors.toMap(
+            Map<String, String> props = getActionProperties().entrySet().stream().collect(Collectors.toMap(
                     (Map.Entry<Object, Object> entry) -> entry.getKey() == null ? null : entry.getKey().toString(),
-                    (Map.Entry<Object, Object> entry) -> entry.getValue() == null ? "" : entry.getValue().toString()
-            )));
+                    (Map.Entry<Object, Object> entry) -> entry.getValue() == null ? "" : entry.getValue().toString()));
+            String configurationId =
+                    Optional.ofNullable(executionEnvironment.getRunnerAndConfigurationSettings())
+                            .map(settings -> settings.getType().getId())
+                            .orElse("");
+            props.put("configurationId", configurationId);
+
+            state.createAppInsightEvent(executor, props);
+            EventUtil.logEvent(EventType.info, operation, props);
 
             // Clear the action properties
             getActionProperties().clear();

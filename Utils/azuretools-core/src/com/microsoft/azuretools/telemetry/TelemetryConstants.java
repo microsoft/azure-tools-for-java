@@ -43,6 +43,7 @@ public class TelemetryConstants {
     public static final String SPARK_ON_COSMOS = "sparkOnCosmos";
     public static final String SPARK_ON_COSMOS_SERVERLESS = "sparkOnCosmosServerless";
     public static final String SPARK_ON_SQL_SERVER = "sparkOnSqlServer";
+    public static final String SPARK_FAILURE_TASK_DEBUG = "sparkFailureTaskDebug";
     public static final String VFS = "virtualFileSystem";
 
     // operation value
@@ -52,6 +53,7 @@ public class TelemetryConstants {
     public static final String PLUGIN_INSTALL = "install-plugin";
     public static final String PLUGIN_LOAD = "load-plugin";
     public static final String PLUGIN_UPGRADE = "upgrade-plugin";
+    public static final String PLUGIN_UNINSTALL = "uninstall-plugin";
     public static final String TELEMETRY_ALLOW = "allow-telemetry";
     public static final String TELEMETRY_DENY = "deny-telemetry";
     public static final String CREATE_WEBAPP = "create-webapp";
@@ -144,6 +146,9 @@ public class TelemetryConstants {
     public static final String REFRESH_JOB_VIEW_TABLE = "refresh-job-view-table";
     public static final String CLOSE_JOB_VIEW_WINDOW = "close-job-view-window";
     public static final String SELECT_JOB_IN_JOB_VIEW_WINDOW = "select-job-in-job-view-window";
+    public static final String CREATE_NEW_RUN_CONFIG = "create-new-run-config";
+    public static final String RUN_SPARK_LIVY_INTERACTIVE_CONSOLE = "run-spark-livy-interactive-console";
+    public static final String RUN_SPARK_LOCAL_CONSOLE = "run-spark-local-console";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";

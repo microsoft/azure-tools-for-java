@@ -56,15 +56,7 @@ abstract class RunSparkScalaConsoleAction
     abstract val selectedMenuActionId: String
 
     override fun getServiceName(event: AnActionEvent?): String {
-        val project = event?.project ?: return super.getServiceName(event)
-        val runManagerEx = RunManagerEx.getInstanceEx(project)
-        val selectedConfigSettings = runManagerEx.selectedConfiguration
-        return (selectedConfigSettings?.configuration as LivySparkBatchJobRunConfiguration).sparkApplicationType.value
-    }
-
-    override fun getOperationName(event: AnActionEvent?): String {
-        // FIXME: set operation name
-        return super.getOperationName(event)
+        return SelectSparkApplicationTypeAction.getSelectedSparkApplicationType().value
     }
 
     override fun onActionPerformed(event: AnActionEvent, operation: Operation?): Boolean {

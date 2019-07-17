@@ -25,12 +25,13 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RemoteState
 import com.microsoft.azure.hdinsight.spark.common.SparkFailureTaskDebugConfigurableModel
-import com.microsoft.azuretools.telemetry.AppInsightsClient
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 
 class SparkFailureTaskDebugProfileState(name: String,
-                                        settingsConfigModel: SparkFailureTaskDebugConfigurableModel)
-    : SparkFailureTaskRunProfileState(name, settingsConfigModel), RemoteState {
+                                        settingsConfigModel: SparkFailureTaskDebugConfigurableModel,
+                                        operation: Operation)
+    : SparkFailureTaskRunProfileState(name, settingsConfigModel, operation, HDInsightBundle.message("SparkRunConfigFailureTaskDebugButtonClick")), RemoteState {
     private val remoteConnection = RemoteConnection(true, "127.0.0.1", "0", true)
 
     override fun getRemoteConnection(): RemoteConnection {
@@ -44,8 +45,4 @@ class SparkFailureTaskDebugProfileState(name: String,
                     "-agentlib:jdwp=transport=dt_socket,server=n,address=127.0.0.1:${remoteConnection.address},suspend=y"
             )
         }
-
-    override fun doAppInsightOnExecute() {
-        AppInsightsClient.create(HDInsightBundle.message("SparkRunConfigFailureTaskDebugButtonClick"), null)
-    }
 }

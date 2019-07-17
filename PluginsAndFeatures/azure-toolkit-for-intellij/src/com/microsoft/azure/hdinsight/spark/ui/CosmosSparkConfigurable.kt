@@ -23,8 +23,13 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.project.Project
+import com.microsoft.azuretools.telemetry.TelemetryConstants
 
-class ServerlessSparkConfigurable(project: Project) : SparkBatchJobConfigurable(project) {
+class CosmosSparkConfigurable(project: Project) : SparkBatchJobConfigurable(project) {
     override fun createSubmissionPanel(): SparkSubmissionContentPanel =
             CosmosSparkSubmissionPanel(project)
+
+    override fun getServiceName(): String {
+        return TelemetryConstants.SPARK_ON_COSMOS
+    }
 }

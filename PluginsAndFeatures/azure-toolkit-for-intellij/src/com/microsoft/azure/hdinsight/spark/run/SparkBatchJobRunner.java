@@ -45,6 +45,8 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
@@ -52,6 +54,8 @@ import rx.Observer;
 import rx.subjects.PublishSubject;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
     @NotNull
@@ -79,6 +83,25 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     }
 
     protected void addConsoleViewFilter(@NotNull ISparkBatchJob job, @NotNull ConsoleView consoleView) {
+    }
+
+    protected void sendTelemetryForParameters(@NotNull SparkSubmitModel model, @Nullable Operation operation) {
+        SparkSubmissionParameter params = model.getSubmissionParameter();
+        Map<String, String> props = new HashMap<>();
+        props.put(SparkSubmissionParameter.DriverCores, params.getDriverCores().toString());
+        props.put(SparkSubmissionParameter.DriverMemory, params.getDriverMemory());
+        props.put(SparkSubmissionParameter.ExecutorCores, params.getExecutorCores().toString());
+        props.put(SparkSubmissionParameter.ExecutorMemory, params.getExecutorMemory());
+        props.put(SparkSubmissionParameter.NumExecutors, params.getNumExecutors().toString());
+        props.put("refJarsCount", String.valueOf(params.getReferencedJars().size()));
+        props.put("refFilesCount", String.valueOf(params.getReferencedFiles().size()));
+        props.put("commandlineArgsCount", String.valueOf(params.getArgs().size()));
+        props.put("isLocalArtifact", String.valueOf(model.getIsLocalArtifact()));
+        props.put("isDefaultArtifact",
+                model.getIsLocalArtifact()
+                        ? "none"
+                        : String.valueOf(model.getArtifactName().toLowerCase().endsWith("defaultartifact")));
+        EventUtil.logEvent(EventType.info, operation, props);
     }
 
     @Nullable
@@ -110,6 +133,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         remoteProcess.start();
         Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
         SparkBatchJobDisconnectAction disconnectAction = new SparkBatchJobDisconnectAction(remoteProcess, operation);
+
+        sendTelemetryForParameters(submitModel, operation);
 
         ExecutionResult result = new DefaultExecutionResult(jobOutputView, processHandler, Separator.getInstance(), disconnectAction);
         submissionState.setExecutionResult(result);

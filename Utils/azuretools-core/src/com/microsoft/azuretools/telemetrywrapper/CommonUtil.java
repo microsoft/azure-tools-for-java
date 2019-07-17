@@ -24,6 +24,7 @@ package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,11 +51,12 @@ public class CommonUtil {
 
     public synchronized static void sendTelemetry(EventType eventType, String serviceName, Map<String, String> properties,
         Map<String, Double> metrics) {
+        Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
         if (client != null) {
             if (!StringUtils.isNullOrEmpty(serviceName)) {
-                properties.put(SERVICE_NAME, serviceName);
+                mutableProps.put(SERVICE_NAME, serviceName);
             }
-            client.trackEvent(getFullEventName(eventType), properties, metrics);
+            client.trackEvent(getFullEventName(eventType), mutableProps, metrics);
             client.flush();
         }
     }

@@ -31,6 +31,7 @@ import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,6 +50,11 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
 
     @NotNull
     private final Project myProject;
+
+    @NotNull
+    public String getServiceName() {
+        return TelemetryConstants.HDINSIGHT;
+    }
 
     public SparkBatchJobConfigurable(@NotNull final Project project) {
         this.myProject = project;
