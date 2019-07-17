@@ -300,10 +300,17 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         }
 
         if (state != null) {
-            state.createAppInsightEvent(executor, getActionProperties().entrySet().stream().collect(Collectors.toMap(
+            Map<String, String> props = getActionProperties().entrySet().stream().collect(Collectors.toMap(
                     (Map.Entry<Object, Object> entry) -> entry.getKey() == null ? null : entry.getKey().toString(),
-                    (Map.Entry<Object, Object> entry) -> entry.getValue() == null ? "" : entry.getValue().toString()
-            )));
+                    (Map.Entry<Object, Object> entry) -> entry.getValue() == null ? "" : entry.getValue().toString()));
+            String configurationId =
+                    Optional.ofNullable(executionEnvironment.getRunnerAndConfigurationSettings())
+                            .map(settings -> settings.getType().getId())
+                            .orElse("");
+            props.put("configurationId", configurationId);
+
+            state.createAppInsightEvent(executor, props);
+            EventUtil.logEvent(EventType.info, operation, props);
 
             // Clear the action properties
             getActionProperties().clear();

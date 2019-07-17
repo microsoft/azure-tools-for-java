@@ -75,7 +75,7 @@ fun Container.addTelemetryListener(serviceName: String) {
                     }
                 }
             }
-            is JTextField -> component.addFocusListener(object: FocusAdapter() {
+            is JTextField, is JTextArea -> component.addFocusListener(object: FocusAdapter() {
                 override fun focusGained(e: FocusEvent?) {
                     createLogEvent(serviceName, "gain-text-focus", component.name)
                     super.focusGained(e)
