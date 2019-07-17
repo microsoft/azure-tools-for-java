@@ -22,3 +22,5 @@ branches:
 script:
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then travis_wait 40 ./BuildDevint -q -e eclipse; fi'
 - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then travis_wait 40 ./BuildDevint -q; fi'
+dist: trusty
+
