@@ -52,8 +52,8 @@ import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
-import com.microsoft.intellij.actions.QualtricsSurveyAction;
 import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -63,7 +63,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
-import rx.Observable;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
@@ -71,7 +70,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -122,22 +120,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void initializeFeedbackNotification() {
-        if (!isFirstInstallationByVersion()) {
-            return;
-        }
-
-        Notification feedbackNotification = new Notification(
-                "Azure Toolkit plugin",
-                "We're listening",
-                "Thanks for helping Microsoft improve Azure Toolkit experience!\n" +
-                        "Your feedback is important. Please take a minute to fill out our survey.",
-                NotificationType.INFORMATION);
-
-        feedbackNotification.addAction(new QualtricsSurveyAction());
-
-        Observable.timer(30, TimeUnit.SECONDS)
-                .take(1)
-                .subscribe(next -> Notifications.Bus.notify(feedbackNotification));
+        CustomerSurveyHelper.INSTANCE.showFeedbackNotification(myProject);
     }
 
     public void projectClosed() {
