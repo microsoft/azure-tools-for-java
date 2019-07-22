@@ -1,6 +1,12 @@
 package com.microsoft.intellij.helpers;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.joda.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.joda.ser.LocalDateTimeSerializer;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
@@ -11,6 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.ui.SurveyPopUpDialog;
 import com.microsoft.intellij.actions.QualtricsSurveyAction;
 import org.apache.commons.io.IOUtils;
+import org.joda.time.LocalDateTime;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -19,8 +26,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
 import java.util.concurrent.TimeUnit;
 
 public enum CustomerSurveyHelper {
@@ -66,11 +71,6 @@ public enum CustomerSurveyHelper {
         saveConfiguration();
     }
 
-    public void putOff(long amountToAdd, TemporalUnit unit) {
-        surveyConfig.nextSurveyDate = surveyConfig.nextSurveyDate.plus(amountToAdd, unit);
-        saveConfiguration();
-    }
-
     public void neverShowAgain() {
         surveyConfig.isAcceptSurvey = false;
         saveConfiguration();
@@ -83,7 +83,8 @@ public enum CustomerSurveyHelper {
     private void loadConfiguration() {
         try (final FileReader fileReader = new FileReader(getConfigFile())) {
             String configString = IOUtils.toString(fileReader);
-            surveyConfig = new Gson().fromJson(configString, SurveyConfig.class);
+            ObjectMapper mapper = new ObjectMapper();
+            surveyConfig = mapper.readValue(configString, SurveyConfig.class);
         } catch (IOException e) {
             surveyConfig = new SurveyConfig();
             saveConfiguration();
@@ -94,7 +95,8 @@ public enum CustomerSurveyHelper {
         ApplicationManager.getApplication().invokeLater(() -> {
             try {
                 File configFile = getConfigFile();
-                IOUtils.write(new Gson().toJson(surveyConfig), new FileOutputStream(configFile), Charset.defaultCharset());
+                ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+                IOUtils.write(ow.writeValueAsString(surveyConfig), new FileOutputStream(configFile), Charset.defaultCharset());
             } catch (IOException e) {
                 // swallow this exception as survey config should not bother user
             }
@@ -110,9 +112,15 @@ public enum CustomerSurveyHelper {
     }
 
     static class SurveyConfig {
+        @JsonProperty("surveyTimes")
         private int surveyTimes = 0;
+        @JsonProperty("isAcceptSurvey")
         private boolean isAcceptSurvey = true;
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
         private LocalDateTime lastSurveyDate = null;
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
         private LocalDateTime nextSurveyDate = LocalDateTime.now().plusDays(INIT_SURVEY_DELAY_BY_DAY);
     }
 }
