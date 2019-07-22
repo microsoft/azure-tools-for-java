@@ -29,9 +29,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.intellij.AppInsightsConfigurationImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +40,7 @@ public class QualtricsSurveyAction extends AzureAnAction {
     private static final String SURVEY_URL = "https://microsoft.qualtrics.com/jfe/form/SV_b17fG5QQlMhs2up?" +
             "toolkit=%s&ide=%s&os=%s&jdk=%s&id=%s";
 
-    public QualtricsSurveyAction(){
+    public QualtricsSurveyAction() {
         super("Provide Feedback...");
     }
 
@@ -68,7 +68,7 @@ public class QualtricsSurveyAction extends AzureAnAction {
         String ide = String.format("%s %s", applicationInfo.getFullVersion(), applicationInfo.getBuild());
         String os = System.getProperty("os.name");
         String jdk = String.format("%s %s", System.getProperty("java.vendor"), System.getProperty("java.version"));
-        String id = new AppInsightsConfigurationImpl().installationId();
-        return String.format(SURVEY_URL, toolkit, ide, os, jdk,id);
+        String id = AppInsightsClient.getInstallationId();
+        return String.format(SURVEY_URL, toolkit, ide, os, jdk, id);
     }
 }
