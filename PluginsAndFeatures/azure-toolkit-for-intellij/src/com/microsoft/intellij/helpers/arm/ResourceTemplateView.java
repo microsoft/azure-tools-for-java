@@ -74,46 +74,9 @@ public class ResourceTemplateView extends BaseEditor {
 
     private String originTemplate;
     private String originParameters;
+    private MessageBusConnection messageBusConnection;
 
-    public void loadTemplate(DeploymentNode node, String template) {
-        this.node = node;
-        this.project = (Project) node.getProject();
-        GridConstraints constraints = new GridConstraints();
-        constraints.setFill(GridConstraints.FILL_BOTH);
-        constraints.setAnchor(GridConstraints.ANCHOR_WEST);
-
-        originTemplate = Utils.getPrettyJson(template);
-        fileEditor = createEditor(originTemplate);
-        editorPanel.add(fileEditor.getComponent(), constraints);
-
-        originParameters = DeploymentUtils.serializeParameters(node.getDeployment());
-        parameterEditor = createEditor(originParameters);
-        parameterPanel.add(parameterEditor.getComponent(), constraints);
-
-        // Init the split panel
-        armSplitPanel.setDividerLocation(0.6); // template : parameter = 6:4
-
-        final MessageBusConnection messageBusConnection = project.getMessageBus().connect(fileEditor);
-        messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
-            @Override
-            public void beforeFileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
-                if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) &&
-                        file.getName().equals(node.getName())) {
-                    try {
-                        if (isTemplateUpdate() || isPropertiesUpdate()) {
-                            if (UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_CLOSE)) {
-                                updateDeployment();
-                            }
-                        }
-                    } finally {
-                        PsiAwareTextEditorProvider.getInstance().disposeEditor(fileEditor);
-                        PsiAwareTextEditorProvider.getInstance().disposeEditor(parameterEditor);
-                        messageBusConnection.disconnect();
-                    }
-                }
-            }
-        });
-
+    public ResourceTemplateView() {
         exportTemplateButton.addActionListener((e) -> {
             new ExportTemplate(node).doExportTemplate(getTemplate());
         });
@@ -134,23 +97,74 @@ public class ResourceTemplateView extends BaseEditor {
         });
     }
 
+    public synchronized void loadTemplate(DeploymentNode node, String template) {
+        this.node = node;
+        this.project = (Project) node.getProject();
+        GridConstraints constraints = new GridConstraints();
+        constraints.setFill(GridConstraints.FILL_BOTH);
+        constraints.setAnchor(GridConstraints.ANCHOR_WEST);
+
+        originTemplate = Utils.getPrettyJson(template);
+        fileEditor = createEditor(originTemplate);
+        editorPanel.removeAll();
+        editorPanel.add(fileEditor.getComponent(), constraints);
+
+        originParameters = DeploymentUtils.serializeParameters(node.getDeployment());
+        parameterEditor = createEditor(originParameters);
+        parameterPanel.removeAll();
+        parameterPanel.add(parameterEditor.getComponent(), constraints);
+
+        // Init the split panel
+        armSplitPanel.setDividerLocation(0.6); // template : parameter = 6:4
+
+        if (messageBusConnection == null) {
+            messageBusConnection = project.getMessageBus().connect(this);
+            messageBusConnection.subscribe(FileEditorManagerListener.Before.FILE_EDITOR_MANAGER, new FileEditorManagerListener.Before() {
+                @Override
+                public void beforeFileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
+                    if (file.getFileType().getName().equals(ResourceTemplateViewProvider.TYPE) &&
+                            file.getName().equals(node.getName())) {
+                        try {
+                            if (isTemplateUpdate() || isPropertiesUpdate()) {
+                                if (UIUtils.showYesNoDialog(PROMPT_TITLE, PROMPT_MESSAGE_CLOSE)) {
+                                    updateDeployment();
+                                }
+                            }
+                        } finally {
+                            PsiAwareTextEditorProvider.getInstance().disposeEditor(fileEditor);
+                            PsiAwareTextEditorProvider.getInstance().disposeEditor(parameterEditor);
+                            messageBusConnection.disconnect();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     private FileEditor createEditor(String template) {
         return PsiAwareTextEditorProvider.getInstance()
                 .createEditor(project, new LightVirtualFile(node.getName() + ".json", ARMLanguage.INSTANCE, template));
     }
 
     private void updateDeployment() {
+        String oldTemplate = this.originTemplate;
+        String oldParameters = this.originParameters;
         ProgressManager.getInstance().run(new Task.Backgroundable(project,
                 "Update your azure resource " + node.getDeployment().name() + "...", false) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
+                    ResourceTemplateView.this.originTemplate = getTemplate();
+                    ResourceTemplateView.this.originParameters = getParameters();
                     node.getDeployment().update()
-                            .withTemplate(getTemplate())
-                            .withParameters(getParameters())
+                            .withTemplate(ResourceTemplateView.this.originTemplate)
+                            .withParameters(ResourceTemplateView.this.originParameters)
                             .withMode(DeploymentMode.INCREMENTAL).apply();
                     UIUtils.showNotification(project, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
                 }), (e) -> {
+                    // Fall back the origin value when update fail.
+                    ResourceTemplateView.this.originTemplate = oldTemplate;
+                    ResourceTemplateView.this.originParameters = oldParameters;
                     UIUtils.showNotification(project,
                             NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + e.getMessage(), MessageType.ERROR);
                 });
