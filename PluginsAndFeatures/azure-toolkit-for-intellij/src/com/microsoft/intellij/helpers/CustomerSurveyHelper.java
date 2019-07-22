@@ -38,7 +38,7 @@ public enum CustomerSurveyHelper {
     private SurveyConfig surveyConfig;
 
     CustomerSurveyHelper() {
-        init();
+        loadConfiguration();
     }
 
     public void showFeedbackNotification(Project project) {
@@ -58,39 +58,39 @@ public enum CustomerSurveyHelper {
         surveyConfig.surveyTimes++;
         surveyConfig.lastSurveyDate = LocalDateTime.now();
         surveyConfig.nextSurveyDate = LocalDateTime.now().plusDays(TAKE_SURVEY_DELAY_BY_DAY);
-        save();
+        saveConfiguration();
     }
 
     public void putOff() {
         surveyConfig.nextSurveyDate = surveyConfig.nextSurveyDate.plusDays(PUT_OFF_DELAY_BY_DAY);
-        save();
+        saveConfiguration();
     }
 
     public void putOff(long amountToAdd, TemporalUnit unit) {
         surveyConfig.nextSurveyDate = surveyConfig.nextSurveyDate.plus(amountToAdd, unit);
-        save();
+        saveConfiguration();
     }
 
     public void neverShowAgain() {
         surveyConfig.isAcceptSurvey = false;
-        save();
+        saveConfiguration();
     }
 
     private boolean isAbleToPopUpSurvey() {
         return surveyConfig.isAcceptSurvey && LocalDateTime.now().isAfter(surveyConfig.nextSurveyDate);
     }
 
-    private void init() {
-        try {
-            String configString = IOUtils.toString(new FileReader(getConfigFile()));
+    private void loadConfiguration() {
+        try (final FileReader fileReader = new FileReader(getConfigFile())) {
+            String configString = IOUtils.toString(fileReader);
             surveyConfig = new Gson().fromJson(configString, SurveyConfig.class);
-        } catch (Exception e) {
+        } catch (IOException e) {
             surveyConfig = new SurveyConfig();
-            save();
+            saveConfiguration();
         }
     }
 
-    private void save() {
+    private void saveConfiguration() {
         ApplicationManager.getApplication().invokeLater(() -> {
             try {
                 File configFile = getConfigFile();
@@ -101,10 +101,10 @@ public enum CustomerSurveyHelper {
         });
     }
 
-    private File getConfigFile() throws IOException {
+    private File getConfigFile() {
         File pluginFolder = new File(System.getProperty("user.home"), PLUGIN_FOLDER_NAME);
         if (!pluginFolder.exists()) {
-            pluginFolder.createNewFile();
+            pluginFolder.mkdirs();
         }
         return new File(pluginFolder, SURVEY_CONFIG_FILE);
     }
