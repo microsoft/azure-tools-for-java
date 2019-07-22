@@ -47,6 +47,10 @@ public class AppInsightsClient {
         Azure
     }
 
+    public static String getInstallationId(){
+        return configuration == null ? null : configuration.installationId();
+    }
+
     public static void setAppInsightsConfiguration(AppInsightsConfiguration appInsightsConfiguration) {
         if (appInsightsConfiguration == null)
             throw new NullPointerException("AppInsights configuration cannot be null.");

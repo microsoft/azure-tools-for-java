@@ -4,10 +4,10 @@ import com.intellij.ide.ui.LafManager;
 import com.intellij.ide.ui.LafManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.wm.impl.WindowManagerImpl;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 
 import javax.swing.*;
@@ -50,7 +50,7 @@ public class SurveyPopUpDialog extends JDialog {
 
         this.customerSurveyHelper = customerSurveyHelper;
         this.disposeTimer = new Timer(1000* DISPOSE_TIME, (e)->this.putOff());
-        this.themeListener = lafManager -> renderUiByTheme(lafManager.getCurrentLookAndFeel());
+        this.themeListener = lafManager -> renderUiByTheme();
 
         this.setAlwaysOnTop(true);
         this.setSize(250, 250);
@@ -80,35 +80,32 @@ public class SurveyPopUpDialog extends JDialog {
         // call onCancel() when cross is clicked
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                onCancel();
+                putOff();
             }
         });
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> putOff(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // Add listener to intellij theme change
         LafManager.getInstance().addLafManagerListener(this.themeListener);
-        renderUiByTheme(LafManager.getInstance().getCurrentLookAndFeel());
+        renderUiByTheme();
     }
 
-    private void renderUiByTheme(UIManager.LookAndFeelInfo theme){
-        switch (theme.getName().toLowerCase()){
-            case "intellij":
-                this.setBackGroundColor(contentPane,Color.WHITE);
-                giveFeedbackButton.setForeground(new Color(255, 255, 255));
-                giveFeedbackButton.setBackground(new Color(0,114,198));
-                notNowButton.setForeground(new Color(255, 255, 255));
-                notNowButton.setBackground(new Color(105,105,105));
-                buttonOnHoverColor = Color.LIGHT_GRAY;
-                break;
-            default:
-                this.setBackGroundColor(contentPane,null);
-                giveFeedbackButton.setForeground(null);
-                giveFeedbackButton.setBackground(null);
-                notNowButton.setForeground(null);
-                notNowButton.setBackground(null);
-                buttonOnHoverColor = Color.WHITE;
-                break;
+    private void renderUiByTheme(){
+        if (UIUtils.isUnderIntelliJTheme()) {
+            giveFeedbackButton.setForeground(new Color(255, 255, 255));
+            giveFeedbackButton.setBackground(new Color(0, 114, 198));
+            notNowButton.setForeground(new Color(255, 255, 255));
+            notNowButton.setBackground(new Color(105, 105, 105));
+            buttonOnHoverColor = Color.LIGHT_GRAY;
+            UIUtils.setPanelBackGroundColor(contentPane, Color.WHITE);
+        } else {
+            giveFeedbackButton.setForeground(null);
+            giveFeedbackButton.setBackground(null);
+            notNowButton.setForeground(null);
+            notNowButton.setBackground(null);
+            buttonOnHoverColor = Color.WHITE;
+            UIUtils.setPanelBackGroundColor(contentPane, null);
         }
     }
 
@@ -145,22 +142,6 @@ public class SurveyPopUpDialog extends JDialog {
         });
     }
 
-
-    private void setBackGroundColor(JPanel panel, Color color) {
-        panel.setBackground(color);
-        for (Component child : panel.getComponents()) {
-            if (child instanceof JPanel) {
-                setBackGroundColor((JPanel) child, color);
-            }
-        }
-    }
-
-    private ImageIcon getAzureIcon() {
-        Image azureImage = IconLoader.toImage(PluginUtil.getIcon("/icons/azure_large.png"));
-        Image result = azureImage.getScaledInstance(50, 50, java.awt.Image.SCALE_SMOOTH);
-        return new ImageIcon(result);
-    }
-
     // Set pop up window to right bottom side of IDE
     private void setLocationRelativeToIDE(Project project) {
         project = project != null ? project : ProjectManagerImpl.getInstance().getOpenProjects()[0];
@@ -182,11 +163,6 @@ public class SurveyPopUpDialog extends JDialog {
                 SurveyPopUpDialog.this.setLocation(e.getX() + getX() - dragPosition.x, e.getY() + getY() - dragPosition.y);
             }
         });
-    }
-
-    private void onCancel() {
-        // add your code here if necessary
-        putOff();
     }
 
     private void takeSurvey() {
@@ -218,6 +194,6 @@ public class SurveyPopUpDialog extends JDialog {
         lblMessage = new JLabel(LABEL_PROMPT);
 
         lblAzureIcon = new JLabel();
-        lblAzureIcon.setIcon(getAzureIcon());
+        lblAzureIcon.setIcon(PluginUtil.getIcon("/icons/azure_large.png", 50, 50));
     }
 }

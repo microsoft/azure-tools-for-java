@@ -46,6 +46,7 @@ import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.common.CommonConst;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.util.HashMap;
 
@@ -174,6 +175,12 @@ public class PluginUtil {
 
     public static Icon getIcon(String iconPath) {
         return IconLoader.getIcon(iconPath);
+    }
+
+    public static Icon getIcon(String iconPath, int width, int height) {
+        Image azureImage = IconLoader.toImage(PluginUtil.getIcon(iconPath));
+        Image result = azureImage.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+        return new ImageIcon(result);
     }
 
     public static void dialogShaker(ValidationInfo info, DialogWrapper dialogWrapper) {
