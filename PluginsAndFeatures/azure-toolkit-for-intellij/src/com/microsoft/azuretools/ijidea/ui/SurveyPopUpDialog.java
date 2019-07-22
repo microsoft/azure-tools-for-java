@@ -9,13 +9,10 @@ import com.intellij.openapi.wm.impl.WindowManagerImpl;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.util.PluginUtil;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,7 +25,7 @@ public class SurveyPopUpDialog extends JDialog {
     private static final int DISPOSE_TIME = 10;
     private static final String LABEL_DO_NOT_SHOW_AGAIN = "Don't show again.";
     private static final String LABEL_PROMPT = "<html>" +
-            "<h3 align=\"center\">Enjoy Java Toolkits?</h3>" +
+            "<h3 align=\"center\">Enjoy Azure Toolkits?</h3>" +
             "<p align=\"center\" style=\"line-height: 0%\"> Your feedback is important, </p>" +
             "<p align=\"center\" style=\"line-height: 0%\"> take a minute to fill out our survey.</p>" +
             "</html>";
@@ -63,9 +60,6 @@ public class SurveyPopUpDialog extends JDialog {
         this.setModal(false);
         this.setLocationRelativeToIDE(project);
         this.setDisposeTimer();
-
-        lblMessage.setText(LABEL_PROMPT);
-        lblAzureIcon.setIcon(getAzureIcon());
 
         giveFeedbackButton.addActionListener((e) -> takeSurvey());
         giveFeedbackButton.setFocusable(false);
@@ -220,5 +214,10 @@ public class SurveyPopUpDialog extends JDialog {
         // TODO: place custom component creation code here
         lblDoNotShowAgain = new HyperlinkLabel(LABEL_DO_NOT_SHOW_AGAIN);
         lblDoNotShowAgain.addHyperlinkListener(e -> neverShow());
+
+        lblMessage = new JLabel(LABEL_PROMPT);
+
+        lblAzureIcon = new JLabel();
+        lblAzureIcon.setIcon(getAzureIcon());
     }
 }

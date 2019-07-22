@@ -50,7 +50,7 @@
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="fe62b" class="javax.swing.JLabel" binding="lblAzureIcon">
+                  <component id="fe62b" class="javax.swing.JLabel" binding="lblAzureIcon" custom-create="true">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="2" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -79,12 +79,11 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="4f22a" class="javax.swing.JLabel" binding="lblMessage">
+              <component id="4f22a" class="javax.swing.JLabel" binding="lblMessage" custom-create="true">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text value=""/>
                 </properties>
               </component>
             </children>
