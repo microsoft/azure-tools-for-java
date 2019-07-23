@@ -67,7 +67,7 @@ public enum CustomerSurveyHelper {
     }
 
     public void putOff() {
-        surveyConfig.nextSurveyDate = surveyConfig.nextSurveyDate.plusDays(PUT_OFF_DELAY_BY_DAY);
+        surveyConfig.nextSurveyDate = LocalDateTime.now().plusDays(PUT_OFF_DELAY_BY_DAY);
         saveConfiguration();
     }
 
