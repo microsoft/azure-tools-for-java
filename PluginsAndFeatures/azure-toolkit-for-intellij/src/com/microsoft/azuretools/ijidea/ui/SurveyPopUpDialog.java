@@ -19,7 +19,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class SurveyPopUpDialog extends JDialog {
 
@@ -86,7 +85,7 @@ public class SurveyPopUpDialog extends JDialog {
             }
         });
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(e -> putOff(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> putOff(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
 
         // Add listener to intellij theme change
         LafManager.getInstance().addLafManagerListener(this.themeListener);
