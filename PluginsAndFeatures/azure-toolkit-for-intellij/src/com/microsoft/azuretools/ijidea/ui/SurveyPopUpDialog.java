@@ -19,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SurveyPopUpDialog extends JDialog {
 
@@ -44,6 +45,7 @@ public class SurveyPopUpDialog extends JDialog {
     private Timer disposeTimer;
     private LafManagerListener themeListener;
     private Color buttonOnHoverColor = Color.WHITE;
+    private boolean isDispose = false;
 
     public SurveyPopUpDialog(CustomerSurveyHelper customerSurveyHelper, Project project) {
         super();
@@ -89,6 +91,7 @@ public class SurveyPopUpDialog extends JDialog {
         // Add listener to intellij theme change
         LafManager.getInstance().addLafManagerListener(this.themeListener);
         renderUiByTheme();
+        this.disposeTimer.restart();
     }
 
     private void renderUiByTheme(){
@@ -165,22 +168,29 @@ public class SurveyPopUpDialog extends JDialog {
         });
     }
 
-    private void takeSurvey() {
-        customerSurveyHelper.takeSurvey();
-        close();
+    private synchronized void takeSurvey() {
+        if (!isDispose) {
+            customerSurveyHelper.takeSurvey();
+            close();
+        }
     }
 
-    private void putOff() {
-        customerSurveyHelper.putOff();
-        close();
+    private synchronized void putOff() {
+        if (!isDispose) {
+            customerSurveyHelper.putOff();
+            close();
+        }
     }
 
-    private void neverShow() {
-        customerSurveyHelper.neverShowAgain();
-        close();
+    private synchronized void neverShow() {
+        if (!isDispose) {
+            customerSurveyHelper.neverShowAgain();
+            close();
+        }
     }
 
-    private void close(){
+    private synchronized void close(){
+        isDispose = true;
         disposeTimer.stop();
         LafManager.getInstance().removeLafManagerListener(this.themeListener);
         dispose();
