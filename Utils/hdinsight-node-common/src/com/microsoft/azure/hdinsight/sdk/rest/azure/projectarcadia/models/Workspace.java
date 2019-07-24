@@ -21,14 +21,16 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.rest.serializer.JsonFlatten;
 
 /**
  * The properties of a workspace.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonFlatten
 public class Workspace extends TrackedResource {
     /**

@@ -21,8 +21,9 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.RestException;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
@@ -30,6 +31,7 @@ import retrofit2.Response;
 /**
  * Exception thrown for an invalid response with ErrorResponse information.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorResponseException extends RestException {
     /**
      * Initializes a new instance of the ErrorResponseException class.

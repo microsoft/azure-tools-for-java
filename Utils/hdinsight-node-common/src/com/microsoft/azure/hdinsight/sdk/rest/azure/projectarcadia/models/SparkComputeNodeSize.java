@@ -21,44 +21,37 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Defines values for SparkComputeProvisioningState.
+ * Defines values for SparkComputeNodeSize.
  */
-public enum SparkComputeProvisioningState {
-    /** Enum value Provisioning. */
-    PROVISIONING("Provisioning"),
+@JsonIgnoreProperties(ignoreUnknown = true)
+public enum SparkComputeNodeSize {
+    /** Enum value MemoryOptimized. */
+    MEMORY_OPTIMIZED("MemoryOptimized");
 
-    /** Enum value Succeeded. */
-    SUCCEEDED("Succeeded"),
-
-    /** Enum value Failed. */
-    FAILED("Failed"),
-
-    /** Enum value Deleting. */
-    DELETING("Deleting");
-
-    /** The actual serialized value for a SparkComputeProvisioningState instance. */
+    /** The actual serialized value for a SparkComputeNodeSize instance. */
     private String value;
 
-    SparkComputeProvisioningState(String value) {
+    SparkComputeNodeSize(String value) {
         this.value = value;
     }
 
     /**
-     * Parses a serialized value to a SparkComputeProvisioningState instance.
+     * Parses a serialized value to a SparkComputeNodeSize instance.
      *
      * @param value the serialized value to parse.
-     * @return the parsed SparkComputeProvisioningState object, or null if unable to parse.
+     * @return the parsed SparkComputeNodeSize object, or null if unable to parse.
      */
     @JsonCreator
-    public static SparkComputeProvisioningState fromString(String value) {
-        SparkComputeProvisioningState[] items = SparkComputeProvisioningState.values();
-        for (SparkComputeProvisioningState item : items) {
+    public static SparkComputeNodeSize fromString(String value) {
+        SparkComputeNodeSize[] items = SparkComputeNodeSize.values();
+        for (SparkComputeNodeSize item : items) {
             if (item.toString().equalsIgnoreCase(value)) {
                 return item;
             }

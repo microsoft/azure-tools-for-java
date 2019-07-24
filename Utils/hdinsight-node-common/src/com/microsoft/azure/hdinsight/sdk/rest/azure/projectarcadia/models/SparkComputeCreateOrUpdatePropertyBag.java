@@ -21,76 +21,63 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
 /**
- * The properties of a spark compute.
+ * The spark compute create or update property bag.
  */
-@JsonFlatten
-public class SparkCompute extends TrackedResource {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SparkComputeCreateOrUpdatePropertyBag {
     /**
      * The number of nodes in a spark compute.
      */
-    @JsonProperty(value = "properties.nodeCount")
+    @JsonProperty(value = "nodeCount")
     private Integer nodeCount;
 
     /**
      * The node size. Possible values include: 'Small', 'Medium', 'Large'.
      */
-    @JsonProperty(value = "properties.nodeSize")
+    @JsonProperty(value = "nodeSize")
     private SparkComputeNodeSizeFamily nodeSize;
 
     /**
      * The node size family. Possible values include: 'MemoryOptimized'.
      */
-    @JsonProperty(value = "properties.nodeSizeFamily")
+    @JsonProperty(value = "nodeSizeFamily")
     private SparkComputeNodeSize nodeSizeFamily;
 
     /**
      * The autoscale properties.
      */
-    @JsonProperty(value = "properties.autoScale")
+    @JsonProperty(value = "autoScale")
     private AutoScaleProperties autoScale;
 
     /**
      * The autoPause properties.
      */
-    @JsonProperty(value = "properties.autoPause")
+    @JsonProperty(value = "autoPause")
     private AutoPauseProperties autoPause;
 
     /**
      * The spark version.
      */
-    @JsonProperty(value = "properties.sparkVersion")
+    @JsonProperty(value = "sparkVersion")
     private String sparkVersion;
 
     /**
      * The folder in workspace storage account where spark events will be stored.
      */
-    @JsonProperty(value = "properties.sparkEventsFolder")
+    @JsonProperty(value = "sparkEventsFolder")
     private String sparkEventsFolder;
 
     /**
      * The folder in workspace storage account where spark logs will be stored.
      */
-    @JsonProperty(value = "properties.defaultSparkLogFolder")
+    @JsonProperty(value = "defaultSparkLogFolder")
     private String defaultSparkLogFolder;
-
-    /**
-     * The spark compute provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed',
-     * 'Deleting'.
-     */
-    @JsonProperty(value = "properties.provisioningState", access = JsonProperty.Access.WRITE_ONLY)
-    private SparkComputeProvisioningState provisioningState;
-
-    /**
-     * The spark compute state.
-     */
-    @JsonProperty(value = "properties.status", access = JsonProperty.Access.WRITE_ONLY)
-    private String status;
 
     /**
      * Get the number of nodes in a spark compute.
@@ -105,9 +92,9 @@ public class SparkCompute extends TrackedResource {
      * Set the number of nodes in a spark compute.
      *
      * @param nodeCount the nodeCount value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withNodeCount(Integer nodeCount) {
+    public SparkComputeCreateOrUpdatePropertyBag withNodeCount(Integer nodeCount) {
         this.nodeCount = nodeCount;
         return this;
     }
@@ -125,9 +112,9 @@ public class SparkCompute extends TrackedResource {
      * Set the node size. Possible values include: 'Small', 'Medium', 'Large'.
      *
      * @param nodeSize the nodeSize value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withNodeSize(SparkComputeNodeSizeFamily nodeSize) {
+    public SparkComputeCreateOrUpdatePropertyBag withNodeSize(SparkComputeNodeSizeFamily nodeSize) {
         this.nodeSize = nodeSize;
         return this;
     }
@@ -145,9 +132,9 @@ public class SparkCompute extends TrackedResource {
      * Set the node size family. Possible values include: 'MemoryOptimized'.
      *
      * @param nodeSizeFamily the nodeSizeFamily value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withNodeSizeFamily(SparkComputeNodeSize nodeSizeFamily) {
+    public SparkComputeCreateOrUpdatePropertyBag withNodeSizeFamily(SparkComputeNodeSize nodeSizeFamily) {
         this.nodeSizeFamily = nodeSizeFamily;
         return this;
     }
@@ -165,9 +152,9 @@ public class SparkCompute extends TrackedResource {
      * Set the autoscale properties.
      *
      * @param autoScale the autoScale value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withAutoScale(AutoScaleProperties autoScale) {
+    public SparkComputeCreateOrUpdatePropertyBag withAutoScale(AutoScaleProperties autoScale) {
         this.autoScale = autoScale;
         return this;
     }
@@ -185,9 +172,9 @@ public class SparkCompute extends TrackedResource {
      * Set the autoPause properties.
      *
      * @param autoPause the autoPause value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withAutoPause(AutoPauseProperties autoPause) {
+    public SparkComputeCreateOrUpdatePropertyBag withAutoPause(AutoPauseProperties autoPause) {
         this.autoPause = autoPause;
         return this;
     }
@@ -205,9 +192,9 @@ public class SparkCompute extends TrackedResource {
      * Set the spark version.
      *
      * @param sparkVersion the sparkVersion value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withSparkVersion(String sparkVersion) {
+    public SparkComputeCreateOrUpdatePropertyBag withSparkVersion(String sparkVersion) {
         this.sparkVersion = sparkVersion;
         return this;
     }
@@ -225,9 +212,9 @@ public class SparkCompute extends TrackedResource {
      * Set the folder in workspace storage account where spark events will be stored.
      *
      * @param sparkEventsFolder the sparkEventsFolder value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withSparkEventsFolder(String sparkEventsFolder) {
+    public SparkComputeCreateOrUpdatePropertyBag withSparkEventsFolder(String sparkEventsFolder) {
         this.sparkEventsFolder = sparkEventsFolder;
         return this;
     }
@@ -245,29 +232,11 @@ public class SparkCompute extends TrackedResource {
      * Set the folder in workspace storage account where spark logs will be stored.
      *
      * @param defaultSparkLogFolder the defaultSparkLogFolder value to set
-     * @return the SparkCompute object itself.
+     * @return the SparkComputeCreateOrUpdatePropertyBag object itself.
      */
-    public SparkCompute withDefaultSparkLogFolder(String defaultSparkLogFolder) {
+    public SparkComputeCreateOrUpdatePropertyBag withDefaultSparkLogFolder(String defaultSparkLogFolder) {
         this.defaultSparkLogFolder = defaultSparkLogFolder;
         return this;
-    }
-
-    /**
-     * Get the spark compute provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
-     *
-     * @return the provisioningState value
-     */
-    public SparkComputeProvisioningState provisioningState() {
-        return this.provisioningState;
-    }
-
-    /**
-     * Get the spark compute state.
-     *
-     * @return the status value
-     */
-    public String status() {
-        return this.status;
     }
 
 }

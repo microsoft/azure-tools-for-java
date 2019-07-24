@@ -21,35 +21,43 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Defines values for SparkComputeNodeSize.
+ * Defines values for SparkComputeNodeSizeFamily.
  */
-public enum SparkComputeNodeSize {
-    /** Enum value MemoryOptimized. */
-    MEMORY_OPTIMIZED("MemoryOptimized");
+@JsonIgnoreProperties(ignoreUnknown = true)
+public enum SparkComputeNodeSizeFamily {
+    /** Enum value Small. */
+    SMALL("Small"),
 
-    /** The actual serialized value for a SparkComputeNodeSize instance. */
+    /** Enum value Medium. */
+    MEDIUM("Medium"),
+
+    /** Enum value Large. */
+    LARGE("Large");
+
+    /** The actual serialized value for a SparkComputeNodeSizeFamily instance. */
     private String value;
 
-    SparkComputeNodeSize(String value) {
+    SparkComputeNodeSizeFamily(String value) {
         this.value = value;
     }
 
     /**
-     * Parses a serialized value to a SparkComputeNodeSize instance.
+     * Parses a serialized value to a SparkComputeNodeSizeFamily instance.
      *
      * @param value the serialized value to parse.
-     * @return the parsed SparkComputeNodeSize object, or null if unable to parse.
+     * @return the parsed SparkComputeNodeSizeFamily object, or null if unable to parse.
      */
     @JsonCreator
-    public static SparkComputeNodeSize fromString(String value) {
-        SparkComputeNodeSize[] items = SparkComputeNodeSize.values();
-        for (SparkComputeNodeSize item : items) {
+    public static SparkComputeNodeSizeFamily fromString(String value) {
+        SparkComputeNodeSizeFamily[] items = SparkComputeNodeSizeFamily.values();
+        for (SparkComputeNodeSizeFamily item : items) {
             if (item.toString().equalsIgnoreCase(value)) {
                 return item;
             }

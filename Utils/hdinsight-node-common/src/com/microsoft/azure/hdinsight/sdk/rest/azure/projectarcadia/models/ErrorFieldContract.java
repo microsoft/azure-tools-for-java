@@ -21,13 +21,15 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Error Field contract.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorFieldContract {
     /**
      * The error code.

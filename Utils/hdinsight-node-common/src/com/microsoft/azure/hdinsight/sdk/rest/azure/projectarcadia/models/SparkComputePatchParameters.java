@@ -21,65 +21,41 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.ProxyResource;
+import com.microsoft.rest.serializer.JsonFlatten;
 
 /**
- * The resource model definition for a ARM tracked top level resource.
+ * Parameters used to patch spark compute.
  */
-public class TrackedResource extends ProxyResource {
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonFlatten
+public class SparkComputePatchParameters {
     /**
-     * The Azure Region where the resource lives.
+     * Spark version.
      */
-    @JsonProperty(value = "location")
-    private String location;
+    @JsonProperty(value = "properties.sparkVersion")
+    private String sparkVersion;
 
     /**
-     * Resource tags.
-     */
-    @JsonProperty(value = "tags")
-    private Map<String, String> tags;
-
-    /**
-     * Get the Azure Region where the resource lives.
+     * Get spark version.
      *
-     * @return the location value
+     * @return the sparkVersion value
      */
-    public String location() {
-        return this.location;
+    public String sparkVersion() {
+        return this.sparkVersion;
     }
 
     /**
-     * Set the Azure Region where the resource lives.
+     * Set spark version.
      *
-     * @param location the location value to set
-     * @return the TrackedResource object itself.
+     * @param sparkVersion the sparkVersion value to set
+     * @return the SparkComputePatchParameters object itself.
      */
-    public TrackedResource withLocation(String location) {
-        this.location = location;
-        return this;
-    }
-
-    /**
-     * Get resource tags.
-     *
-     * @return the tags value
-     */
-    public Map<String, String> tags() {
-        return this.tags;
-    }
-
-    /**
-     * Set resource tags.
-     *
-     * @param tags the tags value to set
-     * @return the TrackedResource object itself.
-     */
-    public TrackedResource withTags(Map<String, String> tags) {
-        this.tags = tags;
+    public SparkComputePatchParameters withSparkVersion(String sparkVersion) {
+        this.sparkVersion = sparkVersion;
         return this;
     }
 

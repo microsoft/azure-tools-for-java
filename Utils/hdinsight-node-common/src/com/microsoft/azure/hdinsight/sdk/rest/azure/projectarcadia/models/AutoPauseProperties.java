@@ -21,13 +21,15 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The auto pause properties for the spark compute.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AutoPauseProperties {
     /**
      * Depicts whether autopause is enabled for the spark compute.

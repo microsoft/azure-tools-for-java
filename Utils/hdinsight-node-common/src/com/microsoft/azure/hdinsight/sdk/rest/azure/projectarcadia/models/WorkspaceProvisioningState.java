@@ -21,41 +21,46 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Defines values for SparkComputeNodeSizeFamily.
+ * Defines values for WorkspaceProvisioningState.
  */
-public enum SparkComputeNodeSizeFamily {
-    /** Enum value Small. */
-    SMALL("Small"),
+@JsonIgnoreProperties(ignoreUnknown = true)
+public enum WorkspaceProvisioningState {
+    /** Enum value Provisioning. */
+    PROVISIONING("Provisioning"),
 
-    /** Enum value Medium. */
-    MEDIUM("Medium"),
+    /** Enum value Succeeded. */
+    SUCCEEDED("Succeeded"),
 
-    /** Enum value Large. */
-    LARGE("Large");
+    /** Enum value Failed. */
+    FAILED("Failed"),
 
-    /** The actual serialized value for a SparkComputeNodeSizeFamily instance. */
+    /** Enum value Deleting. */
+    DELETING("Deleting");
+
+    /** The actual serialized value for a WorkspaceProvisioningState instance. */
     private String value;
 
-    SparkComputeNodeSizeFamily(String value) {
+    WorkspaceProvisioningState(String value) {
         this.value = value;
     }
 
     /**
-     * Parses a serialized value to a SparkComputeNodeSizeFamily instance.
+     * Parses a serialized value to a WorkspaceProvisioningState instance.
      *
      * @param value the serialized value to parse.
-     * @return the parsed SparkComputeNodeSizeFamily object, or null if unable to parse.
+     * @return the parsed WorkspaceProvisioningState object, or null if unable to parse.
      */
     @JsonCreator
-    public static SparkComputeNodeSizeFamily fromString(String value) {
-        SparkComputeNodeSizeFamily[] items = SparkComputeNodeSizeFamily.values();
-        for (SparkComputeNodeSizeFamily item : items) {
+    public static WorkspaceProvisioningState fromString(String value) {
+        WorkspaceProvisioningState[] items = WorkspaceProvisioningState.values();
+        for (WorkspaceProvisioningState item : items) {
             if (item.toString().equalsIgnoreCase(value)) {
                 return item;
             }

@@ -21,15 +21,17 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Defines values for WorkspaceProvisioningState.
+ * Defines values for SparkComputeProvisioningState.
  */
-public enum WorkspaceProvisioningState {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public enum SparkComputeProvisioningState {
     /** Enum value Provisioning. */
     PROVISIONING("Provisioning"),
 
@@ -42,23 +44,23 @@ public enum WorkspaceProvisioningState {
     /** Enum value Deleting. */
     DELETING("Deleting");
 
-    /** The actual serialized value for a WorkspaceProvisioningState instance. */
+    /** The actual serialized value for a SparkComputeProvisioningState instance. */
     private String value;
 
-    WorkspaceProvisioningState(String value) {
+    SparkComputeProvisioningState(String value) {
         this.value = value;
     }
 
     /**
-     * Parses a serialized value to a WorkspaceProvisioningState instance.
+     * Parses a serialized value to a SparkComputeProvisioningState instance.
      *
      * @param value the serialized value to parse.
-     * @return the parsed WorkspaceProvisioningState object, or null if unable to parse.
+     * @return the parsed SparkComputeProvisioningState object, or null if unable to parse.
      */
     @JsonCreator
-    public static WorkspaceProvisioningState fromString(String value) {
-        WorkspaceProvisioningState[] items = WorkspaceProvisioningState.values();
-        for (WorkspaceProvisioningState item : items) {
+    public static SparkComputeProvisioningState fromString(String value) {
+        SparkComputeProvisioningState[] items = SparkComputeProvisioningState.values();
+        for (SparkComputeProvisioningState item : items) {
             if (item.toString().equalsIgnoreCase(value)) {
                 return item;
             }

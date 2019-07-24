@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,43 +18,10 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.arcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
-
-/**
- * Parameters used to patch spark compute.
- */
-@JsonFlatten
-public class SparkComputePatchParameters {
-    /**
-     * Spark version.
-     */
-    @JsonProperty(value = "properties.sparkVersion")
-    private String sparkVersion;
-
-    /**
-     * Get spark version.
-     *
-     * @return the sparkVersion value
-     */
-    public String sparkVersion() {
-        return this.sparkVersion;
-    }
-
-    /**
-     * Set spark version.
-     *
-     * @param sparkVersion the sparkVersion value to set
-     * @return the SparkComputePatchParameters object itself.
-     */
-    public SparkComputePatchParameters withSparkVersion(String sparkVersion) {
-        this.sparkVersion = sparkVersion;
-        return this;
-    }
-
+public class ApiVersion {
+    public static final String VERSION = "2019-06-01-preview"; // Preview version
 }
