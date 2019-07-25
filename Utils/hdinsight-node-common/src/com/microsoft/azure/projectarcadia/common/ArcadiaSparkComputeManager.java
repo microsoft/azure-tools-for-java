@@ -25,6 +25,7 @@ package com.microsoft.azure.projectarcadia.common;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 
 public class ArcadiaSparkComputeManager implements ClusterContainer {
@@ -36,20 +37,24 @@ public class ArcadiaSparkComputeManager implements ClusterContainer {
         return LazyHolder.INSTANCE;
     }
 
+    @NotNull
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
         return ImmutableSortedSet.of();
     }
 
+    @NotNull
     @Override
     public ClusterContainer refresh() {
-        return null;
+        return this;
     }
 
+    @NotNull
     public Observable<ArcadiaSparkComputeManager> fetchClusters() {
         return Observable.just(this);
     }
 
+    @NotNull
     public ImmutableSortedSet<? extends ArcadiaWorkSpace> getWorkspaces() {
         return ImmutableSortedSet.of();
     }

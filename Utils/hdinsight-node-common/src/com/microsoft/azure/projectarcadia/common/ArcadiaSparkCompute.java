@@ -24,21 +24,25 @@ package com.microsoft.azure.projectarcadia.common;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 public class ArcadiaSparkCompute extends SparkCluster {
+    @NotNull
     @Override
     public String getName() {
-        return null;
+        return "";
     }
 
+    @NotNull
     @Override
     public String getTitle() {
-        return null;
+        return "";
     }
 
+    @NotNull
     @Override
     public String getConnectionUrl() {
-        return null;
+        return "";
     }
 
     @Override
