@@ -131,3 +131,4 @@ class LivySparkSelectAndSubmitAction : SeqActions("Actions.SelectHDInsightSparkT
 class CosmosSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosSparkType", "Actions.SubmitSparkApplicationAction")
 class CosmosServerlessSparkSelectAndSubmitAction : SeqActions("Actions.SelectCosmosServerlessSparkType", "Actions.SubmitSparkApplicationAction")
 class ArisSparkSelectAndSubmitAction : SeqActions("Actions.SelectArisSparkType", "Actions.SubmitSparkApplicationAction")
+class ArcadiaSparkSelectAndSubmitAction : SeqActions("Actions.SelectArcadiaSparkType", "Actions.SubmitSparkApplicationAction")

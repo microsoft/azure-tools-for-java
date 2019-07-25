@@ -123,6 +123,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         }
     }
 
+    open val clusterHint = "Spark clusters(Linux only)"
+
     open fun getErrorMessageClusterNameNull(isSignedIn: Boolean): String {
         return when {
             isSignedIn -> "Cluster name should not be null, please choose one for submission"
@@ -130,7 +132,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         }
     }
 
-    val clustersSelectionPrompt: JLabel = JLabel("Spark clusters(Linux only)").apply {
+    val clustersSelectionPrompt: JLabel = JLabel(clusterHint).apply {
         toolTipText = "The $type cluster you want to submit your application to. Only Linux cluster is supported."
     }
 

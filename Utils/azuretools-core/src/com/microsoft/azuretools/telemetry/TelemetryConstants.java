@@ -43,6 +43,7 @@ public class TelemetryConstants {
     public static final String SPARK_ON_COSMOS = "sparkOnCosmos";
     public static final String SPARK_ON_COSMOS_SERVERLESS = "sparkOnCosmosServerless";
     public static final String SPARK_ON_SQL_SERVER = "sparkOnSqlServer";
+    public static final String SPARK_ON_ARCADIA = "sparkOnArcadia";
     public static final String SPARK_FAILURE_TASK_DEBUG = "sparkFailureTaskDebug";
     public static final String VFS = "virtualFileSystem";
 

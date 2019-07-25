@@ -26,10 +26,8 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
-import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
-import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
+import com.microsoft.azure.hdinsight.spark.run.configuration.*
+import com.microsoft.azuretools.authmanage.CommonSettings
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetry.TelemetryConstants
 import com.microsoft.azuretools.telemetrywrapper.Operation
@@ -59,6 +57,7 @@ abstract class SelectSparkApplicationTypeAction
                 SparkApplicationType.CosmosSpark -> CosmosSparkConfigurationType
                 SparkApplicationType.CosmosServerlessSpark -> CosmosServerlessSparkConfigurationType
                 SparkApplicationType.ArisSpark -> ArisSparkConfigurationType
+                SparkApplicationType.ArcadiaSpark -> ArcadiaSparkConfigurationType
             }
         }
     }
@@ -115,10 +114,24 @@ class SelectArisSparkTypeAction : SelectSparkApplicationTypeAction() {
     }
 }
 
+class SelectArcadiaSparkTypeAction : SelectSparkApplicationTypeAction() {
+        override fun getSparkApplicationType() : SparkApplicationType {
+            return SparkApplicationType.ArcadiaSpark
+        }
+
+    override fun update(e: AnActionEvent) {
+        super.update(e)
+        if (!CommonSettings.isProjectArcadiaFeatureEnabled) {
+            e.presentation.isEnabledAndVisible = false
+        }
+    }
+}
+
 enum class SparkApplicationType(val value: String) {
     None("none"),
     HDInsight(TelemetryConstants.HDINSIGHT),
     CosmosSpark(TelemetryConstants.SPARK_ON_COSMOS),
     CosmosServerlessSpark(TelemetryConstants.SPARK_ON_COSMOS_SERVERLESS),
     ArisSpark(TelemetryConstants.SPARK_ON_SQL_SERVER),
+    ArcadiaSpark(TelemetryConstants.SPARK_ON_ARCADIA)
 }

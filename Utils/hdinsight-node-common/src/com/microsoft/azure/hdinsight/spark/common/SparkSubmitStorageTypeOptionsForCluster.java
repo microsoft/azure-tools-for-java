@@ -75,6 +75,11 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
     }),
 
+    // arcadia cluster now suppports blob
+    ArcadiaSparkCluster(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.BLOB
+    }),
+
     // sql big data cluster
     BigDataClusterWithWebHdfs(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,

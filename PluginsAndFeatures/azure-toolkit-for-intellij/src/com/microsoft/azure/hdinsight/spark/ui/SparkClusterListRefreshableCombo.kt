@@ -31,12 +31,15 @@ import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComponentWithBrowseButtonEnabledDelegated
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
+import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.arcadiaSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.arisSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosServerlessSparkAccountsRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.hdinsightSparkClustersRefreshed
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
@@ -226,4 +229,17 @@ class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
     }
 
     override val viewModel: SparkClusterListRefreshableCombo.ViewModel by lazy { ViewModel() }
+}
+
+class ArcadiaSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
+    override val comboBoxName: String = "computeListComboBox"
+
+    inner class ViewModel
+        : SparkClusterListRefreshableCombo.ViewModel(ArcadiaSparkComputeManager.getInstance().clusters
+            .sortedBy { it.title }
+            .toTypedArray()) {
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = arcadiaSparkClustersRefreshed
+    }
+
+    override val viewModel = ViewModel().apply { Disposer.register(this@ArcadiaSparkClusterListRefreshableCombo, this@apply) }
 }
