@@ -44,6 +44,9 @@ public class CommonSettings {
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
 
+    private static final String PROJECT_ARCADIA_KEY = "EnableProjectArcadia";
+    public static boolean isProjectArcadiaFeatureEnabled = false;
+
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
     }
@@ -93,6 +96,9 @@ public class CommonSettings {
                         ENV = providedEnv;
                     }
                 }
+
+                JsonElement arcadiaElement = jsonObject.get(PROJECT_ARCADIA_KEY);
+                isProjectArcadiaFeatureEnabled = arcadiaElement != null && arcadiaElement.getAsBoolean();
             }
         } catch (Exception e) {
             e.printStackTrace();
