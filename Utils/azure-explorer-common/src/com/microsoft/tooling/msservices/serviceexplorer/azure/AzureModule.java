@@ -64,6 +64,8 @@ public class AzureModule extends AzureRefreshableNode {
     private HDInsightRootModule hdInsightModule;
     @Nullable
     private HDInsightRootModule sparkServerlessClusterRootModule;
+    @Nullable
+    private HDInsightRootModule arcadiaModule;
     @NotNull
     private DockerHostModule dockerHostModule;
     @NotNull
@@ -130,6 +132,10 @@ public class AzureModule extends AzureRefreshableNode {
         this.sparkServerlessClusterRootModule = rootModule;
     }
 
+    public void setArcadiaModule(@NotNull HDInsightRootModule rootModule) {
+        this.arcadiaModule = rootModule;
+    }
+
     @Override
     protected void refreshItems() throws AzureCmdException {
         // add the module; we check if the node has
@@ -161,6 +167,10 @@ public class AzureModule extends AzureRefreshableNode {
             addChildNode(sparkServerlessClusterRootModule);
         }
 
+        if (arcadiaModule != null && arcadiaModule.isFeatureEnabled() && !isDirectChild(arcadiaModule)) {
+            addChildNode(arcadiaModule);
+        }
+
         if (!isDirectChild(dockerHostModule)) {
             addChildNode(dockerHostModule);
         }
@@ -190,6 +200,10 @@ public class AzureModule extends AzureRefreshableNode {
 
                 if (sparkServerlessClusterRootModule != null) {
                     sparkServerlessClusterRootModule.load(true);
+                }
+
+                if (arcadiaModule != null) {
+                    arcadiaModule.load(true);
                 }
 
                 dockerHostModule.load(true);
