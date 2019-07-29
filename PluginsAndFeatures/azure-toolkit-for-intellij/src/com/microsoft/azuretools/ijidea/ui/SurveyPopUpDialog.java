@@ -12,6 +12,8 @@ import com.microsoft.intellij.util.PluginUtil;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
+import javax.swing.plaf.ButtonUI;
+import javax.swing.plaf.metal.MetalButtonUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -64,10 +66,13 @@ public class SurveyPopUpDialog extends JDialog {
 
         giveFeedbackButton.addActionListener((e) -> takeSurvey());
         giveFeedbackButton.setFocusable(false);
+        giveFeedbackButton.setBorderPainted(false);
+        //There will be UI issue when paint boder with background in mac/linux
         setButtonHoverListener(giveFeedbackButton);
 
         notNowButton.addActionListener((e) -> putOff());
         notNowButton.setFocusable(false);
+        notNowButton.setBorderPainted(false);
         setButtonHoverListener(notNowButton);
 
         lblClose.addMouseListener(new MouseInputAdapter() {
@@ -95,19 +100,26 @@ public class SurveyPopUpDialog extends JDialog {
 
     private void renderUiByTheme(){
         if (UIUtils.isUnderIntelliJTheme()) {
+            UIUtils.setPanelBackGroundColor(contentPane, Color.WHITE);
+            ButtonUI buttonUI = new MetalButtonUI();
+            giveFeedbackButton.setUI(buttonUI);
             giveFeedbackButton.setForeground(new Color(255, 255, 255));
             giveFeedbackButton.setBackground(new Color(0, 114, 198));
+            notNowButton.setUI(buttonUI);
             notNowButton.setForeground(new Color(255, 255, 255));
             notNowButton.setBackground(new Color(105, 105, 105));
             buttonOnHoverColor = Color.LIGHT_GRAY;
-            UIUtils.setPanelBackGroundColor(contentPane, Color.WHITE);
+
         } else {
+            UIUtils.setPanelBackGroundColor(contentPane, null);
+            ButtonUI buttonUI = new JButton().getUI();
             giveFeedbackButton.setForeground(null);
             giveFeedbackButton.setBackground(null);
+            giveFeedbackButton.setUI(buttonUI);
             notNowButton.setForeground(null);
             notNowButton.setBackground(null);
+            notNowButton.setUI(buttonUI);
             buttonOnHoverColor = Color.WHITE;
-            UIUtils.setPanelBackGroundColor(contentPane, null);
         }
     }
 
