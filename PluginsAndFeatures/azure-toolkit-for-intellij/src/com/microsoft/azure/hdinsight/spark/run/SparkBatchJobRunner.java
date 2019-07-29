@@ -23,6 +23,7 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
@@ -50,12 +51,14 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observer;
 import rx.subjects.PublishSubject;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
     @NotNull
@@ -86,22 +89,27 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     }
 
     protected void sendTelemetryForParameters(@NotNull SparkSubmitModel model, @Nullable Operation operation) {
-        SparkSubmissionParameter params = model.getSubmissionParameter();
-        Map<String, String> props = new HashMap<>();
-        props.put(SparkSubmissionParameter.DriverCores, params.getDriverCores().toString());
-        props.put(SparkSubmissionParameter.DriverMemory, params.getDriverMemory());
-        props.put(SparkSubmissionParameter.ExecutorCores, params.getExecutorCores().toString());
-        props.put(SparkSubmissionParameter.ExecutorMemory, params.getExecutorMemory());
-        props.put(SparkSubmissionParameter.NumExecutors, params.getNumExecutors().toString());
-        props.put("refJarsCount", String.valueOf(params.getReferencedJars().size()));
-        props.put("refFilesCount", String.valueOf(params.getReferencedFiles().size()));
-        props.put("commandlineArgsCount", String.valueOf(params.getArgs().size()));
-        props.put("isLocalArtifact", String.valueOf(model.getIsLocalArtifact()));
-        props.put("isDefaultArtifact",
-                model.getIsLocalArtifact()
-                        ? "none"
-                        : String.valueOf(model.getArtifactName().toLowerCase().endsWith("defaultartifact")));
-        EventUtil.logEvent(EventType.info, operation, props);
+        try {
+            final int DEFAULT_INTEGER_PARAMETER = -1;
+            SparkSubmissionParameter params = model.getSubmissionParameter();
+            Map<String, String> props = new HashMap<>();
+            props.put(SparkSubmissionParameter.DriverCores, Optional.ofNullable(params.getDriverCores()).orElse(DEFAULT_INTEGER_PARAMETER).toString());
+            props.put(SparkSubmissionParameter.DriverMemory, params.getDriverMemory());
+            props.put(SparkSubmissionParameter.ExecutorCores, Optional.ofNullable(params.getExecutorCores()).orElse(DEFAULT_INTEGER_PARAMETER).toString());
+            props.put(SparkSubmissionParameter.ExecutorMemory, params.getExecutorMemory());
+            props.put(SparkSubmissionParameter.NumExecutors, Optional.ofNullable(params.getNumExecutors()).orElse(DEFAULT_INTEGER_PARAMETER).toString());
+            props.put("refJarsCount", String.valueOf(Optional.ofNullable(params.getReferencedJars()).orElse(ImmutableList.of()).size()));
+            props.put("refFilesCount", String.valueOf(Optional.ofNullable(params.getReferencedFiles()).orElse(ImmutableList.of()).size()));
+            props.put("commandlineArgsCount", String.valueOf(Optional.ofNullable(params.getArgs()).orElse(ImmutableList.of()).size()));
+            props.put("isLocalArtifact", String.valueOf(model.getIsLocalArtifact()));
+            props.put("isDefaultArtifact",
+                    model.getIsLocalArtifact()
+                            ? "none"
+                            : String.valueOf(Optional.ofNullable(model.getArtifactName()).orElse("").toLowerCase().endsWith("defaultartifact")));
+            EventUtil.logEvent(EventType.info, operation, props);
+        } catch (Exception ignored) {
+            log().warn("Error sending telemetry when submit spark jobs. " + ExceptionUtils.getStackTrace(ignored));
+        }
     }
 
     @Nullable
