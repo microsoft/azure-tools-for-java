@@ -25,68 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
-/**
- * The properties of a workspace.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonFlatten
 public class Workspace extends TrackedResource {
-    /**
-     * The workspace provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
-     */
-    @JsonProperty(value = "properties.provisioningState", access = JsonProperty.Access.WRITE_ONLY)
-    private WorkspaceProvisioningState provisioningState;
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private WorkspaceProperties properties;
 
-    /**
-     * The virtual network properties.
-     */
-    @JsonProperty(value = "properties.virtualNetworkProfile")
-    private WorkspaceVirtualNetworkProfile virtualNetworkProfile;
-
-    /**
-     * Workspace connectivity endpoints.
-     */
-    @JsonProperty(value = "properties.connectivityEndpoints", access = JsonProperty.Access.WRITE_ONLY)
-    private ConnectivityEndpoints connectivityEndpoints;
-
-    /**
-     * Get the workspace provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
-     *
-     * @return the provisioningState value
-     */
-    public WorkspaceProvisioningState provisioningState() {
-        return this.provisioningState;
+    public WorkspaceProperties properties() {
+        return this.properties;
     }
-
-    /**
-     * Get the virtual network properties.
-     *
-     * @return the virtualNetworkProfile value
-     */
-    public WorkspaceVirtualNetworkProfile virtualNetworkProfile() {
-        return this.virtualNetworkProfile;
-    }
-
-    /**
-     * Set the virtual network properties.
-     *
-     * @param virtualNetworkProfile the virtualNetworkProfile value to set
-     * @return the Workspace object itself.
-     */
-    public Workspace withVirtualNetworkProfile(WorkspaceVirtualNetworkProfile virtualNetworkProfile) {
-        this.virtualNetworkProfile = virtualNetworkProfile;
-        return this;
-    }
-
-    /**
-     * Get workspace connectivity endpoints.
-     *
-     * @return the connectivityEndpoints value
-     */
-    public ConnectivityEndpoints connectivityEndpoints() {
-        return this.connectivityEndpoints;
-    }
-
 }
