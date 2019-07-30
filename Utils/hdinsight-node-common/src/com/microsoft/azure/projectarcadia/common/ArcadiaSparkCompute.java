@@ -22,34 +22,114 @@
 
 package com.microsoft.azure.projectarcadia.common;
 
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkCompute;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkComputeProvisioningState;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.client.utils.URIBuilder;
 
-public class ArcadiaSparkCompute extends SparkCluster {
+import java.util.Optional;
+
+public class ArcadiaSparkCompute extends SparkCluster implements Comparable<ArcadiaSparkCompute>, ILogger {
+    public static final int ARCADIA_SPARK_SERVICE_PORT = 8660;
+    @NotNull
+    private ArcadiaWorkSpace workSpace;
+
+    @NotNull
+    private SparkCompute sparkComputeResponse;
+
+    public ArcadiaSparkCompute(@NotNull ArcadiaWorkSpace workSpace, @NotNull SparkCompute sparkComputeResponse) {
+        this.workSpace = workSpace;
+        this.sparkComputeResponse = sparkComputeResponse;
+    }
+
+    public boolean isRunning() {
+        if (getProvisioningState() == null) {
+            return false;
+        }
+
+        return getProvisioningState().equals(SparkComputeProvisioningState.PROVISIONING)
+                || getProvisioningState().equals(SparkComputeProvisioningState.SUCCEEDED);
+    }
+
+    @Nullable
+    public SparkComputeProvisioningState getProvisioningState() {
+        if (this.sparkComputeResponse.properties() == null) {
+            return null;
+        }
+
+        return this.sparkComputeResponse.properties().provisioningState();
+    }
+
+    @NotNull
+    @Override
+    public String getState() {
+        return Optional.ofNullable(getProvisioningState()).map(state -> state.toString()).orElse("Unknown");
+    }
+
     @NotNull
     @Override
     public String getName() {
-        return "";
+        return this.sparkComputeResponse.name();
     }
 
+    // This title is shown for spark compute list in run configuration dialog
     @NotNull
     @Override
     public String getTitle() {
-        return "";
+        return String.format("%s@%s [%s]", getName(), workSpace.getName(), getState());
+    }
+
+    // This title is shown for spark compute node in Azure Explorer
+    @NotNull
+    public String getTitleForNode() {
+        return String.format("%s [%s]", getName(), getState());
+    }
+
+    @Nullable
+    @Override
+    public String getConnectionUrl() {
+        if (this.workSpace.getSparkUrl() == null) {
+            return null;
+        }
+
+        try {
+            return new URIBuilder(this.workSpace.getSparkUrl()).setPort(ARCADIA_SPARK_SERVICE_PORT).build().toString();
+        } catch (Exception ignore) {
+            log().warn(String.format("Getting connection URL for spark compute %s failed. %s", getName(), ExceptionUtils.getStackTrace(ignore)));
+            return null;
+        }
     }
 
     @NotNull
     @Override
-    public String getConnectionUrl() {
-        return "";
+    public SubscriptionDetail getSubscription() {
+        return this.workSpace.getSubscription();
+    }
+
+    @Nullable
+    @Override
+    public String getSparkVersion() {
+        if (this.sparkComputeResponse.properties() == null) {
+            return null;
+        }
+
+        return this.sparkComputeResponse.properties().sparkVersion();
     }
 
     @Override
-    public SubscriptionDetail getSubscription() {
-        return null;
+    public int compareTo(@NotNull ArcadiaSparkCompute other) {
+        if (this == other) {
+            return 0;
+        }
+
+        return this.getTitle().compareTo(other.getTitle());
     }
 
     @Override
