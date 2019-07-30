@@ -28,8 +28,8 @@ import com.microsoft.intellij.feedback.GithubIssue;
 import com.microsoft.intellij.feedback.NewGithubIssueAction;
 import com.microsoft.intellij.feedback.ReportableFeatureRequest;
 
-public class GithubFeatureRequestAction extends NewGithubIssueAction {
-    public GithubFeatureRequestAction() {
+public class NewFeatureRequestFeedbackAction extends NewGithubIssueAction {
+    public NewFeatureRequestFeedbackAction() {
         super(new GithubIssue<>(new ReportableFeatureRequest("Feature Request"))
                 .withLabel("feature-request"), "Request Features");
     }

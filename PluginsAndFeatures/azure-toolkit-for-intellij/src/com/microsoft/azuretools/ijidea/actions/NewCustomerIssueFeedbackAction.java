@@ -28,8 +28,8 @@ import com.microsoft.intellij.feedback.GithubIssue;
 import com.microsoft.intellij.feedback.NewGithubIssueAction;
 import com.microsoft.intellij.feedback.ReportableIssue;
 
-public class GithubIssueAction extends NewGithubIssueAction {
-    public GithubIssueAction() {
+public class NewCustomerIssueFeedbackAction extends NewGithubIssueAction {
+    public NewCustomerIssueFeedbackAction() {
         super(new GithubIssue<>(new ReportableIssue("Customer Issues")), "Report Issues");
     }
 
