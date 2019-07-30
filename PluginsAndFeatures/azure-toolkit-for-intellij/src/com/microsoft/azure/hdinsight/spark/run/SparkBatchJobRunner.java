@@ -90,14 +90,29 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     protected void sendTelemetryForParameters(@NotNull SparkSubmitModel model, @Nullable Operation operation) {
         try {
-            final int DEFAULT_INTEGER_PARAMETER = -1;
             SparkSubmissionParameter params = model.getSubmissionParameter();
             Map<String, String> props = new HashMap<>();
-            props.put(SparkSubmissionParameter.DriverCores, Optional.ofNullable(params.getDriverCores()).orElse(DEFAULT_INTEGER_PARAMETER).toString());
-            props.put(SparkSubmissionParameter.DriverMemory, params.getDriverMemory());
-            props.put(SparkSubmissionParameter.ExecutorCores, Optional.ofNullable(params.getExecutorCores()).orElse(DEFAULT_INTEGER_PARAMETER).toString());
-            props.put(SparkSubmissionParameter.ExecutorMemory, params.getExecutorMemory());
-            props.put(SparkSubmissionParameter.NumExecutors, Optional.ofNullable(params.getNumExecutors()).orElse(DEFAULT_INTEGER_PARAMETER).toString());
+
+            if (params.getDriverCores() != null) {
+                props.put(SparkSubmissionParameter.DriverCores, params.getDriverCores().toString());
+            }
+
+            if (params.getDriverMemory() != null) {
+                props.put(SparkSubmissionParameter.DriverMemory, params.getDriverMemory());
+            }
+
+            if (params.getExecutorCores() != null) {
+                props.put(SparkSubmissionParameter.ExecutorCores, params.getExecutorCores().toString());
+            }
+
+            if (params.getExecutorMemory() != null) {
+                props.put(SparkSubmissionParameter.ExecutorMemory, params.getExecutorMemory());
+            }
+
+            if (params.getNumExecutors() != null) {
+                props.put(SparkSubmissionParameter.NumExecutors, params.getNumExecutors().toString());
+            }
+
             props.put("refJarsCount", String.valueOf(Optional.ofNullable(params.getReferencedJars()).orElse(ImmutableList.of()).size()));
             props.put("refFilesCount", String.valueOf(Optional.ofNullable(params.getReferencedFiles()).orElse(ImmutableList.of()).size()));
             props.put("commandlineArgsCount", String.valueOf(Optional.ofNullable(params.getArgs()).orElse(ImmutableList.of()).size()));
