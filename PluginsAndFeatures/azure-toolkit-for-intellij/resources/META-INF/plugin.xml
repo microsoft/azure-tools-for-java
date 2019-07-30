@@ -208,7 +208,9 @@
               class="com.microsoft.azuretools.ijidea.actions.DisableSslCertificateValidationAction"
               text="Disable"/>
     </group>
-    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
+    <action class="com.microsoft.azuretools.ijidea.actions.GithubIssueAction" id="AzureToolkit.GithubIssue" text="Report Issues" />
+    <action class="com.microsoft.azuretools.ijidea.actions.GithubFeatureRequestAction" id="AzureToolkit.FeatureRequest" text="Request Feature" />
+    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback" />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
             text="Deploy to Azure" description="Deploy to Azure"
             icon="/icons/PublishWebApp_16.png">
@@ -296,6 +298,8 @@
       <separator/>
       <reference ref="AzureToolkit.ValidateCertificate"/>
       <separator/>
+      <reference ref="AzureToolkit.GithubIssue"/>
+      <reference ref="AzureToolkit.FeatureRequest"/>
       <reference ref="AzureToolkit.Survey"/>
     </group>
 
