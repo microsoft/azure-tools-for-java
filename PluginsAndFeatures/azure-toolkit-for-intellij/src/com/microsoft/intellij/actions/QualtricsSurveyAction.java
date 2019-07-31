@@ -41,7 +41,7 @@ public class QualtricsSurveyAction extends AzureAnAction {
             "toolkit=%s&ide=%s&os=%s&jdk=%s&id=%s";
 
     public QualtricsSurveyAction() {
-        super("Provide Feedback...");
+        super("Provide Feedback");
     }
 
     @Override
