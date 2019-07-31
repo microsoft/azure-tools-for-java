@@ -4,6 +4,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 - [Change Log](#change-log)
 
+  - [3.25.0](#3250)
   - [3.24.0](#3240)
   - [3.23.0](#3230)
   - [3.22.0](#3220)
@@ -37,6 +38,20 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.25.0
+
+### Added
+
+- Support IntelliJ 2019.2
+
+### Changed
+
+- Move customer survey to qualtrics and refactor survey ui.
+
+### Fixed
+
+- [#3297](https://github.com/microsoft/azure-tools-for-java/issues/3297) Fix NPE error when submit job to Spark on cosmos cluster 
+
 ## 3.24.0
 
 ### Added
@@ -55,7 +70,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ### Fixed
 - [#3230](https://github.com/microsoft/azure-tools-for-java/issues/3230),[#3159](https://github.com/microsoft/azure-tools-for-java/issues/3159) Fix related issues for upload path refresh is not ready scenario
 - [#3223](https://github.com/microsoft/azure-tools-for-java/issues/3223),[#3256](https://github.com/microsoft/azure-tools-for-java/issues/3256) Fix main class and cluster info missing on Aris configuration after reopen
-- [#3190](https://github.com/microsoft/azure-tools-for-java/issues/3190)，[#3234](https://github.com/microsoft/azure-tools-for-java/issues/3234) Fix Spark on Cosmos node disappear after sign in account of dogfood environment
+- [#3190](https://github.com/microsoft/azure-tools-for-java/issues/3190),[#3234](https://github.com/microsoft/azure-tools-for-java/issues/3234) Fix Spark on Cosmos node disappear after sign in account of dogfood environment
 - [#3198](https://github.com/microsoft/azure-tools-for-java/issues/3198) Fix misclassified service exception
 
 ## 3.23.0
