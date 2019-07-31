@@ -46,7 +46,7 @@ public class SurveyPopUpDialog extends JDialog {
     private Timer disposeTimer;
     private LafManagerListener themeListener;
     private Color buttonOnHoverColor = Color.WHITE;
-    private boolean isDispose = false;
+    private boolean isDisposed = false;
 
     public SurveyPopUpDialog(CustomerSurveyHelper customerSurveyHelper, Project project) {
         super();
@@ -180,28 +180,28 @@ public class SurveyPopUpDialog extends JDialog {
     }
 
     private synchronized void takeSurvey() {
-        if (!isDispose) {
+        if (!isDisposed) {
             customerSurveyHelper.takeSurvey();
             close();
         }
     }
 
     private synchronized void putOff() {
-        if (!isDispose) {
+        if (!isDisposed) {
             customerSurveyHelper.putOff();
             close();
         }
     }
 
     private synchronized void neverShow() {
-        if (!isDispose) {
+        if (!isDisposed) {
             customerSurveyHelper.neverShowAgain();
             close();
         }
     }
 
     private synchronized void close(){
-        isDispose = true;
+        isDisposed = true;
         disposeTimer.stop();
         LafManager.getInstance().removeLafManagerListener(this.themeListener);
         dispose();
