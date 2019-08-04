@@ -20,4 +20,7 @@ branches:
   - release
   - develop
 script:
-- ./BuildDevint -B
+- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then travis_wait 40 ./BuildDevint -B -q -e eclipse; fi'
+- 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then travis_wait 40 ./BuildDevint -B -q; fi'
+dist: trusty
+

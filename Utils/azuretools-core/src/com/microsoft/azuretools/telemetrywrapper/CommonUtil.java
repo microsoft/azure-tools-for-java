@@ -23,6 +23,8 @@
 package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+import com.microsoft.azuretools.adauth.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class CommonUtil {
     public static final String ERROR_TYPE = "errorType";
     public static final String ERROR_CLASSNAME = "errorClassName";
     public static final String DURATION = "duration";
+    public static final String SERVICE_NAME = "serviceName";
     public static TelemetryClient client;
 
     public static Map<String, String> mergeProperties(Map<String, String> properties) {
@@ -46,16 +49,20 @@ public class CommonUtil {
         return merged;
     }
 
-    public synchronized static void sendTelemetry(EventType eventType, String eventName, Map<String, String> properties,
+    public synchronized static void sendTelemetry(EventType eventType, String serviceName, Map<String, String> properties,
         Map<String, Double> metrics) {
+        Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
         if (client != null) {
-            client.trackEvent(getFullEventName(eventName, eventType), properties, metrics);
+            if (!StringUtils.isNullOrEmpty(serviceName)) {
+                mutableProps.put(SERVICE_NAME, serviceName);
+            }
+            client.trackEvent(getFullEventName(eventType), mutableProps, metrics);
             client.flush();
         }
     }
 
-    private static String getFullEventName(String eventName, EventType eventType) {
-        return TelemetryManager.getInstance().getEventNamePrefix() + eventName + "/" + eventType.name();
+    private static String getFullEventName(EventType eventType) {
+        return TelemetryManager.getInstance().getEventNamePrefix() + "/" + eventType.name();
     }
 
 }

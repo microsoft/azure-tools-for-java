@@ -22,29 +22,29 @@
 package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.microsoft.azure.hdinsight.common.*;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClusterNode extends RefreshableNode implements TelemetryProperties {
+public class ClusterNode extends RefreshableNode implements TelemetryProperties, ILogger {
     private static final String CLUSTER_MODULE_ID = ClusterNode.class.getName();
     private static final String ICON_PATH = CommonConst.ClusterIConPath;
+    public static final String ASE_DEEP_LINK = "storageexplorer:///";
 
     @NotNull
     private IClusterDetail clusterDetail;
 
     public ClusterNode(Node parent, @NotNull IClusterDetail clusterDetail) {
-        super(CLUSTER_MODULE_ID, getClusterNameWitStatus(clusterDetail), parent, ICON_PATH, true);
+        super(CLUSTER_MODULE_ID, clusterDetail.getTitle(), parent, ICON_PATH, true);
         this.clusterDetail = clusterDetail;
         this.loadActions();
     }
@@ -52,6 +52,16 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
     @Override
     protected void loadActions() {
         super.loadActions();
+
+        if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
+            // We need to refresh the whole HDInsight root node when we successfully linked the cluster
+            // So we have to pass "hdinsightRootModule" to the link cluster action
+            HDInsightRootModule hdinsightRootModule = (HDInsightRootModule) this.getParent();
+            NodeActionListener linkClusterActionListener =
+                    HDInsightLoader.getHDInsightHelper().createAddNewHDInsightReaderClusterAction(hdinsightRootModule,
+                            (ClusterDetail) clusterDetail);
+            addAction("Link This Cluster", linkClusterActionListener);
+        }
 
         if (clusterDetail instanceof ClusterDetail || clusterDetail instanceof HDInsightAdditionalClusterDetail ||
                 clusterDetail instanceof EmulatorClusterDetail) {
@@ -68,8 +78,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
             addAction("Open Azure Storage Explorer for storage", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
-                    String aseDeepLink = "storageexplorer:///";
-                    openUrlLink(aseDeepLink);
+                    openUrlLink(ASE_DEEP_LINK);
                 }
             });
 
@@ -112,7 +121,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
         }
 
         if (clusterDetail instanceof HDInsightAdditionalClusterDetail || clusterDetail instanceof HDInsightLivyLinkClusterDetail) {
-            addAction("Unlink", new NodeActionListener() {
+            NodeActionListener listener = new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the HDInsight cluster?",
@@ -122,9 +131,11 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
                         ((RefreshableNode) getParent()).load(false);
                     }
                 }
-            });
+            };
+            addAction("Unlink", new WrappedTelemetryNodeActionListener(
+                    getServiceName(), TelemetryConstants.UNLINK_SPARK_CLUSTER, listener));
         } else if (clusterDetail instanceof EmulatorClusterDetail) {
-            addAction("Unlink", new NodeActionListener() {
+            NodeActionListener listener = new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) {
                     boolean choice = DefaultLoader.getUIHelper().showConfirmation("Do you really want to unlink the Emulator cluster?",
@@ -134,7 +145,9 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
                         ((RefreshableNode) getParent()).load(false);
                     }
                 }
-            });
+            };
+            addAction("Unlink", new WrappedTelemetryNodeActionListener(
+                    getServiceName(), TelemetryConstants.UNLINK_SPARK_CLUSTER, listener));
         }
     }
 
@@ -142,7 +155,7 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
     protected void refreshItems() {
         if(!clusterDetail.isEmulator()) {
             JobViewManager.registerJovViewNode(clusterDetail.getName(), clusterDetail);
-            JobViewNode jobViewNode = new JobViewNode(this, clusterDetail.getName());
+            JobViewNode jobViewNode = new JobViewNode(this, clusterDetail);
             boolean isIntelliJ = HDInsightLoader.getHDInsightHelper().isIntelliJPlugin();
             boolean isLinux = System.getProperty("os.name").toLowerCase().contains("linux");
             if(isIntelliJ || !isLinux) {
@@ -152,15 +165,6 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
             RefreshableNode storageAccountNode = new StorageAccountFolderNode(this, clusterDetail);
             addChildNode(storageAccountNode);
         }
-    }
-
-    private static String getClusterNameWitStatus(IClusterDetail clusterDetail) {
-        String state = clusterDetail.getState();
-        if (!StringHelper.isNullOrWhiteSpace(state) && !state.equalsIgnoreCase("Running")) {
-            return String.format("%s (State:%s)", clusterDetail.getTitle(), state);
-        }
-
-        return clusterDetail.getTitle();
     }
 
     private void openUrlLink(@NotNull String linkUrl) {
@@ -179,5 +183,11 @@ public class ClusterNode extends RefreshableNode implements TelemetryProperties 
         properties.put(AppInsightsConstants.SubscriptionId, this.clusterDetail.getSubscription().getSubscriptionId());
         properties.put(AppInsightsConstants.Region, this.clusterDetail.getLocation());
         return properties;
+    }
+
+    @Override
+    @NotNull
+    public String getServiceName() {
+        return TelemetryConstants.HDINSIGHT;
     }
 }

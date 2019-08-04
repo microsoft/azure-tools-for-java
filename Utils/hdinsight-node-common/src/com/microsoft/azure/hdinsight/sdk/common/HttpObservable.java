@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.sdk.common;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.common.errorresponse.*;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -220,6 +221,11 @@ public class HttpObservable implements ILogger {
         return this;
     }
 
+    public HttpObservable setContentType(@NotNull String type) {
+        this.defaultHeaders.updateHeader(new BasicHeader("Content-Type", type));
+        return this;
+    }
+
     @NotNull
     public HttpContext getHttpContext() {
         return httpContext;
@@ -278,6 +284,30 @@ public class HttpObservable implements ILogger {
         return sslSocketFactory;
     }
 
+    @NotNull
+    public static HttpErrorStatus classifyHttpError(@NotNull CloseableHttpResponse httpResponse) throws IOException {
+        StatusLine status = httpResponse.getStatusLine();
+        int statusCode = status.getStatusCode();
+        HttpEntity httpEntity = httpResponse.getEntity();
+        String message = EntityUtils.toString(httpEntity);
+        Header[] headers = httpResponse.getAllHeaders();
+        if (statusCode == 400) {
+            return new BadRequestHttpErrorStatus(message, headers, httpEntity);
+        } else if (statusCode == 401) {
+            return new UnauthorizedHttpErrorStatus(message, headers, httpEntity);
+        } else if (statusCode == 403) {
+            return new ForbiddenHttpErrorStatus(message, headers, httpEntity);
+        } else if (statusCode == 404) {
+            return new NotFoundHttpErrorStatus(message, headers, httpEntity);
+        } else if (statusCode == 405) {
+            return new MethodNotAllowedHttpErrorStatus(message, headers, httpEntity);
+        } else if (statusCode == 500) {
+            return new InternalServerErrorHttpErrorStatus(message, headers, httpEntity);
+        } else {
+            return new UnclassifiedHttpErrorStatus(statusCode, message, headers, httpEntity);
+        }
+    }
+
     /**
      * Helper to convert the closeable stream good Http response (2xx) to String result.
      * If the response is bad, propagate a HttpResponseException
@@ -295,10 +325,7 @@ public class HttpObservable implements ILogger {
                         StatusLine status = streamResp.getStatusLine();
 
                         if (status.getStatusCode() >= 300) {
-                            Header requestIdHeader = streamResp.getFirstHeader("x-ms-request-id");
-                            return Observable.error(new SparkAzureDataLakePoolServiceException(status.getStatusCode(),
-                                    EntityUtils.toString(streamResp.getEntity()),
-                                    requestIdHeader != null ? requestIdHeader.getValue() : ""));
+                            return Observable.error(classifyHttpError(streamResp));
                         }
 
                         return Observable.just(StreamUtil.getResultFromHttpResponse(streamResp));
@@ -430,8 +457,8 @@ public class HttpObservable implements ILogger {
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
-    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs, List<Header> headers) {
-        return request(req, req.getEntity(), pairs, headers)
+    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs) {
+        return request(req, req.getEntity(), pairs, Arrays.asList(getDefaultHeaderGroup().getAllHeaders()))
                 .doOnNext(
                         resp -> {
                             int statusCode = resp.getStatusLine().getStatusCode();

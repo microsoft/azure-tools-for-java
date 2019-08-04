@@ -166,7 +166,7 @@
         <properties>
           <enabled value="true"/>
           <labelFor value="717d6"/>
-          <text value="Acess tier"/>
+          <text value="Access tier"/>
           <toolTipText value="Only available for 'Blob storage' account kind"/>
           <visible value="false"/>
         </properties>

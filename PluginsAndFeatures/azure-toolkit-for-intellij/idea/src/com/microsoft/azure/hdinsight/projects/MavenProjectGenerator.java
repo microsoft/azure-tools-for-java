@@ -114,6 +114,11 @@ public class MavenProjectGenerator {
                         StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_3_0_pom.xml") :
                         StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_3_0_failure_task_debug_pom.xml");
                 break;
+            case SPARK_2_3_2:
+                file = this.templatesType != HDInsightTemplatesType.ScalaFailureTaskDebugSample ?
+                        StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_3_2_pom.xml") :
+                        StreamUtil.getResourceFile("/hdinsight/templates/pom/spark_2_3_2_failure_task_debug_pom.xml");
+                break;
         }
 
         if (null == file) {

@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.google.gson.annotations.SerializedName;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 public class ClusterIdentity{
     @SerializedName("clusterIdentity.applicationId")
@@ -59,4 +60,23 @@ public class ClusterIdentity{
         return certificatePassword;
     }
 
+    public void setClusterIdentityapplicationId(@Nullable String applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    public void setClusterIdentitycertificate(@Nullable String certificate) {
+        this.certificate = certificate;
+    }
+
+    public void setClusterIdentityaadTenantId(@Nullable String aadTenantId) {
+        this.aadTenantId = aadTenantId;
+    }
+
+    public void setClusterIdentityresourceUri(@Nullable String resourceUri) {
+        this.resourceUri = resourceUri;
+    }
+
+    public void setClusterIdentitycertificatePassword(@Nullable String certificatePassword) {
+        this.certificatePassword = certificatePassword;
+    }
 }

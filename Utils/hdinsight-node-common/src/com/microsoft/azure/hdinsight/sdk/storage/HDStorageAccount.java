@@ -55,8 +55,8 @@ public class HDStorageAccount extends ClientStorageAccount implements IHDIStorag
     }
 
     @Override
-    public StorageAccountTypeEnum getAccountType() {
-        return StorageAccountTypeEnum.BLOB;
+    public StorageAccountType getAccountType() {
+        return StorageAccountType.BLOB;
     }
 
     @Override

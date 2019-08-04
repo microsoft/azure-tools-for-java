@@ -22,6 +22,9 @@
  */
 package com.microsoft.intellij.docker.wizards.createhost;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_DOCKER_HOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -36,6 +39,10 @@ import com.microsoft.azure.docker.ops.AzureDockerVMOps;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.VirtualMachine;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
@@ -115,6 +122,8 @@ public class AzureNewDockerWizardDialog extends WizardDialog<AzureNewDockerWizar
     ProgressManager.getInstance().run(new Task.Backgroundable(model.getProject(), "Creating Docker Host on Azure...", true) {
       @Override
       public void run(ProgressIndicator progressIndicator) {
+        Operation operation = TelemetryManager.createOperation(WEBAPP, CREATE_DOCKER_HOST);
+        operation.start();
         try {
           progressIndicator.setFraction(.05);
           progressIndicator.setText2(String.format("Reading subscription details for Docker host %s ...", dockerHost.apiUrl));
@@ -220,7 +229,10 @@ public class AzureNewDockerWizardDialog extends WizardDialog<AzureNewDockerWizar
         } catch (Exception e) {
           String msg = "An error occurred while attempting to create Docker host." + "\n" + e.getMessage();
           LOGGER.error("Failed to Create Docker Host", e);
+          EventUtil.logError(operation, ErrorType.systemError, e, null, null);
           PluginUtil.displayErrorDialogInAWTAndLog("Failed to Create Docker Host", msg, e);
+        } finally {
+          operation.complete();
         }
       }
     });

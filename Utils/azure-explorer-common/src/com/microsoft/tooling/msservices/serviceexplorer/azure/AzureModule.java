@@ -36,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.AzureAppServiceModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
@@ -71,7 +72,8 @@ public class AzureModule extends AzureRefreshableNode {
     private AzureDatabaseModule azureDatabaseModule;
     @NotNull
     private AzureAppServiceModule azureAppServiceModule;
-
+    @NotNull
+    private ResourceManagementModule resourceManagementModule;
     /**
      * Constructor.
      *
@@ -88,7 +90,7 @@ public class AzureModule extends AzureRefreshableNode {
         containerRegistryModule = new ContainerRegistryModule(this);
         azureDatabaseModule = new AzureDatabaseModule(this);
         azureAppServiceModule = new AzureAppServiceModule(this);
-
+        resourceManagementModule = new ResourceManagementModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -147,6 +149,9 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(storageModule)) {
             addChildNode(storageModule);
         }
+        if (!isDirectChild(resourceManagementModule)) {
+            addChildNode(resourceManagementModule);
+        }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
         }
@@ -183,6 +188,7 @@ public class AzureModule extends AzureRefreshableNode {
                 vmArmServiceModule.load(true);
                 redisCacheModule.load(true);
                 storageModule.load(true);
+                resourceManagementModule.load(true);
 
                 if (hdInsightModule != null) {
                     hdInsightModule.load(true);

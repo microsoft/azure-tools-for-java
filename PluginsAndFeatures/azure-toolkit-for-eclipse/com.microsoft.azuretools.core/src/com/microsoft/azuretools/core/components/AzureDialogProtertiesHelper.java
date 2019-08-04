@@ -19,6 +19,9 @@
  */
 package com.microsoft.azuretools.core.components;
 
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,5 +118,6 @@ public interface AzureDialogProtertiesHelper {
 			properties.putAll(((TelemetryProperties) this).toProperties());
 		}
 		AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action, properties);
+		EventUtil.logEvent(EventType.info, TelemetryConstants.DIALOG, action, properties);
 	}
 }

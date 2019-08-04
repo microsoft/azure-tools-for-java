@@ -27,4 +27,8 @@ public class ClusterConfiguration {
     public Configurations getConfigurations(){
         return configurations;
     }
+
+    public void setConfigurations(Configurations configurations) {
+        this.configurations = configurations;
+    }
 }

@@ -22,27 +22,38 @@
 
 package com.microsoft.azure.hdinsight.spark.run.action
 
-import com.intellij.execution.*
+import com.intellij.execution.ExecutionException
+import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.configuration.AbstractRunConfiguration
-import com.intellij.execution.configurations.*
+import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.configurations.RunnerSettings
+import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.execution.impl.RunDialog
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.ui.Messages
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
+import com.microsoft.intellij.telemetry.TelemetryKeys
 
 object RunConfigurationActionUtils: ILogger {
     fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment) {
         val runner = ProgramRunner.getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
+        val asyncOperation = environment.getUserData(TelemetryKeys.OPERATION)
 
         try {
             if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
+                EventUtil.logErrorWithComplete(asyncOperation, ErrorType.userError, ExecutionException("run config dialog closed"), null, null)
                 return
             }
 
             var configError = getRunConfigurationError(environment.runProfile, runner)
             while (configError != null) {
+                EventUtil.logError(asyncOperation, ErrorType.userError, ExecutionException(configError), null, null)
+
                 if (Messages.YES == Messages.showYesNoDialog(
                                 environment.project,
                                 "Configuration is incorrect: $configError. Do you want to edit it?",
@@ -51,6 +62,7 @@ object RunConfigurationActionUtils: ILogger {
                                 "Continue Anyway",
                                 Messages.getErrorIcon())) {
                     if (!RunDialog.editConfiguration(environment, "Edit configuration")) {
+                        EventUtil.logErrorWithComplete(asyncOperation, ErrorType.userError, ExecutionException("run config dialog closed"), null, null)
                         return
                     }
                 } else {
@@ -61,8 +73,12 @@ object RunConfigurationActionUtils: ILogger {
             }
 
             environment.assignNewExecutionId()
+
+            // asyncOperation is completed at class SparkBatchRemoteRunState
             runner.execute(environment)
         } catch (e: ExecutionException) {
+            EventUtil.logErrorWithComplete(asyncOperation, ErrorType.userError, e, null, null)
+
             ProgramRunnerUtil.handleExecutionError(environment.project, environment, e, setting.configuration)
         }
     }

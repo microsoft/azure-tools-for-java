@@ -22,6 +22,8 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.google.gson.annotations.SerializedName;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.util.Map;
 
@@ -42,5 +44,17 @@ public class Configurations  {
 
     public Gateway getGateway(){
         return gateway;
+    }
+
+    public void setCoresite(@Nullable Map<String, String> coresite) {
+        this.coresite = coresite;
+    }
+
+    public void setClusterIdentity(@Nullable ClusterIdentity clusterIdentity) {
+        this.clusterIdentity = clusterIdentity;
+    }
+
+    public void setGateway(@Nullable Gateway gateway) {
+        this.gateway = gateway;
     }
 }

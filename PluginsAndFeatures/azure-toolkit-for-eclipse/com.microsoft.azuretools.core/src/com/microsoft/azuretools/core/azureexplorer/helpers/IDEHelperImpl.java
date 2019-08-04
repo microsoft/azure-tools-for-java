@@ -145,7 +145,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public boolean isPropertySet(String name) {
-        return false;
+        return getProperty(name) != null;
     }
 
     @Override

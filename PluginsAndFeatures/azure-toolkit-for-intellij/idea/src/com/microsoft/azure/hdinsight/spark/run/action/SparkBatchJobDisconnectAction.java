@@ -29,21 +29,31 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRemoteProcess;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmittedEvent;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+// We didn't extend SparkBatchJobDisconnectAction from AzureAction to avoid introducing a new operation object. We think
+// SparkBatchJobDisconnectAction must belong to one remote run or remote debug action. Therefore, we should pass the
+// operation object in that action to this class rather than create a new one in AzureAnAction class
 public class SparkBatchJobDisconnectAction extends AnAction {
     @Nullable
     private SparkBatchJobRemoteProcess remoteProcess;
     private boolean isEnabled = false;
+    @Nullable
+    private Operation operation = null;
 
     public SparkBatchJobDisconnectAction() {
         super();
     }
 
-    public SparkBatchJobDisconnectAction(@Nullable SparkBatchJobRemoteProcess remoteProcess) {
+    public SparkBatchJobDisconnectAction(@Nullable SparkBatchJobRemoteProcess remoteProcess, @Nullable Operation operation) {
         super("Disconnect",
               "Disconnect the log view from remote Spark job",
               Optional.ofNullable(StreamUtil.getImageResourceFile("/icons/SparkJobDisconnect.png"))
@@ -51,6 +61,7 @@ public class SparkBatchJobDisconnectAction extends AnAction {
                       .orElse(AllIcons.Actions.Exit));
 
         this.remoteProcess = remoteProcess;
+        this.operation = operation;
 
         // Listen Spark Job submitted event to enable the disconnect button
         remoteProcess.getEventSubject()
@@ -60,6 +71,15 @@ public class SparkBatchJobDisconnectAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
+        Map<String, String> properties = new HashMap<>();
+        properties.put("Text", anActionEvent.getPresentation().getText());
+        properties.put("Description", anActionEvent.getPresentation().getDescription());
+        properties.put("Place", anActionEvent.getPlace());
+        properties.put("ActionId", anActionEvent.getActionManager().getId(this));
+
+        properties.put("isDisconnectButtonClicked", "true");
+        EventUtil.logEvent(EventType.info, this.operation, properties);
+
         // Disconnect Spark Job log receiving
         getSparkRemoteProcess().ifPresent(SparkBatchJobRemoteProcess::disconnect);
     }

@@ -27,18 +27,12 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPut;
 import rx.Observable;
 import rx.exceptions.Exceptions;
 
@@ -48,50 +42,50 @@ import java.net.URISyntaxException;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
-    IClusterDetail cluster;
-
-    @Nullable
     public HttpObservable http;
 
-    public ADLSGen2Deploy(IClusterDetail cluster, HttpObservable http) {
-        this.cluster = cluster;
+    @NotNull
+    public String destinationRootPath;
+
+    public ADLSGen2Deploy(@NotNull HttpObservable http, @NotNull String destinationRootPath) {
+        this.destinationRootPath = destinationRootPath;
         this.http = http;
-        if (http == null) {
-            throw new IllegalArgumentException("Cluster type doesen't support adls gen2 storage type.");
-        }
     }
 
-    @Override
-    public URI getUploadDir(@NotNull String rootPath) {
-        return URI.create(rootPath)
+    private URI getUploadDir() {
+        return URI.create(destinationRootPath)
                 .resolve(JobUtils.getFormatPathByDate() + "/");
     }
 
-    @NotNull
-    public Observable<String> deploy(@NotNull File src, @NotNull URI destURI) {
+    @Override
+    public Observable<String> deploy(@NotNull File src) {
         // four steps to upload via adls gen2 rest api
         // 1.put request to create new dir
         // 2.put request to create new file(artifact) which is empty
         // 3.patch request to append data to file
         // 4.patch request to flush data to file
 
+        URI destURI = getUploadDir();
+
         //remove request / end otherwise invalid url response
         String destStr = destURI.toString();
         String dirPath = destStr.endsWith("/") ? destStr.substring(0, destStr.length() - 1) : destStr;
         String filePath = String.format("%s/%s", dirPath, src.getName());
 
-        HttpPut req = new HttpPut(dirPath);
-        ADLSGen2FSOperation op = new ADLSGen2FSOperation((SharedKeyHttpObservable) this.http);
+        ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
         return op.createDir(dirPath)
                 .onErrorReturn(err -> {
-                    if (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))) {
-                        throw new IllegalArgumentException("Failed to upload Spark application artifacts.The access key is invalid.");
+                    if (err.getMessage()!= null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
+                            || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
+                        throw new IllegalArgumentException("Failed to upload Spark application artifacts. ADLS Gen2 root path does not match with access key.");
                     } else {
                         throw Exceptions.propagate(err);
                     }
                 })
+                .doOnNext(ignore -> log().info(String.format("Create filesystem %s successfully.", dirPath)))
                 .flatMap(ignore -> op.createFile(filePath))
                 .flatMap(ignore -> op.uploadData(filePath, src))
+                .doOnNext(ignore -> log().info(String.format("Append data to file %s successfully.", filePath)))
                 .map(ignored -> {
                     try {
                         return getArtifactUploadedPath(filePath);
@@ -101,27 +95,10 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                 });
     }
 
-    @Override
     @Nullable
-    public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        try {
-            HDStorageAccount account = (HDStorageAccount) this.cluster.getStorageAccount();
-            if (StringUtils.isBlank(account.getFullStorageBlobName())
-                    || StringUtils.isBlank(account.getDefaultContainer())
-                    || StringUtils.isBlank(account.getscheme())) {
-                throw new URISyntaxException("invalid storage account info", "blob ,container and scheme cannnot be empty");
-            }
-
-            //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to abfs://fileSystem@fullAccountName/SparkSubmission/xxxx
-            String subPath = rootPath.substring(rootPath.indexOf("SparkSubmission"));
-            return String.format("%s://%s@%s/%s"
-                    , account.getscheme()
-                    , account.getDefaultContainer()
-                    , account.getFullStorageBlobName()
-                    , subPath);
-        } catch (HDIException e) {
-            log().debug(String.format("Getting uploaded path encounters exception %s", e.toString()));
-            return null;
-        }
+    private String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
+        //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to /SparkSubmission/xxxx
+        int index = rootPath.indexOf("SparkSubmission");
+        return String.format("/%s", rootPath.substring(index));
     }
 }

@@ -39,7 +39,9 @@ import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
-import java.io.InputStream;
+import com.microsoft.azuretools.webapp.util.CommonUtils;
+
+import java.io.File;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,6 +82,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -257,7 +260,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 
         Button btnCreate = new Button(composite, SWT.NONE);
-        btnCreate.setLayoutData(new RowData(90, SWT.DEFAULT));
         btnCreate.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -270,7 +272,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         btnDelete = new Button(composite, SWT.NONE);
         btnDelete.setEnabled(false);
-        btnDelete.setLayoutData(new RowData(90, SWT.DEFAULT));
         btnDelete.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -281,7 +282,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnDelete.setText("Delete...");
 
         Button btnRefresh = new Button(composite, SWT.NONE);
-        btnRefresh.setLayoutData(new RowData(90, SWT.DEFAULT));
         btnRefresh.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -303,8 +303,13 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         btnDeployToRoot = new Button(composite, SWT.CHECK);
         btnDeployToRoot.setSelection(true);
-        btnDeployToRoot.setLayoutData(new RowData(120, SWT.DEFAULT));
         btnDeployToRoot.setText("Deploy to root");
+
+        int size = btnDeployToRoot.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        btnCreate.setLayoutData(new RowData(size, SWT.DEFAULT));
+        btnDelete.setLayoutData(new RowData(size, SWT.DEFAULT));
+        btnRefresh.setLayoutData(new RowData(size, SWT.DEFAULT));
+        btnDeployToRoot.setLayoutData(new RowData(size, SWT.DEFAULT));
     }
 
     private void createAppDetailGroup(Composite container) {
@@ -425,8 +430,12 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
         Label label = new Label(compositeSlotCb, SWT.NONE);
         label.setText("");
+        Point point = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        RowData labelConf = new RowData();
+        labelConf.height = point.y;
+        label.setLayoutData(labelConf);
         label.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
-            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 20, 20));
+            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), point.y * 9 / 10, point.y * 9 / 10));
         label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         label.addMouseListener(new MouseAdapter() {
             @Override
@@ -549,6 +558,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         super.create();
         Display.getDefault().asyncExec(() -> {
             fillTable();
+            fillUserSettings();
             AppServiceCreateDialog.initAspCache();
         });
     }
@@ -636,7 +646,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     } catch (CanceledByUserException ex) {
                         Display.getDefault().asyncExec(() -> {
                             System.out.println("updateAndFillTable(): Canceled by user");
-                            cancelPressed();
                         });
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -728,10 +737,40 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         if (comboSlot.getItemCount() > 0) {
             comboSlot.select(0);
         }
-
         comboSlotConf.add(webApp.name());
         comboSlotConf.add(DONOT_CLONE_SLOT_CONF);
         comboSlotConf.select(0);
+    }
+
+    private void fillUserSettings() {
+        try {
+            selectTableRowWithWebAppName(CommonUtils.getPreference(CommonUtils.WEBAPP_NAME));
+            fillAppServiceDetails();
+            String slotName = CommonUtils.getPreference(CommonUtils.SLOT_NAME);
+            String slotConf = CommonUtils.getPreference(CommonUtils.SLOT_CONF);
+            CommonUtils.selectComboIndex(comboSlot, slotName);
+            CommonUtils.selectComboIndex(comboSlotConf, slotConf);
+        } catch (Exception ignore) {
+        }
+    }
+
+    private void recordUserSettings() {
+        try {
+            int selectedRow = table.getSelectionIndex();
+            String appServiceName = table.getItems()[selectedRow].getText(0);
+            CommonUtils.setPreference(CommonUtils.WEBAPP_NAME, appServiceName);
+
+            if (isDeployToSlot) {
+                if (isCreateNewSlot) {
+                    CommonUtils
+                        .setPreference(CommonUtils.SLOT_CONF, webAppSettingModel.getNewSlotConfigurationSource());
+                    CommonUtils.setPreference(CommonUtils.SLOT_NAME, webAppSettingModel.getNewSlotName());
+                } else {
+                    CommonUtils.setPreference(CommonUtils.SLOT_NAME, webAppSettingModel.getSlotName());
+                }
+            }
+        } catch (Exception ignore) {
+        }
     }
 
     private boolean validate() {
@@ -854,6 +893,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 destinationPath = project.getLocation() + "/" + artifactName + ".war";
             }
             collectData();
+            recordUserSettings();
             if (!validate()) {
                 return;
             }
@@ -951,30 +991,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
                     PublishingProfile pp = webApp.getPublishingProfile();
-                    boolean isJar = isJarBaseOnFileName(artifactPath);
-                    int uploadingTryCount;
-                    webApp.stop();
-
-                    if (isJar) {
-                        if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
-                            // We use root.jar in web.config before, now we use app.jar
-                            // for backward compatibility, here need upload web.config when we deploy the code.
-                            try (InputStream webConfigInput = WebAppUtils.class
-                                .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                                WebAppUtils.uploadToRemoteServer(webApp, WEB_CONFIG_DEFAULT, webConfigInput,
-                                    new UpdateProgressIndicator(monitor), WEB_CONFIG_REMOTE_PATH);
-                            } catch (Exception ignore) {
-                            }
-                        }
-                        uploadingTryCount = WebAppUtils.deployArtifactForJavaSE(artifactPath, pp,
-                            new UpdateProgressIndicator(monitor));
-                    } else {
-                        uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
-                            new UpdateProgressIndicator(monitor));
-                    }
-                    postEventProperties
-                        .put(TelemetryConstants.ARTIFACT_UPLOAD_COUNT, String.valueOf(uploadingTryCount));
-                    webApp.start();
+                    WebAppUtils.deployArtifactsToAppService(webApp, new File(artifactPath),
+                            isDeployToRoot, new UpdateProgressIndicator(monitor));
 
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,

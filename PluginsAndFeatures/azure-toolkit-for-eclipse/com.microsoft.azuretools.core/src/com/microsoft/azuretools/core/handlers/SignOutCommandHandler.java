@@ -21,6 +21,8 @@
  */
 package com.microsoft.azuretools.core.handlers;
 
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.SWT;
@@ -45,11 +47,12 @@ public class SignOutCommandHandler extends AzureAbstractHandler {
     }
 
 	public static void doSignOut(Shell shell) {
-		try {
+        EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.SIGNOUT, (operation) -> {
             AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-            String artifact = (authMethodManager.getAuthMethod() == AuthMethod.AD)
-                    ? "Signed in as " + authMethodManager.getAuthMethodDetails().getAccountEmail()
-                    : "Signed in using file \"" + authMethodManager.getAuthMethodDetails().getCredFilePath() + "\"";
+            String artifact = (authMethodManager.getAuthMethod() == AuthMethod.AD
+                || authMethodManager.getAuthMethod() == AuthMethod.DC)
+                ? "Signed in as " + authMethodManager.getAuthMethodDetails().getAccountEmail()
+                : "Signed in using file \"" + authMethodManager.getAuthMethodDetails().getCredFilePath() + "\"";
             MessageBox messageBox = new MessageBox(
                     shell, 
                     SWT.ICON_QUESTION | SWT.YES | SWT.NO);
@@ -66,8 +69,6 @@ public class SignOutCommandHandler extends AzureAbstractHandler {
                 }
                 authMethodManager.signOut();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }, (ex) -> ex.printStackTrace());
 	}
 }

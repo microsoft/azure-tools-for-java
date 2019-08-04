@@ -22,25 +22,30 @@
 
 package com.microsoft.azure.hdinsight.spark.run
 
+import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RemoteState
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 
-class SparkBatchLocalDebugState(myProject: Project, model: SparkLocalRunConfigurableModel)
-    : SparkBatchLocalRunState(myProject, model), RemoteState {
+class SparkBatchLocalDebugState(myProject: Project, model: SparkLocalRunConfigurableModel, operation: Operation?) :
+    SparkBatchLocalRunState(
+        myProject,
+        model,
+        operation,
+        HDInsightBundle.message("SparkRunConfigLocalDebugButtonClick")!!
+    ), RemoteState {
     private val remoteConnection = RemoteConnection(true, "127.0.0.1", "0", true)
-
-    override val appInsightsMessage = HDInsightBundle.message("SparkRunConfigLocalDebugButtonClick")!!
 
     override fun getRemoteConnection(): RemoteConnection = remoteConnection
 
-    override fun getCommandLineVmParameters(params: JavaParameters, moduleName: String): List<String> {
+    override fun getCommandLineVmParameters(executor: Executor?, params: JavaParameters, moduleName: String): List<String> {
         // TODO: Add onthrow and onuncaught with Breakpoint UI settings later
         val debugConnection = "-agentlib:jdwp=transport=dt_socket,server=n,address=127.0.0.1:${remoteConnection.address},suspend=y"
 
-        return super.getCommandLineVmParameters(params, moduleName).plus(debugConnection)
+        return super.getCommandLineVmParameters(executor, params, moduleName).plus(debugConnection)
     }
 }

@@ -27,9 +27,10 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmo
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
 import java.awt.*;
 import java.io.IOException;
@@ -82,5 +83,10 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
                 }
             }
         });
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.SPARK_ON_COSMOS;
     }
 }

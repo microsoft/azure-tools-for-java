@@ -33,7 +33,11 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
-import com.microsoft.azure.hdinsight.sdk.storage.*
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.storage.blob.BlobRequestOptions
@@ -48,6 +52,7 @@ import rx.schedulers.Schedulers
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
+import java.net.URI
 import java.util.stream.Collectors
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.DocumentEvent
@@ -124,9 +129,19 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
         view.storagePanel.adlsGen2Card.storageKeyField.addFocusListener(object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 saveAccesKey().subscribe(
-                        { model -> log().info("save new access key for account" + model.gen2Account) },
+                        { model ->
+                            if (!StringUtils.isEmpty(model.gen2Account)){
+                                log().info("save new access key for account ${model.gen2Account}")
+                            }
+                        },
                         {}
                 )
+            }
+        })
+
+        view.storagePanel.adlsGen2Card.gen2RootPathField.addFocusListener(object : FocusAdapter() {
+            override fun focusLost(e: FocusEvent?) {
+                view.viewModel.uploadStorage.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS GEN2"))
             }
         })
     }
@@ -164,6 +179,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                                 val subscriptionNameList = subscriptionManager.selectedSubscriptionDetails
                                         .stream()
                                         .map { subDetail -> subDetail.subscriptionName }
+                                        .sorted()
                                         .collect(Collectors.toList<String>())
 
                                 if (subscriptionNameList.size > 0) {
@@ -268,10 +284,13 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
     }
 
     override fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?, scheme: String): String? {
-        return if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container) || scheme.isNullOrBlank())
+        if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container) || scheme.isNullOrBlank())
             throw IllegalArgumentException("Blob Name ,container and scheme name cannot be empty")
-        else if (scheme!!.startsWith(ADLSGen2StorageAccount.DefaultScheme)) "https://$fullStorageBlobName/$container/SparkSubmission/"
-        else "$scheme://$container@$fullStorageBlobName/SparkSubmission/"
+
+        val rawStoragePath = "$scheme://$container@$fullStorageBlobName"
+        return if (scheme!!.startsWith(ADLSGen2StorageAccount.DefaultScheme))
+            "${ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath))}/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
+        else  "$rawStoragePath/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
     }
 
     override fun getUploadPath(account: IHDIStorageAccount): String? =

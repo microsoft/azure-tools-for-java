@@ -44,7 +44,7 @@ public class CosmosSparkProvisionAction extends NodeActionListener {
                                       @NotNull PublishSubject<Pair<
                                                   AzureSparkServerlessAccount,
                                                   CosmosSparkADLAccountNode>> provisionAction) {
-        super(adlAccountNode);
+        super();
         this.adlAccount = adlAccount;
         this.provisionAction = provisionAction;
         this.adlAccountNode = adlAccountNode;

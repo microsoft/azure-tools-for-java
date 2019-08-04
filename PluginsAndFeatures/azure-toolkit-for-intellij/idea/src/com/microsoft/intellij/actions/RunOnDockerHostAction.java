@@ -27,7 +27,6 @@ import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -36,10 +35,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
-import com.microsoft.intellij.runner.container.utils.Constant;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,12 +56,23 @@ public class RunOnDockerHostAction extends AzureAnAction {
 
 
     @Override
-    public void onActionPerformed(AnActionEvent event) {
+    public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
-            return;
+            return true;
         }
         ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+        return true;
+    }
+
+    @Override
+    protected String getServiceName(AnActionEvent event) {
+        return TelemetryConstants.WEBAPP;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.DEPLOY_WEBAPP_DOCKERHOST;
     }
 
     @SuppressWarnings({"deprecation", "Duplicates"})

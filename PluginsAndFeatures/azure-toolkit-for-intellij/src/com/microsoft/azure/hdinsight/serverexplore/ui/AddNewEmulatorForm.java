@@ -18,6 +18,9 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 
 import javax.swing.*;
@@ -195,6 +198,8 @@ public class AddNewEmulatorForm extends DialogWrapper {
         ambariEndpoint = ambariEndpointField.getText().trim().replaceAll("/+$","");
 
         AppInsightsClient.create(HDInsightBundle.message("HDInsightCreateLocalEmulator"), null);
+        EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
+            HDInsightBundle.message("HDInsightCreateLocalEmulator"), null);
         try {
             host = new URI(sshEndpoint).getHost();
             sshPort = new URI(sshEndpoint).getPort();

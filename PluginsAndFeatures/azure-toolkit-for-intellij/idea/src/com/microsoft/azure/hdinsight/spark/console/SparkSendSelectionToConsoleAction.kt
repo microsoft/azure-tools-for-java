@@ -28,8 +28,12 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.util.TextRange
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.util.runInWriteAction
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
+import java.io.IOException
 import java.nio.charset.StandardCharsets.UTF_8
 
 class SparkSendSelectionToConsoleAction : AzureAnAction(), ILogger {
@@ -63,16 +67,17 @@ class SparkSendSelectionToConsoleAction : AzureAnAction(), ILogger {
         }
     }
 
-    override fun onActionPerformed(actionEvent: AnActionEvent?) {
-        val content = actionEvent?.dataContext ?: return
-        val editor = CommonDataKeys.EDITOR.getData(content) ?: return
-        val project = CommonDataKeys.PROJECT.getData(content) ?: return
-        val selectedText = editor.selectionModel.selectedText ?: return
+    override fun onActionPerformed(actionEvent: AnActionEvent, operation: Operation?): Boolean {
+        val content = actionEvent.dataContext
+        val editor = CommonDataKeys.EDITOR.getData(content) ?: return true
+        val project = CommonDataKeys.PROJECT.getData(content) ?: return true
+        val selectedText = editor.selectionModel.selectedText ?: return true
 
-        SparkConsoleManager.get(project = project)?.apply { sendSelection(this, selectedText) }
+        SparkConsoleManager.get(project = project)?.apply { sendSelection(this, selectedText, operation) }
+        return true
     }
 
-    private fun sendSelection(consoleDetail: SparkConsoleDetail, text: String) {
+    private fun sendSelection(consoleDetail: SparkConsoleDetail, text: String, operation: Operation?) {
         val outputStream = consoleDetail.processHandler?.processInput ?: return
         val consoleEditor = consoleDetail.console.consoleEditor
         consoleDetail.console.setInputText(text)
@@ -91,10 +96,11 @@ class SparkSendSelectionToConsoleAction : AzureAnAction(), ILogger {
             outputStream.write("$text\n".toByteArray(UTF_8))
             outputStream.flush()
         } catch (ex: Exception) {
-            log().warn("Failed to send codes `$text` to Spark Console", ex)
+            val errMsg = "Failed to send codes `$text` to Spark Console"
+            log().warn(errMsg, ex)
+            EventUtil.logError(operation, ErrorType.systemError, IOException(errMsg, ex), null, null)
         }
 
         consoleDetail.console.indexCodes(text)
-
     }
 }

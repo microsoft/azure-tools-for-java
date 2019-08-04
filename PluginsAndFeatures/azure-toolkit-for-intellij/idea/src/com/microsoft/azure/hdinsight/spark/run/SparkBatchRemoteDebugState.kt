@@ -25,9 +25,10 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RemoteState
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azuretools.telemetrywrapper.Operation
 
-open class SparkBatchRemoteDebugState(serverlessSparkSubmitModel: SparkSubmitModel)
-    : SparkBatchRemoteRunState(serverlessSparkSubmitModel), RemoteState {
+open class SparkBatchRemoteDebugState(serverlessSparkSubmitModel: SparkSubmitModel, operation: Operation?)
+    : SparkBatchRemoteRunState(serverlessSparkSubmitModel, operation), RemoteState {
 
     private var remoteConnection = RemoteConnection(true, "127.0.0.1", "0", true)
 

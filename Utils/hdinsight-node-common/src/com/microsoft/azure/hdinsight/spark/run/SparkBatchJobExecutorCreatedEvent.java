@@ -22,23 +22,17 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.net.URI;
 
-public class SparkBatchJobExecutorCreatedEvent extends SparkBatchJobSubmittedEvent {
-    @NotNull
-    private final SparkBatchDebugSession debugSshSession;
+public class SparkBatchJobExecutorCreatedEvent implements SparkBatchJobSubmissionEvent {
     @NotNull
     private final URI hostUri;
     @NotNull
     private final String containerId;
 
-    public SparkBatchJobExecutorCreatedEvent(@NotNull SparkBatchJob job, @NotNull SparkBatchDebugSession debugSshSession, @NotNull URI hostUri, @NotNull String containerId) {
-        super(job);
-        this.debugSshSession = debugSshSession;
+    public SparkBatchJobExecutorCreatedEvent(@NotNull URI hostUri, @NotNull String containerId) {
         this.hostUri = hostUri;
         this.containerId = containerId;
     }
@@ -51,10 +45,5 @@ public class SparkBatchJobExecutorCreatedEvent extends SparkBatchJobSubmittedEve
     @NotNull
     public String getContainerId() {
         return containerId;
-    }
-
-    @NotNull
-    public SparkBatchDebugSession getDebugSshSession() {
-        return debugSshSession;
     }
 }

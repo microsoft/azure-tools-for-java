@@ -23,6 +23,13 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_REDIS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_BROWSER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_EXPLORER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_READPROP;
+
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -103,11 +110,21 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
             RedisCacheNode.this.getParent().removeNode(RedisCacheNode.this.subscriptionId,
-                    RedisCacheNode.this.resourceId, RedisCacheNode.this);
+                RedisCacheNode.this.resourceId, RedisCacheNode.this);
         }
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+        }
+
+        @Override
+        protected String getServiceName(NodeActionEvent event) {
+            return REDIS;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_REDIS;
         }
     }
 
@@ -138,10 +155,13 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
             addAction(DELETE_ACTION, null, new DeleteRedisCacheAction());
-            addAction(SHOW_PROPERTY_ACTION, null, new ShowRedisCachePropertyAction());
-            addAction(OPEN_EXPLORER, null, new OpenRedisExplorerAction());
+            addAction(SHOW_PROPERTY_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_READPROP,
+                new ShowRedisCachePropertyAction()));
+            addAction(OPEN_EXPLORER, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_EXPLORER,
+                new OpenRedisExplorerAction()));
         }
-        addAction(OPEN_IN_BROWSER_ACTION, null, new OpenInBrowserAction());
+        addAction(OPEN_IN_BROWSER_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_BROWSER,
+            new OpenInBrowserAction()));
         super.loadActions();
     }
 

@@ -19,6 +19,11 @@
  */
 package com.microsoft.azuretools.azureexplorer.forms;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_BLOB_CONTAINER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -141,34 +146,30 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
             return;
         }
 
-        DefaultLoader.getIdeHelper().runInBackground(null, "Creating blob container...", false, true, "Creating blob container...",
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            for (BlobContainer blobContainer : StorageClientSDKManager.getManager().getBlobContainers(connectionString)) {
-                                if (blobContainer.getName().equals(name)) {
-                                    DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            DefaultLoader.getUIHelper().showError("A blob container with the specified name already exists.", "Azure Explorer");
-                                        }
-                                    });
-
-                                    return;
-                                }
+        DefaultLoader.getIdeHelper().runInBackground(null, "Creating blob container...",
+            false, true, "Creating blob container...", () ->
+                EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
+                        for (BlobContainer blobContainer : StorageClientSDKManager.getManager()
+                            .getBlobContainers(connectionString)) {
+                            if (blobContainer.getName().equals(name)) {
+                                DefaultLoader.getIdeHelper().invokeLater(() ->
+                                    DefaultLoader.getUIHelper().showError("A blob container with the specified"
+                                        + " name already exists.", "Azure Explorer")
+                                );
+                                return;
                             }
-                            BlobContainer blobContainer = new BlobContainer(name, ""/*storageAccount.getBlobsUri() + name*/, "", Calendar.getInstance(), "");
-                            StorageClientSDKManager.getManager().createBlobContainer(connectionString, blobContainer);
-
-                            if (onCreate != null) {
-                                DefaultLoader.getIdeHelper().invokeLater(onCreate);
-                            }
-                        } catch (AzureCmdException e) {
-                            DefaultLoader.getUIHelper().showException("Error creating blob container", e, "Error creating blob container", false, true);
                         }
-                    }
-                });
+                        BlobContainer blobContainer = new BlobContainer(name,
+                            ""/*storageAccount.getBlobsUri() + name*/, "", Calendar.getInstance(), "");
+                        StorageClientSDKManager.getManager().createBlobContainer(connectionString, blobContainer);
+                        if (onCreate != null) {
+                            DefaultLoader.getIdeHelper().invokeLater(onCreate);
+                        }
+                    }, (e) ->
+                        DefaultLoader.getUIHelper().showException("Error creating blob container",
+                            e, "Error creating blob container", false, true)
+                )
+        );
         super.okPressed();
     }
 

@@ -122,7 +122,7 @@ public class EmulatorClusterDetail implements IClusterDetail {
 
 	@Override
 	@Nullable
-		public IHDIStorageAccount getStorageAccount() throws HDIException {
+		public IHDIStorageAccount getStorageAccount() {
 			return null;
 		}
 

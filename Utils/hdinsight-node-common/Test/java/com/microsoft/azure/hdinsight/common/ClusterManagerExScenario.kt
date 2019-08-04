@@ -22,11 +22,9 @@
 
 package com.microsoft.azure.hdinsight.common
 
-import com.google.common.collect.ImmutableList
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azuretools.authmanage.SubscriptionManager
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
@@ -34,6 +32,7 @@ import cucumber.api.DataTable
 import cucumber.api.java.Before
 import cucumber.api.java.en.Given
 import org.assertj.core.api.Assertions.assertThat
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.util.*
@@ -53,7 +52,7 @@ class ClusterManagerExScenario {
     private var additionalClusters: List<HDInsightAdditionalClusterDetail> = ArrayList()
     private var emulatedClusters: List<EmulatorClusterDetail> = ArrayList()
     private var subscriptionClusters: List<ClusterDetail> = ArrayList()
-    private var subscriptions = mapOf<String, SubscriptionDetail>()
+    private var selectedSubscriptions = mapOf<String, SubscriptionDetail>()
 
     @Before
     fun setUp() {
@@ -101,7 +100,7 @@ class ClusterManagerExScenario {
         val subscriptionManagerMock = mock(SubscriptionManager::class.java)
         Mockito.`when`(azureMgrMock.subscriptionManager).thenReturn(subscriptionManagerMock)
 
-        Mockito.`when`(subscriptionManagerMock.subscriptionDetails).thenReturn(subscriptions.values.toList())
+        Mockito.`when`(subscriptionManagerMock.selectedSubscriptionDetails).thenReturn(selectedSubscriptions.values.toList())
 
         subscriptionClusters = clusterDetails.asList(SimpleCluster::class.java)
                 .map {
@@ -111,18 +110,20 @@ class ClusterManagerExScenario {
                     doReturn(it.password).`when`(clusterMock).httpPassword
                     // FIXME: Hardcoded for spark version
                     doReturn("2.2").`when`(clusterMock).sparkVersion
-                    doReturn(subscriptions[it.subscription]).`when`(clusterMock).subscription
+                    doReturn(selectedSubscriptions[it.subscription]).`when`(clusterMock).subscription
+                    doReturn(false).`when`(clusterMock).isRoleTypeReader
+                    doReturn("Running").`when`(clusterMock).state
 
                     clusterMock
                 }
 
-        doReturn(Optional.of(subscriptionClusters)).`when`(clusterMagr!!)
-                .getSubscriptionHDInsightClustersOfType(subscriptions.values.toList())
+        doReturn(subscriptionClusters).`when`(clusterMagr!!)
+                .getSubscriptionHDInsightClusters(ArgumentMatchers.any())
     }
 
     @Given("^subscriptions mocked are:$")
     fun mockSubscriptions(subscriptionsMock: DataTable) {
-        subscriptions = subscriptionsMock.asList(SimpleSubscription::class.java)
+        selectedSubscriptions = subscriptionsMock.asList(SimpleSubscription::class.java)
                 .map {
                     val subMock = mock(SubscriptionDetail::class.java)
                     Mockito.`when`(subMock.subscriptionName).thenReturn(it.name)
@@ -130,6 +131,7 @@ class ClusterManagerExScenario {
 
                     it.name to subMock
                 }
+                .filter { it.second.isSelected }
                 .toMap()
 
     }

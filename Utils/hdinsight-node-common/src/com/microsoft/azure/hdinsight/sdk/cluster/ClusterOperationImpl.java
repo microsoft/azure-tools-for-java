@@ -23,13 +23,14 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.microsoft.azure.hdinsight.sdk.common.*;
+import com.microsoft.azure.hdinsight.sdk.common.AuthenticationErrorHandler;
+import com.microsoft.azure.hdinsight.sdk.common.RequestCallback;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.helpers.azure.rest.AzureAADHelper;
 import com.microsoft.tooling.msservices.helpers.azure.rest.RestServiceManager;
 import com.microsoft.tooling.msservices.helpers.azure.rest.RestServiceManagerBaseImpl;
@@ -39,8 +40,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class ClusterOperationImpl implements IClusterOperation {
-
-     private final String VERSION = "2015-03-01-preview";
+     private static final String VERSION = "2015-03-01-preview";
 
      /**
       * list hdinsight cluster
@@ -49,7 +49,7 @@ public class ClusterOperationImpl implements IClusterOperation {
       * @return cluster raw data info
       * @throws IOException
       */
-     public List<ClusterRawInfo> listCluster(final SubscriptionDetail subscription) throws IOException, HDIException, AzureCmdException {
+     public List<ClusterRawInfo> listCluster(final SubscriptionDetail subscription) throws AzureCmdException {
           try {
               String response = requestWithToken(subscription.getTenantId(), (accessToken) -> {
                       Environment environment = AuthMethodManager.getInstance().getAzureManager().getEnvironment();
@@ -85,7 +85,7 @@ public class ClusterOperationImpl implements IClusterOperation {
       * @return cluster configuration info
       * @throws IOException
       */
-     public ClusterConfiguration getClusterConfiguration(final SubscriptionDetail subscription, final String clusterId) throws IOException, HDIException, AzureCmdException {
+     public ClusterConfiguration getClusterConfiguration(final SubscriptionDetail subscription, final String clusterId) throws AzureCmdException {
           try {
                String response = requestWithToken(subscription.getTenantId(), new RequestCallback<String>() {
                     @Override

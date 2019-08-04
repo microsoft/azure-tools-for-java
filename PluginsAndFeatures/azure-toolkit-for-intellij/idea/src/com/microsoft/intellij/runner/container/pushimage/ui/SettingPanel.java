@@ -164,7 +164,9 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         }
 
         PrivateRegistryImageSetting acrInfo = conf.getPrivateRegistryImageSetting();
-        acrInfo.setPassword(loadPassword(acrInfo.getServerUrl(), acrInfo.getUsername()));
+        if (StringUtils.isEmpty(acrInfo.getPassword())) {
+            acrInfo.setPassword(loadPassword(acrInfo.getServerUrl(), acrInfo.getUsername()));
+        }
         containerSettingPanel.setTxtFields(acrInfo);
 
         // load dockerFile path from existing configuration.

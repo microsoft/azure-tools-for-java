@@ -22,22 +22,25 @@
 
 package com.microsoft.intellij.ui.util;
 
+import com.intellij.ide.ui.LafManager;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.Consumer;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -151,5 +154,28 @@ public class UIUtils {
                 .setFadeoutTime(10 * 1000) // fade out after 10 seconds
                 .createBalloon()
                 .showInCenterOf(statusBar.getComponent());
+    }
+
+    public static void showNotification(@NotNull Project project, String message, MessageType type) {
+        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
+        showNotification(statusBar, message, type);
+    }
+
+    public static boolean showYesNoDialog(String title, String prompt){
+        return Messages.showYesNoDialog(null, prompt, title, "Yes", "No", null) == 0;
+    }
+
+    public static boolean isUnderIntelliJTheme(){
+        UIManager.LookAndFeelInfo theme = LafManager.getInstance().getCurrentLookAndFeel();
+        return theme.getName().equalsIgnoreCase("intellij");
+    }
+
+    public static void setPanelBackGroundColor(JPanel panel, Color color){
+        panel.setBackground(color);
+        for (Component child : panel.getComponents()) {
+            if (child instanceof JPanel) {
+                setPanelBackGroundColor((JPanel) child, color);
+            }
+        }
     }
 }

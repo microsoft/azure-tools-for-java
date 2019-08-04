@@ -18,6 +18,61 @@ processResources {
     }
 }
 
+group 'com.microsoft.azuretools'
+
+compileJava {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+}
+
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+apply plugin: 'checkstyle'
+apply plugin: 'findbugs'
+
+checkstyle {
+    toolVersion = '7.7'
+    configFile = new File('config/checkstyle/checkstyle.xml')
+    showViolations = false
+}
+
+findbugs {
+    toolVersion = "3.0.1"
+    ignoreFailures = true
+}
+
+intellij {
+    pluginName = 'azure-toolkit-for-intellij'
+    version = intellij_version
+    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
+    plugins = ['maven', dep_plugins, "properties"]
+	downloadSources = Boolean.valueOf(sources)
+}
+
+sourceSets {
+    main {
+        java.srcDirs 'src'
+        kotlin.srcDirs 'src'
+        resources.srcDirs 'resources'
+    }
+    test {
+        java {
+            srcDir 'Test/java'
+        }
+        kotlin.srcDirs 'Test/java'
+        resources {
+            srcDir 'Test/resources'
+        }
+    }
+}
+
 repositories {
     maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
     mavenLocal()
@@ -39,24 +94,41 @@ dependencies {
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     compile 'commons-io:commons-io:2.5'
     compile 'net.minidev:json-smart:2.3'
-    compile 'com.microsoft.azure:azure-client-runtime:1.6.3', { force = true }
-    compile 'com.microsoft.azure:azure-client-authentication:1.6.3', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.20.0', {
+    compile 'com.microsoft.azure:azure-client-runtime:1.6.5', { force = true }
+    compile 'com.microsoft.azure:azure-client-authentication:1.6.5', { force = true }
+    compile 'com.microsoft.azuretools:azuretools-core:3.26.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.20.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.26.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.20.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.26.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
     compile 'com.spotify:docker-client:8.11.7'
-
     compile 'org.jetbrains.kotlin:kotlin-reflect:1.3.11'
     compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'info.cukes:cucumber-junit:1.2.5'
+    testCompile 'info.cukes:cucumber-java:1.2.5'
+    testCompile 'org.mockito:mockito-core:2.7.22'
+    testCompile 'org.assertj:assertj-swing-junit:3.5.0'
+
+    testCompile 'com.github.tomakehurst:wiremock:2.8.0'
+    testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
+    testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
+    testCompile 'javax.servlet:javax.servlet-api:3.1.0'
+
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testCompile "org.jetbrains.kotlin:kotlin-test"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit"
 }
 
 configurations {
@@ -80,16 +152,16 @@ allprojects {
     }
 
     compileJava {
-    	sourceCompatibility = javaVersion
-    	targetCompatibility = javaVersion
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 
     compileKotlin {
-    	kotlinOptions.jvmTarget = javaVersion
+        kotlinOptions.jvmTarget = javaVersion
     }
 
     compileTestKotlin {
-    	kotlinOptions.jvmTarget = javaVersion
+        kotlinOptions.jvmTarget = javaVersion
     }
 
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
@@ -118,7 +190,7 @@ allprojects {
             default:
                 throw new Exception("Unsupported value for build_common_code_with: " + build_common_code_with)
         }
-        
+
         updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
         downloadSources = Boolean.valueOf(sources)
     }
@@ -153,6 +225,45 @@ allprojects {
         }
     }
 }
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+} 
+
+task cucumberPackJar(type: Jar) {
+    appendix = 'pathing'
+
+    doFirst {
+        manifest {
+            attributes "Class-Path": configurations.cucumberRuntime.files.collect {
+                it.toURI().toString().replaceFirst(/file:\/+/, '/')
+            }.join(' ')
+        }
+    }
+}
+
+buildSearchableOptions.onlyIf {false}
+
+task cucumber() {
+    dependsOn compileTestJava, cucumberPackJar
+    doLast {
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = files(sourceSets.main.output, sourceSets.test.output, cucumberPackJar.archivePath)
+            args = [
+                '--plugin', 'progress',
+                '--glue', 'com.microsoft.azure.hdinsight.spark.common',
+                '-m',
+                'Test/resources']
+        }
+    }
+}
+
+test.dependsOn cucumber
+// buildPlugin.dependsOn test
 
 defaultTasks 'buildPlugin', 'test'
 

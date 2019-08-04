@@ -30,6 +30,9 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.hdinsight.spark.jobs.framework.JobViewPanel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -59,6 +62,8 @@ public class JobViewEditor implements FileEditor {
         uuid = file.getUserData(JobViewEditorProvider.JOB_VIEW_UUID);
         myComponent = new JobViewPanel(PluginUtil.getPluginRootDirectory(), uuid);
         AppInsightsClient.create(HDInsightBundle.message("HDInsightSparkJobview"), null);
+        EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
+            HDInsightBundle.message("HDInsightSparkJobview"), null);
     }
 
     @NotNull
@@ -141,6 +146,8 @@ public class JobViewEditor implements FileEditor {
     @Override
     public void dispose() {
         AppInsightsClient.create(HDInsightBundle.message("HDInsightSparkJobView.Close"), null);
+        EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
+            HDInsightBundle.message("HDInsightSparkJobView.Close"), null);
     }
 
     @Nullable

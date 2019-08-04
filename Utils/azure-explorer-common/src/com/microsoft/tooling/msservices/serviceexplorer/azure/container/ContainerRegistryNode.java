@@ -23,6 +23,10 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.container;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR_OPEN_EXPLORER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACR_OPEN_INBROWSER;
+
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -32,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,8 +68,10 @@ public class ContainerRegistryNode extends Node implements TelemetryProperties {
 
     @Override
     protected void loadActions() {
-        addAction(OPEN_EXPLORER_ACTION, null, new ShowContainerRegistryPropertyAction());
-        addAction(OPEN_IN_BROWSER_ACTION, null, new OpenInBrowserAction());
+        addAction(OPEN_EXPLORER_ACTION, null, new WrappedTelemetryNodeActionListener(ACR, ACR_OPEN_EXPLORER,
+            new ShowContainerRegistryPropertyAction()));
+        addAction(OPEN_IN_BROWSER_ACTION, null, new WrappedTelemetryNodeActionListener(ACR, ACR_OPEN_INBROWSER,
+            new OpenInBrowserAction()));
         super.loadActions();
     }
 

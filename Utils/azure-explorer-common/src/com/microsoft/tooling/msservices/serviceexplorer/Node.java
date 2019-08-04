@@ -25,8 +25,11 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
+import com.microsoft.azuretools.telemetry.BasicTelemetryProperty;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
@@ -41,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Node implements MvpView {
+public class Node implements MvpView, BasicTelemetryProperty {
     private static final String CLICK_ACTION = "click";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
@@ -360,5 +363,11 @@ public class Node implements MvpView {
     
     public Node createNode(Node parent, String sid, NodeContent content) {
         return new Node(content.getId(), content.getName());
+    }
+
+    @Override
+    @NotNull
+    public String getServiceName() {
+        return TelemetryConstants.ACTION;
     }
 }

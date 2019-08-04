@@ -31,7 +31,6 @@ import com.intellij.util.xmlb.annotations.Attribute
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum
 import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
@@ -45,6 +44,10 @@ class SparkSubmitJobUploadStorageModel: ILogger {
 
     @Attribute("adls_gen2_account")
     var gen2Account: String? = null
+
+    // model for ADLS Gen 2 storage type
+    @Attribute("adls_gen2_root_path")
+    var gen2RootPath: String? = null
 
     @get:Transient @set:Transient var storageKey: String? = null
 
@@ -81,11 +84,10 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     var webHdfsAuthUser:String? = null
 
     fun getCredentialAccount(account: String?, type: SparkSubmitStorageType?): String? {
-        when (type) {
+        return when (type) {
             SparkSubmitStorageType.BLOB -> return account?.let { SERVICE_NAME_PREFIX_BLOB + account }
             SparkSubmitStorageType.ADLS_GEN2 -> return account?.let { SERVICE_NAME_PREFIX_GEN2 + account }
+            else -> null
         }
-
-        return null;
     }
 }

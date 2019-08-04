@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.uiDesigner.core.GridConstraints
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.forms.dsl.panel
 import java.awt.Dimension
 import javax.swing.JPanel
@@ -34,8 +35,9 @@ import javax.swing.JPanel
 class LivyBatchJobTableViewerWithToolBar(private val jobTableViewport : LivyBatchJobTableViewport,
                                          private val refreshActionPerformed: (anActionEvent: AnActionEvent?) -> Unit) : JPanel() {
     private val refreshAction = object: AzureAnAction(AllIcons.Actions.Refresh) {
-        override fun onActionPerformed(anActionEvent: AnActionEvent?) {
+        override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
             refreshActionPerformed(anActionEvent)
+            return true
         }
     }
 
@@ -56,6 +58,8 @@ class LivyBatchJobTableViewerWithToolBar(private val jobTableViewport : LivyBatc
             }
         }
 
+        // We don't need to send telemetry in this panel.
+        // For refresh action, the telemetry is already sent in class CosmosSparkClusterOpsCtrl
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }

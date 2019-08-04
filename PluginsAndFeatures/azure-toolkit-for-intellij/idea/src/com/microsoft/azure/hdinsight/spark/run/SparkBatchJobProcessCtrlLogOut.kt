@@ -22,10 +22,11 @@
 
 package com.microsoft.azure.hdinsight.spark.run
 
+import com.intellij.openapi.util.UserDataHolder
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import rx.subjects.PublishSubject
 import java.util.*
 
-interface SparkBatchJobProcessCtrlLogOut {
+interface SparkBatchJobProcessCtrlLogOut: UserDataHolder {
     fun getCtrlSubject() : PublishSubject<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>
 }

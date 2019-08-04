@@ -39,16 +39,24 @@ import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.intellij.util.execution.ParametersListUtil
+import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
+import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Error
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionJobConfigCheckStatus.Warning
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitHelper
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
+import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
 import com.microsoft.intellij.forms.dsl.panel
@@ -58,6 +66,7 @@ import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.ui.util.findFirst
 import org.apache.commons.lang3.StringUtils
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.event.ItemEvent
 import java.io.IOException
 import javax.swing.*
@@ -108,7 +117,13 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             // Don't add more we won't like to add more message labels
     )
 
-    open fun getErrorMessageClusterNameNull(isSignedIn : Boolean) : String {
+    class Constants {
+        companion object {
+            const val submissionFolder: String = "SparkSubmission"
+        }
+    }
+
+    open fun getErrorMessageClusterNameNull(isSignedIn: Boolean): String {
         return when {
             isSignedIn -> "Cluster name should not be null, please choose one for submission"
             else -> "Can't list cluster, please login within Azure Explorer (View -> Tool Windows -> Azure Explorer) and refresh"
@@ -123,6 +138,63 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         Disposer.register(this@SparkSubmissionContentPanel, this@apply)
     }}
 
+    private val hdiReaderErrorLabel: JLabel =
+        JLabel("No Ambari permission to submit job to the selected cluster...").apply {
+            toolTipText = "No Ambari permission to submit job to the selected cluster. Please ask the cluster owner or user access administrator to upgrade your role to HDInsight Cluster Operator in the Azure Portal, or link to the selected cluster."
+            foreground = currentErrorColor
+            isVisible = false
+        }
+
+    private val linkClusterHyperLink = JXHyperLinkWithUri().apply {
+        name = "linkClusterHyperLink"
+        text = "Link the cluster"
+        isVisible = false
+
+        addActionListener {
+            val selectedClusterName = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
+            // record default storage root path for HDInsight Reader role cluster
+            val selectedClusterDetail =
+                ClusterManagerEx.getInstance().findClusterDetail({ clusterDetail ->
+                    clusterDetail is ClusterDetail
+                            && clusterDetail.getName() == selectedClusterName
+                }, false) as? ClusterDetail
+            val defaultStorageRootPath = selectedClusterDetail?.defaultStorageRootPath
+
+            selectedClusterDetail?.let {
+                val form = object: AddNewHDInsightReaderClusterForm(myProject, null, selectedClusterDetail) {
+                    override fun afterOkActionPerformed() {
+                        hideHdiReaderErrors()
+
+                        // Update linked cluster detail with default storage root path
+                        val linkedCluster =
+                            ClusterManagerEx.getInstance().findClusterDetail({ clusterDetail ->
+                                clusterDetail is HDInsightAdditionalClusterDetail
+                                        && clusterDetail.getName() == selectedClusterName
+                            }, true) as? HDInsightAdditionalClusterDetail
+                        linkedCluster?.let {
+                            it.defaultStorageRootPath = defaultStorageRootPath
+                            ClusterManagerEx.getInstance().updateHdiAdditionalClusterDetail(it)
+
+                            // Notify storage type to change
+                            storageWithUploadPathPanel.viewModel.clusterSelectedSubject.onNext(it)
+                            storageWithUploadPathPanel.viewModel.uploadStorage.storageCheckSubject.onNext(
+                                SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it, it.name))
+                            // refresh the cluster list
+                            viewModel.clusterSelection.doRefreshSubject.onNext(true)
+                        }
+                    }
+                }
+                form.show()
+            }
+        }
+    }
+
+    private val clusterErrorMsgPanel: JPanel = JPanel(FlowLayout(FlowLayout.LEFT)).apply {
+        add(errorMessageLabels[ErrorMessage.ClusterName.ordinal])
+        add(hdiReaderErrorLabel)
+        add(linkClusterHyperLink)
+    }
+
     private val artifactSelectLabel: JLabel = JLabel("Select an Artifact to submit").apply {
         toolTipText = "The Artifact you want to use"
     }
@@ -130,6 +202,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     private val selectedArtifactComboBox: ComboBox<Artifact> = ComboBox<Artifact>(
             ArtifactUtil.getArtifactWithOutputPaths(myProject).toTypedArray()
     ).apply {
+        name = "ideaArtifactComboBox"
         toolTipText = artifactSelectLabel.toolTipText
 
         if (itemCount > 0) {
@@ -148,6 +221,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }
 
     internal val localArtifactTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
+        textField.name = "localArtifactTextFieldText"
+        button.name = "localArtifactTextFieldButton"
         toolTipText = "Artifact from local jar package."
         isEnabled = false
         textField.document.addDocumentListener(documentValidationListener)
@@ -171,6 +246,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             checkInputsWithErrorLabels()
         }
 
+        name = "ideaArtifactRadioButton"
         isSelected = true
     }
 
@@ -180,6 +256,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             checkInputsWithErrorLabels()
         }
 
+        name = "localArtifactRadioButton"
         isSelected = false
     }
 
@@ -191,6 +268,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     private val jobConfigPrompt: JLabel = JLabel("Job configurations")
 
     private val jobConfigurationTable: JBTable = JBTable(SubmissionTableModel()).apply {
+        name = "jobConfigurationTable"
         preferredScrollableViewportSize = Dimension(580, 100)
 
         surrendersFocusOnKeystroke = true
@@ -210,6 +288,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }
 
     private val commandLineTextField: ExpandableTextField = ExpandableTextField().apply {
+        name = "commandLineTextField"
         toolTipText = commandLineArgsPrompt.toolTipText
     }
 
@@ -217,16 +296,49 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         toolTipText = "Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)"
     }
 
-    private val referencedJarsTextField: ExpandableTextField = ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
-        toolTipText = refJarsPrompt.toolTipText
+    private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
+        toolTipText = "Artifact from remote storage account."
+    }).apply {
+        textField.name = "referencedJarsTextFieldText"
+        button.name = "referencedJarsTextFieldButton"
+        textField.document.addDocumentListener(documentValidationListener)
+        button.addActionListener {
+            val root = viewModel.prepareVFSRoot()
+            if (root == null) {
+               StorageChooser.handleInvalidUploadInfo()
+            } else {
+                val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
+                val chooseFiles = chooser.chooseFile()
+                // Only override reference jar text field when jar file is selected and ok button is clicked
+                if (chooseFiles.isNotEmpty()) {
+                    text = chooseFiles.joinToString(";") { vf -> vf.url }
+                }
+            }
+        }
     }
 
     private val refFilesPrompt: JLabel = JLabel("Referenced Files(spark.files)").apply {
         toolTipText = "Files to be placed in executor working directory. The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) "
     }
 
-    private val referencedFilesTextField: ExpandableTextField = ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
+    private val referencedFilesTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
         toolTipText = refFilesPrompt.toolTipText
+    }).apply {
+        textField.name = "referencedFilesTextFieldText"
+        button.name = "referencedFilesTextFieldButton"
+        textField.document.addDocumentListener(documentValidationListener)
+        button.addActionListener {
+            val root = viewModel.prepareVFSRoot()
+            if (root == null) {
+                StorageChooser.handleInvalidUploadInfo()
+            } else {
+                val chooser = StorageChooser(root, StorageChooser.ALL_DIRS_AND_FILES)
+                val chooseFiles = chooser.chooseFile()
+                if (chooseFiles.isNotEmpty()) {
+                    text = chooseFiles.joinToString(";") { vf -> vf.url }
+                }
+            }
+        }
     }
 
     private val storageWithUploadPathPanel: SparkSubmissionJobUploadStorageWithUploadPathPanel =
@@ -259,6 +371,30 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     private fun hideAllErrors() {
         for (errorMessageLabel in ErrorMessage.values()) {
             setVisibleForFixedErrorMessage(errorMessageLabel, false)
+        }
+    }
+
+    private fun hideHdiReaderErrors() {
+        // Hide errors for HDI reader cluster
+        hdiReaderErrorLabel.isVisible = false
+        linkClusterHyperLink.isVisible = false
+    }
+
+    private fun showHdiReaderErrors() {
+        // Show errors for HDI reader cluster
+        hdiReaderErrorLabel.isVisible = true
+        linkClusterHyperLink.isVisible = true
+    }
+
+    private fun checkHdiReaderCluster(cluster: IClusterDetail?) {
+        hideHdiReaderErrors()
+
+        cluster?.let {
+            if (cluster is ClusterDetail
+                && cluster.isRoleTypeReader
+                && (cluster.httpUserName == null || cluster.httpPassword == null)) {
+                showHdiReaderErrors()
+            }
         }
     }
 
@@ -340,7 +476,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 }
             }
             row { c(clustersSelectionPrompt);             c(clustersSelection.component) }
-            row { c();                                    c(errorMessageLabels[ErrorMessage.ClusterName.ordinal]) { fill = FILL_NONE } }
+            row { c();                                    c(clusterErrorMsgPanel) { fill = FILL_NONE } }
             row { c(artifactSelectLabel) }
             row {   c(ideaArtifactPrompt) { indent = 1 }; c(selectedArtifactComboBox) }
             row {   c();                                  c(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal]) { fill = FILL_NONE } }
@@ -390,8 +526,21 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                                     preSelectCluster?.name))
                 }
                 checkInputsWithErrorLabels()
+                checkHdiReaderCluster(it)
             }
         }}
+
+        fun prepareVFSRoot(): AzureStorageVirtualFile? {
+            val uploadRootPath = storageWithUploadPathPanel.viewModel.getCurrentUploadFieldText()
+                    ?.replace("/${Constants.submissionFolder}/?$".toRegex(), "")
+
+            val cluster = clustersSelection.viewModel.clusterIsSelected
+                    .toBlocking()
+                    .firstOrDefault(null)
+
+            var storageAccount: IHDIStorageAccount? = cluster?.storageAccount
+            return storageWithUploadPathPanel.viewModel.uploadStorage.prepareVFSRoot(uploadRootPath, storageAccount)
+        }
     }
 
     open val viewModel = ViewModel().apply { Disposer.register(this@SparkSubmissionContentPanel, this@apply) }

@@ -19,6 +19,9 @@
  */
 package com.microsoft.azuretools.azureexplorer.forms.createvm;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_VM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
+
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.compute.VirtualMachine;
@@ -34,10 +37,13 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
@@ -47,17 +53,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.List;
 
 public class CreateVMWizard extends Wizard implements TelemetryProperties {
     private VMArmModule node;
@@ -105,32 +104,24 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
 
     @Override
     public boolean performFinish() {
-    	DefaultLoader.getIdeHelper().runInBackground(null, "Creating virtual machine " + name + "...", false, true, "Creating virtual machine " + name + "...", new Runnable() {
+		Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
+		DefaultLoader.getIdeHelper().runInBackground(null, "Creating virtual machine " + name + "...", false, true,
+			"Creating virtual machine " + name + "...", new Runnable() {
             @Override
             public void run() {
                 try {
+					operation.start();
                     byte[] certData = new byte[0];
-
                     if (!certificate.isEmpty()) {
                         File certFile = new File(certificate);
-
                         if (certFile.exists()) {
-                            FileInputStream certStream = null;
-
-                            try {
-                                certStream = new FileInputStream(certFile);
+                            try (FileInputStream certStream = new FileInputStream(certFile)){
                                 certData = new byte[(int) certFile.length()];
-
                                 if (certStream.read(certData) != certData.length) {
-                                    throw new Exception("Unable to process certificate: stream longer than informed size.");
+                                    throw new Exception("Unable to process certificate: "
+										+ "stream longer than informed size.");
                                 }
                             } finally {
-                                if (certStream != null) {
-                                    try {
-                                        certStream.close();
-                                    } catch (IOException ignored) {
-                                    }
-                                }
                             }
                         }
                     }
@@ -182,12 +173,15 @@ public class CreateVMWizard extends Wizard implements TelemetryProperties {
                         }
                     });
                 } catch (Exception e) {
+					EventUtil.logError(operation, ErrorType.userError, e, null, null);
                 	DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                 		public void run() {
                 			PluginUtil.displayErrorDialogWithAzureMsg(PluginUtil.getParentShell(), "Error Creating Virtual Machine", "An error occurred while trying to create the specified virtual machine", e);
                 		}
                 	});
-                }
+                } finally {
+					operation.complete();
+				}
             }
         });
         return true;

@@ -27,6 +27,8 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
@@ -117,8 +119,9 @@ public class UploadBlobFileForm extends AzureDialogWrapper {
             folder = new URI(null, null, folder, null).getPath();
         } catch (URISyntaxException ignore) {
         }
-
-        uploadSelected.run();
+        EventUtil.executeWithLog(TelemetryConstants.STORAGE, TelemetryConstants.UPLOAD_BLOB_FILE, (operation) -> {
+            uploadSelected.run();
+        });
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 

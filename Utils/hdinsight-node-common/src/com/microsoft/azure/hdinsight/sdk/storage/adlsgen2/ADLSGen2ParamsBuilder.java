@@ -31,8 +31,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 public class ADLSGen2ParamsBuilder extends WebHdfsParamsBuilder {
     public ADLSGen2ParamsBuilder() {
@@ -50,6 +49,16 @@ public class ADLSGen2ParamsBuilder extends WebHdfsParamsBuilder {
 
     public ADLSGen2ParamsBuilder setResource(@NotNull String value) {
         params.add(new BasicNameValuePair("resource", value));
+        return this;
+    }
+
+    public ADLSGen2ParamsBuilder setDirectory(@NotNull String value) {
+        params.add(new BasicNameValuePair("directory", value));
+        return this;
+    }
+
+    public ADLSGen2ParamsBuilder enableRecursive(@NotNull boolean value) {
+        params.add(new BasicNameValuePair("recursive", String.valueOf(value)));
         return this;
     }
 }

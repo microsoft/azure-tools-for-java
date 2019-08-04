@@ -23,6 +23,15 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_OPEN_INBROWSER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_SHOWPROP;
+
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
@@ -185,6 +194,16 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e) {
+        }
+
+        @Override
+        protected String getServiceName(NodeActionEvent event) {
+            return WEBAPP;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_WEBAPP;
         }
     }
 }

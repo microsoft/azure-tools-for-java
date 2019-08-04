@@ -38,6 +38,10 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.intellij.AzurePlugin;
@@ -59,6 +63,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class CreateArmStorageAccountForm extends AzureDialogWrapper {
@@ -282,8 +288,23 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
 //        );
     }
 
+    @Override
+    public void doCancelAction() {
+        DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (onCreate != null) {
+                    onCreate.run();
+                }
+            }
+        });
+        super.doCancelAction();
+    }
+
     private boolean createStorageAccount() {
+        Operation operation = TelemetryManager.createOperation(STORAGE, CREATE_STORAGE_ACCOUNT);
         try {
+            operation.start();
             boolean isNewResourceGroup = createNewRadioButton.isSelected();
             final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
             AzureSDKManager.createStorageAccount(((SubscriptionDetail) subscriptionComboBox.getSelectedItem()).getSubscriptionId(), nameTextField.getText(), ((Location) regionComboBox.getSelectedItem()).name(),
@@ -313,8 +334,12 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             String msg = "An error occurred while attempting to create the specified storage account in subscription "
                     + ((SubscriptionDetail) subscriptionComboBox.getSelectedItem()).getSubscriptionId() + ".\n"
                     + String.format(message("webappExpMsg"), e.getMessage());
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true));
+            EventUtil.logError(operation, ErrorType.userError, e, null, null);
             AzurePlugin.log(msg, e);
             throw new RuntimeException(msg, e);
+        } finally {
+            operation.complete();
         }
     }
 

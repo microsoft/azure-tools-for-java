@@ -22,21 +22,19 @@
  */
 package com.microsoft.tooling.msservices.helpers;
 
-import java.io.File;
-
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
-import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+
+import java.io.File;
 
 public interface UIHelper {
     void showException(@NotNull String message,
@@ -49,9 +47,15 @@ public interface UIHelper {
 
     boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption);
 
+    void showInfo(@NotNull Node node, @NotNull String message);
+
+    void showError(@NotNull Node node, @NotNull String message);
+
     void logError(String message, Throwable ex);
 
     File showFileChooser(String title);
+
+    File showFileSaver(String title, String fileName);
 
     <T extends StorageServiceTreeItem> void openItem(Object projectObject, final StorageAccount storageAccount, final T item, String itemType, String itemName, String iconName);
 
@@ -70,6 +74,10 @@ public interface UIHelper {
     void openRedisPropertyView(@NotNull RedisCacheNode node);
 
     void openRedisExplorer(@NotNull RedisCacheNode node);
+
+    void openDeploymentPropertyView(@NotNull DeploymentNode node);
+
+    void openResourceTemplateView(@NotNull DeploymentNode node, String template);
 
     void openInBrowser(String link);
 

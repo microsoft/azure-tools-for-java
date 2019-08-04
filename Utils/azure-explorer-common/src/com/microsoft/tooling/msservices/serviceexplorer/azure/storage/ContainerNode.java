@@ -25,10 +25,10 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -40,6 +40,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_BLOB_CONTAINER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
 public class ContainerNode extends Node implements TelemetryProperties{
     @Override
@@ -96,12 +99,21 @@ public class ContainerNode extends Node implements TelemetryProperties{
                 } else {
                     StorageClientSDKManager.getManager().deleteBlobContainer(clientStorageAccount, blobContainer);
                 }
-
                 parent.removeAllChildNodes();
                 ((RefreshableNode) parent).load(false);
             } catch (AzureCmdException ex) {
                 throw new RuntimeException("An error occurred while attempting to delete blob storage", ex);
             }
+        }
+
+        @Override
+        protected String getServiceName(NodeActionEvent event) {
+            return STORAGE;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return DELETE_BLOB_CONTAINER;
         }
 
         @Override

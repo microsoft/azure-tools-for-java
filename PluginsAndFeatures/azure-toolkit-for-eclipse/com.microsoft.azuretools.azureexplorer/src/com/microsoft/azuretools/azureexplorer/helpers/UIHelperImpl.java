@@ -21,11 +21,14 @@ package com.microsoft.azuretools.azureexplorer.helpers;
 
 import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotEditor;
 import com.microsoft.azuretools.azureexplorer.editors.webapp.DeploymentSlotPropertyEditorInput;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.io.File;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Map;
 
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -63,6 +66,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
@@ -136,6 +140,12 @@ public class UIHelperImpl implements UIHelper {
         } else {
             return new File(fileName);
         }
+    }
+
+    @Override
+    public File showFileSaver(String s, String s1) {
+        // todo
+        return null;
     }
 
     @Override
@@ -272,12 +282,14 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openRedisPropertyView(RedisCacheNode node) {
-        String sid = node.getSubscriptionId();
-        String resId = node.getResourceId();
-        if (sid == null || resId == null) {
-            return;
-        }
-        openView(RedisPropertyView.ID, sid, resId);
+        EventUtil.executeWithLog(TelemetryConstants.REDIS, TelemetryConstants.REDIS_READPROP, (operation) -> {
+            String sid = node.getSubscriptionId();
+            String resId = node.getResourceId();
+            if (sid == null || resId == null) {
+                return;
+            }
+            openView(RedisPropertyView.ID, sid, resId);
+        });
     }
 
     @Override
@@ -287,6 +299,16 @@ public class UIHelperImpl implements UIHelper {
                 node.getResourceId(), node.getName());
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(RedisExplorerEditor.ID);
         openEditor(EditorType.REDIS_EXPLORER, input, descriptor);
+    }
+
+    @Override
+    public void openDeploymentPropertyView(DeploymentNode deploymentNode) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void openResourceTemplateView(DeploymentNode deploymentNode, String s) {
+        // TODO Auto-generated method stub
     }
 
     @Override
@@ -389,6 +411,18 @@ public class UIHelperImpl implements UIHelper {
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
         openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }
+
+    @Override
+    public void showInfo(Node node, String message) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void showError(Node node, String s) {
+        // TODO Auto-generated method stub
+    }
+
 
     @Override
     public void openFunctionAppProperties(FunctionAppNode node) {
