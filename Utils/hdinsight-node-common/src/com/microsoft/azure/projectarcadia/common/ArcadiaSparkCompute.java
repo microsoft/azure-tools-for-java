@@ -39,10 +39,10 @@ import java.util.Optional;
 public class ArcadiaSparkCompute extends SparkCluster implements Comparable<ArcadiaSparkCompute>, ILogger {
     public static final int ARCADIA_SPARK_SERVICE_PORT = 8660;
     @NotNull
-    private ArcadiaWorkSpace workSpace;
+    private final ArcadiaWorkSpace workSpace;
 
     @NotNull
-    private SparkCompute sparkComputeResponse;
+    private final SparkCompute sparkComputeResponse;
 
     public ArcadiaSparkCompute(@NotNull ArcadiaWorkSpace workSpace, @NotNull SparkCompute sparkComputeResponse) {
         this.workSpace = workSpace;

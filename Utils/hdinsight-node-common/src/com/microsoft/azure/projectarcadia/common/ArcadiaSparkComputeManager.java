@@ -63,11 +63,6 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     @NotNull
     private ImmutableSortedSet<? extends ArcadiaWorkSpace> workSpaces = ImmutableSortedSet.of();
 
-    @NotNull
-    private final Map<String, AzureHttpObservable> httpMap = new HashMap<>();
-
-    @NotNull
-
     @Nullable
     public AzureManager getAzureManager() {
         try {
@@ -202,14 +197,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     }
 
     @NotNull
-    private synchronized AzureHttpObservable getHttp(@NotNull SubscriptionDetail subscriptionDetail) {
-        if (httpMap.containsKey(subscriptionDetail.getSubscriptionId())) {
-            return httpMap.get(subscriptionDetail.getSubscriptionId());
-        }
-
-        AzureHttpObservable subHttp = new AzureHttpObservable(subscriptionDetail, ApiVersion.VERSION);
-        httpMap.put(subscriptionDetail.getSubscriptionId(), subHttp);
-
-        return subHttp;
+    private AzureHttpObservable getHttp(@NotNull SubscriptionDetail subscriptionDetail) {
+        return new AzureHttpObservable(subscriptionDetail, ApiVersion.VERSION);
     }
 }
