@@ -33,6 +33,23 @@
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F96BDA43831E514AA19A550B9421C1E1/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F96BDA43831E514AA19A550B9421C1E1/EntryName/@EntryValue">CosmosDB Trigger</s:String>
     <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=30268A7051168441BABF0D6FEE32A9AE/Entry/=F96BDA43831E514AA19A550B9421C1E1/Position/@EntryValue">26</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Description/@EntryValue">Creates an Azure Function method with an Event Grid trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Shortcut/@EntryValue">funceventgrid</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
+{
+    log.LogInformation(eventGridEvent.Data.ToString());$END$
+}</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/CustomProperties/=Extension/@EntryIndexedValue">cs</s:String>
@@ -88,6 +105,96 @@ namespace $NAMESPACE$
             log.LogInformation($"C# IoT Hub trigger function processed a message: {Encoding.UTF8.GetString(message.Body.Array)}");$END$
         }
     }
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Description/@EntryValue">Creates an Azure Function method with a CosmosDB trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=COLLECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=COLLECTIONVALUE/Expression/@EntryValue">constant("collectionName")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=COLLECTIONVALUE/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=CONNECTIONVALUE/Order/@EntryValue">3</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=DATABASEVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=DATABASEVALUE/Expression/@EntryValue">constant("databaseName")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Field/=DATABASEVALUE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Shortcut/@EntryValue">funccosmosdb</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([CosmosDBTrigger(
+    databaseName: "$DATABASEVALUE$",
+    collectionName: "$COLLECTIONVALUE$",
+    ConnectionStringSetting = "$CONNECTIONVALUE$",
+    LeaseCollectionName = "leases")]IReadOnlyList&lt;Document&gt; input, ILogger log)
+{
+    if (input != null &amp;&amp; input.Count &gt; 0)
+    {
+        log.LogInformation("Documents modified " + input.Count);
+        log.LogInformation("First document Id " + input[0].Id);$END$
+    }
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Description/@EntryValue">Creates an Azure Function method with an Event Hub trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=CONNECTIONVALUE/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=PATHVALUE/Expression/@EntryValue">constant("samples-workitems")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Field/=PATHVALUE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Shortcut/@EntryValue">funceventhub</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([EventHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myEventHubMessage, ILogger log)
+{
+    log.LogInformation($"C# Event Hub trigger function processed a message: {myEventHubMessage}");$END$
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=INPUTTYPE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=INPUTTYPE/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=OUTPUTTYPE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=OUTPUTTYPE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Description/@EntryValue">Creates an Azure Function method with a Service Bus topic trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=CONNECTIONVALUE/Order/@EntryValue">3</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=SUBSCRIPTIONNAME/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=SUBSCRIPTIONNAME/Expression/@EntryValue">constant("mysubscription")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=SUBSCRIPTIONNAME/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=TOPICNAME/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=TOPICNAME/Expression/@EntryValue">constant("mytopic")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Field/=TOPICNAME/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Shortcut/@EntryValue">funcsbtopic</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([ServiceBusTrigger("$TOPICNAME$", "$SUBSCRIPTIONNAME$", Connection = "$CONNECTIONVALUE$")]string mySbMsg, ILogger log)
+{
+    log.LogInformation($"C# ServiceBus topic trigger function processed message: {mySbMsg}");$END$
 }</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
@@ -185,6 +292,11 @@ namespace $NAMESPACE$
         }
     }
 }</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=TRIGGERCLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=TRIGGERCLASS/Order/@EntryValue">1</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=69F652E2FB29B04BB94505057AB259C5/CustomProperties/=Extension/@EntryIndexedValue">cs</s:String>
@@ -247,6 +359,49 @@ namespace $NAMESPACE$
                 : new BadRequestObjectResult("Please pass a name on the query string or in the request body");$END$
         }
     }
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Description/@EntryValue">Creates an Azure Function method with a Service Bus queue trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=CONNECTIONVALUE/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=PATHVALUE/Expression/@EntryValue">constant("myqueue")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Field/=PATHVALUE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Shortcut/@EntryValue">funcsbqueue</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([ServiceBusTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
+{
+    log.LogInformation($"C# ServiceBus queue trigger function processed message: {myQueueItem}");$END$
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Description/@EntryValue">Creates an Azure Function method with a timer trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Field/=SCHEDULE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Field/=SCHEDULE/Expression/@EntryValue">constant("0 */5 * * * *")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Field/=SCHEDULE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Shortcut/@EntryValue">functimer</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([TimerTrigger("$SCHEDULE$")]TimerInfo myTimer, ILogger log)
+{
+    log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");$END$
 }</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
@@ -355,6 +510,29 @@ namespace $NAMESPACE$
         }
     }
 }</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Description/@EntryValue">Creates an Azure Function method with a blob trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=CONNECTIONVALUE/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=PATHVALUE/Expression/@EntryValue">constant("samples-workitems")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Field/=PATHVALUE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Shortcut/@EntryValue">funcblob</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([BlobTrigger("$PATHVALUE$/{name}", Connection = "$CONNECTIONVALUE$")]Stream myBlob, string name, ILogger log)
+{
+    log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");$END$
+}</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/CustomProperties/=Extension/@EntryIndexedValue">cs</s:String>
@@ -406,6 +584,29 @@ namespace $NAMESPACE$
         }
     }
 }</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Description/@EntryValue">Creates an Azure Function method with an IoT Hub trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=CONNECTIONVALUE/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=PATHVALUE/Expression/@EntryValue">constant("messages/events")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Field/=PATHVALUE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Shortcut/@EntryValue">funciothub</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([IoTHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]EventData message, ILogger log)
+{
+    log.LogInformation($"C# IoT Hub trigger function processed a message: {Encoding.UTF8.GetString(message.Body.Array)}");$END$
+}</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/CustomProperties/=Extension/@EntryIndexedValue">cs</s:String>
@@ -455,6 +656,62 @@ namespace $NAMESPACE$
         }
     }
 }</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Description/@EntryValue">Creates an Azure Function method with a queue trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=CONNECTIONVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=CONNECTIONVALUE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=CONNECTIONVALUE/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=PATHVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=PATHVALUE/Expression/@EntryValue">constant("myqueue")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Field/=PATHVALUE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Shortcut/@EntryValue">funcqueue</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static void Run([QueueTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
+{
+    log.LogInformation($"C# Queue trigger function processed: {myQueueItem}");$END$
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Description/@EntryValue">Creates an Azure Function method with an HTTP trigger.</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Field/=AUTHLEVELVALUE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Field/=AUTHLEVELVALUE/Expression/@EntryValue">list("Function,Anonymous,Admin")</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Field/=AUTHLEVELVALUE/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Field/=CLASS/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Shortcut/@EntryValue">funchttp</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Text/@EntryValue">[FunctionName("$CLASS$")]
+public static async Task&lt;IActionResult&gt; Run([HttpTrigger(AuthorizationLevel.$AUTHLEVELVALUE$, "get", "post", Route = null)]HttpRequest req, ILogger log)
+{
+    log.LogInformation("C# HTTP trigger function processed a request.");
+
+    string name = req.Query["name"];
+
+    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+    dynamic data = JsonConvert.DeserializeObject(requestBody);
+    name = name ?? data?.name;
+
+    return name != null
+        ? (ActionResult)new OkObjectResult($"Hello, {name}")
+        : new BadRequestObjectResult("Please pass a name on the query string or in the request body");$END$
+}</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Field/=CLASS/Order/@EntryValue">0</s:Int64>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/CustomProperties/=Extension/@EntryIndexedValue">cs</s:String>
@@ -533,22 +790,22 @@ namespace $NAMESPACE$
 }</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Description/@EntryValue">Creates an activity function method</s:String>
-    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=ActivityClassName/@KeyIndexDefined">True</s:Boolean>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=ActivityClassName/Order/@EntryValue">0</s:Int64>
-    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=InputType/@KeyIndexDefined">True</s:Boolean>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=InputType/Order/@EntryValue">2</s:Int64>
-    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=OutputType/@KeyIndexDefined">True</s:Boolean>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=OutputType/Order/@EntryValue">1</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Description/@EntryValue">Creates an Azure Durable Functions activity function method</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=ActivityClassName/@KeyIndexDefined">False</s:Boolean>
+    
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=InputType/@KeyIndexDefined">False</s:Boolean>
+    
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Field/=OutputType/@KeyIndexDefined">False</s:Boolean>
+    
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Shortcut/@EntryValue">funcac</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Text/@EntryValue">[FunctionName(nameof($ActivityClassName$))]
-public async Task&lt;$OutputType$&gt; Run(
-    [ActivityTrigger] $InputType$ input,
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Text/@EntryValue">[FunctionName(nameof($CLASS$))]
+public async Task&lt;$OUTPUTTYPE$&gt; Run(
+    [ActivityTrigger] $INPUTTYPE$ input,
     ILogger logger)
 {
     $END$
@@ -556,20 +813,20 @@ public async Task&lt;$OutputType$&gt; Run(
 }</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Description/@EntryValue">Creates an orchestration client function method</s:String>
-    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=OrchestrationClientClassName/@KeyIndexDefined">True</s:Boolean>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=OrchestrationClientClassName/Order/@EntryValue">0</s:Int64>
-    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=Trigger/@KeyIndexDefined">True</s:Boolean>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=Trigger/Order/@EntryValue">1</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Description/@EntryValue">Creates an Azure Durable Functions orchestration client function method</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=OrchestrationClientClassName/@KeyIndexDefined">False</s:Boolean>
+    
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Field/=Trigger/@KeyIndexDefined">False</s:Boolean>
+    
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Shortcut/@EntryValue">funccl</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Text/@EntryValue">[FunctionName(nameof($OrchestrationClientClassName$))]
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Text/@EntryValue">[FunctionName(nameof($CLASS$))]
 public async Task Run(
-    $Trigger$,
+    $TRIGGERCLASS$ trigger,
     [OrchestrationClient] DurableOrchestrationClientBase client,
     ILogger logger)
 {
@@ -582,16 +839,16 @@ public async Task Run(
 }</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/@KeyIndexDefined">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Description/@EntryValue">Creates an orchestrator function method</s:String>
-    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Field/=OrchestratorClassName/@KeyIndexDefined">True</s:Boolean>
-    <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Field/=OrchestratorClassName/Order/@EntryValue">0</s:Int64>
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Description/@EntryValue">Creates an Azure Durable Functions orchestrator function method</s:String>
+    <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Field/=OrchestratorClassName/@KeyIndexDefined">False</s:Boolean>
+    
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Shortcut/@EntryValue">funcor</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Text/@EntryValue">[FunctionName(nameof($OrchestratorClassName$))]
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Text/@EntryValue">[FunctionName(nameof($CLASS$))]
 public async Task Run(
     [OrchestrationTrigger] DurableOrchestrationContextBase context,
     ILogger logger)
@@ -718,9 +975,9 @@ namespace $NAMESPACE$
             if (input != null &amp;&amp; input.Count &gt; 0)
             {
                 log.LogInformation("Documents modified " + input.Count);
-                log.LogInformation("First document Id " + input[0].Id);
+                log.LogInformation("First document Id " + input[0].Id);$END$
             }
-        }$END$
+        }
     }
 }</s:String>
 
@@ -1057,7 +1314,7 @@ module $CLASS$ =
     let run([&lt;CosmosDBTrigger(databaseName="$DATABASEVALUE$", collectionName="$COLLECTIONVALUE$", ConnectionStringSetting="$CONNECTIONVALUE$", LeaseCollectionName="leases")&gt;] input: IReadOnlyList&lt;Document&gt;, log: ILogger) =
         if not(isNull input) &amp;&amp; input.Count &gt; 0 then
             log.LogInformation(sprintf "Documents modified %d" input.Count)
-            log.LogInformation("First document Id " + input.[0].Id)</s:String>
+            log.LogInformation("First document Id " + input.[0].Id)$END$</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
     <s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
