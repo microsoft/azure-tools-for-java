@@ -37,13 +37,13 @@ public class ArcadiaSparkComputeNode extends RefreshableNode {
     private ArcadiaSparkCompute compute;
 
     public ArcadiaSparkComputeNode(Node parent, @NotNull ArcadiaSparkCompute compute) {
-        super(ARCADIA_COMPUTE_ID, compute.getTitle(), parent, ICON_PATH, true);
+        super(ARCADIA_COMPUTE_ID, compute.getTitleForNode(), parent, ICON_PATH, true);
         this.compute = compute;
         this.loadActions();
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected synchronized void refreshItems() throws AzureCmdException {
     }
 
     @Override

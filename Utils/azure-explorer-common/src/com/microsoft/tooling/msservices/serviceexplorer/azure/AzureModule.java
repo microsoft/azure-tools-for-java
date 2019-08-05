@@ -202,7 +202,7 @@ public class AzureModule extends AzureRefreshableNode {
                     sparkServerlessClusterRootModule.load(true);
                 }
 
-                if (arcadiaModule != null) {
+                if (arcadiaModule != null && arcadiaModule.isFeatureEnabled()) {
                     arcadiaModule.load(true);
                 }
 

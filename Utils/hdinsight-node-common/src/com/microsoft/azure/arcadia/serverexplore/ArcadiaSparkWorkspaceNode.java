@@ -37,13 +37,13 @@ public class ArcadiaSparkWorkspaceNode extends RefreshableNode {
     private ArcadiaWorkSpace workspace;
 
     public ArcadiaSparkWorkspaceNode(Node parent, @NotNull ArcadiaWorkSpace workspace) {
-        super(ARCADIA_WORKSPACE_ID, workspace.getName(), parent, ICON_PATH, true);
+        super(ARCADIA_WORKSPACE_ID, workspace.getTitleForNode(), parent, ICON_PATH, true);
         this.workspace = workspace;
         this.loadActions();
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected synchronized void refreshItems() throws AzureCmdException {
         this.workspace.refresh();
         this.workspace.getClusters().forEach(compute -> {
             addChildNode(new ArcadiaSparkComputeNode(this, (ArcadiaSparkCompute) compute));

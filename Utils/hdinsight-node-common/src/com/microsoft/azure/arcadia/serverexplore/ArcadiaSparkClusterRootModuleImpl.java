@@ -41,7 +41,7 @@ public class ArcadiaSparkClusterRootModuleImpl extends HDInsightRootModule {
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    protected synchronized void refreshItems() throws AzureCmdException {
         if (!isFeatureEnabled()) {
             return;
         }
