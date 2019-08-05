@@ -115,7 +115,7 @@ class SparkScalaLocalConsoleRunConfiguration(
         // Workaround for Spark 2.3 jline issue, refer to:
         // - https://github.com/Microsoft/azure-tools-for-java/issues/2285
         // - https://issues.apache.org/jira/browse/SPARK-13710
-        val jlineLibraryCoord = "jline:jline:2.12.1"
+        val jlineLibraryCoord = "jline:jline:2.14.5"
         if (getLibraryByCoord(jlineLibraryCoord) == null) {
             promptAndFix(jlineLibraryCoord)
         }
