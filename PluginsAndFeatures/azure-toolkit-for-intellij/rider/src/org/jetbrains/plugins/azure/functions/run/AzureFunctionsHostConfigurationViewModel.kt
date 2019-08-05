@@ -40,6 +40,7 @@ class AzureFunctionsHostConfigurationViewModel(
         val tfmSelector: StringSelector,
         programParametersEditor: ProgramParametersEditor,
         workingDirectorySelector: PathSelector,
+        val functionNamesEditor: TextEditor,
         environmentVariablesEditor: EnvironmentVariablesEditor,
         useExternalConsoleEditor: FlagEditor,
         val separator: ViewSeparator,
@@ -61,6 +62,7 @@ class AzureFunctionsHostConfigurationViewModel(
             tfmSelector,
             programParametersEditor,
             workingDirectorySelector,
+            functionNamesEditor,
             environmentVariablesEditor,
             useExternalConsoleEditor,
             separator,
@@ -171,6 +173,7 @@ class AzureFunctionsHostConfigurationViewModel(
               exePath: String,
               programParameters: String,
               workingDirectory: String,
+              functionNames: String,
               envs: Map<String, String>,
               passParentEnvs: Boolean,
               useExternalConsole: Boolean,
@@ -193,6 +196,10 @@ class AzureFunctionsHostConfigurationViewModel(
         this.trackProjectExePath = trackProjectExePath
         this.trackProjectArguments = trackProjectArguments
         this.trackProjectWorkingDirectory = trackProjectWorkingDirectory
+
+        this.functionNamesEditor.defaultValue.value = ""
+        this.functionNamesEditor.text.value = functionNames
+
         runnableProjectsModel.projects.adviseOnce(lifetime) { projectList ->
             urlEditor.defaultValue.value = dotNetStartBrowserParameters.url
             urlEditor.text.value = dotNetStartBrowserParameters.url

@@ -51,19 +51,20 @@ class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
     private fun createParameters(project: Project) =
             AzureFunctionsHostConfigurationParameters(
                     project,
-                    "",
-                    "",
-                    "",
-                    hashMapOf(),
-                    true,
-                    false,
-                    "",
-                    true,
-                    true,
-                    true,
-                    RunnableProjectKind.None,
-                    "",
-                    DotNetStartBrowserParameters()
+                    exePath = "",
+                    programParameters = "",
+                    workingDirectory = "",
+                    envs = hashMapOf(),
+                    isPassParentEnvs = true,
+                    useExternalConsole = false,
+                    projectFilePath = "",
+                    trackProjectExePath = true,
+                    trackProjectArguments = true,
+                    trackProjectWorkingDirectory = true,
+                    projectKind = RunnableProjectKind.None,
+                    projectTfm = "",
+                    functionNames = "",
+                    startBrowserParameters = DotNetStartBrowserParameters()
             )
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =

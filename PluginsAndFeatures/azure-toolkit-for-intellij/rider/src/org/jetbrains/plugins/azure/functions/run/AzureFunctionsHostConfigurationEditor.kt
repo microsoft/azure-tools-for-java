@@ -58,6 +58,7 @@ class AzureFunctionsHostConfigurationEditor(private val project: Project)
                     exePath,
                     programParameters,
                     workingDirectory,
+                    functionNames,
                     envs,
                     isPassParentEnvs,
                     useExternalConsole,
@@ -79,6 +80,7 @@ class AzureFunctionsHostConfigurationEditor(private val project: Project)
                     trackProjectArguments = viewModel.trackProjectArguments
                     trackProjectWorkingDirectory = viewModel.trackProjectWorkingDirectory
                     projectTfm = selectedTfm
+                    functionNames = viewModel.functionNamesEditor.text.value
                     exePath = FileUtil.toSystemIndependentName(viewModel.exePathSelector.path.value)
                     programParameters = viewModel.programParametersEditor.parametersString.value
                     workingDirectory = FileUtil.toSystemIndependentName(viewModel.workingDirectorySelector.path.value)
@@ -106,6 +108,7 @@ class AzureFunctionsHostConfigurationEditor(private val project: Project)
                 StringSelector("Target framework:"),
                 ProgramParametersEditor("Functions host a&rguments:", lifetime),
                 PathSelector("Working directory:", FileChooserDescriptorFactory.createSingleFolderDescriptor(), lifetime),
+                TextEditor("Function names to run", lifetime),
                 EnvironmentVariablesEditor("Environment variables:"),
                 FlagEditor("Use external console"),
                 ViewSeparator("Open browser"),

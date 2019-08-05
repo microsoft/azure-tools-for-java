@@ -43,7 +43,13 @@ class AzureFunctionsHostExecutorFactory(
                 ?: throw CantRunException("Can't run Azure Functions host - path to core tools has not been configured.")
 
         val projectKind = parameters.projectKind
-        logger.info("project kind is $projectKind")
+        logger.info("Project kind is $projectKind")
+
+        if (parameters.functionNames.isNotBlank()) {
+            logger.debug("Patching host.json file to reflect run configuration parameters")
+
+            HostJsonPatcher.tryPatchHostJsonFile(parameters.workingDirectory, parameters.functionNames)
+        }
 
         val dotNetExecutable = parameters.toDotNetExecutable()
         val runtimeToExecute = AzureFunctionsDotNetCoreRuntime(coreToolsInfo!!)

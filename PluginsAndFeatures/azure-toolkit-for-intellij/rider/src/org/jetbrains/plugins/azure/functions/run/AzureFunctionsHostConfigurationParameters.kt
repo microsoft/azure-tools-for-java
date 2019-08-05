@@ -67,6 +67,7 @@ open class AzureFunctionsHostConfigurationParameters(
         var trackProjectWorkingDirectory: Boolean,
         var projectKind: RunnableProjectKind,
         var projectTfm: String,
+        var functionNames: String,
         var startBrowserParameters: DotNetStartBrowserParameters
 ) : DotNetExeConfigurationParameters(
         project,
@@ -89,6 +90,7 @@ open class AzureFunctionsHostConfigurationParameters(
         private const val PROJECT_WORKING_DIRECTORY_TRACKING = "PROJECT_WORKING_DIRECTORY_TRACKING"
         private const val PROJECT_KIND = "PROJECT_KIND"
         private const val PROJECT_TFM = "PROJECT_TFM"
+        private const val FUNCTION_NAMES = "FUNCTION_NAMES"
         const val PROJECT_NOT_SPECIFIED = "Project is not specified"
         const val SOLUTION_IS_LOADING = "Solution is loading, please wait for a few seconds"
 
@@ -209,6 +211,7 @@ open class AzureFunctionsHostConfigurationParameters(
         projectKind = RunnableProjectKind.valueOf(JDOMExternalizerUtil.readField(element, PROJECT_KIND)
                 ?: "None")
         projectTfm = JDOMExternalizerUtil.readField(element, PROJECT_TFM) ?: ""
+        functionNames = JDOMExternalizerUtil.readField(element, FUNCTION_NAMES) ?: ""
         startBrowserParameters = DotNetStartBrowserParameters.readExternal(element)
     }
 
@@ -220,6 +223,7 @@ open class AzureFunctionsHostConfigurationParameters(
         JDOMExternalizerUtil.writeField(element, PROJECT_WORKING_DIRECTORY_TRACKING, if (trackProjectWorkingDirectory) "1" else "0")
         JDOMExternalizerUtil.writeField(element, PROJECT_KIND, projectKind.toString())
         JDOMExternalizerUtil.writeField(element, PROJECT_TFM, projectTfm)
+        JDOMExternalizerUtil.writeField(element, FUNCTION_NAMES, functionNames)
         startBrowserParameters.writeExternal(element)
     }
 }

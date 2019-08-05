@@ -33,6 +33,7 @@ import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.getSelectedProject
+import java.io.File
 
 class AzureFunctionsConfigurationProducer
     : LazyRunConfigurationProducer<AzureFunctionsHostConfiguration>() {
@@ -42,16 +43,30 @@ class AzureFunctionsConfigurationProducer
 
     override fun setupConfigurationFromContext(configuration: AzureFunctionsHostConfiguration,
                                                context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
-        val selectedItem = context.getSelectedProject() ?: return false
+
+        val selectedItem = context.getSelectedProject()
+        val selectedElement = context.location?.psiElement
+        if (selectedItem == null && selectedElement == null) return false
+
         val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull
         if (projects != null) {
             for (prj in projects) {
-                if (AzureFunctionsHostConfigurationType.isTypeApplicable(prj.kind) &&
-                        prj.projectFilePath == FileUtil.toSystemIndependentName(selectedItem.getFile()?.path ?: "")) {
+                if (AzureFunctionsHostConfigurationType.isTypeApplicable(prj.kind)) {
+                    if ((selectedItem != null && prj.projectFilePath == FileUtil.toSystemIndependentName(selectedItem.getFile()?.path ?: ""))
+                            || (!isInProject(prj.projectFilePath, selectedElement?.containingFile?.virtualFile?.path))) continue
+
+                    val functionName = AzureFunctionsRunMarkerContributor.tryResolveAzureFunctionName(selectedElement)
 
                     val prjToConfigure = AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(prj)
                     val projectOutput = prjToConfigure.projectOutputs.singleOrNull()
-                    configuration.name = prjToConfigure.fullName
+
+                    if (functionName.isNullOrBlank()) {
+                        configuration.name = prjToConfigure.fullName
+                    } else {
+                        configuration.name = prjToConfigure.fullName + "." + functionName
+                        configuration.parameters.functionNames = functionName
+                    }
+
                     configuration.parameters.projectFilePath = prjToConfigure.projectFilePath
                     configuration.parameters.projectKind = prjToConfigure.kind
                     configuration.parameters.projectTfm = projectOutput?.tfm ?: ""
@@ -73,5 +88,11 @@ class AzureFunctionsConfigurationProducer
         val item = context.getSelectedProject() ?: return false
         return FileUtil.toSystemIndependentName(item.getFile()?.path ?: "") ==
                 configurationConfiguration.parameters.projectFilePath
+    }
+
+    private fun isInProject(projectFilePath: String, childPath: String?): Boolean {
+        if (childPath == null) return false
+
+        return File(childPath).startsWith(File(projectFilePath).parentFile)
     }
 }

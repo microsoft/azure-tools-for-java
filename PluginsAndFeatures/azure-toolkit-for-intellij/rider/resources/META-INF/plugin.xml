@@ -124,6 +124,7 @@
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBeforeRunTaskProvider"/>
     <configurationType implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationType"/>
     <runConfigurationProducer implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsConfigurationProducer"/>
+    <runLineMarkerContributor language="C#" implementationClass="org.jetbrains.plugins.azure.functions.run.AzureFunctionsRunMarkerContributor"/>
 
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsNotification" />
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsMissingNupkgInstaller" />
