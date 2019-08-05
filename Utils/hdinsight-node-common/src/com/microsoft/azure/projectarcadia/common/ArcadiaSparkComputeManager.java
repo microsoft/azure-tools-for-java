@@ -44,9 +44,7 @@ import rx.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     private static class LazyHolder {
@@ -168,7 +166,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                 )
                 .doOnNext(subAndWorkspaceUriPair -> log().debug("Pair(Subscription, WorkSpaceListUri): " + subAndWorkspaceUriPair.toString()))
                 .flatMap(subAndWorkSpaceUriPair ->
-                        getHttp(subAndWorkSpaceUriPair.getLeft())
+                        buildHttp(subAndWorkSpaceUriPair.getLeft())
                                 .withUuidUserAgent()
                                 .get(subAndWorkSpaceUriPair.getRight().toString(), null, null, GetWorkspaceListResponse.class)
                                 .flatMap(resp -> Observable.from(resp.items()))
@@ -197,7 +195,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     }
 
     @NotNull
-    private AzureHttpObservable getHttp(@NotNull SubscriptionDetail subscriptionDetail) {
+    private AzureHttpObservable buildHttp(@NotNull SubscriptionDetail subscriptionDetail) {
         return new AzureHttpObservable(subscriptionDetail, ApiVersion.VERSION);
     }
 }
