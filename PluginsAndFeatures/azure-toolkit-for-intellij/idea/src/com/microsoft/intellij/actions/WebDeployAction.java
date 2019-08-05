@@ -37,7 +37,11 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.runner.webapp.WebAppConfigurationType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,19 +54,31 @@ public class WebDeployAction extends AzureAnAction {
 
 
     @Override
-    public void onActionPerformed(AnActionEvent event) {
+    public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
-            return;
+            return true;
         }
         try {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-                return;
+                return true;
             }
             ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return true;
+    }
+
+    @Override
+    protected String getServiceName(AnActionEvent event) {
+        return TelemetryConstants.WEBAPP;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.DEPLOY_WEBAPP;
     }
 
     @SuppressWarnings("deprecation")

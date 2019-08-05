@@ -92,7 +92,7 @@ public interface IClusterDetail {
     }
 
     @Nullable
-    default IHDIStorageAccount getStorageAccount() throws HDIException {
+    default IHDIStorageAccount getStorageAccount() {
         return null;
     }
 

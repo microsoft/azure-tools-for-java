@@ -22,41 +22,30 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.Cache;
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTableBody;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.YarnCluster;
-import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.App;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
-import rx.exceptions.Exceptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,8 +64,7 @@ import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
-    public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
-    public static final String AdlsGen2RestfulPathPattern = "^(https://)([^/.\\s]+\\.)(dfs\\.core\\.windows\\.net)(/[^/.\\s]+)*/?$";
+    public static final String AdlsGen2RestfulPathPattern = "^(https://)(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(/[^/.\\s]+)*/?$";
 
     @Nullable
     private String currentLogUrl;
@@ -219,6 +207,19 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
         this.httpObservable = httpObservable;
+        this.jobDeploy = jobDeploy;
+    }
+
+    public SparkBatchJob(
+            @Nullable IClusterDetail cluster,
+            SparkSubmissionParameter submissionParameter,
+            SparkBatchSubmission sparkBatchSubmission,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
+            @Nullable Deployable jobDeploy) {
+        this.cluster = cluster;
+        this.submissionParameter = submissionParameter;
+        this.submission = sparkBatchSubmission;
+        this.ctrlSubject = ctrlSubject;
         this.jobDeploy = jobDeploy;
     }
 
@@ -649,7 +650,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @return Yarn Application Attempt info Observable
      */
-    Observable<AppAttempt> getSparkJobYarnCurrentAppAttempt() {
+    protected Observable<AppAttempt> getSparkJobYarnCurrentAppAttempt() {
         if (getConnectUri() == null) {
             return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
                     "please configure Spark cluster which the Spark job will be submitted."));
@@ -685,116 +686,6 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
                     return Observable.empty();
                 });
-    }
-
-    /**
-     * New RxAPI: Get the current Spark job Yarn application attempt containers
-     *
-     * @return The string pair Observable of Host and Container Id
-     */
-    Observable<SimpleImmutableEntry<URI, String>> getSparkJobYarnContainersObservable(@NotNull AppAttempt appAttempt) {
-        if (getConnectUri() == null) {
-            return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
-                    "please configure Spark cluster which the Spark job will be submitted."));
-        }
-
-        return loadPageByBrowserObservable(getConnectUri().resolve("/yarnui/hn/cluster/appattempt/")
-                                                          .resolve(appAttempt.getAppAttemptId()).toString())
-                .retry(getRetriesMax())
-                .repeatWhen(ob -> ob.delay(getDelaySeconds(), TimeUnit.SECONDS))
-                .filter(this::isSparkJobYarnAppAttemptNotJustLaunched)
-                .map(htmlPage -> htmlPage.getFirstByXPath("//*[@id=\"containers\"]/tbody")) // Get the container table by XPath
-                .filter(Objects::nonNull)       // May get null in the last step
-                .map(HtmlTableBody.class::cast)
-                .map(HtmlTableBody::getRows)    // To container rows
-                .buffer(2, 1)
-                // Wait for last two refreshes getting the same rows count, which means the yarn application
-                // launching containers finished
-                .takeUntil(buf -> buf.size() == 2 && buf.get(0).size() == buf.get(1).size())
-                .filter(buf -> buf.size() == 2 && buf.get(0).size() == buf.get(1).size())
-                .map(buf -> buf.get(1))
-                .flatMap(Observable::from)  // From rows to row one by one
-                .filter(containerRow -> {
-                    try {
-                        // Read container URL from YarnUI page
-                        String urlFromPage = ((HtmlAnchor) containerRow.getCell(3).getFirstChild()).getHrefAttribute();
-                        URI containerUri = getConnectUri().resolve(urlFromPage);
-
-                        return loadPageByBrowserObservable(containerUri.toString())
-                                .map(this::isSparkJobYarnContainerLogAvailable)
-                                .toBlocking()
-                                .singleOrDefault(false);
-                    } catch (Exception ignore) {
-                        return false;
-                    }
-                })
-                .map(row -> {
-                    URI hostUrl = URI.create(row.getCell(1).getTextContent().trim());
-                    String containerId = row.getCell(0).getTextContent().trim();
-
-                    return new SimpleImmutableEntry<>(hostUrl, containerId);
-                });
-    }
-
-    /*
-     * Parsing the Application Attempt HTML page to determine if the attempt is running
-     */
-    private Boolean isSparkJobYarnAppAttemptNotJustLaunched(@NotNull HtmlPage htmlPage) {
-        // Get the info table by XPath
-        @Nullable
-        HtmlTableBody infoBody = htmlPage.getFirstByXPath("//*[@class=\"info\"]/tbody");
-
-        if (infoBody == null) {
-            return false;
-        }
-
-        return infoBody
-                .getRows()
-                .stream()
-                .filter(row -> row.getCells().size() >= 2)
-                .filter(row -> row.getCell(0)
-                                  .getTextContent()
-                                  .trim()
-                                  .toLowerCase()
-                                  .equals("application attempt state:"))
-                .map(row -> !row.getCell(1)
-                                .getTextContent()
-                                .trim()
-                                .toLowerCase()
-                                .equals("launched"))
-                .findFirst()
-                .orElse(false);
-    }
-
-    private Boolean isSparkJobYarnContainerLogAvailable(@NotNull HtmlPage htmlPage) {
-        Optional<DomElement> firstContent = Optional.ofNullable(
-                htmlPage.getFirstByXPath("//*[@id=\"layout\"]/tbody/tr/td[2]"));
-
-        return firstContent.map(DomElement::getTextContent)
-                           .map(line -> !line.trim()
-                                            .toLowerCase()
-                                            .contains("no logs available"))
-                           .orElse(false);
-    }
-
-    private Observable<HtmlPage> loadPageByBrowserObservable(String url) {
-        final WebClient HTTP_WEB_CLIENT = new WebClient(BrowserVersion.CHROME);
-        HTTP_WEB_CLIENT.setCache(globalCache);
-
-        if (getSubmission().getCredentialsProvider() != null) {
-            HTTP_WEB_CLIENT.setCredentialsProvider(getSubmission().getCredentialsProvider());
-        }
-
-        return Observable.create(ob -> {
-            try {
-                ob.onNext(HTTP_WEB_CLIENT.getPage(url));
-                ob.onCompleted();
-            } catch (ScriptException e) {
-                log().debug("get Spark job Yarn attempts detail browser rendering Error", e);
-            } catch (IOException e) {
-                ob.onError(e);
-            }
-        });
     }
 
     /**
@@ -1040,6 +931,28 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                 .map(yarnApp -> yarnApp.getLogAggregationStatus().toUpperCase());
     }
 
+    public Observable<Integer> getYarnContainerLogUrlPort() {
+        final int DEFAULT_YARN_CONTAINER_LOG_URL_PORT = 30060;
+        return getSparkJobApplicationIdObservable()
+                .flatMap(applicationId ->
+                        Observable.fromCallable(() ->
+                                getSparkJobYarnApplication(this.getYarnNMConnectUri(), applicationId)))
+                .doOnError(err -> log().warn("Error getting yarn application. " + ExceptionUtils.getStackTrace(err)))
+                .map(app -> {
+                    String amHostHttpAddress = app.getAmHostHttpAddress();
+                    int containerPort = DEFAULT_YARN_CONTAINER_LOG_URL_PORT;
+                    Matcher portMatcher = Pattern.compile(":([0-9]+)").matcher(amHostHttpAddress);
+                    if (portMatcher.find()) {
+                        try {
+                            containerPort = Integer.valueOf(portMatcher.group(1));
+                        } catch (Exception ignore) {
+                        }
+                    }
+                    return containerPort;
+                })
+                .onErrorResumeNext(Observable.just(DEFAULT_YARN_CONTAINER_LOG_URL_PORT));
+    }
+
     private Boolean isYarnAppLogAggregationDone(App yarnApp) {
         switch (yarnApp.getLogAggregationStatus().toUpperCase()) {
             case "SUCCEEDED":
@@ -1060,7 +973,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @return Job Driver log URL observable
      */
-    Observable<String> getSparkJobDriverLogUrlObservable() {
+    protected Observable<String> getSparkJobDriverLogUrlObservable() {
         return getSparkJobYarnCurrentAppAttempt()
                 .map(AppAttempt::getLogsLink)
                 .map(URI::create)
@@ -1148,53 +1061,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        if (destinationRootPath != null && destinationRootPath.matches(AdlsPathPattern) && accessToken != null) {
-            //use ADLS GEN1
-            return JobUtils.deployArtifactToADLS(artifactPath, destinationRootPath, accessToken)
-                    .map(path -> {
-                        getSubmissionParameter().setFilePath(path);
-                        return this;
-                    });
-        } else if(destinationRootPath != null && destinationRootPath.matches(AdlsGen2RestfulPathPattern) && accessToken != null) {
-            //use ADLS GEN2
-            URI dest = jobDeploy.getUploadDir(destinationRootPath);
-            if (dest == null) {
-                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
-            }
-
-            return jobDeploy.deploy(new File(artifactPath), dest)
-                    .map(redirectPath -> {
-                        getSubmissionParameter().setFilePath(redirectPath);
-                        return this;
-                    });
-        } else if (destinationRootPath != null && destinationRootPath.matches(WebHDFSPathPattern)) {
-            //use webhdfs
-            URI dest = jobDeploy.getUploadDir(destinationRootPath);
-            if (dest == null) {
-                return Observable.error(new IllegalArgumentException("Cannot get valid uploading artifact destination"));
-            }
-
-            return jobDeploy.deploy(new File(artifactPath), dest)
-                    .map(redirectPath -> {
-                        getSubmissionParameter().setFilePath(redirectPath);
-                        return this;
-                    });
-        } else if (storageAccount == null) {
-            //use livy session
-            return JobUtils.deployArtifact(artifactPath, getSubmissionParameter().getClusterName(), getCtrlSubject())
-                    .map(clusterArtifactUriPair -> {
-                        getSubmissionParameter().setFilePath(clusterArtifactUriPair.getValue());
-                        return this;
-                    })
-                    .toObservable();
-        } else {
-            //use default storage account
-            return JobUtils.deployArtifact(artifactPath, storageAccount, getCtrlSubject())
-                    .map(path -> {
-                        getSubmissionParameter().setFilePath(path);
-                        return this;
-                    });
-        }
+        return jobDeploy.deploy(new File(artifactPath))
+                .map(redirectPath -> {
+                    getSubmissionParameter().setFilePath(redirectPath);
+                    return this;
+                });
     }
 
     /**

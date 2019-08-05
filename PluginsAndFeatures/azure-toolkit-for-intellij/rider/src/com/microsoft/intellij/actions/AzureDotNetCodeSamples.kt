@@ -24,13 +24,15 @@ package com.microsoft.intellij.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import org.jdesktop.swingx.JXHyperlink
 import java.net.URI
 
 class AzureDotNetCodeSamples : AzureAnAction() {
-    override fun onActionPerformed(anActionEvent: AnActionEvent) {
+    override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
         val portalLing = JXHyperlink()
         portalLing.setURI(URI.create("https://azure.microsoft.com/en-us/resources/samples/?platform=dotnet"))
         portalLing.doClick()
+        return true
     }
 }

@@ -59,7 +59,12 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
         const val REFRESH_BUTTON_PATH = "/icons/refresh.png"
     }
 
+    open val comboBoxName: String = "clusterListComboBox"
+
     private val clustersSelection by lazy { ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
+        comboBox.name = comboBoxName + "Combo"
+        button.name = comboBoxName + "Button"
+
         setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH))
 
         comboBox.apply {
@@ -210,6 +215,8 @@ class ArisSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
 }
 
 class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
+    override val comboBoxName: String = "accountListComboBox"
+
     inner class ViewModel
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().accounts
             .sortedBy { it.title }

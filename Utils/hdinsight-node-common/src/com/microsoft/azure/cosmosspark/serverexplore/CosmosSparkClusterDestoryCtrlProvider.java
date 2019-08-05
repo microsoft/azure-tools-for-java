@@ -21,14 +21,17 @@
  */
 package com.microsoft.azure.cosmosspark.serverexplore;
 
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
-import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
+import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
-public class CosmosSparkClusterDestoryCtrlProvider {
+public class CosmosSparkClusterDestoryCtrlProvider implements ILogger {
     @NotNull
     private SettableControl<CosmosSparkClusterDestoryModel> controllableView;
 
@@ -36,11 +39,11 @@ public class CosmosSparkClusterDestoryCtrlProvider {
     private IdeSchedulers ideSchedulers;
 
     @NotNull
-    private DestroyableCluster cluster;
+    private AzureSparkCosmosCluster cluster;
     public CosmosSparkClusterDestoryCtrlProvider(
             @NotNull SettableControl<CosmosSparkClusterDestoryModel> controllableView,
             @NotNull IdeSchedulers ideSchedulers,
-            @NotNull DestroyableCluster cluster) {
+            @NotNull AzureSparkCosmosCluster cluster) {
         this.controllableView = controllableView;
         this.ideSchedulers = ideSchedulers;
         this.cluster = cluster;
@@ -50,20 +53,26 @@ public class CosmosSparkClusterDestoryCtrlProvider {
         return Observable.just(new CosmosSparkClusterDestoryModel())
                 .doOnNext(controllableView::getData)
                 .observeOn(ideSchedulers.processBarVisibleAsync("Validating the cluster name..."))
-                .map(toUpdate -> {
+                .flatMap(toUpdate -> {
                     if (StringUtils.isEmpty(toUpdate.getClusterName())) {
-                        return toUpdate.setErrorMessage("Error: Empty cluster name.");
+                        return Observable.just(toUpdate.setErrorMessage("Error: Empty cluster name."));
                     }
                     if (!clusterName.equals(toUpdate.getClusterName())) {
-                        return toUpdate.setErrorMessage("Error: Wrong cluster name.");
+                        return Observable.just(toUpdate.setErrorMessage("Error: Wrong cluster name."));
                     }
-                    try {
-                        // destroy the cluster
-                        cluster.destroy().toBlocking().single();
-                    } catch (Exception e) {
-                        return toUpdate.setErrorMessage("Delete failed: " + e.getMessage());
-                    }
-                    return toUpdate.setErrorMessage(null);
+
+                    return cluster.destroy()
+                            .map(cluster -> toUpdate.setErrorMessage(null))
+                            .onErrorReturn(err -> {
+                                log().warn("Error provision a cluster. " + ExceptionUtils.getStackTrace(err));
+                                if (err instanceof SparkAzureDataLakePoolServiceException) {
+                                    String requestId = ((SparkAzureDataLakePoolServiceException) err).getRequestId();
+                                    toUpdate.setRequestId(requestId);
+                                    log().info("x-ms-request-id: " + requestId);
+                                }
+                                log().info("Cluster guid: " + cluster.getGuid());
+                                return toUpdate.setErrorMessage(err.getMessage());
+                            });
                 })
                 .observeOn(ideSchedulers.dispatchUIThread())
                 .doOnNext(controllableView::setData)

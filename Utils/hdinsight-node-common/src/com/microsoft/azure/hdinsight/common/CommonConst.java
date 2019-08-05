@@ -56,6 +56,7 @@ public class CommonConst {
     public static final String ToolWindowSparkJobDebugIcon_13x_Path = "/icons/ToolWindowSparkJobDebugger_13x.png";
     public static final String ToolWindowSparkJobDebugIcon_16x_Path = "/icons/ToolWindowSparkJobDebug.png";
 
+    public static final String ENABLE_HDINSIGHT_NEW_SDK = "Enable.HDInsight.New.SDK";
     public static final String HDINSIGHT_ADDITIONAL_CLUSTERS = "com.microsoft.azure.hdinsight.AdditionalClusters";
     public static final String HDINSIGHT_LIVY_LINK_CLUSTERS = "com.microsoft.azure.hdinsight.LivyLinkClusters";
     public static final String SQL_BIG_DATA_LIVY_LINK_CLUSTERS = "com.microsoft.azure.sqlbigdata.SqlBigDataLivyLinkClusters";

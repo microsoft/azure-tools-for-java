@@ -36,6 +36,7 @@ public class AppInsightsClient {
     public enum EventType {
         Action,
         Dialog,
+        Error,
         WizardStep,
         Telemetry,
         DockerContainer,
@@ -44,6 +45,10 @@ public class AppInsightsClient {
         Plugin,
         Subscription,
         Azure
+    }
+
+    public static String getInstallationId(){
+        return configuration == null ? null : configuration.installationId();
     }
 
     public static void setAppInsightsConfiguration(AppInsightsConfiguration appInsightsConfiguration) {
@@ -186,7 +191,7 @@ public class AppInsightsClient {
         try {
             TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
             TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
-            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventNamePrefix());
+            TelemetryManager.getInstance().setEventNamePrefix(configuration.eventName());
         } catch (Exception ignore) {
         }
     }

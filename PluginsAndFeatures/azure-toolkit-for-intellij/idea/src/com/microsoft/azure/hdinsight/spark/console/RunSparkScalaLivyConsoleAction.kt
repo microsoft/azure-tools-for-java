@@ -28,6 +28,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.*
+import com.microsoft.azuretools.telemetry.TelemetryConstants
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
@@ -58,4 +59,6 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
             else -> true
         }
     }
+
+    override fun getOperationName(event: AnActionEvent?): String = TelemetryConstants.RUN_SPARK_LIVY_INTERACTIVE_CONSOLE
 }

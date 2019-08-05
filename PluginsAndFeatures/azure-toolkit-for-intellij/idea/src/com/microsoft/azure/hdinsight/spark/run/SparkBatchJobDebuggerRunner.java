@@ -23,6 +23,7 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
@@ -46,7 +47,11 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionAdvancedConfigPanel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
@@ -59,7 +64,10 @@ import rx.subjects.PublishSubject;
 import java.io.IOException;
 import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implements SparkSubmissionRunner {
     public static final Key<String> DebugTargetKey = new Key<>("debug-target");
@@ -113,11 +121,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
      */
     @Override
     protected void execute(ExecutionEnvironment environment, ProgramRunner.Callback callback, RunProfileState state) throws ExecutionException {
+        final Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
         final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<> ();
         final SparkBatchRemoteDebugState submissionState = (SparkBatchRemoteDebugState) state;
-
-        // Check parameters before starting
-        submissionState.checkSubmissionParameter();
 
         final SparkSubmitModel submitModel = submissionState.getSubmitModel();
         // Create SSH debug session firstly
@@ -127,8 +133,10 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                     .open()
                     .verifyCertificate();
         } catch (Exception e) {
-            throw new ExecutionException("Failed to create SSH session for debugging. " +
+            ExecutionException exp = new ExecutionException("Failed to create SSH session for debugging. " +
                     ExceptionUtils.getRootCauseMessage(e));
+            EventUtil.logErrorWithComplete(operation, ErrorType.systemError, exp, null, null);
+            throw exp;
         }
 
         final Project project = submitModel.getProject();
@@ -181,12 +189,17 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                 },
                 err -> {
                     submissionConsole.print(ExceptionUtils.getRootCauseMessage(err), ConsoleViewContentType.ERROR_OUTPUT);
-                    jobDriverEnvReady.setError("The Spark job remote debug is cancelled due to " + ExceptionUtils.getRootCauseMessage(err));
+                    String errMsg = "The Spark job remote debug is cancelled due to " + ExceptionUtils.getRootCauseMessage(err);
+                    jobDriverEnvReady.setError(errMsg);
+                    EventUtil.logErrorWithComplete(operation, ErrorType.systemError, new UncheckedExecutionException(errMsg, err), null, null);
                 },
                 () -> {
                     if (Optional.ofNullable(driverDebugHandler.getUserData(ProcessHandler.TERMINATION_REQUESTED))
                                 .orElse(false)) {
-                        jobDriverEnvReady.setError("The Spark job remote debug is cancelled by user.");
+                        String errMsg = "The Spark job remote debug is cancelled by user.";
+                        jobDriverEnvReady.setError(errMsg);
+                        Map<String, String> props = ImmutableMap.of("isDebugCancelled", "true");
+                        EventUtil.logErrorWithComplete(operation, ErrorType.userError, new ExecutionException(errMsg), props, null);
                     }
                 });
 
@@ -229,6 +242,26 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
                             // Prepare the debug tab console view UI
                             SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
+                            // Get YARN container log URL port
+                            int containerLogUrlPort =
+                                    ((SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob())
+                                            .getYarnContainerLogUrlPort()
+                                            .toBlocking()
+                                            .single();
+                            // Parse container ID and host URL from driver console view
+                            jobOutputView.getSecondaryConsoleView().addMessageFilter((line, entireLength) -> {
+                                Matcher matcher = Pattern.compile(
+                                        "Launching container (\\w+).* on host ([a-zA-Z_0-9-.]+)",
+                                        Pattern.CASE_INSENSITIVE)
+                                        .matcher(line);
+                                while (matcher.find()) {
+                                    String containerId = matcher.group(1);
+                                    // TODO: get port from somewhere else rather than hard code here
+                                    URI hostUri = URI.create(String.format("http://%s:%d", matcher.group(2), containerLogUrlPort));
+                                    debugEventSubject.onNext(new SparkBatchJobExecutorCreatedEvent(hostUri, containerId));
+                                }
+                                return null;
+                            });
                             jobOutputView.attachToProcess(handlerReadyEvent.getDebugProcessHandler());
 
                             ExecutionResult result = new DefaultExecutionResult(
@@ -253,7 +286,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
                             final String containerId = executorCreatedEvent.getContainerId();
                             final SparkBatchRemoteDebugJob debugJob =
-                                    (SparkBatchRemoteDebugJob) executorCreatedEvent.getJob();
+                                    (SparkBatchRemoteDebugJob) driverDebugProcess.getSparkJob();
 
                             URI internalHostUri = executorCreatedEvent.getHostUri();
                             URI executorLogUrl = debugJob.convertToPublicLogUri(internalHostUri)
@@ -266,7 +299,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                             schedulers,
                                             debugJob,
                                             internalHostUri.getHost(),
-                                            executorCreatedEvent.getDebugSshSession(),
+                                            driverDebugProcess.getDebugSession(),
                                             executorLogUrl.toString());
 
                             SparkBatchJobDebugProcessHandler executorDebugHandler =
@@ -275,6 +308,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                             executorDebugHandler.getRemoteDebugProcess().start();
                         }
                     } catch (ExecutionException e) {
+                        EventUtil.logErrorWithComplete(operation, ErrorType.systemError, new UncheckedExecutionException(e), null, null);
                         throw new UncheckedExecutionException(e);
                     }
                 });
@@ -334,10 +368,16 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
     public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel, @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
         try {
             SparkSubmissionAdvancedConfigPanel.Companion.checkSettings(submitModel.getAdvancedConfigModel());
+            SparkSubmissionParameter debugSubmissionParameter = SparkBatchRemoteDebugJob.convertToDebugParameter(submitModel.getSubmissionParameter());
+            SparkSubmitModel debugModel = new SparkSubmitModel(submitModel.getProject(), debugSubmissionParameter,
+                    submitModel.getAdvancedConfigModel(), submitModel.getJobUploadStorageModel());
 
-            return SparkBatchRemoteDebugJob.factory(submitModel.getSubmissionParameter(),
-                                                    SparkBatchSubmission.getInstance(),
-                                                    ctrlSubject);
+            String clusterName = submitModel.getSubmissionParameter().getClusterName();
+            IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
+                    .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
+
+            Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(debugModel, ctrlSubject);
+            return new SparkBatchRemoteDebugJob(clusterDetail, debugModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
         } catch (DebugParameterDefinedException e) {
             throw new ExecutionException(e);
         }

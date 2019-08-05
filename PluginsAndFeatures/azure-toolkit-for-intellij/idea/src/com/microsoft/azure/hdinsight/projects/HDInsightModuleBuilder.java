@@ -21,6 +21,8 @@
  */
 package com.microsoft.azure.hdinsight.projects;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
 import com.intellij.ide.util.projectWizard.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.ModifiableModuleModel;
@@ -42,6 +44,8 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.IconPathBuilder;
 import com.microsoft.azure.hdinsight.projects.ui.HDInsightProjectTypeStep;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
@@ -212,14 +216,24 @@ public class HDInsightModuleBuilder extends JavaModuleBuilder implements ModuleB
 
         if (templatesType == HDInsightTemplatesType.Java) {
             AppInsightsClient.create(HDInsightBundle.message("SparkProjectSystemJavaCreation"), null, hdiProperties);
+            EventUtil.logEvent(EventType.info, HDINSIGHT, HDInsightBundle.message("SparkProjectSystemJavaCreation"),
+                hdiProperties, null);
         } else if (templatesType == HDInsightTemplatesType.Scala) {
             AppInsightsClient.create(HDInsightBundle.message("SparkProjectSystemScalaCreation"), null, hdiProperties);
+            EventUtil.logEvent(EventType.info, HDINSIGHT, HDInsightBundle.message("SparkProjectSystemScalaCreation"),
+                hdiProperties, null);
         } else if (templatesType == HDInsightTemplatesType.ScalaClusterSample) {
             AppInsightsClient.create(HDInsightBundle.message("SparkProjectSystemScalaSampleCreation"), null, hdiProperties);
+            EventUtil.logEvent(EventType.info, HDINSIGHT, HDInsightBundle.message("SparkProjectSystemScalaSampleCreation"),
+                    hdiProperties, null);
         } else if (templatesType == HDInsightTemplatesType.ScalaFailureTaskDebugSample) {
             AppInsightsClient.create(HDInsightBundle.message("SparkProjectSystemScalaFailureTaskDebugSampleCreation"), null, hdiProperties);
+            EventUtil.logEvent(EventType.info, HDINSIGHT,
+                HDInsightBundle.message("SparkProjectSystemScalaFailureTaskDebugSampleCreation"), hdiProperties, null);
         } else {
             AppInsightsClient.create(HDInsightBundle.message("SparkProjectSystemOtherCreation"), null, hdiProperties);
+            EventUtil.logEvent(EventType.info, HDINSIGHT,
+                HDInsightBundle.message("SparkProjectSystemOtherCreation"), hdiProperties, null);
         }
     }
 

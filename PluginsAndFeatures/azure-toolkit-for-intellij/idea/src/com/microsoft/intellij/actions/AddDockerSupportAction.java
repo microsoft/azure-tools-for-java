@@ -29,17 +29,21 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -56,11 +60,11 @@ public class AddDockerSupportAction extends AzureAnAction {
     String pomXmlBasePath;
 
     @Override
-    public void onActionPerformed(AnActionEvent anActionEvent) {
+    public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         if (module == null) {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
-            return;
+            return true;
         }
         pomXmlBasePath = Paths.get(module.getModuleFilePath()).getParent().toString();
         String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
@@ -98,15 +102,17 @@ public class AddDockerSupportAction extends AzureAnAction {
                     }
             );
         } catch (IOException e) {
+            EventUtil.logError(operation, ErrorType.userError, e, null, null);
             e.printStackTrace();
             notifyError(e.getMessage());
-            return;
+            return true;
         }
         // detect docker daemon
         String defaultDockerHost = null;
         try {
             defaultDockerHost = DefaultDockerClient.fromEnv().uri().toString();
         } catch (DockerCertificateException e) {
+            EventUtil.logError(operation, ErrorType.userError, e, null, null);
             e.printStackTrace();
             // leave defaultDockerHost null
         }
@@ -118,6 +124,15 @@ public class AddDockerSupportAction extends AzureAnAction {
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";
         notifyInfo(notificationContent);
+        return true;
+    }
+
+    protected String getServiceName(AnActionEvent event) {
+        return TelemetryConstants.DOCKER;
+    }
+
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.DEPLOY_DOCKER_HOST;
     }
 
     @Override

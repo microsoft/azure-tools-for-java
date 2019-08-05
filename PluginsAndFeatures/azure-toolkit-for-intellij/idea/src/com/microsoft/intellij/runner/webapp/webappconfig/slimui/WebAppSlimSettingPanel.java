@@ -322,6 +322,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private void selectWebApp() {
         Object value = cbxWebApp.getSelectedItem();
         if (Comparing.equal(CREATE_NEW_WEBAPP, value) && !refreshingWebApp) {
+            cbxWebApp.setSelectedItem(null);
             createNewWebApp();
         } else if (value == null || value instanceof String) {
             return;

@@ -1,5 +1,11 @@
 package com.microsoft.azuretools.azureexplorer.forms;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
+
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -309,51 +315,56 @@ public class CreateArmStorageAccountForm extends AzureTitleAreaDialogWrapper {
 		if (subscription == null) {
 			String name = nameTextField.getText();
 			AccessTier accessTier = (AccessTier) accessTierComboBox.getData(accessTierComboBox.getText());
-			SubscriptionDetail subscriptionDetail = (SubscriptionDetail) subscriptionComboBox.getData(subscriptionComboBox.getText());
+			SubscriptionDetail subscriptionDetail = (SubscriptionDetail) subscriptionComboBox.
+                getData(subscriptionComboBox.getText());
 			setSubscription(subscriptionDetail);
 			DefaultLoader.getIdeHelper().runInBackground(null, "Creating storage account", false, true,
 					"Creating storage account " + name + "...", new Runnable() {
 						@Override
 						public void run() {
-							try {
-								AzureSDKManager.createStorageAccount(subscriptionDetail.getSubscriptionId(), name, region,
-										isNewResourceGroup, resourceGroupName, kind, accessTier, false, replication);
-								// update resource groups cache if new resource group was created when creating storage account
-					            if (isNewResourceGroup) {
-					                AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-					                if (azureManager != null) {
-										ResourceGroup rg = azureManager.getAzure(subscriptionDetail.getSubscriptionId()).resourceGroups().getByName(resourceGroupName);
-										AzureModelController.addNewResourceGroup(subscriptionDetail, rg);
-									}
-					            }
-					
-								if (onCreate != null) {
-									onCreate.run();
-								}
-							} catch (Exception e) {
-								DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										PluginUtil.displayErrorDialog(PluginUtil.getParentShell(), Messages.err,
-												"An error occurred while creating the storage account: " + e.getMessage());
-									}
-								});
-							}
+                            EventUtil.executeWithLog(STORAGE, CREATE_STORAGE_ACCOUNT, (operation) -> {
+                                AzureSDKManager
+                                    .createStorageAccount(subscriptionDetail.getSubscriptionId(), name, region,
+                                        isNewResourceGroup, resourceGroupName, kind, accessTier, false, replication);
+                                // update resource groups cache if new resource group was created when creating
+                                // storage account
+                                if (isNewResourceGroup) {
+                                    AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+                                    if (azureManager != null) {
+                                        ResourceGroup rg = azureManager.getAzure(subscriptionDetail.getSubscriptionId())
+                                            .resourceGroups().getByName(resourceGroupName);
+                                        AzureModelController.addNewResourceGroup(subscriptionDetail, rg);
+                                    }
+                                }
+
+                                if (onCreate != null) {
+                                    onCreate.run();
+                                }
+                            }, (e) ->
+                                DefaultLoader.getIdeHelper().invokeLater(() ->
+                                    PluginUtil.displayErrorDialog(PluginUtil.getParentShell(), Messages.err,
+                                        "An error occurred while creating the storage account: " + e.getMessage())
+                                )
+                            );
 						}
 					});
 		} else {
-			//creating from 'create vm'
-            newStorageAccount =
-                    new com.microsoft.tooling.msservices.model.storage.StorageAccount(nameTextField.getText(), subscription.getSubscriptionId());
-            newStorageAccount.setResourceGroupName(resourceGroupName);
-            newStorageAccount.setNewResourceGroup(isNewResourceGroup);
-            newStorageAccount.setType(replication);
-            newStorageAccount.setLocation(region);
-            newStorageAccount.setKind(kind);
+            EventUtil.executeWithLog(STORAGE, CREATE_STORAGE_ACCOUNT, (operation) -> {
+                //creating from 'create vm'
+                newStorageAccount =
+                    new com.microsoft.tooling.msservices.model.storage.StorageAccount(nameTextField.getText(),
+                        subscription.getSubscriptionId());
+                newStorageAccount.setResourceGroupName(resourceGroupName);
+                newStorageAccount.setNewResourceGroup(isNewResourceGroup);
+                newStorageAccount.setType(replication);
+                newStorageAccount.setLocation(region);
+                newStorageAccount.setKind(kind);
 
-            if (onCreate != null) {
-                onCreate.run();
-            }
+                if (onCreate != null) {
+                    onCreate.run();
+                }
+            });
+
 		}
 		super.okPressed();
     }

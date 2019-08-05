@@ -22,9 +22,11 @@
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.intellij.openapi.application.ApplicationManager
+import com.microsoft.azure.datalake.store.ADLException
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.SessionNotStartException
 import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.intellij.forms.ErrorMessageForm
 import org.apache.commons.lang.exception.ExceptionUtils
 import java.io.FileNotFoundException
@@ -33,6 +35,7 @@ const val ToolPackageSuffix: String = "com.microsoft.azure"
 
 class SparkToolException(exp: Throwable?) : ClassifiedException(exp) {
     override val title: String = "Azure Plugin for IntelliJ Error"
+    override val errorType = ErrorType.toolError
 
     override fun handleByUser(){
         ApplicationManager.getApplication().invokeLater {
@@ -53,6 +56,7 @@ object SparkToolExceptionFactory : ClassifiedExceptionFactory() {
                 && exp !is SessionNotStartException
                 && exp !is SparkJobException
                 && exp !is FileNotFoundException
+                && exp !is ADLException
                 && stackTrace.contains(ToolPackageSuffix)) {
             SparkToolException(exp)
         } else null

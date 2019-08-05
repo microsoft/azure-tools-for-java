@@ -29,6 +29,7 @@ import com.microsoft.intellij.forms.dsl.panel
 class SparkSubmissionJobUploadStorageAdlsSignInCard: SparkSubmissionJobUploadStorageBasicCard() {
     override val title: String = "Sign In"
     val signInLink = JXHyperLinkWithUri().apply {
+        name = "adlsCardSignInHyperLink"
         text = "Sign In"
     }
 
@@ -43,6 +44,7 @@ class SparkSubmissionJobUploadStorageAdlsSignInCard: SparkSubmissionJobUploadSto
                 c(signInLink)
             }
         }
+
         layout = formBuilder.createGridLayoutManager()
         formBuilder.allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
     }

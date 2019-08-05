@@ -33,7 +33,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho-version>0.25.0</tycho-version>
-    <azuretool.eclipse.version>3.13.0-SNAPSHOT</azuretool.eclipse.version>
+    <azuretool.eclipse.version>3.17.0-SNAPSHOT</azuretool.eclipse.version>
   </properties>
 
   <repositories>

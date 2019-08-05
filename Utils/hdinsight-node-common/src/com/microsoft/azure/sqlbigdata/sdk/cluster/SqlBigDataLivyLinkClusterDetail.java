@@ -12,6 +12,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,24 +51,30 @@ public class SqlBigDataLivyLinkClusterDetail implements IClusterDetail, LivyClus
     @Override
     @NotNull
     public String getConnectionUrl() {
-        return String.format("https://%s:%d/gateway/default/livy/v1/", host, knoxPort);
+        return String.format("https://%s:%d/gateway/default/", host, knoxPort);
     }
 
     @Override
     @NotNull
     public String getLivyConnectionUrl() {
-        return getConnectionUrl();
+        return URI.create(getConnectionUrl()).resolve("livy/v1/").toString();
     }
 
     @Override
     @NotNull
     public String getYarnNMConnectionUrl() {
-        return String.format("https://%s:%d/gateway/default/yarn/", host, knoxPort);
+        return URI.create(getConnectionUrl()).resolve("yarn/ws/v1/cluster/apps/").toString();
+    }
+
+    @Override
+    @NotNull
+    public String getYarnUIUrl() {
+        return URI.create(getConnectionUrl()).resolve("yarn/").toString();
     }
 
     @NotNull
     public String getSparkHistoryUrl() {
-        return String.format("https://%s:%d/gateway/default/sparkhistory/", host, knoxPort);
+        return URI.create(getConnectionUrl()).resolve("sparkhistory/").toString();
     }
 
     @Override

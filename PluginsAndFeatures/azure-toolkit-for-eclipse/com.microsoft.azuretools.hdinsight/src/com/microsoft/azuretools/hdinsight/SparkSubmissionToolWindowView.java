@@ -19,6 +19,10 @@
  */
 package com.microsoft.azuretools.hdinsight;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -87,6 +91,7 @@ public class SparkSubmissionToolWindowView extends ViewPart {
                     public void run() {
                         if (!StringHelper.isNullOrWhiteSpace(connectionUrl)) {
                         	AppInsightsClient.create(Messages.SparkSubmissionStopButtionClickEvent, null);
+                            EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionStopButtionClickEvent, null);
                             try {
                                 HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(connectionUrl + "/livy/batches", batchId);
                                 if (deleteResponse.getCode() == 201 || deleteResponse.getCode() == 200) {

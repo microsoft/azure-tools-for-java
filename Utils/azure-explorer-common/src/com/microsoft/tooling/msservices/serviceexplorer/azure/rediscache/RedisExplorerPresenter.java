@@ -30,6 +30,11 @@ import com.microsoft.azuretools.core.mvp.model.rediscache.RedisExplorerMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.ArrayList;
@@ -104,6 +109,8 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
      *            scan match pattern for Redis Cache
      */
     public void onKeyList(int db, String cursor, String pattern) {
+        Operation operation = TelemetryManager.createOperation(TelemetryConstants.REDIS, TelemetryConstants.REDIS_SCAN);
+        operation.start();
         Observable.fromCallable(() -> {
             return RedisExplorerMvpModel.getInstance().scanKeys(sid, id, db, cursor, pattern);
         })
@@ -114,13 +121,18 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
                     return;
                 }
                 getMvpView().showScanResult(new RedisScanResult(result));
+                operation.complete();
             });
         }, e -> {
+            EventUtil.logError(operation, ErrorType.userError, new Exception(e), null, null);
+            operation.complete();
             errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }
 
     public void onGetKeyAndValue(int db, String key) {
+        Operation operation = TelemetryManager.createOperation(TelemetryConstants.REDIS, TelemetryConstants.REDIS_GET);
+        operation.start();
         Observable.fromCallable(() -> {
             boolean isExist = RedisExplorerMvpModel.getInstance().checkKeyExistance(sid, id, db, key);
             if (!isExist) {
@@ -141,8 +153,11 @@ public class RedisExplorerPresenter<V extends RedisExplorerMvpView> extends MvpP
                 }
                 getMvpView().updateKeyList();
                 getMvpView().showContent(result);
+                operation.complete();
             });
         }, e -> {
+            EventUtil.logError(operation, ErrorType.userError, new Exception(e), null, null);
+            operation.complete();
             errorHandler(CANNOT_GET_REDIS_INFO, (Exception) e);
         });
     }

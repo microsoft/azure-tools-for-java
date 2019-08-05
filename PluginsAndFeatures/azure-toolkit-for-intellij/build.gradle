@@ -18,6 +18,22 @@ processResources {
     }
 }
 
+group 'com.microsoft.azuretools'
+
+compileJava {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = javaVersion
+}
+
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
 repositories {
     maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
     mavenLocal()
@@ -39,22 +55,24 @@ dependencies {
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     compile 'commons-io:commons-io:2.5'
     compile 'net.minidev:json-smart:2.3'
-    compile 'com.microsoft.azure:azure-client-runtime:1.6.3', { force = true }
-    compile 'com.microsoft.azure:azure-client-authentication:1.6.3', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.20.0', {
+    compile 'com.microsoft.azure:azure-client-runtime:1.6.5', { force = true }
+    compile 'com.microsoft.azure:azure-client-authentication:1.6.5', { force = true }
+    compile 'com.microsoft.azuretools:azuretools-core:3.26.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.20.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.26.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.20.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.26.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
+        exclude group: "javax.xml.bind", module: "jaxb-api"
     }
     compile 'com.spotify:docker-client:8.11.7'
-
     compile 'org.jetbrains.kotlin:kotlin-reflect:1.3.11'
     compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4'
 }
@@ -67,8 +85,6 @@ allprojects {
     apply plugin: "kotlin"
     apply plugin: 'org.jetbrains.intellij'
     apply plugin: 'java'
-    apply plugin: 'checkstyle'
-    apply plugin: 'findbugs'
 
     group 'com.microsoft.azuretools'
 
@@ -80,30 +96,19 @@ allprojects {
     }
 
     compileJava {
-    	sourceCompatibility = javaVersion
-    	targetCompatibility = javaVersion
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 
     compileKotlin {
-    	kotlinOptions.jvmTarget = javaVersion
+        kotlinOptions.jvmTarget = javaVersion
     }
 
     compileTestKotlin {
-    	kotlinOptions.jvmTarget = javaVersion
+        kotlinOptions.jvmTarget = javaVersion
     }
 
     tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
-    // checkstyle {
-    //     toolVersion = '7.7'
-    //     configFile = new File(rootProject.projectDir, 'config/checkstyle/checkstyle.xml')
-    //     showViolations = false
-    // }
-
-    findbugs {
-        toolVersion = "3.0.1"
-        ignoreFailures = true
-    }
 
     intellij {
         switch (build_common_code_with) {
@@ -118,7 +123,7 @@ allprojects {
             default:
                 throw new Exception("Unsupported value for build_common_code_with: " + build_common_code_with)
         }
-        
+
         updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
         downloadSources = Boolean.valueOf(sources)
     }
@@ -134,14 +139,16 @@ allprojects {
     sourceSets {
         main {
             java.srcDirs 'src'
+            kotlin.srcDirs 'src'
             resources.srcDirs 'resources'
         }
         test {
             java {
-                srcDir 'test/java'
+                srcDir 'Test/java'
             }
+            kotlin.srcDirs 'Test/java'
             resources {
-                srcDir 'test/resources'
+                srcDir 'Test/resources'
             }
         }
     }

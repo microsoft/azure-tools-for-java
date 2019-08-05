@@ -24,7 +24,6 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -44,12 +43,15 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.exceptions.Exceptions;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -87,7 +89,7 @@ public class AzureModelController {
         }
     };
 
-    private static synchronized void clearAll() {
+    private static void clearAll() {
         System.out.println("AzureModelController.clearAll: set null to all the maps.");
         AzureModel azureModel = AzureModel.getInstance();
         azureModel.setSubscriptionToResourceGroupMap(null);
@@ -187,7 +189,7 @@ public class AzureModelController {
         }
     }
 
-    private static synchronized void updateResGrDependency(Azure azure,
+    private static void updateResGrDependency(Azure azure,
             List<ResourceGroup> rgList,
             IProgressIndicator progressIndicator,
             Map<ResourceGroup, List<WebApp>> rgwaMap,
@@ -216,8 +218,12 @@ public class AzureModelController {
         .subscribe(new Action1<RgDepParams>() {
             @Override
             public void call(RgDepParams params) {
-                rgwaMap.put(params.rg, params.wal);
-                rgspMap.put(params.rg, params.aspl);
+                synchronized (rgwaMap) {
+                    synchronized (rgspMap) {
+                        rgwaMap.put(params.rg, params.wal);
+                        rgspMap.put(params.rg, params.aspl);
+                    }
+                }
             }
         });
 
@@ -255,8 +261,6 @@ public class AzureModelController {
             sidToSubscriptionMap.put(s.subscriptionId(), s);
         }
         azureModel.setSidToSubscriptionMap(sidToSubscriptionMap);
-
-
         Map<SubscriptionDetail, List<Location>> sdlocMap = azureModel.createSubscriptionToRegionMap();
         Map<SubscriptionDetail, List<ResourceGroup>> sdrgMap = azureModel.createSubscriptionToResourceGroupMap();
 
@@ -264,28 +268,32 @@ public class AzureModelController {
         subscriptionManager.addListener(subscriptionSelectionListener);
 
         List<SubscriptionDetail> sdl = subscriptionManager.getSubscriptionDetails();
-        for (SubscriptionDetail sd : sdl) {
-            if (!sd.isSelected()) continue;
-            if (progressIndicator != null && progressIndicator.isCanceled()) {
-                clearAll();
-                throw new CanceledByUserException();
-            }
+        if (sdl.size() > 0) {
+            Observable.from(sdl).flatMap((sd) ->
+                Observable.create((subscriber) -> {
+                    try {
+                        if (progressIndicator != null && progressIndicator.isCanceled()) {
+                            clearAll();
+                            throw new CanceledByUserException();
+                        }
+                        if (sd.isSelected()) {
+                            if (progressIndicator != null) {
+                                progressIndicator.setText("Reading subscription");
+                            }
+                            Azure azure = azureManager.getAzure(sd.getSubscriptionId());
 
-            System.out.println("sn : " + sd.getSubscriptionName());
-            if (progressIndicator != null) progressIndicator.setText("Reading subscription '" + sd.getSubscriptionName() + "'");
-            Azure azure = azureManager.getAzure(sd.getSubscriptionId());
+                            List<ResourceGroup> rgList = azure.resourceGroups().list();
+                            sdrgMap.put(sd, rgList);
 
-            List<ResourceGroup> rgList = azure.resourceGroups().list();
-            sdrgMap.put(sd, rgList);
-
-            List<Location> locl = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
-            Collections.sort(locl, new Comparator<Location>() {
-                @Override
-                public int compare(Location lhs, Location rhs) {
-                    return lhs.displayName().compareTo(rhs.displayName());
-                }
-            });
-            sdlocMap.put(sd, locl);
+                            List<Location> locl = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
+                            Collections.sort(locl, Comparator.comparing(Location::displayName));
+                            sdlocMap.put(sd, locl);
+                        }
+                        subscriber.onCompleted();
+                    } catch (Exception e) {
+                        Exceptions.propagate(e);
+                    }
+                }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
         }
         azureModel.setSubscriptionToResourceGroupMap(sdrgMap);
         azureModel.setSubscriptionToLocationMap(sdlocMap);
@@ -297,24 +305,64 @@ public class AzureModelController {
         if (azureManager == null) { return;}
 
         updateSubscriptionMaps(progressIndicator);
-
         AzureModel azureModel = AzureModel.getInstance();
-
         Map<ResourceGroup, List<WebApp>> rgwaMap = azureModel.createResourceGroupToWebAppMap();
         Map<ResourceGroup, List<AppServicePlan>> rgspMap = azureModel.createResourceGroupToAppServicePlanMap();
-        for (SubscriptionDetail sd : azureModel.getSubscriptionToResourceGroupMap().keySet()) {
-            if (progressIndicator != null && progressIndicator.isCanceled()) {
-                clearAll();
-                throw new CanceledByUserException();
-            }
-            List<ResourceGroup> rgList = azureModel.getSubscriptionToResourceGroupMap().get(sd);
-            if (rgList.size() == 0)  {
-                System.out.println("no resource groups found!");
-                continue;
-            }
-            Azure azure = azureManager.getAzure(sd.getSubscriptionId());
-            updateResGrDependency(azure, rgList, progressIndicator, rgwaMap, rgspMap);
+        Set<SubscriptionDetail> sdSet = azureModel.getSubscriptionToResourceGroupMap().keySet();
+        if (sdSet.size() == 0) {
+            azureModel.setResourceGroupToWebAppMap(rgwaMap);
+            azureModel.setResourceGroupToAppServicePlanMap(rgspMap);
+            return;
         }
+
+        CountDownLatch countDownLatch = new CountDownLatch(sdSet.size());
+        Observable.from(sdSet).flatMap((sd) ->
+            Observable.create((subscriber) -> {
+                try {
+                    List<ResourceGroup> rgList = azureModel.getSubscriptionToResourceGroupMap().get(sd);
+                    if (rgList.size() > 0) {
+                        Azure azure = azureManager.getAzure(sd.getSubscriptionId());
+                        updateResGrDependency(azure, rgList, progressIndicator, rgwaMap, rgspMap);
+                    }
+                    subscriber.onCompleted();
+                } catch (Exception e) {
+                    Exceptions.propagate(e);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            }).subscribeOn(Schedulers.io()), sdSet.size()).subscribeOn(Schedulers.io()).subscribe();
+
+        Thread cancelCheckThread = new Thread(() -> {
+            try {
+                while (true) {
+                    if (progressIndicator != null && progressIndicator.isCanceled()) {
+                        long count = countDownLatch.getCount();
+                        for (long i = 0; i < count; i++) {
+                            countDownLatch.countDown();
+                        }
+                        clearAll();
+                        break;
+                    }
+                    if (countDownLatch.getCount() <= 0) {
+                        break;
+                    }
+                    Thread.sleep(1000);
+                }
+            } catch (Exception ex) {
+            }
+        });
+        cancelCheckThread.setDaemon(true);
+        cancelCheckThread.start();
+
+        try {
+            countDownLatch.await();
+        } catch (Exception ignore) {
+        }
+
+        if (progressIndicator != null && progressIndicator.isCanceled()) {
+            throw new CanceledByUserException();
+        }
+
         azureModel.setResourceGroupToWebAppMap(rgwaMap);
         azureModel.setResourceGroupToAppServicePlanMap(rgspMap);
     }

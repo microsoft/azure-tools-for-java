@@ -25,26 +25,33 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
+import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.HDInsightUtil
 import com.microsoft.azure.hdinsight.common.MessageInfoType
+import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
 import com.microsoft.azure.hdinsight.common.classifiedexception.*
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azuretools.telemetrywrapper.EventType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import java.net.URI
 import java.util.*
 
-open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel)
-    : RunProfileStateWithAppInsightsEvent, SparkBatchRemoteRunProfileState  {
+open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel, operation: Operation?) :
+    RunProfileStateWithAppInsightsEvent(
+        UUID.randomUUID().toString(),
+        HDInsightBundle.message("SparkRunConfigRunButtonClick")!!,
+        operation
+    ), SparkBatchRemoteRunProfileState {
     override var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut? = null
     override var executionResult: ExecutionResult? = null
     override var consoleView: ConsoleView? = null
-    override val uuid = UUID.randomUUID().toString()
-    override val appInsightsMessage = HDInsightBundle.message("SparkRunConfigRunButtonClick")!!
 
     override fun execute(executor: Executor?, programRunner: ProgramRunner<*>): ExecutionResult? {
         if (remoteProcessCtrlLogHandler == null || executionResult == null || consoleView == null) {
@@ -78,9 +85,11 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                         classifiedEx.logStackTrace()
 
                         val errMessage = classifiedEx.message
-                        createAppInsightEvent(it, mapOf(
-                                "IsSubmitSucceed" to "false",
-                                "SubmitFailedReason" to HDInsightUtil.normalizeTelemetryMessage(errMessage)))
+                        val additionalProperties = mapOf(
+                            "IsSubmitSucceed" to "false",
+                            "SubmitFailedReason" to HDInsightUtil.normalizeTelemetryMessage(errMessage))
+                        createAppInsightEvent(it, additionalProperties)
+                        createErrorEventWithComplete(it, classifiedEx, classifiedEx.errorType, additionalProperties)
 
                         consoleView!!.print("ERROR: $errMessage", ConsoleViewContentType.ERROR_OUTPUT)
                         classifiedEx.handleByUser()
@@ -93,28 +102,16 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
         }
     }
 
-    @Throws(ExecutionException::class)
-    override fun checkSubmissionParameter() {
-        val parameter = getSubmitModel().submissionParameter
-
-        if (parameter.clusterName.isNullOrBlank()) {
-            throw ExecutionException("The ${getSubmitModel().sparkClusterTypeDisplayName} to submit job is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
-        }
-
-        if (parameter.artifactName.isNullOrBlank() && parameter.localArtifactPath.isNullOrBlank()) {
-            throw ExecutionException("The artifact to submit is not selected, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
-        }
-
-        if (parameter.mainClassName.isNullOrBlank()) {
-            throw ExecutionException("The main class name is empty, please config it at 'Run/Debug configuration -> Remotely Run in Cluster'.")
-        }
-    }
-
     override fun getSubmitModel(): SparkSubmitModel {
         return sparkSubmitModel
     }
 
     open fun onSuccess(executor: Executor) {
-        createAppInsightEvent(executor, mapOf("IsSubmitSucceed" to "true"))
+        val additionalProperties = mutableMapOf("IsSubmitSucceed" to "true")
+        if (remoteProcessCtrlLogHandler?.getUserData(ProcessHandler.TERMINATION_REQUESTED) == true) {
+            additionalProperties["isStopButtonClicked"] = "true"
+        }
+        createAppInsightEvent(executor, additionalProperties)
+        EventUtil.logEventWithComplete(EventType.info, operation, getPostEventProperties(executor, additionalProperties), null)
     }
 }

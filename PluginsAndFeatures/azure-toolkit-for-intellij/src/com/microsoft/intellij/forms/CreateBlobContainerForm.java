@@ -29,11 +29,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +44,8 @@ import javax.swing.*;
 import java.lang.reflect.Field;
 import java.util.Calendar;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_BLOB_CONTAINER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class CreateBlobContainerForm extends AzureDialogWrapper {
@@ -89,32 +94,33 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating blob container...", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-                try {
+                EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
                     progressIndicator.setIndeterminate(true);
-
-                    for (BlobContainer blobContainer : StorageClientSDKManager.getManager().getBlobContainers(connectionString)) {
+                    List<BlobContainer> blobs = StorageClientSDKManager.getManager()
+                        .getBlobContainers(connectionString);
+                    for (BlobContainer blobContainer : blobs) {
                         if (blobContainer.getName().equals(name)) {
-                            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    JOptionPane.showMessageDialog(null, "A blob container with the specified name already exists.", "Azure Explorer", JOptionPane.ERROR_MESSAGE);
-                                }
+                            ApplicationManager.getApplication().invokeLater(() -> {
+                                JOptionPane.showMessageDialog(null,
+                                    "A blob container with the specified name already exists.",
+                                    "Azure Explorer", JOptionPane.ERROR_MESSAGE);
                             });
-
                             return;
                         }
                     }
 
-                    BlobContainer blobContainer = new BlobContainer(name, ""/*storageAccount.getBlobsUri() + name*/, "", Calendar.getInstance(), "");
+                    BlobContainer blobContainer = new BlobContainer(name,
+                        ""/*storageAccount.getBlobsUri() + name*/, "", Calendar.getInstance(), "");
                     StorageClientSDKManager.getManager().createBlobContainer(connectionString, blobContainer);
 
                     if (onCreate != null) {
                         ApplicationManager.getApplication().invokeLater(onCreate);
                     }
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to create blob container." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
+                }, (e) -> {
+                    String msg = "An error occurred while attempting to create blob container."
+                        + "\n" + String.format(message("webappExpMsg"), e.getMessage());
                     PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }
+                }) ;
             }
         });
 

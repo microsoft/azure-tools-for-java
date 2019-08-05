@@ -26,9 +26,9 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import rx.Observable;
@@ -80,12 +80,10 @@ public class CosmosSparkADLAccountNode extends AzureRefreshableNode implements I
 
         addAction("Provision Spark Cluster", new CosmosSparkProvisionAction(
                 this, adlAccount, CosmosSparkClusterOps.getInstance().getProvisionAction()));
-        if (CommonSettings.isCosmosServerlessEnabled) {
-            addAction("Submit Spark on Cosmos Serverless Job", new CosmosServerlessSparkSubmitAction(
-                    this, adlAccount, CosmosSparkClusterOps.getInstance().getServerlessSubmitAction()));
-            addAction("View Spark on Cosmos Serverless Jobs", new CosmosServerlessSparkViewJobsAction(
-                    this, adlAccount, CosmosSparkClusterOps.getInstance().getViewServerlessJobsAction()));
-        }
+        addAction("Submit Spark on Cosmos Serverless Job", new CosmosServerlessSparkSubmitAction(
+                this, adlAccount, CosmosSparkClusterOps.getInstance().getServerlessSubmitAction()));
+        addAction("View Spark on Cosmos Serverless Jobs", new CosmosServerlessSparkViewJobsAction(
+                this, adlAccount, CosmosSparkClusterOps.getInstance().getViewServerlessJobsAction()));
     }
 
     @NotNull
@@ -93,4 +91,8 @@ public class CosmosSparkADLAccountNode extends AzureRefreshableNode implements I
         return adlAccount;
     }
 
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.SPARK_ON_COSMOS;
+    }
 }

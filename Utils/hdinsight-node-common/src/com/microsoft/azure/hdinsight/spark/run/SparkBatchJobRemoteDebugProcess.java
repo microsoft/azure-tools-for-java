@@ -25,18 +25,11 @@ package com.microsoft.azure.hdinsight.spark.run;
 import com.jcraft.jsch.JSchException;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.*;
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import rx.Observable;
-import rx.Subscription;
-import rx.functions.Func2;
 import rx.subjects.PublishSubject;
 
-import java.io.IOException;
-import java.net.URI;
 import java.net.UnknownServiceException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
@@ -45,8 +38,6 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
     private final SparkBatchDebugSession debugSession;
     @NotNull
     private SparkBatchRemoteDebugJobSshAuth authData;
-    @Nullable
-    private Subscription executorSubscription;
 
     public SparkBatchJobRemoteDebugProcess(@NotNull IdeSchedulers schedulers,
                                            @NotNull SparkBatchDebugSession debugSession,
@@ -87,12 +78,6 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
                                 .forwardToRemotePort(remoteHost, remotePort)
                                 .getForwardedLocalPort(remoteHost, remotePort);
 
-                        // Start to find executors
-                        executorSubscription = job.getExecutorsObservable()
-                                .map(hostContainerPair -> new SparkBatchJobExecutorCreatedEvent(
-                                        job, debugSession, hostContainerPair.getKey(), hostContainerPair.getValue()))
-                                .subscribe(getEventSubject()::onNext);
-
                         return Observable.just(new SparkBatchDebugJobJdbPortForwardedEvent(
                                 job, debugSession, remoteHost, remotePort, localPort, true));
                     } catch (JSchException | UnknownServiceException e) {
@@ -104,10 +89,6 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
     @Override
     public void disconnect() {
         super.disconnect();
-
-        if (executorSubscription != null) {
-            executorSubscription.unsubscribe();
-        }
     }
 
     private Observable<SparkBatchRemoteDebugJob> createDebugSession(SparkBatchRemoteDebugJob job) {

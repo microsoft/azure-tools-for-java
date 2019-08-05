@@ -27,14 +27,10 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
-import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +57,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
     @NotNull
     IClusterDetail cluster;
 
-    @Nullable
+    @NotNull
     private HttpObservable http;
 
     @NotNull
@@ -70,8 +66,12 @@ public class WebHDFSDeploy implements Deployable, ILogger {
     @NotNull
     private List<NameValuePair> uploadReqParams;
 
-    public WebHDFSDeploy(IClusterDetail cluster, HttpObservable http) {
+    @NotNull
+    public String destinationRootPath;
+
+    public WebHDFSDeploy(@NotNull IClusterDetail cluster, @NotNull HttpObservable http, @NotNull String destinationRootPath) {
         this.cluster = cluster;
+        this.destinationRootPath = destinationRootPath;
         this.uploadReqParams = new WebHdfsParamsBuilder("CREATE")
                 .setOverwrite("true")
                 .setPermission("777")
@@ -82,27 +82,21 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                 .build();
 
         this.http = http;
-        if (http != null) {
-            http.setDefaultRequestConfig(RequestConfig.custom().setExpectContinueEnabled(true).build());
-        } else {
-            throw new IllegalArgumentException("Cluster type doesen't support webHDFS storage type.");
-        }
+        http.setDefaultRequestConfig(RequestConfig.custom().setExpectContinueEnabled(true).build());
     }
 
+    private URI getUploadDir() {
+        return URI.create(destinationRootPath)
+                .resolve(JobUtils.getFormatPathByDate());
+    }
 
     @Override
-    public URI getUploadDir(@NotNull String rootPath) {
-        return URI.create(rootPath)
-                .resolve(JobUtils.getFormatPathByDate() + "/");
-    }
-
-    @NotNull
-    public Observable<String> deploy(@NotNull File src, @NotNull URI dest) {
+    public Observable<String> deploy(@NotNull File src) {
         //three steps to upload via webhdfs
         // 1.put request to create new dir
         // 2.put request to get 307 redirect uri from response
         // 3.put redirect request with file content as setEntity
-
+        URI dest = getUploadDir();
         HttpPut req = new HttpPut(dest.toString());
         return http.request(req, null, this.createDirReqParams, null)
                 .doOnNext(
@@ -143,7 +137,6 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                 });
     }
 
-    @Override
     @Nullable
     public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
         List<NameValuePair> params = new WebHdfsParamsBuilder("OPEN").build();

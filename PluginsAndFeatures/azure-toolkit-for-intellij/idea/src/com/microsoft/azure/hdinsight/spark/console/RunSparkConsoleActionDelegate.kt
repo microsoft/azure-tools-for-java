@@ -22,13 +22,16 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import java.lang.reflect.Method
 
 // The Action is a bridge to connect Scala related actions with dependent Scala Plugin actions by reflection
-open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : AzureAnAction(), ILogger {
+// Extend this class from class `AnAction` rather than `AzureAnAction` to avoid duplicate telemetries
+open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : AnAction(), ILogger {
     private val delegate = SparkScalaPluginDelegate(sparkScalaActionClassName)
 
     val isEnabled
@@ -52,7 +55,7 @@ open class RunSparkConsoleActionDelegate(sparkScalaActionClassName: String) : Az
         }
     }
 
-    override fun onActionPerformed(actionEvent: AnActionEvent) {
+    override fun actionPerformed(actionEvent: AnActionEvent) {
         actionPerformedMethod?.invoke(delegate.sparkScalaObj, actionEvent)
     }
 }

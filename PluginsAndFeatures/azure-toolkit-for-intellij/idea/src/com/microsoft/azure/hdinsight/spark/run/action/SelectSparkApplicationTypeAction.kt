@@ -23,21 +23,25 @@
 package com.microsoft.azure.hdinsight.spark.run.action
 
 import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Toggleable
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType
-import com.microsoft.azuretools.authmanage.CommonSettings
+import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetry.TelemetryConstants
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.common.CommonConst
 import com.microsoft.tooling.msservices.components.DefaultLoader
 
 
 abstract class SelectSparkApplicationTypeAction
     : AzureAnAction() , Toggleable {
-    override fun onActionPerformed(e: AnActionEvent) {
+    override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
         DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.getSparkApplicationType().toString())
+        return true
     }
 
     companion object {
@@ -67,9 +71,17 @@ abstract class SelectSparkApplicationTypeAction
         val selected = isSelected()
         val presentation = e.presentation
         presentation.putClientProperty(Toggleable.SELECTED_PROPERTY, selected)
-        if (e.isFromContextMenu) {
+        if (ActionPlaces.isPopupPlace(e.place)) {
             presentation.icon = null
         }
+    }
+
+    override fun getOperationName(event: AnActionEvent?): String {
+        return TelemetryConstants.SELECT_DEFAULT_SPARK_APPLICATION_TYPE
+    }
+
+    override fun getServiceName(event: AnActionEvent?): String {
+        return getSparkApplicationType().value
     }
 }
 
@@ -95,13 +107,6 @@ class SelectCosmosServerlessSparkTypeAction : SelectSparkApplicationTypeAction()
     override fun getSparkApplicationType() : SparkApplicationType {
         return SparkApplicationType.CosmosServerlessSpark
     }
-
-    override fun update(e: AnActionEvent) {
-        super.update(e)
-        if (!CommonSettings.isCosmosServerlessEnabled) {
-            e.presentation.isEnabled = false
-        }
-    }
 }
 
 class SelectArisSparkTypeAction : SelectSparkApplicationTypeAction() {
@@ -110,10 +115,10 @@ class SelectArisSparkTypeAction : SelectSparkApplicationTypeAction() {
     }
 }
 
-enum class SparkApplicationType {
-    None,
-    HDInsight,
-    CosmosSpark,
-    CosmosServerlessSpark,
-    ArisSpark,
+enum class SparkApplicationType(val value: String) {
+    None("none"),
+    HDInsight(TelemetryConstants.HDINSIGHT),
+    CosmosSpark(TelemetryConstants.SPARK_ON_COSMOS),
+    CosmosServerlessSpark(TelemetryConstants.SPARK_ON_COSMOS_SERVERLESS),
+    ArisSpark(TelemetryConstants.SPARK_ON_SQL_SERVER),
 }

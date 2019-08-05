@@ -32,7 +32,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -134,8 +134,8 @@ public class AzureSparkCosmosCluster extends SparkCluster
         }
 
         @Override
-        public StorageAccountTypeEnum getAccountType() {
-            return StorageAccountTypeEnum.ADLS;
+        public StorageAccountType getAccountType() {
+            return StorageAccountType.ADLS;
         }
 
         @NotNull
@@ -376,8 +376,25 @@ public class AzureSparkCosmosCluster extends SparkCluster
         return name;
     }
 
+    public boolean isStable() {
+        return isRunning()
+                && getMasterState() != null
+                && getMasterState().equalsIgnoreCase(SparkItemGroupState.STABLE.toString());
+    }
+
+    public boolean isRunning() {
+        return !getState().equalsIgnoreCase(SchedulerState.FINALIZING.toString())
+                && !getState().equalsIgnoreCase(SchedulerState.ENDED.toString())
+                && !getState().equalsIgnoreCase(SchedulerState.ANY.toString());
+
+    }
+
     public String getClusterStateForShow() {
-        return getMasterState() != null ? getMasterState().toUpperCase(): getState().toUpperCase();
+        if (isRunning() && getMasterState() != null) {
+            return getMasterState().toUpperCase();
+        } else {
+            return getState().toUpperCase();
+        }
     }
 
     public String getClusterNameWithAccountName() {
@@ -520,7 +537,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
 
     @Nullable
     @Override
-    public IHDIStorageAccount getStorageAccount() throws HDIException {
+    public IHDIStorageAccount getStorageAccount() {
         return storageAccount;
     }
 

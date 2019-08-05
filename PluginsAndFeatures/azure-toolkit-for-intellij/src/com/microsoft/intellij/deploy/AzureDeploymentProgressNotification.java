@@ -40,6 +40,10 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
@@ -53,6 +57,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERHOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public final class AzureDeploymentProgressNotification {
@@ -142,6 +148,8 @@ public final class AzureDeploymentProgressNotification {
         Map<String, String> postEventProperties = new HashMap<String, String>();
         postEventProperties.put("DockerFileOption", dockerImageInstance.predefinedDockerfile);
         String descriptionTask = String.format("Publishing %s into Docker host %s at port(s) %s", new File(dockerImageInstance.artifactPath).getName(), dockerImageInstance.host.name, dockerImageInstance.dockerPortSettings);
+        Operation operation = TelemetryManager.createOperation(WEBAPP, DEPLOY_WEBAPP_DOCKERHOST);
+        operation.start();
         try {
             String msg = String.format("Publishing %s to Docker host %s ...", new File(dockerImageInstance.artifactPath).getName(), dockerImageInstance.host.name);
             notifyProgress(descriptionTask, startDate, null, 5, msg);
@@ -255,11 +263,15 @@ public final class AzureDeploymentProgressNotification {
 
             notifyProgress(descriptionTask, startDate, url, 100, message("runStatus"), dockerImageInstance.host.name);
         } catch (InterruptedException e) {
+            EventUtil.logError(operation, ErrorType.userError, e, null, null);
             postEventProperties.put("PublishInterruptedError", e.getMessage());
             notifyProgress(descriptionTask, startDate, url, 100, message("runStatus"), dockerImageInstance.host.name);
         } catch (Exception ee) {
+            EventUtil.logError(operation, ErrorType.systemError, ee, null, null);
             postEventProperties.put("PublishError", ee.getMessage());
             notifyProgress(descriptionTask, startDate, url, 100, "Error: %s", ee.getMessage());
+        } finally {
+            operation.complete();
         }
         AppInsightsClient.createByType(AppInsightsClient.EventType.DockerContainer, null, "Deploy", postEventProperties);
     }

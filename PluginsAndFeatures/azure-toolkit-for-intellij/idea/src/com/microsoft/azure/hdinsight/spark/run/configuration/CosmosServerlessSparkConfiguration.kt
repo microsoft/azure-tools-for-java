@@ -5,9 +5,14 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.configurations.RuntimeConfigurationException
 import com.intellij.openapi.options.SettingsEditor
 import com.microsoft.azure.hdinsight.spark.run.SparkSubmissionRunner
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 
 class CosmosServerlessSparkConfiguration(name: String, override val module: CosmosServerlessSparkConfigurationModule, cosmosServerlessSparkConfigurationFactory: CosmosServerlessSparkConfigurationFactory)
     : CosmosSparkRunConfiguration(name, module, cosmosServerlessSparkConfigurationFactory) {
+    override fun getSparkApplicationType(): SparkApplicationType {
+        return SparkApplicationType.CosmosServerlessSpark
+    }
+
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         return LivySparkRunConfigurationSettingsEditor(CosmosServerlessSparkConfigurable(module.project))
     }

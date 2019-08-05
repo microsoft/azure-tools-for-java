@@ -24,25 +24,30 @@ package com.microsoft.azure.hdinsight.sdk.common;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.SharedKeyCredential;
 import com.microsoft.azure.storage.core.Utility;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
+import rx.Observable;
 
-import java.security.InvalidKeyException;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 public class SharedKeyHttpObservable extends HttpObservable {
     public static String ApiVersion = "2018-11-09";
-    public static String DefaultContentLength = "0";
     private SharedKeyCredential cred;
+    private HeaderGroup defaultHeaders;
 
     public SharedKeyHttpObservable(String accountName, String accessKey) {
-        HeaderGroup defaultHeaders = new HeaderGroup();
+        defaultHeaders = new HeaderGroup();
         defaultHeaders.addHeader(new BasicHeader("x-ms-client-request-id", UUID.randomUUID().toString()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-date", Utility.getGMTTime()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-version", ApiVersion));
@@ -79,7 +84,33 @@ public class SharedKeyHttpObservable extends HttpObservable {
         return this;
     }
 
-    public List<Header> getHeaderList() {
-        return Arrays.asList(getDefaultHeaderGroup().getAllHeaders());
+    @Override
+    public Observable<CloseableHttpResponse> request(@NotNull final HttpRequestBase httpRequest,
+                                                     @Nullable final HttpEntity entity,
+                                                     @Nullable final List<NameValuePair> parameters,
+                                                     @Nullable final List<Header> addOrReplaceHeaders) {
+        HttpEntity entityFromRequest = httpRequest instanceof HttpEntityEnclosingRequestBase
+                ? ((HttpEntityEnclosingRequestBase) httpRequest).getEntity()
+                : null;
+
+        if (entityFromRequest != null) {
+            // Job deployment needs to set content-length to generate shared key
+            // httpclient auto adds this header and calculates length when executing
+            // so remove this header after key generation otherwise header already exists exp happens
+            // MUST follow the order when content length is needed to generate key
+            setContentLength(String.valueOf(entityFromRequest.getContentLength()));
+            this.setAuthorization(httpRequest, parameters);
+            this.removeContentLength();
+        } else {
+            this.setAuthorization(httpRequest, parameters);
+        }
+
+        return super.request(httpRequest, entityFromRequest, parameters, null);
+    }
+
+    @Override
+    @Nullable
+    public Header[] getDefaultHeaders() throws IOException {
+        return defaultHeaders.getAllHeaders();
     }
 }

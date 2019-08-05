@@ -34,12 +34,18 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SignInWindow;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.serviceexplorer.azure.SignInOutAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
 
 public class AzureSignInAction extends AzureAnAction {
     private static final Logger LOGGER = Logger.getInstance(AzureSignInAction.class);
@@ -55,9 +61,20 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     @Override
-    public void onActionPerformed(AnActionEvent e) {
+    public boolean onActionPerformed(@NotNull AnActionEvent e, @Nullable Operation operation) {
         Project project = LangDataKeys.PROJECT.getData(e.getDataContext());
         onAzureSignIn(project);
+        return true;
+    }
+
+    @Override
+    protected String getServiceName(AnActionEvent event) {
+        return ACCOUNT;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.SIGNIN;
     }
 
     @Override
@@ -109,10 +126,12 @@ public class AzureSignInAction extends AzureAnAction {
                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
                     new ImageIcon("icons/azure.png"));
                 if (res == JOptionPane.OK_OPTION) {
-                    AdAuthManager adAuthManager = AdAuthManager.getInstance();
-                    if (adAuthManager.isSignedIn())
-                        adAuthManager.signOut();
-                    authMethodManager.signOut();
+                    EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
+                        AdAuthManager adAuthManager = AdAuthManager.getInstance();
+                        if (adAuthManager.isSignedIn())
+                            adAuthManager.signOut();
+                        authMethodManager.signOut();
+                    });
                 }
             } else {
                 doSignIn(authMethodManager, project);

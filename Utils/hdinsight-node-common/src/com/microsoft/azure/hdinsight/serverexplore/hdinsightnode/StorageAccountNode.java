@@ -25,7 +25,7 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountTypeEnum;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.BlobContainerPermissions;
@@ -35,6 +35,7 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
@@ -103,7 +104,7 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
     @Override
     protected void refreshItems() {
         try {
-            if (storageAccount.getAccountType() == StorageAccountTypeEnum.BLOB) {
+            if (storageAccount.getAccountType() == StorageAccountType.BLOB) {
                 HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
                 String defaultContainer = blobStorageAccount.getDefaultContainer();
                 final String connectionString = ((HDStorageAccount) storageAccount).getConnectionString();
@@ -129,7 +130,7 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
     }
 
     private static String getIconPath(IHDIStorageAccount storageAccount) {
-        if(storageAccount.getAccountType() == StorageAccountTypeEnum.ADLS) {
+        if(storageAccount.getAccountType() == StorageAccountType.ADLS) {
             return ADLS_ICON_PATH;
         } else {
             return ICON_PATH;
@@ -141,6 +142,11 @@ public class StorageAccountNode extends RefreshableNode implements TelemetryProp
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.storageAccount.getSubscriptionId());
         return properties;
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.HDINSIGHT;
     }
 }
 

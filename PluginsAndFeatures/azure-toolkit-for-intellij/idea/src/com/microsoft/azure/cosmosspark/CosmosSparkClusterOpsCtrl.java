@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.cosmosspark;
 
+import com.google.common.collect.ImmutableMap;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -55,6 +56,8 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigur
 import com.microsoft.azure.hdinsight.spark.ui.livy.batch.*;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -84,7 +87,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                             ((AzureSparkCosmosCluster) triplet.getMiddle()).getName(),
                             triplet.getRight().getName()));
                     CosmosSparkClusterDestoryDialog destroyDialog = new CosmosSparkClusterDestoryDialog(
-                            triplet.getRight(), triplet.getMiddle());
+                            triplet.getRight(), (AzureSparkCosmosCluster) triplet.getMiddle());
                     destroyDialog.show();
                 }, ex -> log().warn(ExceptionUtils.getStackTrace(ex)));
 
@@ -224,6 +227,9 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                     CosmosServerlessSparkBatchJobsViewer jobView = new CosmosServerlessSparkBatchJobsViewer(account) {
                                         @Override
                                         public void refreshActionPerformed(@Nullable AnActionEvent anActionEvent) {
+                                            Operation operation = TelemetryManager.createOperation(
+                                                    TelemetryConstants.SPARK_ON_COSMOS_SERVERLESS, TelemetryConstants.REFRESH_JOB_VIEW_TABLE);
+                                            operation.start();
                                             account.getSparkBatchJobList()
                                                     .doOnNext(jobList -> {
                                                         LivyBatchJobViewer.Model refreshedModel =
@@ -235,7 +241,16 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                                                 );
                                                         this.setData(refreshedModel);
                                                     })
-                                                    .subscribe(jobList -> {}, ex -> log().warn(ExceptionUtils.getStackTrace(ex)));
+                                                    .subscribe(
+                                                            jobList -> {},
+                                                            ex -> {
+                                                                log().warn(ExceptionUtils.getStackTrace(ex));
+                                                                EventUtil.logErrorWithComplete(operation, ErrorType.serviceError, ex,
+                                                                        ImmutableMap.of("isRefreshJobsTableSucceed", "false"), null);
+                                                            },
+                                                            () -> EventUtil.logEventWithComplete(EventType.info, operation,
+                                                                        ImmutableMap.of("isRefreshJobsTableSucceed", "true"), null)
+                                                    );
                                         }
                                     };
                                     LivyBatchJobViewer.Model model =

@@ -26,15 +26,14 @@ import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Optional;
 
 public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILogger {
     private static final String UPDATE_ACTION_NAME = "Update";
@@ -87,15 +86,18 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
                 new CosmosSparkSubmitAction(this, cluster, CosmosSparkClusterOps.getInstance().getSubmitAction()));
         submitCosmosSparkJobAction.setEnabled(isClusterStable());
 
-        addAction("View Cluster Status", new CosmosSparkMonitorAction(
+        NodeAction viewClusterStatusAction = addAction("View Cluster Status", new CosmosSparkMonitorAction(
                 this, cluster, CosmosSparkClusterOps.getInstance().getMonitorAction()));
+        viewClusterStatusAction.setEnabled(isClusterRunning());
 
         NodeAction updateAction = addAction(UPDATE_ACTION_NAME, new CosmosSparkUpdateAction(
                 this, cluster, CosmosSparkClusterOps.getInstance().getUpdateAction()));
         updateAction.setEnabled(isClusterStable());
-        
-        addAction("Delete", new CosmosSparkDestroyAction(
+
+        NodeAction deleteAction = addAction("Delete", new CosmosSparkDestroyAction(
                 this, cluster, adlAccount, CosmosSparkClusterOps.getInstance().getDestroyAction()));
+        deleteAction.setEnabled(isClusterRunning());
+
         addAction("Open Spark Master UI", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
@@ -117,12 +119,20 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
     }
 
     private boolean isClusterStable() {
-        return Optional.ofNullable(cluster.getMasterState()).orElse("")
-                .equalsIgnoreCase(SparkItemGroupState.STABLE.toString());
+        return cluster.isStable();
+    }
+
+    private boolean isClusterRunning() {
+        return cluster.isRunning();
     }
 
     @NotNull
     public String getClusterName() {
         return cluster.getName();
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.SPARK_ON_COSMOS;
     }
 }

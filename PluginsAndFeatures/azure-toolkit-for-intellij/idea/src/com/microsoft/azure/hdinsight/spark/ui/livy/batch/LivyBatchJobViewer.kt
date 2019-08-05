@@ -27,7 +27,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.undo.UndoUtil
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.EditorKind
+import com.intellij.testFramework.LightVirtualFile
 import com.microsoft.azure.hdinsight.common.mvc.IdeaSettableControlView
 import org.json.JSONException
 import org.json.JSONObject
@@ -52,7 +52,8 @@ abstract class LivyBatchJobViewer : Disposable, IdeaSettableControlView<LivyBatc
     private val jobDetailDocument = EditorFactory.getInstance().createDocument(jobDetailNotSetMessage).apply {
         UndoUtil.disableUndoFor(this)
     }
-    private val jobDetailViewer = EditorFactory.getInstance().createViewer(jobDetailDocument, null, EditorKind.MAIN_EDITOR)
+    private val jobDetailViewer = EditorFactory.getInstance().createEditor(
+            jobDetailDocument, null, LightVirtualFile("job-detail-vf.json"), true)
 
     abstract val jobViewerControl : Control
 

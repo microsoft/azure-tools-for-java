@@ -25,6 +25,7 @@ package com.microsoft.intellij.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
+import com.microsoft.azuretools.telemetrywrapper.Operation
 import org.jdesktop.swingx.JXHyperlink
 import java.net.URI
 
@@ -32,9 +33,10 @@ import java.net.URI
  * Created by vlashch on 6/10/16.
  */
 class AzureJavaCodeSamples : AzureAnAction() {
-    override fun onActionPerformed(anActionEvent: AnActionEvent) {
+    override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
         val portalLing = JXHyperlink()
         portalLing.setURI(URI.create("https://azure.microsoft.com/en-us/documentation/samples/?platform=java"))
         portalLing.doClick()
+        return true
     }
 }

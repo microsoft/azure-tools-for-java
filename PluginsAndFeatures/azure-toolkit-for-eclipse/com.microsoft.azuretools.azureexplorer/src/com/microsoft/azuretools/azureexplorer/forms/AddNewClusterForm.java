@@ -25,6 +25,7 @@ import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterCtrlProvider;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azureexplorer.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.rxjava.EclipseSchedulers;
@@ -35,20 +36,21 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
     @NotNull
     private AddNewClusterCtrlProvider ctrlProvider;
 
-    private Text clusterNameField;
+    protected Text clusterNameField;
     private Text userNameField;
     private Text storageNameField;
     private Text storageKeyField;
     private Combo containersComboBox;
     private Text passwordField;
 
+    @Nullable
     private HDInsightRootModule hdInsightModule;
 
     private Label clusterNameLabel;
     private Label userNameLabel;
     private Label passwordLabel;
 
-    public AddNewClusterForm(Shell parentShell, HDInsightRootModule module) {
+    public AddNewClusterForm(Shell parentShell, @Nullable HDInsightRootModule module) {
         super(parentShell);
         // enable help button
         setHelpAvailable(true);
@@ -60,6 +62,9 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
     private void refreshContainers() {
         ctrlProvider.refreshContainers()
                 .subscribe();
+    }
+    
+    protected void customizeUI() {
     }
     
     @Override
@@ -202,14 +207,21 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
             }
         });
         
+        customizeUI();
         return container;
+    }
+    
+    protected void afterOkActionPerformed() {
+		if (hdInsightModule != null) {
+			hdInsightModule.load(false);
+		}
     }
 
     @Override
     protected void okPressed() {
         ctrlProvider.validateAndAdd()
                 .subscribe(toUpdate -> {
-                    hdInsightModule.load(false);
+                	afterOkActionPerformed();
                     AppInsightsClient.create(Messages.HDInsightAddNewClusterAction, null);
 
                     super.okPressed();

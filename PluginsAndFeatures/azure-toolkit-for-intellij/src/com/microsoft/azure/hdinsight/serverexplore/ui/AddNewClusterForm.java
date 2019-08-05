@@ -43,6 +43,9 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.ui.HintTextField;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
@@ -65,7 +68,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected JComboBox clusterComboBox;
     protected JPanel clusterCardsPanel;
     private JPanel hdInsightClusterCard;
-    private JTextField clusterNameOrUrlField;
+    protected JTextField clusterNameOrUrlField;
     private JPanel livyServiceCard;
     protected JTextField livyEndpointField;
     protected JTextArea validationErrorMessageField;
@@ -98,7 +101,8 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
     private static final String HELP_URL = "https://go.microsoft.com/fwlink/?linkid=866472";
 
-    public AddNewClusterForm(@Nullable final Project project, @NotNull RefreshableNode hdInsightModule) {
+    // ConsoleViewImpl requires project to be NotNull
+    public AddNewClusterForm(@NotNull final Project project, @Nullable RefreshableNode hdInsightModule) {
         super(project, true);
         this.ctrlProvider = new AddNewClusterCtrlProvider(this, new IdeaSchedulers(project));
 
@@ -231,6 +235,12 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         }
     }
 
+    public void afterOkActionPerformed() {
+        if (hdInsightModule != null) {
+            hdInsightModule.load(false);
+        }
+    }
+
     @Override
     protected void doOKAction() {
         if (!getOKAction().isEnabled()) {
@@ -243,9 +253,10 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 .validateAndAdd()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(toUpdate -> {
-                    hdInsightModule.load(false);
+                    afterOkActionPerformed();
                     AppInsightsClient.create(HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
-
+                    EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
+                        HDInsightBundle.message("HDInsightAddNewClusterAction"), null);
                     super.doOKAction();
                 });
     }
