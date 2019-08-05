@@ -123,11 +123,7 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
 
     @Nullable
     public WorkspaceProvisioningState getProvisioningState() {
-        if (this.workspaceResponse.properties() == null) {
-            return null;
-        }
-
-        return this.workspaceResponse.properties().provisioningState();
+        return this.workspaceResponse.provisioningState();
     }
 
     @NotNull
@@ -137,7 +133,11 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
 
     @NotNull
     public String getTitleForNode() {
-        return String.format("%s [%s]", getName(), getState());
+        if (getState().equalsIgnoreCase(WorkspaceProvisioningState.SUCCEEDED.toString())) {
+            return getName();
+        } else {
+            return String.format("%s [%s]", getName(), getState());
+        }
     }
 
     @NotNull
@@ -152,11 +152,11 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
 
     @Nullable
     public String getSparkUrl() {
-        if (this.workspaceResponse.properties() == null || this.workspaceResponse.properties().connectivityEndpoints() == null) {
+        if (this.workspaceResponse.connectivityEndpoints() == null) {
             return null;
         }
 
-        return this.workspaceResponse.properties().connectivityEndpoints().spark();
+        return this.workspaceResponse.connectivityEndpoints().spark();
     }
 
     @NotNull

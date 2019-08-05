@@ -28,10 +28,73 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Workspace extends TrackedResource {
-    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
-    private WorkspaceProperties properties;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The workspace provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
+         */
+        @JsonProperty(value = "provisioningState", access = JsonProperty.Access.WRITE_ONLY)
+        private WorkspaceProvisioningState provisioningState;
 
-    public WorkspaceProperties properties() {
+        /**
+         * The virtual network properties.
+         */
+        @JsonProperty(value = "virtualNetworkProfile")
+        private WorkspaceVirtualNetworkProfile virtualNetworkProfile;
+
+        /**
+         * Workspace connectivity endpoints.
+         */
+        @JsonProperty(value = "connectivityEndpoints", access = JsonProperty.Access.WRITE_ONLY)
+        private ConnectivityEndpoints connectivityEndpoints;
+    }
+
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private Properties properties;
+
+    public Properties properties() {
         return this.properties;
+    }
+
+    /**
+     * Get the workspace provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
+     *
+     * @return the provisioningState value
+     */
+    public WorkspaceProvisioningState provisioningState() {
+        return this.properties == null ? null : this.properties.provisioningState;
+    }
+
+    /**
+     * Get the virtual network properties.
+     *
+     * @return the virtualNetworkProfile value
+     */
+    public WorkspaceVirtualNetworkProfile virtualNetworkProfile() {
+        return this.properties == null ? null : this.properties.virtualNetworkProfile;
+    }
+
+    /**
+     * Set the virtual network properties.
+     *
+     * @param virtualNetworkProfile the virtualNetworkProfile value to set
+     * @return the Workspace object itself.
+     */
+    public Workspace withVirtualNetworkProfile(WorkspaceVirtualNetworkProfile virtualNetworkProfile) {
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.virtualNetworkProfile = virtualNetworkProfile;
+        return this;
+    }
+
+    /**
+     * Get workspace connectivity endpoints.
+     *
+     * @return the connectivityEndpoints value
+     */
+    public ConnectivityEndpoints connectivityEndpoints() {
+        return this.properties == null ? null : this.properties.connectivityEndpoints;
     }
 }

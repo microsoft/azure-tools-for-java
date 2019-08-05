@@ -60,11 +60,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements Comparable<Arca
 
     @Nullable
     public SparkComputeProvisioningState getProvisioningState() {
-        if (this.sparkComputeResponse.properties() == null) {
-            return null;
-        }
-
-        return this.sparkComputeResponse.properties().provisioningState();
+        return this.sparkComputeResponse.provisioningState();
     }
 
     @NotNull
@@ -83,13 +79,21 @@ public class ArcadiaSparkCompute extends SparkCluster implements Comparable<Arca
     @NotNull
     @Override
     public String getTitle() {
-        return String.format("%s@%s [%s]", getName(), workSpace.getName(), getState());
+        if (getState().equalsIgnoreCase(SparkComputeProvisioningState.SUCCEEDED.toString())) {
+            return String.format("%s@%s", getName(), workSpace.getName());
+        } else {
+            return String.format("%s@%s [%s]", getName(), workSpace.getName(), getState());
+        }
     }
 
     // This title is shown for spark compute node in Azure Explorer
     @NotNull
     public String getTitleForNode() {
-        return String.format("%s [%s]", getName(), getState());
+        if (getState().equalsIgnoreCase(SparkComputeProvisioningState.SUCCEEDED.toString())) {
+            return getName();
+        } else {
+            return String.format("%s [%s]", getName(), getState());
+        }
     }
 
     @Nullable
@@ -116,11 +120,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements Comparable<Arca
     @Nullable
     @Override
     public String getSparkVersion() {
-        if (this.sparkComputeResponse.properties() == null) {
-            return null;
-        }
-
-        return this.sparkComputeResponse.properties().sparkVersion();
+        return this.sparkComputeResponse.sparkVersion();
     }
 
     @Override
