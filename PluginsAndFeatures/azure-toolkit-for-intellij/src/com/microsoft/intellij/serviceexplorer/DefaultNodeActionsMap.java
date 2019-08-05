@@ -24,6 +24,7 @@
 package com.microsoft.intellij.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
+import com.microsoft.intellij.serviceexplorer.azure.arm.*;
 import com.microsoft.intellij.serviceexplorer.azure.docker.*;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.*;
@@ -31,6 +32,9 @@ import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAcco
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
@@ -38,8 +42,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class DefaultNodeActionsMap extends NodeActionsMap {
 
@@ -78,6 +81,34 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
         node2Actions.put(DockerHostModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(CreateNewDockerHostAction.class).build());
+
+        //noinspection unchecked
+        node2Actions.put(DockerHostModule.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
+
+        List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>();
+        deploymentNodeList.addAll(Arrays.asList(ExportTemplateAction.class, ExportParameterAction.class,
+                UpdateDeploymentAction.class, EditDeploymentAction.class));
+
+        node2Actions.put(DeploymentNode.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .addAll(deploymentNodeList).build());
+
+        node2Actions.put(ResourceManagementModule.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .add(CreateDeploymentAction.class).build());
+
+        node2Actions.put(ResourceManagementNode.class,
+                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                        .add(CreateDeploymentAction.class).build());
+
+//        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+//
+//        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
     }
 
     @Override
