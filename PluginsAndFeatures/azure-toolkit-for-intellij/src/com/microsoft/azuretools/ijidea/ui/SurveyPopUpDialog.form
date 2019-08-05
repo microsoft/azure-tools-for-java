@@ -83,8 +83,7 @@
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="1" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties>
-                </properties>
+                <properties/>
               </component>
             </children>
           </grid>
@@ -101,8 +100,6 @@
                   <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <background color="-16747834"/>
-                  <foreground color="-1"/>
                   <text value="Give Feedback"/>
                 </properties>
               </component>
@@ -121,8 +118,6 @@
                   <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <background color="-9868951"/>
-                  <foreground color="-1"/>
                   <text value="Not Now"/>
                 </properties>
               </component>

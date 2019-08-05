@@ -56,7 +56,7 @@ class SparkScalaConsoleBuilder(project: Project) : TextConsoleBuilderImpl(projec
     fun getSparkSessionDeclareStatement(sparkVal: String) = "val $sparkVal: org.apache.spark.sql.SparkSession\n"
 
     override fun getConsole(): ConsoleView {
-        val consoleView = SparkScalaLivyConsole(project, ScalaLanguageConsoleView.SCALA_CONSOLE())
+        val consoleView = SparkScalaLivyConsole(project, "Spark Console (Scala)")
 
         ScalaConsoleInfo.setIsConsole(consoleView.file, true)
         consoleView.prompt = null
