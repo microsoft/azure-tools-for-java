@@ -47,6 +47,7 @@ public class TelemetryConstants {
     public static final String VFS = "virtualFileSystem";
 
     // operation value
+    public static final String SURVEY = "survey";
     public static final String FEEDBACK = "feedback";
     public static final String AZURECODE_SAMPLES = "azure-code-samples";
     public static final String LIB_CONFIGURATION = "libraries-configuration";

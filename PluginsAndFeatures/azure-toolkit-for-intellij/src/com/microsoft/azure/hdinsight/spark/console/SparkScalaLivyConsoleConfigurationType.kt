@@ -31,7 +31,7 @@ class SparkScalaLivyConsoleConfigurationType : ScalaConsoleConfigurationType() {
         @JvmStatic
         val instance by lazy { ConfigurationTypeUtil.findConfigurationType(SparkScalaLivyConsoleConfigurationType::class.java) }
     }
-    override fun confFactory(): ScalaConsoleRunConfigurationFactory = SparkScalaLivyConsoleRunConfigurationFactory(this)
+    fun sparkLivyConfFactory(): ScalaConsoleRunConfigurationFactory = SparkScalaLivyConsoleRunConfigurationFactory(this)
 
     override fun getDisplayName(): String = "Spark Livy Interactive Session Console(Scala)"
 
