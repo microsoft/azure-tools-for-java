@@ -104,9 +104,9 @@ if $BUILD_INTELLIJ; then
   tc_close "Building IDEA plugin"
 fi
 
-BUILD_NUMBER="3.20.0.$BUILD_COUNTER-2019.1"
+BUILD_NUMBER="3.26.0.$BUILD_COUNTER-2019.2"
 
-# Build JetBrains Rider 2019.1 plugin
+# Build JetBrains Rider 2019.2 plugin
 tc_open "Building Rider plugin"
 {
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain)

@@ -4,9 +4,17 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Bugfix:</h4>
+      <h4>New features:</h4>
       <ul>
-        <li>Fix Azure Function run configuration clashing - <a href="https://youtrack.jetbrains.com/issue/RIDER-27409">RIDER-27409</a></li>
+        <li>Cloud Shell: Support web preview - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/199">#199</a></li>
+        <li>Azure Explorer: Add Resource management to Azure Explorer</li>
+        <li>Functions: Provide live templates in addition to file templates - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/215">#215</a></li>
+        <li>Function: Add function name to Function run configuration</li>
+      </ul>
+      <h4>Fixed bugs:</h4>
+      <ul>
+        <li>.asm endpoint generation for non-default locale - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/212">#212</a></li>
+        <li>Fix exception on SQL Server create - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/224">#224</a></li>
       </ul>
     </html>
     ]]>

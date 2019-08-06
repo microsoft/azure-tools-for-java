@@ -33,6 +33,7 @@ bin/
 gen/
 target/
 gen-external-apklibs/
+resources/spark/*.jar
 
 # Mac
 .DS_Store
