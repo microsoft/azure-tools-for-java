@@ -128,6 +128,7 @@ class AzureCloudTerminalRunner(project: Project,
 
                 if (!result.isSuccessful) {
                     logger.error("Could not close preview port. Response received from API: ${result.code()} ${result.message()} - ${result.errorBody()?.string()}")
+                    return
                 }
 
                 openPreviewPorts.remove(port)
