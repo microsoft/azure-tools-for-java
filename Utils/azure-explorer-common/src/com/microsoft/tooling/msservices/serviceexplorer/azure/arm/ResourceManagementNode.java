@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2019 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -28,21 +29,19 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
+
 import java.io.IOException;
 import java.util.List;
 
 public class ResourceManagementNode extends RefreshableNode implements ResourceManagementNodeView {
 
-    private static final String ICON_RESOURCE_MANAGEMENT = "arm_resourcegroup.png";
+    private static final String ICON_RESOURCE_MANAGEMENT = "AzureARMResourceGroup.svg";
     private static final String ACTION_DELETE = "Delete";
     private static final String DELETE_RESOURCE_GROUP_PROMPT_MESSAGE = "This operation will delete the Resource "
         + "Group: %s. Are you sure you want to continue?";
@@ -51,6 +50,8 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
     private final String sid;
     private final String rgName;
     private final Object listenerObj = new Object();
+
+    private static final String ICON_ACTION_DELETE = "Discard.svg";
 
     public ResourceManagementNode(ResourceManagementModule parent, String subscriptionId, ResourceGroup resourceGroup) {
         super(resourceGroup.id(), resourceGroup.name(), parent, ICON_RESOURCE_MANAGEMENT, true);
@@ -72,7 +73,7 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_DELETE, new DeleteResourceGroupAction());
+        addAction(ACTION_DELETE, ICON_ACTION_DELETE, new DeleteResourceGroupAction());
         super.loadActions();
     }
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2019 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -38,7 +39,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_DEPLOYM
 
 public class DeploymentNode extends Node implements DeploymentNodeView {
 
-    public static final String ICON_PATH = "arm_deployment.png";
+    public static final String ICON_PATH = "AzureARMDeployment.svg";
     private static final String EXPORT_TEMPLATE_SUCCESS = "Export successfully.";
     private static final String EXPORT_TEMPLATE_FAIL = "MS Services - Error Export resource manager template";
     private static final String SHOW_PROPERTY_ACTION = "Show Properties";
@@ -49,6 +50,9 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
     private final Deployment deployment;
     private final DeploymentNodePresenter deploymentNodePresenter;
     private final String subscriptionId;
+
+    private static final String ICON_ACTION_DELETE = "Discard.svg";
+    private static final String ICON_ACTION_SHOW_PROPERTIES = "gearPlain.svg";
 
     public DeploymentNode(ResourceManagementNode parent, String subscriptionId, Deployment deployment) {
         super(deployment.id(), deployment.name(), parent, ICON_PATH, true);
@@ -70,8 +74,8 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(SHOW_PROPERTY_ACTION, null, new ShowDeploymentPropertyAction());
-        addAction(DELETE_ACTION, null, new DeleteDeploymentAction());
+        addAction(SHOW_PROPERTY_ACTION, ICON_ACTION_SHOW_PROPERTIES, new ShowDeploymentPropertyAction());
+        addAction(DELETE_ACTION, ICON_ACTION_DELETE, new DeleteDeploymentAction());
         super.loadActions();
     }
 

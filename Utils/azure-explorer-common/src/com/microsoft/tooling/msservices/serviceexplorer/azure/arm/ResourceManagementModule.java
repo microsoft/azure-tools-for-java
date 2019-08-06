@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2019 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,27 +24,23 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.*;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
-import javax.swing.tree.TreePath;
 import java.util.List;
 
 public class ResourceManagementModule extends AzureRefreshableNode implements ResourceManagementModuleView {
 
     private static final String RESOURCE_MANAGEMENT_MODULE_ID = ResourceManagementModule.class.getName();
-    private static final String ICON_PATH = "arm_resourcegroup.png";
+    private static final String ICON_PATH = "AzureARM.svg";
     private static final String BASE_MODULE_NAME = "Resource Management";
     private final ResourceManagementModulePresenter rmModulePresenter;
     public static final Object listenerObj = new Object();

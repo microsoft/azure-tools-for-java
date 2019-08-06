@@ -58,5 +58,12 @@ object CommonIcons {
         val TemplateAzureFunc by lazy { load("TemplateAzureFunc.svg") }
     }
 
+    @Suppress("unused")
+    object ResourceManagement {
+        val ResourceManagement by lazy { load("AzureARM.svg") }
+        val ResourceGroup by lazy { load("AzureARMResourceGroup.svg") }
+        val Deployment by lazy { load("AzureARMDeployment.svg") }
+    }
+
     private fun load(path: String): Icon = IconLoader.getIcon("/icons/$path")
 }
