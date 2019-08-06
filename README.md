@@ -18,14 +18,19 @@ The plugin can be downloaded and installed in JetBrains Rider and is available [
 * Basic management of virtual machines (create/delete, start/stop, view details)
 * Basic management of web apps and deployment slots (create/delete, start/stop, view details, edit settings, swap slot)
 * Basic management of function apps and deployment slots (create/delete, start/stop, view details, edit settings, swap slot)
+* Azure Resource Manager (list/expand resource groups, deploy ARM template, import/export parameter file, edit deployment)
 * Run configuration to deploy function apps and ASP.NET web apps (can also provision SQL database)
   * ASP.NET Core web apps (any platform)
   * .NET framework web apps (Windows)
-* Azure Functions Core Tools integration with project and item templates, and a run configuration to run/debug .NET Core function apps
+* Azure Functions
+  * Azure Functions Core Tools integration with project and item templates
+  * Run configuration to run/debug .NET Core function apps
+  * Run function from gutter
 * Azure Cloud Shell support
   * Connect to cloud shell and work with terminal
   * Upload file action in Rider, support `download <file>` command in terminal
   * Support for `az aks browse` command opening browser
+  * Support for web app preview ports
 
 Feature requests can be logged in our [issue tracker](https://github.com/JetBrains/azure-tools-for-intellij/issues), we also welcome contributions.
 
