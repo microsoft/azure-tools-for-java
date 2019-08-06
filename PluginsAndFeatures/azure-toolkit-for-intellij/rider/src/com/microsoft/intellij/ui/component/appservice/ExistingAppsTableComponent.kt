@@ -25,7 +25,6 @@ package com.microsoft.intellij.ui.component.appservice
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionToolbarPosition
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.AnActionButton
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.table.JBTable
@@ -34,6 +33,7 @@ import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.extension.setComponentsVisible
 import net.miginfocom.swing.MigLayout
@@ -62,8 +62,8 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
         private const val TABLE_LOADING_MESSAGE = "Loading ... "
         private const val TABLE_EMPTY_MESSAGE = "No available apps."
 
-        private val osWindowsIcon = IconLoader.getIcon("icons/OSWindows.svg")
-        private val osLinuxIcon = IconLoader.getIcon("icons/OSLinux.svg")
+        private val osWindowsIcon = CommonIcons.OS.Windows
+        private val osLinuxIcon = CommonIcons.OS.Linux
     }
 
     val table = initExistingAppsTable()

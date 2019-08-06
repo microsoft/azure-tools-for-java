@@ -26,7 +26,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.update.Activatable
 import com.intellij.util.ui.update.UiNotifyConnector
@@ -40,16 +39,17 @@ import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
+import com.microsoft.azure.management.storage.StorageAccount
+import com.microsoft.azure.management.storage.StorageAccountSkuType
+import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
-import com.microsoft.intellij.runner.database.config.ui.DatabasePublishComponent
+import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
+import com.microsoft.intellij.runner.database.config.ui.DatabasePublishComponent
 import com.microsoft.intellij.runner.functionapp.config.FunctionAppConfiguration
-import com.microsoft.azure.management.storage.StorageAccount
-import com.microsoft.azure.management.storage.StorageAccountSkuType
-import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import net.miginfocom.swing.MigLayout
 import java.text.SimpleDateFormat
 import java.util.*
@@ -68,8 +68,8 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
         private const val TAB_WEB_APP_CONFIGURATION = "App Configuration"
         private const val TAB_DATABASE_CONNECTION = "Database Connection"
 
-        private val webAppIcon = IconLoader.getIcon("icons/FunctionApp.svg")
-        private val databaseIcon = IconLoader.getIcon("icons/Database.svg")
+        private val webAppIcon = CommonIcons.AzureFunctions.FunctionApp
+        private val databaseIcon = CommonIcons.Database
     }
 
     private val presenter = FunctionAppDeployViewPresenter<PublishFunctionAppPanel>()

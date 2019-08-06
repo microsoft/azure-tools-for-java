@@ -25,7 +25,9 @@ package com.microsoft.intellij.helpers.storage;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileChooser.*;
+import com.intellij.openapi.fileChooser.FileChooserFactory;
+import com.intellij.openapi.fileChooser.FileSaverDescriptor;
+import com.intellij.openapi.fileChooser.FileSaverDialog;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -34,7 +36,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
@@ -43,6 +44,7 @@ import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.forms.UploadBlobFileForm;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.util.PluginUtil;
@@ -55,9 +57,9 @@ import com.microsoft.tooling.msservices.model.storage.BlobFile;
 import com.microsoft.tooling.msservices.model.storage.BlobItem;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.apache.commons.io.IOUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -74,8 +76,8 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -214,7 +216,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         sorter.setSortKeys(sortKeys);
         sorter.sort();
 
-        backButton.setIcon(IconLoader.getIcon("icons/AzureOpenParent.svg"));
+        backButton.setIcon(CommonIcons.INSTANCE.getOpenParent());
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -281,13 +283,13 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         };
 
-        refreshButton.setIcon(IconLoader.getIcon("icons/refresh.svg"));
+        refreshButton.setIcon(CommonIcons.INSTANCE.getRefresh());
         refreshButton.addActionListener(queryAction);
 
-        queryButton.setIcon(IconLoader.getIcon("icons/Search.svg"));
+        queryButton.setIcon(CommonIcons.INSTANCE.getSearch());
         queryButton.addActionListener(queryAction);
 
-        deleteButton.setIcon(IconLoader.getIcon("icons/Discard.svg"));
+        deleteButton.setIcon(CommonIcons.INSTANCE.getDiscard());
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -295,7 +297,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        saveAsButton.setIcon(IconLoader.getIcon("icons/SaveChanges.svg"));
+        saveAsButton.setIcon(CommonIcons.INSTANCE.getSaveChanges());
         saveAsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -303,7 +305,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        openButton.setIcon(IconLoader.getIcon("icons/AzureOpen.svg"));
+        openButton.setIcon(CommonIcons.INSTANCE.getOpen());
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -311,7 +313,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        uploadButton.setIcon(IconLoader.getIcon("icons/AzureUpload.svg"));
+        uploadButton.setIcon(CommonIcons.INSTANCE.getUpload());
         uploadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {

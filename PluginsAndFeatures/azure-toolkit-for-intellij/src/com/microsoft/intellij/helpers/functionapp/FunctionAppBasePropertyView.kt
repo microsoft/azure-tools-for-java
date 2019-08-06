@@ -27,13 +27,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.util.Comparing
-import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.HyperlinkLabel
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azuretools.core.mvp.ui.functionapp.FunctionAppProperty
+import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.helpers.base.BaseEditor
 import com.microsoft.intellij.ui.components.AppSettingsComponent
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper
@@ -68,7 +68,7 @@ abstract class FunctionAppBasePropertyView(val project: Project,
 
     private val pnlMain = JPanel(MigLayout("novisualpadding, ins 5, fillx, wrap 1"))
     private val pnlControlButtons = JPanel(MigLayout("novisualpadding, ins 0, wrap 3"))
-    private val btnGetPublishFile = JButton("Get Publish Profile", IconLoader.getIcon("actions/download.svg"))
+    private val btnGetPublishFile = JButton("Get Publish Profile", CommonIcons.Download)
     private val btnSave = JButton("Save")
     private val btnDiscard = JButton("Discard")
 

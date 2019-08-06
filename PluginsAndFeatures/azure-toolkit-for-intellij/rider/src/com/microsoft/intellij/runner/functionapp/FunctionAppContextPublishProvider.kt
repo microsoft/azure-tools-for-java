@@ -26,9 +26,9 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.IconLoader
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.run.configurations.publishing.RiderContextPublishProvider
+import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.runner.functionapp.config.FunctionAppConfiguration
 import com.microsoft.intellij.runner.functionapp.config.FunctionAppConfigurationType
 import javax.swing.Icon
@@ -41,7 +41,7 @@ class FunctionAppContextPublishProvider : RiderContextPublishProvider {
     }
 
     override val icon: Icon
-        get() = IconLoader.getIcon("icons/Azure.svg")
+        get() = CommonIcons.Azure
 
     override val name: String
         get() = RUN_CONFIG_NAME

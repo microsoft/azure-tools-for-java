@@ -618,7 +618,7 @@ public class UIHelperImpl implements UIHelper {
 
     @NotNull
     public static Icon loadIcon(@Nullable String name) {
-        return IconLoader.getIcon("icons/" + name);
+        return IconLoader.getIcon("/icons/" + name);
     }
 
     private LightVirtualFile searchExistingFile(FileEditorManager fileEditorManager, String fileType, String resourceId) {

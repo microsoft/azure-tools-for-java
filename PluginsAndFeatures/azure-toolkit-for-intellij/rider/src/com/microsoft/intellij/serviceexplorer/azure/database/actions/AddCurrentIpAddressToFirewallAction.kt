@@ -30,11 +30,11 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.InputValidator
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.util.IconLoader
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.icons.CommonIcons
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
@@ -49,7 +49,7 @@ import java.time.format.DateTimeFormatter
 
 abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : NodeActionListener() {
     companion object {
-        private val firewallIcon = IconLoader.getIcon("/icons/Firewall.svg")
+        private val firewallIcon = CommonIcons.Firewall
     }
 
     public override fun actionPerformed(e: NodeActionEvent) {

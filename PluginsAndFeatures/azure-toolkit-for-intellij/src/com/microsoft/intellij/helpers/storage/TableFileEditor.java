@@ -33,9 +33,9 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.forms.TableEntityForm;
 import com.microsoft.intellij.forms.TablesQueryDesigner;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -94,10 +94,10 @@ public class TableFileEditor implements FileEditor {
             }
         };
 
-        queryButton.setIcon(IconLoader.getIcon("icons/Search.svg"));
+        queryButton.setIcon(CommonIcons.INSTANCE.getSearch());
         queryButton.addActionListener(queryActionListener);
 
-        refreshButton.setIcon(IconLoader.getIcon("icons/refresh.svg"));
+        refreshButton.setIcon(CommonIcons.INSTANCE.getRefresh());
         refreshButton.addActionListener(queryActionListener);
 
         deleteButton.addActionListener(new ActionListener() {

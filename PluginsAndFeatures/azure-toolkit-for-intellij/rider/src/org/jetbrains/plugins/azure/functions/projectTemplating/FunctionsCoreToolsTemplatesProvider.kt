@@ -22,7 +22,6 @@
 
 package org.jetbrains.plugins.azure.functions.projectTemplating
 
-import com.intellij.openapi.util.IconLoader
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.IOptProperty
 import com.jetbrains.rd.util.reactive.OptProperty
@@ -36,7 +35,9 @@ import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTem
 import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTemplateDialogContext
 import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTemplateTransferableModel
 import com.jetbrains.rider.util.idea.application
-import javax.swing.*
+import com.microsoft.icons.CommonIcons
+import javax.swing.Icon
+import javax.swing.JComponent
 
 class FunctionsCoreToolsTemplatesProvider : RiderProjectTemplateProvider {
     override val isReady = Property(true)
@@ -61,7 +62,7 @@ class FunctionsCoreToolsTemplatesProvider : RiderProjectTemplateProvider {
         override val name: String
             get() = "Azure Functions"
         override val icon: Icon
-            get() = IconLoader.getIcon("icons/TemplateAzureFunc.svg")
+            get() = CommonIcons.AzureFunctions.TemplateAzureFunc
 
         override fun getKeywords() = arrayOf(name)
 

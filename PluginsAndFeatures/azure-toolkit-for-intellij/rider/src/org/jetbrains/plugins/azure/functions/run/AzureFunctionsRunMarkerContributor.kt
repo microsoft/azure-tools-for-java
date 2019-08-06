@@ -2,13 +2,13 @@ package org.jetbrains.plugins.azure.functions.run
 
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
-import com.intellij.openapi.util.IconLoader
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.siblings
 import com.intellij.sql.type
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.CSharpLanguage
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.lexer.CSharpTokenType
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.psi.CSharpStringLiteralExpression
+import com.microsoft.icons.CommonIcons
 
 class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
     companion object {
@@ -64,6 +64,6 @@ class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
         tryResolveAzureFunctionName(element) ?: return null
 
-        return Info(IconLoader.getIcon("/icons/FunctionAppRunConfiguration.svg"), ExecutorAction.getActions()) { "Run Azure Function" }
+        return Info(CommonIcons.AzureFunctions.FunctionAppRunConfiguration, ExecutorAction.getActions()) { "Run Azure Function" }
     }
 }

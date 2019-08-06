@@ -23,31 +23,27 @@
 
 package com.microsoft.intellij.helpers.rediscache;
 
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-
-import com.intellij.openapi.util.IconLoader;
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
+import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.components.AzureListSelectionListenerWrapper;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
-
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
+
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 
 public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpView {
@@ -145,7 +141,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
             }
         });
 
-        btnSearch.setIcon(IconLoader.getIcon("icons/Search.svg"));
+        btnSearch.setIcon(CommonIcons.INSTANCE.getSearch());
 
         btnSearch.addActionListener(new AzureActionListenerWrapper(INSIGHT_NAME, "btnSearch", null) {
             @Override

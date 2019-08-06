@@ -30,7 +30,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.IconLoader;
 import com.jcraft.jsch.Session;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerCertVault;
@@ -46,12 +45,12 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.docker.dialogs.AzureInputDockerLoginCredsDialog;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardDialog;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.jetbrains.concurrency.AsyncPromise;
 
 import javax.swing.*;
 import java.util.Date;
@@ -187,7 +186,7 @@ public class AzureDockerUIResources {
         "Delete Docker Host",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE,
-        IconLoader.getIcon("icons/AzureWarning.svg"),
+        CommonIcons.INSTANCE.getWarning(),
         options,
         null);
 
@@ -375,7 +374,7 @@ public class AzureDockerUIResources {
         "Stop Create Azure Key Vault",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE,
-        IconLoader.getIcon("icons/AzureWarning.svg"),
+        CommonIcons.INSTANCE.getWarning(),
         new String[]{"Cancel", "OK"},
         null);
   }

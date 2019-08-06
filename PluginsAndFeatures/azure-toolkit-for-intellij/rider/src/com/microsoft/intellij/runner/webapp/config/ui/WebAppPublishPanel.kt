@@ -26,7 +26,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.update.Activatable
 import com.intellij.util.ui.update.UiNotifyConnector
@@ -44,8 +43,9 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
-import com.microsoft.intellij.runner.database.config.ui.DatabasePublishComponent
+import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
+import com.microsoft.intellij.runner.database.config.ui.DatabasePublishComponent
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.config.RiderWebAppConfiguration
 import net.miginfocom.swing.MigLayout
@@ -68,8 +68,8 @@ class WebAppPublishPanel(private val lifetime: Lifetime,
         private const val TAB_WEB_APP_CONFIGURATION = "App Configuration"
         private const val TAB_DATABASE_CONNECTION = "Database Connection"
 
-        private val webAppIcon = IconLoader.getIcon("icons/WebApp.svg")
-        private val databaseIcon = IconLoader.getIcon("icons/Database.svg")
+        private val webAppIcon = CommonIcons.WebApp
+        private val databaseIcon = CommonIcons.Database
     }
 
     private val presenter = DotNetWebAppDeployViewPresenter<WebAppPublishPanel>()

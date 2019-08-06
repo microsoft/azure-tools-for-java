@@ -24,14 +24,14 @@ package com.microsoft.intellij.ui.component.database
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.components.JBPasswordField
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
+import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.ui.component.AzureComponent
-import com.microsoft.intellij.ui.extension.setDefaultRenderer
 import com.microsoft.intellij.ui.extension.fillComboBox
 import com.microsoft.intellij.ui.extension.getSelectedValue
+import com.microsoft.intellij.ui.extension.setDefaultRenderer
 import net.miginfocom.swing.MigLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -78,7 +78,7 @@ class ExistingDatabaseComponent :
     private fun initSqlDatabaseComboBox() {
         cbDatabase.setDefaultRenderer(
                 EMPTY_SQL_DATABASES_MESSAGE,
-                IconLoader.getIcon("icons/Database.svg")) { database -> "${database.name()} (${database.resourceGroupName()})" }
+                CommonIcons.Database) { database -> "${database.name()} (${database.resourceGroupName()})" }
 
         cbDatabase.addActionListener {
             val database = cbDatabase.getSelectedValue() ?: return@addActionListener

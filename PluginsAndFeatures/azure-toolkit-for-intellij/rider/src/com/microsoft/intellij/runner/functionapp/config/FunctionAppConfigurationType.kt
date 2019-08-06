@@ -23,7 +23,7 @@
 package com.microsoft.intellij.runner.functionapp.config
 
 import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.openapi.util.IconLoader
+import com.microsoft.icons.CommonIcons
 import org.jetbrains.annotations.Nls
 import javax.swing.Icon
 
@@ -45,7 +45,7 @@ class FunctionAppConfigurationType : ConfigurationType {
     @Nls
     override fun getConfigurationTypeDescription() = RUN_CONFIG_TYPE_DESCRIPTION
 
-    override fun getIcon(): Icon = IconLoader.getIcon("icons/FunctionApp.svg")
+    override fun getIcon(): Icon = CommonIcons.AzureFunctions.FunctionAppConfigurationType
 
     override fun getConfigurationFactories() =
             arrayOf(FunctionAppConfigurationFactory(this))

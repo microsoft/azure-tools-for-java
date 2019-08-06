@@ -22,15 +22,11 @@
  */
 package com.microsoft.intellij.docker.wizards.createhost;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_DOCKER_HOST;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
-
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.wizard.WizardDialog;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerPreferredSettings;
@@ -45,6 +41,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.Nullable;
@@ -52,6 +49,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Date;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_DOCKER_HOST;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 public class AzureNewDockerWizardDialog extends WizardDialog<AzureNewDockerWizardModel> {
   private static final Logger LOGGER = Logger.getInstance(AzureNewDockerWizardDialog.class);
@@ -245,7 +245,7 @@ public class AzureNewDockerWizardDialog extends WizardDialog<AzureNewDockerWizar
         "Stop Create Docker Host",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE,
-        IconLoader.getIcon("icons/AzureWarning.svg"),
+        CommonIcons.INSTANCE.getWarning(),
         new String[]{"Cancel", "OK"},
         null);
   }

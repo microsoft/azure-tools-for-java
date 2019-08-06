@@ -22,8 +22,8 @@
 
 package org.jetbrains.plugins.azure.functions.projectTemplating
 
-import com.intellij.openapi.util.IconLoader
 import com.jetbrains.rider.projectView.actions.projectTemplating.backend.ReSharperProjectTemplateCustomizer
+import com.microsoft.icons.CommonIcons
 import javax.swing.Icon
 
 class FunctionsCoreToolsV1TemplateCustomizer : ReSharperProjectTemplateCustomizer {
@@ -31,7 +31,7 @@ class FunctionsCoreToolsV1TemplateCustomizer : ReSharperProjectTemplateCustomize
         get() = "AzureFunctions"
 
     override val newIcon: Icon
-        get() = IconLoader.getIcon("icons/TemplateAzureFunc.svg")
+        get() = CommonIcons.AzureFunctions.TemplateAzureFunc
 
     override val newName: String
         get() = "Azure Functions"

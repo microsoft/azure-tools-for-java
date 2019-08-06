@@ -23,7 +23,7 @@
 package com.microsoft.intellij.runner.webapp.config
 
 import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.openapi.util.IconLoader
+import com.microsoft.icons.CommonIcons
 import org.jetbrains.annotations.Nls
 import javax.swing.Icon
 
@@ -43,7 +43,7 @@ class RiderWebAppConfigurationType : ConfigurationType {
     @Nls
     override fun getConfigurationTypeDescription() = RUN_CONFIG_TYPE_DESCRIPTION
 
-    override fun getIcon(): Icon = IconLoader.getIcon("icons/publishAzure.svg")
+    override fun getIcon(): Icon = CommonIcons.PublishAzure
 
     override fun getConfigurationFactories() =
             arrayOf(RiderWebAppConfigurationFactory(this))

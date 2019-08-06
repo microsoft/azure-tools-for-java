@@ -24,17 +24,19 @@ package org.jetbrains.plugins.azure.functions.run
 
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.configurations.*
+import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.IconLoader
-import com.jetbrains.rider.model.*
-import com.jetbrains.rider.run.configurations.*
+import com.jetbrains.rider.model.RunnableProject
+import com.jetbrains.rider.model.RunnableProjectKind
+import com.jetbrains.rider.run.configurations.IRunConfigurationWithDefault
+import com.jetbrains.rider.run.configurations.IRunnableProjectConfigurationType
 import com.jetbrains.rider.run.configurations.launchSettings.LaunchSettingsConfiguration
 import com.jetbrains.rider.run.configurations.launchSettings.LaunchSettingsJsonService
 import com.jetbrains.rider.run.configurations.project.DotNetProjectConfiguration
+import com.microsoft.icons.CommonIcons
 
-class AzureFunctionsHostConfigurationType: ConfigurationTypeBase("AzureFunctionsHost", "Azure Functions host",
-        "Azure Functions host", IconLoader.getIcon("icons/FunctionAppRunConfiguration.svg")), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
+class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunctionsHost", "Azure Functions host",
+        "Azure Functions host", CommonIcons.AzureFunctions.FunctionAppRunConfiguration), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
 
     companion object {
         fun isTypeApplicable(kind: RunnableProjectKind) =
