@@ -177,6 +177,7 @@
            text="Azure Cloud Shell"
            description="Contains Azure Cloud Shell actions"
            icon="/icons/AzureOpenCloudShell.svg">
+
       <add-to-group group-id="AzureToolkit.AzureActionGroup"
                     anchor="before"
                     relative-to-action="AzureToolkit.AzureSignIn" />
@@ -192,6 +193,25 @@
               text="Upload file to Azure Cloud Shell..."
               description="Upload file to Azure Cloud Shell"
               icon="AllIcons.Actions.Upload" />
+
+      <group id="AzureToolkit.AzureCloudShell.WebPreview"
+             class="com.intellij.openapi.actionSystem.DefaultActionGroup"
+             text="Web preview"
+             description="Web preview"
+             popup="true">
+
+        <action id="AzureToolkit.AzureCloudShell.WebPreview.OpenPortAction"
+                class="org.jetbrains.plugins.azure.cloudshell.actions.OpenCloudShellPortAction"
+                text="Open port..."
+                description="Open web preview port..."
+                icon="AllIcons.Actions.Preview" />
+
+        <group id="AzureToolkit.AzureCloudShell.WebPreview.ClosePortAction"
+                class="org.jetbrains.plugins.azure.cloudshell.actions.CloseCloudShellPortActionGroup"
+                text="Close port"
+                description="Close web preview port..."
+                popup="true" />
+      </group>
 
       <separator />
     </group>

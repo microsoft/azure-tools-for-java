@@ -21,6 +21,7 @@
  */
 package org.jetbrains.plugins.azure.cloudshell.terminal
 
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -51,6 +52,8 @@ class AzureCloudTerminalRunner(project: Project,
     private val logger = Logger.getInstance(AzureCloudTerminalRunner::class.java)
     private val resizeTerminalUrl: String
     private val uploadFileToTerminalUrl: String
+    private val previewPortBaseUrl: String
+
     private val controlChannelSocketUrl: String
 
     init {
@@ -60,6 +63,8 @@ class AzureCloudTerminalRunner(project: Project,
 
         resizeTerminalUrl = builder.toString() + "/size"
         uploadFileToTerminalUrl = builder.toString() + "/upload"
+        previewPortBaseUrl = cloudConsoleBaseUrl + "/ports"
+
         controlChannelSocketUrl = socketUri.toString() + "/control"
     }
 
@@ -103,6 +108,30 @@ class AzureCloudTerminalRunner(project: Project,
                 }
             }
 
+            override fun openPreviewPort(port: Int, openInBrowser: Boolean) {
+                val result = cloudConsoleService.openPreviewPort("$previewPortBaseUrl/$port/open").execute()
+
+                if (!result.isSuccessful) {
+                    logger.error("Could not open preview port. Response received from API: ${result.code()} ${result.message()} - ${result.errorBody()?.string()}")
+                    return
+                }
+
+                openPreviewPorts.add(port)
+
+                if (openInBrowser && result.body()?.url != null) {
+                    BrowserUtil.open(result.body()!!.url!!)
+                }
+            }
+
+            override fun closePreviewPort(port: Int) {
+                val result = cloudConsoleService.closePreviewPort("$previewPortBaseUrl/$port/open").execute()
+
+                if (!result.isSuccessful) {
+                    logger.error("Could not close preview port. Response received from API: ${result.code()} ${result.message()} - ${result.errorBody()?.string()}")
+                }
+
+                openPreviewPorts.remove(port)
+            }
 
             override fun getName(): String {
                 return "Connector: $pipeName"

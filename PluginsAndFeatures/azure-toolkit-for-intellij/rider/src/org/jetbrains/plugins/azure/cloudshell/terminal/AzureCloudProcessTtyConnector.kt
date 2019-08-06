@@ -32,6 +32,12 @@ abstract class AzureCloudProcessTtyConnector(process: CloudTerminalProcess)
 
     abstract fun uploadFile(fileName: String, file: VirtualFile)
 
+    val openPreviewPorts = mutableListOf<Int>()
+
+    abstract fun openPreviewPort(port: Int, openInBrowser: Boolean)
+
+    abstract fun closePreviewPort(port: Int)
+
     override fun read(buf: CharArray?, offset: Int, length: Int): Int {
         try {
             return super.read(buf, offset, length)

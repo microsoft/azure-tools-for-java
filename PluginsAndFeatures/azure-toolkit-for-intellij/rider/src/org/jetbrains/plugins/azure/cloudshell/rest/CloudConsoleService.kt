@@ -44,6 +44,14 @@ interface CloudConsoleService {
     fun resizeTerminal(@Url shellUrl: String, @Query("cols") columns: Int, @Query("rows") rows: Int, @Query("version") version: String = "2018-06-01"): Call<Void>
 
     @POST
+    @Headers(*arrayOf("Accept: application/json", "Content-type: application/json"))
+    fun openPreviewPort(@Url portUrl: String): Call<PreviewPortResult>
+
+    @POST
+    @Headers(*arrayOf("Accept: application/json", "Content-type: application/json"))
+    fun closePreviewPort(@Url portUrl: String): Call<PreviewPortResult>
+
+    @POST
     @Multipart
     fun uploadFileToTerminal(@Url shellUrl: String, @Part file: MultipartBody.Part, @Query("version") version: String = "2018-06-01"): Call<Void>
 
