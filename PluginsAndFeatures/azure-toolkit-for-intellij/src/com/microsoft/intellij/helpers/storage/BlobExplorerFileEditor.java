@@ -23,6 +23,7 @@
 package com.microsoft.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -363,7 +364,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                             for (BlobItem blobItem : blobItems) {
                                 if (blobItem instanceof BlobDirectory) {
                                     model.addRow(new Object[]{
-                                            UIHelperImpl.loadIcon("storagefolder.png"),
+                                            AllIcons.Nodes.Folder,
                                             blobItem.getName(),
                                             "",
                                             "",
@@ -373,8 +374,8 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                                 } else {
                                     BlobFile blobFile = (BlobFile) blobItem;
 
-                                    model.addRow(new String[]{
-                                            "",
+                                    model.addRow(new Object[]{
+                                            AllIcons.FileTypes.Any_type,
                                             blobFile.getName(),
                                             UIHelperImpl.readableFileSize(blobFile.getSize()),
                                             new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
