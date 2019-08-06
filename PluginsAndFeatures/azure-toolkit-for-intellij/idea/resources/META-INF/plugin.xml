@@ -56,8 +56,6 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider"/>
     <toolWindow
           anchor="left"
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
@@ -93,14 +91,6 @@
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
-
-    <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
-    <lang.syntaxHighlighterFactory key="arm"
-      implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
-    <lang.parserDefinition language="arm"
-      implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
-    <completion.contributor language="JSON" order="first"
-      implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
