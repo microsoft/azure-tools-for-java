@@ -203,6 +203,8 @@ public class ResourceTemplateView extends BaseEditor {
 
     @Override
     public void dispose() {
-        fileEditor.dispose();
+        if (fileEditor != null) {
+            fileEditor.dispose();
+        }
     }
 }
