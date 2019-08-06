@@ -199,7 +199,7 @@ object WebAppDeployStateUtil {
 
             webAppStop(webApp, processHandler)
 
-            KuduClient.kuduZipDeploy(zipFile, webApp.publishingProfile, webApp.name(), processHandler)
+            KuduClient.kuduZipDeploy(zipFile, webApp, processHandler)
 
             if (zipFile.exists()) {
                 processHandler.setText(String.format(UiConstants.ZIP_FILE_DELETING, zipFile.path))
