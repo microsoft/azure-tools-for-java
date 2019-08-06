@@ -37,7 +37,7 @@ class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
         get() = 0
 
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLocalConsoleConfigurationType().confFactory()
+        get() = SparkScalaLocalConsoleConfigurationType().sparkLocalConfFactory()
 
     override fun getNewSettingName(): String = "Spark Local Console(Scala)"
 

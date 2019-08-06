@@ -44,8 +44,8 @@ class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScala
         val moduleManager = ModuleManager.getInstance(template.project)
 
         val localClassModule = template.model.localRunConfigurableModel?.classpathModule
-        configuration.module = localClassModule?.let { moduleManager.findModuleByName(it) }
-                ?: moduleManager.modules.first { it.name.equals(template.project.name, ignoreCase = true) }
+        configuration.setModule(localClassModule?.let { moduleManager.findModuleByName(it) }
+                ?: moduleManager.modules.first { it.name.equals(template.project.name, ignoreCase = true) })
 
         return configuration
     }

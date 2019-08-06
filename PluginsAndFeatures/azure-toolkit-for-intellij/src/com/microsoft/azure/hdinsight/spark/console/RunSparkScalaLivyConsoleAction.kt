@@ -42,7 +42,7 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
         get() = false
 
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLivyConsoleConfigurationType().confFactory()
+        get() = SparkScalaLivyConsoleConfigurationType().sparkLivyConfFactory()
 
     override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"
 
