@@ -39,8 +39,7 @@ object AzureSqlServerMvpModel {
     private val subscriptionIdToSqlServersMap = ConcurrentHashMap<String, List<ResourceEx<SqlServer>>>()
 
     fun refreshSubscriptionToSqlServerMap() {
-        val azureManager = AuthMethodManager.getInstance().azureManager ?: return
-        val subscriptions = azureManager.subscriptions
+        val subscriptions = AzureMvpModel.getInstance().selectedSubscriptions
 
         for (subscription in subscriptions) {
             listSqlServersBySubscriptionId(subscription.subscriptionId(), true)

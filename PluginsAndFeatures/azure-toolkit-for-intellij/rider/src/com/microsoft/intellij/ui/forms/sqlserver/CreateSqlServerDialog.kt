@@ -182,7 +182,10 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                         sqlServerName,
                         cbLocation.getSelectedValue()!!.region(),
                         pnlResourceGroup.rdoCreateNew.isSelected,
-                        pnlResourceGroup.cbResourceGroup.getSelectedValue()!!.name(),
+                        when {
+                            pnlResourceGroup.rdoCreateNew.isSelected -> pnlResourceGroup.txtResourceGroupName.text
+                            else -> pnlResourceGroup.cbResourceGroup.getSelectedValue()!!.name()
+                        },
                         txtAdminLoginValue.text,
                         passAdminPassword.password)
             }
