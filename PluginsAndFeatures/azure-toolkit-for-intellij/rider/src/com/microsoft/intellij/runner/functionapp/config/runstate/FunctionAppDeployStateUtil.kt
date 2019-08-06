@@ -156,7 +156,7 @@ object FunctionAppDeployStateUtil {
 
             functionAppStop(app, processHandler)
 
-            KuduClient.kuduZipDeploy(zipFile, app.publishingProfile, app.name(), processHandler)
+            KuduClient.kuduZipDeploy(zipFile, app, processHandler)
 
             if (zipFile.exists()) {
                 processHandler.setText(String.format(UiConstants.ZIP_FILE_DELETING, zipFile.path))

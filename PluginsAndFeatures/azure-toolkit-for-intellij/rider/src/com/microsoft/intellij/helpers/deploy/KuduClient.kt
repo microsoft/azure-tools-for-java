@@ -24,6 +24,7 @@ package com.microsoft.intellij.helpers.deploy
 
 import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.PublishingProfile
+import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.utils.AppDeploySession
@@ -46,7 +47,7 @@ object KuduClient {
     /**
      * Method to publish specified ZIP file to Azure server. We make up to 3 tries for uploading a ZIP file.
      *
-     * Note: Azure SDK support a native [FunctionApp.zipDeploy(File)] method. Hoverer, we cannot use it for files with BOM
+     * Note: Azure SDK supports a native [FunctionApp.zipDeploy(File)] method. Hoverer, we cannot use it for files with BOM
      *       Method throws an exception while reading the JSON file that contains BOM. Use our own implementation until fixed
      *
      * @param zipFile - zip file instance to be published
@@ -54,7 +55,28 @@ object KuduClient {
      *
      * @throws [RuntimeException] in case REST request was not succeed or timed out after 3 attempts
      */
-    fun kuduZipDeploy(zipFile: File, publishingProfile: PublishingProfile, appName: String, processHandler: RunProcessHandler) {
+    fun kuduZipDeploy(zipFile: File, app: WebAppBase, processHandler: RunProcessHandler) {
+
+        val appName = app.name()
+        val kuduBaseUrl = "https://" + app.defaultHostName().toLowerCase()
+                .replace("http://", "")
+                .replace(app.name().toLowerCase(), app.name().toLowerCase() + ".scm")
+
+        kuduZipDeploy(zipFile, app.publishingProfile, appName, kuduBaseUrl, processHandler)
+    }
+
+    /**
+     * Method to publish specified ZIP file to Azure server. We make up to 3 tries for uploading a ZIP file.
+     *
+     * Note: Azure SDK supports a native [FunctionApp.zipDeploy(File)] method. Hoverer, we cannot use it for files with BOM
+     *       Method throws an exception while reading the JSON file that contains BOM. Use our own implementation until fixed
+     *
+     * @param zipFile - zip file instance to be published
+     * @param processHandler - a process handler to show a process message
+     *
+     * @throws [RuntimeException] in case REST request was not succeed or timed out after 3 attempts
+     */
+    fun kuduZipDeploy(zipFile: File, publishingProfile: PublishingProfile, appName: String, kuduBaseUrl: String?, processHandler: RunProcessHandler) {
 
         val session = AppDeploySession(publishingProfile.gitUsername(), publishingProfile.gitPassword())
 
@@ -68,7 +90,7 @@ object KuduClient {
 
                 try {
                     response = session.publishZip(
-                            "https://" + appName.toLowerCase() + URL_KUDU_ZIP_DEPLOY,
+                            kuduBaseUrl ?: "https://" + appName.toLowerCase() + URL_KUDU_ZIP_DEPLOY,
                             zipFile,
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
