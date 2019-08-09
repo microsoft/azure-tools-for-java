@@ -36,9 +36,10 @@ object KuduClient {
 
     private val logger = getLogger<WebAppDeployStateUtil>()
 
+    private const val URL_KUDU_ZIP_DEPLOY_SUFFIX = "/api/zipdeploy"
     private const val URL_AZURE_BASE = ".azurewebsites.net"
     private const val URL_KUDU_BASE = ".scm$URL_AZURE_BASE"
-    private const val URL_KUDU_ZIP_DEPLOY = "$URL_KUDU_BASE/api/zipdeploy"
+    private const val URL_KUDU_ZIP_DEPLOY = "$URL_KUDU_BASE$URL_KUDU_ZIP_DEPLOY_SUFFIX"
 
     private const val SLEEP_TIME_MS = 5000L
     private const val DEPLOY_TIMEOUT_MS = 180000L
@@ -61,6 +62,7 @@ object KuduClient {
         val kuduBaseUrl = "https://" + app.defaultHostName().toLowerCase()
                 .replace("http://", "")
                 .replace(app.name().toLowerCase(), app.name().toLowerCase() + ".scm")
+                .trimEnd('/') + URL_KUDU_ZIP_DEPLOY_SUFFIX
 
         kuduZipDeploy(zipFile, app.publishingProfile, appName, kuduBaseUrl, processHandler)
     }
