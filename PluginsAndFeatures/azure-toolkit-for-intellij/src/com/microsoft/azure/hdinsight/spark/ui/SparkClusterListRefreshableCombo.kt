@@ -93,7 +93,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
             addItemListener { event ->
                 when (event.stateChange) {
                     ItemEvent.SELECTED -> if (event.item != null) {
-                        viewModel.toSelectClusterByIdBehavior.onNext((event.item as IClusterDetail).name)
+                        viewModel.toSelectClusterByIdBehavior.onNext((event.item as IClusterDetail).title)
                     }
                 }
             }
@@ -116,7 +116,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
     }
 
     open inner class ViewModel(private val initClusters: Array<IClusterDetail>,
-                               private val clusterIdMapper: (IClusterDetail?) -> String? = { cluster -> cluster?.name })
+                               private val clusterIdMapper: (IClusterDetail?) -> String? = { cluster -> cluster?.title })
         : DisposableObservers() {
 
         val clusterListModelBehavior: BehaviorSubject<ImmutableComboBoxModel<IClusterDetail>> = disposableSubjectOf {
