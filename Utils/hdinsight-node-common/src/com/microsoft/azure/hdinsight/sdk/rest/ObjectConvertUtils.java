@@ -50,9 +50,8 @@ public final class ObjectConvertUtils {
         try {
             return objectMapper.readValue(jsonString, tClass);
         } catch (IOException e) {
-            // ignore the exception
+            return null;
         }
-        return null;
     }
 
     public static <T> Optional<T> convertEntityToObject(@NotNull HttpEntity entity, @NotNull Class<T> tClass) throws IOException {
