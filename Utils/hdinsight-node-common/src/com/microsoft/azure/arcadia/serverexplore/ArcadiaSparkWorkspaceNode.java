@@ -27,6 +27,7 @@ import com.microsoft.azure.projectarcadia.common.ArcadiaWorkSpace;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 public class ArcadiaSparkWorkspaceNode extends RefreshableNode {
@@ -47,6 +48,20 @@ public class ArcadiaSparkWorkspaceNode extends RefreshableNode {
         this.workspace.refresh();
         this.workspace.getClusters().forEach(compute -> {
             addChildNode(new ArcadiaSparkComputeNode(this, (ArcadiaSparkCompute) compute));
+        });
+    }
+
+    @Override
+    protected void loadActions() {
+        super.loadActions();
+
+        addAction("Launch workspace", new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                // ie: https://web.projectarcadia.net/?workspace=/subscriptions/sub_id/resourceGroups/rg_name/providers/Microsoft.ProjectArcadia/workspaces/ws_name
+                DefaultLoader.getIdeHelper().openLinkInBrowser(String.format("https://web.projectarcadia.net/?workspace=%s",
+                        workspace.getUri().getPath()));
+            }
         });
     }
 
