@@ -19,7 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.arcadia.serverexplore;
+package com.microsoft.azure.arcadia.serverexplore.arcadianode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute;

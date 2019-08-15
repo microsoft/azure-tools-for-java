@@ -19,8 +19,9 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.arcadia.serverexplore;
+package com.microsoft.azure.arcadia.serverexplore.arcadianode;
 
+import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -28,6 +29,8 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+
+import java.awt.geom.Arc2D;
 
 public class ArcadiaSparkComputeNode extends RefreshableNode {
     private static final String ARCADIA_COMPUTE_ID = ArcadiaSparkComputeNode.class.getName();
@@ -47,6 +50,14 @@ public class ArcadiaSparkComputeNode extends RefreshableNode {
     }
 
     @Override
+    protected void loadActions() {
+        super.loadActions();
+
+        addAction("submit Spark on Arcadia job",
+                new ArcadiaSparkSubmitAction(this, compute, ArcadiaSparkOps.getInstance().getArcadiaSubmitAction()));
+    }
+
+        @Override
     public String getServiceName() {
         return TelemetryConstants.SPARK_ON_ARCADIA;
     }

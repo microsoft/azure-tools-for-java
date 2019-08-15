@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.arcadia.serverexplore;
 
+import com.microsoft.azure.arcadia.serverexplore.arcadianode.ArcadiaSparkWorkspaceNode;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager;

@@ -28,6 +28,8 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkOpsCtrl;
+import com.microsoft.azure.arcadia.serverexplore.arcadianode.ArcadiaSparkOps;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
@@ -105,6 +107,9 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             // enable spark serverless node subscribe actions
             ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
                     new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
+
+            ServiceManager.setServiceProvider(ArcadiaSparkOpsCtrl.class,
+                    new ArcadiaSparkOpsCtrl(ArcadiaSparkOps.getInstance()));
 
             ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
             initAuthManage();
