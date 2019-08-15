@@ -58,8 +58,8 @@ public class ArcadiaSparkWorkspaceNode extends RefreshableNode {
         addAction("Launch workspace", new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                // ie: https://web.projectarcadia.net/?workspace=/subscriptions/sub_id/resourceGroups/rg_name/providers/Microsoft.ProjectArcadia/workspaces/ws_name
-                DefaultLoader.getIdeHelper().openLinkInBrowser(String.format("https://web.projectarcadia.net/?workspace=%s",
+                // ie: https://web.projectarcadia.net/home?workspace=/subscriptions/sub_id/resourceGroups/rg_name/providers/Microsoft.ProjectArcadia/workspaces/ws_name
+                DefaultLoader.getIdeHelper().openLinkInBrowser(String.format("https://web.projectarcadia.net/home?workspace=%s",
                         workspace.getUri().getPath()));
             }
         });
