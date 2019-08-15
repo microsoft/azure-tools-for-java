@@ -55,7 +55,8 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
 
         event.presentation.isEnabled = when {
             runConfig == null -> SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != SparkApplicationType.CosmosServerlessSpark
-            runConfig.javaClass == CosmosServerlessSparkConfiguration::class.java -> false
+                    && SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != SparkApplicationType.ArcadiaSpark
+            runConfig.javaClass == CosmosServerlessSparkConfiguration::class.java || runConfig.javaClass == ArcadiaSparkConfiguration::class.java -> false
             else -> true
         }
     }
