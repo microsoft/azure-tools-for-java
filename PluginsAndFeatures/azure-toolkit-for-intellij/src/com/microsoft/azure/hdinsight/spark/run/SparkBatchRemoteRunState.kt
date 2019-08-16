@@ -35,6 +35,7 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
 import com.microsoft.azuretools.telemetrywrapper.EventType
 import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
@@ -68,6 +69,8 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                                 consoleView!!.print("LOG: ${messageWithType.value}\n", ConsoleViewContentType.SYSTEM_OUTPUT)
                             MessageInfoType.Hyperlink ->
                                 BrowserUtil.browse(URI.create(messageWithType.value))
+                            MessageInfoType.HtmlPersistentMessage ->
+                                consoleView!!.print(messageWithType.value, ConsoleViewWithMessageBars.CONSOLE_VIEW_HTML_PERSISTENT_MESSAGE_TYPE)
                             else ->
                             {
                                 consoleView!!.print("ERROR: ${messageWithType.value}\n", ConsoleViewContentType.ERROR_OUTPUT)

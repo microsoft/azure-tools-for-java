@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  * <p/>
  * All rights reserved.
@@ -19,46 +19,27 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.spark.common;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+package com.microsoft.azure.hdinsight.common;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class SparkSubmitResponse {
-    private int id;
-    private String state;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-    private String appId;                   // The application ID
-    private Map<String, Object> appInfo;    // The detailed application info
-    private List<String> log;               // The log lines
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public Map<String, Object> getAppInfo() {
-        return appInfo;
-    }
-
-    public List<String> getLog() {
-        return log == null ? Collections.emptyList() : log;
-    }
-
-    public int getId(){
-        return id;
-    }
-
-    public String getState(){
-        return state;
-    }
-
-    public boolean isAlive() {
-        return !this.getState().equals("error") &&
-                !this.getState().equals("success") &&
-                !this.getState().equals("dead");
+public class UriUtil {
+    public static URI normalizeWithSlashEnding(final @NotNull URI src) {
+        try {
+            return src.getPath().endsWith("/")
+                    ? src
+                    : new URI(
+                            src.getScheme(),
+                            src.getAuthority(),
+                            src.getPath() + "/",
+                            src.getQuery(),
+                            src.getFragment());
+        } catch (URISyntaxException x) {
+            throw new IllegalArgumentException(x.getMessage(), x);
+        }
     }
 }

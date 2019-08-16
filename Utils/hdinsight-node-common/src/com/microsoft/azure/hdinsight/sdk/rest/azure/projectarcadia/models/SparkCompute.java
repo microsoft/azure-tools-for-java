@@ -25,74 +25,82 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
 /**
  * The properties of a spark compute.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonFlatten
 public class SparkCompute extends TrackedResource {
-    /**
-     * The number of nodes in a spark compute.
-     */
-    @JsonProperty(value = "properties.nodeCount")
-    private Integer nodeCount;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The number of nodes in a spark compute.
+         */
+        @JsonProperty(value = "nodeCount")
+        private Integer nodeCount;
 
-    /**
-     * The node size. Possible values include: 'Small', 'Medium', 'Large'.
-     */
-    @JsonProperty(value = "properties.nodeSize")
-    private SparkComputeNodeSizeFamily nodeSize;
+        /**
+         * The node size. Possible values include: 'Small', 'Medium', 'Large'.
+         */
+        @JsonProperty(value = "nodeSize")
+        private SparkComputeNodeSize nodeSize;
 
-    /**
-     * The node size family. Possible values include: 'MemoryOptimized'.
-     */
-    @JsonProperty(value = "properties.nodeSizeFamily")
-    private SparkComputeNodeSize nodeSizeFamily;
+        /**
+         * The node size family. Possible values include: 'MemoryOptimized'.
+         */
+        @JsonProperty(value = "nodeSizeFamily")
+        private SparkComputeNodeSizeFamily nodeSizeFamily;
 
-    /**
-     * The autoscale properties.
-     */
-    @JsonProperty(value = "properties.autoScale")
-    private AutoScaleProperties autoScale;
+        /**
+         * The autoscale properties.
+         */
+        @JsonProperty(value = "autoScale")
+        private AutoScaleProperties autoScale;
 
-    /**
-     * The autoPause properties.
-     */
-    @JsonProperty(value = "properties.autoPause")
-    private AutoPauseProperties autoPause;
+        /**
+         * The autoPause properties.
+         */
+        @JsonProperty(value = "autoPause")
+        private AutoPauseProperties autoPause;
 
-    /**
-     * The spark version.
-     */
-    @JsonProperty(value = "properties.sparkVersion")
-    private String sparkVersion;
+        /**
+         * The spark version.
+         */
+        @JsonProperty(value = "sparkVersion")
+        private String sparkVersion;
 
-    /**
-     * The folder in workspace storage account where spark events will be stored.
-     */
-    @JsonProperty(value = "properties.sparkEventsFolder")
-    private String sparkEventsFolder;
+        /**
+         * The folder in workspace storage account where spark events will be stored.
+         */
+        @JsonProperty(value = "sparkEventsFolder")
+        private String sparkEventsFolder;
 
-    /**
-     * The folder in workspace storage account where spark logs will be stored.
-     */
-    @JsonProperty(value = "properties.defaultSparkLogFolder")
-    private String defaultSparkLogFolder;
+        /**
+         * The folder in workspace storage account where spark logs will be stored.
+         */
+        @JsonProperty(value = "defaultSparkLogFolder")
+        private String defaultSparkLogFolder;
 
-    /**
-     * The spark compute provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed',
-     * 'Deleting'.
-     */
-    @JsonProperty(value = "properties.provisioningState", access = JsonProperty.Access.WRITE_ONLY)
-    private SparkComputeProvisioningState provisioningState;
+        /**
+         * The spark compute provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed',
+         * 'Deleting'.
+         */
+        @JsonProperty(value = "provisioningState", access = JsonProperty.Access.WRITE_ONLY)
+        private SparkComputeProvisioningState provisioningState;
 
-    /**
-     * The spark compute state.
-     */
-    @JsonProperty(value = "properties.status", access = JsonProperty.Access.WRITE_ONLY)
-    private String status;
+        /**
+         * The spark compute state.
+         */
+        @JsonProperty(value = "status", access = JsonProperty.Access.WRITE_ONLY)
+        private String status;
+    }
+
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private Properties properties;
+
+    public Properties properties() {
+        return this.properties;
+    }
 
     /**
      * Get the number of nodes in a spark compute.
@@ -100,7 +108,7 @@ public class SparkCompute extends TrackedResource {
      * @return the nodeCount value
      */
     public Integer nodeCount() {
-        return this.nodeCount;
+        return this.properties == null ? null : this.properties.nodeCount;
     }
 
     /**
@@ -110,7 +118,11 @@ public class SparkCompute extends TrackedResource {
      * @return the SparkCompute object itself.
      */
     public SparkCompute withNodeCount(Integer nodeCount) {
-        this.nodeCount = nodeCount;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.nodeCount = nodeCount;
         return this;
     }
 
@@ -119,8 +131,8 @@ public class SparkCompute extends TrackedResource {
      *
      * @return the nodeSize value
      */
-    public SparkComputeNodeSizeFamily nodeSize() {
-        return this.nodeSize;
+    public SparkComputeNodeSize nodeSize() {
+        return this.properties == null ? null : this.properties.nodeSize;
     }
 
     /**
@@ -129,8 +141,12 @@ public class SparkCompute extends TrackedResource {
      * @param nodeSize the nodeSize value to set
      * @return the SparkCompute object itself.
      */
-    public SparkCompute withNodeSize(SparkComputeNodeSizeFamily nodeSize) {
-        this.nodeSize = nodeSize;
+    public SparkCompute withNodeSize(SparkComputeNodeSize nodeSize) {
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.nodeSize = nodeSize;
         return this;
     }
 
@@ -139,8 +155,8 @@ public class SparkCompute extends TrackedResource {
      *
      * @return the nodeSizeFamily value
      */
-    public SparkComputeNodeSize nodeSizeFamily() {
-        return this.nodeSizeFamily;
+    public SparkComputeNodeSizeFamily nodeSizeFamily() {
+        return this.properties == null ? null : this.properties.nodeSizeFamily;
     }
 
     /**
@@ -149,8 +165,12 @@ public class SparkCompute extends TrackedResource {
      * @param nodeSizeFamily the nodeSizeFamily value to set
      * @return the SparkCompute object itself.
      */
-    public SparkCompute withNodeSizeFamily(SparkComputeNodeSize nodeSizeFamily) {
-        this.nodeSizeFamily = nodeSizeFamily;
+    public SparkCompute withNodeSizeFamily(SparkComputeNodeSizeFamily nodeSizeFamily) {
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.nodeSizeFamily = nodeSizeFamily;
         return this;
     }
 
@@ -160,7 +180,7 @@ public class SparkCompute extends TrackedResource {
      * @return the autoScale value
      */
     public AutoScaleProperties autoScale() {
-        return this.autoScale;
+        return this.properties == null ? null : this.properties.autoScale;
     }
 
     /**
@@ -170,7 +190,11 @@ public class SparkCompute extends TrackedResource {
      * @return the SparkCompute object itself.
      */
     public SparkCompute withAutoScale(AutoScaleProperties autoScale) {
-        this.autoScale = autoScale;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.autoScale = autoScale;
         return this;
     }
 
@@ -180,7 +204,7 @@ public class SparkCompute extends TrackedResource {
      * @return the autoPause value
      */
     public AutoPauseProperties autoPause() {
-        return this.autoPause;
+        return this.properties == null ? null : this.properties.autoPause;
     }
 
     /**
@@ -190,7 +214,11 @@ public class SparkCompute extends TrackedResource {
      * @return the SparkCompute object itself.
      */
     public SparkCompute withAutoPause(AutoPauseProperties autoPause) {
-        this.autoPause = autoPause;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.autoPause = autoPause;
         return this;
     }
 
@@ -200,7 +228,7 @@ public class SparkCompute extends TrackedResource {
      * @return the sparkVersion value
      */
     public String sparkVersion() {
-        return this.sparkVersion;
+        return this.properties == null ? null : this.properties.sparkVersion;
     }
 
     /**
@@ -210,7 +238,11 @@ public class SparkCompute extends TrackedResource {
      * @return the SparkCompute object itself.
      */
     public SparkCompute withSparkVersion(String sparkVersion) {
-        this.sparkVersion = sparkVersion;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sparkVersion = sparkVersion;
         return this;
     }
 
@@ -220,7 +252,7 @@ public class SparkCompute extends TrackedResource {
      * @return the sparkEventsFolder value
      */
     public String sparkEventsFolder() {
-        return this.sparkEventsFolder;
+        return this.properties == null ? null : this.properties.sparkEventsFolder;
     }
 
     /**
@@ -230,7 +262,11 @@ public class SparkCompute extends TrackedResource {
      * @return the SparkCompute object itself.
      */
     public SparkCompute withSparkEventsFolder(String sparkEventsFolder) {
-        this.sparkEventsFolder = sparkEventsFolder;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sparkEventsFolder = sparkEventsFolder;
         return this;
     }
 
@@ -240,7 +276,7 @@ public class SparkCompute extends TrackedResource {
      * @return the defaultSparkLogFolder value
      */
     public String defaultSparkLogFolder() {
-        return this.defaultSparkLogFolder;
+        return this.properties == null ? null : this.properties.defaultSparkLogFolder;
     }
 
     /**
@@ -250,7 +286,11 @@ public class SparkCompute extends TrackedResource {
      * @return the SparkCompute object itself.
      */
     public SparkCompute withDefaultSparkLogFolder(String defaultSparkLogFolder) {
-        this.defaultSparkLogFolder = defaultSparkLogFolder;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.defaultSparkLogFolder = defaultSparkLogFolder;
         return this;
     }
 
@@ -260,7 +300,7 @@ public class SparkCompute extends TrackedResource {
      * @return the provisioningState value
      */
     public SparkComputeProvisioningState provisioningState() {
-        return this.provisioningState;
+        return this.properties == null ? null : this.properties.provisioningState;
     }
 
     /**
@@ -269,7 +309,6 @@ public class SparkCompute extends TrackedResource {
      * @return the status value
      */
     public String status() {
-        return this.status;
+        return this.properties == null ? null : this.properties.status;
     }
-
 }

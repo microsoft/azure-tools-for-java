@@ -22,8 +22,20 @@
  */
 package com.microsoft.azure.hdinsight.spark.run
 
+import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
+import com.microsoft.azure.hdinsight.common.MessageInfoType
+import com.microsoft.azure.hdinsight.common.WasbUri
+import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkSubmitModel
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
+import com.microsoft.azuretools.securestore.SecureStore
+import com.microsoft.azuretools.service.ServiceManager
+import rx.Observer
+import java.net.URI
+import java.util.AbstractMap
+import java.util.NoSuchElementException
 
 class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -32,5 +44,55 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
 
     override fun getRunnerId(): String {
         return "ArcadiaSparkBatchRun"
+    }
+
+    val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
+
+    @Throws(ExecutionException::class)
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
+        val arcadiaModel = submitModel as ArcadiaSparkSubmitModel
+        val submission = SparkBatchArcadiaSubmission(
+                arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, URI.create(arcadiaModel.livyUri))
+
+        val fsRoot = WasbUri.parse(arcadiaModel.jobUploadStorageModel.uploadPath
+                ?: throw ExecutionException("No uploading path set in Run Configuration"))
+
+        val storageKey = arcadiaModel.jobUploadStorageModel.let { uploadStoreModel ->
+            uploadStoreModel.storageKey
+                    ?: uploadStoreModel.getCredentialAccount(uploadStoreModel.storageAccount,
+                                                             SparkSubmitStorageType.BLOB)
+                            ?.let { credentialAccount ->
+                                secureStore?.loadPassword(credentialAccount, uploadStoreModel.storageAccount) }
+                    ?: throw ExecutionException("Can't get Blob access key for uploading artifact.")
+        }
+
+        val jobDeploy = if (submitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
+            val compute = try {
+                ArcadiaSparkComputeManager.getInstance().findCompute(
+                        arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
+                        .toBlocking()
+                        .first()
+            } catch (ex: NoSuchElementException) {
+                throw ExecutionException(
+                        "Can't find Arcadia spark compute (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
+                                + " at tenant ${arcadiaModel.tenantId}.")
+            }
+
+            SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
+                    submitModel, compute, ctrlSubject)
+        } else {
+            throw ExecutionException("Arcadia only supports WASB storage to upload currently.")
+        }
+
+        submitModel.submissionParameter.jobConfig.put(
+                SparkSubmissionParameter.Conf,
+                SparkConfigures(mapOf(
+                        "spark.hadoop.fs.azure.account.key.${fsRoot.storageAccount}.blob.core.windows.net" to storageKey)))
+
+        return ArcadiaSparkBatchJob(
+                submitModel.submissionParameter,
+                submission,
+                jobDeploy,
+                ctrlSubject)
     }
 }

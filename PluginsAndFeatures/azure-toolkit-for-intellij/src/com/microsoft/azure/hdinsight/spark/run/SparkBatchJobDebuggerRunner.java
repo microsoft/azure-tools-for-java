@@ -375,7 +375,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
             IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                     .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
-            Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(debugModel, ctrlSubject);
+            Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
+                    debugModel, clusterDetail, ctrlSubject);
             return new SparkBatchRemoteDebugJob(clusterDetail, debugModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
         } catch (DebugParameterDefinedException e) {
             throw new ExecutionException(e);

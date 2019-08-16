@@ -23,33 +23,162 @@
 package com.microsoft.azure.projectarcadia.common;
 
 import com.google.common.collect.ImmutableSortedSet;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.ApiVersion;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.GetSparkComputeListResponse;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.Workspace;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.WorkspaceProvisioningState;
+import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
-public class ArcadiaWorkSpace implements ClusterContainer {
-    private String name;
+import java.net.URI;
+import java.util.Optional;
+
+public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWorkSpace>, ILogger {
+    private static final String REST_SEGMENT_SPARK_COMPUTES = "/sparkComputes";
+
+    @NotNull
+    private final SubscriptionDetail subscription;
+
+    @NotNull
+    private Workspace workspaceResponse;
+
+    @NotNull
+    private ImmutableSortedSet<? extends IClusterDetail> clusters = ImmutableSortedSet.of();
+
+    @NotNull
+    private final URI uri;
+
+    @NotNull
+    private final String name;
+
+    @NotNull
+    private final AzureHttpObservable http;
+
+    public ArcadiaWorkSpace(@NotNull SubscriptionDetail subscription, @NotNull Workspace workspaceResponse) {
+        this.subscription = subscription;
+        this.workspaceResponse = workspaceResponse;
+        this.name = workspaceResponse.name();
+        this.uri = URI.create(CommonSettings.getAdEnvironment().resourceManagerEndpoint()).resolve(workspaceResponse.id());
+        this.http = new AzureHttpObservable(subscription, ApiVersion.VERSION);
+    }
 
     @NotNull
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
-        return ImmutableSortedSet.of();
+        return ImmutableSortedSet.copyOf(
+                this.clusters.stream().filter(cluster -> ((ArcadiaSparkCompute) cluster).isRunning()).iterator());
     }
 
     @NotNull
     public Observable<ArcadiaWorkSpace> fetchClusters() {
-        return Observable.just(this);
+        return getSparkComputesRequest()
+                .map(this::updateWithResponse)
+                .defaultIfEmpty(this);
+    }
+
+    @NotNull
+    private Observable<GetSparkComputeListResponse> getSparkComputesRequest() {
+        String url = getUri().toString() + REST_SEGMENT_SPARK_COMPUTES;
+
+        return getHttp()
+                .withUuidUserAgent()
+                .get(url, null, null, GetSparkComputeListResponse.class);
+    }
+
+    private ArcadiaWorkSpace updateWithResponse(@NotNull GetSparkComputeListResponse response) {
+        this.clusters =
+                ImmutableSortedSet.copyOf(response.items().stream()
+                        .map(sparkCompute -> new ArcadiaSparkCompute(this, sparkCompute))
+                        .iterator());
+        return this;
     }
 
     @NotNull
     @Override
     public ClusterContainer refresh() {
-        return this;
+        try {
+            return fetchClusters().toBlocking().singleOrDefault(this);
+        } catch (Exception ignored) {
+            log().warn("Got Exceptions when refreshing Arcadia spark computes. " + ExceptionUtils.getStackTrace(ignored));
+            return this;
+        }
+    }
+
+    public boolean isRunning() {
+        if (getProvisioningState() == null) {
+            return false;
+        }
+
+        return getProvisioningState().equals(WorkspaceProvisioningState.PROVISIONING)
+                || getProvisioningState().equals(WorkspaceProvisioningState.SUCCEEDED);
+    }
+
+    @Nullable
+    public WorkspaceProvisioningState getProvisioningState() {
+        return this.workspaceResponse.provisioningState();
+    }
+
+    @NotNull
+    public String getState() {
+        return Optional.ofNullable(getProvisioningState()).map(state -> state.toString()).orElse("Unknown");
+    }
+
+    @NotNull
+    public String getTitleForNode() {
+        if (getState().equalsIgnoreCase(WorkspaceProvisioningState.SUCCEEDED.toString())) {
+            return getName();
+        } else {
+            return String.format("%s [%s]", getName(), getState());
+        }
     }
 
     @NotNull
     public String getName() {
-        return "";
+        return this.name;
+    }
+
+    @NotNull
+    public URI getUri() {
+        return this.uri;
+    }
+
+    @Nullable
+    public String getSparkUrl() {
+        if (this.workspaceResponse.connectivityEndpoints() == null) {
+            return null;
+        }
+
+        return this.workspaceResponse.connectivityEndpoints().spark();
+    }
+
+    @NotNull
+    public AzureHttpObservable getHttp() {
+        return http;
+    }
+
+    @NotNull
+    public SubscriptionDetail getSubscription() {
+        return subscription;
+    }
+
+    public Workspace getWorkspaceResponse() {
+        return workspaceResponse;
+    }
+
+    @Override
+    public int compareTo(@NotNull ArcadiaWorkSpace other) {
+        if (this == other) {
+            return 0;
+        }
+
+        return this.getTitleForNode().compareTo(other.getTitleForNode());
     }
 }

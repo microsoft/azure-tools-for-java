@@ -83,7 +83,7 @@ class ArisSparkBatchRunner : SparkBatchJobRunner() {
         val clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
             .orElseThrow { ExecutionException("Can't find cluster named $clusterName") }
 
-        val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, ctrlSubject)
+        val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, clusterDetail, ctrlSubject)
         // UTC Time sample: 2019-07-09T02:47:34.245Z
         val currentUtcTime = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
         return ArisSparkBatchJob(

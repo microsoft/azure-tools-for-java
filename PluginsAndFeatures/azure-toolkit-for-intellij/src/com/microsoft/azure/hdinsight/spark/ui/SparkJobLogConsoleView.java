@@ -27,7 +27,6 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +44,7 @@ public class SparkJobLogConsoleView extends ConsoleViewImpl {
         super(project, true);
 
         // set `usePredefinedMessageFilter = false` to disable predefined filter by console view and avoid filter conflict
-        this.secondaryConsoleView = new ConsoleViewImpl(project, GlobalSearchScope.allScope(project), true, false);
+        this.secondaryConsoleView = new ConsoleViewWithMessageBars(project);
     }
 
     @Override

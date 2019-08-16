@@ -23,12 +23,33 @@
 package com.microsoft.azure.projectarcadia.common;
 
 import com.google.common.collect.ImmutableSortedSet;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.ApiVersion;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.GetWorkspaceListResponse;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.Workspace;
+import com.microsoft.azuretools.adauth.AuthException;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
-public class ArcadiaSparkComputeManager implements ClusterContainer {
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+
+import static rx.Observable.concat;
+import static rx.Observable.from;
+
+public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     private static class LazyHolder {
         static final ArcadiaSparkComputeManager INSTANCE = new ArcadiaSparkComputeManager();
     }
@@ -37,25 +58,159 @@ public class ArcadiaSparkComputeManager implements ClusterContainer {
         return LazyHolder.INSTANCE;
     }
 
+    private static final String REST_SEGMENT_SUBSCRIPTION = "/subscriptions/";
+    private static final String REST_SEGMENT_WORKSPACES = "providers/Microsoft.ProjectArcadia/workspaces";
+
+    @NotNull
+    private ImmutableSortedSet<? extends ArcadiaWorkSpace> workSpaces = ImmutableSortedSet.of();
+
+    @Nullable
+    public AzureManager getAzureManager() {
+        try {
+            return AuthMethodManager.getInstance().getAzureManager();
+        } catch (IOException e) {
+            log().info("Failed to get AzureManager. Error: " + e);
+
+            return null;
+        }
+    }
+
+    public ArcadiaSparkComputeManager() {
+        AuthMethodManager.getInstance().addSignOutEventListener(() -> workSpaces = ImmutableSortedSet.of());
+        AzureManager azureManager = getAzureManager();
+        if (azureManager != null) {
+            azureManager.getSubscriptionManager().addListener(ev -> workSpaces = ImmutableSortedSet.of());
+        }
+    }
+
     @NotNull
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
-        return ImmutableSortedSet.of();
+        if (getAzureManager() == null) {
+            return ImmutableSortedSet.of();
+        }
+
+        return ImmutableSortedSet.copyOf(
+                getWorkspaces().stream()
+                        .flatMap(workSpace -> workSpace.getClusters().stream())
+                        .iterator()
+        );
     }
 
     @NotNull
     @Override
     public ClusterContainer refresh() {
-        return this;
+        if (getAzureManager() == null) {
+            return this;
+        }
+
+        try {
+            return fetchWorkSpaces().toBlocking().singleOrDefault(this);
+        } catch (Exception ignored) {
+            log().warn("Got exceptions when refreshing Arcadia workspaces. " + ExceptionUtils.getStackTrace(ignored));
+            return this;
+        }
     }
 
     @NotNull
     public Observable<ArcadiaSparkComputeManager> fetchClusters() {
-        return Observable.just(this);
+        return fetchWorkSpaces()
+                .map(ArcadiaSparkComputeManager::getWorkspaces)
+                .flatMap(Observable::from)
+                .flatMap(workSpace ->
+                        workSpace.fetchClusters()
+                                .onErrorResumeNext(err -> {
+                                    String errMsg = String.format("Got exceptions when refreshing spark computes. Workspace: %s. %s",
+                                            workSpace.getName(), ExceptionUtils.getStackTrace(err));
+                                    log().warn(errMsg);
+                                    return Observable.empty();
+                                })
+                                .subscribeOn(Schedulers.io())
+                )
+                .map(workspace -> this)
+                .defaultIfEmpty(this);
     }
 
     @NotNull
     public ImmutableSortedSet<? extends ArcadiaWorkSpace> getWorkspaces() {
-        return ImmutableSortedSet.of();
+        this.workSpaces =
+                ImmutableSortedSet.copyOf(this.workSpaces.stream().filter(workspace -> workspace.isRunning()).iterator());
+        return this.workSpaces;
     }
+
+    @NotNull
+    private URI getSubscriptionsUri(@NotNull String subscriptionId) {
+        return URI.create(CommonSettings.getAdEnvironment().resourceManagerEndpoint())
+                .resolve(REST_SEGMENT_SUBSCRIPTION)
+                .resolve(subscriptionId);
+    }
+
+    @NotNull
+    public Observable<ArcadiaSparkComputeManager> fetchWorkSpaces() {
+        return getWorkSpacesRequest()
+                .map(this::updateWithResponse)
+                .defaultIfEmpty(this);
+    }
+
+    @NotNull
+    private Observable<List<Pair<SubscriptionDetail, Workspace>>> getWorkSpacesRequest() {
+        AzureManager azureManager = getAzureManager();
+        if (azureManager == null) {
+            return Observable.error(new AuthException(
+                    "Can't get Arcadia workspaces since user doesn't sign in, please sign in by Azure Explorer."));
+        }
+
+        return Observable.fromCallable(() -> azureManager.getSubscriptionManager().getSelectedSubscriptionDetails())
+                .flatMap(Observable::from)
+                .map(sub -> Pair.of(
+                        sub,
+                        URI.create(getSubscriptionsUri(sub.getSubscriptionId()).toString() + "/")
+                                .resolve(REST_SEGMENT_WORKSPACES))
+                )
+                .doOnNext(subAndWorkspaceUriPair -> log().debug("Pair(Subscription, WorkSpaceListUri): " + subAndWorkspaceUriPair.toString()))
+                .flatMap(subAndWorkSpaceUriPair ->
+                        buildHttp(subAndWorkSpaceUriPair.getLeft())
+                                .withUuidUserAgent()
+                                .get(subAndWorkSpaceUriPair.getRight().toString(), null, null, GetWorkspaceListResponse.class)
+                                .flatMap(resp -> Observable.from(resp.items()))
+                                .onErrorResumeNext(err -> {
+                                    log().warn("Got exceptions when listing workspace by subscription ID. " + ExceptionUtils.getStackTrace(err));
+                                    return Observable.empty();
+                                })
+                                .map(workSpace -> Pair.of(subAndWorkSpaceUriPair.getLeft(), workSpace))
+                                .subscribeOn(Schedulers.io())
+                )
+                .toList()
+                .doOnNext(subAndWorkSpacePair -> log().debug("Pair(Subscription, WorkSpace) list: " + subAndWorkSpacePair.toString()));
+    }
+
+    @NotNull
+    private ArcadiaSparkComputeManager updateWithResponse(@NotNull List<Pair<SubscriptionDetail, Workspace>> workSpacesResponse) {
+        this.workSpaces =
+                ImmutableSortedSet.copyOf(
+                        workSpacesResponse
+                                .stream()
+                                .map(subAndWorkSpacePair ->
+                                        new ArcadiaWorkSpace(subAndWorkSpacePair.getLeft(), subAndWorkSpacePair.getRight()))
+                                .iterator()
+                );
+        return this;
+    }
+
+    @NotNull
+    private AzureHttpObservable buildHttp(@NotNull SubscriptionDetail subscriptionDetail) {
+        return new AzureHttpObservable(subscriptionDetail, ApiVersion.VERSION);
+    }
+
+    @NotNull
+    public Observable<? extends ArcadiaSparkCompute> findCompute(final @NotNull String tenantId,
+                                                                 final @NotNull String workspaceName,
+                                                                 final @NotNull String computeName) {
+        return concat(from(getClusters()), fetchClusters().flatMap(computeManager -> from(computeManager.getClusters())))
+                .map(ArcadiaSparkCompute.class::cast)
+                .filter(compute -> compute.getWorkSpace().getName().equals(workspaceName)
+                        && compute.getSubscription().getTenantId().equals(tenantId)
+                        && compute.getName().equals(computeName));
+    }
+
 }

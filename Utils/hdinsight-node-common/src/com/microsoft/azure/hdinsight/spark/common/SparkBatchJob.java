@@ -395,8 +395,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     httpResponse.getMessage(), SparkSubmitResponse.class)
                     .orElseThrow(() -> new UnknownServiceException(
                             "Bad spark job response: " + httpResponse.getMessage()));
-
             this.setBatchId(jobResp.getId());
+
+            getCtrlSubject().onNext(new SimpleImmutableEntry<>(Info, "Spark Batch submission " + httpResponse.toString()));
 
             return this;
         }

@@ -22,11 +22,14 @@
  */
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
+import com.intellij.execution.configurations.RuntimeConfigurationWarning
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.ui.ArcadiaSparkClusterListRefreshableCombo
 import com.microsoft.azure.hdinsight.spark.ui.SparkClusterListRefreshableCombo
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
 
 class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionContentPanel(project, "Arcadia Spark") {
     override val clustersSelection: SparkClusterListRefreshableCombo by lazy { ArcadiaSparkClusterListRefreshableCombo().apply {
@@ -35,4 +38,22 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
 
     override val clusterHint: String
         get() = "Spark Computes"
+
+    override fun getData(data: SparkSubmitModel) {
+        // Component -> Data
+        super.getData(data)
+
+        val arcadiaData = data as? ArcadiaSparkSubmitModel ?: return
+        val cluster = viewModel.clusterSelection.let {
+            it.findClusterById(it.clusterListModelBehavior.value, it.toSelectClusterByIdBehavior.value) as? ArcadiaSparkCompute
+        }
+
+        if (cluster != null) {
+            arcadiaData.tenantId = cluster.subscription.tenantId
+            arcadiaData.sparkWorkspace = cluster.workSpace.name
+            arcadiaData.sparkCompute = cluster.name
+            arcadiaData.livyUri = cluster.connectionUrl
+                    ?: throw RuntimeConfigurationWarning("Can't get Arcadia compute connection URL")
+        }
+    }
 }

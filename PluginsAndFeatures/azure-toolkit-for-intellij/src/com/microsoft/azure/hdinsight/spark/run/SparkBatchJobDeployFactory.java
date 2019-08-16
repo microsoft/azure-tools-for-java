@@ -60,6 +60,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
     }
 
     public Deployable buildSparkBatchJobDeploy(@NotNull SparkSubmitModel submitModel,
+                                               @NotNull IClusterDetail clusterDetail,
                                                @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
 
         // get storage account and access token from submitModel
@@ -70,8 +71,6 @@ public class SparkBatchJobDeployFactory implements ILogger {
         HttpObservable httpObservable = null;
         Deployable jobDeploy = null;
         String clusterName = submitModel.getSubmissionParameter().getClusterName();
-        IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
-                .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
         SparkSubmitStorageType storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
         String subscription = submitModel.getJobUploadStorageModel().getSelectedSubscription();

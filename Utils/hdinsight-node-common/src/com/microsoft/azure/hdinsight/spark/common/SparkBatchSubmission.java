@@ -28,6 +28,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -83,7 +84,8 @@ public class SparkBatchSubmission implements ILogger {
         return HDInsightLoader.getHDInsightHelper().getInstallationId();
     }
 
-    public CloseableHttpClient getHttpClient() throws IOException {
+    @Nullable
+    protected SSLConnectionSocketFactory getSSLSocketFactory() {
         TrustStrategy ts = ServiceManager.getServiceProvider(TrustStrategy.class);
         SSLConnectionSocketFactory sslSocketFactory = null;
 
@@ -102,9 +104,14 @@ public class SparkBatchSubmission implements ILogger {
             }
         }
 
+        return sslSocketFactory;
+    }
+
+    @NotNull
+    public CloseableHttpClient getHttpClient() throws IOException {
         return HttpClients.custom()
                  .useSystemProperties()
-                 .setSSLSocketFactory(sslSocketFactory)
+                 .setSSLSocketFactory(getSSLSocketFactory())
                  .setDefaultCredentialsProvider(credentialsProvider)
                  .build();
     }

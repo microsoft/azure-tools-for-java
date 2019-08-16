@@ -66,6 +66,7 @@ import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -756,7 +757,7 @@ public class JobUtils {
         return globalCache;
     }
 
-    public static AbstractMap.SimpleImmutableEntry<Integer, Map<String, List<String>>>
+    public static AbstractMap.SimpleImmutableEntry<Integer, List<Header>>
     authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
         SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
         if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {

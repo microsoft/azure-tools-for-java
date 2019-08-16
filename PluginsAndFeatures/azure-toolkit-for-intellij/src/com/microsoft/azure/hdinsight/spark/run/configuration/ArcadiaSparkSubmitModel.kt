@@ -23,8 +23,18 @@
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.openapi.project.Project
+import com.intellij.util.xmlb.annotations.Attribute
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 
 class ArcadiaSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
+    @Attribute("livy_uri")
+    lateinit var livyUri: String
+    @Attribute("spark_workspace")
+    lateinit var sparkWorkspace: String
+    @Attribute("spark_compute")
+    lateinit var sparkCompute: String
+    @Attribute("tenant_id")
+    lateinit var tenantId: String
+
     override fun getSparkClusterTypeDisplayName(): String = "Arcadia Spark cluster"
 }

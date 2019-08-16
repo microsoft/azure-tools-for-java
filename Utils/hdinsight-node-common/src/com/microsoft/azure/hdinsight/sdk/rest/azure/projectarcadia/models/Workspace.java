@@ -25,31 +25,36 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
-/**
- * The properties of a workspace.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonFlatten
 public class Workspace extends TrackedResource {
-    /**
-     * The workspace provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
-     */
-    @JsonProperty(value = "properties.provisioningState", access = JsonProperty.Access.WRITE_ONLY)
-    private WorkspaceProvisioningState provisioningState;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class Properties {
+        /**
+         * The workspace provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
+         */
+        @JsonProperty(value = "provisioningState", access = JsonProperty.Access.WRITE_ONLY)
+        private WorkspaceProvisioningState provisioningState;
 
-    /**
-     * The virtual network properties.
-     */
-    @JsonProperty(value = "properties.virtualNetworkProfile")
-    private WorkspaceVirtualNetworkProfile virtualNetworkProfile;
+        /**
+         * The virtual network properties.
+         */
+        @JsonProperty(value = "virtualNetworkProfile")
+        private WorkspaceVirtualNetworkProfile virtualNetworkProfile;
 
-    /**
-     * Workspace connectivity endpoints.
-     */
-    @JsonProperty(value = "properties.connectivityEndpoints", access = JsonProperty.Access.WRITE_ONLY)
-    private ConnectivityEndpoints connectivityEndpoints;
+        /**
+         * Workspace connectivity endpoints.
+         */
+        @JsonProperty(value = "connectivityEndpoints", access = JsonProperty.Access.WRITE_ONLY)
+        private ConnectivityEndpoints connectivityEndpoints;
+    }
+
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private Properties properties;
+
+    public Properties properties() {
+        return this.properties;
+    }
 
     /**
      * Get the workspace provisioning state. Possible values include: 'Provisioning', 'Succeeded', 'Failed', 'Deleting'.
@@ -57,7 +62,7 @@ public class Workspace extends TrackedResource {
      * @return the provisioningState value
      */
     public WorkspaceProvisioningState provisioningState() {
-        return this.provisioningState;
+        return this.properties == null ? null : this.properties.provisioningState;
     }
 
     /**
@@ -66,7 +71,7 @@ public class Workspace extends TrackedResource {
      * @return the virtualNetworkProfile value
      */
     public WorkspaceVirtualNetworkProfile virtualNetworkProfile() {
-        return this.virtualNetworkProfile;
+        return this.properties == null ? null : this.properties.virtualNetworkProfile;
     }
 
     /**
@@ -76,7 +81,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withVirtualNetworkProfile(WorkspaceVirtualNetworkProfile virtualNetworkProfile) {
-        this.virtualNetworkProfile = virtualNetworkProfile;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.virtualNetworkProfile = virtualNetworkProfile;
         return this;
     }
 
@@ -86,7 +95,6 @@ public class Workspace extends TrackedResource {
      * @return the connectivityEndpoints value
      */
     public ConnectivityEndpoints connectivityEndpoints() {
-        return this.connectivityEndpoints;
+        return this.properties == null ? null : this.properties.connectivityEndpoints;
     }
-
 }

@@ -81,7 +81,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                 .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
-        Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, ctrlSubject);
+        Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
+                submitModel, clusterDetail, ctrlSubject);
         return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
     }
 
