@@ -153,7 +153,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         isVisible = false
 
         addActionListener {
-            val selectedClusterName = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
+            val selectedClusterName = viewModel.clusterSelection.selectedCluster?.name
             // record default storage root path for HDInsight Reader role cluster
             val selectedClusterDetail =
                 ClusterManagerEx.getInstance().findClusterDetail({ clusterDetail ->
@@ -551,7 +551,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         // Data -> Component
 
         ApplicationManager.getApplication().invokeAndWait({
-            viewModel.clusterSelection.toSelectClusterByIdBehavior.onNext(data.clusterName)
+            viewModel.clusterSelection.toSelectClusterByIdBehavior.onNext(data.clusterMappedId ?: data.clusterName)
 
             // TODO: Implement this in ClusterSelection ViewModel to take real effects
             clustersSelection.component.isEnabled = data.isClusterSelectable
@@ -586,7 +586,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         // Component -> Data
 
         val selectedArtifactName = (selectedArtifactComboBox.selectedItem as? Artifact)?.name ?: ""
-        val selectedClusterName = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
+        val selectedClusterName = viewModel.clusterSelection.selectedCluster?.name
+        val selectedClusterId = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
 
         val referencedFileList = referencedFilesTextField.text.split(";").dropLastWhile { it.isEmpty() }
                 .asSequence()
@@ -609,6 +610,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         data.apply {
             // submission parameters
             clusterName = selectedClusterName
+            clusterMappedId = selectedClusterId
             isLocalArtifact = localArtifactPrompt.isSelected
             artifactName = selectedArtifactName
             localArtifactPath = localArtifactTextField.text

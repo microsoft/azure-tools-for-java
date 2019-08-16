@@ -30,6 +30,7 @@ import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.*;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.Pair;
 import org.jdom.Element;
 
@@ -52,6 +53,9 @@ public class SparkSubmitModel {
     @Transient
     @NotNull
     private SparkSubmissionParameter submissionParameter; // The parameters to packing submission related various
+
+    @Nullable
+    private String clusterMappedId;
 
     @NotNull
     @Property(surroundWithTag = false)
@@ -149,6 +153,16 @@ public class SparkSubmitModel {
     @Attribute("cluster_name")
     public void setClusterName(String clusterName) {
         getSubmissionParameter().setClusterName(clusterName);
+    }
+
+    @Attribute("cluster_mapped_id")
+    public String getClusterMappedId() {
+        return clusterMappedId;
+    }
+
+    @Attribute("cluster_mapped_id")
+    public void setClusterMappedId(String clusterMappedId) {
+        this.clusterMappedId = clusterMappedId;
     }
 
     @Attribute("is_local_artifact")
