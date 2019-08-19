@@ -397,7 +397,9 @@ public class AzureSparkCosmosCluster extends SparkCluster
         }
     }
 
-    public String getClusterNameWithAccountName() {
+    @Override
+    @NotNull
+    public String getClusterIdForConfiguration() {
         return String.format("%s@%s", getName(), account.getName());
     }
 
@@ -407,7 +409,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
     @NotNull
     @Override
     public String getTitle() {
-        return String.format("%s [%s]", getClusterNameWithAccountName(), getClusterStateForShow());
+        return String.format("%s [%s]", getClusterIdForConfiguration(), getClusterStateForShow());
     }
 
     /**

@@ -29,6 +29,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.*
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
@@ -60,10 +61,10 @@ open class SparkSubmitJobAction : AzureAnAction() {
 
         val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING) ?:
                 getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return true
-        val clusterName = anActionEvent.dataContext.getData(CLUSTER)?.name
+        val cluster = anActionEvent.dataContext.getData(CLUSTER) as? IClusterDetail
         val mainClassName = anActionEvent.dataContext.getData(MAIN_CLASS_NAME)
 
-        submit(runConfigurationSetting, clusterName, mainClassName, operation)
+        submit(runConfigurationSetting, cluster, mainClassName, operation)
         return false
     }
 
@@ -81,7 +82,7 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 
     private fun submit(runConfigurationSetting: RunnerAndConfigurationSettings,
-                       clusterName: String?,
+                       cluster: IClusterDetail?,
                        mainClassName: String?,
                        operation: Operation?) {
         val executor = ExecutorRegistry.getInstance().getExecutorById(SparkBatchJobRunExecutor.EXECUTOR_ID)
@@ -92,8 +93,10 @@ open class SparkSubmitJobAction : AzureAnAction() {
         val model = runConfiguration.model
         model.focusedTabIndex = 1   // Select remote job submission tab
 
+        val clusterName = cluster?.name
         if (clusterName != null) {
             model.submitModel.submissionParameter.clusterName = clusterName     // Select the cluster
+            model.submitModel.clusterMappedId = cluster?.clusterIdForConfiguration
             model.isClusterSelectionEnabled = false
         } else {
             model.isClusterSelectionEnabled = true

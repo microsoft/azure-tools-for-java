@@ -118,7 +118,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
     }
 
     open inner class ViewModel(private val initClusters: Array<IClusterDetail>,
-                               val clusterIdMapper: (IClusterDetail?) -> String? = { cluster -> cluster?.name })
+                               val clusterIdMapper: (IClusterDetail?) -> String? = { cluster -> cluster?.clusterIdForConfiguration })
         : DisposableObservers() {
 
         val clusterListModelBehavior: BehaviorSubject<ImmutableComboBoxModel<IClusterDetail>> = disposableSubjectOf {
@@ -202,7 +202,7 @@ class CosmosSparkClustersCombo: SparkClusterListRefreshableCombo() {
     inner class ViewModel
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().clusters
             .sortedBy { it.title }
-            .toTypedArray(), { (it as? AzureSparkCosmosCluster)?.clusterNameWithAccountName }) {
+            .toTypedArray()) {
 
         override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = cosmosSparkClustersRefreshed
     }
@@ -242,7 +242,7 @@ class ArcadiaSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo(
     inner class ViewModel
         : SparkClusterListRefreshableCombo.ViewModel(ArcadiaSparkComputeManager.getInstance().clusters
             .sortedBy { it.title }
-            .toTypedArray(), { (it as? ArcadiaSparkCompute)?.computeNameWithWorkspaceName }) {
+            .toTypedArray()) {
         override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = arcadiaSparkClustersRefreshed
     }
 

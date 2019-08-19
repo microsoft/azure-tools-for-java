@@ -77,7 +77,8 @@ public class ArcadiaSparkCompute extends SparkCluster implements Comparable<Arca
     }
 
     @NotNull
-    public String getComputeNameWithWorkspaceName() {
+    @Override
+    public String getClusterIdForConfiguration() {
         return String.format("%s@%s", getName(), workSpace.getName());
     }
 
@@ -86,7 +87,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements Comparable<Arca
     @Override
     public String getTitle() {
         if (getState().equalsIgnoreCase(SparkComputeProvisioningState.SUCCEEDED.toString())) {
-            return getComputeNameWithWorkspaceName();
+            return getClusterIdForConfiguration();
         } else {
             return String.format("%s@%s [%s]", getName(), workSpace.getName(), getState());
         }

@@ -47,6 +47,10 @@ public interface IClusterDetail {
 
     String getTitle();
 
+    default String getClusterIdForConfiguration() {
+        return getName();
+    }
+
     default String getState() {
         return null;
     }
