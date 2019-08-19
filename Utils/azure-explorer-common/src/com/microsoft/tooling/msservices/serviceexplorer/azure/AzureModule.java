@@ -23,6 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -49,6 +50,7 @@ public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
     private static final String ICON_PATH = "AzureExplorer_16.png";
     private static final String BASE_MODULE_NAME = "Azure";
+    private static final String MODULE_NAME_NO_SUBSCRIPTION = "(No subscription)";
 
     @Nullable
     private Object project;
@@ -72,6 +74,7 @@ public class AzureModule extends AzureRefreshableNode {
     private ContainerRegistryModule containerRegistryModule;
     @NotNull
     private ResourceManagementModule resourceManagementModule;
+
     /**
      * Constructor.
      *
@@ -116,10 +119,14 @@ public class AzureModule extends AzureRefreshableNode {
                         : selectedSubscriptions.get(0).getSubscriptionName());
             }
         } catch (Exception e) {
-            String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
-                    .getMessage() + ")";
-            DefaultLoader.getUIHelper().showException(msg, e,
-                    "MS Services - Error Getting Subscriptions", false, true);
+            if (e instanceof AuthException && e.getMessage().equalsIgnoreCase("No subscription found in the account")) {
+                return String.format("%s %s", BASE_MODULE_NAME, MODULE_NAME_NO_SUBSCRIPTION);
+            } else {
+                String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
+                        .getMessage() + ")";
+                DefaultLoader.getUIHelper().showException(msg, e,
+                        "MS Services - Error Getting Subscriptions", false, true);
+            }
         }
         return BASE_MODULE_NAME;
     }
@@ -187,7 +194,7 @@ public class AzureModule extends AzureRefreshableNode {
     @Override
     protected void refreshFromAzure() throws AzureCmdException {
         try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
+            if (AuthMethodManager.getInstance().isSignedIn() && hasSubscription()) {
                 vmArmServiceModule.load(true);
                 redisCacheModule.load(true);
                 storageModule.load(true);
@@ -224,7 +231,7 @@ public class AzureModule extends AzureRefreshableNode {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             // not signed in
-            if (azureManager == null) {
+            if (azureManager == null || !hasSubscription()) {
                 return;
             }
             azureManager.getSubscriptionManager().addListener(isRefresh -> {
@@ -250,5 +257,9 @@ public class AzureModule extends AzureRefreshableNode {
             handleSubscriptionChange();
             addSubscriptionSelectionListener();
         }
+    }
+
+    private boolean hasSubscription() {
+        return !this.name.contains(MODULE_NAME_NO_SUBSCRIPTION);
     }
 }
