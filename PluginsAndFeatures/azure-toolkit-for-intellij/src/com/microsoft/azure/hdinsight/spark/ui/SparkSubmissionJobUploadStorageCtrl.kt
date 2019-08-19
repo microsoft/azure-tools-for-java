@@ -39,7 +39,6 @@ import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
@@ -125,41 +124,11 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
             }
         }
 
-        //save access key after access key text change
-        view.storagePanel.adlsGen2Card.storageKeyField.addFocusListener(object : FocusAdapter() {
-            override fun focusLost(e: FocusEvent?) {
-                saveAccesKey().subscribe(
-                        { model ->
-                            if (!StringUtils.isEmpty(model.gen2Account)){
-                                log().info("save new access key for account ${model.gen2Account}")
-                            }
-                        },
-                        {}
-                )
-            }
-        })
-
         view.storagePanel.adlsGen2Card.gen2RootPathField.addFocusListener(object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 view.viewModel.uploadStorage.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS GEN2"))
             }
         })
-    }
-
-    private fun saveAccesKey(): Observable<SparkSubmitJobUploadStorageModel> {
-        return Observable.just(SparkSubmitJobUploadStorageModel())
-                .doOnNext(view::getData)
-                .map { model ->
-                    model.apply {
-                        if (!StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(gen2Account)) {
-                            val credentialAccount = getCredentialAccount(gen2Account, SparkSubmitStorageType.ADLS_GEN2)
-                            credentialAccount?.let {
-                                view.secureStore?.savePassword(credentialAccount, gen2Account, accessKey)
-                            }
-                        }
-                    }
-                }
-                .doOnNext(view::setData)
     }
 
     private fun refreshSubscriptions(): Observable<SparkSubmitJobUploadStorageModel> {
@@ -220,9 +189,6 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             try {
                                 val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
                                         .apply { primaryKey = toUpdate.storageKey }
-                                val credentialAccount = getCredentialAccount(toUpdate.storageAccount,  SparkSubmitStorageType.BLOB)
-                                credentialAccount?.let {
-                                    view.secureStore?.savePassword(credentialAccount, storageAccount, storageKey) }
 
                                 // Add Timeout for list containers operation to avoid getting stuck
                                 // when storage account or key is invalid

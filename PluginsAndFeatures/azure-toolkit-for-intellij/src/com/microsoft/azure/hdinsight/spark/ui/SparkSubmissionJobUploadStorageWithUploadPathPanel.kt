@@ -43,6 +43,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.microsoft.azure.hdinsight.spark.common.getSecureStoreServiceOf
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.StorageCheckEvent
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import com.microsoft.azuretools.securestore.SecureStore
@@ -380,7 +381,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             when (data.storageAccountType) {
                 SparkSubmitStorageType.BLOB -> {
                     storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
-                    val credentialAccount = data.getCredentialAccount(data.storageAccount, SparkSubmitStorageType.BLOB)
+                    val credentialAccount = SparkSubmitStorageType.BLOB.getSecureStoreServiceOf(data.storageAccount)
                     storagePanel.azureBlobCard.storageKeyField.text =
                             if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
@@ -429,9 +430,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                         storagePanel.adlsGen2Card.gen2RootPathField.text = data.gen2RootPath
                     }
 
-                    val credentialAccount = data.getCredentialAccount(
-                            getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath),
-                            SparkSubmitStorageType.ADLS_GEN2)
+                    val credentialAccount = SparkSubmitStorageType.ADLS_GEN2.getSecureStoreServiceOf(
+                            getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath))
                     storagePanel.adlsGen2Card.storageKeyField.text =
                             if (StringUtils.isEmpty(data.accessKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.gen2Account) ?: "" }

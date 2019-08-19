@@ -35,10 +35,6 @@ import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
 class SparkSubmitJobUploadStorageModel: ILogger {
-    @get:Transient val SERVICE_NAME_PREFIX_BLOB = "Azure IntelliJ Plugin Job Upload Storage Azure Blob - "
-
-    @get:Transient val SERVICE_NAME_PREFIX_GEN2 = "Azure IntelliJ Plugin Job Upload Storage Azure ADLSGen2 - "
-
     @Attribute("storage_account")
     var storageAccount: String? = null
 
@@ -81,13 +77,17 @@ class SparkSubmitJobUploadStorageModel: ILogger {
     var webHdfsRootPath: String? = null
 
     @Attribute("auth_user_for_webhdfs")
-    var webHdfsAuthUser:String? = null
+    var webHdfsAuthUser: String? = null
+}
 
-    fun getCredentialAccount(account: String?, type: SparkSubmitStorageType?): String? {
-        return when (type) {
-            SparkSubmitStorageType.BLOB -> return account?.let { SERVICE_NAME_PREFIX_BLOB + account }
-            SparkSubmitStorageType.ADLS_GEN2 -> return account?.let { SERVICE_NAME_PREFIX_GEN2 + account }
-            else -> null
-        }
+fun SparkSubmitStorageType.getSecureStoreServiceOf(account: String?): String? {
+    if (account.isNullOrBlank()) {
+        return null
+    }
+
+    return when (this) {
+        SparkSubmitStorageType.BLOB -> "Azure IntelliJ Plugin Job Upload Storage Azure Blob - $account"
+        SparkSubmitStorageType.ADLS_GEN2 -> "Azure IntelliJ Plugin Job Upload Storage Azure ADLSGen2 - $account"
+        else -> null
     }
 }

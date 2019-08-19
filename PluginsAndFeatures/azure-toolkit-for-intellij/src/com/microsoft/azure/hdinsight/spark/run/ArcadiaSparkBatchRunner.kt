@@ -57,15 +57,7 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
         val fsRoot = WasbUri.parse(arcadiaModel.jobUploadStorageModel.uploadPath
                 ?: throw ExecutionException("No uploading path set in Run Configuration"))
 
-        val storageKey = arcadiaModel.jobUploadStorageModel.let { uploadStoreModel ->
-            uploadStoreModel.storageKey
-                    ?: uploadStoreModel.getCredentialAccount(uploadStoreModel.storageAccount,
-                                                             SparkSubmitStorageType.BLOB)
-                            ?.let { credentialAccount ->
-                                secureStore?.loadPassword(credentialAccount, uploadStoreModel.storageAccount) }
-                    ?: throw ExecutionException("Can't get Blob access key for uploading artifact.")
-        }
-
+        val storageKey = arcadiaModel.jobUploadStorageModel.storageKey
         val jobDeploy = if (submitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
             val compute = try {
                 ArcadiaSparkComputeManager.getInstance().findCompute(
