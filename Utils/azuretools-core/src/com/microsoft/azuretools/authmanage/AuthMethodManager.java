@@ -86,9 +86,21 @@ public class AuthMethodManager {
         }
     }
 
+    public void removeSignInEventListener(Runnable l) {
+        if (!signInEventListeners.contains(l)) {
+            signInEventListeners.remove(l);
+        }
+    }
+
     public void addSignOutEventListener(Runnable l) {
         if (!signOutEventListeners.contains(l)) {
             signOutEventListeners.add(l);
+        }
+    }
+
+    public void removeSignOutEventListener(Runnable l) {
+        if (!signOutEventListeners.contains(l)) {
+            signOutEventListeners.remove(l);
         }
     }
 
