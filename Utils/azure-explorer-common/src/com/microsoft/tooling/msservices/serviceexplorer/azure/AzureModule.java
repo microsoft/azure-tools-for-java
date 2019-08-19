@@ -42,6 +42,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -119,7 +120,8 @@ public class AzureModule extends AzureRefreshableNode {
                         : selectedSubscriptions.get(0).getSubscriptionName());
             }
         } catch (Exception e) {
-            if (e instanceof AuthException && e.getMessage().equalsIgnoreCase("No subscription found in the account")) {
+            if (e instanceof AuthException &&
+                    StringUtils.equalsIgnoreCase(e.getMessage(), "No subscription found in the account")) {
                 return String.format("%s %s", BASE_MODULE_NAME, MODULE_NAME_NO_SUBSCRIPTION);
             } else {
                 String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
