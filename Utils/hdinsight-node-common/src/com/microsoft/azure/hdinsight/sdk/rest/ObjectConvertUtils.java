@@ -50,7 +50,7 @@ public final class ObjectConvertUtils {
         try {
             return objectMapper.readValue(jsonString, tClass);
         } catch (IOException e) {
-            return null;
+            return null; // Return null if string or class cannot be read
         }
     }
 
