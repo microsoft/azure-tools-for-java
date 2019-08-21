@@ -32,14 +32,12 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComponentWithBrowseButtonEnabledDelegated
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.arcadiaSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.arisSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosServerlessSparkAccountsRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.hdinsightSparkClustersRefreshed
-import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import com.microsoft.intellij.forms.dsl.panel
@@ -63,11 +61,11 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
         const val REFRESH_BUTTON_PATH = "/icons/refresh.png"
     }
 
-    open fun comboBoxName(): String = "clusterListComboBox"
+    open fun getComboBoxNamePrefix(): String = "clusterListComboBox"
 
     private val clustersSelection by lazy { ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
-        comboBox.name = comboBoxName() + "Combo"
-        button.name = comboBoxName() + "Button"
+        comboBox.name = getComboBoxNamePrefix() + "Combo"
+        button.name = getComboBoxNamePrefix() + "Button"
 
         setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH))
 
@@ -223,7 +221,7 @@ class ArisSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
 }
 
 class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
-    override fun comboBoxName(): String = "accountListComboBox"
+    override fun getComboBoxNamePrefix(): String = "accountListComboBox"
 
     inner class ViewModel
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().accounts
@@ -237,7 +235,7 @@ class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
 }
 
 class ArcadiaSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
-    override fun comboBoxName(): String = "computeListComboBox"
+    override fun getComboBoxNamePrefix(): String = "computeListComboBox"
 
     inner class ViewModel
         : SparkClusterListRefreshableCombo.ViewModel(ArcadiaSparkComputeManager.getInstance().clusters
