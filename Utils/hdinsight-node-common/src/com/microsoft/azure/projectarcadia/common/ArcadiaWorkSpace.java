@@ -159,6 +159,15 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
         return this.workspaceResponse.connectivityEndpoints().spark();
     }
 
+    @Nullable
+    public String getWebUrl() {
+        if (this.workspaceResponse.connectivityEndpoints() == null) {
+            return null;
+        }
+
+        return this.workspaceResponse.connectivityEndpoints().web();
+    }
+
     @NotNull
     public AzureHttpObservable getHttp() {
         return http;
