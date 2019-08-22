@@ -66,7 +66,7 @@ public class SqlBigDataClusterNode extends RefreshableNode {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                 try {
-                    Desktop.getDesktop().browse(URI.create(cluster.getYarnNMConnectionUrl()));
+                    Desktop.getDesktop().browse(URI.create(cluster.getYarnUIUrl()));
                 } catch (IOException ignore) {
                 }
             }
