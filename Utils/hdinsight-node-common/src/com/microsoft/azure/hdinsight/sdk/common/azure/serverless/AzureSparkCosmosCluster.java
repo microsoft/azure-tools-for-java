@@ -56,8 +56,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
                                                     ServerlessCluster,
                                                     DestroyableCluster,
                                                     LivyCluster,
-                                                    YarnCluster,
-                                                    Comparable<AzureSparkCosmosCluster> {
+                                                    YarnCluster {
     public static class SparkResource {
         int instances;
         int coresPerInstance;
@@ -791,11 +790,6 @@ public class AzureSparkCosmosCluster extends SparkCluster
 
     @NotNull
     private final AzureSparkServerlessAccount account;
-
-    @Override
-    public int compareTo(@NotNull AzureSparkCosmosCluster other) {
-        return this.getTitle().compareTo(other.getTitle());
-    }
 
     @Nullable
     public String getTenantId() {
