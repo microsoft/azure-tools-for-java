@@ -30,6 +30,10 @@ public interface ComparableCluster extends Comparable<ComparableCluster> {
 
     @Override
     default int compareTo(@NotNull ComparableCluster other) {
+        if (this == other) {
+            return 0;
+        }
+
         return this.getClusterIdForConfiguration().compareToIgnoreCase(other.getClusterIdForConfiguration());
     }
 }
