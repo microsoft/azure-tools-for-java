@@ -31,10 +31,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 
-import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
-
 public class SqlBigDataClusterNode extends RefreshableNode {
     private static final String SQL_BIG_DATA_CLUSTER_ID = SqlBigDataClusterNode.class.getName();
     private static final String ICON_PATH = CommonConst.ClusterIConPath;
@@ -56,8 +52,8 @@ public class SqlBigDataClusterNode extends RefreshableNode {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                 try {
-                    Desktop.getDesktop().browse(URI.create(cluster.getSparkHistoryUrl()));
-                } catch (IOException ignore) {
+                    DefaultLoader.getIdeHelper().openLinkInBrowser(cluster.getSparkHistoryUrl());
+                } catch (Exception ignore) {
                 }
             }
         });
@@ -66,8 +62,8 @@ public class SqlBigDataClusterNode extends RefreshableNode {
             @Override
             protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                 try {
-                    Desktop.getDesktop().browse(URI.create(cluster.getYarnUIUrl()));
-                } catch (IOException ignore) {
+                    DefaultLoader.getIdeHelper().openLinkInBrowser(cluster.getYarnUIUrl());
+                } catch (Exception ignore) {
                 }
             }
         });
