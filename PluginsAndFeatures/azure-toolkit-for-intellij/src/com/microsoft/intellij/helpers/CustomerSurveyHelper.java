@@ -65,14 +65,18 @@ public enum CustomerSurveyHelper {
             Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS).subscribeOn(Schedulers.io())
                     .take(1)
                     .subscribe(next -> {
-                        SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
-                        dialog.setVisible(true);
-                        synchronized (CustomerSurveyHelper.class) {
-                            if (operation != null) {
-                                operation.complete();
+                        try {
+                            SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
+                            dialog.setVisible(true);
+                            synchronized (CustomerSurveyHelper.class) {
+                                if (operation != null) {
+                                    operation.complete();
+                                }
+                                operation = TelemetryManager.createOperation(SYSTEM, SURVEY);
+                                operation.start();
                             }
-                            operation = TelemetryManager.createOperation(SYSTEM, SURVEY);
-                            operation.start();
+                        } catch (Exception e) {
+                            // Survey exceptions should not block user
                         }
                     });
         }
