@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.ijidea.ui.SurveyPopUpDialog;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -77,6 +78,7 @@ public enum CustomerSurveyHelper {
                             }
                         } catch (Exception e) {
                             // Survey exceptions should not block user
+                            EventUtil.logError(SYSTEM, SURVEY, ErrorType.systemError, e, null, null);
                         }
                     });
         }

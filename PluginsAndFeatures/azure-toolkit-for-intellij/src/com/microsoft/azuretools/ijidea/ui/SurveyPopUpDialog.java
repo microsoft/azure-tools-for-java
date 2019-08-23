@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.wm.impl.WindowManagerImpl;
 import com.intellij.ui.HyperlinkLabel;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
@@ -21,6 +23,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SURVEY;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 
 public class SurveyPopUpDialog extends JDialog {
 
@@ -219,7 +224,11 @@ public class SurveyPopUpDialog extends JDialog {
 
         lblMessage = new JLabel(LABEL_PROMPT);
 
-        lblAzureIcon = new JLabel();
-        lblAzureIcon.setIcon(PluginUtil.getIcon("/icons/azure_large.png", 50, 50));
+        try {
+            lblAzureIcon = new JLabel();
+            lblAzureIcon.setIcon(PluginUtil.getIcon("/icons/azure_large.png", 50, 50));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            EventUtil.logError(SYSTEM, SURVEY, ErrorType.systemError, e, null, null);
+        }
     }
 }

@@ -178,13 +178,9 @@ public class PluginUtil {
     }
 
     public static Icon getIcon(String iconPath, int width, int height) {
-        try {
-            Image azureImage = IconLoader.toImage(PluginUtil.getIcon(iconPath));
-            Image result = azureImage.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
-            return new ImageIcon(result);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return null;
-        }
+        Image azureImage = IconLoader.toImage(PluginUtil.getIcon(iconPath));
+        Image result = azureImage.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
+        return new ImageIcon(result);
     }
 
     public static void dialogShaker(ValidationInfo info, DialogWrapper dialogWrapper) {
