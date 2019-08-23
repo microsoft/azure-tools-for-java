@@ -11,6 +11,7 @@ import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -24,6 +25,7 @@ import com.microsoft.intellij.actions.QualtricsSurveyAction;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.LocalDateTime;
 import rx.Observable;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 
 import java.io.File;
@@ -65,22 +67,21 @@ public enum CustomerSurveyHelper {
         if (isAbleToPopUpSurvey()) {
             Observable.timer(POP_UP_DELAY, TimeUnit.SECONDS).subscribeOn(Schedulers.io())
                     .take(1)
-                    .subscribe(next -> {
-                        try {
-                            SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
-                            dialog.setVisible(true);
-                            synchronized (CustomerSurveyHelper.class) {
-                                if (operation != null) {
-                                    operation.complete();
+                    .subscribe(
+                            next -> {
+                                synchronized (CustomerSurveyHelper.class) {
+                                    if (operation != null) {
+                                        operation.complete();
+                                    }
+                                    operation = TelemetryManager.createOperation(SYSTEM, SURVEY);
+                                    operation.start();
                                 }
-                                operation = TelemetryManager.createOperation(SYSTEM, SURVEY);
-                                operation.start();
-                            }
-                        } catch (Exception e) {
-                            // Survey exceptions should not block user
-                            EventUtil.logError(SYSTEM, SURVEY, ErrorType.systemError, e, null, null);
-                        }
-                    });
+                                SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
+                                dialog.setVisible(true);
+                            },
+                            error -> EventUtil.logError(SYSTEM, SURVEY, ErrorType.systemError, (Exception) error, null, null),
+                            Actions.empty()
+                    );
         }
     }
 
