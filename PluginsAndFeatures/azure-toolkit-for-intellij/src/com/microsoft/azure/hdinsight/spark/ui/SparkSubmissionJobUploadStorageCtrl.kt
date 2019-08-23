@@ -53,6 +53,7 @@ import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import java.net.URI
 import java.util.stream.Collectors
+import javax.swing.ComboBoxModel
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.DocumentEvent
 
@@ -103,7 +104,16 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                         { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
             }
         }
-        // after container is selected, update upload path
+
+        // after container is selected or new model is set, update upload path
+        view.storagePanel.azureBlobCard.storageContainerUI.comboBox.addPropertyChangeListener("model") {
+            if ((it.oldValue as? ComboBoxModel<*>)?.selectedItem != (it.newValue as? ComboBoxModel<*>)?.selectedItem) {
+                updateStorageAfterContainerSelected().subscribe(
+                        { },
+                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+            }
+        }
+
         view.storagePanel.azureBlobCard.storageContainerUI.comboBox.addItemListener { itemEvent ->
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
                 updateStorageAfterContainerSelected().subscribe(

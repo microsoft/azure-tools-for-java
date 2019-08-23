@@ -24,10 +24,10 @@ package com.microsoft.azure.projectarcadia.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkCompute;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkComputeProvisioningState;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -37,7 +37,7 @@ import org.apache.http.client.utils.URIBuilder;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-public class ArcadiaSparkCompute extends SparkCluster implements Comparable<ArcadiaSparkCompute>, ILogger {
+public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     public static final int ARCADIA_SPARK_SERVICE_PORT = 443;
     @NotNull
     private final ArcadiaWorkSpace workSpace;
@@ -137,15 +137,6 @@ public class ArcadiaSparkCompute extends SparkCluster implements Comparable<Arca
     @Override
     public String getSparkVersion() {
         return this.sparkComputeResponse.sparkVersion();
-    }
-
-    @Override
-    public int compareTo(@NotNull ArcadiaSparkCompute other) {
-        if (this == other) {
-            return 0;
-        }
-
-        return this.getTitle().compareTo(other.getTitle());
     }
 
     @Override
