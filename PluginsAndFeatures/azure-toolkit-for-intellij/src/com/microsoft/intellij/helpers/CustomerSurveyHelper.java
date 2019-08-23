@@ -11,7 +11,6 @@ import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -56,6 +55,7 @@ public enum CustomerSurveyHelper {
     private static final String TELEMETRY_VALUE_PUT_OFF = "putOff";
     private static final String TELEMETRY_VALUE_ACCEPT = "accept";
 
+    private boolean isShown = false;
     private SurveyConfig surveyConfig;
     private Operation operation;
 
@@ -79,7 +79,7 @@ public enum CustomerSurveyHelper {
                                 SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
                                 dialog.setVisible(true);
                             },
-                            error -> EventUtil.logError(SYSTEM, SURVEY, ErrorType.systemError, (Exception) error, null, null),
+                            error -> EventUtil.logErrorWithComplete(operation, ErrorType.systemError, error, null, null),
                             Actions.empty()
                     );
         }
@@ -107,7 +107,11 @@ public enum CustomerSurveyHelper {
         sendTelemetry(TELEMETRY_VALUE_NEVER_SHOW);
     }
 
-    private boolean isAbleToPopUpSurvey() {
+    private synchronized boolean isAbleToPopUpSurvey() {
+        if (isShown) {
+            return false;
+        }
+        isShown = true;
         return surveyConfig.isAcceptSurvey && LocalDateTime.now().isAfter(surveyConfig.nextSurveyDate);
     }
 
