@@ -53,6 +53,7 @@ public enum CustomerSurveyHelper {
     private static final String TELEMETRY_VALUE_PUT_OFF = "putOff";
     private static final String TELEMETRY_VALUE_ACCEPT = "accept";
 
+    private boolean isShown = false;
     private SurveyConfig surveyConfig;
     private Operation operation;
 
@@ -100,7 +101,11 @@ public enum CustomerSurveyHelper {
         sendTelemetry(TELEMETRY_VALUE_NEVER_SHOW);
     }
 
-    private boolean isAbleToPopUpSurvey() {
+    private synchronized boolean isAbleToPopUpSurvey() {
+        if (isShown) {
+            return false;
+        }
+        isShown = true;
         return surveyConfig.isAcceptSurvey && LocalDateTime.now().isAfter(surveyConfig.nextSurveyDate);
     }
 
