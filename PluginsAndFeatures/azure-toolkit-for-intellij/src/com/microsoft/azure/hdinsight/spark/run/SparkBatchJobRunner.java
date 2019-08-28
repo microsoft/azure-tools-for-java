@@ -167,6 +167,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         addConsoleViewFilter(remoteProcess.getSparkJob(), submissionState.getConsoleView());
 
         submissionState.setRemoteProcessCtrlLogHandler(processHandler);
+        submissionState.setSparkBatchJob(remoteProcess.getSparkJob());
 
         ctrlSubject.subscribe(
                 messageWithType -> {

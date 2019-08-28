@@ -130,15 +130,19 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
 
     @Override
     public void destroy() {
-        getSparkJob().killBatchJob().subscribe(
-                job -> log().trace("Killed Spark batch job " + job.getBatchId()),
-                err -> log().warn("Got error when killing Spark batch job", err),
-                () -> {}
-        );
-
-        this.isDestroyed = true;
-
-        this.disconnect();
+        if (!isDestroyed()) {
+            getSparkJob().killBatchJob()
+                    .doOnError(err -> getCtrlSubject().onError(err))
+                    .doOnEach(job -> {
+                        this.isDestroyed = true;
+                        this.disconnect();
+                    })
+                    .subscribe(
+                            job -> log().trace("Killed Spark batch job " + job.getBatchId()),
+                            err -> log().warn("Got error when killing Spark batch job", err),
+                            () -> {}
+                    );
+        }
     }
 
     @NotNull
@@ -189,12 +193,14 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     }
 
     public void disconnect() {
-        this.isDisconnected = true;
+        if (!isDisconnected()) {
+            this.isDisconnected = true;
 
-        this.ctrlSubject.onCompleted();
-        this.eventSubject.onCompleted();
+            this.ctrlSubject.onCompleted();
+            this.eventSubject.onCompleted();
 
-        this.getJobSubscription().ifPresent(Subscription::unsubscribe);
+            this.getJobSubscription().ifPresent(Subscription::unsubscribe);
+        }
     }
 
     protected void ctrlInfo(String message) {
@@ -259,6 +265,10 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     Observable<SimpleImmutableEntry<String, String>> awaitForJobDone(ISparkBatchJob runningJob) {
         return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
+                .doOnNext(jobStateDiagnosticsPair ->
+                        getCtrlSubject().onNext(new SimpleImmutableEntry(
+                                MessageInfoType.Telemetry,
+                                jobStateDiagnosticsPair.getKey() + "`````" + jobStateDiagnosticsPair.getValue())))
                 .flatMap(jobStateDiagnosticsPair -> runningJob
                         .awaitPostDone()
                         .subscribeOn(schedulers.processBarVisibleAsync(

@@ -912,10 +912,8 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
                 ob.onNext(new SimpleImmutableEntry<>(state.toString(), diagnostics));
                 ob.onCompleted();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 ob.onError(ex);
-            } catch (InterruptedException ignored) {
-                ob.onCompleted();
             }
         });
     }
@@ -1112,12 +1110,12 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     @Override
     public boolean isRunning(@NotNull String state) {
-        return SparkBatchJobState.valueOf(state.toUpperCase()) == SparkBatchJobState.RUNNING;
+        return state.equalsIgnoreCase(SparkBatchJobState.RUNNING.toString());
     }
 
     @Override
     public boolean isSuccess(@NotNull String state) {
-        return SparkBatchJobState.valueOf(state.toUpperCase()) == SparkBatchJobState.SUCCESS;
+        return state.equalsIgnoreCase(SparkBatchJobState.SUCCESS.toString());
     }
 
     /**

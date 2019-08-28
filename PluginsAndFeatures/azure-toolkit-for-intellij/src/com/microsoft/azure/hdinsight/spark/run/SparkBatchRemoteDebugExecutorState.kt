@@ -29,6 +29,6 @@ import com.microsoft.azuretools.telemetrywrapper.Operation
 class SparkBatchRemoteDebugExecutorState(serverlessSparkSubmitModel: SparkSubmitModel, operation: Operation?)
     : SparkBatchRemoteDebugState(serverlessSparkSubmitModel, operation) {
 
-    override fun onSuccess(executor: Executor) {
+    override fun onComplete(executor: Executor) {
     }
 }

@@ -26,8 +26,10 @@ import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -172,6 +174,11 @@ public class CosmosSparkClusterProvisionCtrlProvider implements ILogger {
                                 .doOnNext(cluster -> toUpdate.setClusterGuid(cluster.getGuid()))
                                 .flatMap(cluster -> cluster.provision())
                                 .map(cluster -> toUpdate)
+                                .doOnNext(model -> {
+                                    // Send telemetry when provision cluster succeeded
+                                    AzureSparkCosmosClusterManager.getInstance().sendInfoTelemetry(
+                                            TelemetryConstants.PROVISION_A_CLUSTER, model.getClusterGuid());
+                                })
                                 .onErrorReturn(err -> {
                                     log().warn("Error provision a cluster. " + ExceptionUtils.getStackTrace(err));
                                     if (err instanceof SparkAzureDataLakePoolServiceException) {
@@ -180,6 +187,9 @@ public class CosmosSparkClusterProvisionCtrlProvider implements ILogger {
                                         log().info("x-ms-request-id: " + requestId);
                                     }
                                     log().info("Cluster guid: " + toUpdate.getClusterGuid());
+                                    // Send telemetry when provision cluster failed
+                                    AzureSparkCosmosClusterManager.getInstance().sendErrorTelemetry(
+                                            TelemetryConstants.PROVISION_A_CLUSTER, err, toUpdate.getClusterGuid());
                                     return toUpdate.setErrorMessage(err.getMessage());
                                 })
                 )

@@ -136,6 +136,11 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
         return Observable.just(Objects.requireNonNull(getConnectUri()).toString() + "/" + getBatchId() + "/log");
     }
 
+    @Override
+    public Observable<String> awaitPostDone() {
+        return Observable.just("");
+    }
+
     @NotNull
     private SparkBatchAzureSubmission getAzureSubmission() {
         return (SparkBatchAzureSubmission) getSubmission();

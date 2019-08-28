@@ -33,11 +33,10 @@ import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.HDInsightUtil
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
+import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
-import com.microsoft.azuretools.telemetrywrapper.EventType
-import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import java.net.URI
@@ -52,6 +51,8 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
     override var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut? = null
     override var executionResult: ExecutionResult? = null
     override var consoleView: ConsoleView? = null
+    override var sparkBatchJob: ISparkBatchJob? = null
+    private var jobStateDiagnosticsPair: List<String>? = null
 
     override fun execute(executor: Executor?, programRunner: ProgramRunner<*>): ExecutionResult? {
         if (remoteProcessCtrlLogHandler == null || executionResult == null || consoleView == null) {
@@ -71,6 +72,8 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                                 BrowserUtil.browse(URI.create(messageWithType.value))
                             MessageInfoType.HtmlPersistentMessage ->
                                 consoleView!!.print(messageWithType.value, ConsoleViewWithMessageBars.CONSOLE_VIEW_HTML_PERSISTENT_MESSAGE_TYPE)
+                            MessageInfoType.Telemetry ->
+                                this.jobStateDiagnosticsPair = messageWithType.value.split("`````")
                             else ->
                             {
                                 consoleView!!.print("ERROR: ${messageWithType.value}\n", ConsoleViewContentType.ERROR_OUTPUT)
@@ -88,7 +91,8 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
 
                         val errMessage = classifiedEx.message
                         val additionalProperties = mapOf(
-                            "IsSubmitSucceed" to "false",
+                            "isJobRunSucceed" to "false",
+                            "isStopButtonClicked" to isStopButtonClicked().toString(),
                             "SubmitFailedReason" to HDInsightUtil.normalizeTelemetryMessage(errMessage))
                         createAppInsightEvent(it, additionalProperties)
                         createErrorEventWithComplete(it, classifiedEx, classifiedEx.errorType, additionalProperties)
@@ -96,7 +100,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                         consoleView!!.print("ERROR: $errMessage", ConsoleViewContentType.ERROR_OUTPUT)
                         classifiedEx.handleByUser()
                     },
-                    { onSuccess(it) })
+                    { onComplete(it) })
 
             programRunner.onProcessStarted(null, executionResult)
 
@@ -108,12 +112,19 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
         return sparkSubmitModel
     }
 
-    open fun onSuccess(executor: Executor) {
-        val additionalProperties = mutableMapOf("IsSubmitSucceed" to "true")
-        if (remoteProcessCtrlLogHandler?.getUserData(ProcessHandler.TERMINATION_REQUESTED) == true) {
-            additionalProperties["isStopButtonClicked"] = "true"
-        }
-        createAppInsightEvent(executor, additionalProperties)
-        EventUtil.logEventWithComplete(EventType.info, operation, getPostEventProperties(executor, additionalProperties), null)
+    open fun onComplete(executor: Executor) {
+        val jobState = if (jobStateDiagnosticsPair?.size == 2) jobStateDiagnosticsPair!![0] else "unknown"
+        val diagnostics = if (jobStateDiagnosticsPair?.size == 2) jobStateDiagnosticsPair!![1] else "null"
+        val props = mapOf(
+            "isJobRunSucceed" to (sparkBatchJob?.isSuccess(jobState)?.toString() ?: "unknown"),
+            "livyState" to jobState,
+            "livyDiagnostics" to diagnostics,
+            "isStopButtonClicked" to isStopButtonClicked().toString())
+        createAppInsightEvent(executor, props.toMap())
+        createInfoEventWithComplete(executor, props)
+    }
+
+    private fun isStopButtonClicked(): Boolean {
+        return remoteProcessCtrlLogHandler?.getUserData(ProcessHandler.TERMINATION_REQUESTED) == true
     }
 }
