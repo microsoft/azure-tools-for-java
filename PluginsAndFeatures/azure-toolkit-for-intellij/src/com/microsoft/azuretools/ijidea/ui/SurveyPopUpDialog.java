@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.wm.impl.WindowManagerImpl;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.util.IconUtil;
+
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
@@ -220,6 +222,9 @@ public class SurveyPopUpDialog extends JDialog {
         lblMessage = new JLabel(LABEL_PROMPT);
 
         lblAzureIcon = new JLabel();
-        lblAzureIcon.setIcon(PluginUtil.getIcon("/icons/azure_large.png", 50, 50));
+        Icon rawIcon = PluginUtil.getIcon("/icons/azure_large.png");
+        Icon scaledIcon = IconUtil.scale(rawIcon, lblAzureIcon, 50f / rawIcon.getIconWidth());
+
+        lblAzureIcon.setIcon(scaledIcon);
     }
 }

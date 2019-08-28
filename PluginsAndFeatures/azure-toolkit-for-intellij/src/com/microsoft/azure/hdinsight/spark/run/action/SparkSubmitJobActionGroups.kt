@@ -36,8 +36,9 @@ class SparkSubmitJobActionGroups : QuickSwitchSchemeAction() {
         group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosSparkApplicationAction"))
         group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosServerlessSparkApplicationAction"))
         group.add(ActionManager.getInstance().getAction("Actions.SubmitArisSparkApplicationAction"))
-        if(CommonSettings.isProjectArcadiaFeatureEnabled){
-            group.add(ActionManager.getInstance().getAction("Actions.SubmitArcadiaSparkApplicationAction"))
-        }
+//      TODO: Enable the following codes when Arcadia feature is ready
+//        if(CommonSettings.isProjectArcadiaFeatureEnabled){
+//            group.add(ActionManager.getInstance().getAction("Actions.SubmitArcadiaSparkApplicationAction"))
+//        }
     }
 }

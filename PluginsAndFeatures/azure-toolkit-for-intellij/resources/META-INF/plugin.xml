@@ -319,9 +319,9 @@
       <action id="Actions.SelectArisSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
       </action>
-      <action id="Actions.SelectArcadiaSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Arcadia Cluster" >
-      </action>
+<!--      <action id="Actions.SelectArcadiaSparkType"-->
+<!--              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Arcadia Cluster" >-->
+<!--      </action>-->
     </group>
 
     <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>

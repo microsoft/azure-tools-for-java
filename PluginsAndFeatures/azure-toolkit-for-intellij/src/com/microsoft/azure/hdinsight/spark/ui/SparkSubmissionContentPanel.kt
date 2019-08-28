@@ -495,6 +495,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         formBuilder.buildPanel().apply {
             // Add a margin for the panel
             border = BorderFactory.createEmptyBorder(5, 8, 5, 8)
+            minimumSize = Dimension(480, 480)
         }
     }
 

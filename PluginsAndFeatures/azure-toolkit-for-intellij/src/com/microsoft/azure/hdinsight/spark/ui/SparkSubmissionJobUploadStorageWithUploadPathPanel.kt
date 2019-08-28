@@ -239,7 +239,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 }
                             }
                             SparkSubmitStorageType.BLOB -> model.apply {
-                                if (containersModel.size == 0 || containersModel.selectedItem == null) {
+                                if (containersModel.size == 0
+                                        || containersModel.selectedItem == null
+                                        || storageAccount.isNullOrBlank()
+                                        || storageKey.isNullOrBlank()) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "Azure Blob storage form is not completed"
                                 } else {
@@ -380,18 +383,29 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             uploadPathField.text = data.uploadPath
             when (data.storageAccountType) {
                 SparkSubmitStorageType.BLOB -> {
-                    storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
+                    if (storagePanel.azureBlobCard.storageAccountField.text != data.storageAccount) {
+                        storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
+                    }
+
                     val credentialAccount = SparkSubmitStorageType.BLOB.getSecureStoreServiceOf(data.storageAccount)
-                    storagePanel.azureBlobCard.storageKeyField.text =
+                    val storageKeyToSet =
                             if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
                             } else {
                                 data.storageKey
                             }
-                    if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
-                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
-                    } else {
-                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+                    if (storagePanel.azureBlobCard.storageKeyField.text != storageKeyToSet) {
+                        storagePanel.azureBlobCard.storageKeyField.text = storageKeyToSet
+                    }
+
+                    if (storagePanel.azureBlobCard.storageContainerUI.comboBox.model != data.containersModel) {
+                        if (data.containersModel.size == 0
+                                && StringUtils.isEmpty(storagePanel.errorMessage)
+                                && StringUtils.isNotEmpty(data.selectedContainer)) {
+                            storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
+                        } else {
+                            storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+                        }
                     }
                 }
                 SparkSubmitStorageType.ADLS_GEN1 -> {
