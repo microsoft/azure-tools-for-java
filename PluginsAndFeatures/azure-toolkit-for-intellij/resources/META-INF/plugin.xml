@@ -20,18 +20,19 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.25.0</h3>
+    <h3>3.26.0</h3>
     <h4>Added</h4>
-    <ul>
-        <li>Support IntelliJ 2019.2</li>
-    </ul>
+    
     <h4>Changed</h4>
-    <ul>
-        <li>Move customer survey to qualtrics and refactor survey ui.</li>
-    </ul>
+    
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3297">#3297</a> Fix NPE error when submit job to Spark on cosmos cluster</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2414">#2414</a> Fix NPE error when open multi
+            IntelliJ window and sign in/out.</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3058">#3058</a> Remove duplicated error
+            notification when auth with no subscription account</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3454">#3454</a> Fix
+            ArrayIndexOutOfBoundsException when pop up customer survey window</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
