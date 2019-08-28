@@ -45,11 +45,8 @@ class AzureFunctionsHostExecutorFactory(
         val projectKind = parameters.projectKind
         logger.info("Project kind is $projectKind")
 
-        if (parameters.functionNames.isNotBlank()) {
-            logger.debug("Patching host.json file to reflect run configuration parameters")
-
-            HostJsonPatcher.tryPatchHostJsonFile(parameters.workingDirectory, parameters.functionNames)
-        }
+        logger.debug("Patching host.json file to reflect run configuration parameters")
+        HostJsonPatcher.tryPatchHostJsonFile(parameters.workingDirectory, parameters.functionNames)
 
         val dotNetExecutable = parameters.toDotNetExecutable()
         val runtimeToExecute = AzureFunctionsDotNetCoreRuntime(coreToolsInfo!!)

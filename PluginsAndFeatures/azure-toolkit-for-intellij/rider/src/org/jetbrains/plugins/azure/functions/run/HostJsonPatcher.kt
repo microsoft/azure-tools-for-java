@@ -29,6 +29,7 @@ import java.io.File
 
 object HostJsonPatcher {
     private val logger = getLogger<HostJsonPatcher>()
+    private val functionsPropertyName = "functions"
 
     private fun determineHostJsonFile(workingDirectory: String): File? {
         val candidates = listOf(
@@ -59,7 +60,7 @@ object HostJsonPatcher {
                     .filter { it.isNotBlank() }
                     .forEach { functionsArray.add(JsonPrimitive(it)) }
 
-            hostJson.add("functions", functionsArray)
+            hostJson.add(functionsPropertyName, functionsArray)
 
             hostJsonFile.writeText(gson.toJson(hostJson))
         } catch (e: JsonParseException) {

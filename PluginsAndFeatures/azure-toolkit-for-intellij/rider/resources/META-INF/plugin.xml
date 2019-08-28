@@ -33,6 +33,7 @@
           <li>.asm endpoint generation for non-default locale - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/212">#212</a></li>
           <li>Publish Azure web app does not work - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/236">#236</a></li>
           <li>Fix exception on SQL Server create - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/224">#224</a></li>
+		  <li>Debugging an entire function app is no longer possible - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/238">#238</a></li>
         </ul>
         <p>[3.20.0-2019.1]</p>
         <ul>
