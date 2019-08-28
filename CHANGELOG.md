@@ -41,11 +41,16 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ## 3.26.0
 
 ### Added
+- Support spark 2.4 template projects
+- Introduce Spark console view message bars
 
 ### Changed
+- Refine important message show in the error report 
+- Provide Spark Submission panel minimum size to help form building
 
 ### Fixed
-
+- [#3308](https://github.com/microsoft/azure-tools-for-java/issues/3308) Fix Scala plugin 2019.2.15 regression
+- [#3440](https://github.com/microsoft/azure-tools-for-java/issues/3440) Fix can't open Yarn UI for Aris cluster issue
 - [#2414](https://github.com/microsoft/azure-tools-for-java/issues/2414) Fix NPE error when open multi IntelliJ window and sign in/out.
 - [#3058](https://github.com/microsoft/azure-tools-for-java/issues/3058) Remove duplicated error notification when auth with no subscription account
 - [#3454](https://github.com/microsoft/azure-tools-for-java/issues/3454) Fix ArrayIndexOutOfBoundsException when pop up customer survey window

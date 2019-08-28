@@ -22,11 +22,21 @@
     <html>
     <h3>3.26.0</h3>
     <h4>Added</h4>
-    
+    <ul>
+        <li>Support spark 2.4 template projects</li>
+        <li>Introduce Spark console view message bars</li>
+    </ul>
     <h4>Changed</h4>
-    
+    <ul>
+        <li>Refine important message show in the error report </li>
+        <li>Provide Spark Submission panel minimum size to help form building</li>
+    </ul>
     <h4>Fixed</h4>
     <ul>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3308">#3308</a> Fix Scala plugin 2019.2.15
+            regression</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3440">#3440</a> Fix can't open Yarn UI for
+            Aris cluster issue</li>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2414">#2414</a> Fix NPE error when open multi
             IntelliJ window and sign in/out.</li>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3058">#3058</a> Remove duplicated error
