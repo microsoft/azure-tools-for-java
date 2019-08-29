@@ -132,13 +132,15 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     public void destroy() {
         if (!isDestroyed()) {
             getSparkJob().killBatchJob()
-                    .doOnError(err -> getCtrlSubject().onError(err))
-                    .doOnEach(job -> {
+                    .doOnEach(notification -> {
+                        if (notification.isOnError()) {
+                            getCtrlSubject().onError(notification.getThrowable());
+                        }
                         this.isDestroyed = true;
                         this.disconnect();
                     })
                     .subscribe(
-                            job -> log().trace("Killed Spark batch job " + job.getBatchId()),
+                            job -> log().info("Killed Spark batch job " + job.getBatchId()),
                             err -> log().warn("Got error when killing Spark batch job", err),
                             () -> {}
                     );
@@ -230,6 +232,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> prepareArtifact() {
         return getSparkJob()
                 .deploy(artifactPath)
+                .doOnNext(job -> getEventSubject().onNext(new SparkBatchJobArtifactUploadedEvent()))
                 .onErrorResumeNext(err -> {
                     Throwable rootCause = err.getCause() != null ? err.getCause() : err;
                     return Observable.error(new SparkJobUploadArtifactException("Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
@@ -240,9 +243,9 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> submitJob(ISparkBatchJob sparkJob) {
         return sparkJob
                 .submit()
+                .doOnNext(job -> eventSubject.onNext(new SparkBatchJobSubmittedEvent(job)))
                 .subscribeOn(schedulers.processBarVisibleAsync("Submit the Spark batch job"))
-                .flatMap(this::startJobSubmissionLogReceiver)   // To receive the Livy submission log
-                .doOnNext(job -> eventSubject.onNext(new SparkBatchJobSubmittedEvent(job)));
+                .flatMap(this::startJobSubmissionLogReceiver);   // To receive the Livy submission log
     }
 
     @NotNull
@@ -266,14 +269,16 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
         return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
                 .doOnNext(jobStateDiagnosticsPair ->
-                        getCtrlSubject().onNext(new SimpleImmutableEntry(
-                                MessageInfoType.Telemetry,
-                                jobStateDiagnosticsPair.getKey() + "`````" + jobStateDiagnosticsPair.getValue())))
-                .flatMap(jobStateDiagnosticsPair -> runningJob
-                        .awaitPostDone()
-                        .subscribeOn(schedulers.processBarVisibleAsync(
-                                "Waiting for " + getTitle() + " log aggregation is done"))
-                        .map(any -> jobStateDiagnosticsPair));
+                        getEventSubject().onNext(
+                                new SparkBatchJobFinishedEvent(
+                                        getSparkJob().isSuccess(jobStateDiagnosticsPair.getKey()),
+                                        jobStateDiagnosticsPair.getKey(),
+                                        jobStateDiagnosticsPair.getValue())))
+                .delaySubscription(
+                        runningJob
+                                .awaitPostDone()
+                                .subscribeOn(schedulers.processBarVisibleAsync(
+                                        "Waiting for " + getTitle() + " log aggregation is done")));
     }
 
     @NotNull

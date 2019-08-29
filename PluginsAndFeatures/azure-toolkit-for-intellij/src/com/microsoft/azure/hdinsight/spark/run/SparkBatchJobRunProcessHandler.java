@@ -64,5 +64,11 @@ public class SparkBatchJobRunProcessHandler extends ColoredRemoteProcessHandler<
     public PublishSubject<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
         return getProcess().getSparkJobProcess().getCtrlSubject();
     }
+
+    @NotNull
+    @Override
+    public PublishSubject<SparkBatchJobSubmissionEvent> getEventSubject() {
+        return getProcess().getSparkJobProcess().getEventSubject();
+    }
 }
 

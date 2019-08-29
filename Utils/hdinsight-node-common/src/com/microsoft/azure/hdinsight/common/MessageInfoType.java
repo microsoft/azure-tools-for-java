@@ -28,6 +28,5 @@ public enum MessageInfoType {
     Warning,
     Hyperlink,
     HyperlinkWithText,
-    HtmlPersistentMessage,
-    Telemetry
+    HtmlPersistentMessage
 }

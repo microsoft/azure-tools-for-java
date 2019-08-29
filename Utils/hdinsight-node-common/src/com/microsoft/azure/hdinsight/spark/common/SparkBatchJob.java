@@ -1110,12 +1110,12 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     @Override
     public boolean isRunning(@NotNull String state) {
-        return state.equalsIgnoreCase(SparkBatchJobState.RUNNING.toString());
+        return SparkBatchJobState.valueOf(state.toUpperCase()) == SparkBatchJobState.RUNNING;
     }
 
     @Override
     public boolean isSuccess(@NotNull String state) {
-        return state.equalsIgnoreCase(SparkBatchJobState.SUCCESS.toString());
+        return SparkBatchJobState.valueOf(state.toUpperCase()) == SparkBatchJobState.SUCCESS;
     }
 
     /**

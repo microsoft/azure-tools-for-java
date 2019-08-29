@@ -20,16 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run
+package com.microsoft.azure.hdinsight.spark.run;
 
-import com.intellij.execution.ExecutionResult
-import com.intellij.execution.ui.ConsoleView
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-
-interface SparkBatchRemoteRunProfileState {
-    var executionResult: ExecutionResult?
-    var consoleView: ConsoleView?
-    var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut?
-
-    fun getSubmitModel(): SparkSubmitModel
+public class SparkBatchJobArtifactUploadedEvent implements SparkBatchJobSubmissionEvent {
 }

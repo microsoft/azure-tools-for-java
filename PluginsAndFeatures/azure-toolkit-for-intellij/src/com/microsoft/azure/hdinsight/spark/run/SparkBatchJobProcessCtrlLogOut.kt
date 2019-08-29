@@ -29,4 +29,6 @@ import java.util.*
 
 interface SparkBatchJobProcessCtrlLogOut: UserDataHolder {
     fun getCtrlSubject() : PublishSubject<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>
+
+    fun getEventSubject(): PublishSubject<SparkBatchJobSubmissionEvent>
 }

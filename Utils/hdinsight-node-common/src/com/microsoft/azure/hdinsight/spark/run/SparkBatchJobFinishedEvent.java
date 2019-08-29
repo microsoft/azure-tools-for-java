@@ -20,16 +20,35 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run
+package com.microsoft.azure.hdinsight.spark.run;
 
-import com.intellij.execution.ExecutionResult
-import com.intellij.execution.ui.ConsoleView
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-interface SparkBatchRemoteRunProfileState {
-    var executionResult: ExecutionResult?
-    var consoleView: ConsoleView?
-    var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut?
+public class SparkBatchJobFinishedEvent implements SparkBatchJobSubmissionEvent {
+    private final boolean isJobSucceed;
+    @NotNull
+    private final String state;
+    @NotNull
+    private final String diagnostics;
 
-    fun getSubmitModel(): SparkSubmitModel
+    public SparkBatchJobFinishedEvent(boolean isJobSucceed, @NotNull String state, @Nullable String diagnostics) {
+        this.isJobSucceed = isJobSucceed;
+        this.state = state;
+        this.diagnostics = diagnostics;
+    }
+
+    public boolean getIsJobSucceed() {
+        return isJobSucceed;
+    }
+
+    @NotNull
+    public String getState() {
+        return state;
+    }
+
+    @Nullable
+    public String getDiagnostics() {
+        return diagnostics;
+    }
 }

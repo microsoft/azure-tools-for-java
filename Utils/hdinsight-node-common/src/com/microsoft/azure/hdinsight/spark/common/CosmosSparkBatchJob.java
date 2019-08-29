@@ -138,7 +138,7 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
 
     @Override
     public Observable<String> awaitPostDone() {
-        return Observable.just("");
+        return Observable.empty();
     }
 
     @NotNull

@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
+import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDisconnectEvent;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRemoteProcess;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmittedEvent;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -71,6 +72,8 @@ public class SparkBatchJobDisconnectAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
+        remoteProcess.getEventSubject().onNext(new SparkBatchJobDisconnectEvent());
+
         Map<String, String> properties = new HashMap<>();
         properties.put("Text", anActionEvent.getPresentation().getText());
         properties.put("Description", anActionEvent.getPresentation().getDescription());
