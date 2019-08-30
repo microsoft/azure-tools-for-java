@@ -135,7 +135,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
         return mutableMapOf(
                 "isArtifactUploaded" to isArtifactUploaded.toString(),
                 "isJobSubmitSucceed" to isSubmitSucceed.toString(),
-                "isJobRunSucceed" to (isJobRunSucceed?.toString() ?: "unknown"),
+                "isJobRunSucceed" to if (!isSubmitSucceed) "false" else (isJobRunSucceed?.toString() ?: "unknown"),
                 "livyState" to (jobState ?: "unknown"),
                 "livyDiagnostics" to (diagnostics ?: "null"),
                 "isDisconnectButtonClicked" to isDisconnectButtonClicked.toString(),

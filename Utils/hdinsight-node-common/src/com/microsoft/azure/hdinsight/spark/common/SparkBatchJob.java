@@ -912,8 +912,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
                 ob.onNext(new SimpleImmutableEntry<>(state.toString(), diagnostics));
                 ob.onCompleted();
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 ob.onError(ex);
+            } catch (InterruptedException ignored) {
+                ob.onCompleted();
             }
         });
     }
