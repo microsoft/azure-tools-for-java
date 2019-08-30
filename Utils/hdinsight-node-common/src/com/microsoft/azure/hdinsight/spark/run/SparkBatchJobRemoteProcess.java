@@ -135,6 +135,8 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                     .doOnEach(notification -> {
                         if (notification.isOnError()) {
                             getCtrlSubject().onError(notification.getThrowable());
+                        } else if (notification.isOnNext()) {
+                            getEventSubject().onNext(new SparkBatchJobKilledEvent());
                         }
                         this.isDestroyed = true;
                         this.disconnect();

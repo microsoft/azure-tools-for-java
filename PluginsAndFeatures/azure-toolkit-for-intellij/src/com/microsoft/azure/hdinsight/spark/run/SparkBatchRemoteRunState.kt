@@ -55,6 +55,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
     private var isDisconnectButtonClicked: Boolean = false
     private var isArtifactUploaded: Boolean = false
     private var isSubmitSucceed: Boolean = false
+    private var isJobKilled: Boolean = false
     private var isJobRunSucceed: Boolean? = null
     private var jobState: String? = null
     private var diagnostics: String? = null
@@ -70,6 +71,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                         when (it) {
                             is SparkBatchJobArtifactUploadedEvent -> this.isArtifactUploaded = true
                             is SparkBatchJobSubmittedEvent -> this.isSubmitSucceed = true
+                            is SparkBatchJobKilledEvent -> this.isJobKilled = true
                             is SparkBatchJobFinishedEvent -> {
                                 this.isJobRunSucceed = it.isJobSucceed
                                 this.jobState = it.state
@@ -135,7 +137,8 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
         return mutableMapOf(
                 "isArtifactUploaded" to isArtifactUploaded.toString(),
                 "isJobSubmitSucceed" to isSubmitSucceed.toString(),
-                "isJobRunSucceed" to if (!isSubmitSucceed) "false" else (isJobRunSucceed?.toString() ?: "unknown"),
+                "isJobKilled" to isJobKilled.toString(),
+                "isJobRunSucceed" to if (!isSubmitSucceed || isJobKilled) "false" else (isJobRunSucceed?.toString() ?: "unknown"),
                 "livyState" to (jobState ?: "unknown"),
                 "livyDiagnostics" to (diagnostics ?: "null"),
                 "isDisconnectButtonClicked" to isDisconnectButtonClicked.toString(),
