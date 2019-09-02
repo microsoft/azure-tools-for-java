@@ -35,15 +35,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -137,13 +131,7 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
 					}
             	}
             });
-            link.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-            	@Override
-            	public void getName(AccessibleEvent e) {
-            		e.result = deviceCode.getVerificationUrl(); 
-            	}
-            });
-            
+
             Label label = new Label(area,SWT.NONE);
             label.setText("Waiting for signing in with the code, do not close the window.");
             
