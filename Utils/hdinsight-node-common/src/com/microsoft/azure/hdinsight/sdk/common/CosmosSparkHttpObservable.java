@@ -36,12 +36,12 @@ import java.util.stream.Collectors;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 
-public class ServerlessSparkHttpObservable extends AzureHttpObservable {
+public class CosmosSparkHttpObservable extends AzureHttpObservable {
     public static final String KOBO_ACCOUNT_HEADER_NAME = "x-ms-kobo-account-name";
 
     private AzureSparkServerlessAccount adlAccount;
 
-    public ServerlessSparkHttpObservable(@NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) {
+    public CosmosSparkHttpObservable(@NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) {
         super(tenantId, "");
         this.adlAccount = adlAccount;
     }

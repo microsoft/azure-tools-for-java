@@ -33,7 +33,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.ServerlessSparkSession
+import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.CosmosSparkSession
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState
 import com.microsoft.azure.hdinsight.spark.common.CosmosSparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
@@ -54,7 +54,7 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
 
         val livyUrl = (sparkCluster.livyUri?.toString() ?: return null).trimEnd('/') + "/"
 
-        val session = ServerlessSparkSession(
+        val session = CosmosSparkSession(
                 name,
                 URI.create(livyUrl),
                 sparkCluster.tenantId,
