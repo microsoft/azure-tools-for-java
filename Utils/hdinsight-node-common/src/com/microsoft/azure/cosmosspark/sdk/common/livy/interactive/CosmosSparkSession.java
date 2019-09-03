@@ -20,11 +20,12 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
+package com.microsoft.azure.cosmosspark.sdk.common.livy.interactive;
 
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.common.CosmosSparkHttpObservable;
+import com.microsoft.azure.cosmosspark.sdk.common.CosmosSparkHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.net.URI;

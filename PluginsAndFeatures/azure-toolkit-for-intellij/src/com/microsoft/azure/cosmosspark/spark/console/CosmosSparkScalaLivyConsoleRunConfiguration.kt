@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.azure.cosmosspark.spark.console
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
@@ -31,11 +31,15 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.cosmosspark.sdk.common.livy.interactive.CosmosSparkSession
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.CosmosSparkSession
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState
 import com.microsoft.azure.hdinsight.spark.common.CosmosSparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.console.SparkScalaConsoleBuilder
+import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfiguration
+import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfigurationFactory
+import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunProfileState
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import java.net.URI
 

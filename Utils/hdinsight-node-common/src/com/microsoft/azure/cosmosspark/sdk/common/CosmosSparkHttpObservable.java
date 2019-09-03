@@ -20,21 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.common;
+package com.microsoft.azure.cosmosspark.sdk.common;
 
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-
-import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
 
 public class CosmosSparkHttpObservable extends AzureHttpObservable {
     public static final String KOBO_ACCOUNT_HEADER_NAME = "x-ms-kobo-account-name";
