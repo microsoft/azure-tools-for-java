@@ -276,11 +276,12 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                                         getSparkJob().isSuccess(jobStateDiagnosticsPair.getKey()),
                                         jobStateDiagnosticsPair.getKey(),
                                         jobStateDiagnosticsPair.getValue())))
-                .delaySubscription(
+                .delay(jobStateDiagnosticsPair ->
                         runningJob
                                 .awaitPostDone()
                                 .subscribeOn(schedulers.processBarVisibleAsync(
-                                        "Waiting for " + getTitle() + " log aggregation is done")));
+                                        "Waiting for " + getTitle() + " log aggregation is done"))
+                );
     }
 
     @NotNull
