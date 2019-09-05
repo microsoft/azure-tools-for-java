@@ -24,6 +24,7 @@ package com.microsoft.azure.arcadia.sdk.common;
 
 import com.microsoft.azure.hdinsight.sdk.common.ApiVersionParam;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchArcadiaSubmission;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -35,9 +36,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ArcadiaSparkHttpObservable extends AzureHttpObservable {
-    public static final String WORKSPACE_HEADER_NAME = "x-ms-workspace-name";
-    public static final String ARCADIA_RESOURCE_ID = "5d13f7d7-0567-429c-9880-320e9555e5fc";
-
     @NotNull
     private String workspaceName;
 
@@ -50,10 +48,10 @@ public class ArcadiaSparkHttpObservable extends AzureHttpObservable {
     public Header[] getDefaultHeaders() throws IOException {
         Header[] defaultHeaders = super.getDefaultHeaders();
         List<Header> headers = Arrays.stream(defaultHeaders)
-                .filter(header -> !header.getName().equals(WORKSPACE_HEADER_NAME))
+                .filter(header -> !header.getName().equals(SparkBatchArcadiaSubmission.WORKSPACE_HEADER_NAME))
                 .collect(Collectors.toList());
 
-        headers.add(new BasicHeader(WORKSPACE_HEADER_NAME, workspaceName));
+        headers.add(new BasicHeader(SparkBatchArcadiaSubmission.WORKSPACE_HEADER_NAME, workspaceName));
 
         return headers.toArray(new Header[0]);
     }
@@ -69,6 +67,6 @@ public class ArcadiaSparkHttpObservable extends AzureHttpObservable {
 
     @Override
     public String getResourceEndpoint() {
-        return ARCADIA_RESOURCE_ID;
+        return SparkBatchArcadiaSubmission.ARCADIA_RESOURCE_ID;
     }
 }

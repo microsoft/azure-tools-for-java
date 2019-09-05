@@ -67,10 +67,10 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
                 ?: throw RuntimeConfigurationError("Can't cast submitModel to ArcadiaSparkSubmitModel")
 
         cluster = try {
-            ArcadiaSparkComputeManager.getInstance().findCompute(
-                    arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
-                    .toBlocking()
-                    .first()
+            ArcadiaSparkComputeManager.getInstance()
+                .findCompute(arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
+                .toBlocking()
+                .first()
         } catch (ex: NoSuchElementException) {
             throw RuntimeConfigurationError(
                     "Can't find Arcadia spark compute (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"

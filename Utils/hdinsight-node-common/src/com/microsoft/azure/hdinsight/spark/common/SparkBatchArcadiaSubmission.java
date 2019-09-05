@@ -44,6 +44,7 @@ import java.util.regex.Pattern;
 
 public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
     public static final String ARCADIA_RESOURCE_ID = "5d13f7d7-0567-429c-9880-320e9555e5fc";
+    public static final String WORKSPACE_HEADER_NAME = "x-ms-workspace-name";
     public static final Pattern LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN = Pattern.compile(
             "https?://arcadia-spark-service-prod\\.(?<region>[^/.]+)(?<suffix>[^/:]+)(:(?<port>[0-9]+))?"
                     + "/versions/(?<apiVersion>[^/]+)/sparkcomputes/(?<compute>[^/]+)/?",
@@ -99,7 +100,7 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
                 .useSystemProperties()
                 .setDefaultHeaders(Arrays.asList(
                         new BasicHeader("Authorization", "Bearer " + getAccessToken()),
-                        new BasicHeader("x-ms-workspace-name", getWorkspaceName())))
+                        new BasicHeader(WORKSPACE_HEADER_NAME, getWorkspaceName())))
                 .setSSLSocketFactory(getSSLSocketFactory())
                 .build();
     }
