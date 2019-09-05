@@ -54,6 +54,7 @@ class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess)
     }
 
     override fun destroyProcessImpl() {
+        sessionEventsSubject.onCompleted()
         process.destroy()
         notifyProcessTerminated(0)
     }

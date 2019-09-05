@@ -54,9 +54,10 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
         var runConfig = selectedConfigSettings?.configuration
 
         event.presentation.isEnabled = when {
+            // FIXME: when there is no configuration file, we disabled interactive console feature for Spark on Arcadia
             runConfig == null -> SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != SparkApplicationType.CosmosServerlessSpark
                     && SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != SparkApplicationType.ArcadiaSpark
-            runConfig.javaClass == CosmosServerlessSparkConfiguration::class.java || runConfig.javaClass == ArcadiaSparkConfiguration::class.java -> false
+            runConfig.javaClass == CosmosServerlessSparkConfiguration::class.java -> false
             else -> true
         }
     }

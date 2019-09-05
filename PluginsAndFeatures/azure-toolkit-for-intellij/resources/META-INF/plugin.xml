@@ -341,6 +341,9 @@
 
     <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Spark Local Console"/>
 
+<!--    <action id="Actions.RunArcadiaSparkConsoleAction"-->
+<!--            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLivyConsoleAction" text="Spark on Arcadia"-->
+<!--            description="Start an interactive console for Spark on Arcadia Application" icon="/icons/Spark.png"/>-->
     <action id="Actions.RunLivySparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Spark on HDInsight"
             description="Start an interactive console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
@@ -351,6 +354,9 @@
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction" text="Spark on SQL Server Big Data Cluster"
             description="Start an interactive console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
 
+<!--    <action id="Actions.RunArcadiaSparkLocalConsoleAction"-->
+<!--            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction" text="Spark on Arcadia"-->
+<!--            description="Start a Spark local console for Spark on Arcadia Application" icon="/icons/Spark.png"/>-->
     <action id="Actions.RunLivySparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
             description="Start a Spark local console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
