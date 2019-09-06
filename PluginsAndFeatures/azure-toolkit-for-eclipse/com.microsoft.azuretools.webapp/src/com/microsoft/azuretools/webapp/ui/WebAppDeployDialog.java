@@ -7,6 +7,83 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_CREATEW
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REFRESH_METADATA;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
+import java.io.File;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.window.DefaultToolTip;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
+import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.accessibility.AccessibleListener;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
+import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
+
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
@@ -40,72 +117,6 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
-
-import java.io.File;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
-import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
-import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
 
 @SuppressWarnings("restriction")
@@ -427,24 +438,38 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 fillSlot();
             }
         });
+        
+        ToolBarManager barMgr = new ToolBarManager(SWT.FLAT);
+        ToolBar toolBar = barMgr.createControl(compositeSlotCb);
+        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+        item.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
+	            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION),15 , 15 )); 
+        toolBar.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+        	@Override
+        	public void getName(AccessibleEvent e) {
+        		e.result = DEPLOYMENT_SLOT_HOVER;
+        	}
+		});
+        
+        DefaultToolTip  iconTooltip = new DefaultToolTip(toolBar,SWT.NONE,false);
+        iconTooltip.setText(DEPLOYMENT_SLOT_HOVER);
+        toolBar.addFocusListener(new FocusListener() {
 
-        Label label = new Label(compositeSlotCb, SWT.NONE);
-        label.setText("");
-        Point point = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        RowData labelConf = new RowData();
-        labelConf.height = point.y;
-        label.setLayoutData(labelConf);
-        label.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
-            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), point.y * 9 / 10, point.y * 9 / 10));
-        label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                Program.launch("https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots");
-            }
+			@Override
+			public void focusGained(FocusEvent e) {
+				iconTooltip.show(new Point(20,20) );
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				iconTooltip.hide();
+			}        	
         });
+        
+        toolBar.getParent().setTabList(new Control[] {btnDeployToSlot,toolBar});
+        
         new Label(compositeSlot, SWT.NONE);
-
+        
         btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
         btnSlotUseExisting.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -819,8 +844,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         textSlotName.setEnabled(enable && !enableUseExisting);
         lblSlotConf.setEnabled(enable && !enableUseExisting);
 
-        isDeployToSlot = enable;
-        isCreateNewSlot = btnSlotCreateNew.getSelection();
+		isDeployToSlot = enable;
+		isCreateNewSlot = btnSlotCreateNew.getSelection();
     }
 
     private AppServicePlan findAppSevicePlanByID(String id, Map<ResourceGroup, List<AppServicePlan>> rgaspMap) {
