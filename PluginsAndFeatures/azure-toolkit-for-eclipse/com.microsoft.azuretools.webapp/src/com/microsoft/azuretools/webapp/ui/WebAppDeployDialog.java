@@ -1,5 +1,8 @@
 package com.microsoft.azuretools.webapp.ui;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP_SLOT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_CREATEWEBAPP_DIALOG;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REFRESH_METADATA;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
