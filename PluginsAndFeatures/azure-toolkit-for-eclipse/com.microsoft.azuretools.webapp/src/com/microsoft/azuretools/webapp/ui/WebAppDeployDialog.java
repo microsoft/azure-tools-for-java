@@ -1,8 +1,5 @@
 package com.microsoft.azuretools.webapp.ui;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP_SLOT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_CREATEWEBAPP_DIALOG;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REFRESH_METADATA;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
@@ -38,7 +35,6 @@ import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDa
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
-import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
@@ -46,10 +42,6 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -64,7 +56,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -438,38 +429,38 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 fillSlot();
             }
         });
-        
+
         ToolBarManager barMgr = new ToolBarManager(SWT.FLAT);
         ToolBar toolBar = barMgr.createControl(compositeSlotCb);
         ToolItem item = new ToolItem(toolBar, SWT.PUSH);
         item.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
-	            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION),15 , 15 )); 
+                compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 15, 15));
         toolBar.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-        	@Override
-        	public void getName(AccessibleEvent e) {
-        		e.result = DEPLOYMENT_SLOT_HOVER;
-        	}
-		});
-        
-        DefaultToolTip  iconTooltip = new DefaultToolTip(toolBar,SWT.NONE,false);
+            @Override
+            public void getName(AccessibleEvent e) {
+                e.result = DEPLOYMENT_SLOT_HOVER;
+            }
+        });
+
+        DefaultToolTip iconTooltip = new DefaultToolTip(toolBar, SWT.NONE, false);
         iconTooltip.setText(DEPLOYMENT_SLOT_HOVER);
         toolBar.addFocusListener(new FocusListener() {
 
-			@Override
-			public void focusGained(FocusEvent e) {
-				iconTooltip.show(new Point(20,20) );
-			}
+            @Override
+            public void focusGained(FocusEvent e) {
+                iconTooltip.show(new Point(20, 20));
+            }
 
-			@Override
-			public void focusLost(FocusEvent e) {
-				iconTooltip.hide();
-			}        	
+            @Override
+            public void focusLost(FocusEvent e) {
+                iconTooltip.hide();
+            }
         });
-        
-        toolBar.getParent().setTabList(new Control[] {btnDeployToSlot,toolBar});
-        
+
+        toolBar.getParent().setTabList(new Control[] {btnDeployToSlot, toolBar });
+
         new Label(compositeSlot, SWT.NONE);
-        
+
         btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
         btnSlotUseExisting.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -844,8 +835,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         textSlotName.setEnabled(enable && !enableUseExisting);
         lblSlotConf.setEnabled(enable && !enableUseExisting);
 
-		isDeployToSlot = enable;
-		isCreateNewSlot = btnSlotCreateNew.getSelection();
+        isDeployToSlot = enable;
+        isCreateNewSlot = btnSlotCreateNew.getSelection();
     }
 
     private AppServicePlan findAppSevicePlanByID(String id, Map<ResourceGroup, List<AppServicePlan>> rgaspMap) {
