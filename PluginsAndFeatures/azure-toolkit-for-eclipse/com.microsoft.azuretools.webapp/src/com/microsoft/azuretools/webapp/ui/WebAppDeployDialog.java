@@ -7,6 +7,69 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_CREATEW
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REFRESH_METADATA;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
+import java.io.File;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
+import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
+import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
+
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
@@ -41,72 +104,6 @@ import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
 
-import java.io.File;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
-import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
-import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
-
 
 @SuppressWarnings("restriction")
 public class WebAppDeployDialog extends AppServiceBaseDialog {
@@ -114,7 +111,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private static ILog LOG = Activator.getDefault().getLog();
 
     private Table table;
-    private Browser browserAppServiceDetailes;
+    private Link browserAppServiceDetailes;
     private Button btnDeployToRoot;
     private String browserFontStyle;
     private Button btnDelete;
@@ -320,31 +317,21 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         grpAppServiceDetails.setLayoutData(gdGrpAppServiceDetails);
         grpAppServiceDetails.setText("App service details");
 
-        browserAppServiceDetailes = new Browser(grpAppServiceDetails, SWT.NONE);
-        FontData browserFontData = container.getFont().getFontData()[0];
-        browserFontStyle = String.format("font-family: '%s'; font-size: 9pt;", browserFontData.getName());
-        browserAppServiceDetailes.addLocationListener(new LocationListener() {
+        browserAppServiceDetailes = new Link(grpAppServiceDetails, SWT.MULTI | SWT.FULL_SELECTION);
+        browserAppServiceDetailes.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void changing(LocationEvent event) {
+            public void widgetSelected(SelectionEvent e) {
                 try {
-                    if (event.location.contains(ftpLinkString)) {
-                        event.doit = false;
+                    if (e.text.equals(ftpLinkString)) {
                         showFtpCreadentialsWindow();
-                    }
-                    if (event.location.contains("http")) {
-                        event.doit = false;
-                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                            .openURL(new URL(event.location));
+                    } else if (e.text.contains("http")) {
+                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                        "changing@LocationListener@browserAppServiceDetailes@AppServiceCreateDialog", ex));
+                            "changing@LocationListener@browserAppServiceDetailes@AppServiceCreateDialog", ex));
                 }
-            }
-
-            @Override
-            public void changed(LocationEvent event) {
             }
         });
 
@@ -607,19 +594,14 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         AppServicePlan asp = wad.appServicePlan;
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<div style=\"margin: 7px 7px 7px 7px; " + browserFontStyle + "\">");
-        sb.append(String.format("App Service name:&nbsp;<b>%s</b>;<br/>", appServiceName));
-        sb.append(String.format("Subscription name:&nbsp;<b>%s</b>;&nbsp;id:&nbsp;<b>%s</b>;<br/>",
-            sd.getSubscriptionName(), sd.getSubscriptionId()));
+        sb.append(String.format("App Service name: %s \n", appServiceName));
+        sb.append(String.format("Subscription name: %s ; id: %s \n", sd.getSubscriptionName(), sd.getSubscriptionId()));
         String aspName = asp == null ? "N/A" : asp.name();
         String aspPricingTier = asp == null ? "N/A" : asp.pricingTier().toString();
-        sb.append(String.format("App Service Plan name:&nbsp;<b>%s</b>;&nbsp;Pricing tier:&nbsp;<b>%s</b>;<br/>",
-            aspName, aspPricingTier));
-
+        sb.append(String.format("App Service Plan name: %s ; Pricing tier: %s \n", aspName, aspPricingTier));
         String link = buildSiteLink(wad.webApp, null);
-        sb.append(String.format("Link:&nbsp;<a href=\"%s\">%s</a><br/>", link, link));
-        sb.append(String.format("<a href=\"%s\">%s</a>", ftpLinkString, "Show FTP deployment credentials"));
-        sb.append("</div>");
+        sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link, link));
+        sb.append(String.format("<a href=\"%s\">%s</a> \n", ftpLinkString, "Show FTP deployment credentials"));
         browserAppServiceDetailes.setText(sb.toString());
     }
 
