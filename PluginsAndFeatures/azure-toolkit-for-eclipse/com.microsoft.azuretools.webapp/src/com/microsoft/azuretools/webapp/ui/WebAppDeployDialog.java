@@ -115,7 +115,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private static ILog LOG = Activator.getDefault().getLog();
 
     private Table table;
-    private Link browserAppServiceDetailes;
+    private Link browserAppServiceDetails;
     private Button btnDeployToRoot;
     private String browserFontStyle;
     private Button btnDelete;
@@ -321,8 +321,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         grpAppServiceDetails.setLayoutData(gdGrpAppServiceDetails);
         grpAppServiceDetails.setText("App service details");
 
-        browserAppServiceDetailes = new Link(grpAppServiceDetails, SWT.MULTI | SWT.FULL_SELECTION);
-        browserAppServiceDetailes.addSelectionListener(new SelectionAdapter() {
+        browserAppServiceDetails = new Link(grpAppServiceDetails, SWT.MULTI | SWT.FULL_SELECTION);
+        browserAppServiceDetails.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
@@ -334,7 +334,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                            "changing@LocationListener@browserAppServiceDetailes@AppServiceCreateDialog", ex));
+                            "changing@LocationListener@browserAppServiceDetails@AppServiceCreateDialog", ex));
                 }
             }
         });
@@ -591,7 +591,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         validated();
         int selectedRow = table.getSelectionIndex();
         if (selectedRow < 0) {
-            browserAppServiceDetailes.setText("");
+            browserAppServiceDetails.setText("");
             btnDelete.setEnabled(false);
             return;
         }
@@ -620,7 +620,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         String link = buildSiteLink(wad.webApp, null);
         sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link, link));
         sb.append(String.format("<a href=\"%s\">%s</a> \n", ftpLinkString, "Show FTP deployment credentials"));
-        browserAppServiceDetailes.setText(sb.toString());
+        browserAppServiceDetails.setText(sb.toString());
     }
 
     private static String buildSiteLink(WebAppBase webApp, String artifactName) {
