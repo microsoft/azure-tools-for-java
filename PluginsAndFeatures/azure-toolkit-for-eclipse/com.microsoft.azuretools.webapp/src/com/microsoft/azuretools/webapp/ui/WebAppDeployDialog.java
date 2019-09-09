@@ -27,18 +27,21 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
 import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -52,7 +55,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -66,6 +68,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
@@ -415,21 +419,35 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             }
         });
 
-        Label label = new Label(compositeSlotCb, SWT.NONE);
-        label.setText("");
-        Point point = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        RowData labelConf = new RowData();
-        labelConf.height = point.y;
-        label.setLayoutData(labelConf);
-        label.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
-            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), point.y * 9 / 10, point.y * 9 / 10));
-        label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
-        label.addMouseListener(new MouseAdapter() {
+        ToolBarManager barMgr = new ToolBarManager(SWT.FLAT);
+        ToolBar toolBar = barMgr.createControl(compositeSlotCb);
+        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+        item.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
+                compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 15, 15));
+        toolBar.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
-            public void mouseDown(MouseEvent e) {
-                Program.launch("https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots");
+            public void getName(AccessibleEvent e) {
+                e.result = DEPLOYMENT_SLOT_HOVER;
             }
         });
+
+        DefaultToolTip iconTooltip = new DefaultToolTip(toolBar, SWT.NONE, false);
+        iconTooltip.setText(DEPLOYMENT_SLOT_HOVER);
+        toolBar.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                iconTooltip.show(new Point(20, 20));
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                iconTooltip.hide();
+            }
+        });
+
+        toolBar.getParent().setTabList(new Control[] {btnDeployToSlot, toolBar });
+
         new Label(compositeSlot, SWT.NONE);
 
         btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
