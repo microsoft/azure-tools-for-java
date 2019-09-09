@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.WasbUri
 import com.microsoft.azure.hdinsight.spark.common.*
@@ -32,6 +33,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkSubmitM
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
+import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observer
 import java.net.URI
 import java.util.AbstractMap
@@ -66,8 +68,12 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
                         .first()
             } catch (ex: NoSuchElementException) {
                 throw ExecutionException(
-                        "Can't find Arcadia spark compute (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
+                        "Can't find Arcadia Spark Compute (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
                                 + " at tenant ${arcadiaModel.tenantId}.")
+            }  catch (ex: UninitializedPropertyAccessException) {
+                val errMsg = "Arcadia Spark Compute is not set"
+                log().warn(errMsg + ". " + ExceptionUtils.getStackTrace(ex))
+                throw RuntimeConfigurationError(errMsg)
             }
 
             SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(

@@ -32,6 +32,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.arcadia.sdk.common.livy.interactive.ArcadiaSparkSession
+import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaConsoleBuilder
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfiguration
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfigurationFactory
@@ -40,6 +41,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkSubmitM
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
+import org.apache.commons.lang3.exception.ExceptionUtils
 import java.net.URI
 import java.util.*
 
@@ -48,7 +50,7 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
                                                    batchRunConfiguration: LivySparkBatchJobRunConfiguration?,
                                                    name: String)
     : SparkScalaLivyConsoleRunConfiguration(
-        project, configurationFactory, batchRunConfiguration, name) {
+        project, configurationFactory, batchRunConfiguration, name), ILogger {
     override val runConfigurationTypeName: String = "Arcadia Spark Run Configuration"
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
@@ -75,6 +77,10 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
             throw RuntimeConfigurationError(
                     "Can't find Arcadia spark compute (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
                             + " at tenant ${arcadiaModel.tenantId}.")
+        } catch (ex: UninitializedPropertyAccessException) {
+            val errMsg = "Arcadia Spark Compute is not set"
+            log().warn(errMsg + ". " + ExceptionUtils.getStackTrace(ex))
+            throw RuntimeConfigurationError(errMsg)
         }
     }
 }
