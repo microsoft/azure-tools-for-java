@@ -90,6 +90,8 @@ import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -643,6 +645,19 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         tblAppSettings.setHeaderVisible(true);
         tblAppSettings.setLinesVisible(true);
         tblAppSettings.addListener(SWT.MouseDoubleClick, event -> onTblAppSettingMouseDoubleClick(event));
+        tblAppSettings.addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                // Edit items when user press enter
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    TableItem[] selection = tblAppSettings.getSelection();
+                    if (selection.length > 0) {
+                        editingTableItem(selection[0], 0);
+                        e.doit = false;
+                    }
+                }
+            }
+        });
 
         appSettingsEditor = new TableEditor(tblAppSettings);
         appSettingsEditor.horizontalAlignment = SWT.LEFT;
@@ -727,6 +742,17 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                             e.doit = false;
                             readTblAppSettings();
                             updateTableActionBtnStatus(true);
+                            break;
+                        case SWT.TRAVERSE_TAB_NEXT:
+                            if (column < tblAppSettings.getColumnCount()) {
+                                editingTableItem(item, column + 1);
+                            }
+                            break;
+                        case SWT.TRAVERSE_TAB_PREVIOUS:
+                            if (column > 0) {
+                                editingTableItem(item, column - 1);
+                            }
+                            break;
                         default:
                     }
                     break;
