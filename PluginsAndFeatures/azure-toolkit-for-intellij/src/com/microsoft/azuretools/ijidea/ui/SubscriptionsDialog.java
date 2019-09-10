@@ -22,10 +22,6 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.GET_SUBSCRIPTIONS;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
-
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -43,21 +39,19 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.GET_SUBSCRIPTIONS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSCRIPTIONS;
 
 public class SubscriptionsDialog extends AzureDialogWrapper {
     private static final int CHECKBOX_COLUMN = 0;
@@ -142,17 +136,16 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     private void createUIComponents() {
         DefaultTableModel model = new SubscriptionTableModel();
-        model.addColumn(""); // TODO: name for 'select/deselect all'
+        model.addColumn("Selected"); // Set the text read by JAWS
         model.addColumn("Subscription name");
         model.addColumn("Subscription ID");
 
         table = new JBTable();
         table.setModel(model);
         TableColumn column = table.getColumnModel().getColumn(CHECKBOX_COLUMN);
+        column.setHeaderValue(""); // Don't show title text
         column.setMinWidth(23);
         column.setMaxWidth(23);
-        table.setRowSelectionAllowed(false);
-        table.setCellSelectionEnabled(false);
         table.getTableHeader().setReorderingAllowed(false);
 
         // secret functionality: select all subs
