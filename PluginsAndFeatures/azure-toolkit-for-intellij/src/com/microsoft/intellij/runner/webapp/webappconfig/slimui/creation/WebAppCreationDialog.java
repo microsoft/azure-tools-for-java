@@ -146,6 +146,12 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         osButtonGroup.add(rdoLinuxOS);
         osButtonGroup.add(rdoWindowsOS);
 
+        // Set label for existing resource group checkbox and new resource group text field, for jaws
+        JLabel labelForExistingResourceGroup = new JLabel("Resource Group");
+        labelForExistingResourceGroup.setLabelFor(cbExistResGrp);
+        JLabel labelForNewResourceGroup = new JLabel("Resource Group");
+        labelForNewResourceGroup.setLabelFor(txtNewResGrp);
+
         cbSubscription.setRenderer(new ListCellRendererWrapper<Subscription>() {
             @Override
             public void customize(JList list, Subscription subscription, int
