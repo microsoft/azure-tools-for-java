@@ -60,6 +60,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="7bc9d"/>
               <text value="Name"/>
             </properties>
           </component>
@@ -84,6 +85,7 @@
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="183d5"/>
               <requestFocusEnabled value="true"/>
               <text value="Subscription"/>
             </properties>
@@ -129,6 +131,7 @@
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="78ba5"/>
               <text value="Java Version"/>
               <visible value="false"/>
             </properties>
@@ -148,6 +151,7 @@
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="658ee"/>
               <text value="Web Container"/>
               <visible value="false"/>
             </properties>
@@ -165,6 +169,7 @@
               <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="17731"/>
               <text value="Web Container"/>
             </properties>
           </component>
@@ -311,6 +316,7 @@
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="3ba62"/>
                   <text value="ServicePlan        "/>
                 </properties>
               </component>
@@ -331,6 +337,7 @@
                   <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="72d80"/>
                   <text value="Pricing Tier"/>
                 </properties>
               </component>
@@ -364,6 +371,7 @@
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="8a6b9"/>
                   <text value="Location"/>
                 </properties>
               </component>
@@ -372,6 +380,7 @@
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
+                  <labelFor value="bc0d5"/>
                   <text value="ServicePlan        "/>
                 </properties>
               </component>
