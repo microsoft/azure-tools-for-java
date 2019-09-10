@@ -28,13 +28,13 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 
 class ArcadiaSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
     @Attribute("livy_uri")
-    lateinit var livyUri: String
+    var livyUri: String? = null
     @Attribute("spark_workspace")
-    lateinit var sparkWorkspace: String
+    var sparkWorkspace: String? = null
     @Attribute("spark_compute")
-    lateinit var sparkCompute: String
+    var sparkCompute: String? = null
     @Attribute("tenant_id")
-    lateinit var tenantId: String
+    var tenantId: String? = null
 
     override fun getSparkClusterTypeDisplayName(): String = "Arcadia Spark cluster"
 }
