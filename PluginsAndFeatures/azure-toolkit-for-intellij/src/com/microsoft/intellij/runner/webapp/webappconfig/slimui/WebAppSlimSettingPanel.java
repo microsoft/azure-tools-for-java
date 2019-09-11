@@ -55,8 +55,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-//import javax.swing.ToolTipManager;
-
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
 
     private static final String DEPLOYMENT_SLOT = "Deployment Slot";
