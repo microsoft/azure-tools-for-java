@@ -85,6 +85,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                 }
             }
         });
+        editorPanel.setFocusable(false);
         // Apply JLabel's font and color to JEditorPane
         final Font font = UIManager.getFont("Label.font");
         final Color foregroundColor = UIManager.getColor("Label.foreground");

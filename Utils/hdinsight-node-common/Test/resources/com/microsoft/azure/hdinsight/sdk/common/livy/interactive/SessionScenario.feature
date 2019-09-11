@@ -10,7 +10,7 @@ Feature: Livy Interactive Session Tests
   Scenario: Session.create() IT negative case with mocked http server
     Given setup a mock livy interactive service for POST request '/sessions' to return 'Bad Request' with status code 400
     And create a livy Spark interactive session instance with name 'testSparkREPL'
-    Then check the HttpResponseException(400) when creating livy interactive session after creating should be thrown
+    Then check the BadRequestHttpErrorStatus(400) when creating livy interactive session after creating should be thrown
 
   Scenario: Session.getAppId() IT positive case with mocked http server
     Given setup a mock livy interactive service for POST request '/sessions' to return '{"id":6,"appId":null,"owner":null,"proxyUser":null,"state":"starting","kind":"spark","appInfo":{"driverLogUrl":null,"sparkUiUrl":null},"log":[]}' with status code 200
