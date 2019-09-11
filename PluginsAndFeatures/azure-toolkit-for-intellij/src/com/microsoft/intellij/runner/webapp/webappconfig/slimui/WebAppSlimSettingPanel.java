@@ -1,6 +1,7 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.IdeTooltipManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
@@ -22,9 +23,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
+import rx.Observable;
+import rx.Subscription;
+import rx.schedulers.Schedulers;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxEditor;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -32,15 +38,21 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
@@ -80,9 +92,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JLabel lblSlotConfiguration;
     private HyperlinkLabel lblCreateWebApp;
     private JCheckBox chkOpenBrowser;
-    private JLabel lblSlotHover;
     private HyperlinkLabel lblNewSlot;
     private JPanel pnlExistingSlot;
+    private JButton btnSlotHover;
     private HideableDecorator slotDecorator;
 
     // presenter
@@ -149,6 +161,40 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             }
         });
         cbxWebApp.setEditable(true);
+
+        Icon informationIcon = AllIcons.General.Information;
+        btnSlotHover.setIcon(informationIcon);
+        btnSlotHover.setHorizontalAlignment(SwingConstants.CENTER);
+        btnSlotHover.setPreferredSize(new Dimension(informationIcon.getIconWidth(), informationIcon.getIconHeight()));
+        btnSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);
+        btnSlotHover.addFocusListener(new FocusListener() {
+
+            Subscription subscription;
+
+            @Override
+            public void focusGained(FocusEvent focusEvent) {
+                btnSlotHover.setBorderPainted(true);
+                MouseEvent phantom = new MouseEvent(btnSlotHover, MouseEvent.MOUSE_ENTERED, System.currentTimeMillis(),
+                        0, 10, 10, 0, false);
+                IdeTooltipManager.getInstance().eventDispatched(phantom);
+                if (subscription != null) {
+                    subscription.unsubscribe();
+                }
+                subscription = Observable.timer(2, TimeUnit.SECONDS)
+                        .subscribeOn(Schedulers.newThread())
+                        .subscribe(next -> {
+                            if (KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == btnSlotHover) {
+                                focusGained(focusEvent);
+                            }
+                        });
+            }
+
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                btnSlotHover.setBorderPainted(false);
+                IdeTooltipManager.getInstance().dispose();
+            }
+        });
 
         cbArtifact.addActionListener(e -> artifactActionPeformed((Artifact) cbArtifact.getSelectedItem()));
 
@@ -391,9 +437,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         lblNewSlot = new HyperlinkLabel("No available deployment slot, click to create a new one");
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
-
-        lblSlotHover = new JLabel(AllIcons.General.Information);
-        lblSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);
     }
 
     private void refreshWebApps(boolean force) {
