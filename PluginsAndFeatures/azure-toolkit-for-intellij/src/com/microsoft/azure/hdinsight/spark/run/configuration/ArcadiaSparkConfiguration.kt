@@ -38,4 +38,8 @@ class ArcadiaSparkConfiguration (name: String, val module: ArcadiaSparkConfigura
     override fun getSuggestedNamePrefix(): String {
         return "[Spark on Arcadia]"
     }
+
+    override fun getErrorMessageClusterNull(): String {
+        return "The Spark Compute should be selected as the target for Spark application submission"
+    }
 }

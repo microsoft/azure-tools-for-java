@@ -107,6 +107,13 @@ public class SparkLibraryOptionsPanel extends Composite {
         comboBoxUseMaven = new Combo(comUseMaven, SWT.READ_ONLY);
         comboBoxUseMaven.setLayoutData(gridData);
         for (SparkVersion sv : SparkVersion.class.getEnumConstants()) {
+            // Ignore Spark version suports for higher than 2.3.0
+            switch (sv) {
+            case SPARK_2_4_0:
+            case SPARK_2_3_2:
+                continue;
+            default:
+            }
         	comboBoxUseMaven.add(sv.toString(), comboBoxUseMaven.getItemCount());
         }
         sparkVersion = SparkVersion.class.getEnumConstants()[0];

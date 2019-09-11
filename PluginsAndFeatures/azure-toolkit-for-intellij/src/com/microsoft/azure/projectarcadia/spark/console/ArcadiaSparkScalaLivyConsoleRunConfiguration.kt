@@ -32,6 +32,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.arcadia.sdk.common.livy.interactive.ArcadiaSparkSession
+import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaConsoleBuilder
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfiguration
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfigurationFactory
@@ -48,7 +49,7 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
                                                    batchRunConfiguration: LivySparkBatchJobRunConfiguration?,
                                                    name: String)
     : SparkScalaLivyConsoleRunConfiguration(
-        project, configurationFactory, batchRunConfiguration, name) {
+        project, configurationFactory, batchRunConfiguration, name), ILogger {
     override val runConfigurationTypeName: String = "Arcadia Spark Run Configuration"
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
@@ -63,8 +64,14 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
     }
 
     override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
-        val arcadiaModel = (submitModel as? ArcadiaSparkSubmitModel)
-                ?: throw RuntimeConfigurationError("Can't cast submitModel to ArcadiaSparkSubmitModel")
+        val arcadiaModel = (submitModel as? ArcadiaSparkSubmitModel)?.apply {
+            if (sparkCompute == null || tenantId == null || sparkWorkspace == null) {
+                log().warn("Arcadia Spark Compute is not selected. " +
+                            "spark compute: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
+                throw RuntimeConfigurationError("Arcadia Spark Compute is not selected")
+            }
+        }
+            ?: throw RuntimeConfigurationError("Can't cast submitModel to ArcadiaSparkSubmitModel")
 
         cluster = try {
             ArcadiaSparkComputeManager.getInstance()

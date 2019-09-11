@@ -23,6 +23,7 @@
 package com.microsoft.azure.projectarcadia.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ComparableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkCompute;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkComputeProvisioningState;
@@ -152,5 +153,23 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     @NotNull
     public ArcadiaWorkSpace getWorkSpace() {
         return workSpace;
+    }
+
+    @Override
+    public int compareTo(@NotNull ComparableCluster other) {
+        if (this == other) {
+            return 0;
+        }
+
+        final ArcadiaSparkCompute another = (ArcadiaSparkCompute) other;
+
+        // Compare the workspace name firstly
+        final int workspaceCmpResult = this.workSpace.getName().compareToIgnoreCase(another.workSpace.getName());
+        if (workspaceCmpResult != 0) {
+            return workspaceCmpResult;
+        }
+
+        // Then, the compute name
+        return this.getName().compareToIgnoreCase(another.getName());
     }
 }

@@ -74,7 +74,6 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private JPanel contentPane;
 
-    private JRadioButton interactiveRadioButton;
     private JRadioButton deviceLoginRadioButton;
 
     private JRadioButton automatedRadioButton;
@@ -83,7 +82,6 @@ public class SignInWindow extends AzureDialogWrapper {
     private JButton browseButton;
     private JButton createNewAuthenticationFileButton;
     private JLabel automatedCommentLabel;
-    private JLabel interactiveCommentLabel;
     private JLabel deviceLoginCommentLabel;
 
     private AuthMethodDetails authMethodDetails;
@@ -117,12 +115,6 @@ public class SignInWindow extends AzureDialogWrapper {
         this.authMethodDetails = authMethodDetails;
         authFileTextField.setText(authMethodDetails.getCredFilePath());
 
-        interactiveRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                refreshAuthControlElements();
-            }
-        });
-
         automatedRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 refreshAuthControlElements();
@@ -148,6 +140,9 @@ public class SignInWindow extends AzureDialogWrapper {
             }
         });
 
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(deviceLoginRadioButton);
+        buttonGroup.add(automatedRadioButton);
         deviceLoginRadioButton.setSelected(true);
         refreshAuthControlElements();
 
@@ -157,7 +152,6 @@ public class SignInWindow extends AzureDialogWrapper {
     private void refreshAuthControlElements() {
         refreshAutomateLoginElements();
         refreshDeviceLoginElements();
-        refreshInteractiveLoginElements();
     }
 
     private void refreshAutomateLoginElements() {
@@ -170,10 +164,6 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void refreshDeviceLoginElements() {
         deviceLoginCommentLabel.setEnabled(deviceLoginRadioButton.isSelected());
-    }
-
-    private void refreshInteractiveLoginElements() {
-        interactiveCommentLabel.setEnabled(interactiveRadioButton.isSelected());
     }
 
     private void doSelectCredFilepath() {
@@ -225,55 +215,6 @@ public class SignInWindow extends AzureDialogWrapper {
                     }
                 }
             });
-    }
-
-    private void doInteractiveLogin() {
-        try {
-            AdAuthManager adAuthManager = AdAuthManager.getInstance();
-            if (adAuthManager.isSignedIn()) {
-                doSignOut();
-            }
-            signInAsync();
-            accountEmail = adAuthManager.getAccountEmail();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            //LOGGER.error("doSignIn", ex);
-            ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
-        }
-    }
-
-    private void signInAsync() {
-        ProgressManager.getInstance().run(
-            new Task.Modal(project, "Sign In Progress", false) {
-                @Override
-                public void run(ProgressIndicator indicator) {
-                    indicator.setIndeterminate(true);
-                    indicator.setText("Signing In...");
-                    try {
-                        AdAuthManager.getInstance().signIn();
-                    } catch (AuthCanceledException ex) {
-                        System.out.println(ex.getMessage());
-                    } catch (Exception ex) {
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                // To revert after Device Flow is stable.
-                                ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR, "Try Device Flow", () -> {
-                                    authMethodDetailsResult = new AuthMethodDetails();
-                                    doDeviceLogin();
-                                    if (!StringUtils.isNullOrEmpty(accountEmail)) {
-                                        authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
-                                        authMethodDetailsResult.setAccountEmail(accountEmail);
-                                        authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
-                                        SignInWindow.super.doOKAction();
-                                    }
-                                });
-                            }
-                        });
-                    }
-                }
-            }
-        );
     }
 
     private void doSignOut() {
@@ -393,16 +334,7 @@ public class SignInWindow extends AzureDialogWrapper {
     @Override
     protected void doOKAction() {
         authMethodDetailsResult = new AuthMethodDetails();
-        if (interactiveRadioButton.isSelected()) {
-            doInteractiveLogin();
-            if (StringUtils.isNullOrEmpty(accountEmail)) {
-                System.out.println("Canceled by the user.");
-                return;
-            }
-            authMethodDetailsResult.setAuthMethod(AuthMethod.AD);
-            authMethodDetailsResult.setAccountEmail(accountEmail);
-            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
-        } else if (automatedRadioButton.isSelected()) { // automated
+        if (automatedRadioButton.isSelected()) { // automated
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
