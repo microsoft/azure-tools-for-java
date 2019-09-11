@@ -31,15 +31,11 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.*;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -50,7 +46,6 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
@@ -66,6 +61,7 @@ import rx.exceptions.Exceptions;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.UnknownServiceException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -146,14 +142,16 @@ public class HttpObservable implements ILogger {
     public HttpObservable(@NotNull final String username, @NotNull final String password) {
         this();
 
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(
-                new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
+        if (StringUtils.isNotBlank(username)) {
+            String auth = username + ":" + password;
+            final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+            setDefaultHeader(new BasicHeader(
+                    HttpHeaders.AUTHORIZATION, String.format("%s %s", "Basic", new String(encodedAuth))));
+        }
 
         this.httpClient = HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultCookieStore(getCookieStore())
-                .setDefaultCredentialsProvider(credentialsProvider)
                 .setDefaultRequestConfig(getDefaultRequestConfig())
                 .setSSLSocketFactory(createSSLSocketFactory())
                 .build();
