@@ -70,7 +70,7 @@ class SessionScenario {
         }}
     }
 
-    @Then("^check the AzureDataLakeException\\((\\d+)\\) when creating livy interactive session after creating should be thrown$")
+    @Then("^check the BadRequestHttpErrorStatus\\((\\d+)\\) when creating livy interactive session after creating should be thrown$")
     fun checkCreateSessionException(statusCodeExpect: Int) {
         sessionMock!!.create()
                 .subscribe(
