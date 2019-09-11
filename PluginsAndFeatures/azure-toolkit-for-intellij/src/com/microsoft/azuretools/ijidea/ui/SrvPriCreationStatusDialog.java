@@ -114,6 +114,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         filesList.setLayoutOrientation(JList.VERTICAL);
         filesList.setVisibleRowCount(-1);
         filesList.setModel(filesListModel);
+        filesList.setFocusable(false);
 
         init();
     }
