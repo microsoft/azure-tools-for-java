@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.sdk.common.livy.interactive
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import com.microsoft.azure.hdinsight.sdk.common.AzureDataLakeException
+import com.microsoft.azure.hdinsight.sdk.common.errorresponse.BadRequestHttpErrorStatus
 import com.microsoft.azure.hdinsight.spark.common.MockHttpService
 import cucumber.api.java.Before
 import cucumber.api.java.en.And
@@ -70,7 +70,7 @@ class SessionScenario {
         }}
     }
 
-    @Then("^check the AzureDataLakeException\\((\\d+)\\) when creating livy interactive session after creating should be thrown$")
+    @Then("^check the BadRequestHttpErrorStatus\\((\\d+)\\) when creating livy interactive session after creating should be thrown$")
     fun checkCreateSessionException(statusCodeExpect: Int) {
         sessionMock!!.create()
                 .subscribe(
@@ -78,8 +78,8 @@ class SessionScenario {
                             fail("Get a normal session return without exceptions.")
                         },
                         { err -> run {
-                            assertThat(err).isInstanceOf(AzureDataLakeException::class.java)
-                            assertThat((err as AzureDataLakeException).statusCode).isEqualTo(statusCodeExpect)
+                            assertThat(err).isInstanceOf(BadRequestHttpErrorStatus::class.java)
+                            assertThat((err as BadRequestHttpErrorStatus).statusCode).isEqualTo(statusCodeExpect)
                         }}
                 )
 
