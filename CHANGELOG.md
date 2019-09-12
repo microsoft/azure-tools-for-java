@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.27.0](#3270)
   - [3.26.0](#3260)
   - [3.25.0](#3250)
   - [3.24.0](#3240)
@@ -39,10 +40,6 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.6](#306)
 
 ## 3.27.0
-
-### Added
-
-### Changed
 
 ### Fixed
 - [#3316](https://github.com/microsoft/azure-tools-for-java/issues/3316), [#3322](https://github.com/microsoft/azure-tools-for-java/issues/3322), [#3334](https://github.com/microsoft/azure-tools-for-java/issues/3334), [#3337](https://github.com/microsoft/azure-tools-for-java/issues/3337), [#3339](https://github.com/microsoft/azure-tools-for-java/issues/3339), [#3346](https://github.com/microsoft/azure-tools-for-java/issues/3346), [#3385](https://github.com/microsoft/azure-tools-for-java/issues/3385), [#3387](https://github.com/microsoft/azure-tools-for-java/issues/3387) Fix Accessibility issues

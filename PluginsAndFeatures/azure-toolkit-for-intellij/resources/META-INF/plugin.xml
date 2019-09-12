@@ -21,8 +21,6 @@
     <![CDATA[
     <html>
     <h3>3.27.0</h3>
-    <h4>Added</h4>
-    <h4>Changed</h4>
     <h4>Fixed</h4>
     <ul>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3316">#3316</a>, <a
