@@ -35,7 +35,6 @@ import com.intellij.openapi.progress.util.DispatchThreadProgressWindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.impl.libraries.LibraryEx
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar
 import com.intellij.openapi.roots.libraries.NewLibraryConfiguration
@@ -49,7 +48,7 @@ import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow
 import com.microsoft.intellij.util.runInWriteAction
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfiguration
 import java.nio.file.Paths
 import javax.swing.Action
 
@@ -64,9 +63,9 @@ class SparkScalaLocalConsoleRunConfiguration(
 
     lateinit var batchRunConfiguration: LivySparkBatchJobRunConfiguration
 
-    override fun mainClass(): String = "org.apache.spark.deploy.SparkSubmit"
+    override fun `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$MainClass`(): String = "org.apache.spark.deploy.SparkSubmit"
 
-    override fun createParams(): JavaParameters {
+    override fun `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$createParams`(): JavaParameters {
         var isMockFs = false
         if (Messages.YES == Messages.showYesNoDialog(
                         project,
@@ -78,7 +77,7 @@ class SparkScalaLocalConsoleRunConfiguration(
 
         val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel, null)
                 .createParams(executor = null, hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
-        val params = super.createParams()
+        val params = super.`org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$createParams`()
         params.classPath.clear()
         val replLibraryCoord = findReplCoord() ?: throw ExecutionException("""
                 The library org.apache.spark:spark-core is not in project dependencies.
@@ -101,7 +100,7 @@ class SparkScalaLocalConsoleRunConfiguration(
         params.classPath.addAll(getDependencyClassPaths(jlineLibraryCoord))
 
         params.classPath.addAll(localRunParams.classPath.pathList)
-        params.mainClass = mainClass()
+        params.mainClass = `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$MainClass`()
 
         params.vmParametersList.addAll(localRunParams.vmParametersList.parameters)
 
@@ -218,7 +217,7 @@ class SparkScalaLocalConsoleRunConfiguration(
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val state = object : JavaCommandLineState(env) {
             override fun createJavaParameters() : JavaParameters {
-                val params = createParams()
+                val params = `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$createParams`()
 
                 params.programParametersList.addParametersString(consoleArgs())
                 return params

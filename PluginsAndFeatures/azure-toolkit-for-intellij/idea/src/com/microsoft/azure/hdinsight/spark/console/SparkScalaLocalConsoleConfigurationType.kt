@@ -22,16 +22,20 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeUtil
-import org.jetbrains.plugins.scala.console.ScalaConsoleConfigurationType
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleConfigurationType
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLocalConsoleConfigurationType : ScalaConsoleConfigurationType() {
     companion object {
         @JvmStatic
         val instance by lazy { ConfigurationTypeUtil.findConfigurationType(SparkScalaLocalConsoleConfigurationType::class.java) }
     }
-    override fun confFactory(): ScalaConsoleRunConfigurationFactory = SparkScalaLocalConsoleRunConfigurationFactory(this)
+
+    public fun confFactory(): ScalaConsoleRunConfigurationFactory = SparkScalaLocalConsoleRunConfigurationFactory(this)
+
+    override fun getConfigurationFactories(): Array<ConfigurationFactory> = arrayOf(this.confFactory())
 
     override fun getDisplayName(): String = "Spark Local Console(Scala)"
 

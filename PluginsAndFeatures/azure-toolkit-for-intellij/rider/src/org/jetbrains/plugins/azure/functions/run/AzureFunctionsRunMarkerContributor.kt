@@ -3,8 +3,8 @@ package org.jetbrains.plugins.azure.functions.run
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.elementType
 import com.intellij.psi.util.siblings
-import com.intellij.sql.type
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.CSharpLanguage
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.lexer.CSharpTokenType
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.psi.CSharpStringLiteralExpression
@@ -29,14 +29,14 @@ class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
 
             // Case 0: Do not be tricked by having a FunctionNameAttribute applied on an identifier,
             //         e.g. `[FunctionName("Foo")]string bar` should not match.
-            if (functionNameAttributeClosingRBracketSibling.nextSibling.type == CSharpTokenType.IDENTIFIER)
+            if (functionNameAttributeClosingRBracketSibling.nextSibling.elementType == CSharpTokenType.IDENTIFIER)
                 return null
 
             // Case 1: [FunctionName("Foo")] - take the string content
             val functionNameStringLiteralSibling = functionNameAttributeSibling.siblings(forward = true)
                     .takeWhile { it.text != "]" && it.text != ")" }
                     .firstOrNull { it is CSharpStringLiteralExpression }
-                    ?.children?.firstOrNull { it.type == CSharpTokenType.STRING_LITERAL_REGULAR }
+                    ?.children?.firstOrNull { it.elementType == CSharpTokenType.STRING_LITERAL_REGULAR }
 
             if (functionNameStringLiteralSibling != null) {
                 return functionNameStringLiteralSibling.text?.replace("\"", "")

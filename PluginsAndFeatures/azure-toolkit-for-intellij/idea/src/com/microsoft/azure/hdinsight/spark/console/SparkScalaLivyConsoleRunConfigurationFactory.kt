@@ -26,7 +26,7 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLivyConsoleConfigurationType)
     : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {

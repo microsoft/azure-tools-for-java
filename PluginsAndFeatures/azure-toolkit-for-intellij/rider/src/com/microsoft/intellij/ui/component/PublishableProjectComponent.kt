@@ -103,10 +103,12 @@ class PublishableProjectComponent(private val project: Project) :
 
                 if (projectNodes.isEmpty()) return
                 val itemIcon = projectNodes[0].getIcon()
-                val icon =
-                        if (canBePublishedAction(publishableProject)) itemIcon
-                        else LayeredIcon.create(IconLoader.getDisabledIcon(itemIcon), AllIcons.RunConfigurations.InvalidConfigurationLayer)
-                setIcon(icon)
+                if (itemIcon != null) {
+                    val icon =
+                            if (canBePublishedAction(publishableProject)) itemIcon
+                            else LayeredIcon.create(IconLoader.getDisabledIcon(itemIcon), AllIcons.RunConfigurations.InvalidConfigurationLayer)
+                    setIcon(icon)
+                }
             }
         }
 

@@ -29,7 +29,7 @@ import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.*
 import com.microsoft.azuretools.telemetry.TelemetryConstants
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
     override val selectedMenuActionId: String
