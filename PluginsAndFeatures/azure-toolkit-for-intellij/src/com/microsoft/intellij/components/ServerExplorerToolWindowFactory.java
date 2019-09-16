@@ -33,10 +33,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
-import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -329,6 +329,10 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private class NodeTreeCellRenderer extends NodeRenderer {
+        /** @see com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode#load for where this string is defined */
+        private static final String REFRESHING_MARKER = " (Refreshing...)";
+        private static final String REFRESHING_SUFFIX = " \u00b7 Refreshing...";
+
         @Override
         protected void doPaint(Graphics2D g) {
             super.doPaint(g);
@@ -353,6 +357,14 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             // a multi-root tree control
             if (node == null) {
                 return;
+            }
+
+            // Show "Refreshing..." suffix?
+            int refreshingMarkerPosition = node.getName().indexOf(REFRESHING_MARKER);
+            if (refreshingMarkerPosition >= 0) {
+                clear();
+                append(node.getName().substring(0, refreshingMarkerPosition), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                append(REFRESHING_SUFFIX, SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES);
             }
 
             String iconPath = node.getIconPath();
