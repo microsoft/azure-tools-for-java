@@ -107,8 +107,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         this.presenter.onAttachView(this);
 
         final ButtonGroup slotButtonGroup = new ButtonGroup();
-        slotButtonGroup.add(rbtExistingSlot);
         slotButtonGroup.add(rbtNewSlot);
+        slotButtonGroup.add(rbtExistingSlot);
         rbtExistingSlot.addActionListener(e -> toggleSlotType(true));
         rbtNewSlot.addActionListener(e -> toggleSlotType(false));
 
@@ -223,6 +223,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
                 }
             }
         });
+
+        JLabel labelForNewSlotName = new JLabel("Slot Name");
+        labelForNewSlotName.setLabelFor(txtNewSlotName);
+        JLabel labelForExistingSlotName = new JLabel("Slot Name");
+        labelForExistingSlotName.setLabelFor(cbxSlotName);
 
         slotDecorator = new HideableDecorator(pnlSlotHolder, DEPLOYMENT_SLOT, true);
         slotDecorator.setContentComponent(pnlSlot);

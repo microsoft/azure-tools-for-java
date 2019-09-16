@@ -126,6 +126,7 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
+                      <labelFor value="cae1c"/>
                       <text value="Slot Configuration Source"/>
                       <visible value="true"/>
                     </properties>
