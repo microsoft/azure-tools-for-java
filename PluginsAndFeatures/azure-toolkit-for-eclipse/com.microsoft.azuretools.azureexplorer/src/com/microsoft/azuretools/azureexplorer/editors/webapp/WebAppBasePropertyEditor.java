@@ -615,6 +615,7 @@ public abstract class WebAppBasePropertyEditor extends EditorPart implements Web
             item.setText(new String[]{key, map.get(key)});
         }
         updateTableActionBtnStatus(true);
+        updateSaveAndDiscardBtnStatus();
     }
 
     private void readTblAppSettings() {

@@ -143,7 +143,10 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         rbtnDevice.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                enableAutomatedAuthControls(false);
+                if(rbtnDevice.getSelection()) {
+                    rbtnDevice.setFocus();
+                    enableAutomatedAuthControls(false);
+                }
             }
         });
         rbtnDevice.setText("Device Login");
@@ -165,7 +168,12 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         rbtnAutomated.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                enableAutomatedAuthControls(true);
+                if (rbtnAutomated.getSelection()) {
+                    // Set the radio button to be focused or the default one will be selected when refresh
+                    // For issue https://github.com/microsoft/azure-tools-for-java/issues/3543
+                    rbtnAutomated.setFocus();
+                    enableAutomatedAuthControls(true);
+                }
             }
         });
         rbtnAutomated.setText("Service Principal");
