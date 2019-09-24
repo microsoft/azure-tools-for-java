@@ -105,8 +105,9 @@ fun filterMSCallStacks(callStacks: String): String {
     // Ignore the beginning 2 lines and `Caused by` line, only filter lines starting with `at`.
 
     return callStacks.splitToSequence("\n", "\r")
+            .filter { it.isNotBlank() }
             .filterIndexed { index, line ->
-                // The First and second line
+                // The First and second non-blank lines
                 if (index <= 1) {
                     return@filterIndexed true
                 }

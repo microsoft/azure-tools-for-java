@@ -22,14 +22,14 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 import rx.Observer;
 
-import java.io.IOException;
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 public interface ISparkBatchJob {
@@ -99,6 +99,18 @@ public interface ISparkBatchJob {
      */
     @NotNull
     Observable<SimpleImmutableEntry<String, Long>> getDriverLog(@NotNull String type, long logOffset, int size);
+
+    /**
+     * Get Spark job specified container log observable
+     *
+     * @param containerLogUrl the container log URL
+     * @param type the log type, such as `stderr`, `stdout`
+     * @param logOffset the log offset that fetching would start from
+     * @param size the fetching size, -1 for all.
+     * @return the log and its starting offset pair observable
+     */
+    @NotNull
+    Observable<AbstractMap.SimpleImmutableEntry<String, Long>> getContainerLog(@NotNull String containerLogUrl, @NotNull String type, long logOffset, int size);
 
     /**
      * Get Spark job submission log observable

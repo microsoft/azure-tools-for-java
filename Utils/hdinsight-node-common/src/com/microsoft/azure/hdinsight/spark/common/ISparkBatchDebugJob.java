@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.spark.common;
 import rx.Observable;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 public interface ISparkBatchDebugJob extends ISparkBatchJob {
     /**
@@ -34,6 +33,5 @@ public interface ISparkBatchDebugJob extends ISparkBatchJob {
      * @return Spark driver node debugging port
      * @throws IOException exceptions for the driver debugging port not found
      */
-    public Observable<Integer> getSparkDriverDebuggingPort() throws IOException;
-
+    Observable<Integer> getSparkDriverDebuggingPort() throws IOException;
 }

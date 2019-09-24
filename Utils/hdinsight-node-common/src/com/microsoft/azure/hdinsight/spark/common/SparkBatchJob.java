@@ -449,19 +449,28 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         return Observable.empty();
                     }
 
-                    String logGot = JobUtils.getInformationFromYarnLogDom(
-                            getSubmission().getCredentialsProvider(),
-                            getCurrentLogUrl(),
-                            type,
-                            offset,
-                            size);
-
-                    if (StringUtils.isEmpty(logGot)) {
-                        return Observable.empty();
-                    }
-
-                    return Observable.just(new SimpleImmutableEntry<>(logGot, offset));
+                    return getContainerLog(getCurrentLogUrl(), type, offset, size);
                 });
+    }
+
+    @NotNull
+    @Override
+    public Observable<SimpleImmutableEntry<String, Long>> getContainerLog(@NotNull String containerLogUrl,
+                                                                          @NotNull String type,
+                                                                          long logOffset,
+                                                                          int size) {
+        String logGot = JobUtils.getInformationFromYarnLogDom(
+                getSubmission().getCredentialsProvider(),
+                containerLogUrl,
+                type,
+                logOffset,
+                size);
+
+        if (StringUtils.isEmpty(logGot)) {
+            return Observable.empty();
+        }
+
+        return Observable.just(new SimpleImmutableEntry<>(logGot, logOffset));
     }
 
     /**
@@ -567,7 +576,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     /**
      * Get Spark Job Yarn application with retries
      *
-     * @param batchBaseUri the connection URI of HDInsight Livy batch job, http://livy:8998/batches, the function will help translate it to Yarn connection URI.
+     * @param yarnConnectUri the connection URI of HDInsight Livy batch job, http://livy:8998/batches, the function will help translate it to Yarn connection URI.
      * @param applicationID the Yarn application ID
      * @return the Yarn application got
      * @throws IOException exceptions in transaction

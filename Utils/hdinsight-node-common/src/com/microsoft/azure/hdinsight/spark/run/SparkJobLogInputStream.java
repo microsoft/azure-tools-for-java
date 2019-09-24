@@ -23,16 +23,11 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Optional;
 
@@ -43,8 +38,6 @@ public class SparkJobLogInputStream extends InputStream {
     private String logType;
     @Nullable
     private ISparkBatchJob sparkBatchJob;
-    @Nullable
-    private String logUrl;
 
     private long offset = 0;
     @NotNull
@@ -61,7 +54,7 @@ public class SparkJobLogInputStream extends InputStream {
         return sparkJob;
     }
 
-    private synchronized Optional<SimpleImmutableEntry<String, Long>> fetchLog(long logOffset, int fetchSize) {
+    protected synchronized Optional<SimpleImmutableEntry<String, Long>> fetchLog(long logOffset, int fetchSize) {
         return getAttachedJob()
                 .map(job -> job.getDriverLog(getLogType(), logOffset, fetchSize)
                                .toBlocking().singleOrDefault(null));
@@ -104,14 +97,6 @@ public class SparkJobLogInputStream extends InputStream {
         } else {
             return buffer.length - bufferPos;
         }
-    }
-
-    void setLogUrl(@Nullable String logUrl) {
-        this.logUrl = logUrl;
-    }
-
-    public Optional<String> getLogUrl() {
-        return Optional.ofNullable(logUrl);
     }
 
     @NotNull
