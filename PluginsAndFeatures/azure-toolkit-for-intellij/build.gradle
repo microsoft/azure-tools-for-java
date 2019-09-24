@@ -86,8 +86,8 @@ dependencies {
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     compile 'commons-io:commons-io:2.5'
     compile 'net.minidev:json-smart:2.3'
-    compile 'com.microsoft.azure:azure-client-runtime:1.6.5', { force = true }
-    compile 'com.microsoft.azure:azure-client-authentication:1.6.5', { force = true }
+    compile 'com.microsoft.azure:azure-client-runtime:1.6.13', { force = true }
+    compile 'com.microsoft.azure:azure-client-authentication:1.6.13', { force = true }
     compile 'com.microsoft.azuretools:azuretools-core:3.28.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
