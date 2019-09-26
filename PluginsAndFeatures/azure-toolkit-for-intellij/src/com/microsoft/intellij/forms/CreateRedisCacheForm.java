@@ -245,7 +245,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
                         PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
                     }
                 }
-            });
+            }, MoreExecutors.directExecutor());
             close(DialogWrapper.OK_EXIT_CODE, true);
         } catch (Exception ex) {
             ex.printStackTrace();
