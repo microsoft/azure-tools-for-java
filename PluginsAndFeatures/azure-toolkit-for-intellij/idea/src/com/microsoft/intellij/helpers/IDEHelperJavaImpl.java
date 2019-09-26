@@ -22,10 +22,7 @@
 
 package com.microsoft.intellij.helpers;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.*;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
@@ -93,7 +90,7 @@ public class IDEHelperJavaImpl extends IDEHelperImpl {
                                 throwable));
                     }
                 }
-            });
+            }, MoreExecutors.directExecutor());
 
             return future;
         } catch (AzureCmdException e) {
