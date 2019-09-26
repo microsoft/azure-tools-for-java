@@ -66,7 +66,7 @@ class AzureFunctionsConfigurationProducer
                 if (functionName.isNullOrBlank()) {
                     configuration.name = prjToConfigure.fullName
                 } else {
-                    configuration.name = prjToConfigure.fullName + "." + functionName
+                    configuration.name = "$functionName (${prjToConfigure.fullName})"
                     configuration.parameters.functionNames = functionName
                 }
 

@@ -11,6 +11,7 @@ import com.jetbrains.rider.ideaInterop.fileTypes.csharp.psi.CSharpStringLiteralE
 import com.microsoft.icons.CommonIcons
 
 class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
+
     companion object {
         fun tryResolveAzureFunctionName(element: PsiElement?): String? {
             if (element == null) return null
