@@ -27,7 +27,10 @@ import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
+import com.jetbrains.rider.model.PublishableProjectModel
+import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
+import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.publishing.RiderContextPublishProvider
 import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.runner.webapp.config.RiderWebAppConfiguration
@@ -61,8 +64,15 @@ class WebAppContextPublishProvider : RiderContextPublishProvider {
         return Pair(configuration, factory)
     }
 
+    private fun isProjectPublishable(projectData: PublishableProjectModel?) =
+            projectData != null && (projectData.isWeb && (projectData.isDotNetCore || SystemInfo.isWindows))
+
     override fun isAvailable(project: Project, projectModelNode: ProjectModelNode): Boolean {
         val projectData = RiderContextPublishProvider.getProjectData(project, projectModelNode)
-        return projectData != null && projectData.value.isWeb && (projectData.value.isDotNetCore || SystemInfo.isWindows)
+        return isProjectPublishable(projectData?.value)
+    }
+
+    override fun solutionHasAnyPublishableProjects(project: Project): Boolean {
+        return project.solution.publishableProjectsModel.publishableProjects.entries.any { isProjectPublishable(it.value) }
     }
 }

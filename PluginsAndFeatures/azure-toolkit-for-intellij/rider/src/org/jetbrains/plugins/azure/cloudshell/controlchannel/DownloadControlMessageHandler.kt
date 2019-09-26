@@ -23,7 +23,7 @@ package org.jetbrains.plugins.azure.cloudshell.controlchannel
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.intellij.ide.actions.ShowFilePathAction
+import com.intellij.ide.actions.RevealFileAction
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationListener
 import com.intellij.notification.NotificationType
@@ -102,7 +102,7 @@ class DownloadControlMessageHandler(
                                             override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
                                                 if (!project.isDisposed) {
                                                     when (e.description) {
-                                                        "show" -> ShowFilePathAction.openFile(File(virtualFile.presentableUrl))
+                                                        "show" -> RevealFileAction.openFile(File(virtualFile.presentableUrl))
                                                     }
                                                 }
                                             }
