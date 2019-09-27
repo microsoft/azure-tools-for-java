@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterOperationImpl;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.HttpErrorStatus;
+import com.microsoft.azure.hdinsight.sdk.common.errorresponse.NotFoundHttpErrorStatus;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -125,7 +126,9 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                     } else {
                         if (err instanceof HttpErrorStatus) {
                             HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
-                            log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
+                            if (!(err instanceof NotFoundHttpErrorStatus)) {
+                                log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
+                            }
                             log().warn(((HttpErrorStatus) err).getErrorDetails());
 
                             final Map<String, String> properties = new HashMap<>();
