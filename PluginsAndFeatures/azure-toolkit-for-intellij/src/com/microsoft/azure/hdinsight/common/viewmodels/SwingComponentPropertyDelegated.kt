@@ -32,8 +32,8 @@ import javax.swing.JComboBox
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-abstract class SwingComponentPropertyDelegated<T>: ILogger, ReadWriteProperty<Any?, T>  {
-    override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+abstract class SwingComponentPropertyDelegated<T>: ILogger, ReadWriteProperty<Any?, T?>  {
+    override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
         try {
             ApplicationManager.getApplication().invokeLater({
                 setValueInDispatch(thisRef, property, value)
@@ -43,15 +43,15 @@ abstract class SwingComponentPropertyDelegated<T>: ILogger, ReadWriteProperty<An
         }
     }
 
-    abstract fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T)
+    abstract fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T?)
 }
 
-inline fun <T> swingPropertyDelegated(crossinline getter: (property: KProperty<*>) -> T,
-                                      crossinline setterInDispatch: (property: KProperty<*>, newValue: T) -> Unit)
-        : ReadWriteProperty<Any?, T> = object: SwingComponentPropertyDelegated<T>(){
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T = getter(property)
+inline fun <T> swingPropertyDelegated(crossinline getter: (property: KProperty<*>) -> T?,
+                                      crossinline setterInDispatch: (property: KProperty<*>, newValue: T?) -> Unit)
+        : ReadWriteProperty<Any?, T?> = object: SwingComponentPropertyDelegated<T>(){
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T? = getter(property)
 
-    override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T) {
+    override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T?) {
         setterInDispatch(property, v)
     }
 }
@@ -62,18 +62,18 @@ class ComponentWithBrowseButtonEnabledDelegated(private val componentWithBrowseB
         return componentWithBrowseButton.button.isEnabled
     }
 
-    override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: Boolean) {
-        componentWithBrowseButton.setButtonEnabled(v)
+    override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: Boolean?) {
+        v?.let { componentWithBrowseButton.setButtonEnabled(it) }
     }
 }
 
 class ComboBoxSelectionDelegated<T>(private val comboBox: JComboBox<T>): SwingComponentPropertyDelegated<T>() {
-    override operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
+    override operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
         @Suppress("UNCHECKED_CAST")
-        return comboBox.selectedItem as T
+        return comboBox.selectedItem as? T
     }
 
-    override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T) {
+    override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T?) {
         comboBox.selectedItem = v
     }
 
