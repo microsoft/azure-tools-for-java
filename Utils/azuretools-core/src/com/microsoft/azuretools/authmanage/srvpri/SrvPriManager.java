@@ -197,7 +197,7 @@ public class SrvPriManager {
             // set the properties value
             prop.setProperty("tenant", CommonParams.getTenantId());
             int i = 0;
-            for (String subscriptionId : CommonParams.getSubscriptionIdList()) {
+            for (String subscriptionId : CommonParams.getResultSubscriptionIdList()) {
                 if (i==0) {
                     prop.setProperty("subscription", subscriptionId);
                 } else {
