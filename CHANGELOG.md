@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.28.0](#3280)
   - [3.27.0](#3270)
   - [3.26.0](#3260)
   - [3.25.0](#3250)
@@ -38,6 +39,12 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.28.0
+
+### Fixed
+- [#3641](https://github.com/microsoft/azure-tools-for-java/issues/3641) Fix NPE error in customer survey dialog
+- [#3643](https://github.com/microsoft/azure-tools-for-java/issues/3643) Fix errors when create service principals
 
 ## 3.27.0
 
