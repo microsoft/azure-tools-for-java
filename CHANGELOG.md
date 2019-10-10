@@ -42,8 +42,15 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ## 3.28.0
 
+### Changed
+- HDInsight emulator function is removed
+- Upgrade Azure SDK dependencies to most new versions
+
 ### Fixed
+- [#3534](https://github.com/microsoft/azure-tools-for-java/issues/3534) Fix errors when starting Spark interactive console
+- [#3552](https://github.com/microsoft/azure-tools-for-java/issues/3552) Fix Spark remote debugging regresion
 - [#3641](https://github.com/microsoft/azure-tools-for-java/issues/3641) Fix NPE error in customer survey dialog
+- [#3642](https://github.com/microsoft/azure-tools-for-java/issues/3642) Fix Not Found error when HDInsight refreshing
 - [#3643](https://github.com/microsoft/azure-tools-for-java/issues/3643) Fix errors when create service principals
 
 ## 3.27.0
