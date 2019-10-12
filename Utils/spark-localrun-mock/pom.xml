@@ -15,6 +15,8 @@
         <project.build.encoding>UTF-8</project.build.encoding>
         <scala.version>2.11.11</scala.version>
         <spark.version>2.1.0</spark.version>
+        <hadoop.version>2.8.5</hadoop.version>
+        <assertj.version>3.9.1</assertj.version>
     </properties>
     <build>
         <sourceDirectory>src/main</sourceDirectory>
@@ -139,6 +141,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -199,6 +202,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
