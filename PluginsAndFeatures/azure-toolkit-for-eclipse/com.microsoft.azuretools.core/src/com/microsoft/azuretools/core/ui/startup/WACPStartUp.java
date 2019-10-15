@@ -111,7 +111,7 @@ public class WACPStartUp implements IStartup {
 									|| StringHelper.isNullOrWhiteSpace(hdinsightPrefValue)) {
 								setValues(dataFile, StringHelper.isNullOrWhiteSpace(prefValue),
 										StringHelper.isNullOrWhiteSpace(hdinsightPrefValue));
-							} else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
+							} else if (StringUtils.isEmpty(instID) || !GetHashMac.IsValidHashMacFormat(instID)) {
 								upgrade = true;
 								Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 								DataOperations.updatePropertyValue(doc, Messages.instID, _hashmac);

@@ -168,7 +168,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                     String instID = DataOperations.getProperty(dataFile, message("instID"));
                     if (prefValue == null || prefValue.isEmpty()) {
                         setValues(dataFile);
-                    } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
+                    } else if (StringUtils.isEmpty(instID) || !GetHashMac.IsValidHashMacFormat(instID)) {
                         upgrade = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 

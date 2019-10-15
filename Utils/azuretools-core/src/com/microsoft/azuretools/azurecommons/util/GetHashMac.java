@@ -32,6 +32,7 @@ import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -42,6 +43,12 @@ public class GetHashMac {
 
     public static final String MAC_REGEX = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
     public static final Pattern MAC_PATTERN = Pattern.compile(MAC_REGEX);
+    public static final String[] UNIX_COMMAND = {"/sbin/ifconfig -a || /sbin/ip link"};
+    public static final String[] WINDOWS_COMMAND = {"getmac"};
+    public static final String[] INVALIDATE_MAC_ADDRESS = {"00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff", "ac:de:48:00:11:22"};
+
+    // Hashed mac address for iBridge device
+    public static final String INVALIDATE_HASHED_MAC_ADDRESS = "6c9d2bc8f91b89624add29c0abeae7fb42bf539fa1cdb2e3e57cd668fa9bcead";
 
     public static boolean IsValidHashMacFormat(String hashMac) {
         if (hashMac == null || hashMac.isEmpty()) {
@@ -50,13 +57,14 @@ public class GetHashMac {
 
         Pattern hashmac_pattern = Pattern.compile("[0-9a-f]{64}");
         Matcher matcher = hashmac_pattern.matcher(hashMac);
-        return matcher.matches();
+        return matcher.matches() && !(StringUtils.containsIgnoreCase(System.getProperty("os.name"), "mac") &&
+                StringUtils.equalsIgnoreCase(INVALIDATE_HASHED_MAC_ADDRESS, hashMac));
     }
 
     public static String GetHashMac() {
         String ret = null;
         String mac_raw = getRawMac();
-        mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithoutIfconfig();
+        mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithoutCommand();
 
         if (isValidMac(mac_raw)) {
             String mac_regex_zero = "([0]{2}[:-]){5}[0]{2}";
@@ -76,17 +84,18 @@ public class GetHashMac {
     }
 
     private static boolean isValidMac(String mac) {
-        return StringUtils.isNotEmpty(mac) && MAC_PATTERN.matcher(mac).find();
+        final boolean isMacAddress = StringUtils.isNotEmpty(mac) && MAC_PATTERN.matcher(mac).find();
+        final boolean isValidateMacAddress = !Arrays.stream(INVALIDATE_MAC_ADDRESS)
+                .anyMatch(invalidateMacAddress -> StringUtils.equalsIgnoreCase(mac, invalidateMacAddress));
+        return isMacAddress && isValidateMacAddress;
     }
 
     private static String getRawMac() {
         String ret = null;
         try {
             String os = System.getProperty("os.name").toLowerCase();
-            String[] command = {"ifconfig", "-a"};
-            if (os != null && !os.isEmpty() && os.startsWith("win")) {
-                command = new String[]{"getmac"};
-            }
+            String[] command = StringUtils.startsWithIgnoreCase(os, "win") ?
+                    WINDOWS_COMMAND : UNIX_COMMAND;
             ProcessBuilder probuilder = new ProcessBuilder(command);
             Process process = probuilder.start();
             try (final InputStream inputStream = process.getInputStream();
@@ -104,7 +113,7 @@ public class GetHashMac {
         return ret;
     }
 
-    private static String getRawMacWithoutIfconfig() {
+    private static String getRawMacWithoutCommand() {
         List<String> macSet = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
