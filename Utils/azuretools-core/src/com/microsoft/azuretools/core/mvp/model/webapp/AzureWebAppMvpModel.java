@@ -577,6 +577,23 @@ public class AzureWebAppMvpModel {
     /**
      * List available Web Containers.
      */
+    public List<WebAppUtils.WebContainerMod> listWebContainers(JdkModel jdkModel) {
+        final List<WebAppUtils.WebContainerMod> webContainers = listWebContainers();
+        final String javaVersion = jdkModel.getJavaVersion().toString();
+        if (javaVersion.startsWith("1.8")) {
+            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_11);
+        } else if (javaVersion.startsWith("11")) {
+            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_8);
+        } else {
+            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_8);
+            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_11);
+        }
+        return webContainers;
+    }
+
+    /**
+     * List available Web Containers.
+     */
     public List<WebAppUtils.WebContainerMod> listWebContainers() {
         List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
         Collections.addAll(webContainers, WebAppUtils.WebContainerMod.values());

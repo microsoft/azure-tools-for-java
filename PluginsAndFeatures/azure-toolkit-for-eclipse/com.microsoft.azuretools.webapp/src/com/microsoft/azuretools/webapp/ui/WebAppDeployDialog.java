@@ -117,9 +117,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private Table table;
     private Link browserAppServiceDetails;
     private Button btnDeployToRoot;
-    private String browserFontStyle;
     private Button btnDelete;
-    private Link lnkWebConfig;
     private Button btnDeployToSlot;
     private Combo comboSlot;
     private Combo comboSlotConf;
@@ -135,11 +133,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private Shell parentShell;
 
     private static final String ftpLinkString = "ShowFtpCredentials";
-    private static final String WEB_CONFIG_DEFAULT = "web.config";
-    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
-    private static final String WEB_CONFIG_REMOTE_PATH = "/site/wwwroot/web.config";
-    private static final String TYPE_JAR = "jar";
-    private static final String WEB_CONFIG_LINK_FORMAT = "<a href=\"https://%s/dev/wwwroot/web.config\">web.config</a>";
     private static final String DATE_FORMAT = "yyMMddHHmmss";
     private static final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
 
@@ -293,9 +286,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                     fillTable();
                     slotMap.clear();
-                    if (lnkWebConfig != null) {
-                        lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
-                    }
                     AppServiceCreateDialog.initAspCache();
                 });
             }
@@ -344,41 +334,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 btnDeployToRoot.setSelection(true);
                 btnDeployToRoot.setVisible(false);
                 ((RowData) btnDeployToRoot.getLayoutData()).exclude = true;
-                Composite southComposite = new Composite(container, SWT.NONE);
-                GridLayout glSouthComposite = new GridLayout(3, false);
-                glSouthComposite.horizontalSpacing = 0;
-                glSouthComposite.marginWidth = 0;
-                glSouthComposite.marginHeight = 0;
-                southComposite.setLayout(glSouthComposite);
-                southComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-
-                Label lblWebConfigPrefix = new Label(southComposite, SWT.NONE);
-                lblWebConfigPrefix.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-                lblWebConfigPrefix.setAlignment(SWT.RIGHT);
-                lblWebConfigPrefix.setText("Please check the ");
-
-                lnkWebConfig = new Link(southComposite, SWT.NONE);
-                lnkWebConfig.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-                lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
-
-                lnkWebConfig.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent event) {
-                        try {
-                            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                                .openURL(new URL(event.text));
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", ex));
-                        }
-                    }
-                });
-
-                Label lblSuffix = new Label(southComposite, SWT.NONE);
-                lblSuffix.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-                lblSuffix.setText(" file used to deploy this JAR executable.");
-                container.layout(false);
-                new Label(container, SWT.NONE);
             }
         } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", e));
@@ -599,14 +554,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnDelete.setEnabled(true);
         String appServiceName = table.getItems()[selectedRow].getText(0);
 
-        try {
-            if (lnkWebConfig != null) {
-                String scmSuffix = AuthMethodManager.getInstance().getAzureManager().getScmSuffix();
-                lnkWebConfig.setText(String.format(WEB_CONFIG_LINK_FORMAT, appServiceName + scmSuffix));
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
         WebAppDetails wad = webAppDetailsMap.get(appServiceName);
         SubscriptionDetail sd = wad.subscriptionDetail;
         AppServicePlan asp = wad.appServicePlan;
@@ -1099,14 +1046,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 webAppSettingModel.setSlotName(index < 0 ? "" : comboSlot.getItem(index));
             }
         }
-    }
-
-    private boolean isJarBaseOnFileName(String filePath) {
-        int index = filePath.lastIndexOf(".");
-        if (index < 0) {
-            return false;
-        }
-        return filePath.substring(index + 1).equals(TYPE_JAR);
     }
 
     private void deleteAppService() {

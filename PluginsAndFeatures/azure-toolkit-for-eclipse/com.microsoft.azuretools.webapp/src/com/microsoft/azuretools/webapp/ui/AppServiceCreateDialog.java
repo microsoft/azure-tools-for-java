@@ -90,6 +90,7 @@ import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Font;
@@ -363,6 +364,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
+        fillJavaVersion();
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
@@ -380,7 +382,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         fillAppServicePlansDetails();
         fillAppServicePlanLocations();
         fillAppServicePlanPricingTiers();
-        fillJavaVersion();
         return scrolledComposite;
     }
 
@@ -611,6 +612,17 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         cbJavaVersion = new Combo(compositeRuntime, SWT.READ_ONLY);
         cbJavaVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         cbJavaVersion.setEnabled(false);
+        cbJavaVersion.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+				fillWebContainers();
+			}
+
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				fillWebContainers();
+			}
+        });
         dec_cbJavaVersion = decorateContorolAndRegister(cbJavaVersion);
 
         lblWebContainer = new Label(compositeRuntime, SWT.NONE);
@@ -880,7 +892,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         } else {
             comboWebContainer.removeAll();
             binderWebConteiners = new ArrayList<>();
-            WebContainerMod[] webContainers = WebContainerMod.values();
+            JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
+            WebContainerMod[] webContainers = jdkModel == null ? WebContainerMod.values() : AzureWebAppMvpModel.getInstance().listWebContainers(jdkModel).toArray(new WebContainerMod[] {});
             for (int i = 0; i < webContainers.length; i++) {
                 WebContainerMod webContainerMod = webContainers[i];
                 comboWebContainer.add(webContainerMod.toString());
@@ -1206,15 +1219,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                         webApp = AzureWebAppMvpModel.getInstance().createWebApp(model);
                         if (!appSettings.isEmpty()) {
                             webApp.update().withAppSettings(appSettings).apply();
-                        }
-                        if (webApp != null && packaging.equals(WebAppUtils.TYPE_JAR) && chooseWin) {
-                            webApp.stop();
-                            try (InputStream webConfigInput = WebAppUtils.class
-                                .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                                WebAppUtils.uploadWebConfig(webApp, webConfigInput,
-                                    new UpdateProgressIndicator(monitor));
-                            }
-                            webApp.start();
                         }
                         monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
                         AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));

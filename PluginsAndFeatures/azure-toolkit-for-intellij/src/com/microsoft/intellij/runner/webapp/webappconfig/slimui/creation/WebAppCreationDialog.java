@@ -124,6 +124,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         buttonCancel.addActionListener(e -> onCancel());
         cbSubscription.addActionListener(e -> selectSubscription());
         cbExistAppServicePlan.addActionListener(e -> selectAppServicePlan());
+        cbJdkVersion.addItemListener((itemEvent) -> fillWebContainer(AzureWebAppMvpModel.getInstance().listWebContainers((JdkModel) itemEvent.getItem())));
 
         rdoCreateAppServicePlan.addActionListener(e -> toggleAppServicePlan(true));
         rdoUseExistAppServicePlan.addActionListener(e -> toggleAppServicePlan(false));
