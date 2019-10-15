@@ -64,16 +64,14 @@ public class GetHashMac {
     public static String GetHashMac() {
         String ret = null;
         String mac_raw = getRawMac();
-        mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithNetworkInterface();
+        mac_raw = isValidRawMac(mac_raw) ? mac_raw : getRawMacWithNetworkInterface();
 
-        if (isValidMac(mac_raw)) {
-            String mac_regex_zero = "([0]{2}[:-]){5}[0]{2}";
-            Pattern pattern_zero = Pattern.compile(mac_regex_zero);
+        if (isValidRawMac(mac_raw)) {
             Matcher matcher = MAC_PATTERN.matcher(mac_raw);
             String mac = "";
             while (matcher.find()) {
                 mac = matcher.group(0);
-                if (!pattern_zero.matcher(mac).matches()) {
+                if (isValidMac(mac)) {
                     break;
                 }
             }
@@ -84,10 +82,15 @@ public class GetHashMac {
     }
 
     private static boolean isValidMac(String mac) {
-        final boolean isMacAddress = StringUtils.isNotEmpty(mac) && MAC_PATTERN.matcher(mac).find();
+        final String fixedMac = mac.replaceAll("-", ":");
+        final boolean isMacAddress = StringUtils.isNotEmpty(fixedMac) && MAC_PATTERN.matcher(fixedMac).find();
         final boolean isValidateMacAddress = !Arrays.stream(INVALIDATE_MAC_ADDRESS)
-                .anyMatch(invalidateMacAddress -> StringUtils.equalsIgnoreCase(mac, invalidateMacAddress));
+                .anyMatch(invalidateMacAddress -> StringUtils.equalsIgnoreCase(fixedMac, invalidateMacAddress));
         return isMacAddress && isValidateMacAddress;
+    }
+
+    private static boolean isValidRawMac(String raw) {
+        return StringUtils.isNotEmpty(raw) && MAC_PATTERN.matcher(raw).find();
     }
 
     private static String getRawMac() {
