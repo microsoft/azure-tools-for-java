@@ -64,7 +64,7 @@ public class GetHashMac {
     public static String GetHashMac() {
         String ret = null;
         String mac_raw = getRawMac();
-        mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithoutCommand();
+        mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithNetworkInterface();
 
         if (isValidMac(mac_raw)) {
             String mac_regex_zero = "([0]{2}[:-]){5}[0]{2}";
@@ -91,7 +91,7 @@ public class GetHashMac {
     }
 
     private static String getRawMac() {
-        String ret = null;
+        final StringBuilder ret = new StringBuilder();
         try {
             String os = System.getProperty("os.name").toLowerCase();
             String[] command = StringUtils.startsWithIgnoreCase(os, "win") ?
@@ -103,17 +103,20 @@ public class GetHashMac {
                  final BufferedReader br = new BufferedReader(inputStreamReader)) {
                 String tmp;
                 while ((tmp = br.readLine()) != null) {
-                    ret += tmp;
+                    ret.append(tmp);
                 }
             }
-        } catch (IOException ex) {
+            if (process.waitFor() != 0) {
+                throw new IOException("Command execute fail.");
+            }
+        } catch (IOException | InterruptedException ex) {
             return null;
         }
 
-        return ret;
+        return ret.toString();
     }
 
-    private static String getRawMacWithoutCommand() {
+    private static String getRawMacWithNetworkInterface() {
         List<String> macSet = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
