@@ -23,22 +23,6 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import org.apache.commons.io.IOUtils;
-
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
@@ -57,8 +41,23 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import org.apache.commons.io.IOUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
 
@@ -579,6 +578,9 @@ public class AzureWebAppMvpModel {
      */
     public List<WebAppUtils.WebContainerMod> listWebContainers(JdkModel jdkModel) {
         final List<WebAppUtils.WebContainerMod> webContainers = listWebContainers();
+        if (jdkModel == null) {
+            return webContainers;
+        }
         final String javaVersion = jdkModel.getJavaVersion().toString();
         if (javaVersion.startsWith("1.8")) {
             webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_11);

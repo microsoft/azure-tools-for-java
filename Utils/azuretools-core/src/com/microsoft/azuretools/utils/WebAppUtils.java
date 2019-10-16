@@ -404,8 +404,8 @@ public class WebAppUtils {
         Newest_Tomcat_70("Newest Tomcat 7.0", "tomcat 7.0"),
         Newest_Jetty_93("Newest Jetty 9.3", "jetty 9.3"),
         Newest_Jetty_91("Newest Jetty 9.1", "jetty 9.1"),
-        Java_SE_8("Java SE", "java 8"),
-        Java_SE_11("Java SE", "java 11");
+        Java_SE_8("Java SE 8", "java 8"),
+        Java_SE_11("Java SE 11", "java 11");
 
         private String displayName;
         private String value;

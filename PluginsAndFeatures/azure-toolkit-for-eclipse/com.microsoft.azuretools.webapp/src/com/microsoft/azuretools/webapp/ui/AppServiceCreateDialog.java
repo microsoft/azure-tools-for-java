@@ -895,7 +895,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             comboWebContainer.removeAll();
             binderWebConteiners = new ArrayList<>();
             JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
-            WebContainerMod[] webContainers = jdkModel == null ? WebContainerMod.values() : AzureWebAppMvpModel.getInstance().listWebContainers(jdkModel).toArray(new WebContainerMod[] {});
+            WebContainerMod[] webContainers = AzureWebAppMvpModel.getInstance().listWebContainers(jdkModel).toArray(new WebContainerMod[0]);
             for (int i = 0; i < webContainers.length; i++) {
                 WebContainerMod webContainerMod = webContainers[i];
                 comboWebContainer.add(webContainerMod.toString());
