@@ -78,7 +78,6 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -936,7 +935,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     }
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
-                    PublishingProfile pp = webApp.getPublishingProfile();
                     WebAppUtils.deployArtifactsToAppService(webApp, new File(artifactPath),
                             isDeployToRoot, new UpdateProgressIndicator(monitor));
 

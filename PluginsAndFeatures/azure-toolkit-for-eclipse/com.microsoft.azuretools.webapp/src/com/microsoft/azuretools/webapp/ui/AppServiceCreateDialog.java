@@ -27,6 +27,36 @@ import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_LOCATI
 import static com.microsoft.azuretools.webapp.util.CommonUtils.ASP_CREATE_PRICING;
 import static com.microsoft.azuretools.webapp.util.CommonUtils.getSelectedItem;
 
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
+import com.microsoft.azuretools.core.ui.ErrorWindow;
+import com.microsoft.azuretools.core.utils.MavenUtils;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.azuretools.core.utils.ProgressDialog;
+import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.azuretools.utils.WebAppUtils.WebContainerMod;
+import com.microsoft.azuretools.webapp.Activator;
+import com.microsoft.azuretools.webapp.util.CommonUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -89,44 +119,11 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebContainer;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.azuretools.core.ui.ErrorWindow;
-import com.microsoft.azuretools.core.utils.MavenUtils;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azuretools.core.utils.ProgressDialog;
-import com.microsoft.azuretools.core.utils.UpdateProgressIndicator;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.AzureModel;
-import com.microsoft.azuretools.utils.AzureModelController;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.azuretools.utils.WebAppUtils.WebContainerMod;
-import com.microsoft.azuretools.webapp.Activator;
-import com.microsoft.azuretools.webapp.util.CommonUtils;
-
 import rx.Observable;
 import rx.exceptions.Exceptions;
 import rx.schedulers.Schedulers;
 
 public class AppServiceCreateDialog extends AppServiceBaseDialog {
-
-    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
 
     // validation error string constants
     private static final String SELECT_WEB_CONTAINER = "Select a valid web container.";
@@ -366,7 +363,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         scrolledComposite.setExpandVertical(true);
         scrolledComposite.setMinSize(group.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 
-        fillJavaVersion();
         fillLinuxRuntime();
         fillWebContainers();
         fillSubscriptions();
@@ -384,6 +380,7 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         fillAppServicePlansDetails();
         fillAppServicePlanLocations();
         fillAppServicePlanPricingTiers();
+        fillJavaVersion();
         return scrolledComposite;
     }
 
@@ -845,10 +842,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             lblJavaVersion.setEnabled(!enabled);
             lblWebContainer.setEnabled(!enabled);
             comboWebContainer.setEnabled(!enabled);
-            if (packaging.equals(WebAppUtils.TYPE_JAR)) {
-                lblWebContainer.setEnabled(false);
-                comboWebContainer.setEnabled(false);
-            }
         }
         fillAppServicePlans();
     }
@@ -888,25 +881,21 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
         }
-        if (packaging.equals(WebAppUtils.TYPE_JAR)) {
-            lblWebContainer.setVisible(false);
-            comboWebContainer.setVisible(false);
-        } else {
-            comboWebContainer.removeAll();
-            binderWebConteiners = new ArrayList<>();
-            JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
-            WebContainerMod[] webContainers = AzureWebAppMvpModel.getInstance().listWebContainers(jdkModel).toArray(new WebContainerMod[0]);
-            for (int i = 0; i < webContainers.length; i++) {
-                WebContainerMod webContainerMod = webContainers[i];
-                comboWebContainer.add(webContainerMod.toString());
-                binderWebConteiners.add(webContainerMod);
-                if (webContainerMod == DEFAULT_WEB_CONTAINER) {
-                    comboWebContainer.select(i);
-                }
+        final boolean isJarPacking = packaging.equals(WebAppUtils.TYPE_JAR);
+        final JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
+        final List<WebContainerMod> webContainers = isJarPacking ? AzureWebAppMvpModel.getInstance().listWebContainersForJarFile(jdkModel) : AzureWebAppMvpModel.getInstance().listWebContainersForWarFile();
+        comboWebContainer.removeAll();
+        binderWebConteiners = new ArrayList<>();
+        for (int i = 0; i < webContainers.size(); i++) {
+            WebContainerMod webContainerMod = webContainers.get(i);
+            comboWebContainer.add(webContainerMod.toString());
+            binderWebConteiners.add(webContainerMod);
+            if (i == 0 || webContainerMod == DEFAULT_WEB_CONTAINER) {
+                comboWebContainer.select(i);
             }
-            String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
-            CommonUtils.selectComboIndex(comboWebContainer, webContainer);
         }
+        String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
+        CommonUtils.selectComboIndex(comboWebContainer, webContainer);
     }
 
     protected static <T> List<T> createListFromClassFields(Class<?> c) throws IllegalAccessException {
@@ -1368,15 +1357,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             index = cbJavaVersion.getSelectionIndex();
             model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
 
-            // Windows does not provider java se parameter, and the api here needs a parameter, so here just use
-            // TOMCAT_8.5_NEWEST.
-            // The App services itself start a jar file based on the web.config
-            if (packaging.equals(WebAppUtils.TYPE_JAR)) {
-                model.setWebContainer(WebContainer.TOMCAT_8_5_NEWEST.toString());
-            } else {
-                index = comboWebContainer.getSelectionIndex();
-                model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
-            }
+            index = comboWebContainer.getSelectionIndex();
+            model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
         } else {
             String linuxRuntime = comboLinuxRuntime.getItem(comboLinuxRuntime.getSelectionIndex());
             String[] part = linuxRuntime.split(" ");

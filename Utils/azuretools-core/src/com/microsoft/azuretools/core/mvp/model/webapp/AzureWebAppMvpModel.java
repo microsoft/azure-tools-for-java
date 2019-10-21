@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,9 @@ public class AzureWebAppMvpModel {
 
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
+
+    private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS = Arrays.asList(WebAppUtils.WebContainerMod.Java_SE_8);
+    private static final List<WebAppUtils.WebContainerMod> JAVA_11_JAR_CONTAINERS = Arrays.asList(WebAppUtils.WebContainerMod.Java_SE_11);
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebApps = new ConcurrentHashMap<>();
@@ -574,23 +578,34 @@ public class AzureWebAppMvpModel {
     }
 
     /**
-     * List available Web Containers.
+     * List available web containers for jar files.
      */
-    public List<WebAppUtils.WebContainerMod> listWebContainers(JdkModel jdkModel) {
-        final List<WebAppUtils.WebContainerMod> webContainers = listWebContainers();
+    public List<WebAppUtils.WebContainerMod> listWebContainersForJarFile(JdkModel jdkModel) {
         if (jdkModel == null) {
-            return webContainers;
+            return Collections.emptyList();
         }
         final String javaVersion = jdkModel.getJavaVersion().toString();
         if (javaVersion.startsWith("1.8")) {
-            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_11);
+            return JAVA_8_JAR_CONTAINERS;
         } else if (javaVersion.startsWith("11")) {
-            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_8);
-        } else {
-            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_8);
-            webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_11);
+            return JAVA_11_JAR_CONTAINERS;
         }
-        return webContainers;
+        return Collections.emptyList();
+    }
+
+
+    /**
+     * List available web containers for war files.
+     */
+    public List<WebAppUtils.WebContainerMod> listWebContainersForWarFile() {
+        return Arrays.asList(
+                WebAppUtils.WebContainerMod.Newest_Jetty_91,
+                WebAppUtils.WebContainerMod.Newest_Jetty_93,
+                WebAppUtils.WebContainerMod.Newest_Tomcat_70,
+                WebAppUtils.WebContainerMod.Newest_Tomcat_80,
+                WebAppUtils.WebContainerMod.Newest_Tomcat_85,
+                WebAppUtils.WebContainerMod.Newest_Tomcat_90
+        );
     }
 
     /**
@@ -599,6 +614,8 @@ public class AzureWebAppMvpModel {
     public List<WebAppUtils.WebContainerMod> listWebContainers() {
         List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
         Collections.addAll(webContainers, WebAppUtils.WebContainerMod.values());
+        webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_8);
+        webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_11);
         return webContainers;
     }
 

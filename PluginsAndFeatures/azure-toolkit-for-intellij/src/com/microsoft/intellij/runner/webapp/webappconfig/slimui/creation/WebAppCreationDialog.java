@@ -32,6 +32,7 @@ import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenConstants;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -124,7 +125,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         buttonCancel.addActionListener(e -> onCancel());
         cbSubscription.addActionListener(e -> selectSubscription());
         cbExistAppServicePlan.addActionListener(e -> selectAppServicePlan());
-        cbJdkVersion.addItemListener((itemEvent) -> fillWebContainer(AzureWebAppMvpModel.getInstance().listWebContainers((JdkModel) itemEvent.getItem())));
+        cbJdkVersion.addItemListener((itemEvent) -> loadWebContainers());
 
         rdoCreateAppServicePlan.addActionListener(e -> toggleAppServicePlan(true));
         rdoUseExistAppServicePlan.addActionListener(e -> toggleAppServicePlan(false));
@@ -322,7 +323,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         txtNewResGrp.setText(defaultNewResourceGroup);
         txtCreateAppServicePlan.setText(defaultNewServicePlanName);
 
-        presenter.onLoadWebContainer();
+        loadWebContainers();
         presenter.onLoadSubscription();
         presenter.onLoadPricingTier();
         presenter.onLoadJavaVersions();
@@ -477,4 +478,16 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
             , deploymentType, "Deploy", telemetryMap);
     }
 
+    private void loadWebContainers() {
+        if (isJarApplication()) {
+            final JdkModel jdkModel = (JdkModel) cbJdkVersion.getSelectedItem();
+            this.presenter.onLoadJarWebContainer(jdkModel);
+        } else {
+            this.presenter.onLoadWarWebContainer();
+        }
+    }
+
+    private boolean isJarApplication(){
+        return MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()).equalsIgnoreCase(MavenConstants.TYPE_JAR);
+    }
 }

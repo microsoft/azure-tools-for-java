@@ -398,7 +398,7 @@ public class AzureWebAppMvpModelTest {
     public void testListWebContainers() {
         // TODO: will contain all the container types from WebContainer?
         List<WebAppUtils.WebContainerMod> containers = azureWebAppMvpModel.listWebContainers();
-        assertEquals(8, containers.size());
+        assertEquals(6, containers.size());
     }
 
     @Test
