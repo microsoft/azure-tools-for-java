@@ -242,11 +242,8 @@
                     </constraints>
                     <properties>
                       <editable value="false"/>
-                      <enabled value="false"/>
-                      <model>
-                        <item value="Basic Authentication"/>
-                        <item value="No Authentication"/>
-                      </model>
+                      <enabled value="true"/>
+                      <model/>
                     </properties>
                   </component>
                 </children>
