@@ -607,6 +607,12 @@ public class AzureWebAppMvpModel {
         );
     }
 
+    public List<WebAppUtils.WebContainerMod> listWebContainers() {
+        List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
+        Collections.addAll(webContainers, WebAppUtils.WebContainerMod.values());
+        return webContainers;
+    }
+
     /**
      * List available Third Party JDKs.
      */
