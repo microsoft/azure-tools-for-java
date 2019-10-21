@@ -788,20 +788,21 @@ public class JobUtils {
     public static AbstractMap.SimpleImmutableEntry<Integer, List<Header>>
     authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
         SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
-        if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
-            submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
-        }
-
         String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
         if (livyUrl == null) {
             throw new IOException("Can't get livy connection Url");
         }
 
-        com.microsoft.azure.hdinsight.sdk.common.HttpResponse response = submission.getHttpResponseViaHead(livyUrl);
+        if (!StringUtils.isEmpty(clusterDetail.getHttpUserName()) && !StringUtils.isEmpty(clusterDetail.getHttpPassword())) {
+            submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+        }
+
+        com.microsoft.azure.hdinsight.sdk.common.HttpResponse response = clusterDetail instanceof MfaEspCluster
+                ? submission.negotiateAuthMethodWithResp(livyUrl)
+                : submission.getHttpResponseViaHead(livyUrl);
 
         int statusCode = response.getCode();
-
-        if (statusCode >= 200 && statusCode < 300) {
+        if (statusCode >= 200 && statusCode <= 302) {
             return new AbstractMap.SimpleImmutableEntry<>(statusCode, response.getHeaders());
         }
 

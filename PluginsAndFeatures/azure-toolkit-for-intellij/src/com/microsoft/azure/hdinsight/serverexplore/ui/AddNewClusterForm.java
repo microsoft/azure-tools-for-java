@@ -40,6 +40,8 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
+import com.microsoft.azure.hdinsight.sdk.common.AuthType;
+import com.microsoft.azure.hdinsight.sdk.common.AuthTypeOptions;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterCtrlProvider;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
@@ -105,6 +107,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     private JPanel authErrorDetailsPanelHolder;
     private JPanel authErrorDetailsPanel;
     protected JLabel linkResourceTypeLabel;
+    private JPanel azureAccountCard;
     protected HideableDecorator authErrorDetailsDecorator;
     protected ConsoleViewImpl consoleViewPanel;
     @NotNull
@@ -149,7 +152,9 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 new SimpleListCellRenderer<AuthType>() {
                     @Override
                     public void customize(JList<? extends AuthType> jList, AuthType authType, int i, boolean b, boolean b1) {
-                        setText(authType.getTypeName());
+                        if (authType != null) {
+                            setText(authType.getTypeName());
+                        }
                     }
                 }
         );
@@ -166,6 +171,13 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             } else {
                 authComboBox.setModel(authOpsForLivyCluster);
             }
+
+            authComboBox.setSelectedItem(authComboBox.getSelectedObjects()[0]);
+        });
+
+        authComboBox.addItemListener(e -> {
+            CardLayout layout = (CardLayout) (authCardsPanel.getLayout());
+            layout.show(authCardsPanel, ((AuthType) e.getItem()).getTypeName());
         });
         
         // field validation check
@@ -237,6 +249,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 data.setClusterName(clusterNameOrUrlField.getText().trim())
                         .setUserName(userNameField.getText().trim())
                         .setPassword(passwordField.getText().trim())
+                        .setAuthType((AuthType) authComboBox.getSelectedItem())
                         // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
                         .setClusterNameLabelTitle(clusterNameLabel.getText())
                         .setUserNameLabelTitle(userNameLabel.getText())

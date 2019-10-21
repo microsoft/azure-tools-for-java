@@ -32,10 +32,7 @@ import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
-import com.microsoft.azure.hdinsight.sdk.cluster.MfaClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.*
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
@@ -180,6 +177,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
 
         private fun setUploadInfoForLinkedCluster(cluster: IClusterDetail, model: SparkSubmitJobUploadStorageModel) {
             model.apply {
+                // as for reader cluster , get the default path first then set the property to the linked reader cluster
                 val defaultRootPath = (cluster as? HDInsightAdditionalClusterDetail)?.defaultStorageRootPath
                 defaultRootPath?.run {
                     val pathUri = StoragePathInfo(defaultRootPath).path
@@ -286,8 +284,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     uploadPath = invalidUploadPath
                                     errorMsg = "ADLS GEN2 Root Path is invalid"
                                 } else {
-                                    val formatAdlsRootPath = if (gen2RootPath?.endsWith("/") == true) gen2RootPath else "$gen2RootPath/"
-                                    uploadPath = "${formatAdlsRootPath}SparkSubmission/"
+                                    var formatAdlsRootPath = if (gen2RootPath?.endsWith("/") == true) gen2RootPath else "$gen2RootPath/"
+                                    if(cluster is MfaEspCluster) formatAdlsRootPath += cluster.userPath
+                                    uploadPath = "${formatAdlsRootPath}/SparkSubmission/"
                                     errorMsg = null
                                 }
                             }

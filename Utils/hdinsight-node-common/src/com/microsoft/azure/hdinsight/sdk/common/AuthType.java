@@ -19,28 +19,20 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.serverexplore.ui;
+package com.microsoft.azure.hdinsight.sdk.common;
 
-public enum AuthTypeOptions {
-    HDICluster(new AuthType[]{
-            AuthType.BasicAuth,
-            AuthType.AADAuth
-    }),
+public enum AuthType {
+    BasicAuth("Basic Authentication"),
+    AADAuth("Azure Account"),
+    NoAuth("No Authentication");
 
-    LivyCluster(new AuthType[]{
-            AuthType.BasicAuth,
-            AuthType.AADAuth,
-            AuthType.NoAuth
+    private String type;
 
-    });
-
-    private AuthType[] optionTypes;
-
-    AuthTypeOptions(AuthType[] optionTypes) {
-        this.optionTypes = optionTypes;
+    AuthType(String type) {
+        this.type = type;
     }
 
-    public AuthType[] getOptionTypes() {
-        return this.optionTypes;
+    public String getTypeName() {
+        return this.type;
     }
 }

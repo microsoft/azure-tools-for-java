@@ -21,6 +21,15 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+
 public interface MfaEspCluster {
     String getTenantId();
+
+    // get path suffix user/<user_name>
+    default String getUserPath() {
+        String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+        String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
+        return String.format("%s/%s", "user", loginUser);
+    }
 }

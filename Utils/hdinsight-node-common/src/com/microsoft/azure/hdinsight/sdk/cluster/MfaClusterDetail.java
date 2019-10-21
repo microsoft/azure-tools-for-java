@@ -45,9 +45,7 @@ public class MfaClusterDetail extends ClusterDetail implements MfaEspCluster, IL
         // check login status and get the login user name
         try {
             if (Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(storageRootPath).matches()) {
-                String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
-                String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
-                storageRootPath = String.format("%s/user/%s", storageRootPath, loginUser);
+                storageRootPath = String.format("%s/%s", storageRootPath, getUserPath());
             }
 
             return storageRootPath;

@@ -189,7 +189,10 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     throw new ExecutionException("Invalid access key input");
                 }
 
-                httpObservable = new SharedKeyHttpObservable(gen2StorageAccount, accessKey);
+                httpObservable = clusterDetail instanceof MfaEspCluster
+                        ? new ADLSGen2OAuthHttpObservable(((MfaEspCluster) clusterDetail).getTenantId())
+                        : new SharedKeyHttpObservable(gen2StorageAccount, accessKey);
+
                 jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
                 break;
             case WEBHDFS:

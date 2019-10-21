@@ -163,10 +163,7 @@ public class SparkBatchSubmission implements ILogger {
     }
 
     public String negotiateAuthMethod(String connectUrl) throws IOException {
-        List<Header> additionHeader = new ArrayList<>();
-        additionHeader.add(new BasicHeader("User-Agent", "Mozilla/5"));
-
-        HttpResponse resp = getHttpResponseViaGet(connectUrl, getHttpClient(true), additionHeader);
+        HttpResponse resp = negotiateAuthMethodWithResp(connectUrl);
         if (resp.getCode() == 302) {
             String location = resp.getHeaders().stream()
                     .filter(header -> header.getName().equalsIgnoreCase("Location"))
@@ -179,6 +176,12 @@ public class SparkBatchSubmission implements ILogger {
         }
 
         return null;
+    }
+
+    public HttpResponse negotiateAuthMethodWithResp(String connectUrl) throws IOException{
+        List<Header> additionHeader = new ArrayList<>();
+        additionHeader.add(new BasicHeader("User-Agent", "Mozilla/5"));
+        return getHttpResponseViaGet(connectUrl, getHttpClient(true), additionHeader);
     }
 
     public HttpResponse getHttpResponseViaGet(String connectUrl, CloseableHttpClient httpclient, List<Header> additionHeaders) throws IOException {
