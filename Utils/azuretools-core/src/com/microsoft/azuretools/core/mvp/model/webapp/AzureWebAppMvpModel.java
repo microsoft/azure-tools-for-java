@@ -65,8 +65,8 @@ public class AzureWebAppMvpModel {
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
 
-    private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS = Arrays.asList(WebAppUtils.WebContainerMod.Java_SE_8);
-    private static final List<WebAppUtils.WebContainerMod> JAVA_11_JAR_CONTAINERS = Arrays.asList(WebAppUtils.WebContainerMod.Java_SE_11);
+    private static final List<WebAppUtils.WebContainerMod> JAVA_8_JAR_CONTAINERS = Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_8);
+    private static final List<WebAppUtils.WebContainerMod> JAVA_11_JAR_CONTAINERS = Collections.singletonList(WebAppUtils.WebContainerMod.Java_SE_11);
 
     private AzureWebAppMvpModel() {
         subscriptionIdToWebApps = new ConcurrentHashMap<>();
@@ -580,8 +580,8 @@ public class AzureWebAppMvpModel {
     /**
      * List available web containers for jar files.
      */
-    public List<WebAppUtils.WebContainerMod> listWebContainersForJarFile(JdkModel jdkModel) {
-        if (jdkModel == null) {
+    public static List<WebAppUtils.WebContainerMod> listWebContainersForJarFile(JdkModel jdkModel) {
+        if (jdkModel == null || jdkModel.getJavaVersion() == null) {
             return Collections.emptyList();
         }
         final String javaVersion = jdkModel.getJavaVersion().toString();
@@ -593,11 +593,10 @@ public class AzureWebAppMvpModel {
         return Collections.emptyList();
     }
 
-
     /**
      * List available web containers for war files.
      */
-    public List<WebAppUtils.WebContainerMod> listWebContainersForWarFile() {
+    public static List<WebAppUtils.WebContainerMod> listWebContainersForWarFile() {
         return Arrays.asList(
                 WebAppUtils.WebContainerMod.Newest_Jetty_91,
                 WebAppUtils.WebContainerMod.Newest_Jetty_93,
@@ -606,17 +605,6 @@ public class AzureWebAppMvpModel {
                 WebAppUtils.WebContainerMod.Newest_Tomcat_85,
                 WebAppUtils.WebContainerMod.Newest_Tomcat_90
         );
-    }
-
-    /**
-     * List available Web Containers.
-     */
-    public List<WebAppUtils.WebContainerMod> listWebContainers() {
-        List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
-        Collections.addAll(webContainers, WebAppUtils.WebContainerMod.values());
-        webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_8);
-        webContainers.remove(WebAppUtils.WebContainerMod.Java_SE_11);
-        return webContainers;
     }
 
     /**

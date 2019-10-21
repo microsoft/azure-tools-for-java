@@ -86,14 +86,14 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
      * Load war web containers from model.
      */
     public void onLoadWarWebContainer() {
-        getMvpView().fillWebContainer(AzureWebAppMvpModel.getInstance().listWebContainersForWarFile());
+        getMvpView().fillWebContainer(AzureWebAppMvpModel.listWebContainersForWarFile());
     }
 
     /**
      * Load jar web containers from model.
      */
     public void onLoadJarWebContainer(JdkModel jdkModel) {
-        getMvpView().fillWebContainer(AzureWebAppMvpModel.getInstance().listWebContainersForJarFile(jdkModel));
+        getMvpView().fillWebContainer(AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel));
     }
 
     /**
