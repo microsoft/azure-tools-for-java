@@ -41,29 +41,22 @@ import java.util.regex.Pattern;
 
 public class GetHashMac {
 
-    public static final String MAC_REGEX = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
-    public static final Pattern MAC_PATTERN = Pattern.compile(MAC_REGEX);
-    public static final String[] UNIX_COMMAND = {"/sbin/ifconfig -a || /sbin/ip link"};
-    public static final String[] WINDOWS_COMMAND = {"getmac"};
-    public static final String[] INVALIDATE_MAC_ADDRESS = {"00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff", "ac:de:48:00:11:22"};
+    private static final String MAC_REGEX = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
+    private static final Pattern MAC_PATTERN = Pattern.compile(MAC_REGEX);
+    private static final String[] UNIX_COMMAND = {"/sbin/ifconfig -a || /sbin/ip link"};
+    private static final String[] WINDOWS_COMMAND = {"getmac"};
+    private static final String[] INVALID_MAC_ADDRESS = {"00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff", "ac:de:48:00:11:22"};
 
     // Hashed mac address for iBridge device
-    public static final String INVALIDATE_HASHED_MAC_ADDRESS = "6c9d2bc8f91b89624add29c0abeae7fb42bf539fa1cdb2e3e57cd668fa9bcead";
+    private static final String INVALID_HASHED_MAC_ADDRESS = "6c9d2bc8f91b89624add29c0abeae7fb42bf539fa1cdb2e3e57cd668fa9bcead";
 
-    public static boolean IsValidHashMacFormat(String hashMac) {
-        if (hashMac == null || hashMac.isEmpty()) {
-            return false;
-        }
-
-        Pattern hashmac_pattern = Pattern.compile("[0-9a-f]{64}");
-        Matcher matcher = hashmac_pattern.matcher(hashMac);
-        return matcher.matches() && !(StringUtils.containsIgnoreCase(System.getProperty("os.name"), "mac") &&
-                StringUtils.equalsIgnoreCase(INVALIDATE_HASHED_MAC_ADDRESS, hashMac));
+    public static boolean isValidHashMac(String hashMac) {
+        return isValidHashMacFormat(hashMac) && !isInstallationIdDepreciated(hashMac);
     }
 
-    public static String GetHashMac() {
+    public static String getHashMac() {
         String ret = null;
-        String mac_raw = getRawMac();
+        String mac_raw = getRawMacByCommand();
         mac_raw = isValidRawMac(mac_raw) ? mac_raw : getRawMacWithNetworkInterface();
 
         if (isValidRawMac(mac_raw)) {
@@ -82,25 +75,28 @@ public class GetHashMac {
     }
 
     private static boolean isValidMac(String mac) {
+        if (mac == null) {
+            return false;
+        }
         final String fixedMac = mac.replaceAll("-", ":");
         final boolean isMacAddress = StringUtils.isNotEmpty(fixedMac) && MAC_PATTERN.matcher(fixedMac).find();
-        final boolean isValidateMacAddress = !Arrays.stream(INVALIDATE_MAC_ADDRESS)
+        final boolean isValidMacAddress = !Arrays.stream(INVALID_MAC_ADDRESS)
                 .anyMatch(invalidateMacAddress -> StringUtils.equalsIgnoreCase(fixedMac, invalidateMacAddress));
-        return isMacAddress && isValidateMacAddress;
+        return isMacAddress && isValidMacAddress;
     }
 
     private static boolean isValidRawMac(String raw) {
         return StringUtils.isNotEmpty(raw) && MAC_PATTERN.matcher(raw).find();
     }
 
-    private static String getRawMac() {
+    private static String getRawMacByCommand() {
         final StringBuilder ret = new StringBuilder();
         try {
-            String os = System.getProperty("os.name").toLowerCase();
-            String[] command = StringUtils.startsWithIgnoreCase(os, "win") ?
+            final String os = System.getProperty("os.name").toLowerCase();
+            final String[] command = StringUtils.startsWithIgnoreCase(os, "win") ?
                     WINDOWS_COMMAND : UNIX_COMMAND;
-            ProcessBuilder probuilder = new ProcessBuilder(command);
-            Process process = probuilder.start();
+            final ProcessBuilder probuilder = new ProcessBuilder(command);
+            final Process process = probuilder.start();
             try (final InputStream inputStream = process.getInputStream();
                  final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                  final BufferedReader br = new BufferedReader(inputStreamReader)) {
@@ -110,7 +106,7 @@ public class GetHashMac {
                 }
             }
             if (process.waitFor() != 0) {
-                throw new IOException("Command execute fail.");
+                throw new IOException(String.format("Command %s execute fail.", String.join(" ", command)));
             }
         } catch (IOException | InterruptedException ex) {
             return null;
@@ -140,6 +136,21 @@ public class GetHashMac {
         }
         Collections.sort(macSet);
         return String.join(" ", macSet);
+    }
+
+    private static boolean isValidHashMacFormat(String hashMac) {
+        if (hashMac == null || hashMac.isEmpty()) {
+            return false;
+        }
+
+        Pattern hashmac_pattern = Pattern.compile("[0-9a-f]{64}");
+        Matcher matcher = hashmac_pattern.matcher(hashMac);
+        return matcher.matches();
+    }
+
+    private static boolean isInstallationIdDepreciated(String hashMac)
+    {
+        return Utils.isMac() && StringUtils.equalsIgnoreCase(INVALID_HASHED_MAC_ADDRESS, hashMac);
     }
 
     public static String hash(String mac) {
