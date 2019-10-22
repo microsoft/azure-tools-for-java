@@ -75,7 +75,7 @@ public class GetHashMac {
     }
 
     private static boolean isValidMac(String mac) {
-        if (mac == null) {
+        if (StringUtils.isEmpty(mac)) {
             return false;
         }
         final String fixedMac = mac.replaceAll("-", ":");
@@ -139,7 +139,7 @@ public class GetHashMac {
     }
 
     private static boolean isValidHashMacFormat(String hashMac) {
-        if (hashMac == null || hashMac.isEmpty()) {
+        if (StringUtils.isEmpty(hashMac)) {
             return false;
         }
 
@@ -154,7 +154,7 @@ public class GetHashMac {
     }
 
     public static String hash(String mac) {
-        if (mac == null || mac.isEmpty()) {
+        if (StringUtils.isEmpty(mac)) {
             return null;
         }
 
