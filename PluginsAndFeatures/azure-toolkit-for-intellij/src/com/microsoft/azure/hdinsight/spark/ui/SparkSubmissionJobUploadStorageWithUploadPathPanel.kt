@@ -59,7 +59,10 @@ import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
-import javax.swing.*
+import javax.swing.DefaultComboBoxModel
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextField
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel
     : JPanel(), Disposable, SettableControl<SparkSubmitJobUploadStorageModel>, ILogger {
@@ -77,7 +80,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
         isEditable = false
-        border = BorderFactory.createEmptyBorder()
     }
 
     val storagePanel = SparkSubmissionJobUploadStoragePanel().apply {

@@ -66,6 +66,9 @@ public class ErrorWindow extends AzureDialogWrapper {
         Font labelFont = UIManager.getFont("Label.font");
         textPane.setFont(labelFont);
 
+        // To fix accessibility focus issue: https://github.com/microsoft/azure-tools-for-java/issues/3606
+        textPane.setFocusable(false);
+
         init();
     }
 

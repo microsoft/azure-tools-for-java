@@ -373,6 +373,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         }
         configuration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
+        this.webAppConfiguration = configuration;
     }
 
     private void selectWebApp() {
