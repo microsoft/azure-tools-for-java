@@ -35,14 +35,12 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 class SparkCommonRunParametersPanel(private val myProject: Project, private val wholePanel : SparkBatchJobConfigurable) {
-    private val mainClassPrompt: JLabel = JLabel("Main class name").apply {
-        toolTipText = "Application's Java/Spark main class"
-    }
+    private val mainClassToolTip = "Application's Java/Spark main class"
 
     private val mainClassTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton().apply {
         textField.name = "mainClassTextFieldText"
         button.name = "mainClassTextFieldButton"
-        toolTipText = mainClassPrompt.toolTipText
+        toolTipText = mainClassToolTip
 
         // Button actions
         addActionListener {
@@ -56,6 +54,11 @@ class SparkCommonRunParametersPanel(private val myProject: Project, private val 
                 setText(selected.qualifiedName)
             }
         }
+    }
+
+    private val mainClassPrompt: JLabel = JLabel("Main class name").apply {
+        toolTipText = mainClassToolTip
+        labelFor = mainClassTextField
     }
 
     private val errorMessageLabel = JLabel("")
