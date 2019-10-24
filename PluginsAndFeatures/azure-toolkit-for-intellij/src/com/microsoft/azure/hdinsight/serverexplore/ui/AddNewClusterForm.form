@@ -312,6 +312,7 @@
             </constraints>
             <properties>
               <editable value="false"/>
+              <focusable value="false"/>
               <foreground color="-60396"/>
               <lineWrap value="true"/>
             </properties>

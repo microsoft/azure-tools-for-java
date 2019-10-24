@@ -188,6 +188,11 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 authErrorDetailsDecorator.setOn(true);
             }
 
+            // If there are error messages, console view will be focused.
+            // Refer to issue https://github.com/microsoft/azure-tools-for-java/issues/3635
+            if (data.getErrorMessageList().size() > 0) {
+                consoleViewPanel.getPreferredFocusableComponent().grabFocus();
+            }
             data.getErrorMessageList().forEach(typeAndLogPair -> {
                 if (typeAndLogPair.getLeft().equals(data.ERROR_OUTPUT)) {
                     printLogLine(ConsoleViewContentType.ERROR_OUTPUT, typeAndLogPair.getRight());
