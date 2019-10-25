@@ -107,9 +107,11 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     @Nullable
     @Override
     public String getConnectionUrl() {
-        if (this.workSpace.getSparkUrl() == null) {
-            return null;
-        }
+        // Comment the following codes since the "spark" field replacing with "dev" field in API
+        // which causes connection URL returns null
+//        if (this.workSpace.getSparkUrl() == null) {
+//            return null;
+//        }
 
         try {
             // TODO: Enable it when the workspace's Spark URL is usable.
