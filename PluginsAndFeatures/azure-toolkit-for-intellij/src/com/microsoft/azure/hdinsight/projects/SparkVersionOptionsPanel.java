@@ -68,6 +68,9 @@ public class SparkVersionOptionsPanel extends JPanel {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         layout.setConstraints(sparkVersionComboBox, constraints);
         setLayout(layout);
+
+        // To fix focus invisible issue. Refer to https://github.com/microsoft/azure-tools-for-java/issues/3612
+        this.setFocusable(false);
     }
 
     private void useCachedSparkVersion(String cachedSparkVersion) {
