@@ -19,27 +19,10 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.common.classifiedexception
+package com.microsoft.azure.hdinsight.sdk.cluster;
 
-import com.microsoft.azure.datalake.store.ADLException
-import com.microsoft.azuretools.adauth.AuthException
-import com.microsoft.azuretools.telemetrywrapper.ErrorType
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.net.UnknownHostException
-
-class SparkServiceException(exp: Throwable?) : ClassifiedException(exp) {
-    override val title: String = "Spark Service Error"
-    override val errorType = ErrorType.serviceError
-}
-
-object SparkServiceExceptionFactory : ClassifiedExceptionFactory() {
-    override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
-        return if (exp is UnknownHostException) {
-            val hintMsg = "\nPlease make sure that the cluster exists"
-            SparkServiceException(UnknownHostException("${exp.message}$hintMsg"))
-        } else if ((exp is IOException && exp !is FileNotFoundException && exp !is ADLException && exp !is AuthException)
-                || (exp is ADLException && exp.httpResponseCode != 403))
-            SparkServiceException(exp) else null
+public interface MfaEspCluster {
+    default boolean isMfaEspCluster(){
+        return false;
     }
 }

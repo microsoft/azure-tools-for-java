@@ -19,27 +19,33 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.common.classifiedexception
 
-import com.microsoft.azure.datalake.store.ADLException
-import com.microsoft.azuretools.adauth.AuthException
-import com.microsoft.azuretools.telemetrywrapper.ErrorType
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.net.UnknownHostException
+package com.microsoft.azure.hdinsight.sdk.common;
 
-class SparkServiceException(exp: Throwable?) : ClassifiedException(exp) {
-    override val title: String = "Spark Service Error"
-    override val errorType = ErrorType.serviceError
-}
+import com.microsoft.azuretools.adauth.PromptBehavior;
+import com.microsoft.azuretools.authmanage.AdAuthManager;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.message.BasicHeader;
 
-object SparkServiceExceptionFactory : ClassifiedExceptionFactory() {
-    override fun createClassifiedException(exp: Throwable?): ClassifiedException? {
-        return if (exp is UnknownHostException) {
-            val hintMsg = "\nPlease make sure that the cluster exists"
-            SparkServiceException(UnknownHostException("${exp.message}$hintMsg"))
-        } else if ((exp is IOException && exp !is FileNotFoundException && exp !is ADLException && exp !is AuthException)
-                || (exp is ADLException && exp.httpResponseCode != 403))
-            SparkServiceException(exp) else null
+import java.io.IOException;
+import java.util.List;
+
+public class ADLSGen2OAuthHttpObservable extends SharedKeyHttpObservable {
+    private static final String resource = "https://storage.azure.com/";
+    private String tenantId;
+
+    public ADLSGen2OAuthHttpObservable(String tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    @Override
+    public ADLSGen2OAuthHttpObservable setAuthorization(HttpRequestBase req, List<NameValuePair> pairs) {
+        try {
+            getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", "Bearer "+AdAuthManager.getInstance().getAccessToken(tenantId, resource, PromptBehavior.Auto)));
+        } catch (IOException e) {
+        }
+
+        return this;
     }
 }

@@ -110,7 +110,15 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
 
-                    if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
+                    if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2 && clusterDetail.isMfaEspCluster()) {
+                        String rawStoragePath = ((ClusterDetail) clusterDetail).getDefaultStorageRootPath();
+                        String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+                        String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
+                        destinationRootPath = String.format("%s/user/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
+                                loginUser);
+                        httpObservable = new ADLSGen2OAuthHttpObservable(clusterDetail.getSubscription().getTenantId());
+                        jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
+                    } else if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
                         String rawStoragePath = ((ClusterDetail) clusterDetail).getDefaultStorageRootPath();
                         destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
                                 SparkSubmissionContentPanel.Constants.submissionFolder);

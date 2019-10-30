@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.common.classifiedexception
 import com.microsoft.azure.datalake.store.ADLException
 import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azuretools.adauth.AuthException
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import java.io.FileNotFoundException
 
@@ -46,6 +47,9 @@ object SparkUserExceptionFactory : ClassifiedExceptionFactory() {
         } else if (exp is ADLException && exp.httpResponseCode == 403) {
             val hintMsg = "\nPlease make sure user has RWX permissions for the storage account"
             SparkUserException(ADLException("${exp.remoteExceptionMessage}$hintMsg"))
+        } else if (exp is AuthException && exp.error.equals("invalid_grant")) {
+            val hintMsg = String.format("\nPlease check whether have enough permission to access the cluster")
+            SparkUserException(AuthException("${exp.errorMessage}$hintMsg"))
         } else null
     }
 }

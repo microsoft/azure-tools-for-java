@@ -83,7 +83,18 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
                 submitModel, clusterDetail, ctrlSubject);
-        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
+
+        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), getSparkBatchSubmission(clusterDetail), ctrlSubject, jobDeploy);
+    }
+
+    @NotNull
+    private SparkBatchSubmission getSparkBatchSubmission(@NotNull IClusterDetail clusterDetail) {
+        if (clusterDetail.isMfaEspCluster()) {
+            String id = clusterDetail.getSubscription().getTenantId();
+            return new SparkBatchEspMfaSubmission(id, clusterDetail.getName());
+        } else {
+            return SparkBatchSubmission.getInstance();
+        }
     }
 
     protected void addConsoleViewFilter(@NotNull ISparkBatchJob job, @NotNull ConsoleView consoleView) {

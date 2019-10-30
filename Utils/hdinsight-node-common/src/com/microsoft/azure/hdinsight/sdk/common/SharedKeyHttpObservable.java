@@ -46,15 +46,18 @@ public class SharedKeyHttpObservable extends HttpObservable {
     private SharedKeyCredential cred;
     private HeaderGroup defaultHeaders;
 
-    public SharedKeyHttpObservable(String accountName, String accessKey) {
+    public SharedKeyHttpObservable() {
         defaultHeaders = new HeaderGroup();
         defaultHeaders.addHeader(new BasicHeader("x-ms-client-request-id", UUID.randomUUID().toString()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-date", Utility.getGMTTime()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-version", ApiVersion));
-        defaultHeaders.addHeader(new BasicHeader("authorization", ""));
+        defaultHeaders.addHeader(new BasicHeader("Authorization", ""));
         defaultHeaders.addHeader(new BasicHeader("Content-Type", "application/json"));
 
         setDefaultHeaderGroup(defaultHeaders);
+    }
+
+    public SharedKeyHttpObservable(String accountName, String accessKey)  {
         try {
             this.cred = new SharedKeyCredential(accountName, accessKey);
         } catch (IllegalArgumentException ex) {
@@ -65,7 +68,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
 
     public SharedKeyHttpObservable setAuthorization(@NotNull HttpRequestBase req, List<NameValuePair> pairs) {
         String key = cred.generateSharedKey(req, getDefaultHeaderGroup(), pairs);
-        getDefaultHeaderGroup().updateHeader(new BasicHeader("authorization", key));
+        getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", key));
         return this;
     }
 

@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, ILogger {
+public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, ILogger  {
 
     private static final String ADL_HOME_PREFIX = "adl://home";
     private static final String ADLS_HOME_HOST_NAME = "dfs.adls.home.hostname";
@@ -488,6 +488,16 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
            return SparkSubmitStorageTypeOptionsForCluster.ClusterWithAdlsGen2;
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
+        }
+    }
+
+    @Override
+    public boolean isMfaEspCluster() {
+        try {
+            String type = clusterRawInfo.getProperties().getSecurityProfile().getDirectoryType();
+            return type.equals("ActiveDirectory");
+        } catch (Exception e) {
+            return false;
         }
     }
 }
