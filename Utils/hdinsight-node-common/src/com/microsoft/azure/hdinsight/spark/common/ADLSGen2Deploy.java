@@ -39,6 +39,8 @@ import rx.exceptions.Exceptions;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -71,11 +73,15 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
         String destStr = destURI.toString();
         String dirPath = destStr.endsWith("/") ? destStr.substring(0, destStr.length() - 1) : destStr;
         String filePath = String.format("%s/%s", dirPath, src.getName());
+        String rootPath = destinationRootPath.endsWith("/")
+                ? destinationRootPath.substring(0, destinationRootPath.length() - 1)
+                : destinationRootPath;
 
         ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
+
         return op.createDir(dirPath)
                 .onErrorReturn(err -> {
-                    if (err.getMessage()!= null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
+                    if (err.getMessage() != null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
                             || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
                         throw new IllegalArgumentException("Failed to upload Spark application artifacts. ADLS Gen2 root path does not match with access key.");
                     } else {
@@ -83,6 +89,9 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                     }
                 })
                 .doOnNext(ignore -> log().info(String.format("Create filesystem %s successfully.", dirPath)))
+                .flatMap(ignore -> op.getAclInfo(rootPath))
+                .flatMap(headerGroup -> op.setAcl(dirPath, headerGroup))
+                .doOnNext(ignore -> log().info(String.format("Successfully set the default acl on %s", destinationRootPath)))
                 .flatMap(ignore -> op.createFile(filePath))
                 .flatMap(ignore -> op.uploadData(filePath, src))
                 .doOnNext(ignore -> log().info(String.format("Append data to file %s successfully.", filePath)))

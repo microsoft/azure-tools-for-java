@@ -63,8 +63,15 @@ public class SharedKeyHttpObservable extends HttpObservable {
         }
     }
 
-    public SharedKeyHttpObservable setAuthorization(@NotNull HttpRequestBase req, List<NameValuePair> pairs) {
-        String key = cred.generateSharedKey(req, getDefaultHeaderGroup(), pairs);
+    public SharedKeyHttpObservable setAuthorization(@NotNull HttpRequestBase req, List<NameValuePair> pairs, List<Header> addOrReplaceHeaders) {
+        HeaderGroup headerForAuth = getDefaultHeaderGroup().copy();
+        if(addOrReplaceHeaders != null) {
+            for(Header header : addOrReplaceHeaders) {
+                headerForAuth.updateHeader(header);
+            }
+        }
+
+        String key = cred.generateSharedKey(req, headerForAuth, pairs);
         getDefaultHeaderGroup().updateHeader(new BasicHeader("authorization", key));
         return this;
     }
@@ -99,13 +106,13 @@ public class SharedKeyHttpObservable extends HttpObservable {
             // so remove this header after key generation otherwise header already exists exp happens
             // MUST follow the order when content length is needed to generate key
             setContentLength(String.valueOf(entityFromRequest.getContentLength()));
-            this.setAuthorization(httpRequest, parameters);
+            this.setAuthorization(httpRequest, parameters, addOrReplaceHeaders);
             this.removeContentLength();
         } else {
-            this.setAuthorization(httpRequest, parameters);
+            this.setAuthorization(httpRequest, parameters, addOrReplaceHeaders);
         }
 
-        return super.request(httpRequest, entityFromRequest, parameters, null);
+        return super.request(httpRequest, entityFromRequest, parameters, addOrReplaceHeaders);
     }
 
     @Override

@@ -455,8 +455,13 @@ public class HttpObservable implements ILogger {
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
-    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs) {
-        return request(req, req.getEntity(), pairs, Arrays.asList(getDefaultHeaderGroup().getAllHeaders()))
+    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpRequestBase req, int validStatueCode, List<NameValuePair> pairs){
+        return executeReqAndCheckStatus(req,validStatueCode,pairs,null);
+    }
+
+    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpRequestBase req, int validStatueCode, List<NameValuePair> pairs, @Nullable List<Header> additionalHeaders) {
+        HttpEntity entity = req instanceof HttpEntityEnclosingRequestBase ? ((HttpEntityEnclosingRequestBase) req).getEntity() : null;
+        return request(req, entity, pairs, additionalHeaders)
                 .doOnNext(
                         resp -> {
                             int statusCode = resp.getStatusLine().getStatusCode();

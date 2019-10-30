@@ -26,18 +26,21 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.api.GetRemoteFilesResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.http.Header;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.HeaderGroup;
 import rx.Observable;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.net.URI;
 
@@ -52,6 +55,12 @@ public class ADLSGen2FSOperation {
 
     @NotNull
     private List<NameValuePair> appendReqParams;
+
+    @NotNull
+    private List<NameValuePair> setAclReqParams;
+
+    @NotNull
+    private List<NameValuePair> getAclReqParams;
 
     @NotNull
     private ADLSGen2ParamsBuilder listReqBuilder;
@@ -76,12 +85,32 @@ public class ADLSGen2FSOperation {
 
         this.flushReqParamsBuilder = new ADLSGen2ParamsBuilder()
                 .setAction("flush");
+
+        this.setAclReqParams = new ADLSGen2ParamsBuilder()
+                .setAction("setAccessControl")
+                .build();
+
+        this.getAclReqParams = new ADLSGen2ParamsBuilder()
+                .setAction("getAccessControl")
+                .build();
     }
 
     public Observable<Boolean> createDir(String dirpath) {
         HttpPut req = new HttpPut(dirpath);
         return http.executeReqAndCheckStatus(req, 201, this.createDirReqParams)
                 .map(ignore -> true);
+    }
+
+    public Observable<Boolean> setAcl(String dirPath, HeaderGroup additionHeaderGroup) {
+        if (!dirPath.contains("SparkSubmission")) {
+            return Observable.just(true);
+        }
+
+        return http.executeReqAndCheckStatus(new HttpPatch(dirPath),
+                200,
+                this.setAclReqParams,
+                Arrays.asList(additionHeaderGroup.getAllHeaders()))
+                .flatMap(ignore -> setAcl(dirPath.substring(0, dirPath.lastIndexOf("/")), additionHeaderGroup));
     }
 
     public Observable<Boolean> createFile(String filePath) {
@@ -102,6 +131,26 @@ public class ADLSGen2FSOperation {
 
         return http.get(rootPath, listReqBuilder.setDirectory(relativePath).build(), null, GetRemoteFilesResponse.class)
                 .flatMap(pathList -> Observable.from(pathList.getRemoteFiles()));
+    }
+
+    public Observable<HeaderGroup> getAclInfo(String rootPath) {
+        HttpHead head = new HttpHead(rootPath);
+        return http.executeReqAndCheckStatus(head, 200, this.getAclReqParams)
+                .map(resp -> getBuilder(resp.getAllHeaders()))
+                .map(builder -> builder.setAcl(ADLSGen2HeaderBuilder.defaultAcls).build());
+    }
+
+    public ADLSGen2HeaderBuilder getBuilder(Header[] headers){
+        ADLSGen2HeaderBuilder builder = new ADLSGen2HeaderBuilder();
+        for(Header header : headers){
+            if(header.getName().equals(ADLSGen2HeaderBuilder.groupHeader)){
+                builder.setGroup(header.getValue());
+            }else if(header.getName().equals(ADLSGen2HeaderBuilder.ownerHeader)){
+                builder.setOwner(header.getValue());
+            }
+        }
+
+        return builder;
     }
 
     private Observable<Long> appendData(String filePath, File src) {
