@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.ComboboxWithBrowseButton
-import com.intellij.ui.ListCellRendererWrapper
+import com.intellij.ui.SimpleListCellRenderer
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
@@ -63,15 +63,15 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 
     open fun getComboBoxNamePrefix(): String = "clusterListComboBox"
 
-    private val clustersSelection by lazy { ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
+    private val clustersSelection  = ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
         comboBox.name = getComboBoxNamePrefix() + "Combo"
         button.name = getComboBoxNamePrefix() + "Button"
 
         setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH))
 
         comboBox.apply {
-            setRenderer(object : ListCellRendererWrapper<IClusterDetail>() {
-                override fun customize(list: JList<*>?,
+            setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {
+                override fun customize(list: JList<out IClusterDetail>?,
                                        cluster: IClusterDetail?,
                                        index: Int,
                                        selected: Boolean,
@@ -105,7 +105,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
                 viewModel.doRefreshSubject.onNext(true)
             }
         }
-    }}
+    }
 
     val component: JComponent by lazy {
         val formBuilder = panel {

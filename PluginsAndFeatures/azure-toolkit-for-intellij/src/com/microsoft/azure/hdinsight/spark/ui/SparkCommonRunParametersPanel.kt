@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.vfs.impl.jar.JarFileSystemImpl
 import com.intellij.packaging.impl.elements.ManifestFileUtil
@@ -30,6 +31,7 @@ import com.intellij.uiDesigner.core.GridConstraints
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.helpers.ManifestFileUtilsEx
+import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -56,10 +58,8 @@ class SparkCommonRunParametersPanel(private val myProject: Project, private val 
         }
     }
 
-    private val mainClassPrompt: JLabel = JLabel("Main class name").apply {
-        toolTipText = mainClassToolTip
-        labelFor = mainClassTextField
-    }
+    private val mainClassInput: LabeledComponent<TextFieldWithBrowseButton> =
+            LabeledComponent.create(mainClassTextField, "Main class name", BorderLayout.WEST)
 
     private val errorMessageLabel = JLabel("")
             .apply {
@@ -72,16 +72,12 @@ class SparkCommonRunParametersPanel(private val myProject: Project, private val 
             columnTemplate {
                 col {
                     anchor = GridConstraints.ANCHOR_WEST
-                    fill = GridConstraints.FILL_NONE
-                }
-                col {
-                    anchor = GridConstraints.ANCHOR_WEST
                     hSizePolicy = GridConstraints.SIZEPOLICY_WANT_GROW
                     fill = GridConstraints.FILL_HORIZONTAL
                 }
             }
-            row { c(mainClassPrompt); c(mainClassTextField) }
-            row { c(); c(errorMessageLabel) }
+            row { c(mainClassInput) }
+            row { c(errorMessageLabel) }
         }
 
         formBuilder.buildPanel()

@@ -60,13 +60,13 @@ class SparkSubmissionJobUploadStorageAzureBlobCard: SparkSubmissionJobUploadStor
                 }
             }
             row {
-                c(storageAccountLabel); c(storageAccountField)
+                c(storageAccountLabel.apply { labelFor = storageAccountField });    c(storageAccountField)
             }
             row {
-                c(storageKeyLabel); c(storageKeyField)
+                c(storageKeyLabel.apply { labelFor = storageKeyField });            c(storageKeyField)
             }
             row {
-                c(storageContainerLabel); c(storageContainerUI)
+                c(storageContainerLabel.apply { labelFor = storageContainerUI });   c(storageContainerUI)
             }
         }
 

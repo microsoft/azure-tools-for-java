@@ -111,7 +111,8 @@ open class SparkSubmitJobAction : AzureAnAction() {
         val environment = ExecutionEnvironmentBuilder.create(executor, runConfigurationSetting).build()
         environment.putUserData(TelemetryKeys.OPERATION, operation)
 
-        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
+        RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(
+                environment, "Edit Spark Job submission run configuration")
 
         // Restore for common run configuration editor
         runConfigurationSetting.isEditBeforeRun = false

@@ -46,6 +46,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.hdinsight.spark.common.getSecureStoreServiceOf
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.StorageCheckEvent
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
+import com.microsoft.azuretools.ijidea.ui.AccessibleHideableTitledPanel
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
@@ -86,7 +87,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         Disposer.register(this@SparkSubmissionJobUploadStorageWithUploadPathPanel, this@apply)
     }
 
-    private val hideableJobUploadStoragePanel = HideableTitledPanel(jobUploadStorageTitle, true, storagePanel, false)
+    private val hideableJobUploadStoragePanel = AccessibleHideableTitledPanel(jobUploadStorageTitle, storagePanel)
 
     init {
         val formBuilder = panel {
@@ -100,7 +101,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     fill = FILL_HORIZONTAL
                 }
                 row {
-                    c(uploadPathLabel) { indent = 0 }; c(uploadPathField) {}
+                    c(uploadPathLabel
+                            .apply { labelFor = uploadPathField }) { indent = 0 }
+                                                                                        c(uploadPathField) {}
                 }
                 row {
                     c(hideableJobUploadStoragePanel) { colSpan = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL }
