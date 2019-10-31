@@ -52,10 +52,10 @@ class SparkSubmissionJobUploadStorageGen2Card : SparkSubmissionJobUploadStorageB
                 }
             }
             row {
-                c(gen2RootPathLabel); c(gen2RootPathField)
+                c(gen2RootPathLabel.apply { labelFor = gen2RootPathField });    c(gen2RootPathField)
             }
             row {
-                c(storageKeyLabel); c(storageKeyField)
+                c(storageKeyLabel.apply { labelFor = storageKeyField });        c(storageKeyField)
             }
         }
 

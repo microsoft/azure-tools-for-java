@@ -39,13 +39,14 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.intellij.telemetry.TelemetryKeys
 
 object RunConfigurationActionUtils: ILogger {
-    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment) {
+    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment,
+                                               title: String = "Edit configuration") {
         val runner = ProgramRunner.getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
         val asyncOperation = environment.getUserData(TelemetryKeys.OPERATION)
 
         try {
-            if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
+            if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, title)) {
                 EventUtil.logErrorWithComplete(asyncOperation, ErrorType.userError, ExecutionException("run config dialog closed"), null, null)
                 return
             }

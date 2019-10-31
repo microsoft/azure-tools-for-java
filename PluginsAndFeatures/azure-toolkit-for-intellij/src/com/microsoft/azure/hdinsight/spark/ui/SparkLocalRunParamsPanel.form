@@ -70,6 +70,7 @@
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="112df"/>
               <text value="Data repositories directory:"/>
             </properties>
           </component>
@@ -89,6 +90,7 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="188d6"/>
               <text value="Data default repo directory:"/>
             </properties>
           </component>
@@ -97,23 +99,26 @@
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <labelFor value="307b7"/>
               <text value="Hadoop user default directory:"/>
             </properties>
           </component>
-          <component id="b146c" class="javax.swing.JLabel" binding="myDataDefaultDirectory">
+          <component id="188d6" class="com.intellij.ui.components.JBTextField" binding="myDataDefaultDirectory">
             <constraints>
-              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Label"/>
+              <editable value="false"/>
+              <text value=""/>
             </properties>
           </component>
-          <component id="aee32" class="javax.swing.JLabel" binding="myHadoopUserDefaultDirectoryLabel">
+          <component id="307b7" class="com.intellij.ui.components.JBTextField" binding="myHadoopUserDefaultDirectoryLabel">
             <constraints>
-              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Label"/>
+              <editable value="false"/>
+              <text value=""/>
             </properties>
           </component>
         </children>

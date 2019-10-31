@@ -224,6 +224,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
                 }
             }
         });
+        cbArtifact.addItemListener((itemEvent)->updateArtifactConfiguration());
+        cbMavenProject.addItemListener((itemEvent)->updateArtifactConfiguration());
 
         JLabel labelForNewSlotName = new JLabel("Slot Name");
         labelForNewSlotName.setLabelFor(txtNewSlotName);
@@ -373,7 +375,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         }
         configuration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
-        this.webAppConfiguration = configuration;
     }
 
     private void selectWebApp() {
@@ -454,6 +455,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         cbxWebApp.setEnabled(false);
         cbxWebApp.addItem(REFRESHING_WEBAPP);
         presenter.loadWebApps(force);
+    }
+
+    private void updateArtifactConfiguration() {
+        webAppConfiguration.setTargetName(getTargetName());
+        webAppConfiguration.setTargetPath(getTargetPath());
     }
 
     class WebAppCombineBoxRender extends ListCellRendererWrapper {

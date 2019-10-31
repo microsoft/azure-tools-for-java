@@ -139,7 +139,8 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
                 }
             }
             row {
-                c(storageTypeLabel) { indent = 2 }; c(storageTypeComboBox) { indent = 3 }
+                c(storageTypeLabel.apply { labelFor = storageTypeComboBox }) { indent = 2 }
+                        c(storageTypeComboBox) { indent = 3 }
             }
             row {
                 c(storageCardsPanel) { indent = 2; colSpan = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL}

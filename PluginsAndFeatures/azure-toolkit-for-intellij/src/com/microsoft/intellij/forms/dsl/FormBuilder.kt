@@ -91,6 +91,7 @@ class FormBuilder(var columnTemplate: ColumnTemplate? = null) {
         layout = createGridLayoutManager()
 
         allComponentConstraints.forEach { (component, gridConstrains) -> add(component, gridConstrains) }
+        isFocusable = false
     }
 }
 
