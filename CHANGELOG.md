@@ -45,11 +45,10 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Added
 - Support IntelliJ 2019.3 EAP
-- Add support for Windows Java SE web apps.
-
-### Changed
+- Add support for Windows Java SE web apps
 
 ### Fixed
+- Improving the accessibility of IntelliJ plugin
 
 ## 3.28.0
 
