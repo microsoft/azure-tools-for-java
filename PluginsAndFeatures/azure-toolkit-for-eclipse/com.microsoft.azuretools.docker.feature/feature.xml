@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.docker.feature"
       label="Azure Containers for Eclipse"
-      version="3.18.0.qualifier"
+      version="3.19.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>

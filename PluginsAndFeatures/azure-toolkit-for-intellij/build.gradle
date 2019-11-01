@@ -88,17 +88,17 @@ dependencies {
     compile 'net.minidev:json-smart:2.3'
     compile 'com.microsoft.azure:azure-client-runtime:1.6.13', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.6.13', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.29.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.30.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.29.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.30.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.29.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.30.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
