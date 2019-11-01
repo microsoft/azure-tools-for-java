@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.29.0](#3290)
   - [3.28.0](#3280)
   - [3.27.0](#3270)
   - [3.26.0](#3260)
@@ -39,6 +40,16 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.29.0
+
+### Added
+- Support IntelliJ 2019.3 EAP
+- Add support for Windows Java SE web apps.
+
+### Changed
+
+### Fixed
 
 ## 3.28.0
 

@@ -20,25 +20,14 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.28.0</h3>
+    <h3>3.29.0</h3>
+    <h4>Added</h4>
+    <ul>
+        <li>Support IntelliJ 2019.3 EAP</li>
+        <li>Add support for Windows Java SE web apps.</li>
+    </ul>
     <h4>Changed</h4>
-    <ul>
-        <li>HDInsight emulator function is removed</li>
-        <li>Upgrade Azure SDK dependencies to most new versions</li>
-    </ul>
     <h4>Fixed</h4>
-    <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3534">#3534</a> Fix errors when starting Spark
-            interactive console</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3552">#3552</a> Fix Spark remote debugging
-            regresion</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3641">#3641</a> Fix NPE error in customer
-            survey dialog</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3642">#3642</a> Fix Not Found error when
-                HDInsight refreshing</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3643">#3643</a> Fix errors when create service
-            principals</li>
-    </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
     </html>
