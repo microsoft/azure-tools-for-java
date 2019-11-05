@@ -32,8 +32,10 @@ import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
@@ -228,7 +230,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         errorMsg = "Cluster have no storage account"
                                         uploadPath = invalidUploadPath
                                     } else {
-                                        val path = control.getUploadPath(defaultStorageAccount)
+                                        // TODO: need to test whether this has block issue
+                                        val path = (cluster as? ClusterDetail)?.defaultStorageRootPath
                                         if (path == null) {
                                             errorMsg = "Error getting upload path from storage account"
                                             uploadPath = invalidUploadPath

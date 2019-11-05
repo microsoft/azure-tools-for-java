@@ -22,7 +22,5 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 public interface MfaEspCluster {
-    default boolean isMfaEspCluster(){
-        return false;
-    }
+    String getTenantId();
 }

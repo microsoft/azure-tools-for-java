@@ -125,8 +125,9 @@ public class SparkBatchSubmission implements ILogger {
                 .setSSLSocketFactory(getSSLSocketFactory())
                 .setDefaultCredentialsProvider(credentialsProvider);
 
-        return disableRedirect ? clientBuilder.disableRedirectHandling().build() :
-                clientBuilder.build();
+        return disableRedirect
+                ? clientBuilder.disableRedirectHandling().build()
+                : clientBuilder.build();
     }
 
     @NotNull

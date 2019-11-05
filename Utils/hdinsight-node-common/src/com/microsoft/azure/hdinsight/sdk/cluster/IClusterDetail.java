@@ -34,7 +34,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import java.io.IOException;
 import java.util.List;
 
-public interface IClusterDetail extends ComparableCluster, MfaEspCluster {
+public interface IClusterDetail extends ComparableCluster {
 
     default boolean isEmulator() {
         return false;

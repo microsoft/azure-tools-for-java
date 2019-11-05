@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
 import com.microsoft.azure.hdinsight.sdk.common.*;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.storage.*;
@@ -109,25 +110,21 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 try {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
-
-                    if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2 && clusterDetail.isMfaEspCluster()) {
-                        String rawStoragePath = ((ClusterDetail) clusterDetail).getDefaultStorageRootPath();
-                        String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
-                        String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
-                        destinationRootPath = String.format("%s/user/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
-                                loginUser);
-                        httpObservable = new ADLSGen2OAuthHttpObservable(clusterDetail.getSubscription().getTenantId());
-                        jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
-                    } else if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
+                    if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
                         String rawStoragePath = ((ClusterDetail) clusterDetail).getDefaultStorageRootPath();
                         destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
                                 SparkSubmissionContentPanel.Constants.submissionFolder);
-                        accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
-                        if (StringUtils.isBlank(accessKey)) {
-                            throw new ExecutionException("Cannot get valid access key for storage account");
+
+                        if (clusterDetail instanceof MfaEspCluster) {
+                            httpObservable = new ADLSGen2OAuthHttpObservable(clusterDetail.getSubscription().getTenantId());
+                        } else {
+                            accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
+                            httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
+                            if (StringUtils.isBlank(accessKey)) {
+                                throw new ExecutionException("Cannot get valid access key for storage account");
+                            }
                         }
 
-                        httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
                         jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
                     } else if (storageAccount.getAccountType() == StorageAccountType.BLOB ||
                             storageAccount.getAccountType() == StorageAccountType.ADLS) {

@@ -159,7 +159,8 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
             if (SparkBatchSubmission.getInstance().negotiateAuthMethod(String.format("https://%s.azurehdinsight.net", clusterName)) != null) {
                 return true;
             }
-        } catch (IOException e) {
+        } catch (IOException ignore) {
+            log().warn(ignore.toString());
         }
 
         return false;

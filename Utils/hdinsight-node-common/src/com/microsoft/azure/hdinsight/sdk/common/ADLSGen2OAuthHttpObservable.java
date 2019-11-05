@@ -24,14 +24,9 @@ package com.microsoft.azure.hdinsight.sdk.common;
 
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.message.BasicHeader;
-
 import java.io.IOException;
-import java.util.List;
 
-public class ADLSGen2OAuthHttpObservable extends SharedKeyHttpObservable {
+public class ADLSGen2OAuthHttpObservable extends OAuthTokenHttpObservable {
     private static final String resource = "https://storage.azure.com/";
     private String tenantId;
 
@@ -40,12 +35,12 @@ public class ADLSGen2OAuthHttpObservable extends SharedKeyHttpObservable {
     }
 
     @Override
-    public ADLSGen2OAuthHttpObservable setAuthorization(HttpRequestBase req, List<NameValuePair> pairs) {
+    public String getAccessToken() {
         try {
-            getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", "Bearer "+AdAuthManager.getInstance().getAccessToken(tenantId, resource, PromptBehavior.Auto)));
-        } catch (IOException e) {
+           return AdAuthManager.getInstance().getAccessToken(tenantId, resource, PromptBehavior.Auto);
+        } catch (IOException ignore) {
         }
 
-        return this;
+        return "";
     }
 }

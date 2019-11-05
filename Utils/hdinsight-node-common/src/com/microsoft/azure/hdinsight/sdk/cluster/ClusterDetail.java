@@ -490,14 +490,4 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
         }
     }
-
-    @Override
-    public boolean isMfaEspCluster() {
-        try {
-            String type = clusterRawInfo.getProperties().getSecurityProfile().getDirectoryType();
-            return type.equals("ActiveDirectory");
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }

@@ -46,7 +46,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
     private SharedKeyCredential cred;
     private HeaderGroup defaultHeaders;
 
-    public SharedKeyHttpObservable() {
+    public SharedKeyHttpObservable(String accountName, String accessKey) {
         defaultHeaders = new HeaderGroup();
         defaultHeaders.addHeader(new BasicHeader("x-ms-client-request-id", UUID.randomUUID().toString()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-date", Utility.getGMTTime()));
@@ -55,9 +55,6 @@ public class SharedKeyHttpObservable extends HttpObservable {
         defaultHeaders.addHeader(new BasicHeader("Content-Type", "application/json"));
 
         setDefaultHeaderGroup(defaultHeaders);
-    }
-
-    public SharedKeyHttpObservable(String accountName, String accessKey)  {
         try {
             this.cred = new SharedKeyCredential(accountName, accessKey);
         } catch (IllegalArgumentException ex) {

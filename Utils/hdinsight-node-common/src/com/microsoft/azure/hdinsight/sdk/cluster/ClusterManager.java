@@ -100,7 +100,9 @@ public class ClusterManager implements ILogger {
                                                 // Run the time-consuming probe job concurrently in IO thread
                                                 .subscribeOn(Schedulers.io())
                                                 .map(isProbeSucceed -> isProbeSucceed
-                                                        ? new ClusterDetail(subscriptionDetail, clusterRawInfo, probeClusterNewApiOperation)
+                                                        ? (isMfaEspCluster(clusterRawInfo)
+                                                            ? new MfaClusterDetail(subscriptionDetail, clusterRawInfo, probeClusterNewApiOperation)
+                                                            : new ClusterDetail(subscriptionDetail, clusterRawInfo, probeClusterNewApiOperation))
                                                         : new ClusterDetail(subscriptionDetail, clusterRawInfo, new ClusterOperationImpl()));
                                     } else {
                                         return Observable.just(new ClusterDetail(subscriptionDetail, clusterRawInfo, new ClusterOperationImpl()));
@@ -126,5 +128,14 @@ public class ClusterManager implements ILogger {
             @NotNull ClusterOperationNewAPIImpl clusterOperation,
             @NotNull String clusterId) {
         return clusterOperation.isProbeGetConfigurationSucceed(clusterId);
+    }
+
+    private boolean isMfaEspCluster(ClusterRawInfo rawInfo) {
+        try {
+            String type = rawInfo.getProperties().getSecurityProfile().getDirectoryType();
+            return type.equals("ActiveDirectory");
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
