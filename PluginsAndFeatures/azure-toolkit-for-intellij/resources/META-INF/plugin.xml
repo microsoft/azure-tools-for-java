@@ -222,6 +222,7 @@
     <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
             text="Disconnect" description="Disconnect the log view from remote Spark Job"
             icon="/icons/SparkJobDisconnect.png">
+      <keyboard-shortcut first-keystroke="ctrl shift alt F2" keymap="$default"/>
     </action>
     <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"
             text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">

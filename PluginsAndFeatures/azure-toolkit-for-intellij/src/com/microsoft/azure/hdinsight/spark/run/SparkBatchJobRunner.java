@@ -34,6 +34,7 @@ import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
@@ -168,7 +169,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         remoteProcess.start();
         Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
-        SparkBatchJobDisconnectAction disconnectAction = new SparkBatchJobDisconnectAction(remoteProcess, operation);
+        // After we define a new AnAction class, IntelliJ will construct a new AnAction instance for us.
+        // Use one action instance can keep behaviours like isEnabled() consistent
+        SparkBatchJobDisconnectAction disconnectAction =
+                (SparkBatchJobDisconnectAction) ActionManager.getInstance().getAction("Actions.SparkJobDisconnect");
+        disconnectAction.init(remoteProcess, operation);
 
         sendTelemetryForParameters(submitModel, operation);
 
