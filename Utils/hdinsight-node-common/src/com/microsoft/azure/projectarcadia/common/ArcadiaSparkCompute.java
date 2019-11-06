@@ -80,7 +80,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     @NotNull
     @Override
     public String getClusterIdForConfiguration() {
-        return String.format("%s@%s", getName(), workSpace.getName());
+        return String.format("[%s] %s", workSpace.getName(), getName());
     }
 
     // This title is shown for spark compute list in run configuration dialog
@@ -90,7 +90,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
         if (getState().equalsIgnoreCase(SparkComputeProvisioningState.SUCCEEDED.toString())) {
             return getClusterIdForConfiguration();
         } else {
-            return String.format("%s@%s [%s]", getName(), workSpace.getName(), getState());
+            return String.format("[%s] %s (%s)", workSpace.getName(), getName(), getState());
         }
     }
 

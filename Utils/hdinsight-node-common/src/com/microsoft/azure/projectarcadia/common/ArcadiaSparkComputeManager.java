@@ -127,7 +127,10 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                                 })
                                 .subscribeOn(Schedulers.io())
                 )
-                .map(workspace -> this)
+                .map(workspace -> getClusters())
+                .flatMap(Observable::from)
+                .toSortedList()
+                .map(clusters -> this)
                 .defaultIfEmpty(this);
     }
 
