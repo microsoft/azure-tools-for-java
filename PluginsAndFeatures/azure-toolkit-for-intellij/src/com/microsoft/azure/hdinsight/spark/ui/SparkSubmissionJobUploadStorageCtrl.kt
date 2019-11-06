@@ -274,8 +274,8 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                 is HDStorageAccount -> getAzureBlobStoragePath(account.fullStorageBlobName, account.defaultContainer, account.scheme)
                 is ADLSStorageAccount ->
                     if (StringUtils.isBlank(account.name) || StringUtils.isBlank(account.defaultContainerOrRootPath)) null
-                    else "adl://${account.name}.azuredatalakestore.net${account.defaultContainerOrRootPath}SparkSubmission/"
-                is AzureSparkCosmosCluster.StorageAccount -> account.defaultContainerOrRootPath?.let { "${it}SparkSubmission/" }
+                    else "adl://${account.name}.azuredatalakestore.net${account.defaultContainerOrRootPath + SparkSubmissionContentPanel.Constants.submissionFolder}/"
+                is AzureSparkCosmosCluster.StorageAccount -> account.defaultContainerOrRootPath?.let { "${it + SparkSubmissionContentPanel.Constants.submissionFolder}/" }
                 else -> null
             }
 }

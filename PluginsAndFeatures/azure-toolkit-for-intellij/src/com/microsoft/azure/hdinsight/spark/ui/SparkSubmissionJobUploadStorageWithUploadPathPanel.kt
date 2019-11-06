@@ -231,7 +231,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         uploadPath = invalidUploadPath
                                     } else {
                                         // TODO: need to test whether this has block issue
-                                        val path = (cluster as? ClusterDetail)?.defaultStorageRootPath
+                                        val path = (cluster as? ClusterDetail)?.defaultStorageRootPath ?.trimEnd('/') +
+                                                "/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
                                         if (path == null) {
                                             errorMsg = "Error getting upload path from storage account"
                                             uploadPath = invalidUploadPath
