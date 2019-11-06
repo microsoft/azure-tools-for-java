@@ -39,7 +39,7 @@ object ArcadiaSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Apache Spark on Arcadia"
+        return "Apache Spark on Synapse"
     }
 
     override fun getId(): String {
@@ -47,7 +47,7 @@ object ArcadiaSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark on Arcadia Run Configuration"
+        return "Spark on Synapse Run Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

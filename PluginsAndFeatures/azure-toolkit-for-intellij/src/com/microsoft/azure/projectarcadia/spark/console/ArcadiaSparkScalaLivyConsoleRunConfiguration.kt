@@ -50,7 +50,7 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
                                                    name: String)
     : SparkScalaLivyConsoleRunConfiguration(
         project, configurationFactory, batchRunConfiguration, name), ILogger {
-    override val runConfigurationTypeName: String = "Arcadia Spark Run Configuration"
+    override val runConfigurationTypeName: String = "Synapse Spark Run Configuration"
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val sparkCluster = cluster as? ArcadiaSparkCompute ?: throw ExecutionException(RuntimeConfigurationError(

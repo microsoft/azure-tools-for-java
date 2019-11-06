@@ -36,7 +36,7 @@ class ArcadiaSparkConfiguration (name: String, val module: ArcadiaSparkConfigura
     }
 
     override fun getSuggestedNamePrefix(): String {
-        return "[Spark on Arcadia]"
+        return "[Spark on Synapse]"
     }
 
     override fun getErrorMessageClusterNull(): String {
