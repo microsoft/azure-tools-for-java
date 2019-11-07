@@ -189,7 +189,6 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 
     open val viewModel: ViewModel = ViewModel(ClusterManagerEx.getInstance().cachedClusters
             .filter { ClusterManagerEx.getInstance().hdInsightClusterFilterPredicate.test(it) }
-            .sortedBy { it.title }
             .toTypedArray()).apply { Disposer.register(this@SparkClusterListRefreshableCombo, this@apply) }
 
     override fun dispose() {
@@ -199,7 +198,6 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 class CosmosSparkClustersCombo: SparkClusterListRefreshableCombo() {
     inner class ViewModel
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().clusters
-            .sortedBy { it.title }
             .toTypedArray()) {
 
         override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = cosmosSparkClustersRefreshed
@@ -225,7 +223,6 @@ class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
 
     inner class ViewModel
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().accounts
-            .sortedBy { it.title }
             .toTypedArray()) {
 
         override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = cosmosServerlessSparkAccountsRefreshed
@@ -239,7 +236,6 @@ class ArcadiaSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo(
 
     inner class ViewModel
         : SparkClusterListRefreshableCombo.ViewModel(ArcadiaSparkComputeManager.getInstance().clusters
-            .sortedBy { it.title }
             .toTypedArray()) {
         override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = arcadiaSparkClustersRefreshed
     }

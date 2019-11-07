@@ -42,6 +42,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -269,6 +270,9 @@ public class ClusterManagerEx implements ILogger {
 
         mergedClusters.addAll(allAdditionalClusters);
         mergedClusters.addAll(getEmulatorClusterDetails());
+
+        // Sort the merged clusters before set it to cache, sorting algorithm is based on cluster name
+        Collections.sort(mergedClusters);
 
         setCachedClusters(mergedClusters);
         return getCachedClusters();

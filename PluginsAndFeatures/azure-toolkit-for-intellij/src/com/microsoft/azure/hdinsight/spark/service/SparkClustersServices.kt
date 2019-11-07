@@ -34,7 +34,6 @@ object SparkClustersServices {
     val arisSparkClustersRefreshed: Observable<List<IClusterDetail>> = fromCallable {
         ClusterManagerEx.getInstance().clusterDetails.asSequence()
                 .filter { it is SqlBigDataLivyLinkClusterDetail }
-                .sortedBy { it.title }
                 .toList()
     }.share()
 
@@ -56,7 +55,6 @@ object SparkClustersServices {
     val hdinsightSparkClustersRefreshed: Observable<List<IClusterDetail>> = fromCallable {
         ClusterManagerEx.getInstance().clusterDetails.asSequence()
                 .filter { ClusterManagerEx.getInstance().hdInsightClusterFilterPredicate.test(it) }
-                .sortedBy { it.title }
                 .toList()
     }.share()
 
