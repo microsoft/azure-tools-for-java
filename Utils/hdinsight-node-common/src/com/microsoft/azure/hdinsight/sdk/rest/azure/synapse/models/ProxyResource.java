@@ -23,11 +23,9 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
-import com.microsoft.azure.ProxyResource;
-
 /**
  * The resource model definition for a ARM proxy resource. It will have everything other than required location and
  * tags.
  */
-public class ProxyResource extends ProxyResource {
+public class ProxyResource extends com.microsoft.azure.ProxyResource {
 }

@@ -24,36 +24,43 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
 /**
  * Workspace active directory administrator.
  */
-@JsonFlatten
 public class WorkspaceAadAdminInfo extends ProxyResource {
-    /**
-     * Tenant ID of the workspace active directory administrator.
-     */
-    @JsonProperty(value = "properties.tenantId")
-    private String tenantId;
+    private static class Properties {
+        /**
+         * Tenant ID of the workspace active directory administrator.
+         */
+        @JsonProperty(value = "tenantId")
+        private String tenantId;
 
-    /**
-     * Login of the workspace active directory administrator.
-     */
-    @JsonProperty(value = "properties.login")
-    private String login;
+        /**
+         * Login of the workspace active directory administrator.
+         */
+        @JsonProperty(value = "login")
+        private String login;
 
-    /**
-     * Workspace active directory administrator type.
-     */
-    @JsonProperty(value = "properties.administratorType")
-    private String administratorType;
+        /**
+         * Workspace active directory administrator type.
+         */
+        @JsonProperty(value = "administratorType")
+        private String administratorType;
 
-    /**
-     * Object ID of the workspace active directory administrator.
-     */
-    @JsonProperty(value = "properties.sid")
-    private String sid;
+        /**
+         * Object ID of the workspace active directory administrator.
+         */
+        @JsonProperty(value = "sid")
+        private String sid;
+    }
+
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private Properties properties;
+
+    public Properties properties() {
+        return this.properties == null ? null : this.properties;
+    }
 
     /**
      * Get tenant ID of the workspace active directory administrator.
@@ -61,7 +68,7 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the tenantId value
      */
     public String tenantId() {
-        return this.tenantId;
+        return this.properties == null ? null : this.properties.tenantId;
     }
 
     /**
@@ -71,7 +78,11 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the WorkspaceAadAdminInfo object itself.
      */
     public WorkspaceAadAdminInfo withTenantId(String tenantId) {
-        this.tenantId = tenantId;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.tenantId = tenantId;
         return this;
     }
 
@@ -81,7 +92,7 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the login value
      */
     public String login() {
-        return this.login;
+        return this.properties == null ? null : this.properties.login;
     }
 
     /**
@@ -91,7 +102,11 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the WorkspaceAadAdminInfo object itself.
      */
     public WorkspaceAadAdminInfo withLogin(String login) {
-        this.login = login;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.login = login;
         return this;
     }
 
@@ -101,7 +116,7 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the administratorType value
      */
     public String administratorType() {
-        return this.administratorType;
+        return this.properties == null ? null : this.properties.administratorType;
     }
 
     /**
@@ -111,7 +126,11 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the WorkspaceAadAdminInfo object itself.
      */
     public WorkspaceAadAdminInfo withAdministratorType(String administratorType) {
-        this.administratorType = administratorType;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.administratorType = administratorType;
         return this;
     }
 
@@ -121,7 +140,7 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the sid value
      */
     public String sid() {
-        return this.sid;
+        return this.properties == null ? null : this.properties.sid;
     }
 
     /**
@@ -131,7 +150,11 @@ public class WorkspaceAadAdminInfo extends ProxyResource {
      * @return the WorkspaceAadAdminInfo object itself.
      */
     public WorkspaceAadAdminInfo withSid(String sid) {
-        this.sid = sid;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sid = sid;
         return this;
     }
 

@@ -23,15 +23,35 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
+
+import java.util.Map;
 
 /**
  * Workspace patch details.
  */
-@JsonFlatten
 public class WorkspacePatchInfo {
+    private static class Properties {
+        /**
+         * SQL administrator login password.
+         */
+        @JsonProperty(value = "sqlAdministratorLoginPassword")
+        private String sqlAdministratorLoginPassword;
+
+        /**
+         * Resource provisioning state.
+         */
+        @JsonProperty(value = "provisioningState", access = JsonProperty.Access.WRITE_ONLY)
+        private String provisioningState;
+    }
+
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private Properties properties;
+
+    public Properties properties() {
+        return this.properties;
+    }
+
     /**
      * Resource tags.
      */
@@ -43,18 +63,6 @@ public class WorkspacePatchInfo {
      */
     @JsonProperty(value = "identity")
     private ManagedIdentity identity;
-
-    /**
-     * SQL administrator login password.
-     */
-    @JsonProperty(value = "properties.sqlAdministratorLoginPassword")
-    private String sqlAdministratorLoginPassword;
-
-    /**
-     * Resource provisioning state.
-     */
-    @JsonProperty(value = "properties.provisioningState", access = JsonProperty.Access.WRITE_ONLY)
-    private String provisioningState;
 
     /**
      * Get resource tags.
@@ -102,7 +110,7 @@ public class WorkspacePatchInfo {
      * @return the sqlAdministratorLoginPassword value
      */
     public String sqlAdministratorLoginPassword() {
-        return this.sqlAdministratorLoginPassword;
+        return this.properties == null ? null : this.properties.sqlAdministratorLoginPassword;
     }
 
     /**
@@ -112,7 +120,11 @@ public class WorkspacePatchInfo {
      * @return the WorkspacePatchInfo object itself.
      */
     public WorkspacePatchInfo withSqlAdministratorLoginPassword(String sqlAdministratorLoginPassword) {
-        this.sqlAdministratorLoginPassword = sqlAdministratorLoginPassword;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sqlAdministratorLoginPassword = sqlAdministratorLoginPassword;
         return this;
     }
 
@@ -122,7 +134,7 @@ public class WorkspacePatchInfo {
      * @return the provisioningState value
      */
     public String provisioningState() {
-        return this.provisioningState;
+        return this.properties == null ? null : this.properties.provisioningState;
     }
 
 }

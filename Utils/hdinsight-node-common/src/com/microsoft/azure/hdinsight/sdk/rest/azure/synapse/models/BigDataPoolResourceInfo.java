@@ -25,80 +25,87 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
 /**
  * Big Data pool.
  * A Big Data pool.
  */
-@JsonFlatten
 public class BigDataPoolResourceInfo extends TrackedResource {
-    /**
-     * The state of the Big Data pool.
-     */
-    @JsonProperty(value = "properties.provisioningState")
-    private String provisioningState;
+    private static class Properties {
+        /**
+         * The state of the Big Data pool.
+         */
+        @JsonProperty(value = "provisioningState")
+        private String provisioningState;
 
-    /**
-     * Auto-scaling properties.
-     */
-    @JsonProperty(value = "properties.autoScale")
-    private AutoScaleProperties autoScale;
+        /**
+         * Auto-scaling properties.
+         */
+        @JsonProperty(value = "autoScale")
+        private AutoScaleProperties autoScale;
 
-    /**
-     * The time when the Big Data pool was created.
-     */
-    @JsonProperty(value = "properties.creationDate")
-    private DateTime creationDate;
+        /**
+         * The time when the Big Data pool was created.
+         */
+        @JsonProperty(value = "creationDate")
+        private DateTime creationDate;
 
-    /**
-     * Auto-pausing properties.
-     */
-    @JsonProperty(value = "properties.autoPause")
-    private AutoPauseProperties autoPause;
+        /**
+         * Auto-pausing properties.
+         */
+        @JsonProperty(value = "autoPause")
+        private AutoPauseProperties autoPause;
 
-    /**
-     * The Spark events folder.
-     */
-    @JsonProperty(value = "properties.sparkEventsFolder")
-    private String sparkEventsFolder;
+        /**
+         * The Spark events folder.
+         */
+        @JsonProperty(value = "sparkEventsFolder")
+        private String sparkEventsFolder;
 
-    /**
-     * The number of nodes in the Big Data pool.
-     */
-    @JsonProperty(value = "properties.nodeCount")
-    private Integer nodeCount;
+        /**
+         * The number of nodes in the Big Data pool.
+         */
+        @JsonProperty(value = "nodeCount")
+        private Integer nodeCount;
 
-    /**
-     * Library version requirements.
-     */
-    @JsonProperty(value = "properties.libraryRequirements")
-    private LibraryRequirements libraryRequirements;
+        /**
+         * Library version requirements.
+         */
+        @JsonProperty(value = "libraryRequirements")
+        private LibraryRequirements libraryRequirements;
 
-    /**
-     * The Apache Spark version.
-     */
-    @JsonProperty(value = "properties.sparkVersion")
-    private String sparkVersion;
+        /**
+         * The Apache Spark version.
+         */
+        @JsonProperty(value = "sparkVersion")
+        private String sparkVersion;
 
-    /**
-     * The default folder where Spark logs will be written.
-     */
-    @JsonProperty(value = "properties.defaultSparkLogFolder")
-    private String defaultSparkLogFolder;
+        /**
+         * The default folder where Spark logs will be written.
+         */
+        @JsonProperty(value = "defaultSparkLogFolder")
+        private String defaultSparkLogFolder;
 
-    /**
-     * The level of compute power that each node in the Big Data pool has. Possible values include: 'None', 'Small',
-     * 'Medium', 'Large'.
-     */
-    @JsonProperty(value = "properties.nodeSize")
-    private NodeSize nodeSize;
+        /**
+         * The level of compute power that each node in the Big Data pool has. Possible values include: 'None', 'Small',
+         * 'Medium', 'Large'.
+         */
+        @JsonProperty(value = "nodeSize")
+        private NodeSize nodeSize;
 
-    /**
-     * The kind of nodes that the Big Data pool provides. Possible values include: 'None', 'MemoryOptimized'.
-     */
-    @JsonProperty(value = "properties.nodeSizeFamily")
-    private NodeSizeFamily nodeSizeFamily;
+        /**
+         * The kind of nodes that the Big Data pool provides. Possible values include: 'None', 'MemoryOptimized'.
+         */
+        @JsonProperty(value = "nodeSizeFamily")
+        private NodeSizeFamily nodeSizeFamily;
+    }
+
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private Properties properties;
+
+    public Properties properties() {
+        return this.properties == null ? null : this.properties;
+    }
 
     /**
      * Get the state of the Big Data pool.
@@ -106,7 +113,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the provisioningState value
      */
     public String provisioningState() {
-        return this.provisioningState;
+        return this.properties == null ? null : this.properties.provisioningState;
     }
 
     /**
@@ -116,7 +123,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withProvisioningState(String provisioningState) {
-        this.provisioningState = provisioningState;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.provisioningState = provisioningState;
         return this;
     }
 
@@ -126,7 +137,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the autoScale value
      */
     public AutoScaleProperties autoScale() {
-        return this.autoScale;
+        return this.properties == null ? null : this.properties.autoScale;
     }
 
     /**
@@ -136,7 +147,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withAutoScale(AutoScaleProperties autoScale) {
-        this.autoScale = autoScale;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.autoScale = autoScale;
         return this;
     }
 
@@ -146,7 +161,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the creationDate value
      */
     public DateTime creationDate() {
-        return this.creationDate;
+        return this.properties == null ? null : this.properties.creationDate;
     }
 
     /**
@@ -156,7 +171,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withCreationDate(DateTime creationDate) {
-        this.creationDate = creationDate;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.creationDate = creationDate;
         return this;
     }
 
@@ -166,7 +185,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the autoPause value
      */
     public AutoPauseProperties autoPause() {
-        return this.autoPause;
+        return this.properties == null ? null : this.properties.autoPause;
     }
 
     /**
@@ -176,7 +195,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withAutoPause(AutoPauseProperties autoPause) {
-        this.autoPause = autoPause;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.autoPause = autoPause;
         return this;
     }
 
@@ -186,7 +209,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the sparkEventsFolder value
      */
     public String sparkEventsFolder() {
-        return this.sparkEventsFolder;
+        return this.properties == null ? null : this.properties.sparkEventsFolder;
     }
 
     /**
@@ -196,7 +219,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withSparkEventsFolder(String sparkEventsFolder) {
-        this.sparkEventsFolder = sparkEventsFolder;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sparkEventsFolder = sparkEventsFolder;
         return this;
     }
 
@@ -206,7 +233,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the nodeCount value
      */
     public Integer nodeCount() {
-        return this.nodeCount;
+        return this.properties == null ? null : this.properties.nodeCount;
     }
 
     /**
@@ -216,7 +243,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withNodeCount(Integer nodeCount) {
-        this.nodeCount = nodeCount;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.nodeCount = nodeCount;
         return this;
     }
 
@@ -226,7 +257,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the libraryRequirements value
      */
     public LibraryRequirements libraryRequirements() {
-        return this.libraryRequirements;
+        return this.properties == null ? null : this.properties.libraryRequirements;
     }
 
     /**
@@ -236,7 +267,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withLibraryRequirements(LibraryRequirements libraryRequirements) {
-        this.libraryRequirements = libraryRequirements;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.libraryRequirements = libraryRequirements;
         return this;
     }
 
@@ -246,7 +281,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the sparkVersion value
      */
     public String sparkVersion() {
-        return this.sparkVersion;
+        return this.properties == null ? null : this.properties.sparkVersion;
     }
 
     /**
@@ -256,7 +291,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withSparkVersion(String sparkVersion) {
-        this.sparkVersion = sparkVersion;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sparkVersion = sparkVersion;
         return this;
     }
 
@@ -266,7 +305,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the defaultSparkLogFolder value
      */
     public String defaultSparkLogFolder() {
-        return this.defaultSparkLogFolder;
+        return this.properties == null ? null : this.properties.defaultSparkLogFolder;
     }
 
     /**
@@ -276,7 +315,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withDefaultSparkLogFolder(String defaultSparkLogFolder) {
-        this.defaultSparkLogFolder = defaultSparkLogFolder;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.defaultSparkLogFolder = defaultSparkLogFolder;
         return this;
     }
 
@@ -286,7 +329,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the nodeSize value
      */
     public NodeSize nodeSize() {
-        return this.nodeSize;
+        return this.properties == null ? null : this.properties.nodeSize;
     }
 
     /**
@@ -296,7 +339,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withNodeSize(NodeSize nodeSize) {
-        this.nodeSize = nodeSize;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.nodeSize = nodeSize;
         return this;
     }
 
@@ -306,7 +353,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the nodeSizeFamily value
      */
     public NodeSizeFamily nodeSizeFamily() {
-        return this.nodeSizeFamily;
+        return this.properties == null ? null : this.properties.nodeSizeFamily;
     }
 
     /**
@@ -316,7 +363,11 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @return the BigDataPoolResourceInfo object itself.
      */
     public BigDataPoolResourceInfo withNodeSizeFamily(NodeSizeFamily nodeSizeFamily) {
-        this.nodeSizeFamily = nodeSizeFamily;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.nodeSizeFamily = nodeSizeFamily;
         return this;
     }
 

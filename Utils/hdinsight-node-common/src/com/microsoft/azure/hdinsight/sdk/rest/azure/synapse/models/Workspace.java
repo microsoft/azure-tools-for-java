@@ -25,66 +25,73 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
 /**
  * A workspace.
  */
-@JsonFlatten
 public class Workspace extends TrackedResource {
-    /**
-     * Workspace default data lake storage account details.
-     */
-    @JsonProperty(value = "properties.defaultDataLakeStorage")
-    private DataLakeStorageAccountDetails defaultDataLakeStorage;
+    private static class Properties {
+        /**
+         * Workspace default data lake storage account details.
+         */
+        @JsonProperty(value = "defaultDataLakeStorage")
+        private DataLakeStorageAccountDetails defaultDataLakeStorage;
 
-    /**
-     * SQL administrator login password.
-     */
-    @JsonProperty(value = "properties.sqlAdministratorLoginPassword")
-    private String sqlAdministratorLoginPassword;
+        /**
+         * SQL administrator login password.
+         */
+        @JsonProperty(value = "sqlAdministratorLoginPassword")
+        private String sqlAdministratorLoginPassword;
 
-    /**
-     * Workspace managed resource group.
-     */
-    @JsonProperty(value = "properties.managedResourceGroupName", access = JsonProperty.Access.WRITE_ONLY)
-    private String managedResourceGroupName;
+        /**
+         * Workspace managed resource group.
+         */
+        @JsonProperty(value = "managedResourceGroupName", access = JsonProperty.Access.WRITE_ONLY)
+        private String managedResourceGroupName;
 
-    /**
-     * ADLA resource ID.
-     */
-    @JsonProperty(value = "properties.adlaResourceId")
-    private String adlaResourceId;
+        /**
+         * ADLA resource ID.
+         */
+        @JsonProperty(value = "adlaResourceId")
+        private String adlaResourceId;
 
-    /**
-     * Resource provisioning state.
-     */
-    @JsonProperty(value = "properties.provisioningState", access = JsonProperty.Access.WRITE_ONLY)
-    private String provisioningState;
+        /**
+         * Resource provisioning state.
+         */
+        @JsonProperty(value = "provisioningState", access = JsonProperty.Access.WRITE_ONLY)
+        private String provisioningState;
 
-    /**
-     * Login for workspace SQL active directory administrator.
-     */
-    @JsonProperty(value = "properties.sqlAdministratorLogin")
-    private String sqlAdministratorLogin;
+        /**
+         * Login for workspace SQL active directory administrator.
+         */
+        @JsonProperty(value = "sqlAdministratorLogin")
+        private String sqlAdministratorLogin;
 
-    /**
-     * Virtual Network profile.
-     */
-    @JsonProperty(value = "properties.virtualNetworkProfile")
-    private VirtualNetworkProfile virtualNetworkProfile;
+        /**
+         * Virtual Network profile.
+         */
+        @JsonProperty(value = "virtualNetworkProfile")
+        private VirtualNetworkProfile virtualNetworkProfile;
 
-    /**
-     * Connectivity endpoints.
-     */
-    @JsonProperty(value = "properties.connectivityEndpoints")
-    private Map<String, String> connectivityEndpoints;
+        /**
+         * Connectivity endpoints.
+         */
+        @JsonProperty(value = "connectivityEndpoints")
+        private Map<String, String> connectivityEndpoints;
 
-    /**
-     * Identity of the workspace.
-     */
-    @JsonProperty(value = "identity")
-    private ManagedIdentity identity;
+        /**
+         * Identity of the workspace.
+         */
+        @JsonProperty(value = "identity")
+        private ManagedIdentity identity;
+    }
+
+    @JsonProperty(value = "properties", access = JsonProperty.Access.WRITE_ONLY)
+    private Properties properties;
+
+    public Properties properties() {
+        return this.properties == null ? null : this.properties;
+    }
 
     /**
      * Get workspace default data lake storage account details.
@@ -92,7 +99,7 @@ public class Workspace extends TrackedResource {
      * @return the defaultDataLakeStorage value
      */
     public DataLakeStorageAccountDetails defaultDataLakeStorage() {
-        return this.defaultDataLakeStorage;
+        return this.properties == null ? null : this.properties.defaultDataLakeStorage;
     }
 
     /**
@@ -102,7 +109,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withDefaultDataLakeStorage(DataLakeStorageAccountDetails defaultDataLakeStorage) {
-        this.defaultDataLakeStorage = defaultDataLakeStorage;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.defaultDataLakeStorage = defaultDataLakeStorage;
         return this;
     }
 
@@ -112,7 +123,7 @@ public class Workspace extends TrackedResource {
      * @return the sqlAdministratorLoginPassword value
      */
     public String sqlAdministratorLoginPassword() {
-        return this.sqlAdministratorLoginPassword;
+        return this.properties == null ? null : this.properties.sqlAdministratorLoginPassword;
     }
 
     /**
@@ -122,7 +133,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withSqlAdministratorLoginPassword(String sqlAdministratorLoginPassword) {
-        this.sqlAdministratorLoginPassword = sqlAdministratorLoginPassword;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sqlAdministratorLoginPassword = sqlAdministratorLoginPassword;
         return this;
     }
 
@@ -132,7 +147,7 @@ public class Workspace extends TrackedResource {
      * @return the managedResourceGroupName value
      */
     public String managedResourceGroupName() {
-        return this.managedResourceGroupName;
+        return this.properties == null ? null : this.properties.managedResourceGroupName;
     }
 
     /**
@@ -141,7 +156,7 @@ public class Workspace extends TrackedResource {
      * @return the adlaResourceId value
      */
     public String adlaResourceId() {
-        return this.adlaResourceId;
+        return this.properties == null ? null : this.properties.adlaResourceId;
     }
 
     /**
@@ -151,7 +166,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withAdlaResourceId(String adlaResourceId) {
-        this.adlaResourceId = adlaResourceId;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.adlaResourceId = adlaResourceId;
         return this;
     }
 
@@ -161,7 +180,7 @@ public class Workspace extends TrackedResource {
      * @return the provisioningState value
      */
     public String provisioningState() {
-        return this.provisioningState;
+        return this.properties == null ? null : this.properties.provisioningState;
     }
 
     /**
@@ -170,7 +189,7 @@ public class Workspace extends TrackedResource {
      * @return the sqlAdministratorLogin value
      */
     public String sqlAdministratorLogin() {
-        return this.sqlAdministratorLogin;
+        return this.properties == null ? null : this.properties.sqlAdministratorLogin;
     }
 
     /**
@@ -180,7 +199,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withSqlAdministratorLogin(String sqlAdministratorLogin) {
-        this.sqlAdministratorLogin = sqlAdministratorLogin;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.sqlAdministratorLogin = sqlAdministratorLogin;
         return this;
     }
 
@@ -190,7 +213,7 @@ public class Workspace extends TrackedResource {
      * @return the virtualNetworkProfile value
      */
     public VirtualNetworkProfile virtualNetworkProfile() {
-        return this.virtualNetworkProfile;
+        return this.properties == null ? null : this.properties.virtualNetworkProfile;
     }
 
     /**
@@ -200,7 +223,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withVirtualNetworkProfile(VirtualNetworkProfile virtualNetworkProfile) {
-        this.virtualNetworkProfile = virtualNetworkProfile;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.virtualNetworkProfile = virtualNetworkProfile;
         return this;
     }
 
@@ -210,7 +237,7 @@ public class Workspace extends TrackedResource {
      * @return the connectivityEndpoints value
      */
     public Map<String, String> connectivityEndpoints() {
-        return this.connectivityEndpoints;
+        return this.properties == null ? null : this.properties.connectivityEndpoints;
     }
 
     /**
@@ -220,7 +247,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withConnectivityEndpoints(Map<String, String> connectivityEndpoints) {
-        this.connectivityEndpoints = connectivityEndpoints;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.connectivityEndpoints = connectivityEndpoints;
         return this;
     }
 
@@ -230,7 +261,7 @@ public class Workspace extends TrackedResource {
      * @return the identity value
      */
     public ManagedIdentity identity() {
-        return this.identity;
+        return this.properties == null ? null : this.properties.identity;
     }
 
     /**
@@ -240,7 +271,11 @@ public class Workspace extends TrackedResource {
      * @return the Workspace object itself.
      */
     public Workspace withIdentity(ManagedIdentity identity) {
-        this.identity = identity;
+        if (this.properties == null) {
+            this.properties = new Properties();
+        }
+
+        this.properties.identity = identity;
         return this;
     }
 
