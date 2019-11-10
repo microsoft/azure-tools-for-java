@@ -142,7 +142,9 @@ public class SparkRestUtil {
     }
 
     private static HttpEntity getSparkRestEntity(@NotNull IClusterDetail clusterDetail, @NotNull String restUrl) throws HDIException, IOException {
-        final String url = String.format(SPARK_REST_API_ENDPOINT, clusterDetail.getConnectionUrl(), restUrl);
+        String connUrl = clusterDetail.getConnectionUrl();
+        connUrl = connUrl.endsWith("/") ? connUrl.substring(0, connUrl.length() - 1) : connUrl;
+        final String url = String.format(SPARK_REST_API_ENDPOINT, connUrl, restUrl);
         return JobUtils.getEntity(clusterDetail, url);
     }
 }
