@@ -51,9 +51,10 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -112,7 +113,7 @@ public class SparkSubmissionExDialog extends Dialog {
 	private Text commandLineTextField;
 	private Text referencedJarsTextField;
 	private Text referencedFilesTextField;
-	private Button intelliJArtifactRadioButton;
+	private Button eclipseArtifactRadioButton;
 	private Button localArtifactRadioButton;
 
 	private SparkSubmitModel submitModel;
@@ -185,6 +186,12 @@ public class SparkSubmissionExDialog extends Dialog {
 				showHdiReaderErrors(false);
 			}
 		});
+		clustersListComboBox.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+			public void getName(AccessibleEvent e) {
+				super.getName(e);
+				e.result = clusterListLabel.getText();
+			}
+		});
 		// Execute "select the first item" operation after the dialog opened
 		Display.getDefault().asyncExec(() -> {
 			for (IClusterDetail clusterDetail : cachedClusterDetails) {
@@ -199,6 +206,12 @@ public class SparkSubmissionExDialog extends Dialog {
 		clusterListButton = new Button(composite, SWT.PUSH);
 		clusterListButton.setToolTipText("Refresh");
 		clusterListButton.setImage(Activator.getImageDescriptor(CommonConst.RefreshIConPath).createImage());
+		clusterListButton.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+			public void getName(AccessibleEvent e) {
+				super.getName(e);
+				e.result = clusterListButton.getToolTipText();
+			}
+		});
 
 		//Add blank label as a placeholder
 		Label placeholderLabel = new Label(container, SWT.LEFT);
@@ -264,27 +277,9 @@ public class SparkSubmissionExDialog extends Dialog {
 		gridData.horizontalSpan = 2;
 		artifactSelectLabel.setLayoutData(gridData);
 
-		intelliJArtifactRadioButton = new Button(container, SWT.RADIO);
-		intelliJArtifactRadioButton.setText("Artifact from Eclipse project:");
-		intelliJArtifactRadioButton.setSelection(true);
-		intelliJArtifactRadioButton.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				selectedArtifactComboBox.setEnabled(true);
-				selectedArtifactTextField.setEnabled(false);
-				// mainClassTextField.setButtonEnabled(true);
-				//
-				// setVisibleForFixedErrorMessageLabel(2, false);
-				//
-				// if (selectedArtifactComboBox.getItemCount() == 0) {
-				// setVisibleForFixedErrorMessageLabel(2, true);
-				// }
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-			}
-		});
+		eclipseArtifactRadioButton = new Button(container, SWT.RADIO);
+		eclipseArtifactRadioButton.setText("Artifact from Eclipse project:");
+		
 		gridData = new GridData();
 		gridData.grabExcessHorizontalSpace = true;
 		gridData.horizontalAlignment = SWT.FILL;
@@ -307,30 +302,6 @@ public class SparkSubmissionExDialog extends Dialog {
 		localArtifactRadioButton = new Button(container, SWT.RADIO);
 		localArtifactRadioButton.setText("Artifact from hard disk:");
 
-		localArtifactRadioButton.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-
-				selectedArtifactComboBox.setEnabled(false);
-				selectedArtifactTextField.setEnabled(true);
-				// mainClassTextField.setButtonEnabled(false);
-				//
-				// setVisibleForFixedErrorMessageLabel(1, false);
-				//
-				// if
-				// (StringHelper.isNullOrWhiteSpace(selectedArtifactTextField.getText()))
-				// {
-				// setVisibleForFixedErrorMessageLabel(2, true);
-				// }
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-		});
-
 		gridLayout = new GridLayout();
 		gridLayout.numColumns = 2;
 		gridData = new GridData();
@@ -345,6 +316,12 @@ public class SparkSubmissionExDialog extends Dialog {
 		gridData.grabExcessHorizontalSpace = true;
 		selectedArtifactTextField = new Text(composite, SWT.LEFT | SWT.BORDER);
 		selectedArtifactTextField.setLayoutData(gridData);
+		selectedArtifactTextField.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+			public void getName(AccessibleEvent e) {
+				super.getName(e);
+				e.result = localArtifactRadioButton.getText();
+			}
+		});
 		artifactBrowseButton = new Button(composite, SWT.PUSH);
 		artifactBrowseButton.setText("Browse");
 		artifactBrowseButton.addSelectionListener(new SelectionAdapter() {
@@ -357,6 +334,22 @@ public class SparkSubmissionExDialog extends Dialog {
 				if (file != null) {
 					selectedArtifactTextField.setText(file);
 				}
+			}
+		});
+
+		eclipseArtifactRadioButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				doEclipseArtifactRadioButtonSelection(e);
+			}
+		});
+		eclipseArtifactRadioButton.setSelection(true);
+		doEclipseArtifactRadioButtonSelection(null);
+
+		localArtifactRadioButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				doLocalArtifactRadioButtonSelection(e);
 			}
 		});
 
@@ -388,6 +381,12 @@ public class SparkSubmissionExDialog extends Dialog {
 		} catch (CoreException e1) {
 			Activator.getDefault().log("get main class list error", e1);
 		}
+		mainClassCombo.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+			public void getName(AccessibleEvent e) {
+				super.getName(e);
+				e.result = sparkMainClassLabel.getText();
+			}
+		});
 	    
 		Label jobConfigurationLabel = new Label(container, SWT.LEFT);
 		jobConfigurationLabel.setText("Job configurations");
@@ -465,6 +464,18 @@ public class SparkSubmissionExDialog extends Dialog {
 		referencedFilesTextField.setLayoutData(gridData);
 
 		return super.createContents(parent);
+	}
+	
+	private void doEclipseArtifactRadioButtonSelection(SelectionEvent e) {
+		selectedArtifactComboBox.setEnabled(true);
+		selectedArtifactTextField.setEnabled(false);
+		artifactBrowseButton.setEnabled(false);
+	}
+	
+	private void doLocalArtifactRadioButtonSelection(SelectionEvent e) {
+		selectedArtifactComboBox.setEnabled(false);
+		selectedArtifactTextField.setEnabled(true);
+		artifactBrowseButton.setEnabled(true);
 	}
 	
 	private void showHdiReaderErrors(boolean isVisible) {
@@ -561,7 +572,7 @@ public class SparkSubmissionExDialog extends Dialog {
 
 	private void initializeTable() {
 		for (int i = 0; i < SparkSubmissionParameter.defaultParameters.length; ++i) {
-			jobConfigMap.put(SparkSubmissionParameter.defaultParameters[i].first(), "");
+			jobConfigMap.put(SparkSubmissionParameter.defaultParameters[i].first(), SparkSubmissionParameter.defaultParameters[i].second());
 		}
 		tableViewer.setInput(jobConfigMap.entrySet());
 	}

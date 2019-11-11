@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -108,6 +110,12 @@ public class SparkSubmissionToolWindowView extends ViewPart {
                 });
         	}
 		});
+        stopButton.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+        	public void getName(AccessibleEvent e)  {
+        		super.getName(e);
+        		e.result = stopButton.getToolTipText();
+        	}
+        });
         
 		openSparkUIButton = new Button(composite, SWT.PUSH);
 		openSparkUIButton.setToolTipText("Open the corresponding Spark UI page");
@@ -124,6 +132,12 @@ public class SparkSubmissionToolWindowView extends ViewPart {
 					DefaultLoader.getUIHelper().showError("Failed to browse spark application yarn url", "Spark Submission");
 				}
 			}
+        });
+		openSparkUIButton.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+        	public void getName(AccessibleEvent e)  {
+        		super.getName(e);
+        		e.result = openSparkUIButton.getToolTipText();
+        	}
         });
 		
 		gridData = new GridData();
