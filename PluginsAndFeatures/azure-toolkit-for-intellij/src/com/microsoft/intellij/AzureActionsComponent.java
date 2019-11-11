@@ -73,7 +73,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsComponent.class);
     private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForIntelliJ";
-    private static final String AZURE_TOOLS_FOLDER_PREVIOUS = "AzureToolsForIntelliJ";
+    private static final String AZURE_TOOLS_FOLDER_DEPRECATED = "AzureToolsForIntelliJ";
     private static FileHandler logFileHandler = null;
 
     private PluginSettings settings;
@@ -134,8 +134,8 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         }
         try {
             final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
-            final String previousBaseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_PREVIOUS).toString();
-            CommonSettings.setUpEnvironment(baseFolder, previousBaseFolder);
+            final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
+            CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
             initLoggerFileHandler();
         } catch (IOException ex) {
             LOG.error("initAuthManage()", ex);

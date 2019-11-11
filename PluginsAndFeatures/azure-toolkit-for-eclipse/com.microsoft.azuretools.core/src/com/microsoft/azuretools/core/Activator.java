@@ -91,7 +91,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s, machineid:%s";
     private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForEclipse";
-    private static final String AZURE_TOOLS_FOLDER_PREVIOUS = "AzureToolsForEclipse";
+    private static final String AZURE_TOOLS_FOLDER_DEPRECATED = "AzureToolsForEclipse";
 
     private String pluginInstLoc;
     private String dataFile;
@@ -165,8 +165,8 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
             if (CommonSettings.getUiFactory() == null)
                 CommonSettings.setUiFactory(new UIFactory());
             final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
-            final String previousBaseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_PREVIOUS).toString();
-            CommonSettings.setUpEnvironment(baseFolder, previousBaseFolder);
+            final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
+            CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
             initAzureToolsCoreLibsLoggerFileHandler();
         } catch (IOException e) {
             e.printStackTrace();

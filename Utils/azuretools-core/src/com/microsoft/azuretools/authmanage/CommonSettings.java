@@ -56,11 +56,11 @@ public class CommonSettings {
         return settingsBaseDir;
     }
 
-    public static void setUpEnvironment(@NotNull String baseDir, String previousDir) throws IOException {
+    public static void setUpEnvironment(@NotNull String baseDir, String deprecatedFolder) throws IOException {
         initBaseDir(baseDir);
         // If base dir doesn't exist or is empty, copy resources from oldBaseDir base folder
-        if (isUsingPreviousBaseFolder(baseDir, previousDir)) {
-            copyResourcesFromPreviousFolder(baseDir, previousDir);
+        if (isUsingDeprecatedBaseFolder(baseDir, deprecatedFolder)) {
+            copyResourcesFromDeprecatedFolder(baseDir, deprecatedFolder);
         }
         setUpEnvironment(baseDir);
     }
@@ -151,8 +151,8 @@ public class CommonSettings {
         }
     }
 
-    private static boolean isUsingPreviousBaseFolder(String baseDir, String previousDir) {
-        return !FileUtil.isNonEmptyFolder(baseDir) && FileUtil.isNonEmptyFolder(previousDir);
+    private static boolean isUsingDeprecatedBaseFolder(String baseDir, String deprecated) {
+        return !FileUtil.isNonEmptyFolder(baseDir) && FileUtil.isNonEmptyFolder(deprecated);
     }
 
     private static void initBaseDir(@NotNull String basePath) throws IOException {
@@ -163,11 +163,11 @@ public class CommonSettings {
         Files.setAttribute(baseDir.toPath(), "dos:hidden", true);
     }
 
-    private static void copyResourcesFromPreviousFolder(String baseDir, String fallback) {
+    private static void copyResourcesFromDeprecatedFolder(String baseDir, String deprecatedDir) {
         try {
-            FileUtils.copyDirectory(new File(fallback), new File(baseDir));
+            FileUtils.copyDirectory(new File(deprecatedDir), new File(baseDir));
         } catch (IOException e) {
-            LOGGER.warning(String.format(COPY_CONFIGURATION_FAIL, baseDir, fallback));
+            LOGGER.warning(String.format(COPY_CONFIGURATION_FAIL, baseDir, deprecatedDir));
         }
     }
 }
