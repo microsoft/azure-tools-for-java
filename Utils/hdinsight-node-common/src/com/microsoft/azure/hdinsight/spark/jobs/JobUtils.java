@@ -415,15 +415,15 @@ public class JobUtils {
     }
 
     public static HttpEntity getEntity(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws IOException, HDIException {
-        if (StringUtils.isNoneEmpty(clusterDetail.getHttpUserName()) && StringUtils.isNoneEmpty(clusterDetail.getHttpPassword())) {
+        final HttpClient client;
+        if (clusterDetail instanceof MfaEspCluster) {
+            client = new SparkBatchEspMfaSubmission(((MfaEspCluster) clusterDetail).getTenantId(), clusterDetail.getName()).getHttpClient();
+        } else {
             provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
+            client = HttpClients.custom()
+                    .useSystemProperties()
+                    .setDefaultCredentialsProvider(provider).build();
         }
-
-        final HttpClient client = clusterDetail instanceof MfaEspCluster
-                ? new SparkBatchEspMfaSubmission(((MfaEspCluster) clusterDetail).getTenantId(), clusterDetail.getName()).getHttpClient()
-                : HttpClients.custom()
-                .useSystemProperties()
-                .setDefaultCredentialsProvider(provider).build();
 
         final HttpGet get = new HttpGet(url);
         final HttpResponse response = client.execute(get);
