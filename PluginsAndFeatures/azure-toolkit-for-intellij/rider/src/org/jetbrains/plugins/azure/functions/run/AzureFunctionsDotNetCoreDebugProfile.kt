@@ -41,6 +41,7 @@ import com.jetbrains.rider.run.*
 import com.jetbrains.rider.runtime.DotNetExecutable
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
+import org.jetbrains.concurrency.resolvedPromise
 
 class AzureFunctionsDotNetCoreDebugProfile(
         private val dotNetExecutable: DotNetExecutable,
@@ -49,14 +50,14 @@ class AzureFunctionsDotNetCoreDebugProfile(
         private val funcCoreToolsPath: String)
     : DebugProfileStateBase(executionEnvironment) {
 
-    override fun createWorkerRunCmd(lifetime: Lifetime, helper: DebuggerHelperHost, port: Int): Promise<GeneralCommandLine> {
-        return AsyncPromise<GeneralCommandLine>().apply {
-            setResult(
-                    createWorkerCmdFor(consoleKind, port, DebuggerWorkerPlatform.AnyCpu).apply {
-                        withWorkDirectory(dotNetExecutable.workingDirectoryOrExeFolder)
-                    }
-            )
-        }
+    override fun createWorkerRunCmd(lifetime: Lifetime, helper: DebuggerHelperHost, port: Int): Promise<WorkerRunInfo> {
+        val resolvedPromise = resolvedPromise(
+                WorkerRunInfo(
+                        createWorkerCmdFor(consoleKind, port, DebuggerWorkerPlatform.AnyCpu).apply {
+                            withWorkDirectory(dotNetExecutable.workingDirectoryOrExeFolder)
+                        })
+        )
+        return patchCommandLineInPlugins(lifetime, resolvedPromise)
     }
 
     override fun startDebuggerWorker(

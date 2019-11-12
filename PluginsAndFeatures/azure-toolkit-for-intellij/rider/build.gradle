@@ -9,7 +9,7 @@ dependencies {
 }
 
 if (!ext.has("BuildNumber"))
-    ext.BuildNumber = "3.26.0.9999-2019.2"
+    ext.BuildNumber = "3.26.0.9999-2019.3"
 
 version "$BuildNumber"
 logger.lifecycle("version=$version")
