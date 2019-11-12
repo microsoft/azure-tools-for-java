@@ -38,7 +38,7 @@ import java.util.zip.ZipOutputStream;
 public class FileUtil {
 
     private static final int BUFF_SIZE = 1024;
-    public static final String USER_HOME = "user.home";
+    private static final String USER_HOME = "user.home";
 
     /**
      * Method writes contents of file.
