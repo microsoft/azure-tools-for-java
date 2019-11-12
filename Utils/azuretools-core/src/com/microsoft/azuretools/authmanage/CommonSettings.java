@@ -26,9 +26,13 @@ import com.google.gson.*;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -37,6 +41,7 @@ import java.util.stream.StreamSupport;
 public class CommonSettings {
     private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
     public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
+    public static final String COPY_CONFIGURATION_FAIL = "Fail to copy Azure Toolkit configuration from %s to %s";
 
     private static String settingsBaseDir = null;
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
@@ -49,6 +54,15 @@ public class CommonSettings {
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
+    }
+
+    public static void setUpEnvironment(@NotNull String baseDir, String deprecatedFolder) throws IOException {
+        initBaseDir(baseDir);
+        // If base dir doesn't exist or is empty, copy resources from oldBaseDir base folder
+        if (isUsingDeprecatedBaseFolder(baseDir, deprecatedFolder)) {
+            copyResourcesFromDeprecatedFolder(baseDir, deprecatedFolder);
+        }
+        setUpEnvironment(baseDir);
     }
 
     public static void setUpEnvironment(@NotNull String baseDir) {
@@ -134,6 +148,26 @@ public class CommonSettings {
             ENV = Environment.valueOf(env.toUpperCase());
         } catch (Exception e) {
             ENV = Environment.GLOBAL;
+        }
+    }
+
+    private static boolean isUsingDeprecatedBaseFolder(String baseDir, String deprecated) {
+        return !FileUtil.isNonEmptyFolder(baseDir) && FileUtil.isNonEmptyFolder(deprecated);
+    }
+
+    private static void initBaseDir(@NotNull String basePath) throws IOException {
+        File baseDir = new File(basePath);
+        if(!baseDir.exists()){
+            FileUtils.forceMkdir(baseDir);
+        }
+        Files.setAttribute(baseDir.toPath(), "dos:hidden", true);
+    }
+
+    private static void copyResourcesFromDeprecatedFolder(String baseDir, String deprecatedDir) {
+        try {
+            FileUtils.copyDirectory(new File(deprecatedDir), new File(baseDir));
+        } catch (IOException e) {
+            LOGGER.warning(String.format(COPY_CONFIGURATION_FAIL, baseDir, deprecatedDir));
         }
     }
 }

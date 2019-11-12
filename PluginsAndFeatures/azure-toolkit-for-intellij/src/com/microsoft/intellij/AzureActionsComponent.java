@@ -34,6 +34,7 @@ import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
@@ -61,8 +62,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -73,6 +72,8 @@ import rx.internal.util.PlatformDependent;
 public class AzureActionsComponent implements ApplicationComponent, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsComponent.class);
+    private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForIntelliJ";
+    private static final String AZURE_TOOLS_FOLDER_DEPRECATED = "AzureToolsForIntelliJ";
     private static FileHandler logFileHandler = null;
 
     private PluginSettings settings;
@@ -131,13 +132,10 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         if (CommonSettings.getUiFactory() == null) {
             CommonSettings.setUiFactory(new UIFactory());
         }
-        String wd = "AzureToolsForIntelliJ";
-        Path dirPath = Paths.get(System.getProperty("user.home"), wd);
         try {
-            if (!Files.exists(dirPath)) {
-                Files.createDirectory(dirPath);
-            }
-            CommonSettings.setUpEnvironment(dirPath.toString());
+            final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
+            final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
+            CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
             initLoggerFileHandler();
         } catch (IOException ex) {
             LOG.error("initAuthManage()", ex);
