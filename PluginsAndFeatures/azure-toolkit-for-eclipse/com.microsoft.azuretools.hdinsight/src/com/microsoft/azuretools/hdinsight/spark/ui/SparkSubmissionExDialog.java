@@ -438,10 +438,7 @@ public class SparkSubmissionExDialog extends Dialog {
 		        		|| event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.character == SWT.SPACE) {
 		            EventObject source = event.sourceEvent;
 		            // Take double right click as invalid mouse event
-		            if (source instanceof MouseEvent && ((MouseEvent)source).button == 3)
-		                return false;
-
-		            return true;
+		            return !(source instanceof MouseEvent && ((MouseEvent)source).button == 3);
 		        }
 
 		        return false;
