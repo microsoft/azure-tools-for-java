@@ -28,6 +28,7 @@ import static org.eclipse.swt.SWT.TOP;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EventObject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,17 +52,24 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerEditor;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.FocusCellOwnerDrawHighlighter;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TableViewerEditor;
+import org.eclipse.jface.viewers.TableViewerFocusCellManager;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -74,11 +82,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.google.common.collect.ImmutableList;
@@ -420,7 +428,34 @@ public class SparkSubmissionExDialog extends Dialog {
 		jobConfigTableViewer.setContentProvider(new JobConfigurationContentProvider());
 		jobConfigTableViewer.setLabelProvider(new JobConfigurationLabelProvider());
 		jobConfigTableViewer.setCellModifier(new JobConfigurationCellModifier());
+		
+		// Enable navigate the table cells with arrow keys
+		TableViewerFocusCellManager focusCellManager = new TableViewerFocusCellManager(jobConfigTableViewer,new FocusCellOwnerDrawHighlighter(jobConfigTableViewer));
+		ColumnViewerEditorActivationStrategy activationSupport = new ColumnViewerEditorActivationStrategy(jobConfigTableViewer) {
+		    protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
+		        // Enable editor only with mouse double click or space key press
+		        if (event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+		        		|| event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.character == SWT.SPACE) {
+		            EventObject source = event.sourceEvent;
+		            // Take double right click as invalid mouse event
+		            if (source instanceof MouseEvent && ((MouseEvent)source).button == 3)
+		                return false;
+
+		            return true;
+		        }
+
+		        return false;
+		    }
+		};
+
+		TableViewerEditor.create(jobConfigTableViewer, focusCellManager, activationSupport, ColumnViewerEditor.TABBING_HORIZONTAL | 
+		    ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
+		    ColumnViewerEditor.TABBING_VERTICAL |
+		    ColumnViewerEditor.KEYBOARD_ACTIVATION);
+
 		initializeTable();
+		// Make the table focus at the first cell when it get focus at the first time
+		jobConfigTableViewer.editElement(jobConfigurationTable.getItem(0).getData(), 0);
 
 		final Label label = new Label(root, SWT.LEFT);
 		label.setText("Command line arguments");
@@ -519,11 +554,14 @@ public class SparkSubmissionExDialog extends Dialog {
 		@Override
 		public void modify(Object element, String property, Object value) {
 			final int columnIndex = getPropertyColumnIndex(property);
-
-			final Pair<String, String> row = asConfigRow((element instanceof Item)
-					? ((Item)element).getData()
-					: element);
-
+			
+			if (!(element instanceof TableItem)) {
+				return;
+			}
+			
+			final TableItem item = (TableItem) element;
+			final Pair<String, String> row = asConfigRow(item.getData());
+			
 			switch (columnIndex) {
 			case 0: // Key
 				if (StringUtils.isNotBlank(String.valueOf(value))) {
@@ -550,21 +588,22 @@ public class SparkSubmissionExDialog extends Dialog {
 							.filter(conf -> !conf.first().equals(row.first()))
 							.iterator());
 				}
-
+				
+				// TODO: item.setText() for Key changes
 				break;
 			case 1: // Value
 				// Update only
+				final Pair<String, String> toUpdate = new Pair<>(row.first(), String.valueOf(value));
 				jobConfigs = ImmutableList.copyOf(jobConfigs.stream()
-						.map(conf -> conf.first().equals(row.first())
-								? new Pair<>(row.first(), String.valueOf(value))
-								: conf)
+						.map(conf -> conf.first().equals(row.first()) ? toUpdate : conf)
 						.iterator());
-
+				
+				// Change the value displayed on the cell
+				item.setText(1, String.valueOf(value));
+				
 				break;
 			default:
 			}
-
-			jobConfigTableViewer.refresh();
 		}
 
 		public Object getValue(Object element, String property) {
@@ -573,9 +612,14 @@ public class SparkSubmissionExDialog extends Dialog {
 
 			switch (columnIndex) {
 			case 0: // Key
+				// TODO: find key from immutable jobConfigs list when Key is changed
 				return row.first();
 			case 1: // Value
-				return row.second();
+				return jobConfigs.stream()
+						.filter(conf -> conf.first().equals(row.first()))
+						.findFirst()
+						.map(Pair::second)
+						.orElse("");
 			default:
 				return "UNKNOWN_PROPERTY: " + property;
 			}
