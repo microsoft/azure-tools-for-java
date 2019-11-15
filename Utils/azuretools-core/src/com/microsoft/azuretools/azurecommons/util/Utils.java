@@ -245,6 +245,11 @@ public class Utils {
 
     public static boolean isMac() {
         final String os = System.getProperty("os.name");
-        return StringUtils.containsIgnoreCase(os, System.getProperty("os.name"));
+        return StringUtils.containsIgnoreCase(os, "mac");
+    }
+
+    public static boolean isWindows() {
+        final String os = System.getProperty("os.name");
+        return StringUtils.containsIgnoreCase(os, "windows");
     }
 }

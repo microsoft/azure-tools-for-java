@@ -27,6 +27,7 @@ import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.authmanage.interact.IUIFactory;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import com.microsoft.azuretools.azurecommons.util.Utils;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -160,7 +161,9 @@ public class CommonSettings {
         if(!baseDir.exists()){
             FileUtils.forceMkdir(baseDir);
         }
-        Files.setAttribute(baseDir.toPath(), "dos:hidden", true);
+        if (Utils.isWindows()) {
+            Files.setAttribute(baseDir.toPath(), "dos:hidden", true);
+        }
     }
 
     private static void copyResourcesFromDeprecatedFolder(String baseDir, String deprecatedDir) {
