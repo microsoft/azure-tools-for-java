@@ -67,7 +67,7 @@ public class CommonConst {
     public static final String SQL_BIG_DATA_CLUSTER_MODULE_ICON_PATH = "SqlBigDataClusterRoot_16x.png";
     public static final String ARCADIA_WORKSPACE_MODULE_ICON_PATH = "ArcadiaRoot_16x.png";
     public static final String ARCADIA_WORKSPACE_NODE_ICON_PATH = "Workspace_13x.png";
-    public static final String OpenArcadiaUIIconName = "OpenArcadiaUI";
+    public static final String ARCADIA_OPEN_UI_NAME = "OpenArcadiaUI";
     public static final String DISABLE_SSL_CERTIFICATE_VALIDATION = "false";
 
     public static final String CosmosServerlessToolWindowIconName= "SparkSubmissionToolWindow";

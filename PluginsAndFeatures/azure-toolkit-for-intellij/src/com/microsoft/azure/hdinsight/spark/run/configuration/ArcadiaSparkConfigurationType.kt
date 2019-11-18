@@ -34,7 +34,7 @@ object ArcadiaSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
         // TODO: should use Arcadia config icon
         return PluginUtil.getIcon(IconPathBuilder
-                .custom(CommonConst.OpenArcadiaUIIconName)
+                .custom(CommonConst.ARCADIA_OPEN_UI_NAME)
                 .build())
     }
 
