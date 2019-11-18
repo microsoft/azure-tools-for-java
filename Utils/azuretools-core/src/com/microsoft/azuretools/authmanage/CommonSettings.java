@@ -40,17 +40,18 @@ import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
 public class CommonSettings {
-    private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
-    public static final String authMethodDetailsFileName = "AuthMethodDetails.json";
-    public static final String COPY_CONFIGURATION_FAIL = "Fail to copy Azure Toolkit configuration from %s to %s";
 
-    private static String settingsBaseDir = null;
+    public static final String AUTH_METHOD_DETAILS_FILE_NAME = "AuthMethodDetails.json";
+    private static final Logger LOGGER = Logger.getLogger(AdAuthManager.class.getName());
     private static final String AAD_PROVIDER_FILENAME = "AadProvider.json";
     private static final String ENV_NAME_KEY = "EnvironmentName";
+    private static final String MOVE_CONFIGURATION_FAIL = "Fail to move Azure Toolkit configuration from %s to %s";
+    private static final String PROJECT_ARCADIA_KEY = "EnableProjectArcadia";
+
+    private static String settingsBaseDir = null;
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
 
-    private static final String PROJECT_ARCADIA_KEY = "EnableProjectArcadia";
     public static boolean isProjectArcadiaFeatureEnabled = false;
 
     public static String getSettingsBaseDir() {
@@ -58,11 +59,11 @@ public class CommonSettings {
     }
 
     public static void setUpEnvironment(@NotNull String baseDir, String deprecatedFolder) throws IOException {
-        initBaseDir(baseDir);
-        // If base dir doesn't exist or is empty, copy resources from oldBaseDir base folder
+        // If base dir doesn't exist or is empty, move resources from oldBaseDir base folder
         if (isUsingDeprecatedBaseFolder(baseDir, deprecatedFolder)) {
-            copyResourcesFromDeprecatedFolder(baseDir, deprecatedFolder);
+            moveResourcesFromDeprecatedFolder(baseDir, deprecatedFolder);
         }
+        initBaseDir(baseDir);
         setUpEnvironment(baseDir);
     }
 
@@ -153,7 +154,8 @@ public class CommonSettings {
     }
 
     private static boolean isUsingDeprecatedBaseFolder(String baseDir, String deprecated) {
-        return !FileUtil.isNonEmptyFolder(baseDir) && FileUtil.isNonEmptyFolder(deprecated);
+        File baseFile = new File(baseDir);
+        return !baseFile.exists() && FileUtil.isNonEmptyFolder(deprecated);
     }
 
     private static void initBaseDir(@NotNull String basePath) throws IOException {
@@ -166,11 +168,11 @@ public class CommonSettings {
         }
     }
 
-    private static void copyResourcesFromDeprecatedFolder(String baseDir, String deprecatedDir) {
+    private static void moveResourcesFromDeprecatedFolder(String baseDir, String deprecatedDir) {
         try {
-            FileUtils.copyDirectory(new File(deprecatedDir), new File(baseDir));
+            FileUtils.moveDirectory(new File(deprecatedDir), new File(baseDir));
         } catch (IOException e) {
-            LOGGER.warning(String.format(COPY_CONFIGURATION_FAIL, baseDir, deprecatedDir));
+            LOGGER.warning(String.format(MOVE_CONFIGURATION_FAIL, baseDir, deprecatedDir));
         }
     }
 }
