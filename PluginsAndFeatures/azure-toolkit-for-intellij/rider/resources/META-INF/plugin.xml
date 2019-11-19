@@ -122,6 +122,7 @@
   <depends>com.intellij.modules.rider</depends>
   <depends>com.intellij.database</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
+  <depends optional="true">com.jetbrains.restClient</depends>
 
   <extensions defaultExtensionNs="com.intellij">
     <projectConfigurable groupId="tools"
@@ -147,6 +148,8 @@
     <projectTemplateProvider implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplatesProvider" order="first"/>
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV1TemplateCustomizer" />
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV2TemplateCustomizer" />
+
+    <internalFileTemplate name="Trigger Azure Function"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">

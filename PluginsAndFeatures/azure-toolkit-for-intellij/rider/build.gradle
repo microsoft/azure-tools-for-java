@@ -19,7 +19,7 @@ intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version
 
-    plugins 'terminal', dep_plugins_rider
+    plugins 'terminal', 'restClient', dep_plugins_rider
 }
 
 def extensionsFrom = 'resources/dotnet'

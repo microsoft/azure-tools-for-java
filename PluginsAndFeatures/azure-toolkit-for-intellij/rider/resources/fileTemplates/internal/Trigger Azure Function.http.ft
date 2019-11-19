@@ -1,0 +1,21 @@
+#set($comment = '#')
+${comment} Trigger Azure Function - ${functionName}
+${comment}
+${comment} More information can be found in the Azure Functions documentation,
+${comment} as well as examples on how to pass test data to a function:
+${comment} https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#passing-test-data-to-a-function
+${comment}
+${comment} Make sure to update the below calls to suit your function host and port.
+${comment}
+${comment} Call the following endpoint to locally run HTTP and webhook triggered functions:
+
+GET http://localhost:7071/api/${functionName}
+
+###
+
+${comment} Call the following administrator endpoint to trigger non-HTTP functions:
+
+POST http://localhost:7071/admin/functions/${functionName}
+Content-Type: application/json
+
+{}
