@@ -267,6 +267,19 @@ public class JobUtils {
             HTTP_WEB_CLIENT.setCredentialsProvider(credentialsProvider);
         }
 
+        try {
+            URI uri = URI.create(baseUrl);
+            String location = SparkBatchSubmission.getInstance().negotiateAuthMethod(String.format("%s://%s", uri.getScheme(), uri.getHost()));
+            if (location != null) {
+                Matcher matcher = Pattern.compile(SparkBatchSubmission.probeLocationPattern).matcher(location);
+                String tenantId = matcher.find() ? matcher.group("tenantId") : "";
+                HTTP_WEB_CLIENT.addRequestHeader("Authorization", "Bearer " + AdAuthManager.getInstance()
+                        .getAccessToken(tenantId, SparkBatchEspMfaSubmission.resource, PromptBehavior.Auto));
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Encounter exception when negotiating mfa cluster", e);
+        }
+
         URI url = null;
 
         try {
