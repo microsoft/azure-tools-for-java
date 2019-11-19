@@ -21,6 +21,14 @@
   <change-notes>
     <![CDATA[
       <html>
+        <p>[3.26.0-2019.3]</p>
+        <ul>
+          <li>Functions: Invoke timer trigger during debug session - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/246">#246</a></li>
+        </ul>
+        <h4>Fixed bugs:</h4>
+        <ul>
+		  <li>Azure Functions - Filter out pre-releases from core tools downloads - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/256">#256</a></li>
+        </ul>
         <p>[3.26.0-2019.2]</p>
         <ul>
           <li>Cloud Shell: Support web preview - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/199">#199</a></li>

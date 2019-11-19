@@ -4,8 +4,9 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Bugfix:</h4>
+      <h4>Changes:</h4>
       <ul>
+          <li>Functions: Invoke timer trigger during debug session - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/246">#246</a></li>
 		  <li>Azure Functions - Filter out pre-releases from core tools downloads - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/256">#256</a></li>
       </ul>
     </html>
