@@ -32,9 +32,11 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.arcadia.sdk.common.livy.interactive.MfaEspSparkSession
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
@@ -73,10 +75,14 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val cluster = cluster ?: throw ExecutionException(RuntimeConfigurationError(
                 "Can't prepare Spark Livy interactive session since the target cluster isn't set or found"))
-
-        val session = SparkSession(
+        val url = URI.create((cluster as? LivyCluster)?.livyConnectionUrl ?: return null)
+        val session = if (cluster is MfaEspCluster) MfaEspSparkSession(
                 name,
-                URI.create((cluster as? LivyCluster)?.livyConnectionUrl ?: return null),
+                url,
+                cluster.tenantId
+        ) else SparkSession(
+                name,
+                url,
                 cluster.httpUserName,
                 cluster.httpPassword)
 

@@ -32,7 +32,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 public class ArcadiaSparkWorkspaceNode extends RefreshableNode {
     private static final String ARCADIA_WORKSPACE_ID = ArcadiaSparkWorkspaceNode.class.getName();
-    private static final String ICON_PATH = CommonConst.ClusterIConPath;
+    private static final String ICON_PATH = CommonConst.ARCADIA_WORKSPACE_NODE_ICON_PATH;
 
     @NotNull
     private ArcadiaWorkSpace workspace;
