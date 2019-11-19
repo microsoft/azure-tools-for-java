@@ -254,6 +254,22 @@ public class JobUtils {
         return new ApplicationMasterLogs(standout, standerr, directoryInfo);
     }
 
+    public static String getInformationFromYarnLogDom(@Nullable String authCode,
+                                                      @NotNull String baseUrl,
+                                                      @NotNull String type,
+                                                      long start,
+                                                      int size) {
+        final WebClient HTTP_WEB_CLIENT = new WebClient(BrowserVersion.CHROME);
+        HTTP_WEB_CLIENT.getOptions().setUseInsecureSSL(HttpObservable.isSSLCertificateValidationDisabled());
+        HTTP_WEB_CLIENT.setCache(globalCache);
+
+        if (authCode != null) {
+            HTTP_WEB_CLIENT.addRequestHeader("Authorization", authCode);
+        }
+
+        return getInformationFromYarnLogDom(HTTP_WEB_CLIENT, baseUrl, type, start, size);
+    }
+
     public static String getInformationFromYarnLogDom(final CredentialsProvider credentialsProvider,
                                                       @NotNull String baseUrl,
                                                       @NotNull String type,
@@ -267,26 +283,21 @@ public class JobUtils {
             HTTP_WEB_CLIENT.setCredentialsProvider(credentialsProvider);
         }
 
-        try {
-            URI uri = URI.create(baseUrl);
-            String location = SparkBatchSubmission.getInstance().negotiateAuthMethod(String.format("%s://%s", uri.getScheme(), uri.getHost()));
-            if (location != null) {
-                Matcher matcher = Pattern.compile(SparkBatchSubmission.probeLocationPattern).matcher(location);
-                String tenantId = matcher.find() ? matcher.group("tenantId") : "";
-                HTTP_WEB_CLIENT.addRequestHeader("Authorization", "Bearer " + AdAuthManager.getInstance()
-                        .getAccessToken(tenantId, SparkBatchEspMfaSubmission.resource, PromptBehavior.Auto));
-            }
-        } catch (Exception e) {
-            LOGGER.warn("Encounter exception when negotiating mfa cluster", e);
-        }
+        return getInformationFromYarnLogDom(HTTP_WEB_CLIENT, baseUrl, type, start, size);
+    }
 
+    private static String getInformationFromYarnLogDom(@NotNull WebClient client,
+                                                      @NotNull String baseUrl,
+                                                      @NotNull String type,
+                                                      long start,
+                                                      int size) {
         URI url = null;
 
         try {
             url = new URI(baseUrl + "/").resolve(
                     String.format("%s?start=%d", type, start) +
                             (size <= 0 ? "" : String.format("&&end=%d", start + size)));
-            HtmlPage htmlPage = HTTP_WEB_CLIENT.getPage(url.toString());
+            HtmlPage htmlPage = client.getPage(url.toString());
 
             Iterator<DomElement> iterator = htmlPage.getElementById("navcell").getNextElementSibling().getChildElements().iterator();
 

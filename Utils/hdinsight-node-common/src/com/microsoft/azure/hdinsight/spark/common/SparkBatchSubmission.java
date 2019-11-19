@@ -33,6 +33,7 @@ import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import okio.Timeout;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.net.util.Base64;
 import org.apache.http.Header;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -54,6 +55,7 @@ import org.apache.http.ssl.TrustStrategy;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -85,6 +87,13 @@ public class SparkBatchSubmission implements ILogger {
     }
 
     private CredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
+
+    private String authCode = null;
+
+    @Nullable
+    public String getAuthCode() {
+        return authCode;
+    }
 
     @NotNull
     public String getInstallationID() {
@@ -143,6 +152,10 @@ public class SparkBatchSubmission implements ILogger {
      */
     public void setUsernamePasswordCredential(String username, String password) {
         credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
+        if (username != null && password != null) {
+            String auth = username + ":" + password;
+            authCode = "Basic " + new String(Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1)));
+        }
     }
 
     public CredentialsProvider getCredentialsProvider() {

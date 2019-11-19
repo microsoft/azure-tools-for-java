@@ -460,7 +460,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                                                                           long logOffset,
                                                                           int size) {
         String logGot = JobUtils.getInformationFromYarnLogDom(
-                getSubmission().getCredentialsProvider(),
+                getSubmission().getAuthCode(),
                 containerLogUrl,
                 type,
                 logOffset,

@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 
 public class SparkBatchEspMfaSubmission extends SparkBatchSubmission {
     public static final String resource = "https://hib.azurehdinsight.net";
+    private static final String authScheme = "Bearer ";
     private String tenantId;
 
     public SparkBatchEspMfaSubmission(final @NotNull String tenantId, final @NotNull String name) {
@@ -50,7 +52,7 @@ public class SparkBatchEspMfaSubmission extends SparkBatchSubmission {
         return HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultHeaders(Arrays.asList(
-                        new BasicHeader("Authorization", "Bearer " + getAccessToken())))
+                        new BasicHeader("Authorization", authScheme + getAccessToken())))
                 .setSSLSocketFactory(getSSLSocketFactory())
                 .build();
     }
@@ -58,5 +60,15 @@ public class SparkBatchEspMfaSubmission extends SparkBatchSubmission {
 
     public String getTenantId() {
         return tenantId;
+    }
+
+    @Override
+    @Nullable
+    public String getAuthCode() {
+        try {
+            return authScheme + getAccessToken();
+        } catch (IOException e) {
+            return null;
+        }
     }
 }
