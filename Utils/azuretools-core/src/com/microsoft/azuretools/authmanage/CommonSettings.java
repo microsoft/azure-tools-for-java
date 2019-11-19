@@ -72,13 +72,13 @@ public class CommonSettings {
         return settingsBaseDir;
     }
 
-    public static void setUpEnvironment(@NotNull String baseDir, String deprecatedFolder) throws IOException {
+    public static void setUpEnvironment(@NotNull String basePath, String deprecatedPath) throws IOException {
         // If base dir doesn't exist or is empty, move resources from oldBaseDir base folder
-        if (isUsingDeprecatedBaseFolder(baseDir, deprecatedFolder)) {
-            moveResourcesToBaseFolder(baseDir, deprecatedFolder);
+        if (isUsingDeprecatedBaseFolder(basePath, deprecatedPath)) {
+            moveResourcesToBaseFolder(basePath, deprecatedPath);
         }
-        initBaseDir(baseDir);
-        setUpEnvironment(baseDir);
+        initBaseDir(basePath);
+        setUpEnvironment(basePath);
     }
 
     public static void setUpEnvironment(@NotNull String baseDir) {
@@ -167,9 +167,9 @@ public class CommonSettings {
         }
     }
 
-    private static boolean isUsingDeprecatedBaseFolder(String baseDir, String deprecated) {
-        File baseFile = new File(baseDir);
-        return !baseFile.exists() && FileUtil.isNonEmptyFolder(deprecated);
+    private static boolean isUsingDeprecatedBaseFolder(String basePath, String deprecatedPath) {
+        File baseDir = new File(basePath);
+        return !baseDir.exists() && FileUtil.isNonEmptyFolder(deprecatedPath);
     }
 
     private static void initBaseDir(@NotNull String basePath) throws IOException {
@@ -182,34 +182,34 @@ public class CommonSettings {
         }
     }
 
-    private static void moveResourcesToBaseFolder(String baseDir, String deprecatedDir) {
-        final File baseFile = new File(baseDir);
-        final File deprecatedFile = new File(deprecatedDir);
-        Arrays.stream(deprecatedFile.listFiles())
+    private static void moveResourcesToBaseFolder(String basePath, String deprecatedPath) {
+        final File baseDir = new File(basePath);
+        final File deprecatedDir = new File(deprecatedPath);
+        Arrays.stream(deprecatedDir.listFiles())
                 .filter(CommonSettings::isToolkitResourceFile)
-                .forEach(file -> moveResourceFileToBaseFolder(file, baseFile));
-        cleanDeprecatedFolder(deprecatedFile);
+                .forEach(file -> moveToolkitResourceFileToFolder(file, baseDir));
+        cleanDeprecatedFolder(deprecatedDir);
     }
 
     private static boolean isToolkitResourceFile(File file){
-        return RESOURCE_FILE_LIST.stream()
-                .anyMatch(resource -> file.isFile() && StringUtils.containsIgnoreCase(file.getName(), resource));
+        return file.isFile() && RESOURCE_FILE_LIST.stream()
+                .anyMatch(resource -> StringUtils.containsIgnoreCase(file.getName(), resource));
     }
 
-    private static void moveResourceFileToBaseFolder(File resource, File baseFolder){
+    private static void moveToolkitResourceFileToFolder(File resourceFile, File baseDir){
         try {
-            FileUtils.moveToDirectory(resource, baseFolder, true);
+            FileUtils.moveToDirectory(resourceFile, baseDir, true);
         } catch (IOException e) {
-            LOGGER.warning(String.format(MOVE_RESOURCE_FILE_FAIL, resource, baseFolder));
+            LOGGER.warning(String.format(MOVE_RESOURCE_FILE_FAIL, resourceFile, baseDir));
         }
     }
 
-    private static void cleanDeprecatedFolder(File deprecatedFile) {
-        if (ArrayUtils.isEmpty(deprecatedFile.list())) {
+    private static void cleanDeprecatedFolder(File deprecatedDir) {
+        if (ArrayUtils.isEmpty(deprecatedDir.list())) {
             try {
-                FileUtils.deleteDirectory(deprecatedFile);
+                FileUtils.deleteDirectory(deprecatedDir);
             } catch (IOException e) {
-                LOGGER.warning(String.format(CLEAN_DEPRECATED_FOLDER_FAIL, deprecatedFile.getName()));
+                LOGGER.warning(String.format(CLEAN_DEPRECATED_FOLDER_FAIL, deprecatedDir.getName()));
             }
         }
     }

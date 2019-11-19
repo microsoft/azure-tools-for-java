@@ -243,13 +243,15 @@ public class Utils {
         }
     }
 
+    public static String getOS() {
+        return System.getProperty("os.name");
+    }
+
     public static boolean isMac() {
-        final String os = System.getProperty("os.name");
-        return StringUtils.containsIgnoreCase(os, "mac");
+        return StringUtils.containsIgnoreCase(getOS(), "mac");
     }
 
     public static boolean isWindows() {
-        final String os = System.getProperty("os.name");
-        return StringUtils.containsIgnoreCase(os, "windows");
+        return StringUtils.containsIgnoreCase(getOS(), "windows");
     }
 }
