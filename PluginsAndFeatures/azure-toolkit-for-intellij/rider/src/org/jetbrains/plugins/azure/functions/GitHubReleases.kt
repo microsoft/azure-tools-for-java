@@ -48,6 +48,7 @@ interface GitHubReleasesService {
 class GitHubRelease(val url: String?,
                     @SerializedName("assets_url") val assetsUrl: String?,
                     val name: String?,
+                    val prerelease: Boolean,
                     @SerializedName("tag_name") val tagName: String?,
                     val assets: List<GitHubReleaseAsset> = mutableListOf()) {
 }

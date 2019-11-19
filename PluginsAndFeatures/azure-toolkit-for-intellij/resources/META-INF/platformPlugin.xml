@@ -6,7 +6,7 @@
     <html>
       <h4>Bugfix:</h4>
       <ul>
-        <li>Debugging an entire function app is no longer possible - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/238">#238</a></li>
+		  <li>Azure Functions - Filter out pre-releases from core tools downloads - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/256">#256</a></li>
       </ul>
     </html>
     ]]>

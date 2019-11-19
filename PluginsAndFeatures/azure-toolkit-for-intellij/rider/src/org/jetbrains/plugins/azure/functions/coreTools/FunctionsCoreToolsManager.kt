@@ -53,25 +53,25 @@ object FunctionsCoreToolsManager {
 
     private val logger = getLogger<FunctionsCoreToolsManager>()
 
-    fun downloadLatestRelease(indicator: ProgressIndicator, completed: (String) -> Unit) {
+    fun downloadLatestRelease(allowPrerelease: Boolean, indicator: ProgressIndicator, completed: (String) -> Unit) {
         object : Task.Backgroundable(null, DOWNLOADTASK_TITLE, true) {
             override fun run(pi: ProgressIndicator) {
                 ApplicationManager.getApplication().executeOnPooledThread {
-                    downloadLatestReleaseInternal(pi, completed)
+                    downloadLatestReleaseInternal(allowPrerelease, pi, completed)
                 }
             }
         }.run(indicator)
     }
 
-    fun downloadLatestRelease(project: Project, completed: (String) -> Unit): Task {
+    fun downloadLatestRelease(allowPrerelease: Boolean, project: Project, completed: (String) -> Unit): Task {
         return object : Task.Backgroundable(project, DOWNLOADTASK_TITLE, true) {
             override fun run(pi: ProgressIndicator) {
-                downloadLatestReleaseInternal(pi, completed)
+                downloadLatestReleaseInternal(allowPrerelease, pi, completed)
             }
         }
     }
 
-    private fun downloadLatestReleaseInternal(pi: ProgressIndicator, completed: (String) -> Unit) {
+    private fun downloadLatestReleaseInternal(allowPrerelease: Boolean, pi: ProgressIndicator, completed: (String) -> Unit) {
         if (!pi.isRunning) pi.start()
 
         // Grab latest URL
@@ -79,7 +79,7 @@ object FunctionsCoreToolsManager {
         pi.isIndeterminate = true
 
         val latestLocal = determineVersion(determineLatestLocalCoreToolsPath())
-        val latestRemote = determineLatestRemote()
+        val latestRemote = determineLatestRemote(allowPrerelease)
         if (latestRemote == null) {
             logger.error { "Could not determine latest remote version." }
         }
@@ -210,7 +210,7 @@ object FunctionsCoreToolsManager {
         return null
     }
 
-    fun determineLatestRemote(): AzureFunctionsCoreToolsRemoteAsset? {
+    fun determineLatestRemote(allowPrerelease: Boolean): AzureFunctionsCoreToolsRemoteAsset? {
         val expectedFileNamePrefix = "Azure.Functions.Cli." + if (SystemInfo.isWindows && SystemInfo.is64Bit) {
             "win-x64"
         } else if (SystemInfo.isWindows) {
@@ -232,6 +232,7 @@ object FunctionsCoreToolsManager {
             if (gitHubReleases != null) {
                 for (gitHubRelease in gitHubReleases
                         .filter { !it.tagName.isNullOrEmpty() }
+                        .filter { allowPrerelease || !it.prerelease }
                         .sortedWith(Comparator { o1, o2 ->
                             VersionComparatorUtil.compare(o2.tagName!!.trimStart('v'), o1.tagName!!.trimStart('v')) // latest versions on top
                         })) {
@@ -242,7 +243,7 @@ object FunctionsCoreToolsManager {
                     }
 
                     if (latestAsset != null) {
-                        return AzureFunctionsCoreToolsRemoteAsset(latestReleaseVersion, latestAsset.name!!, latestAsset.browserDownloadUrl!!)
+                        return AzureFunctionsCoreToolsRemoteAsset(latestReleaseVersion, latestAsset.name!!, gitHubRelease.prerelease, latestAsset.browserDownloadUrl!!)
                     }
                 }
             }
@@ -262,5 +263,5 @@ object FunctionsCoreToolsManager {
     }
 
     class AzureFunctionsCoreToolsLocalAsset(version: String, val fullPath: String) : AzureFunctionsCoreToolsAsset(version)
-    class AzureFunctionsCoreToolsRemoteAsset(version: String, val fileName: String, val downloadUrl: String) : AzureFunctionsCoreToolsAsset(version)
+    class AzureFunctionsCoreToolsRemoteAsset(version: String, val fileName: String, val isPrerelease: Boolean, val downloadUrl: String) : AzureFunctionsCoreToolsAsset(version)
 }

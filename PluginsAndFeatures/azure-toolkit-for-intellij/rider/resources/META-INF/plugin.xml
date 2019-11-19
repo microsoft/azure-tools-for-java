@@ -34,6 +34,7 @@
           <li>Publish Azure web app does not work - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/236">#236</a></li>
           <li>Fix exception on SQL Server create - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/224">#224</a></li>
 		  <li>Debugging an entire function app is no longer possible - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/238">#238</a></li>
+		  <li>Azure Functions - Filter out pre-releases from core tools downloads - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/256">#256</a></li>
         </ul>
         <p>[3.20.0-2019.1]</p>
         <ul>

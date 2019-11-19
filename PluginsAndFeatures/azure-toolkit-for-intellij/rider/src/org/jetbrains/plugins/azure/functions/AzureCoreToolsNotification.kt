@@ -49,9 +49,10 @@ class AzureCoreToolsNotification : StartupActivity {
 
             ApplicationManager.getApplication().executeOnPooledThread {
                 val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.retrieve()
+                val allowPrerelease = PropertiesComponent.getInstance().getBoolean(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE)
 
                 val local = FunctionsCoreToolsManager.determineVersion(funcCoreToolsInfo?.coreToolsPath)
-                val remote = FunctionsCoreToolsManager.determineLatestRemote()
+                val remote = FunctionsCoreToolsManager.determineLatestRemote(allowPrerelease)
 
                 if (local == null || remote != null && local < remote) {
                     val title = if (local == null) {
@@ -75,7 +76,7 @@ class AzureCoreToolsNotification : StartupActivity {
                                         when (e.description) {
                                             "install" -> {
                                                 ProgressManager.getInstance().run(
-                                                        FunctionsCoreToolsManager.downloadLatestRelease(project) {
+                                                        FunctionsCoreToolsManager.downloadLatestRelease(allowPrerelease, project) {
                                                             PropertiesComponent.getInstance().setValue(
                                                                     AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, it)
                                                             notification.expire()
