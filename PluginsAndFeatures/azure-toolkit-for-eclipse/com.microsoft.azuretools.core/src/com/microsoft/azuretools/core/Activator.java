@@ -57,6 +57,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import com.google.gson.Gson;
+import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
@@ -176,7 +177,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsLoggerFileHandler() {
         try {
-            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), "corelibs.log").toString();
+            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), Constants.FILE_NAME_CORE_LIB_LOG).toString();
             System.out.println("Logger path:" + loggerFilePath);
             logFileHandler = new FileHandler(loggerFilePath, false);
             java.util.logging.Logger l = java.util.logging.Logger.getLogger("");

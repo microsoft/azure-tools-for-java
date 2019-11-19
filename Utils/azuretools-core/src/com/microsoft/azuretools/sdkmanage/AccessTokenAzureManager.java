@@ -47,6 +47,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.microsoft.azuretools.Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_AT;
+
 public class AccessTokenAzureManager extends AzureManagerBase {
     private final static Logger LOGGER = Logger.getLogger(AccessTokenAzureManager.class.getName());
     private final SubscriptionManager subscriptionManager;
@@ -70,7 +72,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
 
     static {
         settings = new Settings();
-        settings.setSubscriptionsDetailsFileName("subscriptionsDetails-at.json");
+        settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_AT);
     }
 
     @Override

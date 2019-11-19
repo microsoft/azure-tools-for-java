@@ -69,6 +69,8 @@ import java.util.logging.SimpleFormatter;
 
 import rx.internal.util.PlatformDependent;
 
+import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
+
 public class AzureActionsComponent implements ApplicationComponent, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
     private static final Logger LOG = Logger.getInstance(AzureActionsComponent.class);
@@ -153,7 +155,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
 
     private void initLoggerFileHandler() {
         try {
-            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), "corelibs.log").toString();
+            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), FILE_NAME_CORE_LIB_LOG).toString();
             System.out.println("Logger path:" + loggerFilePath);
             logFileHandler = new FileHandler(loggerFilePath, false);
             java.util.logging.Logger l = java.util.logging.Logger.getLogger("");

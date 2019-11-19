@@ -46,6 +46,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
+
 public class AuthMethodManager {
     private final static Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
     private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. "
@@ -208,11 +210,11 @@ public class AuthMethodManager {
     private void loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {
-            FileStorage fs = new FileStorage(CommonSettings.AUTH_METHOD_DETAILS_FILE_NAME, CommonSettings.getSettingsBaseDir());
+            FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
             byte[] data = fs.read();
             String json = new String(data);
             if (json.isEmpty()) {
-                System.out.println(CommonSettings.AUTH_METHOD_DETAILS_FILE_NAME + "file is empty");
+                System.out.println(FILE_NAME_AUTH_METHOD_DETAILS + "file is empty");
                 authMethodDetails = new AuthMethodDetails();
                 return;
             }
@@ -226,7 +228,7 @@ public class AuthMethodManager {
     private void saveSettings() throws IOException {
         System.out.println("saving authMethodDetails...");
         String sd = JsonHelper.serialize(authMethodDetails);
-        FileStorage fs = new FileStorage(CommonSettings.AUTH_METHOD_DETAILS_FILE_NAME, CommonSettings.getSettingsBaseDir());
+        FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
         fs.write(sd.getBytes(Charset.forName("utf-8")));
     }
 }

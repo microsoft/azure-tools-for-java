@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.microsoft.azuretools.Constants.FILE_NAME_SURVEY_CONFIG;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SURVEY;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 
@@ -47,7 +48,6 @@ public enum CustomerSurveyHelper {
     private static final int PUT_OFF_DELAY_BY_DAY = 30;
     private static final int TAKE_SURVEY_DELAY_BY_DAY = 180;
 
-    private static final String SURVEY_CONFIG_FILE = "SurveyConfig.json";
     private static final String TELEMETRY_KEY_RESPONSE = "response";
     private static final String TELEMETRY_VALUE_NEVER_SHOW = "neverShowAgain";
     private static final String TELEMETRY_VALUE_PUT_OFF = "putOff";
@@ -133,7 +133,7 @@ public enum CustomerSurveyHelper {
     }
 
     private File getConfigFile() {
-        return new File(CommonSettings.getSettingsBaseDir(), SURVEY_CONFIG_FILE);
+        return new File(CommonSettings.getSettingsBaseDir(), FILE_NAME_SURVEY_CONFIG);
     }
 
     private synchronized void sendTelemetry(String response) {
