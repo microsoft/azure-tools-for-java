@@ -51,11 +51,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
-import org.eclipse.jface.viewers.FocusCellOwnerDrawHighlighter;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -63,12 +61,13 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TableViewerEditor;
-import org.eclipse.jface.viewers.TableViewerFocusCellManager;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -388,7 +387,7 @@ public class SparkSubmissionExDialog extends Dialog {
 		jobConfigurationLabel.setText("Job configurations");
 		jobConfigurationLabel.setLayoutData(new GridDataBuilder().verticalAlignment(TOP).build());
 
-		jobConfigTableViewer = new TableViewer(root, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		jobConfigTableViewer = new TableViewer(root, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		jobConfigTableViewer.setUseHashlookup(true);
 		jobConfigTableViewer.setColumnProperties(COLUMN_NAMES);
 
@@ -402,22 +401,10 @@ public class SparkSubmissionExDialog extends Dialog {
 		final TableViewerColumn keyCol = new TableViewerColumn(jobConfigTableViewer, SWT.NONE);
 		keyCol.getColumn().setText(COLUMN_NAMES[0]);
 		keyCol.getColumn().setWidth(150);
-		keyCol.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				return asConfigRow(element).first();
-			}
-		});
 
 		final TableViewerColumn valueCol = new TableViewerColumn(jobConfigTableViewer, SWT.NONE);
 		valueCol.getColumn().setText(COLUMN_NAMES[1]);
 		valueCol.getColumn().setWidth(80);
-		valueCol.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				return asConfigRow(element).second();
-			}
-		});
 
 		final CellEditor[] editors = new CellEditor[] {
 			new TextCellEditor(jobConfigurationTable),
@@ -429,12 +416,24 @@ public class SparkSubmissionExDialog extends Dialog {
 		jobConfigTableViewer.setLabelProvider(new JobConfigurationLabelProvider());
 		jobConfigTableViewer.setCellModifier(new JobConfigurationCellModifier());
 		
-		// Enable navigate the table cells with arrow keys
-		TableViewerFocusCellManager focusCellManager = new TableViewerFocusCellManager(jobConfigTableViewer,new FocusCellOwnerDrawHighlighter(jobConfigTableViewer));
+		jobConfigurationTable.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if (e.keyCode == SWT.SPACE) {
+					TableItem[] selection = ((Table)e.getSource()).getSelection();
+					if (selection.length > 0) {
+						jobConfigTableViewer.editElement(selection[0].getData(), 1);
+					}
+				}
+			}
+		});
+
+		
 		ColumnViewerEditorActivationStrategy activationSupport = new ColumnViewerEditorActivationStrategy(jobConfigTableViewer) {
 		    protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
 		        // Enable editor only with mouse double click or space key press
 		        if (event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+		        		|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
 		        		|| event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.character == SWT.SPACE) {
 		            EventObject source = event.sourceEvent;
 		            // Take double right click as invalid mouse event
@@ -445,7 +444,7 @@ public class SparkSubmissionExDialog extends Dialog {
 		    }
 		};
 
-		TableViewerEditor.create(jobConfigTableViewer, focusCellManager, activationSupport, ColumnViewerEditor.TABBING_HORIZONTAL | 
+		TableViewerEditor.create(jobConfigTableViewer, activationSupport, ColumnViewerEditor.TABBING_HORIZONTAL | 
 		    ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
 		    ColumnViewerEditor.TABBING_VERTICAL |
 		    ColumnViewerEditor.KEYBOARD_ACTIVATION);
