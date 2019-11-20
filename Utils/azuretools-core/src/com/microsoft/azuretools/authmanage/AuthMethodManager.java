@@ -214,7 +214,7 @@ public class AuthMethodManager {
             byte[] data = fs.read();
             String json = new String(data);
             if (json.isEmpty()) {
-                System.out.println(FILE_NAME_AUTH_METHOD_DETAILS + "file is empty");
+                System.out.println(FILE_NAME_AUTH_METHOD_DETAILS + " is empty");
                 authMethodDetails = new AuthMethodDetails();
                 return;
             }
