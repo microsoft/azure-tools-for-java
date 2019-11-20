@@ -34,7 +34,6 @@ import java.util.Arrays;
 
 public class SparkBatchEspMfaSubmission extends SparkBatchSubmission {
     public static final String resource = "https://hib.azurehdinsight.net";
-    private static final String authScheme = "Bearer ";
     private String tenantId;
 
     public SparkBatchEspMfaSubmission(final @NotNull String tenantId, final @NotNull String name) {
@@ -52,7 +51,7 @@ public class SparkBatchEspMfaSubmission extends SparkBatchSubmission {
         return HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultHeaders(Arrays.asList(
-                        new BasicHeader("Authorization", authScheme + getAccessToken())))
+                        new BasicHeader("Authorization", "Bearer " + getAccessToken())))
                 .setSSLSocketFactory(getSSLSocketFactory())
                 .build();
     }
@@ -66,7 +65,7 @@ public class SparkBatchEspMfaSubmission extends SparkBatchSubmission {
     @Nullable
     public String getAuthCode() {
         try {
-            return authScheme + getAccessToken();
+            return "Bearer " + getAccessToken();
         } catch (IOException e) {
             return null;
         }

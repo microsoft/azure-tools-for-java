@@ -25,6 +25,7 @@ import com.microsoft.azure.hdinsight.spark.common.MockHttpService;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
+import org.apache.http.client.CredentialsProvider;
 
 import java.util.List;
 
@@ -65,7 +66,7 @@ public class JobUtilsScenario {
 
     @Then("^get YarnUI log '(.+)' from '(.+)' should return '(.*)'$")
     public void checkGetYarnUILogType(String type, String logUrl, String expect) throws Throwable {
-        String actual = JobUtils.getInformationFromYarnLogDom(null, httpServerMock.completeUrl(logUrl), type, 0, -1);
+        String actual = JobUtils.getInformationFromYarnLogDom((CredentialsProvider) null, httpServerMock.completeUrl(logUrl), type, 0, -1);
 
         assertTrue("There are unmatched requests. All requests (reversed) are: \n" +
                         httpServerMock.getLivyServerMock().getAllServeEvents().stream()
