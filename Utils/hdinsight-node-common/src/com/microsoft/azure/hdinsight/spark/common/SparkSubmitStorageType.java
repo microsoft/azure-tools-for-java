@@ -34,6 +34,7 @@ public enum SparkSubmitStorageType {
     SPARK_INTERACTIVE_SESSION("Use Spark interactive session to upload"),
     ADLS_GEN1("Use ADLS Gen 1 to upload"),
     ADLS_GEN2("Use ADLS Gen 2 to upload"),
+    ADLS_GEN2_FOR_OAUTH("Use ADLS Gen2 with azure account to upload"),
     WEBHDFS("Use WebHDFS to upload"),
     ADLA_ACCOUNT_DEFAULT_STORAGE("Use Cosmos account default storage to upload"),
     NOT_SUPPORT_STORAGE_TYPE("Tool doesn't support submitting job with gen2 storage account");

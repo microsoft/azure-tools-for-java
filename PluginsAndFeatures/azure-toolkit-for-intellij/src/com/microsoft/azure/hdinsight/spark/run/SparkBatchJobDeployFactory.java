@@ -175,6 +175,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
 
                 jobDeploy = new AdlsDeploy(destinationRootPath, accessToken);
                 break;
+            case ADLS_GEN2_FOR_OAUTH:
             case ADLS_GEN2:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
                 String gen2StorageAccount = "";
@@ -187,25 +188,14 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     throw new ExecutionException("Invalid ADLS GEN2 root path");
                 }
 
-                accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
-                if (StringUtils.isBlank(accessKey)) {
-                    throw new ExecutionException("Invalid access key input");
-                }
-
                 if (clusterDetail instanceof MfaEspCluster) {
-                    try {
-                        AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), null);
-                    } catch (Exception e) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
-                                    String title = "Unable to login in and have a retry please";
-                                    ErrorMessageForm toolErrorDialog = new ErrorMessageForm(title);
-                                    toolErrorDialog.show();
-                                }
-                        );
-                    }
-
                     httpObservable = new ADLSGen2OAuthHttpObservable(((MfaEspCluster) clusterDetail).getTenantId());
                 } else {
+                    accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
+                    if (StringUtils.isBlank(accessKey)) {
+                        throw new ExecutionException("Invalid access key input");
+                    }
+
                     httpObservable = new SharedKeyHttpObservable(gen2StorageAccount, accessKey);
                 }
 

@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
@@ -55,5 +56,10 @@ public class MfaHdiAdditionalClusterDetail extends HDInsightAdditionalClusterDet
         }
 
         return this.tenantId;
+    }
+
+    @Override
+    public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
+        return SparkSubmitStorageTypeOptionsForCluster.MfaHdiLinkedCluster;
     }
 }

@@ -23,13 +23,22 @@ package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 
+import java.io.IOException;
+
 public interface MfaEspCluster {
     String getTenantId();
 
     // get path suffix user/<user_name>
     default String getUserPath() {
-        String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
-        String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
-        return String.format("%s/%s", "user", loginUser);
+        try {
+            if (AuthMethodManager.getInstance().isSignedIn()) {
+                String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+                String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
+                return String.format("%s/%s", "user", loginUser);
+            }
+        } catch (IOException e) {
+        }
+
+        return "<unknown_user>";
     }
 }
