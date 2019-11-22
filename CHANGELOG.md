@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.30.0](#3300)
   - [3.29.0](#3290)
   - [3.28.0](#3280)
   - [3.27.0](#3270)
@@ -40,6 +41,14 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.30.0
+
+### Changed
+- Deprecate Storage Accounts(will be removed in v3.31.0)
+
+### Fixed
+- [#2891](https://github.com/microsoft/azure-tools-for-java/issues/2891) Hidden Toolkit directory in user home
 
 ## 3.29.0
 

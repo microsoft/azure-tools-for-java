@@ -20,15 +20,15 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.29.0</h3>
-    <h4>Added</h4>
+    <h3>3.30.0</h3>
+    <h4>Changed</h4>
     <ul>
-        <li>Support IntelliJ 2019.3 EAP</li>
-        <li>Add support for Windows Java SE web apps</li>
+        <li>Deprecate Storage Accounts(will be removed in v3.31.0)</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li>Improving the accessibility of IntelliJ plugin</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2891">#2891</a> Hidden Toolkit directory in
+            user home</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
