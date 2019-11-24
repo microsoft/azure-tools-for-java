@@ -36,6 +36,7 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -144,8 +145,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 }
             }
         });
+
         // add the tree to the window
-        toolWindow.getComponent().add(new JBScrollPane(tree));
+        JBScrollPane scrollPane = new JBScrollPane(tree);
+        scrollPane.setBorder(JBUI.Borders.empty());
+        toolWindow.getComponent().add(scrollPane);
 
         // set tree and tree path to expand the node later
         azureModule.setTree(tree);
@@ -153,7 +157,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // setup toolbar icons
         addToolbarItems(toolWindow, azureModule);
-
     }
 
     private SortableTreeNode initRoot(Project project, List<RefreshableNode> nodes) {
