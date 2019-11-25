@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
@@ -30,7 +31,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MfaHdiAdditionalClusterDetail extends HDInsightAdditionalClusterDetail implements MfaEspCluster{
+public class MfaHdiAdditionalClusterDetail extends HDInsightAdditionalClusterDetail implements MfaEspCluster, ILogger {
     private String tenantId;
 
     public MfaHdiAdditionalClusterDetail(String clusterName, String userName, String password, HDStorageAccount storageAccount) {
@@ -52,7 +53,8 @@ public class MfaHdiAdditionalClusterDetail extends HDInsightAdditionalClusterDet
                     this.tenantId = m.group("tenantId");
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException ignore) {
+            log().warn(String.format("Encounter expection when negotiating request for linked mfa cluster %s", ignore));
         }
 
         return this.tenantId;

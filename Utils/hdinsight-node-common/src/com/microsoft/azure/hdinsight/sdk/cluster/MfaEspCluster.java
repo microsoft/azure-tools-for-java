@@ -38,8 +38,8 @@ public interface MfaEspCluster extends ILogger {
                 String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
                 return String.format("%s/%s", "user", loginUser);
             }
-        } catch (IOException e) {
-            log().warn("Encounter exception when getting user sign in info ", e);
+        } catch (IOException ignore) {
+            log().warn("Encounter exception when getting user sign in info ", ignore);
         }
 
         return "<unknown_user>";
