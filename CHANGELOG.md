@@ -44,6 +44,9 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ## 3.30.0
 
+### Added
+- Integrate with HDInsight Identity Broker (HIB) for HDInsight ESP cluster MFA Authentication, cluster navigation, job submission, and interactive query.
+
 ### Changed
 - Deprecate Storage Accounts(will be removed in v3.31.0)
 
