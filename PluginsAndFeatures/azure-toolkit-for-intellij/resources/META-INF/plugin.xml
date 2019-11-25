@@ -23,16 +23,29 @@
     <h3>3.30.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Integrate with HDInsight Identity Broker (HIB) for HDInsight ESP cluster MFA Authentication, cluster navigation, job submission, and interactive query.</li>
+        <li>Add shorcut ctrl+shift+alt+F2 for disconnect spark application action</li>
+        <li>Integrate with HDInsight Identity Broker (HIB) for HDInsight ESP cluster MFA Authentication, cluster navigation,
+            job submission, and interactive query.</li>
     </ul>
     <h4>Changed</h4>
     <ul>
+        <li>Rename brand name from Arcadia to Synapse</li>
         <li>Deprecate Storage Accounts(will be removed in v3.31.0)</li>
+        <li>Upload path changes to abfs scheme for default ADLS GEN2 storage type</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2891">#2891</a> Hidden Toolkit directory in
             user home</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3765">#3765</a> Fix upload path shows null for
+            spark serverless</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3676">#3676</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3728">#3728</a> Fix job view panel show
+            failure</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3700">#3700</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3710">#3710</a> Fix Spark configuration name
+            shorten issue in 193EAP</li>
+        <li>Fix Spark job submission dialog accessibility issues of Eclipse plugin</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
