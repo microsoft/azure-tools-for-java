@@ -285,12 +285,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 if (gen2RootPath != null && !SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "ADLS GEN2 Root Path is invalid"
-                                } else if( this.storageAccountType == SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH && !AuthMethodManager.getInstance().isSignedIn){
+                                } else if (this.storageAccountType == SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH
+                                        && !AuthMethodManager.getInstance().isSignedIn) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "Need to use azure account to login in first"
-                                }else {
+                                } else {
                                     var formatAdlsRootPath = if (gen2RootPath?.endsWith("/") == true) gen2RootPath else "$gen2RootPath/"
-                                    if(cluster is MfaEspCluster) formatAdlsRootPath += cluster.userPath
+                                    if (cluster is MfaEspCluster) formatAdlsRootPath += cluster.userPath
                                     uploadPath = "${formatAdlsRootPath}/SparkSubmission/"
                                     errorMsg = null
                                 }

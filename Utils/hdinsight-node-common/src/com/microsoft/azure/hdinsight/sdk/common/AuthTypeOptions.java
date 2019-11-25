@@ -29,7 +29,6 @@ public enum AuthTypeOptions {
 
     LivyCluster(new AuthType[]{
             AuthType.BasicAuth,
-            AuthType.AADAuth,
             AuthType.NoAuth
 
     });
