@@ -165,7 +165,6 @@ public class AzureMvpModel {
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
             ret.addAll(azure.resourceGroups().list());
-            Collections.sort(ret, (first, second) -> StringUtils.compare(first.name(), second.name()));
         } catch (IOException e) {
             e.printStackTrace();
         }
