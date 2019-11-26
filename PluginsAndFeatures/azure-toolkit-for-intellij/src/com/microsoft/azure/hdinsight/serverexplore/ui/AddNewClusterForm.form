@@ -242,11 +242,8 @@
                     </constraints>
                     <properties>
                       <editable value="false"/>
-                      <enabled value="false"/>
-                      <model>
-                        <item value="Basic Authentication"/>
-                        <item value="No Authentication"/>
-                      </model>
+                      <enabled value="true"/>
+                      <model/>
                     </properties>
                   </component>
                 </children>
@@ -306,6 +303,15 @@
                     <margin top="0" left="0" bottom="0" right="0"/>
                     <constraints>
                       <card name="No Authentication"/>
+                    </constraints>
+                    <properties/>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
+                  <grid id="f2daf" binding="azureAccountCard" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints>
+                      <card name="Azure Account"/>
                     </constraints>
                     <properties/>
                     <border type="none"/>

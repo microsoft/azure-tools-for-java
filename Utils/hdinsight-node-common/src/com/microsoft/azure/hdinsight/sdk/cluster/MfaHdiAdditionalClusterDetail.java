@@ -22,47 +22,46 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
-import java.net.URI;
+import java.io.IOException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MfaClusterDetail extends ClusterDetail implements MfaEspCluster, ILogger {
+public class MfaHdiAdditionalClusterDetail extends HDInsightAdditionalClusterDetail implements MfaEspCluster, ILogger {
+    private String tenantId;
 
-    public MfaClusterDetail(SubscriptionDetail paramSubscription, ClusterRawInfo paramClusterRawInfo, IClusterOperation clusterOperation) {
-        super(paramSubscription, paramClusterRawInfo, clusterOperation);
+    public MfaHdiAdditionalClusterDetail(String clusterName, String userName, String password, HDStorageAccount storageAccount) {
+        super(clusterName, userName, password, storageAccount);
     }
 
+    @Nullable
     @Override
-    public String getDefaultStorageRootPath() {
-        String storageRootPath = super.getDefaultStorageRootPath();
-
-        // check login status and get the login user name
-        try {
-            if (Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(storageRootPath).matches()) {
-                storageRootPath = String.format("%s/%s", storageRootPath, getUserPath());
-            }
-
-            return storageRootPath;
-        } catch (Exception ignore) {
-            log().warn(String.format("Get default storage root path for mfa cluster encounter %s", ignore));
+    public synchronized String getTenantId(){
+        if(tenantId != null){
+            return this.tenantId;
         }
 
-        return "";
+        try {
+            String location = SparkBatchSubmission.getInstance().negotiateAuthMethod(getConnectionUrl());
+            if (location != null && location.matches(SparkBatchSubmission.probeLocationPattern)) {
+                Matcher m = Pattern.compile(SparkBatchSubmission.probeLocationPattern).matcher(location);
+                if (m.find()) {
+                    this.tenantId = m.group("tenantId");
+                }
+            }
+        } catch (IOException ignore) {
+            log().warn(String.format("Encounter expection when negotiating request for linked mfa cluster %s", ignore));
+        }
+
+        return this.tenantId;
     }
 
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
-        return SparkSubmitStorageTypeOptionsForCluster.MfaHdiCluster;
-    }
-
-    @Override
-    public String getTenantId() {
-        return getSubscription().getTenantId();
+        return SparkSubmitStorageTypeOptionsForCluster.MfaHdiLinkedCluster;
     }
 }

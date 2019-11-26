@@ -34,11 +34,18 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
+import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
+import com.microsoft.azure.hdinsight.sdk.common.AuthType;
+import com.microsoft.azure.hdinsight.sdk.common.AuthTypeOptions;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterCtrlProvider;
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
+import com.microsoft.azure.hdinsight.spark.ui.ImmutableComboBoxModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.ui.HintTextField;
@@ -49,15 +56,23 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import cucumber.api.java.ca.I;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import rx.subjects.PublishSubject;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class AddNewClusterForm extends DialogWrapper implements SettableControl<AddNewClusterModel> {
     private JPanel wholePanel;
@@ -92,12 +107,16 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     private JPanel authErrorDetailsPanelHolder;
     private JPanel authErrorDetailsPanel;
     protected JLabel linkResourceTypeLabel;
+    private JPanel azureAccountCard;
     protected HideableDecorator authErrorDetailsDecorator;
     protected ConsoleViewImpl consoleViewPanel;
     @NotNull
     private RefreshableNode hdInsightModule;
     @NotNull
     protected AddNewClusterCtrlProvider ctrlProvider;
+
+    private ImmutableComboBoxModel authOpsForHdiCluster = new ImmutableComboBoxModel(AuthTypeOptions.HDICluster.getOptionTypes());
+    private ImmutableComboBoxModel authOpsForLivyCluster = new ImmutableComboBoxModel(AuthTypeOptions.LivyCluster.getOptionTypes());
 
     private static final String HELP_URL = "https://go.microsoft.com/fwlink/?linkid=866472";
 
@@ -128,26 +147,39 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 new DefaultActionGroup(consoleViewPanel.createConsoleActions()), false);
         authErrorDetailsPanel.add(toolbar.getComponent(), BorderLayout.WEST);
 
+        authComboBox.setModel(authOpsForHdiCluster);
+        authComboBox.setRenderer(
+                new SimpleListCellRenderer<AuthType>() {
+                    @Override
+                    public void customize(JList<? extends AuthType> jList, AuthType authType, int i, boolean b, boolean b1) {
+                        if (authType != null) {
+                            setText(authType.getTypeName());
+                        }
+                    }
+                }
+        );
+
         this.setModal(true);
 
         clusterComboBox.addItemListener(e -> {
             CardLayout layout = (CardLayout) (clusterCardsPanel.getLayout());
             layout.show(clusterCardsPanel, (String) e.getItem());
 
-            // if "HDInsight Cluster" is chose, "Basic Authentication" should be the only one authentication method
+            // if "HDInsight Cluster" is chose, "No Authentication" should not exist
             if (isHDInsightClusterSelected()) {
-                authComboBox.setSelectedItem(authComboBox.getModel().getElementAt(0));
-                authComboBox.setEnabled(false);
+                authComboBox.setModel(authOpsForHdiCluster);
             } else {
-                authComboBox.setEnabled(true);
+                authComboBox.setModel(authOpsForLivyCluster);
             }
 
-        });
-        authComboBox.addItemListener(e -> {
-            CardLayout layout = (CardLayout) (authCardsPanel.getLayout());
-            layout.show(authCardsPanel, (String)e.getItem());
+            authComboBox.setSelectedItem(authComboBox.getSelectedObjects()[0]);
         });
 
+        authComboBox.addItemListener(e -> {
+            CardLayout layout = (CardLayout) (authCardsPanel.getLayout());
+            layout.show(authCardsPanel, ((AuthType) e.getItem()).getTypeName());
+        });
+        
         // field validation check
         Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> validateBasicInputs()));
 
@@ -217,6 +249,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
                 data.setClusterName(clusterNameOrUrlField.getText().trim())
                         .setUserName(userNameField.getText().trim())
                         .setPassword(passwordField.getText().trim())
+                        .setAuthType((AuthType) authComboBox.getSelectedItem())
                         // TODO: these label title setting is no use other than to be compatible with legacy ctrlprovider code
                         .setClusterNameLabelTitle(clusterNameLabel.getText())
                         .setUserNameLabelTitle(userNameLabel.getText())
@@ -283,7 +316,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
     protected boolean isBasicAuthSelected() {
-        return ((String) authComboBox.getSelectedItem()).equalsIgnoreCase("Basic Authentication");
+        return  authComboBox.getSelectedItem() == AuthType.BasicAuth;
     }
 
     protected void validateBasicInputs() {

@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.30.0](#3300)
   - [3.29.0](#3290)
   - [3.28.0](#3280)
   - [3.27.0](#3270)
@@ -40,6 +41,24 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.30.0
+
+### Added
+- Add shorcut ctrl+shift+alt+F2 for disconnect spark application action
+- Integrate with HDInsight Identity Broker (HIB) for HDInsight ESP cluster MFA Authentication, cluster navigation, job submission, and interactive query.
+
+### Changed
+- Rename brand name from Arcadia to Synapse
+- Deprecate Storage Accounts(will be removed in v3.31.0)
+- Upload path changes to abfs scheme for default ADLS GEN2 storage type
+
+### Fixed
+- [#2891](https://github.com/microsoft/azure-tools-for-java/issues/2891) Hidden Toolkit directory in user home
+- [#3765](https://github.com/microsoft/azure-tools-for-java/issues/3765) Fix upload path shows null for spark serverless
+- [#3676](https://github.com/microsoft/azure-tools-for-java/issues/3676),[#3728](https://github.com/microsoft/azure-tools-for-java/issues/3728) Fix job view panel show failure
+- [#3700](https://github.com/microsoft/azure-tools-for-java/issues/3700),[#3710](https://github.com/microsoft/azure-tools-for-java/issues/3710) Fix Spark configuration name shorten issue in 193EAP
+- Fix Spark job submission dialog accessibility issues of Eclipse plugin
 
 ## 3.29.0
 

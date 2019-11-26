@@ -21,6 +21,27 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
-public interface MfaEspCluster {
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+
+import java.io.IOException;
+
+public interface MfaEspCluster extends ILogger {
     String getTenantId();
+
+    // get path suffix user/<user_name>
+    default String getUserPath() {
+        try {
+            if (AuthMethodManager.getInstance().isSignedIn()) {
+                // FIXME!!! since this is only a workaround to get user folder name
+                String loginUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+                String loginUser = loginUserEmail.substring(0, loginUserEmail.indexOf("@"));
+                return String.format("%s/%s", "user", loginUser);
+            }
+        } catch (IOException ignore) {
+            log().warn("Encounter exception when getting user sign in info ", ignore);
+        }
+
+        return "<unknown_user>";
+    }
 }

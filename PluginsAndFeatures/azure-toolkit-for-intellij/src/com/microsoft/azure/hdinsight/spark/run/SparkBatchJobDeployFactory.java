@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
@@ -37,6 +38,8 @@ import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
+import com.microsoft.intellij.forms.ErrorMessageForm;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -172,6 +175,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
 
                 jobDeploy = new AdlsDeploy(destinationRootPath, accessToken);
                 break;
+            case ADLS_GEN2_FOR_OAUTH:
             case ADLS_GEN2:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
                 String gen2StorageAccount = "";
@@ -184,12 +188,17 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     throw new ExecutionException("Invalid ADLS GEN2 root path");
                 }
 
-                accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
-                if (StringUtils.isBlank(accessKey)) {
-                    throw new ExecutionException("Invalid access key input");
+                if (clusterDetail instanceof MfaEspCluster) {
+                    httpObservable = new ADLSGen2OAuthHttpObservable(((MfaEspCluster) clusterDetail).getTenantId());
+                } else {
+                    accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
+                    if (StringUtils.isBlank(accessKey)) {
+                        throw new ExecutionException("Invalid access key input");
+                    }
+
+                    httpObservable = new SharedKeyHttpObservable(gen2StorageAccount, accessKey);
                 }
 
-                httpObservable = new SharedKeyHttpObservable(gen2StorageAccount, accessKey);
                 jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
                 break;
             case WEBHDFS:

@@ -40,6 +40,8 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
 import com.microsoft.azure.hdinsight.spark.common.*;
@@ -92,7 +94,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     @NotNull
     private SparkBatchSubmission getSparkBatchSubmission(@NotNull IClusterDetail clusterDetail) {
         if (clusterDetail instanceof MfaEspCluster) {
-            String id = clusterDetail.getSubscription().getTenantId();
+            String id = ((MfaEspCluster) clusterDetail).getTenantId();
             return new SparkBatchEspMfaSubmission(id, clusterDetail.getName());
         } else {
             return SparkBatchSubmission.getInstance();
