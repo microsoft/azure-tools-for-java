@@ -24,12 +24,15 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Patch for a Big Data pool.
  * Properties patch for a Big Data pool.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BigDataPoolPatchInfo {
     /**
      * Updated tags for the Big Data pool.

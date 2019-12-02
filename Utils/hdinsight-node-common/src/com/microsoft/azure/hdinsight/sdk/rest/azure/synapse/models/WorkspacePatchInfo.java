@@ -23,6 +23,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
@@ -30,7 +31,9 @@ import java.util.Map;
 /**
  * Workspace patch details.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkspacePatchInfo {
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private static class Properties {
         /**
          * SQL administrator login password.

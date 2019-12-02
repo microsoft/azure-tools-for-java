@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The workspace managed identity.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ManagedIdentity {
     /**
      * The principal ID of the workspace managed identity.

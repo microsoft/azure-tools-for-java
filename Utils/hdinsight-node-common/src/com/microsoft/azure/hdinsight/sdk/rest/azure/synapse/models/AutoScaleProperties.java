@@ -23,12 +23,14 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Spark pool auto-scaling properties.
  * Auto-scaling properties of a Big Data pool powered by Apache Spark.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AutoScaleProperties {
     /**
      * The minimum number of nodes the Big Data pool can support.

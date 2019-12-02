@@ -23,6 +23,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,7 +31,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Big Data pool.
  * A Big Data pool.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BigDataPoolResourceInfo extends TrackedResource {
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private static class Properties {
         /**
          * The state of the Big Data pool.

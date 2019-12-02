@@ -23,12 +23,14 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.ProxyResource;
 
 /**
  * The resource model definition for a Azure Resource Manager resource with an etag.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AzureEntityResource extends ProxyResource {
     /**
      * Resource Etag.

@@ -23,6 +23,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.Page;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.List;
  *
  * @param <T> type of Azure resource
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PageImpl<T> implements Page<T> {
     /**
      * The link to the next page.

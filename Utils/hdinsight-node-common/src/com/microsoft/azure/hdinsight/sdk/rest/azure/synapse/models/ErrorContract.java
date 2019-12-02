@@ -23,12 +23,14 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Error details.
  * Contains details when the response code indicates an error.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorContract {
     /**
      * The error details.

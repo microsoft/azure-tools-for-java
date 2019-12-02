@@ -25,11 +25,13 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
 
 /**
  * Defines values for NodeSize.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class NodeSize extends ExpandableStringEnum<NodeSize> {
     /** Static value None for NodeSize. */
     public static final NodeSize NONE = fromString("None");

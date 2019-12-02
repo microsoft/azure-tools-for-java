@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Virtual Network Profile.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualNetworkProfile {
     /**
      * Subnet ID used for computes in workspace.

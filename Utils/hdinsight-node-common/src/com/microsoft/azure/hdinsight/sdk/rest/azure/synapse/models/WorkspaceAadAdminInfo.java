@@ -23,12 +23,15 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Workspace active directory administrator.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkspaceAadAdminInfo extends ProxyResource {
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private static class Properties {
         /**
          * Tenant ID of the workspace active directory administrator.

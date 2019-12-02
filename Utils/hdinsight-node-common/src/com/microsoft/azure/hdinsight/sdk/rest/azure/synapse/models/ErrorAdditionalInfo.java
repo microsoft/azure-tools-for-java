@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The resource management error additional info.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorAdditionalInfo {
     /**
      * The additional info type.

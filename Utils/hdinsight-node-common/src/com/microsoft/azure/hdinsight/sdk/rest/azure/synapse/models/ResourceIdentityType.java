@@ -24,11 +24,13 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * Defines values for ResourceIdentityType.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public enum ResourceIdentityType {
     /** Enum value None. */
     NONE("None"),

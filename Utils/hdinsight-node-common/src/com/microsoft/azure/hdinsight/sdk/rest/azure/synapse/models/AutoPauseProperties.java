@@ -23,12 +23,14 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Spark pool auto-pausing properties.
  * Auto-pausing properties of a Big Data pool powered by Apache Spark.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AutoPauseProperties {
     /**
      * Number of minutes of idle time before the Big Data pool is automatically paused.

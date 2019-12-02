@@ -24,11 +24,14 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The resource management error response.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorResponse {
     /**
      * The error code.

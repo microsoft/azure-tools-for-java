@@ -24,12 +24,16 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A workspace.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Workspace extends TrackedResource {
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private static class Properties {
         /**
          * Workspace default data lake storage account details.

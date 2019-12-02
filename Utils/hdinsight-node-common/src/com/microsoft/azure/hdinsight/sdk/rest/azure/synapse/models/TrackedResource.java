@@ -24,12 +24,15 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.ProxyResource;
 
 /**
  * The resource model definition for a ARM tracked top level resource.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TrackedResource extends ProxyResource {
     /**
      * Resource tags.

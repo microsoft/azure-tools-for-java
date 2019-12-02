@@ -23,6 +23,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.RestException;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
@@ -30,6 +31,7 @@ import retrofit2.Response;
 /**
  * Exception thrown for an invalid response with ErrorContract information.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorContractException extends RestException {
     /**
      * Initializes a new instance of the ErrorContractException class.

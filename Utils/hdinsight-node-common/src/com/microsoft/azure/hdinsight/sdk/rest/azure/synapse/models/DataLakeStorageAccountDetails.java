@@ -23,11 +23,13 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Details of the data lake storage account associated with the workspace.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataLakeStorageAccountDetails {
     /**
      * Account URL.
