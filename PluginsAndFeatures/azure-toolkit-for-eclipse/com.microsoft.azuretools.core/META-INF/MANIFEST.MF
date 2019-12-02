@@ -26,7 +26,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.m2e.core,
  org.eclipse.m2e.maven.runtime,
  org.eclipse.m2e.launching,
- org.eclipse.equinox.registry
+ org.eclipse.equinox.registry,
+ org.eclipse.mylyn.commons.core,
+ org.eclipse.add.commons.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.
