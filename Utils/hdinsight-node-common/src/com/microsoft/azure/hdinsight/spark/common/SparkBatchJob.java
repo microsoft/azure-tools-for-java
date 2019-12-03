@@ -64,7 +64,7 @@ import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
-    public static final String AdlsGen2RestfulPathPattern = "^(https://)(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(/[^/.\\s]+)*/?$";
+    public static final String AdlsGen2RestfulPathPattern = "^(https://)(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(?<subpath>/[^\\s]+)*/?$";
 
     @Nullable
     private String currentLogUrl;
@@ -460,7 +460,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                                                                           long logOffset,
                                                                           int size) {
         String logGot = JobUtils.getInformationFromYarnLogDom(
-                getSubmission().getCredentialsProvider(),
+                getSubmission().getAuthCode(),
                 containerLogUrl,
                 type,
                 logOffset,

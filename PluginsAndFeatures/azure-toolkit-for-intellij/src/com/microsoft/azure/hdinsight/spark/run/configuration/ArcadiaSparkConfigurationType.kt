@@ -34,12 +34,12 @@ object ArcadiaSparkConfigurationType : ConfigurationType {
     override fun getIcon(): Icon {
         // TODO: should use Arcadia config icon
         return PluginUtil.getIcon(IconPathBuilder
-                .custom(CommonConst.OpenSparkUIIconName)
+                .custom(CommonConst.ARCADIA_OPEN_UI_NAME)
                 .build())
     }
 
     override fun getDisplayName(): String {
-        return "Apache Spark on Arcadia"
+        return "Apache Spark on Synapse"
     }
 
     override fun getId(): String {
@@ -47,7 +47,7 @@ object ArcadiaSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark on Arcadia Run Configuration"
+        return "Spark on Synapse Run Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

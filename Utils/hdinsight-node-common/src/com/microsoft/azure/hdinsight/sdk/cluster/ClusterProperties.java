@@ -21,6 +21,8 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+
 import java.util.List;
 
 public class ClusterProperties {
@@ -33,6 +35,7 @@ public class ClusterProperties {
     private String createdDate;
     private QuotaInfo quotaInfo;
     private List<ConnectivityEndpoint> connectivityEndpoints;
+    private SecurityProfile securityProfile;
 
     public String getClusterVersion(){
         return clusterVersion;
@@ -56,6 +59,11 @@ public class ClusterProperties {
 
     public ComputeProfile getComputeProfile(){
         return computeProfile;
+    }
+
+    @Nullable
+    public SecurityProfile getSecurityProfile(){
+        return securityProfile;
     }
 
     public String getCreatedDate(){

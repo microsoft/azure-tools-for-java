@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.console.LanguageConsoleImpl
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys.EDITOR
 import com.intellij.openapi.editor.ex.EditorEx
@@ -32,8 +33,11 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.microsoft.intellij.rxjava.IdeaSchedulers
+import com.microsoft.intellij.util.runInReadAction
 import com.microsoft.intellij.util.runInWriteAction
-import java.io.IOException
+import org.apache.commons.lang3.exception.ExceptionUtils
+import rx.Observable
 import java.nio.charset.StandardCharsets.UTF_8
 
 class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
@@ -85,14 +89,29 @@ class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
 
         // Send to process as a whole codes block
         val normalizedCodes = text.trimEnd() + "\n"
-        try {
+        val codeHint = normalizedCodes.split("\n").first()
+
+        Observable.fromCallable {
             outputStream.write(normalizedCodes.toByteArray(UTF_8))
             outputStream.flush()
-        } catch (e : IOException) {
-            log().debug("Write $normalizedCodes to stdin error", e)
-        }
 
-        consoleDetail.console.indexCodes(normalizedCodes)
+            normalizedCodes
+        }
+                .subscribeOn(IdeaSchedulers(actionEvent.project).processBarVisibleAsync("Run codes: $codeHint ..."))
+                .subscribe(
+                        { codes -> runInReadAction {
+                            consoleDetail.console.indexCodes(codes)
+                        }},
+                        { err ->
+                            consoleDetail.console.print(
+                                    """
+                                    |${ExceptionUtils.getMessage(err)}
+                                    |Caused by ${ExceptionUtils.getRootCauseMessage(err)}
+                                    """.trimMargin(),
+                                    ConsoleViewContentType.ERROR_OUTPUT)
+                        }
+                )
+
         return true
     }
 }

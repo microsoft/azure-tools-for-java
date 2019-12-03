@@ -27,6 +27,8 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterOperationImpl;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.HttpErrorStatus;
+import com.microsoft.azure.hdinsight.sdk.common.errorresponse.NotFoundHttpErrorStatus;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -34,15 +36,15 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.Header;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
 import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements ILogger {
     private static final String VERSION = "2015-03-01-preview";
@@ -91,11 +93,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
     public Observable<Boolean> isProbeGetConfigurationSucceed(final String clusterId) {
         return getClusterConfigurationRequest(clusterId)
                 .map(clusterConfiguration -> {
-                    if (clusterConfiguration != null
-                            && clusterConfiguration.getConfigurations() != null
-                            && clusterConfiguration.getConfigurations().getGateway() != null
-                            && clusterConfiguration.getConfigurations().getGateway().getUsername() != null
-                            && clusterConfiguration.getConfigurations().getGateway().getPassword() != null) {
+                    if (isValid(clusterConfiguration, clusterId)) {
                         setRoleType(HDInsightUserRoleType.OWNER);
                         return true;
                     } else {
@@ -125,7 +123,9 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                     } else {
                         if (err instanceof HttpErrorStatus) {
                             HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
-                            log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
+                            if (!(err instanceof NotFoundHttpErrorStatus)) {
+                                log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
+                            }
                             log().warn(((HttpErrorStatus) err).getErrorDetails());
 
                             final Map<String, String> properties = new HashMap<>();
@@ -140,6 +140,30 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                         return Observable.just(false);
                     }
                 });
+    }
+
+    private boolean isValid(ClusterConfiguration clusterConfiguration, String clusterId) {
+        if (clusterConfiguration == null
+                || clusterConfiguration.getConfigurations() == null
+                || clusterConfiguration.getConfigurations().getGateway() == null) {
+            return false;
+        }
+
+        Gateway gw = clusterConfiguration.getConfigurations().getGateway();
+        if (gw.getUsername() != null && gw.getPassword() != null) {
+            return true;
+        }
+
+        try {
+            String clusterName = clusterId.substring(clusterId.lastIndexOf("/") + 1);
+            if (SparkBatchSubmission.getInstance().negotiateAuthMethod(String.format("https://%s.azurehdinsight.net", clusterName)) != null) {
+                return true;
+            }
+        } catch (IOException ignore) {
+            log().warn(ignore.toString());
+        }
+
+        return false;
     }
 
     /**

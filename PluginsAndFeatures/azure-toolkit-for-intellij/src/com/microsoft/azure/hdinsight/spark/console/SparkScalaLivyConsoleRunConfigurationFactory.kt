@@ -45,7 +45,7 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
                             template.project,
                             this,
                             template,
-                            "${template.name} >> Arcadia Spark Livy Interactive Session Console(Scala)")
+                            "${template.name} >> Synapse Spark Livy Interactive Session Console(Scala)")
                 is CosmosSparkRunConfiguration ->
                     CosmosSparkScalaLivyConsoleRunConfiguration(
                             template.project,

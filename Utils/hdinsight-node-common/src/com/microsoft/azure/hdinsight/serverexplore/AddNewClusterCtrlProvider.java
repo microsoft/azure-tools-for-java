@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.*;
+import com.microsoft.azure.hdinsight.sdk.common.AuthType;
 import com.microsoft.azure.hdinsight.sdk.common.AuthenticationException;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
@@ -199,6 +200,7 @@ public class AddNewClusterCtrlProvider {
                     SparkClusterType sparkClusterType = toUpdate.getSparkClusterType();
                     String clusterNameOrUrl = toUpdate.getClusterName();
                     String userName = Optional.ofNullable(toUpdate.getUserName()).orElse("");
+                    AuthType authType = toUpdate.getAuthType();
                     String storageName = toUpdate.getStorageName();
                     String storageKey = toUpdate.getStorageKey();
                     String password = Optional.ofNullable(toUpdate.getPassword()).orElse("");
@@ -282,7 +284,9 @@ public class AddNewClusterCtrlProvider {
                     switch (sparkClusterType) {
                         case HDINSIGHT_CLUSTER:
                             additionalClusterDetail =
-                                    new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount);
+                                  authType == AuthType.BasicAuth
+                                          ? new HDInsightAdditionalClusterDetail(clusterName, userName, password, storageAccount)
+                                          : new MfaHdiAdditionalClusterDetail(clusterName, userName, password, storageAccount);
                             break;
                         case LIVY_LINK_CLUSTER:
                             additionalClusterDetail =

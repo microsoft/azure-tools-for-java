@@ -1,17 +1,17 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.27.0</version>
+  <version>3.30.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
       <html>
-        <p>These plugins allow Java developers and Azure HDInsight users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
+        <p>These plugins allow Java developers, Azure HDInsight developers and SQL Server Spark users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
         <ul>
           <li>Azure Web App Workflow: You can run your web applications on Azure Web App with One-Click experience using Azure Toolkits for IntelliJ.</li>
           <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
           <li>Azure Explorer: You can view and manage your cloud resources on Azure with Azure Explorer in Azure Toolkits for IntelliJ.</li>
-          <li>Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor and debug Spark jobs easily. </li>
+          <li>Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor and debug Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.</li>
           <li>SQL Server Big Data Cluster: Link to SQL Server Big Data Cluster; Create a Spark project, author and submit Spark jobs to cluster; Monitor and debug Spark jobs easily</li>
         </ul>
       </html>
@@ -20,17 +20,32 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.27.0</h3>
+    <h3>3.30.0</h3>
+    <h4>Added</h4>
+    <ul>
+        <li>Add shorcut ctrl+shift+alt+F2 for disconnect spark application action</li>
+        <li>Integrate with HDInsight Identity Broker (HIB) for HDInsight ESP cluster MFA Authentication, cluster navigation,
+            job submission, and interactive query.</li>
+    </ul>
+    <h4>Changed</h4>
+    <ul>
+        <li>Rename brand name from Arcadia to Synapse</li>
+        <li>Deprecate Storage Accounts(will be removed in v3.31.0)</li>
+        <li>Upload path changes to abfs scheme for default ADLS GEN2 storage type</li>
+    </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3316">#3316</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3322">#3322</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3334">#3334</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3337">#3337</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3339">#3339</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3346">#3346</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3385">#3385</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3387">#3387</a> Fix Accessibility issues</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2891">#2891</a> Hidden Toolkit directory in
+            user home</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3765">#3765</a> Fix upload path shows null for
+            spark serverless</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3676">#3676</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3728">#3728</a> Fix job view panel show
+            failure</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3700">#3700</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3710">#3710</a> Fix Spark configuration name
+            shorten issue in 193EAP</li>
+        <li>Fix Spark job submission dialog accessibility issues of Eclipse plugin</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
@@ -187,8 +202,8 @@
             class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction" text="Spark on SQL Server Big Data Cluster"
             description="Submit Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitArcadiaSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.ArcadiaSparkSelectAndSubmitAction" text="Spark on Arcadia"
-            description="Submit Spark on Arcadia Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.ArcadiaSparkSelectAndSubmitAction" text="Spark on Synapse"
+            description="Submit Spark on Synapse Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -224,6 +239,7 @@
     <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
             text="Disconnect" description="Disconnect the log view from remote Spark Job"
             icon="/icons/SparkJobDisconnect.png">
+      <keyboard-shortcut first-keystroke="ctrl shift alt F2" keymap="$default"/>
     </action>
     <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"
             text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">

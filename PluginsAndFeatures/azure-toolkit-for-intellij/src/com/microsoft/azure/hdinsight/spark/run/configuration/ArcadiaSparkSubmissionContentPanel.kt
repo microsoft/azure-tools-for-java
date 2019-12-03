@@ -37,7 +37,7 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
     } }
 
     override val clusterHint: String
-        get() = "Spark Computes"
+        get() = "Spark Pools"
 
     override fun getData(data: SparkSubmitModel) {
         // Component -> Data

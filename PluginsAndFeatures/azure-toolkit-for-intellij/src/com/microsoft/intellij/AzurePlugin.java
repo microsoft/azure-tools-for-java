@@ -22,6 +22,29 @@
 
 package com.microsoft.intellij;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.swing.event.EventListenerList;
+
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginInstaller;
 import com.intellij.ide.plugins.PluginStateListener;
@@ -45,7 +68,11 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.*;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import com.microsoft.azuretools.azurecommons.util.GetHashMac;
+import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -59,22 +86,11 @@ import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
-
-import javax.swing.event.EventListenerList;
-import java.io.*;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
 public class AzurePlugin extends AbstractProjectComponent {
@@ -107,7 +123,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        String hasMac = GetHashMac.GetHashMac();
+        String hasMac = GetHashMac.getHashMac();
         this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
         CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
             TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
@@ -168,7 +184,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                     String instID = DataOperations.getProperty(dataFile, message("instID"));
                     if (prefValue == null || prefValue.isEmpty()) {
                         setValues(dataFile);
-                    } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
+                    } else if (StringUtils.isEmpty(instID) || !GetHashMac.isValidHashMac(instID)) {
                         upgrade = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 

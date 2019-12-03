@@ -34,12 +34,16 @@ import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
@@ -83,7 +87,18 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
                 submitModel, clusterDetail, ctrlSubject);
-        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), SparkBatchSubmission.getInstance(), ctrlSubject, jobDeploy);
+
+        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), getSparkBatchSubmission(clusterDetail), ctrlSubject, jobDeploy);
+    }
+
+    @NotNull
+    private SparkBatchSubmission getSparkBatchSubmission(@NotNull IClusterDetail clusterDetail) {
+        if (clusterDetail instanceof MfaEspCluster) {
+            String id = ((MfaEspCluster) clusterDetail).getTenantId();
+            return new SparkBatchEspMfaSubmission(id, clusterDetail.getName());
+        } else {
+            return SparkBatchSubmission.getInstance();
+        }
     }
 
     protected void addConsoleViewFilter(@NotNull ISparkBatchJob job, @NotNull ConsoleView consoleView) {
@@ -156,7 +171,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         remoteProcess.start();
         Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
-        SparkBatchJobDisconnectAction disconnectAction = new SparkBatchJobDisconnectAction(remoteProcess, operation);
+        // After we define a new AnAction class, IntelliJ will construct a new AnAction instance for us.
+        // Use one action instance can keep behaviours like isEnabled() consistent
+        SparkBatchJobDisconnectAction disconnectAction =
+                (SparkBatchJobDisconnectAction) ActionManager.getInstance().getAction("Actions.SparkJobDisconnect");
+        disconnectAction.init(remoteProcess, operation);
 
         sendTelemetryForParameters(submitModel, operation);
 

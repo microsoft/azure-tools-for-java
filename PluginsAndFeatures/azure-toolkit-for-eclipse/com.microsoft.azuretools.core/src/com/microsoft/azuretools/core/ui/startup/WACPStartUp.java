@@ -53,7 +53,7 @@ import com.microsoft.azuretools.telemetry.AppInsightsConstants;
  * This class gets executed after the Workbench initializes.
  */
 public class WACPStartUp implements IStartup {
-	private String _hashmac = GetHashMac.GetHashMac();
+	private String _hashmac = GetHashMac.getHashMac();
 
 	@Override
     public void earlyStartup() {
@@ -111,7 +111,7 @@ public class WACPStartUp implements IStartup {
 									|| StringHelper.isNullOrWhiteSpace(hdinsightPrefValue)) {
 								setValues(dataFile, StringHelper.isNullOrWhiteSpace(prefValue),
 										StringHelper.isNullOrWhiteSpace(hdinsightPrefValue));
-							} else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
+							} else if (StringUtils.isEmpty(instID) || !GetHashMac.isValidHashMac(instID)) {
 								upgrade = true;
 								Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 								DataOperations.updatePropertyValue(doc, Messages.instID, _hashmac);

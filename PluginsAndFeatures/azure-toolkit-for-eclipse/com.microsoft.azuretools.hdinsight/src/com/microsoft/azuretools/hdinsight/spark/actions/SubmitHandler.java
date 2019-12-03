@@ -22,6 +22,8 @@ package com.microsoft.azuretools.hdinsight.spark.actions;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -79,7 +81,7 @@ public class SubmitHandler extends AzureAbstractHandler {
                     } else {
                         HDInsightUtil.showErrorMessageOnSubmissionMessageWindow("Error: Failed to list additional cluster");
                     }
-                    SparkSubmissionExDialog dialog = new SparkSubmissionExDialog(PluginUtil.getParentShell(), cachedClusterDetails, project, null);
+                    SparkSubmissionExDialog dialog = new SparkSubmissionExDialog(PluginUtil.getParentShell(), cachedClusterDetails == null ? Collections.emptyList() : cachedClusterDetails, project, null);
                     dialog.open();
             return null;
         }

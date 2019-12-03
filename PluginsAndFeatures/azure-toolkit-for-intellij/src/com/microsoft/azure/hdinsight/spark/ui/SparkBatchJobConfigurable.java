@@ -24,9 +24,9 @@ package com.microsoft.azure.hdinsight.spark.ui;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.components.JBPanel;
-import com.intellij.ui.components.JBScrollPane;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
@@ -43,8 +43,8 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     private JTabbedPane executionTypeTabPane;
     private JPanel myWholePanel;
     private SparkLocalRunParamsPanel localRunParamsPanel;
-    private JScrollPane remoteConfigScrollPane;
     private JPanel commonPanel;
+    private JPanel remoteRunParamsPanel;
     public SparkSubmissionContentPanel submissionContentPanel;
     private SparkCommonRunParametersPanel commonRunParametersPanel;
 
@@ -67,7 +67,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
 
     protected void createUIComponents() {
         localRunParamsPanel = new SparkLocalRunParamsPanel(getProject()).withInitialize();
-        remoteConfigScrollPane = new JBScrollPane(VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER);
+        remoteRunParamsPanel = new JPanel(new VerticalFlowLayout(0, 5));
         setClusterSubmissionPanel(createSubmissionPanel());
 
         this.commonPanel = new JBPanel();
@@ -116,7 +116,7 @@ public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobC
     protected synchronized void setClusterSubmissionPanel(SparkSubmissionContentPanel clusterSubmissionPanel) {
         this.submissionContentPanel = clusterSubmissionPanel;
         Disposer.register(this, this.submissionContentPanel);
-        remoteConfigScrollPane.setViewportView(clusterSubmissionPanel.getComponent());
+        remoteRunParamsPanel.add(clusterSubmissionPanel.getComponent());
     }
 
     private void setLocalRunConfigEnabled(boolean enabled) {

@@ -200,7 +200,6 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
 
                     return (AzureSparkCosmosCluster) cluster;
                 }))
-                .toSortedList()
                 .map(clusters -> this)
                 .defaultIfEmpty(this);
     }

@@ -22,11 +22,9 @@
 
 package com.microsoft.azure.hdinsight.spark.run.action;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDisconnectEvent;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRemoteProcess;
 import com.microsoft.azure.hdinsight.spark.run.SparkBatchJobSubmittedEvent;
@@ -35,7 +33,6 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -54,13 +51,7 @@ public class SparkBatchJobDisconnectAction extends AnAction {
         super();
     }
 
-    public SparkBatchJobDisconnectAction(@Nullable SparkBatchJobRemoteProcess remoteProcess, @Nullable Operation operation) {
-        super("Disconnect",
-              "Disconnect the log view from remote Spark job",
-              Optional.ofNullable(StreamUtil.getImageResourceFile("/icons/SparkJobDisconnect.png"))
-                      .map(Icon.class::cast)
-                      .orElse(AllIcons.Actions.Exit));
-
+    public void init(@Nullable SparkBatchJobRemoteProcess remoteProcess, @Nullable Operation operation) {
         this.remoteProcess = remoteProcess;
         this.operation = operation;
 

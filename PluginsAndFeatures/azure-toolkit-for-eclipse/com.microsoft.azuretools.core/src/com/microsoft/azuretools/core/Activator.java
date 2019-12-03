@@ -57,12 +57,14 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import com.google.gson.Gson;
+import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.deploy.UploadProgressEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.UploadProgressEventListener;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.azureexplorer.helpers.IDEHelperImpl;
 import com.microsoft.azuretools.core.azureexplorer.helpers.MvpUIHelperImpl;
 import com.microsoft.azuretools.core.mvp.ui.base.AppSchedulerProvider;
@@ -89,6 +91,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for Eclipse, v%s, machineid:%s";
+    private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForEclipse";
+    private static final String AZURE_TOOLS_FOLDER_DEPRECATED = "AzureToolsForEclipse";
+
     private String pluginInstLoc;
     private String dataFile;
 
@@ -160,12 +165,9 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
                             com.microsoft.azuretools.core.utils.Messages.instID)));
             if (CommonSettings.getUiFactory() == null)
                 CommonSettings.setUiFactory(new UIFactory());
-            String wd = "AzureToolsForEclipse";
-            Path dirPath = Paths.get(System.getProperty("user.home"), wd);
-            if (!Files.exists(dirPath)) {
-                Files.createDirectory(dirPath);
-            }
-            CommonSettings.setUpEnvironment(dirPath.toString());
+            final String baseFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER).toString();
+            final String deprecatedFolder = FileUtil.getDirectoryWithinUserHome(AZURE_TOOLS_FOLDER_DEPRECATED).toString();
+            CommonSettings.setUpEnvironment(baseFolder, deprecatedFolder);
             initAzureToolsCoreLibsLoggerFileHandler();
         } catch (IOException e) {
             e.printStackTrace();
@@ -175,7 +177,7 @@ public class Activator extends AbstractUIPlugin implements PluginComponent {
 
     private void initAzureToolsCoreLibsLoggerFileHandler() {
         try {
-            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), "corelibs.log").toString();
+            String loggerFilePath = Paths.get(CommonSettings.getSettingsBaseDir(), Constants.FILE_NAME_CORE_LIB_LOG).toString();
             System.out.println("Logger path:" + loggerFilePath);
             logFileHandler = new FileHandler(loggerFilePath, false);
             java.util.logging.Logger l = java.util.logging.Logger.getLogger("");

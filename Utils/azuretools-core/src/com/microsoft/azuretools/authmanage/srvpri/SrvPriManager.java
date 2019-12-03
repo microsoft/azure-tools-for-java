@@ -197,7 +197,7 @@ public class SrvPriManager {
             // set the properties value
             prop.setProperty("tenant", CommonParams.getTenantId());
             int i = 0;
-            for (String subscriptionId : CommonParams.getSubscriptionIdList()) {
+            for (String subscriptionId : CommonParams.getResultSubscriptionIdList()) {
                 if (i==0) {
                     prop.setProperty("subscription", subscriptionId);
                 } else {
@@ -250,7 +250,7 @@ public class SrvPriManager {
                         fileReporter.report(String.format("Failed to check cred file -retry limit %s has reached, error: %s", RETRY_QNTY, e.getMessage()));
                         throw e;
                     }
-                    fileReporter.report(String.format("Failed, will retry in %s seconds, error: %s", SLEEP_SEC, e.getMessage()));
+                    LOGGER.info(String.format("Failed %d/%d, will retry in %s seconds, error: %s", retry_count, RETRY_QNTY, SLEEP_SEC, e.getMessage()));
                     try {
                         Thread.sleep(SLEEP_SEC * 1000);
                     } catch (InterruptedException e1) {

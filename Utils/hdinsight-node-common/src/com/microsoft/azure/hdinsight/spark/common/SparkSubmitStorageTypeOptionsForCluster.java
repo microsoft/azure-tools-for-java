@@ -80,6 +80,16 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
             SparkSubmitStorageType.BLOB
     }),
 
+    // esp cluster supports default storage account
+    MfaHdiCluster(new SparkSubmitStorageType[]{
+        SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
+    }),
+
+    // linked esp cluster supports default storage account
+    MfaHdiLinkedCluster(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH
+    }),
+
     // sql big data cluster
     BigDataClusterWithWebHdfs(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION,

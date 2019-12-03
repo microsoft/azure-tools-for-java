@@ -23,6 +23,7 @@
 package com.microsoft.azure.hdinsight.serverexplore;
 
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
+import com.microsoft.azure.hdinsight.sdk.common.AuthType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
@@ -45,6 +46,8 @@ public class AddNewClusterModel implements Cloneable {
     private String clusterName;
     private String userName;
     private String password;
+    private AuthType authType;
+
     @Nullable
     private URI livyEndpoint;
     @Nullable
@@ -133,6 +136,15 @@ public class AddNewClusterModel implements Cloneable {
     public AddNewClusterModel setPassword(String password) {
         this.password = password;
 
+        return this;
+    }
+
+    public AuthType getAuthType() {
+        return authType;
+    }
+
+    public AddNewClusterModel setAuthType(AuthType type) {
+        this.authType = type;
         return this;
     }
 

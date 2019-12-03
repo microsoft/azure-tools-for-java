@@ -2,6 +2,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeTooltipManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.Comparing;
@@ -223,6 +224,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
                 }
             }
         });
+        cbArtifact.addItemListener((itemEvent)->updateArtifactConfiguration());
+        cbMavenProject.addItemListener((itemEvent)->updateArtifactConfiguration());
 
         JLabel labelForNewSlotName = new JLabel("Slot Name");
         labelForNewSlotName.setLabelFor(txtNewSlotName);
@@ -383,7 +386,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         } else if (Comparing.equal(CREATE_NEW_WEBAPP, value)) {
             // Create new web app
             cbxWebApp.setSelectedItem(null);
-            createNewWebApp();
+            ApplicationManager.getApplication().invokeLater(()->createNewWebApp());
         }
     }
 
@@ -452,6 +455,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         cbxWebApp.setEnabled(false);
         cbxWebApp.addItem(REFRESHING_WEBAPP);
         presenter.loadWebApps(force);
+    }
+
+    private void updateArtifactConfiguration() {
+        webAppConfiguration.setTargetName(getTargetName());
+        webAppConfiguration.setTargetPath(getTargetPath());
     }
 
     class WebAppCombineBoxRender extends ListCellRendererWrapper {

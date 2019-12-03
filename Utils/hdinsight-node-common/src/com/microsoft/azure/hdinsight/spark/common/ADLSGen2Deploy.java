@@ -39,6 +39,8 @@ import rx.exceptions.Exceptions;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -97,8 +99,12 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
 
     @Nullable
     private String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to /SparkSubmission/xxxx
-        int index = rootPath.indexOf("SparkSubmission");
-        return String.format("/%s", rootPath.substring(index));
+        //convert https://fullAccountName/fileSystem/subfolder/guid/artifact.jar to /subfolder/xxxx
+        Matcher m = Pattern.compile(SparkBatchJob.AdlsGen2RestfulPathPattern).matcher(rootPath);
+        if (m.find()) {
+            return m.group("subpath");
+        }
+
+        throw new URISyntaxException(rootPath, "Cannot get valid artifact path");
     }
 }

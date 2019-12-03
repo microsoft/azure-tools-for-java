@@ -80,7 +80,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     @NotNull
     @Override
     public String getClusterIdForConfiguration() {
-        return String.format("%s@%s", getName(), workSpace.getName());
+        return String.format("[%s] %s", workSpace.getName(), getName());
     }
 
     // This title is shown for spark compute list in run configuration dialog
@@ -90,7 +90,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
         if (getState().equalsIgnoreCase(SparkComputeProvisioningState.SUCCEEDED.toString())) {
             return getClusterIdForConfiguration();
         } else {
-            return String.format("%s@%s [%s]", getName(), workSpace.getName(), getState());
+            return String.format("[%s] %s (%s)", workSpace.getName(), getName(), getState());
         }
     }
 
@@ -107,9 +107,11 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     @Nullable
     @Override
     public String getConnectionUrl() {
-        if (this.workSpace.getSparkUrl() == null) {
-            return null;
-        }
+        // Comment the following codes since the "spark" field replacing with "dev" field in API
+        // which causes connection URL returns null
+//        if (this.workSpace.getSparkUrl() == null) {
+//            return null;
+//        }
 
         try {
             // TODO: Enable it when the workspace's Spark URL is usable.

@@ -31,7 +31,10 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import okio.Timeout;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.net.util.Base64;
+import org.apache.http.Header;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -43,18 +46,28 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SparkBatchSubmission implements ILogger {
+    public static final String probeLocationPattern = "^https://login.windows.net/(?<tenantId>[^/.\\s]+)+(/oauth2/authorize\\?client_id=)+(?<clientId>[^&/.\\s]+)+(&.*)$";
+
     SparkBatchSubmission() {
     }
 
@@ -74,6 +87,13 @@ public class SparkBatchSubmission implements ILogger {
     }
 
     private CredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
+
+    private String authCode = null;
+
+    @Nullable
+    public String getAuthCode() {
+        return authCode;
+    }
 
     @NotNull
     public String getInstallationID() {
@@ -108,13 +128,22 @@ public class SparkBatchSubmission implements ILogger {
     }
 
     @NotNull
-    public CloseableHttpClient getHttpClient() throws IOException {
-        return HttpClients.custom()
-                 .useSystemProperties()
-                 .setSSLSocketFactory(getSSLSocketFactory())
-                 .setDefaultCredentialsProvider(credentialsProvider)
-                 .build();
+    public CloseableHttpClient getHttpClient(boolean disableRedirect) throws IOException {
+        HttpClientBuilder clientBuilder = HttpClients.custom()
+                .useSystemProperties()
+                .setSSLSocketFactory(getSSLSocketFactory())
+                .setDefaultCredentialsProvider(credentialsProvider);
+
+        return disableRedirect
+                ? clientBuilder.disableRedirectHandling().build()
+                : clientBuilder.build();
     }
+
+    @NotNull
+    public CloseableHttpClient getHttpClient() throws IOException {
+        return getHttpClient(false);
+    }
+
 
     /**
      * Set http request credential using username and password
@@ -123,22 +152,58 @@ public class SparkBatchSubmission implements ILogger {
      */
     public void setUsernamePasswordCredential(String username, String password) {
         credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
+        if (username != null && password != null) {
+            String auth = username + ":" + password;
+            authCode = "Basic " + new String(Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1)));
+        }
     }
 
     public CredentialsProvider getCredentialsProvider() {
         return credentialsProvider;
     }
 
-    public HttpResponse getHttpResponseViaGet(String connectUrl) throws IOException {
-        CloseableHttpClient httpclient = getHttpClient();
+    public String negotiateAuthMethod(String connectUrl) throws IOException {
+        HttpResponse resp = negotiateAuthMethodWithResp(connectUrl);
+        if (resp.getCode() == 302) {
+            String location = resp.getHeaders().stream()
+                    .filter(header -> header.getName().equalsIgnoreCase("Location"))
+                    .findFirst()
+                    .map(header -> header.getValue())
+                    .filter(loc -> loc.matches(probeLocationPattern))
+                    .orElse(null);
 
+            return location;
+        }
+
+        return null;
+    }
+
+    public HttpResponse negotiateAuthMethodWithResp(String connectUrl) throws IOException{
+        List<Header> additionHeader = new ArrayList<>();
+        additionHeader.add(new BasicHeader("User-Agent", "Mozilla/5"));
+        return getHttpResponseViaGet(connectUrl, getHttpClient(true), additionHeader);
+    }
+
+    public HttpResponse getHttpResponseViaGet(String connectUrl, CloseableHttpClient httpclient, List<Header> additionHeaders) throws IOException {
         HttpGet httpGet = new HttpGet(connectUrl);
         httpGet.addHeader("Content-Type", "application/json");
         httpGet.addHeader("User-Agent", getUserAgentPerRequest(false));
         httpGet.addHeader("X-Requested-By", "ambari");
-        try(CloseableHttpResponse response = httpclient.execute(httpGet)) {
+
+        if (additionHeaders != null) {
+            for (Header replace : additionHeaders) {
+                httpGet.removeHeaders(replace.getName());
+                httpGet.addHeader(replace);
+            }
+        }
+
+        try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
+    }
+
+    public HttpResponse getHttpResponseViaGet(String connectUrl) throws IOException {
+        return getHttpResponseViaGet(connectUrl, getHttpClient(), null);
     }
 
     public HttpResponse getHttpResponseViaHead(String connectUrl) throws IOException {

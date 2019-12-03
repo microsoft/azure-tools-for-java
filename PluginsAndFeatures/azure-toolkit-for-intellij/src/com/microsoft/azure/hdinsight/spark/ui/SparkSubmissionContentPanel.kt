@@ -283,6 +283,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     private val jobConfTableScrollPane: JBScrollPane = JBScrollPane(jobConfigurationTable).apply {
         minimumSize = jobConfigurationTable.preferredScrollableViewportSize
+        isFocusable = false
     }
 
     private val commandLineArgsPrompt: JLabel = JLabel("Command line arguments").apply {
@@ -464,6 +465,30 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         }
     }
 
+    private val artifactSelection: JPanel by lazy {
+        val formBuilder = panel {
+            columnTemplate {
+                col {
+                    anchor = ANCHOR_WEST
+                    fill = FILL_NONE
+                }
+                col {
+                    anchor = ANCHOR_WEST
+                    hSizePolicy = SIZEPOLICY_WANT_GROW
+                    fill = FILL_HORIZONTAL
+                }
+            }
+            row {   c(ideaArtifactPrompt) { indent = 1 }; c(selectedArtifactComboBox) }
+            row {   c();                                  c(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal]) { fill = FILL_NONE } }
+            row {   c(localArtifactPrompt){ indent = 1 }; c(localArtifactTextField) }
+            row {   c();                                  c(errorMessageLabels[ErrorMessage.LocalArtifact.ordinal]) { fill = FILL_NONE }}
+        }
+
+        formBuilder.buildPanel().apply {
+            name = "SparkArtifactSelection"
+        }
+    }
+
     private val submissionPanel : JPanel by lazy {
         val formBuilder = panel {
             columnTemplate {
@@ -477,18 +502,26 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     fill = FILL_HORIZONTAL
                 }
             }
-            row { c(clustersSelectionPrompt);             c(clustersSelection.component) }
+            row { c(clustersSelectionPrompt
+                    .apply { labelFor = clustersSelection.component });
+                                                          c(clustersSelection.component) }
             row { c();                                    c(clusterErrorMsgPanel) { fill = FILL_NONE } }
-            row { c(artifactSelectLabel) }
-            row {   c(ideaArtifactPrompt) { indent = 1 }; c(selectedArtifactComboBox) }
-            row {   c();                                  c(errorMessageLabels[ErrorMessage.SystemArtifact.ordinal]) { fill = FILL_NONE } }
-            row {   c(localArtifactPrompt){ indent = 1 }; c(localArtifactTextField) }
-            row {   c();                                  c(errorMessageLabels[ErrorMessage.LocalArtifact.ordinal]) { fill = FILL_NONE }}
-            row { c(jobConfigPrompt);                     c(jobConfTableScrollPane) }
+            row { c(artifactSelectLabel
+                    .apply { labelFor = artifactSelection }) }
+            row { c(artifactSelection) { colSpan = 2; fill = FILL_HORIZONTAL }}
+            row { c(jobConfigPrompt
+                    .apply { labelFor = jobConfTableScrollPane });
+                                                          c(jobConfTableScrollPane) }
             row { c();                                    c(errorMessageLabels[ErrorMessage.JobConfiguration.ordinal]) }
-            row { c(commandLineArgsPrompt);               c(commandLineTextField) }
-            row { c(refJarsPrompt);                       c(referencedJarsTextField) }
-            row { c(refFilesPrompt);                      c(referencedFilesTextField) }
+            row { c(commandLineArgsPrompt
+                    .apply { labelFor = commandLineTextField });
+                                                          c(commandLineTextField) }
+            row { c(refJarsPrompt
+                    .apply { labelFor = referencedJarsTextField });
+                                                          c(referencedJarsTextField) }
+            row { c(refFilesPrompt
+                    .apply { labelFor = referencedFilesTextField });
+                                                          c(referencedFilesTextField) }
             row { c(storageWithUploadPathPanel) { colSpan = 2; fill = FILL_HORIZONTAL }; }
         }
 
@@ -496,6 +529,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             // Add a margin for the panel
             border = BorderFactory.createEmptyBorder(5, 8, 5, 8)
             minimumSize = Dimension(480, 480)
+            name = "SparkSubmissionContentPanel"
         }
     }
 
@@ -573,6 +607,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     }
                 }
             }
+
+            // Make the table focused at the first cell by default
+            jobConfigurationTable.changeSelection(1, 0, false, false)
+            jobConfigurationTable.editCellAt(1, 0)
 
             if (!data.artifactName.isNullOrBlank()) {
                 selectedArtifactComboBox.model.apply { selectedItem = findFirst { it.name == data.artifactName } }

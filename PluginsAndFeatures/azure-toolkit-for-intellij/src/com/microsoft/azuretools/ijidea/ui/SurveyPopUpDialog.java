@@ -167,6 +167,10 @@ public class SurveyPopUpDialog extends JDialog {
     private void setLocationRelativeToIDE(Project project) {
         project = project != null ? project : ProjectManagerImpl.getInstance().getOpenProjects()[0];
         JFrame ideFrame = WindowManagerImpl.getInstance().getFrame(project);
+        if (ideFrame == null) {
+            // In case user close project after start up
+            ideFrame = WindowManagerImpl.getInstance().findVisibleFrame();
+        }
         int locationX = ideFrame.getX() + ideFrame.getWidth() - this.getWidth();
         int locationY = ideFrame.getY() + ideFrame.getHeight() - this.getHeight();
         this.setLocation(locationX, locationY);

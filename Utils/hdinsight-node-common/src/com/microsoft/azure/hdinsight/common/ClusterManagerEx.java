@@ -42,6 +42,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -270,6 +271,9 @@ public class ClusterManagerEx implements ILogger {
         mergedClusters.addAll(allAdditionalClusters);
         mergedClusters.addAll(getEmulatorClusterDetails());
 
+        // Sort the merged clusters before set it to cache, sorting algorithm is based on cluster name
+        Collections.sort(mergedClusters);
+
         setCachedClusters(mergedClusters);
         return getCachedClusters();
     }
@@ -369,12 +373,15 @@ public class ClusterManagerEx implements ILogger {
 
     private void saveAdditionalClusters() {
         List<IClusterDetail> hdiAdditionalClusters = new ArrayList<>();
+        List<IClusterDetail> hdiAdditionalMfaClusters = new ArrayList<>();
         List<IClusterDetail> hdiLivyLinkClusters = new ArrayList<>();
         List<IClusterDetail> sqlBigDatalivyLinkClusters = new ArrayList<>();
 
         additionalClusterDetails.forEach(clusterDetail -> {
             if (clusterDetail instanceof HDInsightLivyLinkClusterDetail) {
                 hdiLivyLinkClusters.add(clusterDetail);
+            } else if (clusterDetail instanceof MfaHdiAdditionalClusterDetail) {
+                hdiAdditionalMfaClusters.add(clusterDetail);
             } else if (clusterDetail instanceof HDInsightAdditionalClusterDetail) {
                 hdiAdditionalClusters.add(clusterDetail);
             } else if (clusterDetail instanceof SqlBigDataLivyLinkClusterDetail) {
@@ -385,6 +392,9 @@ public class ClusterManagerEx implements ILogger {
         String additionalClustersJson = gson.toJson(hdiAdditionalClusters);
         DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS, additionalClustersJson);
 
+        String additionalMfaClustersJson = gson.toJson(hdiAdditionalMfaClusters);
+        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_MFA_CLUSTERS, additionalMfaClustersJson);
+
         String livyLinkClustersJson = gson.toJson(hdiLivyLinkClusters);
         DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS, livyLinkClustersJson);
 
@@ -394,17 +404,21 @@ public class ClusterManagerEx implements ILogger {
 
     List<IClusterDetail> loadAdditionalClusters() {
         List<IClusterDetail> hdiAdditionalClusters = new ArrayList<>();
+        List<IClusterDetail> hdiAdditionalMfaClusters = new ArrayList<>();
         List<IClusterDetail> hdiLivyLinkClusters = new ArrayList<>();
         List<IClusterDetail> sqlBigDataClusters = new ArrayList<>();
 
         isListAdditionalClusterSuccess = false;
         Gson gson = new Gson();
         String additionalClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
+        String additionalMfaClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_MFA_CLUSTERS);
         String livyLinkClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS);
         String sqlBigDataClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.SQL_BIG_DATA_LIVY_LINK_CLUSTERS);
         if (!StringHelper.isNullOrWhiteSpace(additionalClustersJson) && !StringHelper.isNullOrWhiteSpace(livyLinkClustersJson)) {
             try {
                 hdiAdditionalClusters = gson.fromJson(additionalClustersJson, new TypeToken<ArrayList<HDInsightAdditionalClusterDetail>>() {
+                }.getType());
+                hdiAdditionalMfaClusters = gson.fromJson(additionalMfaClustersJson, new TypeToken<ArrayList<MfaHdiAdditionalClusterDetail>>() {
                 }.getType());
                 hdiLivyLinkClusters = gson.fromJson(livyLinkClustersJson, new TypeToken<ArrayList<HDInsightLivyLinkClusterDetail>>() {
                 }.getType());
@@ -414,6 +428,7 @@ public class ClusterManagerEx implements ILogger {
                 isListAdditionalClusterSuccess = false;
                 // clear local cache if we cannot get information from local json
                 DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
+                DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_MFA_CLUSTERS);
                 DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS);
                 DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.SQL_BIG_DATA_LIVY_LINK_CLUSTERS);
                 DefaultLoader.getUIHelper().showException("Failed to list linked clusters", e, "List Linked Clusters", false, true);
@@ -422,7 +437,8 @@ public class ClusterManagerEx implements ILogger {
         }
 
         isListAdditionalClusterSuccess = true;
-        Stream<IClusterDetail> hdiLinkedClusters = Stream.concat(hdiAdditionalClusters.stream(), hdiLivyLinkClusters.stream());
+        Stream<IClusterDetail> hdiLinkedClusters = Stream.concat(Stream.concat(hdiAdditionalClusters.stream(), hdiLivyLinkClusters.stream())
+                , hdiAdditionalMfaClusters.stream());
         if (sqlBigDataClusters == null) {
             return hdiLinkedClusters.collect(Collectors.toList());
         } else {

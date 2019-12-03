@@ -14,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.ijidea.ui.SurveyPopUpDialog;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.microsoft.azuretools.Constants.FILE_NAME_SURVEY_CONFIG;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SURVEY;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 
@@ -46,8 +48,6 @@ public enum CustomerSurveyHelper {
     private static final int PUT_OFF_DELAY_BY_DAY = 30;
     private static final int TAKE_SURVEY_DELAY_BY_DAY = 180;
 
-    private static final String PLUGIN_FOLDER_NAME = "AzureToolsForIntelliJ";
-    private static final String SURVEY_CONFIG_FILE = "SurveyConfig.json";
     private static final String TELEMETRY_KEY_RESPONSE = "response";
     private static final String TELEMETRY_VALUE_NEVER_SHOW = "neverShowAgain";
     private static final String TELEMETRY_VALUE_PUT_OFF = "putOff";
@@ -133,11 +133,7 @@ public enum CustomerSurveyHelper {
     }
 
     private File getConfigFile() {
-        File pluginFolder = new File(System.getProperty("user.home"), PLUGIN_FOLDER_NAME);
-        if (!pluginFolder.exists()) {
-            pluginFolder.mkdirs();
-        }
-        return new File(pluginFolder, SURVEY_CONFIG_FILE);
+        return new File(CommonSettings.getSettingsBaseDir(), FILE_NAME_SURVEY_CONFIG);
     }
 
     private synchronized void sendTelemetry(String response) {

@@ -44,6 +44,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.microsoft.azuretools.Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_SP;
+
 public class ServicePrincipalAzureManager extends AzureManagerBase {
     private final static Logger LOGGER = Logger.getLogger(ServicePrincipalAzureManager.class.getName());
     private static Settings settings;
@@ -54,7 +56,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
 
     static {
         settings = new Settings();
-        settings.setSubscriptionsDetailsFileName("subscriptionsDetails-sp.json");
+        settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_SP);
     }
 
     public static void cleanPersist() throws IOException {

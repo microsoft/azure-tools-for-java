@@ -103,7 +103,7 @@ public class NodeActionsMap {
         //noinspection unchecked
         node2Actions.put(HDInsightRootModuleImpl.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
+                        .add(AddNewClusterAction.class).build());
         node2Actions.put(SqlBigDataClusterModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(LinkSqlServerBigDataClusterAction.class).build());
