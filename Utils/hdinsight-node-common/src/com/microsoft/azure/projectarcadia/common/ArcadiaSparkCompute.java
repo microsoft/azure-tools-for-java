@@ -25,28 +25,27 @@ package com.microsoft.azure.projectarcadia.common;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ComparableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkCompute;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.SparkComputeProvisioningState;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolProvisioningState;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolResourceInfo;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.client.utils.URIBuilder;
 
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.util.Optional;
 
 public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
-    public static final int ARCADIA_SPARK_SERVICE_PORT = 443;
+    public static final String ApiVersion = "2019-11-01-preview";
+
     @NotNull
     private final ArcadiaWorkSpace workSpace;
 
     @NotNull
-    private final SparkCompute sparkComputeResponse;
+    private final BigDataPoolResourceInfo sparkComputeResponse;
 
-    public ArcadiaSparkCompute(@NotNull ArcadiaWorkSpace workSpace, @NotNull SparkCompute sparkComputeResponse) {
+    public ArcadiaSparkCompute(@NotNull ArcadiaWorkSpace workSpace, @NotNull BigDataPoolResourceInfo sparkComputeResponse) {
         this.workSpace = workSpace;
         this.sparkComputeResponse = sparkComputeResponse;
     }
@@ -56,13 +55,13 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
             return false;
         }
 
-        return getProvisioningState().equals(SparkComputeProvisioningState.PROVISIONING)
-                || getProvisioningState().equals(SparkComputeProvisioningState.SUCCEEDED);
+        return getProvisioningState().equals(BigDataPoolProvisioningState.PROVISIONING)
+                || getProvisioningState().equals(BigDataPoolProvisioningState.SUCCEEDED);
     }
 
     @Nullable
-    public SparkComputeProvisioningState getProvisioningState() {
-        return this.sparkComputeResponse.provisioningState();
+    public BigDataPoolProvisioningState getProvisioningState() {
+        return BigDataPoolProvisioningState.fromString(this.sparkComputeResponse.provisioningState());
     }
 
     @NotNull
@@ -87,7 +86,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     @NotNull
     @Override
     public String getTitle() {
-        if (getState().equalsIgnoreCase(SparkComputeProvisioningState.SUCCEEDED.toString())) {
+        if (getState().equalsIgnoreCase(BigDataPoolProvisioningState.SUCCEEDED.toString())) {
             return getClusterIdForConfiguration();
         } else {
             return String.format("[%s] %s (%s)", workSpace.getName(), getName(), getState());
@@ -97,7 +96,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     // This title is shown for spark compute node in Azure Explorer
     @NotNull
     public String getTitleForNode() {
-        if (getState().equalsIgnoreCase(SparkComputeProvisioningState.SUCCEEDED.toString())) {
+        if (getState().equalsIgnoreCase(BigDataPoolProvisioningState.SUCCEEDED.toString())) {
             return getName();
         } else {
             return String.format("%s [%s]", getName(), getState());
@@ -107,27 +106,12 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
     @Nullable
     @Override
     public String getConnectionUrl() {
-        // Comment the following codes since the "spark" field replacing with "dev" field in API
-        // which causes connection URL returns null
-//        if (this.workSpace.getSparkUrl() == null) {
-//            return null;
-//        }
-
-        try {
-            // TODO: Enable it when the workspace's Spark URL is usable.
-            // return new URIBuilder(this.workSpace.getSparkUrl()).setPort(ARCADIA_SPARK_SERVICE_PORT).build().toString();
-
-            return new URIBuilder()
-                    .setScheme("https")
-                    .setHost("arcadia-spark-service-prod."
-                            + this.workSpace.getWorkspaceResponse().location() + ".cloudapp.azure.com")
-                    .setPort(ARCADIA_SPARK_SERVICE_PORT)
-                    .setPath("/versions/2019-01-01/sparkcomputes/" + getName() + "/")
-                    .build().toString();
-        } catch (URISyntaxException e) {
-            log().warn(String.format("Getting connection URL for spark compute %s failed. %s", getName(), ExceptionUtils.getStackTrace(e)));
+        if (this.workSpace.getSparkUrl() == null) {
             return null;
         }
+
+        return URI.create(workSpace.getSparkUrl())
+                .resolve(String.format("/livyApi/versions/%s/sparkPools/%s/", ApiVersion, getName())).toString();
     }
 
     @NotNull

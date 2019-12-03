@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -51,7 +50,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
          * The time when the Big Data pool was created.
          */
         @JsonProperty(value = "creationDate")
-        private DateTime creationDate;
+        private String creationDate;
 
         /**
          * Auto-pausing properties.
@@ -163,7 +162,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      *
      * @return the creationDate value
      */
-    public DateTime creationDate() {
+    public String creationDate() {
         return this.properties == null ? null : this.properties.creationDate;
     }
 
@@ -173,7 +172,7 @@ public class BigDataPoolResourceInfo extends TrackedResource {
      * @param creationDate the creationDate value to set
      * @return the BigDataPoolResourceInfo object itself.
      */
-    public BigDataPoolResourceInfo withCreationDate(DateTime creationDate) {
+    public BigDataPoolResourceInfo withCreationDate(String creationDate) {
         if (this.properties == null) {
             this.properties = new Properties();
         }

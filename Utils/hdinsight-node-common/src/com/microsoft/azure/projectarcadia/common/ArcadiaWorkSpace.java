@@ -27,10 +27,10 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.GetSparkComputeListResponse;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.Workspace;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.WorkspaceProvisioningState;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.ApiVersion;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolResourceInfoListResult;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.Workspace;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.WorkspaceProvisioningState;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -42,7 +42,7 @@ import java.net.URI;
 import java.util.Optional;
 
 public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWorkSpace>, ILogger {
-    private static final String REST_SEGMENT_SPARK_COMPUTES = "/sparkComputes";
+    private static final String REST_SEGMENT_SPARK_COMPUTES = "/bigDataPools";
 
     @NotNull
     private final SubscriptionDetail subscription;
@@ -85,15 +85,15 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
     }
 
     @NotNull
-    private Observable<GetSparkComputeListResponse> getSparkComputesRequest() {
+    private Observable<BigDataPoolResourceInfoListResult> getSparkComputesRequest() {
         String url = getUri().toString() + REST_SEGMENT_SPARK_COMPUTES;
 
         return getHttp()
                 .withUuidUserAgent()
-                .get(url, null, null, GetSparkComputeListResponse.class);
+                .get(url, null, null, BigDataPoolResourceInfoListResult.class);
     }
 
-    private ArcadiaWorkSpace updateWithResponse(@NotNull GetSparkComputeListResponse response) {
+    private ArcadiaWorkSpace updateWithResponse(@NotNull BigDataPoolResourceInfoListResult response) {
         this.clusters =
                 ImmutableSortedSet.copyOf(response.items().stream()
                         .map(sparkCompute -> new ArcadiaSparkCompute(this, sparkCompute))
@@ -123,7 +123,7 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
 
     @Nullable
     public WorkspaceProvisioningState getProvisioningState() {
-        return this.workspaceResponse.provisioningState();
+        return WorkspaceProvisioningState.fromString(this.workspaceResponse.provisioningState());
     }
 
     @NotNull
@@ -150,22 +150,19 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
         return this.uri;
     }
 
+    @NotNull
+    public String getId() {
+        return this.workspaceResponse.id();
+    }
+
     @Nullable
     public String getSparkUrl() {
-        if (this.workspaceResponse.connectivityEndpoints() == null) {
-            return null;
-        }
-
-        return this.workspaceResponse.connectivityEndpoints().spark();
+        return this.workspaceResponse.connectivityEndpoints().getOrDefault("dev", null);
     }
 
     @Nullable
     public String getWebUrl() {
-        if (this.workspaceResponse.connectivityEndpoints() == null) {
-            return null;
-        }
-
-        return this.workspaceResponse.connectivityEndpoints().web();
+        return this.workspaceResponse.connectivityEndpoints().getOrDefault("web", null);
     }
 
     @NotNull

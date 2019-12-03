@@ -21,42 +21,17 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.rest.serializer.JsonFlatten;
 
-/**
- * Parameters used to patch spark compute.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonFlatten
-public class SparkComputePatchParameters {
-    /**
-     * Spark version.
-     */
-    @JsonProperty(value = "properties.sparkVersion")
-    private String sparkVersion;
+public class GetSparkHistoryEndpointResponse {
+    @JsonProperty(value = "webProxyEndpoint")
+    String webProxyEndpoint;
 
-    /**
-     * Get spark version.
-     *
-     * @return the sparkVersion value
-     */
-    public String sparkVersion() {
-        return this.sparkVersion;
+    public String getWebProxyEndpoint() {
+        return webProxyEndpoint;
     }
-
-    /**
-     * Set spark version.
-     *
-     * @param sparkVersion the sparkVersion value to set
-     * @return the SparkComputePatchParameters object itself.
-     */
-    public SparkComputePatchParameters withSparkVersion(String sparkVersion) {
-        this.sparkVersion = sparkVersion;
-        return this;
-    }
-
 }

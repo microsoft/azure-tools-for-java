@@ -21,43 +21,48 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Defines values for SparkComputeNodeSizeFamily.
+ * FIXME: This file is copied from legacy Arcadia API
+ *
+ * Defines values for SparkComputeProvisioningState.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public enum SparkComputeNodeSizeFamily {
-    /** Enum value Small. */
-    SMALL("Small"),
+public enum BigDataPoolProvisioningState {
+    /** Enum value Provisioning. */
+    PROVISIONING("Provisioning"),
 
-    /** Enum value Medium. */
-    MEDIUM("Medium"),
+    /** Enum value Succeeded. */
+    SUCCEEDED("Succeeded"),
 
-    /** Enum value Large. */
-    LARGE("Large");
+    /** Enum value Failed. */
+    FAILED("Failed"),
 
-    /** The actual serialized value for a SparkComputeNodeSizeFamily instance. */
+    /** Enum value Deleting. */
+    DELETING("Deleting");
+
+    /** The actual serialized value for a SparkComputeProvisioningState instance. */
     private String value;
 
-    SparkComputeNodeSizeFamily(String value) {
+    BigDataPoolProvisioningState(String value) {
         this.value = value;
     }
 
     /**
-     * Parses a serialized value to a SparkComputeNodeSizeFamily instance.
+     * Parses a serialized value to a SparkComputeProvisioningState instance.
      *
      * @param value the serialized value to parse.
-     * @return the parsed SparkComputeNodeSizeFamily object, or null if unable to parse.
+     * @return the parsed SparkComputeProvisioningState object, or null if unable to parse.
      */
     @JsonCreator
-    public static SparkComputeNodeSizeFamily fromString(String value) {
-        SparkComputeNodeSizeFamily[] items = SparkComputeNodeSizeFamily.values();
-        for (SparkComputeNodeSizeFamily item : items) {
+    public static BigDataPoolProvisioningState fromString(String value) {
+        BigDataPoolProvisioningState[] items = BigDataPoolProvisioningState.values();
+        for (BigDataPoolProvisioningState item : items) {
             if (item.toString().equalsIgnoreCase(value)) {
                 return item;
             }

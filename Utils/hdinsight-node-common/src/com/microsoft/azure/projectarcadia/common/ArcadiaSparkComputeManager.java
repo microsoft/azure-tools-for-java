@@ -27,9 +27,9 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.GetWorkspaceListResponse;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.Workspace;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.ApiVersion;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.Workspace;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.WorkspaceInfoListResult;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -59,7 +59,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     }
 
     private static final String REST_SEGMENT_SUBSCRIPTION = "/subscriptions/";
-    private static final String REST_SEGMENT_WORKSPACES = "providers/Microsoft.ProjectArcadia/workspaces";
+    private static final String REST_SEGMENT_WORKSPACES = "providers/Microsoft.Synapse/workspaces";
 
     @NotNull
     private ImmutableSortedSet<? extends ArcadiaWorkSpace> workSpaces = ImmutableSortedSet.of();
@@ -171,7 +171,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                 .flatMap(subAndWorkSpaceUriPair ->
                         buildHttp(subAndWorkSpaceUriPair.getLeft())
                                 .withUuidUserAgent()
-                                .get(subAndWorkSpaceUriPair.getRight().toString(), null, null, GetWorkspaceListResponse.class)
+                                .get(subAndWorkSpaceUriPair.getRight().toString(), null, null, WorkspaceInfoListResult.class)
                                 .flatMap(resp -> Observable.from(resp.items()))
                                 .onErrorResumeNext(err -> {
                                     log().warn("Got exceptions when listing workspace by subscription ID. " + ExceptionUtils.getStackTrace(err));
@@ -213,4 +213,11 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                         && compute.getName().equals(computeName));
     }
 
+    @NotNull
+    public Observable<? extends ArcadiaWorkSpace> findWorkspace(final @NotNull String tenantId,
+                                                                final @NotNull String workspaceName) {
+        return concat(from(getWorkspaces()), fetchWorkSpaces().flatMap(manager -> from(manager.getWorkspaces())))
+                .filter(workspace -> workspace.getSubscription().getTenantId().equals(tenantId)
+                        && workspace.getName().equals(workspaceName));
+    }
 }

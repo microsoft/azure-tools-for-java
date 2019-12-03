@@ -22,32 +22,42 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHeader;
-
 import com.microsoft.azure.hdinsight.common.UriUtil;
+import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
+import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.GetSparkHistoryEndpointResponse;
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager;
+import com.microsoft.azure.projectarcadia.common.ArcadiaWorkSpace;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownServiceException;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.Thread.sleep;
+
 public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
-    public static final String ARCADIA_RESOURCE_ID = "5d13f7d7-0567-429c-9880-320e9555e5fc";
+    public static final String ARCADIA_RESOURCE_ID = "https://dev.azuresynapse.net";
     public static final String WORKSPACE_HEADER_NAME = "x-ms-workspace-name";
     public static final Pattern LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN = Pattern.compile(
-            "https?://arcadia-spark-service-prod\\.(?<region>[^/.]+)(?<suffix>[^/:]+)(:(?<port>[0-9]+))?"
-                    + "/versions/(?<apiVersion>[^/]+)/sparkcomputes/(?<compute>[^/]+)/?",
+            "(?<baseUrl>https?://[^/]+)/livyApi/versions/(?<apiVersion>[^/]+)/sparkPools/(?<compute>[^/]+)/?",
             Pattern.CASE_INSENSITIVE);
 
     private final @NotNull String workspaceName;
@@ -64,7 +74,7 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
 
     @Override
     public void setUsernamePasswordCredential(String username, String password) {
-        throw new UnsupportedOperationException("Azure Arcadia does not support UserName/Password credential");
+        throw new UnsupportedOperationException("Azure Synapse does not support UserName/Password credential");
     }
 
     @NotNull
@@ -99,8 +109,7 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
         return HttpClients.custom()
                 .useSystemProperties()
                 .setDefaultHeaders(Arrays.asList(
-                        new BasicHeader("Authorization", "Bearer " + getAccessToken()),
-                        new BasicHeader(WORKSPACE_HEADER_NAME, getWorkspaceName())))
+                        new BasicHeader("Authorization", "Bearer " + getAccessToken())))
                 .setSSLSocketFactory(getSSLSocketFactory())
                 .build();
     }
@@ -110,23 +119,89 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
         return livyUri;
     }
 
-    @NotNull
+    @Nullable
+    protected String getSparkHistoryEndpoint(@NotNull String baseUrl) {
+        final int MAX_RETRY_COUNT = 3;
+        final int DELAY_SECONDS = 10;
+        int retries = 0;
+
+        while (retries < MAX_RETRY_COUNT) {
+            try {
+                String requestUrl = baseUrl + "/sparkhistory/api/v1/historyServerProperties";
+                HttpResponse httpResponse = getHttpResponseViaGet(requestUrl);
+                if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
+                    Optional<GetSparkHistoryEndpointResponse> historyEndpointResponse =
+                            ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(), GetSparkHistoryEndpointResponse.class);
+                    return historyEndpointResponse
+                            .orElseThrow(() -> new UnknownServiceException(
+                                    String.format("Bad response when getting from %s, response: %s",
+                                            requestUrl, httpResponse.getMessage())))
+                            .getWebProxyEndpoint();
+                }
+            } catch (IOException ex) {
+                log().warn("Got exception when getting Spark history endpoint, will retry.", ex);
+            }
+
+            try {
+                // Retry interval
+                sleep(TimeUnit.SECONDS.toMillis(DELAY_SECONDS));
+            } catch (InterruptedException ex) {
+                log().warn("Interrupted in retry attempting", ex);
+            }
+
+            retries++;
+        }
+
+        log().warn("Failed to get Spark history endpoint after retry " + MAX_RETRY_COUNT + " times.");
+        return null;
+    }
+
+    @Nullable
     public URL getHistoryServerUrl(int livyId) {
         Matcher matcher = LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN.matcher(getLivyUri().toString());
 
         if (matcher.matches()) {
+            String sparkHistoryEndpoint = getSparkHistoryEndpoint(matcher.group("baseUrl"));
+            if (sparkHistoryEndpoint == null) {
+                return null;
+            }
+
             try {
-                return new URL(String.format("https://arcadia-spark-history-server-prod-%s.azurewebsites.net/" +
-                        "workspaces/%s/sparkcomputes/%s/livyid/%d/summary",
-                        matcher.group("region"),
-                        workspaceName,
+                return new URL(String.format("%s/workspaces/%s/sparkcomputes/%s/livyid/%d/summary",
+                        sparkHistoryEndpoint,
+                        getWorkspaceName(),
                         matcher.group("compute"),
                         livyId));
             } catch (MalformedURLException e) {
-                throw new IllegalArgumentException("Bad Arcadia history server URL", e);
+                throw new IllegalArgumentException("Bad Synapse history server URL", e);
             }
         }
 
-        throw new IllegalArgumentException("Bad Arcadia Livy URL: " + getLivyUri());
+        throw new IllegalArgumentException("Bad Synapse Livy URL: " + getLivyUri());
+    }
+
+    @NotNull
+    public URL getJobDetailsWebUrl(int livyId) {
+        Matcher matcher = LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN.matcher(getLivyUri().toString());
+        if (matcher.matches()) {
+            try {
+                ArcadiaWorkSpace workSpace =
+                        ArcadiaSparkComputeManager.getInstance()
+                                .findWorkspace(getTenantId(), getWorkspaceName())
+                                .toBlocking()
+                                .first();
+                return new URL(String.format("https://web.azuresynapse.net/monitoring/sparkapplication?" +
+                                "workspace=%s&livyId=%d&sparkPoolName=%s",
+                        workSpace.getId(),
+                        livyId,
+                        matcher.group("compute")));
+            } catch (NoSuchElementException ex) {
+                log().warn(String.format("Can't find workspace %s under tenant %s", getWorkspaceName(), getTenantId()), ex);
+            } catch (MalformedURLException ex) {
+                throw new IllegalArgumentException("Bad Synapse history server URL", ex);
+            }
+        }
+
+        throw new IllegalArgumentException("Bad Synapse Livy URL: " + getLivyUri());
     }
 }

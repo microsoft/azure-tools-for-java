@@ -21,9 +21,11 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
-public class GetWorkspaceListResponse extends PageImpl<Workspace> implements IConvertible {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class WorkspaceInfoListResult extends PageImpl<Workspace> implements IConvertible {
 }

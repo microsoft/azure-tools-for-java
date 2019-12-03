@@ -21,41 +21,11 @@
  *
  */
 
-package com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.microsoft.rest.RestException;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
+import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
-/**
- * Exception thrown for an invalid response with ErrorResponse information.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ErrorResponseException extends RestException {
-    /**
-     * Initializes a new instance of the ErrorResponseException class.
-     *
-     * @param message the exception message or the response content if a message is not available
-     * @param response the HTTP response
-     */
-    public ErrorResponseException(final String message, final Response<ResponseBody> response) {
-        super(message, response);
-    }
-
-    /**
-     * Initializes a new instance of the ErrorResponseException class.
-     *
-     * @param message the exception message or the response content if a message is not available
-     * @param response the HTTP response
-     * @param body the deserialized response body
-     */
-    public ErrorResponseException(final String message, final Response<ResponseBody> response, final ErrorResponse body) {
-        super(message, response, body);
-    }
-
-    @Override
-    public ErrorResponse body() {
-        return (ErrorResponse) super.body();
-    }
+public class BigDataPoolResourceInfoListResult extends PageImpl<BigDataPoolResourceInfo> implements IConvertible {
 }
