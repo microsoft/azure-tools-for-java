@@ -24,9 +24,13 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azure.management.resources.fluentcore.arm.models.HasId;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.BasicTelemetryProperty;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -35,16 +39,24 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class Node implements MvpView, BasicTelemetryProperty {
     private static final String CLICK_ACTION = "click";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
+    private static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
+    public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
+    public static final String OPEN_BROWSERS_IN_PORTAL_NOT_SUPPORTED = "Open browsers is not supported in current system";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -388,5 +400,29 @@ public class Node implements MvpView, BasicTelemetryProperty {
     @NotNull
     public String getServiceName() {
         return TelemetryConstants.ACTION;
+    }
+
+    public void openResourcesInPortal(HasId resource, String subscriptionId) throws AzureCmdException {
+        try {
+            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            // not signed in
+            if (azureManager == null) {
+                return;
+            }
+            final String portalUrl = azureManager.getPortalUrl();
+            final String tenantId = azureManager.getTenantIdBySubscription(subscriptionId);
+            String url = portalUrl
+                    + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
+                    + tenantId
+                    + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
+                    + resource.id();
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(new URI(url));
+            } else {
+                throw new AzureCmdException(OPEN_BROWSERS_IN_PORTAL_NOT_SUPPORTED);
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, e);
+        }
     }
 }
