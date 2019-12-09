@@ -112,6 +112,14 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
         }
     }
 
+    public Observable<ArcadiaWorkSpace> get() {
+        return getHttp()
+                .withUuidUserAgent()
+                .get(getUri().toString(), null, null, Workspace.class)
+                .doOnNext(workspaceResponse -> this.workspaceResponse = workspaceResponse)
+                .map(workspace -> this);
+    }
+
     public boolean isRunning() {
         if (getProvisioningState() == null) {
             return false;
