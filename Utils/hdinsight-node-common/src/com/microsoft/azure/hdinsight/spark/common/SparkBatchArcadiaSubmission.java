@@ -55,7 +55,6 @@ import static java.lang.Thread.sleep;
 
 public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
     public static final String ARCADIA_RESOURCE_ID = "https://dev.azuresynapse.net";
-    public static final String WORKSPACE_HEADER_NAME = "x-ms-workspace-name";
     public static final Pattern LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN = Pattern.compile(
             "(?<baseUrl>https?://[^/]+)/livyApi/versions/(?<apiVersion>[^/]+)/sparkPools/(?<compute>[^/]+)/?",
             Pattern.CASE_INSENSITIVE);
