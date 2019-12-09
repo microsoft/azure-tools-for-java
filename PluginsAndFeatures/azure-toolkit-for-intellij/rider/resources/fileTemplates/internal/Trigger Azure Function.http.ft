@@ -7,13 +7,13 @@ ${comment} https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-
 ${comment}
 ${comment} Make sure to update the below calls to suit your function host and port.
 ${comment}
-${comment} Call the following endpoint to locally run HTTP and webhook triggered functions:
+${comment} Call the following endpoint to locally run HTTP and webhook-triggered functions:
 
 GET http://localhost:7071/api/${functionName}
 
 ###
 
-${comment} Call the following administrator endpoint to trigger non-HTTP functions:
+${comment} Call the following administrative endpoint to trigger non-HTTP functions:
 
 POST http://localhost:7071/admin/functions/${functionName}
 Content-Type: application/json
