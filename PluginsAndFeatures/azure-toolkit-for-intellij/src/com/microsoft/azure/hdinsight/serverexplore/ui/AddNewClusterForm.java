@@ -88,7 +88,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected JTextField livyEndpointField;
     protected JTextArea validationErrorMessageField;
     private JPanel authComboBoxPanel;
-    protected JComboBox authComboBox;
+    protected JComboBox<AuthType> authComboBox;
     protected JPanel authCardsPanel;
     private JPanel basicAuthCard;
     protected JTextField userNameField;
