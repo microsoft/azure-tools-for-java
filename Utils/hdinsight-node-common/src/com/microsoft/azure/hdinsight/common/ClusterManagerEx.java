@@ -410,10 +410,11 @@ public class ClusterManagerEx implements ILogger {
 
         isListAdditionalClusterSuccess = false;
         Gson gson = new Gson();
-        String additionalClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
-        String additionalMfaClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_MFA_CLUSTERS);
-        String livyLinkClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS);
-        String sqlBigDataClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.SQL_BIG_DATA_LIVY_LINK_CLUSTERS);
+        final String DEFAULT_EMPTY_JSON = "[]";
+        String additionalClustersJson = DefaultLoader.getIdeHelper().getPropertyWithDefault(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS, DEFAULT_EMPTY_JSON);
+        String additionalMfaClustersJson = DefaultLoader.getIdeHelper().getPropertyWithDefault(CommonConst.HDINSIGHT_ADDITIONAL_MFA_CLUSTERS, DEFAULT_EMPTY_JSON);
+        String livyLinkClustersJson = DefaultLoader.getIdeHelper().getPropertyWithDefault(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS, DEFAULT_EMPTY_JSON);
+        String sqlBigDataClustersJson = DefaultLoader.getIdeHelper().getPropertyWithDefault(CommonConst.SQL_BIG_DATA_LIVY_LINK_CLUSTERS, DEFAULT_EMPTY_JSON);
         if (!StringHelper.isNullOrWhiteSpace(additionalClustersJson) && !StringHelper.isNullOrWhiteSpace(livyLinkClustersJson)) {
             try {
                 hdiAdditionalClusters = gson.fromJson(additionalClustersJson, new TypeToken<ArrayList<HDInsightAdditionalClusterDetail>>() {
