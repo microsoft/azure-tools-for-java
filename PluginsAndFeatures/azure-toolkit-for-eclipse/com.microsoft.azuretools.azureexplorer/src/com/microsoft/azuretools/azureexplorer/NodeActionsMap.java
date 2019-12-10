@@ -29,7 +29,6 @@ import com.microsoft.azuretools.azureexplorer.actions.AddNewEmulatorAction;
 import com.microsoft.azuretools.azureexplorer.actions.AttachExternalStorageAccountAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateArmStorageAccountAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateArmVMAction;
-import com.microsoft.azuretools.azureexplorer.actions.CreateBlobContainer;
 import com.microsoft.azuretools.azureexplorer.actions.CreateQueueAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateRedisCacheAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateTableAction;
@@ -54,10 +53,8 @@ public class NodeActionsMap {
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder().add(CreateRedisCacheAction.class).build());
         node2Actions.put(TableModule.class, new ImmutableList.Builder().add(CreateTableAction.class).build());
         node2Actions.put(QueueModule.class, new ImmutableList.Builder().add(CreateQueueAction.class).build());
-        node2Actions.put(BlobModule.class, new ImmutableList.Builder().add(CreateBlobContainer.class).build());
         node2Actions.put(StorageModule.class, new ImmutableList.Builder().add(CreateArmStorageAccountAction.class, AttachExternalStorageAccountAction.class).build());
 //        node2Actions.put(ExternalStorageNode.class, new ImmutableList.Builder().add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
-        node2Actions.put(StorageNode.class, new ImmutableList.Builder().add(CreateBlobContainer.class).build());
         node2Actions.put(HDInsightRootModuleImpl.class, new ImmutableList.Builder().add(AddNewClusterAction.class).build());
         node2Actions.put(DockerHostNode.class, new ImmutableList.Builder().add(DeployDockerContainerAction.class, ViewDockerHostAction.class, DeleteDockerHostAction.class).build());
         node2Actions.put(DockerHostModule.class, new ImmutableList.Builder().add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
