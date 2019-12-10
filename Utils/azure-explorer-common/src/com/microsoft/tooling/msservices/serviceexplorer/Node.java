@@ -56,7 +56,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
     private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
     private static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
-    public static final String OPEN_BROWSERS_IN_PORTAL_NOT_SUPPORTED = "Open browsers is not supported in current system";
+    public static final String OPEN_RESOURCES_IN_PORTAL_NOT_SUPPORTED = "Open browsers is not supported in current system";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -419,7 +419,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                 Desktop.getDesktop().browse(new URI(url));
             } else {
-                throw new AzureCmdException(OPEN_BROWSERS_IN_PORTAL_NOT_SUPPORTED);
+                throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_NOT_SUPPORTED);
             }
         } catch (IOException | URISyntaxException e) {
             throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, e);
