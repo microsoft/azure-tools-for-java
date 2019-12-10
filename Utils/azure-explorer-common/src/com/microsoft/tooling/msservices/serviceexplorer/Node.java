@@ -416,12 +416,8 @@ public class Node implements MvpView, BasicTelemetryProperty {
                     + tenantId
                     + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
                     + resource.id();
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(new URI(url));
-            } else {
-                throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_NOT_SUPPORTED);
-            }
-        } catch (IOException | URISyntaxException e) {
+            DefaultLoader.getIdeHelper().openLinkInBrowser(url);
+        } catch (IOException e) {
             throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, e);
         }
     }
