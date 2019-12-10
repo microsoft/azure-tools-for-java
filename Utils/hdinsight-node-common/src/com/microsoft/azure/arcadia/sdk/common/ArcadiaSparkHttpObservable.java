@@ -26,34 +26,14 @@ import com.microsoft.azure.hdinsight.sdk.common.ApiVersionParam;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchArcadiaSubmission;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import org.apache.http.Header;
 import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicHeader;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ArcadiaSparkHttpObservable extends AzureHttpObservable {
-    @NotNull
-    private String workspaceName;
-
-    public ArcadiaSparkHttpObservable(@NotNull String tenantId, @NotNull String workspaceName) {
+    public ArcadiaSparkHttpObservable(@NotNull String tenantId) {
         super(tenantId, "");
-        this.workspaceName = workspaceName;
-    }
-
-    @Override
-    public Header[] getDefaultHeaders() throws IOException {
-        Header[] defaultHeaders = super.getDefaultHeaders();
-        List<Header> headers = Arrays.stream(defaultHeaders)
-                .filter(header -> !header.getName().equals(SparkBatchArcadiaSubmission.WORKSPACE_HEADER_NAME))
-                .collect(Collectors.toList());
-
-        headers.add(new BasicHeader(SparkBatchArcadiaSubmission.WORKSPACE_HEADER_NAME, workspaceName));
-
-        return headers.toArray(new Header[0]);
     }
 
     @Override

@@ -20,26 +20,25 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
+package com.microsoft.azuretools.plugins.tasks
 
-import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.gradle.api.tasks.TaskAction
 
-import java.net.URI;
+class InstallIdeaTask extends BundleBuildIDEATask {
+    @TaskAction
+    def install() {
+        logger.info "IntelliJ IDEA binary: " + intellij.ideaDependency.classes
+        logger.info "Spark development bundle bits target directory: " + bundleConfig.bundleBuildDir
 
-public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
+        def ideaBat = new File(bundleConfig.bundleBuildDir, "bin/idea.bat")
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
-        super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId);
-    }
-
-    @Override
-    @NotNull
-    public ArcadiaSparkHttpObservable getHttp() {
-        return http;
+        if (!ideaBat.exists()) {
+            project.copy {
+                from intellij.ideaDependency.classes
+                into bundleConfig.bundleBuildDir
+            }
+        } else {
+            logger.info "idea.bat file existed, ignore copying."
+        }
     }
 }

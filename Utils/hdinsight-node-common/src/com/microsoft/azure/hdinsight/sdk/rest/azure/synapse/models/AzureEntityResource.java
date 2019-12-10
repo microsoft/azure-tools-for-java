@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,28 +18,33 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
-import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.ProxyResource;
 
-import java.net.URI;
+/**
+ * The resource model definition for a Azure Resource Manager resource with an etag.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class AzureEntityResource extends ProxyResource {
+    /**
+     * Resource Etag.
+     */
+    @JsonProperty(value = "etag", access = JsonProperty.Access.WRITE_ONLY)
+    private String etag;
 
-public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
-
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
-        super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId);
+    /**
+     * Get resource Etag.
+     *
+     * @return the etag value
+     */
+    public String etag() {
+        return this.etag;
     }
 
-    @Override
-    @NotNull
-    public ArcadiaSparkHttpObservable getHttp() {
-        return http;
-    }
 }

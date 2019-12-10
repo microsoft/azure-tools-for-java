@@ -59,7 +59,7 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
                 "Can't prepare Arcadia Spark interactive session since Livy URL is empty"))
 
         val session = ArcadiaSparkSession(
-                name, URI.create(livyUrl), sparkCluster.subscription.tenantId, sparkCluster.workSpace.name)
+                name, URI.create(livyUrl), sparkCluster.subscription.tenantId)
         return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
     }
 

@@ -22,12 +22,11 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import rx.Observable;
-import rx.Observer;
-
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import rx.Observable;
+import rx.Observer;
 
 import java.io.File;
 import java.net.URI;
@@ -79,9 +78,13 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @Override
     public Observable<SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
         // No batches/{id}/log API support yet
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(
-                MessageInfoType.HtmlPersistentMessage,
-                "Track the batch job by opening <a href=\"" + getJobHistoryWebUrl() + "\">Spark Job History Server</a> in Browser"));
+        URL jobHistoryWebUrl = getJobHistoryWebUrl();
+        String trackingJobMsg = "Track the batch job by opening ";
+        if (jobHistoryWebUrl != null) {
+            trackingJobMsg += "<a href=\"" + jobHistoryWebUrl + "\">Spark Job History Server</a> and ";
+        }
+        trackingJobMsg += "<a href=\"" + getJobDetailsWebUrl() + "\">Spark Job Details UI</a> in Browser";
+        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.HtmlPersistentMessage, trackingJobMsg));
 
         return Observable.empty();
     }
@@ -104,8 +107,14 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
         return (SparkBatchArcadiaSubmission) super.getSubmission();
     }
 
+    @Nullable
     private URL getJobHistoryWebUrl() {
         return getArcadiaSubmission().getHistoryServerUrl(getBatchId());
+    }
+
+    @NotNull
+    private URL getJobDetailsWebUrl() {
+        return getArcadiaSubmission().getJobDetailsWebUrl(getBatchId());
     }
 
     private void ctrlInfo(@NotNull String message) {

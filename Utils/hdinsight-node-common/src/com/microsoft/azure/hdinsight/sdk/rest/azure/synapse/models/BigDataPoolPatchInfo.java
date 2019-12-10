@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,28 +18,46 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
-import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import java.util.Map;
 
-import java.net.URI;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
+/**
+ * Patch for a Big Data pool.
+ * Properties patch for a Big Data pool.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class BigDataPoolPatchInfo {
+    /**
+     * Updated tags for the Big Data pool.
+     */
+    @JsonProperty(value = "tags")
+    private Map<String, String> tags;
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
-        super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId);
+    /**
+     * Get updated tags for the Big Data pool.
+     *
+     * @return the tags value
+     */
+    public Map<String, String> tags() {
+        return this.tags;
     }
 
-    @Override
-    @NotNull
-    public ArcadiaSparkHttpObservable getHttp() {
-        return http;
+    /**
+     * Set updated tags for the Big Data pool.
+     *
+     * @param tags the tags value to set
+     * @return the BigDataPoolPatchInfo object itself.
+     */
+    public BigDataPoolPatchInfo withTags(Map<String, String> tags) {
+        this.tags = tags;
+        return this;
     }
+
 }

@@ -20,26 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
+package com.microsoft.azuretools.plugins.tasks
 
-import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.plugins.configs.BundleBuildIDEAConfig
+import org.gradle.api.DefaultTask
 
-import java.net.URI;
+abstract class BundleBuildIDEATask extends DefaultTask {
+    BundleBuildIDEAConfig bundleConfig
 
-public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
+    def intellij = project.intellij
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
-        super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId);
-    }
-
-    @Override
-    @NotNull
-    public ArcadiaSparkHttpObservable getHttp() {
-        return http;
+    def dumpConfig() {
+        logger.info "Bundle Build for IDEA configuration: " + bundleConfig.dump()
     }
 }

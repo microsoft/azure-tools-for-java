@@ -173,6 +173,11 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             }
 
             authComboBox.setSelectedItem(authComboBox.getSelectedObjects()[0]);
+
+            // since ops for hdi and livy has overlap auth type, sometimes won't trigger authcombox selected change event
+            // also need to render the auth card after cluster change
+            layout = (CardLayout) (authCardsPanel.getLayout());
+            layout.show(authCardsPanel, ((AuthType) authComboBox.getSelectedItem()).getTypeName());
         });
 
         authComboBox.addItemListener(e -> {

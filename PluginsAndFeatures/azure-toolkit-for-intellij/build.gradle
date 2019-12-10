@@ -1,9 +1,12 @@
 plugins {
     id "org.jetbrains.intellij" version "0.4.5"
     id "org.jetbrains.kotlin.jvm" version "1.2.50"
+    id "de.undercouch.download" version "4.0.1"
 }
 
+import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
 import org.apache.tools.ant.filters.*
+
 processResources {
     filesMatching('**/ApplicationInsights.xml') {
         filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
@@ -52,7 +55,10 @@ sourceSets {
     main {
         java.srcDirs 'src'
         kotlin.srcDirs 'src'
-        resources.srcDirs 'resources'
+        resources {
+            srcDir 'resources'
+            exclude 'bundle/**'
+        }
     }
     test {
         java {
@@ -165,4 +171,12 @@ defaultTasks 'buildPlugin'
 task wrapper(type: Wrapper) {
     gradleVersion = '4.8'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+apply plugin: BundleBuildIDEAPlugin
+
+installIdea.dependsOn buildPlugin
+
+patchPluginXml {
+    sinceBuild = patchPluginXmlSinceBuild
 }

@@ -20,26 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
+package com.microsoft.azuretools.plugins.tasks
 
-import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.gradle.api.tasks.TaskAction
 
-import java.net.URI;
+class DownloadOptTask extends BundleBuildIDEATask {
+    @TaskAction
+    def download() {
+        logger.info "Download OPT dependencies into " + bundleConfig.downloadedOptsDir
+        project.mkdir bundleConfig.downloadedOptsDir
 
-public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
+        for (dep in bundleConfig.downloadUrls) {
+            if (dep == null) {
+                continue
+            }
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
-        super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId);
-    }
-
-    @Override
-    @NotNull
-    public ArcadiaSparkHttpObservable getHttp() {
-        return http;
+            project.download {
+                src dep
+                dest bundleConfig.downloadedOptsDir
+                onlyIfModified true
+            }
+        }
     }
 }

@@ -1,0 +1,28 @@
+<application>
+  <component name="libraryTable">
+    <library name="${new File(scalaSdkDir).name}" type="Scala">
+      <properties>
+        <language-level>Scala_2_11</language-level>
+        <compiler-classpath>
+          <root url="file://\$APPLICATION_HOME_DIR\$/opt/${new File(scalaSdkDir).name}/lib/scala-compiler.jar" />
+          <root url="file://\$APPLICATION_HOME_DIR\$/opt/${new File(scalaSdkDir).name}/lib/scala-library.jar" />
+          <root url="file://\$APPLICATION_HOME_DIR\$/opt/${new File(scalaSdkDir).name}/lib/scala-reflect.jar" />
+        </compiler-classpath>
+      </properties>
+      <CLASSES>
+<%
+    new File(scalaSdkDir, "lib").listFiles()
+        .findAll { jar -> jar.name.startsWith("scala-") && !jar.name.startsWith("scala-compiler") }
+        .each { jar ->
+            out.println '        ' +
+        '<root url="jar://\$APPLICATION_HOME_DIR\$/' + new File(bundleBuildDir).toURI().relativize(jar.toURI()) + '!/"/>'
+        }
+%>
+      </CLASSES>
+      <JAVADOC>
+        <root url="https://www.scala-lang.org/api/${scalaVer}/" />
+      </JAVADOC>
+      <SOURCES />
+    </library>
+  </component>
+</application>

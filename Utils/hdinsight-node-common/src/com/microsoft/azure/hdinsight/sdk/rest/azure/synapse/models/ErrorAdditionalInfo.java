@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,28 +18,47 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
+package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
-import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.net.URI;
+/**
+ * The resource management error additional info.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ErrorAdditionalInfo {
+    /**
+     * The additional info type.
+     */
+    @JsonProperty(value = "type", access = JsonProperty.Access.WRITE_ONLY)
+    private String type;
 
-public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
+    /**
+     * The additional info.
+     */
+    @JsonProperty(value = "info", access = JsonProperty.Access.WRITE_ONLY)
+    private Object info;
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
-        super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId);
+    /**
+     * Get the additional info type.
+     *
+     * @return the type value
+     */
+    public String type() {
+        return this.type;
     }
 
-    @Override
-    @NotNull
-    public ArcadiaSparkHttpObservable getHttp() {
-        return http;
+    /**
+     * Get the additional info.
+     *
+     * @return the info value
+     */
+    public Object info() {
+        return this.info;
     }
+
 }

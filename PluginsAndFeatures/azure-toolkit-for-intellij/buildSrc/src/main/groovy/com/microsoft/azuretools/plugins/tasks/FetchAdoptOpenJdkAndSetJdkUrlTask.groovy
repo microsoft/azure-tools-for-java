@@ -20,26 +20,34 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
+package com.microsoft.azuretools.plugins.tasks
 
-import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.plugins.configs.JdkUrlConfigurable
+import groovy.json.JsonSlurper
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
 
-import java.net.URI;
+class FetchAdoptOpenJdkAndSetJdkUrlTask extends DefaultTask {
+    boolean setOnlyForEmpty = true
 
-public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
+    JdkUrlConfigurable conf
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
-        super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId);
-    }
+    String adoptOpenJdkApi
 
-    @Override
-    @NotNull
-    public ArcadiaSparkHttpObservable getHttp() {
-        return http;
+    @TaskAction
+    def fetchAndSet() {
+        if (conf == null) {
+            return
+        }
+
+        if (setOnlyForEmpty && conf.jdkUrl != null && !conf.jdkUrl.isEmpty()) {
+            return
+        }
+
+        def httpcon = new URL(adoptOpenJdkApi).openConnection()
+        httpcon.addRequestProperty("User-Agent", "Mozilla")
+        def adoptOpenJdk = new JsonSlurper().parseText(httpcon.getInputStream().getText())
+
+        conf.jdkUrl = adoptOpenJdk["binaries"][0]["binary_link"]
     }
 }
