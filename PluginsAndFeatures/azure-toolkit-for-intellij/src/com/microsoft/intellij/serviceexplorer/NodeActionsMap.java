@@ -79,14 +79,10 @@ public class NodeActionsMap {
                 .add(CreateQueueAction.class).build());
         node2Actions.put(TableModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateTableAction.class).build());
-//        node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-//                .add(CreateBlobContainer.class).build());
         node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateStorageAccountAction.class).build());
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateRedisCacheAction.class).build());
-//        node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-//                .add(CreateBlobContainer.class).build());
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
         // todo: what is ConfirmDialogAction?

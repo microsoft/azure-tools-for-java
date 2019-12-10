@@ -119,7 +119,7 @@ public class StorageNode extends Node implements TelemetryProperties {
                 });
             } catch (Exception ex) {
                 DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete storage account.", ex,
-                        "MS Services  Error Deleting Storage Account", false, true);
+                        "MS Services - Error Deleting Storage Account", false, true);
             }
         }
 
