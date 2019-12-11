@@ -143,7 +143,7 @@ public class ResourceTemplateView extends BaseEditor {
 
     private FileEditor createEditor(String template) {
         return PsiAwareTextEditorProvider.getInstance()
-                .createEditor(project, new LightVirtualFile(node.getName() + ".json", ARMLanguage.INSTANCE, template));
+                . createEditor(project, new LightVirtualFile(node.getName() + ".json", ARMLanguage.INSTANCE, template));
     }
 
     private void updateDeployment() {
