@@ -158,6 +158,14 @@
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV1TemplateCustomizer" />
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV2TemplateCustomizer" />
 
+    <localInspection language="MSBuild"
+                     enabledByDefault="true"
+                     level="WARNING"
+                     shortName="AzureFunctionsVersionNotSpecified"
+                     displayName="Azure Functions version not specified"
+                     groupName="Azure"
+                     implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.AzureFunctionsVersionInspection"/>
+
     <internalFileTemplate name="Trigger Azure Function"/>
   </extensions>
 
