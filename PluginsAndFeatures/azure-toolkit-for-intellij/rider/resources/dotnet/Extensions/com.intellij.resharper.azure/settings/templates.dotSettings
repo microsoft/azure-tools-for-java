@@ -46,7 +46,7 @@
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Shortcut/@EntryValue">funceventgrid</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0D7EFBC8579147469FB563D1023C20C6/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
+public static async Task RunAsync([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
 {
     log.LogInformation(eventGridEvent.Data.ToString());$END$
 }</s:String>
@@ -86,6 +86,7 @@ public static void Run([EventGridTrigger]EventGridEvent eventGridEvent, ILogger 
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=10AA984D50993544AC205383CE878BCA/Text/@EntryValue">$HEADER$using System;
 using IoTHubTrigger = Microsoft.Azure.WebJobs.EventHubTriggerAttribute;
 
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.EventHubs;
@@ -100,7 +101,7 @@ namespace $NAMESPACE$
         private static HttpClient client = new HttpClient();
 
         [FunctionName("$CLASS$")]
-        public static void Run([IoTHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]EventData message, ILogger log)
+        public static async Task RunAsync([IoTHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]EventData message, ILogger log)
         {
             log.LogInformation($"C# IoT Hub trigger function processed a message: {Encoding.UTF8.GetString(message.Body.Array)}");$END$
         }
@@ -128,7 +129,7 @@ namespace $NAMESPACE$
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Shortcut/@EntryValue">funccosmosdb</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=11F33192EE947041A2CEDB05AF3C12B6/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([CosmosDBTrigger(
+public static async Task RunAsync([CosmosDBTrigger(
     databaseName: "$DATABASEVALUE$",
     collectionName: "$COLLECTIONVALUE$",
     ConnectionStringSetting = "$CONNECTIONVALUE$",
@@ -159,7 +160,7 @@ public static void Run([CosmosDBTrigger(
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Shortcut/@EntryValue">funceventhub</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=190B0B4F284C0143AA99D1368CBEA42E/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([EventHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myEventHubMessage, ILogger log)
+public static async Task RunAsync([EventHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myEventHubMessage, ILogger log)
 {
     log.LogInformation($"C# Event Hub trigger function processed a message: {myEventHubMessage}");$END$
 }</s:String>
@@ -192,7 +193,7 @@ public static void Run([EventHubTrigger("$PATHVALUE$", Connection = "$CONNECTION
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Shortcut/@EntryValue">funcsbtopic</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=33E2D46DE8EFAF4FA3EE2619362355FE/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([ServiceBusTrigger("$TOPICNAME$", "$SUBSCRIPTIONNAME$", Connection = "$CONNECTIONVALUE$")]string mySbMsg, ILogger log)
+public static async Task RunAsync([ServiceBusTrigger("$TOPICNAME$", "$SUBSCRIPTIONNAME$", Connection = "$CONNECTIONVALUE$")]string mySbMsg, ILogger log)
 {
     log.LogInformation($"C# ServiceBus topic trigger function processed message: {mySbMsg}");$END$
 }</s:String>
@@ -229,7 +230,8 @@ public static void Run([ServiceBusTrigger("$TOPICNAME$", "$SUBSCRIPTIONNAME$", C
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Scope/=D2B8A841E72DF843A812220E5BC95BEB/@KeyIndexDefined">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Text/@EntryValue">$HEADER$using System;
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3EEDE17E903019419043E88D376059DC/Text/@EntryValue">$HEADER$using System.Threading.Tasks;
+using System;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -239,7 +241,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([QueueTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
+        public static async Task RunAsync([QueueTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
         {
             log.LogInformation($"C# Queue trigger function processed: {myQueueItem}");$END$
         }
@@ -275,6 +277,7 @@ namespace $NAMESPACE$
 // http://localhost:7071/runtime/webhooks/EventGrid?functionName=$CLASS$
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.EventGrid.Models;
@@ -286,7 +289,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
+        public static async Task RunAsync([EventGridTrigger]EventGridEvent eventGridEvent, ILogger log)
         {
             log.LogInformation(eventGridEvent.Data.ToString());$END$
         }
@@ -344,7 +347,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static async Task&lt;IActionResult&gt; Run([HttpTrigger(AuthorizationLevel.$AUTHLEVELVALUE$, "get", "post", Route = null)]HttpRequest req, ILogger log)
+        public static async Task&lt;IActionResult&gt; RunAsync([HttpTrigger(AuthorizationLevel.$AUTHLEVELVALUE$, "get", "post", Route = null)]HttpRequest req, ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
@@ -379,7 +382,7 @@ namespace $NAMESPACE$
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Shortcut/@EntryValue">funcsbqueue</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6B03063335FC604597CBE6584A5F5CE3/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([ServiceBusTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
+public static async Task RunAsync([ServiceBusTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
 {
     log.LogInformation($"C# ServiceBus queue trigger function processed message: {myQueueItem}");$END$
 }</s:String>
@@ -399,7 +402,7 @@ public static void Run([ServiceBusTrigger("$PATHVALUE$", Connection = "$CONNECTI
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Shortcut/@EntryValue">functimer</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=6BABE7CD6697EA45A6AA09E325E85275/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([TimerTrigger("$SCHEDULE$")]TimerInfo myTimer, ILogger log)
+public static async Task RunAsync([TimerTrigger("$SCHEDULE$")]TimerInfo myTimer, ILogger log)
 {
     log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");$END$
 }</s:String>
@@ -443,6 +446,7 @@ public static void Run([TimerTrigger("$SCHEDULE$")]TimerInfo myTimer, ILogger lo
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7185F4732E7F0A4EA8D89AB2B3C6D3A2/Text/@EntryValue">$HEADER$using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -452,7 +456,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([BlobTrigger("$PATHVALUE$/{name}", Connection = "$CONNECTIONVALUE$")]Stream myBlob, string name, ILogger log)
+        public static async Task RunAsync([BlobTrigger("$PATHVALUE$/{name}", Connection = "$CONNECTIONVALUE$")]Stream myBlob, string name, ILogger log)
         {
             log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");$END$
         }
@@ -495,6 +499,7 @@ namespace $NAMESPACE$
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=744A6A5E6574184EB1EBA82294AD3391/Text/@EntryValue">$HEADER$using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -504,7 +509,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([ServiceBusTrigger("$TOPICNAME$", "$SUBSCRIPTIONNAME$", Connection = "$CONNECTIONVALUE$")]string mySbMsg, ILogger log)
+        public static async Task RunAsync([ServiceBusTrigger("$TOPICNAME$", "$SUBSCRIPTIONNAME$", Connection = "$CONNECTIONVALUE$")]string mySbMsg, ILogger log)
         {
             log.LogInformation($"C# ServiceBus topic trigger function processed message: {mySbMsg}");$END$
         }
@@ -529,7 +534,7 @@ namespace $NAMESPACE$
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Shortcut/@EntryValue">funcblob</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=7FEEEEB5841D18498B035D63B94E3DEA/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([BlobTrigger("$PATHVALUE$/{name}", Connection = "$CONNECTIONVALUE$")]Stream myBlob, string name, ILogger log)
+public static async Task RunAsync([BlobTrigger("$PATHVALUE$/{name}", Connection = "$CONNECTIONVALUE$")]Stream myBlob, string name, ILogger log)
 {
     log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");$END$
 }</s:String>
@@ -569,6 +574,7 @@ public static void Run([BlobTrigger("$PATHVALUE$/{name}", Connection = "$CONNECT
 
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=81D7BB6083CC6949894044E09CE85725/Text/@EntryValue">$HEADER$using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -578,7 +584,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([TimerTrigger("$SCHEDULE$")]TimerInfo myTimer, ILogger log)
+        public static async Task RunAsync([TimerTrigger("$SCHEDULE$")]TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");$END$
         }
@@ -603,7 +609,7 @@ namespace $NAMESPACE$
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Shortcut/@EntryValue">funciothub</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A39A5CEB7BD8CC448C427321FE699BBC/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([IoTHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]EventData message, ILogger log)
+public static async Task RunAsync([IoTHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]EventData message, ILogger log)
 {
     log.LogInformation($"C# IoT Hub trigger function processed a message: {Encoding.UTF8.GetString(message.Body.Array)}");$END$
 }</s:String>
@@ -641,6 +647,7 @@ public static void Run([IoTHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVA
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A64F121BE15AEE4B8C4AB4CA11AAAAA2/Text/@EntryValue">$HEADER$using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -650,7 +657,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([EventHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myEventHubMessage, ILogger log)
+        public static async Task RunAsync([EventHubTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myEventHubMessage, ILogger log)
         {
             log.LogInformation($"C# Event Hub trigger function processed a message: {myEventHubMessage}");$END$
         }
@@ -675,7 +682,7 @@ namespace $NAMESPACE$
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Shortcut/@EntryValue">funcqueue</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CCE85039CD8DEE4FACE4AA88D290CFA9/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static void Run([QueueTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
+public static async Task RunAsync([QueueTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
 {
     log.LogInformation($"C# Queue trigger function processed: {myQueueItem}");$END$
 }</s:String>
@@ -695,7 +702,7 @@ public static void Run([QueueTrigger("$PATHVALUE$", Connection = "$CONNECTIONVAL
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Shortcut/@EntryValue">funchttp</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D46CAA2DEF0ADB4A852E359DCB38593C/Text/@EntryValue">[FunctionName("$CLASS$")]
-public static async Task&lt;IActionResult&gt; Run([HttpTrigger(AuthorizationLevel.$AUTHLEVELVALUE$, "get", "post", Route = null)]HttpRequest req, ILogger log)
+public static async Task&lt;IActionResult&gt; RunAsync([HttpTrigger(AuthorizationLevel.$AUTHLEVELVALUE$, "get", "post", Route = null)]HttpRequest req, ILogger log)
 {
     log.LogInformation("C# HTTP trigger function processed a request.");
 
@@ -767,7 +774,7 @@ namespace $NAMESPACE$
         }
 
         [FunctionName("$CLASS$_Hello")]
-        public static string SayHello([ActivityTrigger] string name, ILogger log)
+        public static async Task&lt;string&gt; SayHello([ActivityTrigger] string name, ILogger log)
         {
             log.LogInformation($"Saying hello to {name}.");
             return $"Hello {name}!";
@@ -804,7 +811,7 @@ namespace $NAMESPACE$
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Shortcut/@EntryValue">funcac</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=30111C58960418448EBD57679251F1B5/Text/@EntryValue">[FunctionName(nameof($CLASS$))]
-public async Task&lt;$OUTPUTTYPE$&gt; Run(
+public async Task&lt;$OUTPUTTYPE$&gt; RunAsync(
     [ActivityTrigger] $INPUTTYPE$ input,
     ILogger logger)
 {
@@ -825,7 +832,7 @@ public async Task&lt;$OUTPUTTYPE$&gt; Run(
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Shortcut/@EntryValue">funccl</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=5D9C03E36C88DE4C9BBC9E1155D879EE/Text/@EntryValue">[FunctionName(nameof($CLASS$))]
-public async Task Run(
+public async Task RunAsync(
     $TRIGGERCLASS$ trigger,
     [OrchestrationClient] DurableOrchestrationClientBase client,
     ILogger logger)
@@ -849,7 +856,7 @@ public async Task Run(
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Shortcut/@EntryValue">funcor</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D828595513AC9A46AAD55B3EF6AD3DC6/Text/@EntryValue">[FunctionName(nameof($CLASS$))]
-public async Task Run(
+public async Task RunAsync(
     [OrchestrationTrigger] DurableOrchestrationContextBase context,
     ILogger logger)
 {
@@ -903,6 +910,7 @@ public async Task Run(
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F7EE3A0674610547AB87B8FC949B596A/Text/@EntryValue">$HEADER$using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -912,7 +920,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([ServiceBusTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
+        public static async Task RunAsync([ServiceBusTrigger("$PATHVALUE$", Connection = "$CONNECTIONVALUE$")]string myQueueItem, ILogger log)
         {
             log.LogInformation($"C# ServiceBus queue trigger function processed message: {myQueueItem}");$END$
         }
@@ -956,6 +964,7 @@ namespace $NAMESPACE$
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F96BDA43831E514AA19A550B9421C1E1/Text/@EntryValue">$HEADER$using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
@@ -966,7 +975,7 @@ namespace $NAMESPACE$
     public static class $CLASS$
     {
         [FunctionName("$CLASS$")]
-        public static void Run([CosmosDBTrigger(
+        public static async Task RunAsync([CosmosDBTrigger(
             databaseName: "$DATABASEVALUE$",
             collectionName: "$COLLECTIONVALUE$",
             ConnectionStringSetting = "$CONNECTIONVALUE$",
