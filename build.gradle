@@ -1,0 +1,145 @@
+import org.gradle.internal.os.OperatingSystem
+
+def gradleExec = file(OperatingSystem.current().isWindows() ? "gradlew.bat" : "gradlew")
+def mavenExec = file(OperatingSystem.current().isWindows() ? "mvnw.cmd" : "mvnw")
+def IJ_VERSION_LATEST = IJ_VERSION_MINOR?.trim()?.isEmpty() ? IJ_VERSION_MAJOR : "${IJ_VERSION_MAJOR}.${IJ_VERSION_MINOR}"
+
+def mavenArgs = { conf ->
+    List<String> mvnArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) + conf.goals + [ '-B' ]
+
+    if (conf.pom != null) {
+        mvnArgs << "-f" << conf.pom.toString()
+    }
+
+    if (skipTest.toBoolean()) {
+        mvnArgs << "-Dmaven.test.skip=true"
+    }
+
+    if (skipCheckstyle.toBoolean()) {
+        mvnArgs << "-Dcheckstyle.skip=true"
+    }
+
+    if (conf.localRepo != null) {
+        mvnArgs << "-Dmaven.repo.local=" + conf.localRepo.toString()
+    }
+
+    boolean isMavenQuiet = mavenQuiet.equalsIgnoreCase("auto")
+            ? (!(logger.isInfoEnabled() || logger.isDebugEnabled()))
+            : mavenQuiet.toBoolean()
+
+    if (isMavenQuiet) {
+        mvnArgs << "-q"
+    }
+
+    mvnArgs
+}
+
+ext.maven = { Closure mavenClosure ->
+    exec {
+        executable mavenExec
+        args mavenArgs(configure([:], mavenClosure))
+    }
+}
+
+task buildUtils {
+    doLast {
+        logger.info('Building Utils ...')
+        maven {
+            goals = "install"
+            pom = file('Utils/pom.xml')
+            localRepo = file('.repository')
+        }
+    }
+}
+
+task buildAdditionalLibrary {
+    dependsOn buildUtils
+
+    doLast {
+        maven {
+            goals = "install"
+            pom = file('PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml')
+            localRepo = file('.repository')
+        }
+    }
+}
+
+task buildEclipse {
+    dependsOn buildUtils, buildAdditionalLibrary
+
+    doLast {
+        logger.info('Building Eclipse plugin ...')
+        maven {
+            goals = "install"
+            pom = file('PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml')
+        }
+
+        copy {
+            from file('PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target')
+            include 'WindowsAzurePlugin4EJ*.zip'
+            into file(ARTIFACTS_DIR)
+        }
+    }
+}
+
+task buildIntelliJ {
+    dependsOn buildUtils, buildAdditionalLibrary
+
+    doLast {
+        logger.info('Building IntelliJ plugin ...')
+
+        def ijBuildArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) + [
+                'buildPlugin',
+                'bundleBuildIdeaZip',
+                '-s',
+                "-Pintellij_version=IC-$IJ_VERSION_LATEST",
+                "-Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST"
+        ]
+
+        if (INJECT_INTELLIJ_VERSION.toBoolean()) {
+            ijBuildArgs << "-PpatchPluginXmlSinceBuild=$IJ_VERSION_MAJOR_BUILD"
+        }
+
+        // Transfer root Gradle start parameters into IntelliJ Gradle build
+        if (logger.isInfoEnabled()) {
+            ijBuildArgs << '--info'
+        }
+
+        if (logger.isDebugEnabled()) {
+            ijBuildArgs << '--debug'
+        }
+
+        switch (gradle.startParameter.showStacktrace) {
+            case ShowStacktrace.ALWAYS:
+                ijBuildArgs << '--stacktrace'
+                break
+            case ShowStacktrace.ALWAYS_FULL:
+                ijBuildArgs << '--full-stacktrace'
+                break
+            default:
+                break
+        }
+
+        exec {
+            workingDir file('PluginsAndFeatures/azure-toolkit-for-intellij')
+            executable gradleExec
+            args ijBuildArgs
+        }
+
+        copy {
+            from file('PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/')
+            into file(ARTIFACTS_DIR)
+            rename '(.*).zip', '$1' + "-${IJ_VERSION_LATEST}.zip"
+        }
+    }
+}
+
+task buildAll {
+    dependsOn buildUtils, buildAdditionalLibrary, buildEclipse, buildIntelliJ
+
+    doLast {
+        logger.info("ALL BUILD SUCCESSFUL")
+    }
+}
+
+defaultTasks 'buildAll'
