@@ -39,22 +39,19 @@ import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class Node implements MvpView, BasicTelemetryProperty {
     private static final String CLICK_ACTION = "click";
-    private static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
-    private static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
+    public static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
+    public static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
     public static final String OPEN_RESOURCES_IN_PORTAL_NOT_SUPPORTED = "Open browsers is not supported in current system";
 
