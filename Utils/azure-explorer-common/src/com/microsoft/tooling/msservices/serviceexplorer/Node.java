@@ -24,7 +24,6 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.microsoft.azure.management.resources.fluentcore.arm.models.HasId;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -53,7 +52,6 @@ public class Node implements MvpView, BasicTelemetryProperty {
     public static final String REST_SEGMENT_JOB_MANAGEMENT_TENANTID = "/#@";
     public static final String REST_SEGMENT_JOB_MANAGEMENT_RESOURCE = "/resource";
     public static final String OPEN_RESOURCES_IN_PORTAL_FAILED = "Fail to open resources in portal.";
-    public static final String OPEN_RESOURCES_IN_PORTAL_NOT_SUPPORTED = "Open browsers is not supported in current system";
 
     protected static Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions;
 
@@ -399,7 +397,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
         return TelemetryConstants.ACTION;
     }
 
-    public void openResourcesInPortal(HasId resource, String subscriptionId) throws AzureCmdException {
+    public void openResourcesInPortal(String subscriptionId, String resourceRelativePath) throws AzureCmdException {
         try {
             final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             // not signed in
@@ -412,7 +410,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
                     + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
                     + tenantId
                     + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
-                    + resource.id();
+                    + resourceRelativePath;
             DefaultLoader.getIdeHelper().openLinkInBrowser(url);
         } catch (IOException e) {
             throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, e);

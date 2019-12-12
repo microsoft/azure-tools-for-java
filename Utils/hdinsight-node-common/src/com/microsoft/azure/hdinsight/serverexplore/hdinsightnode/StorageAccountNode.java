@@ -27,19 +27,15 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,24 +62,9 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
             addAction("Open Storage in Azure Management Portal", new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    try {
-                        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                        // not signed in
-                        if (azureManager == null) {
-                            return;
-                        }
-                        final String portalUrl = azureManager.getPortalUrl();
-                        final String tenantId = clusterDetail.getSubscription().getTenantId();
-                        String url = portalUrl
-                                + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
-                                + tenantId
-                                + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
-                                + ((ClusterDetail) clusterDetail).getId()
-                                + REST_SEGMENT_STORAGE_ACCOUNT;
-                        DefaultLoader.getIdeHelper().openLinkInBrowser(url);
-                    } catch (IOException ex) {
-                        throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, ex);
-                    }
+                    String subscriptionId = clusterDetail.getSubscription().getSubscriptionId();
+                    String storageRelativePath = ((ClusterDetail) clusterDetail).getId() + REST_SEGMENT_STORAGE_ACCOUNT;
+                    openResourcesInPortal(subscriptionId, storageRelativePath);
                 }
             });
         }

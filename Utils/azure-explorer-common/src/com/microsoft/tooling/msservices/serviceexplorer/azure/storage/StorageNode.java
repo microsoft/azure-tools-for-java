@@ -73,7 +73,7 @@ public class StorageNode extends Node implements TelemetryProperties {
 
         @Override
         protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
-            openResourcesInPortal(storageAccount, subscriptionId);
+            openResourcesInPortal(subscriptionId, storageAccount.id());
         }
 
         @Override

@@ -280,7 +280,10 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
     public void afterOkActionPerformed() {
         if (hdInsightModule != null) {
-            hdInsightModule.load(false);
+            // FIXME: There is a bug for linking cluster action: If the cluster name already exists, the linked cluster
+            // will fail to be added to cache. If we don't force refresh again, the cluster will not be shown as linked
+            // state in  Azure Explorer.
+            hdInsightModule.load(true);
         }
     }
 
