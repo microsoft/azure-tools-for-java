@@ -144,6 +144,10 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
     }
 
+    public String getId() {
+        return clusterRawInfo.getId();
+    }
+
     public String getState(){
         ClusterProperties clusterProperties = this.clusterRawInfo.getProperties();
         return clusterProperties == null ? null : clusterProperties.getClusterState();

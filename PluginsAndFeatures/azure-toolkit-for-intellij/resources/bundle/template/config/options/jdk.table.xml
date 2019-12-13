@@ -1,0 +1,38 @@
+<application>
+  <component name="ProjectJdkTable">
+    <jdk version="2">
+      <name value="1.8" />
+      <type value="JavaSDK" />
+      <version value="java version &quot;${new File(jdkDir).name}&quot;" />
+      <homePath value="\$APPLICATION_HOME_DIR\$/opt/${new File(jdkDir).name}" />
+      <roots>
+        <annotationsPath>
+          <root type="composite">
+            <root url="jar://\$APPLICATION_HOME_DIR\$/plugins/java/lib/jdkAnnotations.jar!/" type="simple" />
+          </root>
+        </annotationsPath>
+        <classPath>
+          <root type="composite">
+<%
+    new File(jdkDir, "jre/lib").traverse(
+            type: groovy.io.FileType.FILES, nameFilter: ~/(?i).*\.jar$/, excludeFilter: ~/(?i).*jre.lib.security.*/ )
+    { jar ->
+        println '            ' +
+            '<root url="jar://\$APPLICATION_HOME_DIR\$/' + new File(bundleBuildDir).toURI().relativize(jar.toURI()) + '!/" type="simple" />'
+    }
+%>
+          </root>
+        </classPath>
+        <javadocPath>
+          <root type="composite" />
+        </javadocPath>
+        <sourcePath>
+          <root type="composite">
+            <root url="jar://\$APPLICATION_HOME_DIR\$/opt/${new File(jdkDir).name}/src.zip!/" type="simple" />
+          </root>
+        </sourcePath>
+      </roots>
+      <additional />
+    </jdk>
+  </component>
+</application>

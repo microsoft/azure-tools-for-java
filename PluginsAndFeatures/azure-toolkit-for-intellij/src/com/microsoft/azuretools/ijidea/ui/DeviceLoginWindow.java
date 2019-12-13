@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.microsoft.aad.adal4j.AdalErrorCode;
@@ -40,7 +41,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.text.html.HTMLDocument;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Font;
@@ -50,7 +50,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -150,11 +149,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         final StringSelection selection = new StringSelection(deviceCode.getUserCode());
         final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
-        try {
-            Desktop.getDesktop().browse(new URI(deviceCode.getVerificationUrl()));
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-        }
+        BrowserUtil.open(deviceCode.getVerificationUrl());
     }
 
     private void closeDialog() {

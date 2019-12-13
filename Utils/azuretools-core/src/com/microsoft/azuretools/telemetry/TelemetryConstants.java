@@ -103,6 +103,7 @@ public class TelemetryConstants {
     public static final String START_VM = "start-vm";
     public static final String RESTART_VM = "restart-vm";
     public static final String CREATE_STORAGE_ACCOUNT = "create-storage-account";
+    public static final String OPEN_STORAGE_IN_PORTAL = "open-storage-in-portal";
     public static final String DELETE_STORAGE_ACCOUNT = "delete-storage-account";
     public static final String DETACH_STORAGE_ACCOUNT = "detach-storage-account";
     public static final String DELETE_STORAGE_TABLE = "delete-storage-table";

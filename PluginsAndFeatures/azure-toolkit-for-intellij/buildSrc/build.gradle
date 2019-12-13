@@ -1,0 +1,16 @@
+plugins {
+    id "de.undercouch.download" version "4.0.1"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+apply plugin: 'groovy'
+
+dependencies {
+    compile localGroovy()
+    compile gradleApi()
+}
+

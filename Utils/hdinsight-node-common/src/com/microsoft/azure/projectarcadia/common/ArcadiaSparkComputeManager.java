@@ -27,9 +27,8 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.GetWorkspaceListResponse;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.projectarcadia.models.Workspace;
+import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.WorkspaceInfoListResult;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -39,11 +38,13 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.NameValuePair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
 import static rx.Observable.concat;
@@ -59,7 +60,9 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
     }
 
     private static final String REST_SEGMENT_SUBSCRIPTION = "/subscriptions/";
-    private static final String REST_SEGMENT_WORKSPACES = "providers/Microsoft.ProjectArcadia/workspaces";
+    private static final String REST_SEGMENT_RESOURCES = "resources";
+    private static final String SYNAPSE_WORKSPACE_FILTER = "resourceType eq 'Microsoft.Synapse/workspaces'";
+    private static final String LIST_WORKSPACE_API_VERSION = "2017-03-01";
 
     @NotNull
     private ImmutableSortedSet<? extends ArcadiaWorkSpace> workSpaces = ImmutableSortedSet.of();
@@ -152,8 +155,12 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                 .defaultIfEmpty(this);
     }
 
-    @NotNull
-    private Observable<List<Pair<SubscriptionDetail, Workspace>>> getWorkSpacesRequest() {
+    public List<NameValuePair> getSynapseWorkspaceFilter() {
+        return Collections.singletonList(ODataParam.filter(SYNAPSE_WORKSPACE_FILTER));
+    }
+
+        @NotNull
+    private Observable<List<ArcadiaWorkSpace>> getWorkSpacesRequest() {
         AzureManager azureManager = getAzureManager();
         if (azureManager == null) {
             return Observable.error(new AuthException(
@@ -165,41 +172,37 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                 .map(sub -> Pair.of(
                         sub,
                         URI.create(getSubscriptionsUri(sub.getSubscriptionId()).toString() + "/")
-                                .resolve(REST_SEGMENT_WORKSPACES))
+                                .resolve(REST_SEGMENT_RESOURCES))
                 )
                 .doOnNext(subAndWorkspaceUriPair -> log().debug("Pair(Subscription, WorkSpaceListUri): " + subAndWorkspaceUriPair.toString()))
                 .flatMap(subAndWorkSpaceUriPair ->
                         buildHttp(subAndWorkSpaceUriPair.getLeft())
                                 .withUuidUserAgent()
-                                .get(subAndWorkSpaceUriPair.getRight().toString(), null, null, GetWorkspaceListResponse.class)
+                                .get(subAndWorkSpaceUriPair.getRight().toString(), getSynapseWorkspaceFilter(), null, WorkspaceInfoListResult.class)
                                 .flatMap(resp -> Observable.from(resp.items()))
                                 .onErrorResumeNext(err -> {
                                     log().warn("Got exceptions when listing workspace by subscription ID. " + ExceptionUtils.getStackTrace(err));
                                     return Observable.empty();
                                 })
-                                .map(workSpace -> Pair.of(subAndWorkSpaceUriPair.getLeft(), workSpace))
+                                // Filter workspaces only in provisioning state or success state
+                                .map(workspace -> new ArcadiaWorkSpace(subAndWorkSpaceUriPair.getLeft(), workspace))
+                                // Run the time-consuming task concurrently in IO thread
+                                .flatMap(arcadiaWorkSpace -> arcadiaWorkSpace.get().subscribeOn(Schedulers.io()))
+                                .filter(ArcadiaWorkSpace::isRunning)
                                 .subscribeOn(Schedulers.io())
                 )
-                .toList()
-                .doOnNext(subAndWorkSpacePair -> log().debug("Pair(Subscription, WorkSpace) list: " + subAndWorkSpacePair.toString()));
+                .toList();
     }
 
     @NotNull
-    private ArcadiaSparkComputeManager updateWithResponse(@NotNull List<Pair<SubscriptionDetail, Workspace>> workSpacesResponse) {
-        this.workSpaces =
-                ImmutableSortedSet.copyOf(
-                        workSpacesResponse
-                                .stream()
-                                .map(subAndWorkSpacePair ->
-                                        new ArcadiaWorkSpace(subAndWorkSpacePair.getLeft(), subAndWorkSpacePair.getRight()))
-                                .iterator()
-                );
+    private ArcadiaSparkComputeManager updateWithResponse(@NotNull List<ArcadiaWorkSpace> arcadiaWorkspace) {
+        this.workSpaces = ImmutableSortedSet.copyOf(arcadiaWorkspace);
         return this;
     }
 
     @NotNull
     private AzureHttpObservable buildHttp(@NotNull SubscriptionDetail subscriptionDetail) {
-        return new AzureHttpObservable(subscriptionDetail, ApiVersion.VERSION);
+        return new AzureHttpObservable(subscriptionDetail, LIST_WORKSPACE_API_VERSION);
     }
 
     @NotNull
@@ -213,4 +216,11 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                         && compute.getName().equals(computeName));
     }
 
+    @NotNull
+    public Observable<? extends ArcadiaWorkSpace> findWorkspace(final @NotNull String tenantId,
+                                                                final @NotNull String workspaceName) {
+        return concat(from(getWorkspaces()), fetchWorkSpaces().flatMap(manager -> from(manager.getWorkspaces())))
+                .filter(workspace -> workspace.getSubscription().getTenantId().equals(tenantId)
+                        && workspace.getName().equals(workspaceName));
+    }
 }

@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.AuthType
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule
 import org.apache.commons.lang3.StringUtils
 import java.awt.event.WindowAdapter
@@ -43,8 +44,7 @@ open class AddNewHDInsightReaderClusterForm(val project: Project, val module: HD
         clusterComboBox.model = DefaultComboBoxModel(arrayOf(hdiLinkTitle))
         clusterComboBox.isEnabled = true
 
-        val basicAuthTitle = "Basic Authentication"
-        authComboBox.model = DefaultComboBoxModel(arrayOf(basicAuthTitle))
+        authComboBox.model = DefaultComboBoxModel(arrayOf(AuthType.BasicAuth))
         authComboBox.isEnabled = true
 
 

@@ -32,9 +32,9 @@ public class ArcadiaSparkSession extends SparkSession {
     @NotNull
     private ArcadiaSparkHttpObservable http;
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId, @NotNull String workspaceName) {
+    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
         super(name, baseUrl);
-        this.http = new ArcadiaSparkHttpObservable(tenantId, workspaceName);
+        this.http = new ArcadiaSparkHttpObservable(tenantId);
     }
 
     @Override

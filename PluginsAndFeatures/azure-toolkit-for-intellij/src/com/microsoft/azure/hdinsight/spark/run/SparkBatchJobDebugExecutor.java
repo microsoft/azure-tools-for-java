@@ -111,6 +111,13 @@ public class SparkBatchJobDebugExecutor extends Executor {
         }
 
         // Intellij requires the executor equaling DefaultDebugExecutor to enable the support for multiple debug tabs
-        return obj.equals(DefaultDebugExecutor.getDebugExecutorInstance()) || super.equals(obj);
+        // And all executors are Singletons, only compare the ID
+        if (!(obj instanceof Executor)) {
+            return false;
+        }
+
+        Executor other = (Executor) obj;
+
+        return other.getId().equals(defaultDebugExecutor.getId()) || other.getId().equals(this.getId());
     }
 }
