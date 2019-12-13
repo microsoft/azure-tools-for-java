@@ -79,8 +79,11 @@ class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
         runInWriteAction {
             val range = TextRange(0, document.textLength)
 
-            // Add prompt before input commands
-            consoleDetail.console.print("scala> ", ConsoleViewContentType.NORMAL_OUTPUT)
+            // Add prompt before input commands for Livy interactive console
+            // To address issue https://github.com/microsoft/azure-tools-for-java/issues/3806
+            if (consoleDetail.processHandler is SparkLivySessionProcessHandler) {
+                consoleDetail.console.print("scala> ", ConsoleViewContentType.NORMAL_OUTPUT)
+            }
 
             editor.selectionModel.setSelection(range.startOffset, range.endOffset)
             langConsole?.addToHistory(range, langConsole.consoleEditor, true)
