@@ -187,7 +187,14 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                                 // Filter workspaces only in provisioning state or success state
                                 .map(workspace -> new ArcadiaWorkSpace(subAndWorkSpaceUriPair.getLeft(), workspace))
                                 // Run the time-consuming task concurrently in IO thread
-                                .flatMap(arcadiaWorkSpace -> arcadiaWorkSpace.get().subscribeOn(Schedulers.io()))
+                                .flatMap(arcadiaWorkSpace -> arcadiaWorkSpace
+                                        .get()
+                                        .onErrorResumeNext(err -> {
+                                            log().warn(String.format("Got exceptions when getting workspace %s details. %s",
+                                                    arcadiaWorkSpace.getName(), ExceptionUtils.getStackTrace(err)));
+                                            return Observable.empty();
+                                        })
+                                        .subscribeOn(Schedulers.io()))
                                 .filter(ArcadiaWorkSpace::isRunning)
                                 .subscribeOn(Schedulers.io())
                 )
