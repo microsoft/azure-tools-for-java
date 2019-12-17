@@ -130,6 +130,7 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
     }
 
     @Nullable
+    @Override
     public String getDefaultStorageRootPath() {
         return defaultStorageRootPath;
     }

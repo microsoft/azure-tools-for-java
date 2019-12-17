@@ -77,6 +77,7 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
 
     // arcadia cluster now suppports blob
     ArcadiaSparkCluster(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
             SparkSubmitStorageType.BLOB
     }),
 

@@ -79,8 +79,13 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                 .onErrorReturn(err -> {
                     if (err.getMessage()!= null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
                             || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
-                        throw new IllegalArgumentException("Failed to create folder " + dirPath +
-                                " when uploading Spark application artifacts with error: " + err.getMessage());
+                        String errorMessage = new StringBuilder("Failed to create folder " + dirPath + " when uploading Spark application artifacts with error: " + err.getMessage() + ". Please verify if\n")
+                                .append("1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n")
+                                .append("2. You have Storage Blob Data Contributor or Storage Blob Data Owner role over the storage path " + dirPath + ".\n")
+                                .append("   If the role is recently granted, please wait a while and submit the job again later.\n")
+                                .append("   Find more details at https://docs.microsoft.com/en-us/azure/storage/common/storage-access-blobs-queues-portal#azure-ad-account")
+                                .toString();
+                        throw new IllegalArgumentException(errorMessage);
                     } else {
                         throw Exceptions.propagate(err);
                     }

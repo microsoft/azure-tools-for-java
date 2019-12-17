@@ -319,6 +319,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     }
 
     @Nullable
+    @Override
     public String getDefaultStorageRootPath() {
         log().info("Cluster ID: " + clusterRawInfo.getId());
         Map<String, String> requestedCoresiteMap = null;

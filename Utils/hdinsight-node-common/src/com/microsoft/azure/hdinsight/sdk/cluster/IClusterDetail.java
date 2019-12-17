@@ -96,6 +96,11 @@ public interface IClusterDetail extends ComparableCluster {
     }
 
     @Nullable
+    default String getDefaultStorageRootPath() {
+        return null;
+    }
+
+    @Nullable
     default IHDIStorageAccount getStorageAccount() {
         return null;
     }

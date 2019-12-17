@@ -27,10 +27,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolResourceInfoListResult;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.Workspace;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.WorkspaceProvisioningState;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.*;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -185,6 +182,11 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
 
     public Workspace getWorkspaceResponse() {
         return workspaceResponse;
+    }
+
+    @Nullable
+    public DataLakeStorageAccountDetails getStorageAccountDetails() {
+        return getWorkspaceResponse().defaultDataLakeStorage();
     }
 
     @Override

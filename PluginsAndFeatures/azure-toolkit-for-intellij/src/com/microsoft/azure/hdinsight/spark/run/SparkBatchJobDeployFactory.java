@@ -35,6 +35,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.*;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -114,11 +115,11 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
                     if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
-                        String rawStoragePath = ((ClusterDetail) clusterDetail).getDefaultStorageRootPath();
+                        String rawStoragePath = clusterDetail.getDefaultStorageRootPath();
                         destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
                                 SparkSubmissionContentPanel.Constants.submissionFolder);
 
-                        if (clusterDetail instanceof MfaEspCluster) {
+                        if (clusterDetail instanceof MfaEspCluster || clusterDetail instanceof ArcadiaSparkCompute) {
                             httpObservable = new ADLSGen2OAuthHttpObservable(clusterDetail.getSubscription().getTenantId());
                         } else {
                             accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();

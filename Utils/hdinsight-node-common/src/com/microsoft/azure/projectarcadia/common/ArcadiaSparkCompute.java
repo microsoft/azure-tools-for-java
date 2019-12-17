@@ -27,6 +27,10 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ComparableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolProvisioningState;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolResourceInfo;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.DataLakeStorageAccountDetails;
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -126,6 +130,36 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
         return this.sparkComputeResponse.sparkVersion();
     }
 
+    @Nullable
+    @Override
+    public IHDIStorageAccount getStorageAccount() {
+        DataLakeStorageAccountDetails storageAccountDetails = getWorkSpace().getStorageAccountDetails();
+        if (storageAccountDetails == null
+                || storageAccountDetails.accountUrl() == null
+                || storageAccountDetails.filesystem() == null) {
+            log().warn(String.format("Storage account info is invalid for workspace %s. AccountUrl: %s, filesystem: %s.",
+                    getWorkSpace().getName(), storageAccountDetails.accountUrl(), storageAccountDetails.filesystem()));
+            return null;
+        }
+
+        // Sample response:
+        // "accountUrl": "https://rufangen2.dfs.core.windows.net",
+        // "filesystem": "rufan-hdi36-gen2-2019-09-18t09-19-58-321z"
+        StoragePathInfo pathInfo = new StoragePathInfo(storageAccountDetails.accountUrl());
+        return new ADLSGen2StorageAccount(this, pathInfo.path.getHost(), true, storageAccountDetails.filesystem());
+    }
+
+    @Nullable
+    @Override
+    public String getDefaultStorageRootPath() {
+        ADLSGen2StorageAccount storageAccount = (ADLSGen2StorageAccount) getStorageAccount();
+        if (storageAccount == null) {
+            return null;
+        }
+
+        return storageAccount.getStorageRootPath();
+    }
+
     @Override
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
         return SparkSubmitStorageTypeOptionsForCluster.ArcadiaSparkCluster;
@@ -133,7 +167,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
 
     @Override
     public SparkSubmitStorageType getDefaultStorageType() {
-        return SparkSubmitStorageType.BLOB;
+        return SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT;
     }
 
     @NotNull

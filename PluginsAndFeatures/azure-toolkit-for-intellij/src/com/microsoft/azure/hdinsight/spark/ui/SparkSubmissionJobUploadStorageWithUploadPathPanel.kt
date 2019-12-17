@@ -231,7 +231,11 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         uploadPath = invalidUploadPath
                                     } else {
                                         // TODO: need to test whether this has block issue
-                                        val path = (cluster as? ClusterDetail)?.defaultStorageRootPath ?.trimEnd('/') ?: "" +
+                                        // Here is a bug before this commit. If cluster.defaultStorageRootPath is not
+                                        // null, the path will not add "/SparkSubmission" as suffix. This is because
+                                        // operator + is calculated ahead of operator ?:
+                                        // To address issue https://github.com/microsoft/azure-tools-for-java/issues/3856
+                                        val path = (cluster.defaultStorageRootPath?.trimEnd('/') ?: "") +
                                                 "/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
 
                                         if (path == null) {

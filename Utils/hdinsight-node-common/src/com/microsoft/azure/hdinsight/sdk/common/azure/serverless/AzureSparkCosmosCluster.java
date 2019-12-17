@@ -542,6 +542,16 @@ public class AzureSparkCosmosCluster extends SparkCluster
         return storageAccount;
     }
 
+    @Nullable
+    @Override
+    public String getDefaultStorageRootPath() {
+        if (getStorageAccount() == null) {
+            return null;
+        }
+
+        return getStorageAccount().getDefaultContainerOrRootPath();
+    }
+
     @Override
     public List<HDStorageAccount> getAdditionalStorageAccounts() {
         return null;

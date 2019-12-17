@@ -27,6 +27,8 @@ import java.net.URI;
 
 public class StoragePathInfo {
     public static final String AdlsGen2PathPattern = "^(abfs[s]?)://(.*)@(.*)$";
+    // TODO: modify the pattern to match the whole URL with relative path
+    public static final String AdlsGen2EndpointPattern = "^https?://([^.]+).dfs.core.windows.net/?$";
     public static final String BlobPathPattern = "^(wasb[s]?)://(.*)@(.*)$";
     public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
 
@@ -42,7 +44,7 @@ public class StoragePathInfo {
     }
 
     private StorageAccountType setStorageType(@NotNull String path) {
-        if (path.matches(AdlsGen2PathPattern)) {
+        if (path.matches(AdlsGen2PathPattern) || path.matches(AdlsGen2EndpointPattern)) {
             return StorageAccountType.ADLSGen2;
         }
 
