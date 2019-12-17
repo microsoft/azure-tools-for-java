@@ -28,6 +28,7 @@
         <h4>Fixed bugs:</h4>
         <ul>
 		  <li>Azure Functions - Filter out pre-releases from core tools downloads - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/256">#256</a></li>
+		  <li>Publishing Azure Web App fails if the target is running on a Linux App Service Plan - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/271">#271</a></li>
         </ul>
         <p>[3.26.0-2019.2]</p>
         <ul>

@@ -60,9 +60,8 @@ class AppDeploySession(username: String, password: String) {
                 .build()
                 .httpClient()
 
-        val requestBody = RequestBody.create(MultipartBody.FORM, zipFile)
+        val requestBody = RequestBody.create(null, zipFile)
         val request = Request.Builder()
-                .addHeader("Content-Type", "multipart/form-data")
                 .url(connectUrl)
                 .post(requestBody)
                 .build()
