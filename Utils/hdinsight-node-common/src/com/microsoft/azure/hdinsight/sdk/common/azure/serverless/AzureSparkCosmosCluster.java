@@ -30,7 +30,6 @@ import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.*;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
@@ -49,7 +48,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class AzureSparkCosmosCluster extends SparkCluster
                                          implements ProvisionableCluster,
@@ -550,11 +552,6 @@ public class AzureSparkCosmosCluster extends SparkCluster
         }
 
         return getStorageAccount().getDefaultContainerOrRootPath();
-    }
-
-    @Override
-    public List<HDStorageAccount> getAdditionalStorageAccounts() {
-        return null;
     }
 
     @NotNull

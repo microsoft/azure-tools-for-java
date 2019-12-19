@@ -143,8 +143,8 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
         }
 
         // Sample response:
-        // "accountUrl": "https://rufangen2.dfs.core.windows.net",
-        // "filesystem": "rufan-hdi36-gen2-2019-09-18t09-19-58-321z"
+        // "accountUrl": "https://accountName.dfs.core.windows.net",
+        // "filesystem": "fileSystemName"
         StoragePathInfo pathInfo = new StoragePathInfo(storageAccountDetails.accountUrl());
         return new ADLSGen2StorageAccount(this, pathInfo.path.getHost(), true, storageAccountDetails.filesystem());
     }

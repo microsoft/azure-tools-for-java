@@ -1,14 +1,12 @@
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 import com.microsoft.azure.hdinsight.sdk.common.HDIException;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 public class EmulatorClusterDetail implements IClusterDetail {
@@ -123,11 +121,6 @@ public class EmulatorClusterDetail implements IClusterDetail {
 	@Override
 	@Nullable
 		public IHDIStorageAccount getStorageAccount() {
-			return null;
-		}
-
-	@Override
-		public List<HDStorageAccount> getAdditionalStorageAccounts() {
 			return null;
 		}
 

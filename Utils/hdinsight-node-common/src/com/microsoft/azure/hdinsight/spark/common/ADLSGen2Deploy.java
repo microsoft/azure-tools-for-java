@@ -26,11 +26,11 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
-import com.microsoft.azure.hdinsight.spark.utils.PathUtil;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -81,8 +81,8 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                 .onErrorReturn(err -> {
                     if (err.getMessage()!= null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
                             || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
-                        // Sample destinationRootPath: https://ltianwestus2gen2.dfs.core.windows.net/mydefault/SparkSubmission/
-                        String fileSystemRootPath = PathUtil.getParentPath(destinationRootPath);
+                        // Sample destinationRootPath: https://accountName.dfs.core.windows.net/fsName/SparkSubmission/
+                        String fileSystemRootPath = UriUtil.normalizeWithSlashEnding(URI.create(destinationRootPath)).resolve("../").toString();
                         String signInUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
                         String errorMessage = new StringBuilder("Failed to create folder " + dirPath + " when uploading Spark application artifacts with error: " + err.getMessage() + ". Please verify if\n")
                                 .append("1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n")
