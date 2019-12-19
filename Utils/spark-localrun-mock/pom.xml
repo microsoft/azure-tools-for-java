@@ -21,7 +21,7 @@
         <testSourceDirectory>test</testSourceDirectory>
         <testResources>
             <testResource>
-                <directory>Test/resources</directory>
+                <directory>test/resources</directory>
             </testResource>
         </testResources>
         <defaultGoal>install</defaultGoal>
@@ -89,7 +89,7 @@
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>Test/resources/data</directory>
+                                    <directory>test/resources/data</directory>
                                     <targetPath>data</targetPath>
                                 </resource>
                             </resources>
