@@ -21,9 +21,32 @@
     <![CDATA[
     <html>
     <h3>3.31.0</h3>
+    <h4>Added</h4>
+    <ul>
+        <li>Support for IntelliJ 2019.3</li>
+        <li>Support link an HDInsight HIB cluster for no ARM permission users(Supported by smiles-a-lot girl Yi Zhou <a
+                href="https://github.com/lcadzy">@lcadzy</a>)</li>
+    </ul>
     <h4>Changed</h4>
     <ul>
+        <li>List only Synapse workspaces rather than mixed Arcadia and Synapse workspaces</li>
         <li>Remove Storage Accounts explorer</li>
+    </ul>
+    <h4>Fixed</h4>
+    <ul>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3831">#3831</a> Fix ClassCastException when
+            link
+            an SQL Server big data cluster</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3806">#3806</a> Fix showing two 'scala>' when
+            run
+            Spark local console issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3864">#3864</a>, <a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3869">#3869</a> Fix scala plugin version
+            breaking
+            change</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3823">#3823</a> Fix uncaught
+            StackOverflowError
+            when calling SparkBatchJobDebugExecutor.equals() issue</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
