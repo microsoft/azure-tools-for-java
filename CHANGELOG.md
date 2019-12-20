@@ -42,6 +42,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.7](#307)
   - [3.0.6](#306)
 
+## 3.31.0
+
+### Changed
+- Remove Storage Accounts explorer
+
 ## 3.30.0
 
 ### Added
