@@ -24,6 +24,7 @@
         <p>[3.26.0-2019.3]</p>
         <ul>
           <li>Functions: Invoke timer trigger during debug session - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/246">#246</a></li>
+          <li>Functions: Update durable functions live templates - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/273">#273</a></li>
         </ul>
         <h4>Fixed bugs:</h4>
         <ul>
