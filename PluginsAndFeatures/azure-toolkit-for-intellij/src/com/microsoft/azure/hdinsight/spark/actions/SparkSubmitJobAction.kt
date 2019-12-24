@@ -61,7 +61,7 @@ open class SparkSubmitJobAction : AzureAnAction() {
 
         val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING) ?:
                 getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return true
-        val cluster = anActionEvent.dataContext.getData(CLUSTER) as? IClusterDetail
+        val cluster = anActionEvent.dataContext.getData(CLUSTER)
         val mainClassName = anActionEvent.dataContext.getData(MAIN_CLASS_NAME)
 
         submit(runConfigurationSetting, cluster, mainClassName, operation)
@@ -96,7 +96,7 @@ open class SparkSubmitJobAction : AzureAnAction() {
         val clusterName = cluster?.name
         if (clusterName != null) {
             model.submitModel.submissionParameter.clusterName = clusterName     // Select the cluster
-            model.submitModel.clusterMappedId = cluster?.clusterIdForConfiguration
+            model.submitModel.clusterMappedId = cluster.clusterIdForConfiguration
             model.isClusterSelectionEnabled = false
         } else {
             model.isClusterSelectionEnabled = true

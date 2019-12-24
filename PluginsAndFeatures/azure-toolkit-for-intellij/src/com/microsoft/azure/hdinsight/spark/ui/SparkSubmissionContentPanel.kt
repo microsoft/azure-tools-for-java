@@ -33,7 +33,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.Disposer
 import com.intellij.packaging.artifacts.Artifact
 import com.intellij.packaging.impl.artifacts.ArtifactUtil
-import com.intellij.ui.ListCellRendererWrapper
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.table.JBTable
@@ -211,9 +211,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             selectedIndex = 0
         }
 
-        renderer = object: ListCellRendererWrapper<Artifact>() {
-            override fun customize(list: JList<*>?, artifact: Artifact?, index: Int, selected: Boolean, hasFocus: Boolean) {
-                setText(artifact?.name)
+        @Suppress("MissingRecentApi") // Supported after 192.3099
+        renderer = object: SimpleListCellRenderer<Artifact>() {
+            override fun customize(list: JList<out Artifact>?, artifact: Artifact?, index: Int, selected: Boolean, hasFocus: Boolean) {
+                text = artifact?.name
             }
         }
 

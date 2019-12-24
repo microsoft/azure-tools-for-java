@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.30.0</version>
+  <version>3.31.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -20,32 +20,33 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.30.0</h3>
+    <h3>3.31.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Add shorcut ctrl+shift+alt+F2 for disconnect spark application action</li>
-        <li>Integrate with HDInsight Identity Broker (HIB) for HDInsight ESP cluster MFA Authentication, cluster navigation,
-            job submission, and interactive query.</li>
+        <li>Support for IntelliJ 2019.3</li>
+        <li>Support link an HDInsight HIB cluster for no ARM permission users(Supported by smiles-a-lot girl Yi Zhou <a
+                href="https://github.com/lcadzy">@lcadzy</a>)</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Rename brand name from Arcadia to Synapse</li>
-        <li>Deprecate Storage Accounts(will be removed in v3.31.0)</li>
-        <li>Upload path changes to abfs scheme for default ADLS GEN2 storage type</li>
+        <li>List only Synapse workspaces rather than mixed Arcadia and Synapse workspaces</li>
+        <li>Remove Storage Accounts explorer</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2891">#2891</a> Hidden Toolkit directory in
-            user home</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3765">#3765</a> Fix upload path shows null for
-            spark serverless</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3676">#3676</a>,<a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3728">#3728</a> Fix job view panel show
-            failure</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3700">#3700</a>,<a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3710">#3710</a> Fix Spark configuration name
-            shorten issue in 193EAP</li>
-        <li>Fix Spark job submission dialog accessibility issues of Eclipse plugin</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3831">#3831</a> Fix ClassCastException when
+            link
+            an SQL Server big data cluster</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3806">#3806</a> Fix showing two 'scala>' when
+            run
+            Spark local console issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3864">#3864</a>, <a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/3869">#3869</a> Fix scala plugin version
+            breaking
+            change</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3823">#3823</a> Fix uncaught
+            StackOverflowError
+            when calling SparkBatchJobDebugExecutor.equals() issue</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

@@ -71,7 +71,7 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
         val cosmosSparkSubmitModel = (submitModel as? CosmosSparkSubmitModel)
                 ?: throw RuntimeConfigurationError("Can't cast submitModel to CosmosSparkSubmitModel")
 
-        val adlAccount = cosmosSparkSubmitModel?.accountName
+        val adlAccount = cosmosSparkSubmitModel.accountName
                 ?: throw RuntimeConfigurationError("The target cluster name is not selected")
 
         cluster = AzureSparkCosmosClusterManager

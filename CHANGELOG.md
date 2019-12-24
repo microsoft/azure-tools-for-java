@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.31.0](#3310)
   - [3.30.0](#3300)
   - [3.29.0](#3290)
   - [3.28.0](#3280)
@@ -41,6 +42,22 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.31.0
+
+### Added
+- Support for IntelliJ 2019.3
+- Support link an HDInsight HIB cluster for no ARM permission users(Supported by smiles-a-lot girl Yi Zhou [@lcadzy](https://github.com/lcadzy))
+
+### Changed
+- List only Synapse workspaces rather than mixed Arcadia and Synapse workspaces
+- Remove Storage Accounts explorer
+
+### Fixed
+- [#3831](https://github.com/microsoft/azure-tools-for-java/issues/3831) Fix ClassCastException when link an SQL Server big data cluster
+- [#3806](https://github.com/microsoft/azure-tools-for-java/issues/3806) Fix showing two 'scala>' when run Spark local console issue
+- [#3864](https://github.com/microsoft/azure-tools-for-java/issues/3864), [#3869](https://github.com/microsoft/azure-tools-for-java/issues/3869) Fix scala plugin version breaking change
+- [#3823](https://github.com/microsoft/azure-tools-for-java/issues/3823) Fix uncaught StackOverflowError when calling SparkBatchJobDebugExecutor.equals() issue
 
 ## 3.30.0
 

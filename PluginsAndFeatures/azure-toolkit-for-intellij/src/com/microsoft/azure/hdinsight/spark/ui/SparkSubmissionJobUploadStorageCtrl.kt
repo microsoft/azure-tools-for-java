@@ -237,7 +237,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
         return Observable.just(SparkSubmitJobUploadStorageModel())
             .doOnNext(view::getData)
             // set error message to prevent user from applying the change when updating is not completed
-            .map { it.apply { "updating upload path is not completed" } }
+            .map { it.apply { errorMsg = "updating upload path is not completed" } }
             .doOnNext(view::setData)
             .observeOn(Schedulers.io())
             .map { toUpdate ->
@@ -259,12 +259,12 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
             }
     }
 
-    override fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?, scheme: String): String? {
-        if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container) || scheme.isNullOrBlank())
+    override fun getAzureBlobStoragePath(fullStorageBlobName: String?, container: String?, schema: String): String? {
+        if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container) || schema.isBlank())
             throw IllegalArgumentException("Blob Name ,container and scheme name cannot be empty")
 
-        val rawStoragePath = "$scheme://$container@$fullStorageBlobName"
-        return if (scheme!!.startsWith(ADLSGen2StorageAccount.DefaultScheme))
+        val rawStoragePath = "$schema://$container@$fullStorageBlobName"
+        return if (schema.startsWith(ADLSGen2StorageAccount.DefaultScheme))
             "${ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath))}/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
         else  "$rawStoragePath/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
     }
