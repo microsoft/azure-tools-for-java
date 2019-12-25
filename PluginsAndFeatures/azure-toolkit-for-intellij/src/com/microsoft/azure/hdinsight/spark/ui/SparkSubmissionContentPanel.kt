@@ -308,8 +308,11 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         textField.document.addDocumentListener(documentValidationListener)
         button.addActionListener {
             val root = viewModel.prepareVFSRoot()
+            val listChildrenErrorMessage = root?.listChildrenErrorMessage
             if (root == null) {
                StorageChooser.handleInvalidUploadInfo()
+            } else if (listChildrenErrorMessage != null) {
+                StorageChooser.handleListChildrenFailureInfo(listChildrenErrorMessage)
             } else {
                 val chooser = StorageChooser(root) { file -> file.isDirectory || file.name.endsWith(".jar") }
                 val chooseFiles = chooser.chooseFile()
@@ -333,9 +336,12 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         textField.document.addDocumentListener(documentValidationListener)
         button.addActionListener {
             val root = viewModel.prepareVFSRoot()
+            val listChildrenErrorMessage = root?.listChildrenErrorMessage
             if (root == null) {
                 StorageChooser.handleInvalidUploadInfo()
-            } else {
+            } else if (listChildrenErrorMessage != null) {
+                StorageChooser.handleListChildrenFailureInfo(listChildrenErrorMessage)
+            }  else {
                 val chooser = StorageChooser(root, StorageChooser.ALL_DIRS_AND_FILES)
                 val chooseFiles = chooser.chooseFile()
                 if (chooseFiles.isNotEmpty()) {
@@ -577,7 +583,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     .firstOrDefault(null)
 
             var storageAccount: IHDIStorageAccount? = cluster?.storageAccount
-            return storageWithUploadPathPanel.viewModel.uploadStorage.prepareVFSRoot(uploadRootPath, storageAccount)
+            return storageWithUploadPathPanel.viewModel.uploadStorage.prepareVFSRoot(uploadRootPath, storageAccount, cluster)
         }
     }
 

@@ -1,8 +1,6 @@
 package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
-import com.intellij.mock.MockVirtualFile;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.impl.http.HttpFileSystemImpl;
 import com.intellij.openapi.vfs.impl.http.HttpVirtualFile;
 import com.intellij.openapi.vfs.impl.http.RemoteFileInfo;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
@@ -12,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 
 public abstract class AzureStorageVirtualFile extends HttpVirtualFile implements ILogger {
     abstract public void setParent(VirtualFile parent);
@@ -65,5 +62,15 @@ public abstract class AzureStorageVirtualFile extends HttpVirtualFile implements
     @Override
     public InputStream getInputStream() throws IOException {
         throw new UnsupportedOperationException("unimplemented method for Adls Gen2 FileSystem");
+    }
+
+    @Nullable
+    public String getListChildrenErrorMessage() {
+        try {
+            this.getChildren();
+            return null;
+        } catch (Exception ex) {
+            return ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
+        }
     }
 }

@@ -31,13 +31,16 @@ import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
-import com.microsoft.azure.hdinsight.sdk.cluster.*
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType
 import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo
+import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
@@ -58,6 +61,7 @@ import rx.Observable.just
 import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
+import java.net.URI
 import java.util.concurrent.TimeUnit
 import javax.swing.*
 
@@ -233,8 +237,12 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         val path = (cluster.defaultStorageRootPath?.trimEnd('/') ?: "") +
                                                 "/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
 
-                                        errorMsg = null
-                                        uploadPath = path
+                                        if (StoragePathInfo.AdlsGen2PathPattern.toRegex().matches(path)) {
+                                            uploadPath = ADLSGen2FSOperation.convertToGen2Path(URI.create(path))
+                                        } else {
+                                            errorMsg = null
+                                            uploadPath = path
+                                        }
                                     }
                                 } catch (ex: Exception) {
                                     errorMsg = "Error getting cluster storage configuration"
@@ -276,7 +284,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 }
                             }
                             SparkSubmitStorageType.ADLS_GEN2, SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> model.apply {
-                                if (gen2RootPath != null && !SparkBatchJob.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
+                                if (gen2RootPath != null && !StoragePathInfo.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "ADLS GEN2 Root Path is invalid"
                                 } else if (this.storageAccountType == SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH
@@ -286,7 +294,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 } else {
                                     var formatAdlsRootPath = if (gen2RootPath?.endsWith("/") == true) gen2RootPath else "$gen2RootPath/"
                                     if (cluster is MfaEspCluster) formatAdlsRootPath += cluster.userPath
-                                    uploadPath = "${formatAdlsRootPath}/SparkSubmission/"
+                                    uploadPath = "${formatAdlsRootPath}SparkSubmission/"
                                     errorMsg = null
                                 }
                             }
@@ -370,7 +378,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             SparkSubmitStorageType.ADLS_GEN2 -> {
                 data.gen2RootPath = storagePanel.adlsGen2Card.gen2RootPathField.text.trim()
                 data.gen2Account = if (!StringUtils.isEmpty(data.gen2RootPath))
-                    getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath) else ""
+                    getAccount(StoragePathInfo.AdlsGen2RestfulPathPattern, data.gen2RootPath) else ""
                 data.accessKey = storagePanel.adlsGen2Card.storageKeyField.text.trim()
             }
             SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> {
@@ -457,7 +465,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     }
 
                     val credentialAccount = SparkSubmitStorageType.ADLS_GEN2.getSecureStoreServiceOf(
-                            getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath))
+                            getAccount(StoragePathInfo.AdlsGen2RestfulPathPattern, data.gen2RootPath))
                     storagePanel.adlsGen2Card.storageKeyField.text =
                             if (StringUtils.isEmpty(data.accessKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.gen2Account) ?: "" }

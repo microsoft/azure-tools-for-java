@@ -59,4 +59,9 @@ public class StorageChooser implements ILogger {
                                         "clusters and check upload inputs. Or\n preparing upload path has a delay, please retry.")
                 , ModalityState.any());
     }
+
+    public static void handleListChildrenFailureInfo(String errorMessage) {
+        ApplicationManager.getApplication().invokeAndWait(() ->
+                        PluginUtil.displayErrorDialog("List files failure", errorMessage), ModalityState.any());
+    }
 }

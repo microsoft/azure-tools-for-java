@@ -29,6 +29,7 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -83,13 +84,8 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                             || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
                         // Sample destinationRootPath: https://accountName.dfs.core.windows.net/fsName/SparkSubmission/
                         String fileSystemRootPath = UriUtil.normalizeWithSlashEnding(URI.create(destinationRootPath)).resolve("../").toString();
-                        String signInUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
-                        String errorMessage = new StringBuilder("Failed to create folder " + dirPath + " when uploading Spark application artifacts with error: " + err.getMessage() + ". Please verify if\n")
-                                .append("1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n")
-                                .append("2. The signed in user " + signInUserEmail + " has Storage Blob Data Contributor or Storage Blob Data Owner role over the storage path " + fileSystemRootPath + ".\n")
-                                .append("   If the role is recently granted, please wait a while and submit the job again later.\n")
-                                .append("   Find more details at https://docs.microsoft.com/en-us/azure/storage/common/storage-access-blobs-queues-portal#azure-ad-account")
-                                .toString();
+                        String errorMessage = String.format("Failed to create folder %s when uploading Spark application artifacts with error: %s. %s",
+                                dirPath, err.getMessage(), getForbiddenErrorHints(fileSystemRootPath));
                         throw new IllegalArgumentException(errorMessage);
                     } else {
                         throw Exceptions.propagate(err);
@@ -108,12 +104,22 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                 });
     }
 
+    public static String getForbiddenErrorHints(String fileSystemRootPath) {
+        String signInUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+        return new StringBuilder(" Please verify if\n")
+                .append("1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n")
+                .append("2. The signed in user " + signInUserEmail + " has Storage Blob Data Contributor or Storage Blob Data Owner role over the storage path " + fileSystemRootPath + ".\n")
+                .append("   If the role is recently granted, please wait a while and try again later.\n")
+                .append("   Find more details at https://docs.microsoft.com/en-us/azure/storage/common/storage-access-blobs-queues-portal#azure-ad-account")
+                .toString();
+    }
+
     @Nullable
     private String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
         //convert https://fullAccountName/fileSystem/subfolder/guid/artifact.jar to /subfolder/xxxx
-        Matcher m = Pattern.compile(SparkBatchJob.AdlsGen2RestfulPathPattern).matcher(rootPath);
+        Matcher m = Pattern.compile(StoragePathInfo.AdlsGen2RestfulPathPattern).matcher(rootPath);
         if (m.find()) {
-            return m.group("subpath");
+            return m.group("subPath");
         }
 
         throw new URISyntaxException(rootPath, "Cannot get valid artifact path");

@@ -24,9 +24,12 @@ package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
+import com.microsoft.azure.hdinsight.spark.common.ADLSGen2Deploy;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +42,7 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     @Nullable
     private HttpObservable http;
 
-    // abfs://file_system@account_name.dfs.core.windows.net/
+    // abfs://file_system@account_name.dfs.core.windows.net
     private URI root;
     private ADLSGen2FSOperation op;
 
@@ -49,8 +52,8 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     public ADLSGen2FileSystem(@NotNull HttpObservable http, @NotNull String restApiRoot) {
         this.http = http;
         this.op = new ADLSGen2FSOperation(this.http);
-        this.restApiRoot = restApiRoot;
-        this.root = URI.create(op.convertToGen2Uri(URI.create(restApiRoot)));
+        this.restApiRoot = this.op.getGen2BaseRestfulPath(URI.create(restApiRoot));
+        this.root = URI.create(op.convertToGen2Uri(URI.create(this.restApiRoot)));
     }
 
     @NotNull
@@ -66,9 +69,18 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
         List<AdlsGen2VirtualFile> childrenList = new ArrayList<>();
         if (vf.isDirectory()) {
             childrenList = this.op.list(this.restApiRoot, this.op.getDirectoryParam(vf.getUri()))
-                    .map(path -> new AdlsGen2VirtualFile(this.root.resolve(path.getName()),
-                            path.isDirectory(), this))
+                    // sample remoteFile.getName(): user/test/SparkSubmission
+                    .map(remoteFile -> new AdlsGen2VirtualFile(this.root.resolve("/" + remoteFile.getName()),
+                            remoteFile.isDirectory(), this))
                     .doOnNext(file -> file.setParent(vf))
+                    .onErrorResumeNext(err -> {
+                                String errorMessage = "Failed to list folders and files with error " + err.getMessage() + ". ";
+                                if (err instanceof ForbiddenHttpErrorStatus) {
+                                    errorMessage += ADLSGen2Deploy.getForbiddenErrorHints(restApiRoot);
+                                }
+                                return Observable.error(new IOException(errorMessage));
+                            }
+                    )
                     .toList().toBlocking().lastOrDefault(new ArrayList<>());
         }
 

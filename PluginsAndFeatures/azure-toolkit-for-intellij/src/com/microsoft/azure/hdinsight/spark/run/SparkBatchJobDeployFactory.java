@@ -22,7 +22,6 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.ExecutionException;
-import com.intellij.openapi.application.ApplicationManager;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
@@ -39,8 +38,6 @@ import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
-import com.microsoft.intellij.forms.ErrorMessageForm;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -116,7 +113,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     storageAccount = clusterDetail.getStorageAccount();
                     if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
                         String rawStoragePath = clusterDetail.getDefaultStorageRootPath();
-                        destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
+                        destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.convertToGen2Path(URI.create(rawStoragePath)),
                                 SparkSubmissionContentPanel.Constants.submissionFolder);
 
                         if (clusterDetail instanceof MfaEspCluster || clusterDetail instanceof ArcadiaSparkCompute) {
@@ -180,7 +177,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
             case ADLS_GEN2:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
                 String gen2StorageAccount = "";
-                Matcher m = Pattern.compile(SparkBatchJob.AdlsGen2RestfulPathPattern).matcher(destinationRootPath);
+                Matcher m = Pattern.compile(StoragePathInfo.AdlsGen2RestfulPathPattern).matcher(destinationRootPath);
                 if (m.find()) {
                     gen2StorageAccount = m.group("accountName");
                 }

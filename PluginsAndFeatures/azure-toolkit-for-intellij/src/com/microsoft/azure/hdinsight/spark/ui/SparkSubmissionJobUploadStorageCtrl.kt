@@ -265,7 +265,7 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
 
         val rawStoragePath = "$schema://$container@$fullStorageBlobName"
         return if (schema.startsWith(ADLSGen2StorageAccount.DefaultScheme))
-            "${ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath))}/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
+            "${ADLSGen2FSOperation.convertToGen2Path(URI.create(rawStoragePath))}/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
         else  "$rawStoragePath/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
     }
 
