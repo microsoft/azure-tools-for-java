@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.api.GetRemoteFilesResponse;
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPatch;
@@ -39,10 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ADLSGen2FSOperation {
     private HttpObservable http;
@@ -136,49 +132,5 @@ public class ADLSGen2FSOperation {
 
         return http.executeReqAndCheckStatus(req, 200, flushReqParams)
                 .map(ignore -> true);
-    }
-
-    private static Matcher getPatternMatcherWithValidation(String uri, String regex) {
-        Matcher matcher = Pattern.compile(regex).matcher(uri);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException(String.format("URI %s doesn't match with pattern %s.", uri, regex));
-        }
-        return matcher;
-    }
-
-    //convert https://accountname.dfs.core.windows.net/filesystem/subPath to abfs://filesystem@accountname.dfs.core.windows.net/subPath
-    public static String convertToGen2Uri(URI root) {
-        Matcher matcher = getPatternMatcherWithValidation(root.toString(), StoragePathInfo.AdlsGen2RestfulPathPattern);
-        return String.format("abfs://%s@%s.dfs.core.windows.net%s",
-                matcher.group("fileSystem"),
-                matcher.group("accountName"),
-                matcher.group("subPath"));
-    }
-
-    //convert abfs://filesystem@accountname.dfs.core.windows.net/subPath to https://accountname.dfs.core.windows.net/filesystem/subPath
-    public static String convertToGen2Path(URI root) {
-        Matcher matcher = getPatternMatcherWithValidation(root.toString(), StoragePathInfo.AdlsGen2PathPattern);
-        return String.format("https://%s.dfs.core.windows.net/%s%s",
-                matcher.group("accountName"),
-                matcher.group("fileSystem"),
-                matcher.group("subPath"));
-    }
-
-    // Get https://accountname.dfs.core.windows.net/filesystem from https://accountname.dfs.core.windows.net/filesystem/subPath
-    public static String getGen2BaseRestfulPath(URI root) {
-        Matcher matcher = getPatternMatcherWithValidation(root.toString(), StoragePathInfo.AdlsGen2RestfulPathPattern);
-        return String.format("https://%s.dfs.core.windows.net/%s",
-                matcher.group("accountName"),
-                matcher.group("fileSystem"));
-    }
-
-    // get ab from abfs://filesystem@accountname.dfs.core.windows.net/ab
-    // get / from abfs://filesystem@accountname.dfs.core.windows.net/
-    public static String getDirectoryParam(URI root) {
-        Matcher matcher = getPatternMatcherWithValidation(root.toString(), StoragePathInfo.AdlsGen2PathPattern);
-
-        return matcher.group("subPath").length() == 0 || matcher.group("subPath").equals("/")
-                ? "/"
-                : matcher.group("subPath").substring(1);
     }
 }

@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.ExecutionException;
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
@@ -112,9 +113,9 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
                     if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
-                        String rawStoragePath = clusterDetail.getDefaultStorageRootPath();
-                        destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.convertToGen2Path(URI.create(rawStoragePath)),
-                                SparkSubmissionContentPanel.Constants.submissionFolder);
+                        destinationRootPath = AbfsUri.parse(clusterDetail.getDefaultStorageRootPath() + "/").getUrl()
+                                .resolve(SparkSubmissionContentPanel.Constants.submissionFolder + "/")
+                                .toString();
 
                         if (clusterDetail instanceof MfaEspCluster || clusterDetail instanceof ArcadiaSparkCompute) {
                             httpObservable = new ADLSGen2OAuthHttpObservable(clusterDetail.getSubscription().getTenantId());
@@ -176,14 +177,8 @@ public class SparkBatchJobDeployFactory implements ILogger {
             case ADLS_GEN2_FOR_OAUTH:
             case ADLS_GEN2:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
-                String gen2StorageAccount = "";
-                Matcher m = Pattern.compile(StoragePathInfo.AdlsGen2RestfulPathPattern).matcher(destinationRootPath);
-                if (m.find()) {
-                    gen2StorageAccount = m.group("accountName");
-                }
-
-                if (StringUtils.isBlank(gen2StorageAccount)) {
-                    throw new ExecutionException("Invalid ADLS GEN2 root path");
+                if (!AbfsUri.isType(destinationRootPath)) {
+                    throw new ExecutionException("Invalid ADLS GEN2 root path: " + destinationRootPath);
                 }
 
                 if (clusterDetail instanceof MfaEspCluster) {
@@ -194,7 +189,8 @@ public class SparkBatchJobDeployFactory implements ILogger {
                         throw new ExecutionException("Invalid access key input");
                     }
 
-                    httpObservable = new SharedKeyHttpObservable(gen2StorageAccount, accessKey);
+                    String accountName = AbfsUri.parse(destinationRootPath).getAccountName();
+                    httpObservable = new SharedKeyHttpObservable(accountName, accessKey);
                 }
 
                 jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);

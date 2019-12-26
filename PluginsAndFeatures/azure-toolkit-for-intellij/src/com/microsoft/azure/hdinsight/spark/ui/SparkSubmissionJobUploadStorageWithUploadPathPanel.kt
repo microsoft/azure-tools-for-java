@@ -28,6 +28,7 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.util.Disposer
 import com.intellij.uiDesigner.core.GridConstraints.*
+import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
@@ -40,7 +41,6 @@ import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType
 import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
@@ -61,7 +61,6 @@ import rx.Observable.just
 import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
-import java.net.URI
 import java.util.concurrent.TimeUnit
 import javax.swing.*
 
@@ -237,12 +236,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         val path = (cluster.defaultStorageRootPath?.trimEnd('/') ?: "") +
                                                 "/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
 
-                                        if (StoragePathInfo.AdlsGen2PathPattern.toRegex().matches(path)) {
-                                            uploadPath = ADLSGen2FSOperation.convertToGen2Path(URI.create(path))
-                                        } else {
-                                            errorMsg = null
-                                            uploadPath = path
-                                        }
+                                        uploadPath = if (AbfsUri.isType(path)) AbfsUri.parse(path).url.toString() else path
+                                        errorMsg = null
                                     }
                                 } catch (ex: Exception) {
                                     errorMsg = "Error getting cluster storage configuration"

@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
@@ -42,18 +43,13 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     @Nullable
     private HttpObservable http;
 
-    // abfs://file_system@account_name.dfs.core.windows.net
-    private URI root;
+    private AbfsUri rootPathUri;
     private ADLSGen2FSOperation op;
 
-    // https://account_name.dfs.core.windows.net/file_system
-    private String restApiRoot;
-
-    public ADLSGen2FileSystem(@NotNull HttpObservable http, @NotNull String restApiRoot) {
+    public ADLSGen2FileSystem(@NotNull HttpObservable http, @NotNull AbfsUri rootPathUri) {
         this.http = http;
         this.op = new ADLSGen2FSOperation(this.http);
-        this.restApiRoot = this.op.getGen2BaseRestfulPath(URI.create(restApiRoot));
-        this.root = URI.create(op.convertToGen2Uri(URI.create(this.restApiRoot)));
+        this.rootPathUri = rootPathUri;
     }
 
     @NotNull
@@ -62,21 +58,27 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
         return myProtocol;
     }
 
-    public URI getRoot() {return root;}
-
     @NotNull
     public VirtualFile[] listFiles(AdlsGen2VirtualFile vf) {
         List<AdlsGen2VirtualFile> childrenList = new ArrayList<>();
         if (vf.isDirectory()) {
-            childrenList = this.op.list(this.restApiRoot, this.op.getDirectoryParam(vf.getUri()))
-                    // sample remoteFile.getName(): user/test/SparkSubmission
-                    .map(remoteFile -> new AdlsGen2VirtualFile(this.root.resolve("/" + remoteFile.getName()),
-                            remoteFile.isDirectory(), this))
+            // sample rootUrl: https://accountName.dfs.core.windows.net/fileSystem
+            URI rootUrl = this.rootPathUri.getRootUrl();
+            // sample rootUri: abfs://fileSystem@accountName.dfs.core.windows.net
+            URI rootUri = this.rootPathUri.getRootUri();
+            // sample directoryParam: sub/path/to
+            URI directoryParam = vf.getAbfsUri().getDirectoryParam();
+            childrenList = this.op.list(rootUrl.toString(), directoryParam.toString())
+                    // sample remoteFile.getName(): sub/path/to/SparkSubmission
+                    .map(remoteFile -> new AdlsGen2VirtualFile(
+                            AbfsUri.parse(rootUri.resolve("/" + remoteFile.getName()).toString()),
+                            remoteFile.isDirectory(),
+                            this))
                     .doOnNext(file -> file.setParent(vf))
                     .onErrorResumeNext(err -> {
                                 String errorMessage = "Failed to list folders and files with error " + err.getMessage() + ". ";
                                 if (err instanceof ForbiddenHttpErrorStatus) {
-                                    errorMessage += ADLSGen2Deploy.getForbiddenErrorHints(restApiRoot);
+                                    errorMessage += ADLSGen2Deploy.getForbiddenErrorHints(rootUrl.toString());
                                 }
                                 return Observable.error(new IOException(errorMessage));
                             }

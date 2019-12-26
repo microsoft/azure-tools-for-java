@@ -28,6 +28,7 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.ui.DocumentAdapter
+import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
@@ -265,8 +266,9 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
 
         val rawStoragePath = "$schema://$container@$fullStorageBlobName"
         return if (schema.startsWith(ADLSGen2StorageAccount.DefaultScheme))
-            "${ADLSGen2FSOperation.convertToGen2Path(URI.create(rawStoragePath))}/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
-        else  "$rawStoragePath/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
+            AbfsUri.parse("$rawStoragePath/").url
+                .resolve("${SparkSubmissionContentPanel.Constants.submissionFolder}/").toString()
+        else "$rawStoragePath/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
     }
 
     override fun getUploadPath(account: IHDIStorageAccount): String? =

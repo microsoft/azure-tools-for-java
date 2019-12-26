@@ -1,4 +1,4 @@
-Feature: ADLS Gen2 File system operation
+Feature: ADLS Gen2 URI operation
 
   Scenario: Convert Gen2 restful path to ABFS URI
     Given Gen two restful path is

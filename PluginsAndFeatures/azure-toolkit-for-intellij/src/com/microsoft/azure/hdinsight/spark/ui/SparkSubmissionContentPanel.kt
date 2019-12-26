@@ -40,6 +40,7 @@ import com.intellij.ui.table.JBTable
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.intellij.util.execution.ParametersListUtil
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
+import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.DarkThemeManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
@@ -578,12 +579,17 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             val uploadRootPath = storageWithUploadPathPanel.viewModel.getCurrentUploadFieldText()
                     ?.replace("/${Constants.submissionFolder}/?$".toRegex(), "")
 
+            // Currently we only support VFS for Gen2 storage account
+            if (uploadRootPath.isNullOrEmpty() || !AbfsUri.isType(uploadRootPath)) {
+                return null
+            }
+
             val cluster = clustersSelection.viewModel.clusterIsSelected
                     .toBlocking()
                     .firstOrDefault(null)
 
             var storageAccount: IHDIStorageAccount? = cluster?.storageAccount
-            return storageWithUploadPathPanel.viewModel.uploadStorage.prepareVFSRoot(uploadRootPath, storageAccount, cluster)
+            return storageWithUploadPathPanel.viewModel.uploadStorage.prepareVFSRoot(AbfsUri.parse(uploadRootPath), storageAccount, cluster)
         }
     }
 

@@ -20,15 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2
+package com.microsoft.azure.hdinsight.common
 
 import cucumber.api.DataTable
 import cucumber.api.java.en.Given
 import cucumber.api.java.en.Then
-import java.net.URI
+import java.util.*
 import java.util.stream.Collectors
 
-class ADLSGen2FSOperationScenario {
+class AbfsUriScenario {
     private var restfulGen2Paths: List<String> = emptyList()
     private var abfsUris: List<String> = emptyList()
 
@@ -43,8 +43,8 @@ class ADLSGen2FSOperationScenario {
         val actualConvertedUris = this.restfulGen2Paths.stream()
             .map { path ->
                 try {
-                    ADLSGen2FSOperation.convertToGen2Uri(URI.create(path))
-                } catch (ex: IllegalArgumentException) {
+                    AbfsUri.parse(path).uri.toString()
+                } catch (ex: UnknownFormatConversionException) {
                     "invalid restful path"
                 }
             }
@@ -64,8 +64,8 @@ class ADLSGen2FSOperationScenario {
         val actualGen2Path = this.abfsUris.stream()
             .map { path ->
                 try {
-                    ADLSGen2FSOperation.convertToGen2Path(URI.create(path))
-                } catch (ex: IllegalArgumentException) {
+                    AbfsUri.parse(path).url.toString()
+                } catch (ex: UnknownFormatConversionException) {
                     "invalid Gen2 URI"
                 }
             }
@@ -80,8 +80,8 @@ class ADLSGen2FSOperationScenario {
         val actualBaseRestfulPath = this.restfulGen2Paths.stream()
             .map { path ->
                 try {
-                    ADLSGen2FSOperation.getGen2BaseRestfulPath(URI.create(path))
-                } catch (ex: IllegalArgumentException) {
+                    AbfsUri.parse(path).rootUrl.toString()
+                } catch (ex: UnknownFormatConversionException) {
                     "invalid Gen2 URI"
                 }
             }
@@ -97,8 +97,8 @@ class ADLSGen2FSOperationScenario {
         val actualSubPath = this.abfsUris.stream()
             .map { path ->
                 try {
-                    ADLSGen2FSOperation.getDirectoryParam(URI.create(path))
-                } catch (ex: IllegalArgumentException) {
+                    AbfsUri.parse(path).directoryParam.toString()
+                } catch (ex: UnknownFormatConversionException) {
                     "invalid Gen2 URI"
                 }
             }

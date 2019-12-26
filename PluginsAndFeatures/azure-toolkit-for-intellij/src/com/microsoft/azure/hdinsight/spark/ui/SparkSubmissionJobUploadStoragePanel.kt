@@ -27,6 +27,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.uiDesigner.core.GridConstraints.*
+import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxModelDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
@@ -35,8 +36,6 @@ import com.microsoft.azure.hdinsight.sdk.common.ADLSGen2OAuthHttpObservable
 import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.*
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.ADLSGen2FileSystem
@@ -53,7 +52,6 @@ import java.awt.CardLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
-import java.net.URI
 import javax.swing.ComboBoxModel
 import javax.swing.JLabel
 import javax.swing.JList
@@ -164,8 +162,8 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
 
         val storageCheckSubject: PublishSubject<StorageCheckEvent> = disposableSubjectOf { PublishSubject.create() }
 
-        fun prepareVFSRoot(uploadRootPath: String?, storageAccount: IHDIStorageAccount?, cluster: IClusterDetail?): AzureStorageVirtualFile? {
-            var fileSystem: AzureStorageVirtualFileSystem? = null
+        fun prepareVFSRoot(uploadRootPathUri: AbfsUri, storageAccount: IHDIStorageAccount?, cluster: IClusterDetail?): AzureStorageVirtualFile? {
+            var fileSystem: AzureStorageVirtualFileSystem?
             var account: String? = null
             var accessKey: String? = null
             var fsType: AzureStorageVirtualFileSystem.VFSSupportStorageType? = null
@@ -183,8 +181,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
 
                     SparkSubmitStorageType.ADLS_GEN2 -> {
                         fsType = AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2
-                        val host = URI.create(uploadRootPath).host
-                        account = host.substring(0, host.indexOf("."))
+                        account = uploadRootPathUri.accountName
                         accessKey = adlsGen2Card.storageKeyField.text.trim()
                     }
 
@@ -199,10 +196,7 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
                 AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2 -> {
                     // for issue #3159, upload path maybe not ready if switching cluster fast so path is the last cluster's path
                     // if switching between gen2 clusters, need to check account is matched
-                    val isPathValid = uploadRootPath?.matches(StoragePathInfo.AdlsGen2RestfulPathPattern.toRegex())
-                            ?: false
-                    val isAccountMatch = uploadRootPath?.contains(account ?: "") ?: false
-                    if (!isPathValid || !isAccountMatch || StringUtils.isBlank(account)) {
+                    if (uploadRootPathUri.accountName != account) {
                         return null
                     }
 
@@ -225,9 +219,8 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
                             SharedKeyHttpObservable(account, accessKey)
                         }
 
-                    fileSystem = ADLSGen2FileSystem(http, uploadRootPath)
-                    val gen2Uri = ADLSGen2FSOperation.convertToGen2Uri(URI.create(uploadRootPath))
-                    return AdlsGen2VirtualFile(URI.create(gen2Uri), true, fileSystem)
+                    fileSystem = ADLSGen2FileSystem(http, uploadRootPathUri)
+                    return AdlsGen2VirtualFile(uploadRootPathUri, true, fileSystem)
                 }
                 else -> {
                     return null

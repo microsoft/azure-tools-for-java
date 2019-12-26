@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2
+package com.microsoft.azure.hdinsight.common
 
 import cucumber.api.CucumberOptions
 import cucumber.api.junit.Cucumber
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 @RunWith(Cucumber::class)
 @CucumberOptions(
     plugin = ["html:target/cucumber"],
-    name = ["ADLS Gen2 File system operation"]
+    name = ["ADLS Gen2 URI operation"]
 )
-class ADLSGen2FSOperationTest {
+class AbfsUriTest {
 }
