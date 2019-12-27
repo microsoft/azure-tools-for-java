@@ -42,9 +42,8 @@ class OpenCloudShellPortAction : AnAction() {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext)
         val cloudShellComponent = project?.getComponent<CloudShellComponent>()
 
-        e.presentation.isEnabled = CommonDataKeys.PROJECT.getData(e.dataContext) != null
-                && cloudShellComponent != null
-                && cloudShellComponent.activeConnector() != null
+        e.presentation.isEnabled = project != null
+                && cloudShellComponent?.activeConnector() != null
     }
 
     override fun actionPerformed(e: AnActionEvent) {
