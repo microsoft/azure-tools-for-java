@@ -279,7 +279,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 }
                             }
                             SparkSubmitStorageType.ADLS_GEN2, SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> model.apply {
-                                if (gen2RootPath != null && !StoragePathInfo.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
+                                if (gen2RootPath != null && ! AbfsUri.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "ADLS GEN2 Root Path is invalid"
                                 } else if (this.storageAccountType == SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH
@@ -373,7 +373,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             SparkSubmitStorageType.ADLS_GEN2 -> {
                 data.gen2RootPath = storagePanel.adlsGen2Card.gen2RootPathField.text.trim()
                 data.gen2Account = if (!StringUtils.isEmpty(data.gen2RootPath))
-                    getAccount(StoragePathInfo.AdlsGen2RestfulPathPattern, data.gen2RootPath) else ""
+                    getAccount(AbfsUri.AdlsGen2RestfulPathPattern, data.gen2RootPath) else ""
                 data.accessKey = storagePanel.adlsGen2Card.storageKeyField.text.trim()
             }
             SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> {
@@ -460,7 +460,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     }
 
                     val credentialAccount = SparkSubmitStorageType.ADLS_GEN2.getSecureStoreServiceOf(
-                            getAccount(StoragePathInfo.AdlsGen2RestfulPathPattern, data.gen2RootPath))
+                            getAccount(AbfsUri.AdlsGen2RestfulPathPattern, data.gen2RootPath))
                     storagePanel.adlsGen2Card.storageKeyField.text =
                             if (StringUtils.isEmpty(data.accessKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.gen2Account) ?: "" }

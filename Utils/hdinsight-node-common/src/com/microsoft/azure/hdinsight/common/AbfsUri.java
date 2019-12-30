@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.common;
 
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
@@ -31,15 +31,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AbfsUri {
-    public static final Pattern ABFS_URI_PATTERN = Pattern.compile(
-            StoragePathInfo.AdlsGen2PathPattern, Pattern.CASE_INSENSITIVE);
-    public static final Pattern HTTP_URI_PATTERN = Pattern.compile(
-            StoragePathInfo.AdlsGen2RestfulPathPattern, Pattern.CASE_INSENSITIVE);
+    public static final String AdlsGen2PathPattern = "^(?<schema>abfss?)://(?<fileSystem>[^/.\\s]+)@(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(?<relativePath>(/[^\\s]+)*/?)$";
+    public static final String AdlsGen2RestfulPathPattern = "^(?<schema>https?)://(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(?<relativePath>(/[^\\s]+)*/?)$";
+    public static final Pattern ABFS_URI_PATTERN = Pattern.compile(AdlsGen2PathPattern, Pattern.CASE_INSENSITIVE);
+    public static final Pattern HTTP_URI_PATTERN = Pattern.compile(AdlsGen2RestfulPathPattern, Pattern.CASE_INSENSITIVE);
 
     private final URI rawUri;
     private final LaterInit<String> fileSystem = new LaterInit<>();
     private final LaterInit<String> accountName = new LaterInit<>();
-    private final LaterInit<String> subPath = new LaterInit<>();
+    private final LaterInit<String> relativePath = new LaterInit<>();
 
     private AbfsUri(URI rawUri) {
         this.rawUri = rawUri;
@@ -57,35 +57,29 @@ public class AbfsUri {
         return accountName.get();
     }
 
-    public String getSubPath() {
-        return subPath.get();
+    public String getRelativePath() {
+        return relativePath.get();
+    }
+
+    public AbfsUri getRoot() {
+        return AbfsUri.parse(String.format("abfs://%s@%s.dfs.core.windows.net", getFileSystem(), getAccountName()));
     }
 
     public URI getUri() {
         return URI.create(String.format("abfs://%s@%s.dfs.core.windows.net%s",
-                getFileSystem(), getAccountName(), getSubPath()));
-    }
-
-    // get root URI ending without "/"
-    public URI getRootUri() {
-        return URI.create(String.format("abfs://%s@%s.dfs.core.windows.net", getFileSystem(), getAccountName()));
+                getFileSystem(), getAccountName(), getRelativePath()));
     }
 
     public URI getUrl() {
         return URI.create(String.format("https://%s.dfs.core.windows.net/%s%s",
-                getAccountName(), getFileSystem(), getSubPath()));
-    }
-
-    // get restful root url ending without "/"
-    public URI getRootUrl() {
-        return URI.create(String.format("https://%s.dfs.core.windows.net/%s", getAccountName(), getFileSystem()));
+                getAccountName(), getFileSystem(), getRelativePath()));
     }
 
     // get subPath starting without "/" except when subPath is empty
     public URI getDirectoryParam() {
-        return getSubPath().length() == 0 || getSubPath().equals("/")
+        return getRelativePath().length() == 0 || getRelativePath().equals("/")
                 ? URI.create("/")
-                : URI.create(getSubPath().substring(1));
+                : URI.create(getRelativePath().substring(1));
     }
 
     public static AbfsUri parse(final String rawUri) {
@@ -102,15 +96,15 @@ public class AbfsUri {
             AbfsUri abfsUri = new AbfsUri(URI.create(rawUri));
             abfsUri.accountName.set(matcher.group("accountName"));
             abfsUri.fileSystem.set(matcher.group("fileSystem"));
-            abfsUri.subPath.set(matcher.group("subPath"));
+            abfsUri.relativePath.set(matcher.group("relativePath"));
             return abfsUri;
         }
 
         throw new UnknownFormatConversionException("Unmatched ADLS Gen2 URI: " + rawUri);
     }
 
-    public static boolean isType(final String uri) {
-        return ABFS_URI_PATTERN.matcher(uri).matches() || HTTP_URI_PATTERN.matcher(uri).matches();
+    public static boolean isType(@Nullable final String uri) {
+        return uri != null && (ABFS_URI_PATTERN.matcher(uri).matches() || HTTP_URI_PATTERN.matcher(uri).matches());
     }
 
     @Override

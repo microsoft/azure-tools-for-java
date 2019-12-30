@@ -52,16 +52,28 @@ Feature: ADLS Gen2 URI operation
 
   Scenario: Get Gen2 directory param from ABFS URI
     Given ABFS URI is
-      | abfs://accountName.dfs.core.windows.net                       |
-      | abfs://fs0@accountName.dfs.core.windows.net                   |
-      | abfs://fs0@accountName.dfs.core.windows.net/                  |
-      | abfs://fs0@accountName.dfs.core.windows.net/subPath0          |
-      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/         |
-      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/subPath1 |
+      | abfs://accountName.dfs.core.windows.net                        |
+      | abfs://fs0@accountName.dfs.core.windows.net                    |
+      | abfs://fs0@accountName.dfs.core.windows.net/                   |
+      | abfs://fs0@accountName.dfs.core.windows.net/subPath0           |
+      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/          |
+      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/subPath1  |
+      | https://accountName.dfs.core.windows.net                       |
+      | https://accountName.dfs.core.windows.net/fs0                   |
+      | https://accountName.dfs.core.windows.net/fs0/                  |
+      | https://accountName.dfs.core.windows.net/fs0/subPath0          |
+      | https://accountName.dfs.core.windows.net/fs0/subPath0/         |
+      | https://accountName.dfs.core.windows.net/fs0/subPath0/subPath1 |
     Then the Gen two directory param should be
-      | invalid Gen2 URI   |
-      | /                  |
-      | /                  |
+      | invalid Gen2 URI  |
+      | /                 |
+      | /                 |
+      | subPath0          |
+      | subPath0/         |
+      | subPath0/subPath1 |
+      | invalid Gen2 URI  |
+      | /                 |
+      | /                 |
       | subPath0          |
       | subPath0/         |
       | subPath0/subPath1 |

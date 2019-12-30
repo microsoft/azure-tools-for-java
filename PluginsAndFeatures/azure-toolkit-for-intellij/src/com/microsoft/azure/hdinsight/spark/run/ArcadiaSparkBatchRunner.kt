@@ -84,9 +84,9 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
             submitModel, compute, ctrlSubject)
 
         return ArcadiaSparkBatchJob(
-                submitModel.submissionParameter,
-                submission,
-                jobDeploy,
-                ctrlSubject)
+            prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
+            submission,
+            jobDeploy,
+            ctrlSubject)
     }
 }

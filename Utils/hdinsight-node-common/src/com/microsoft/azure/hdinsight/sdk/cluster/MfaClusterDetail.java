@@ -21,8 +21,8 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -46,7 +46,7 @@ public class MfaClusterDetail extends ClusterDetail implements MfaEspCluster, IL
 
         // check login status and get the login user name
         try {
-            if (Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(storageRootPath).matches()) {
+            if (Pattern.compile(AbfsUri.AdlsGen2PathPattern).matcher(storageRootPath).matches()) {
                 storageRootPath = String.format("%s/%s", storageRootPath, getUserPath());
             }
 

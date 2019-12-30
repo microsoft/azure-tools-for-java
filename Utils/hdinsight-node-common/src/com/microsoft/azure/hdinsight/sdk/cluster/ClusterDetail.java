@@ -21,6 +21,7 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
@@ -369,7 +370,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
                     .resolve(defaultRootPath)
                     .toString();
         } else if (Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches()
-                || Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(containerAddress).matches()) {
+                || Pattern.compile(AbfsUri.AdlsGen2PathPattern).matcher(containerAddress).matches()) {
             return containerAddress;
         } else {
             final Map<String, String> properties = new HashMap<>();

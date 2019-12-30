@@ -22,13 +22,12 @@
 
 package com.microsoft.azure.hdinsight.sdk.storage;
 
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.net.URI;
 
 public class StoragePathInfo {
-    public static final String AdlsGen2PathPattern = "^(?<schema>abfss?)://(?<fileSystem>[^/.\\s]+)@(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(?<subPath>(/[^\\s]+)*/?)$";
-    public static final String AdlsGen2RestfulPathPattern = "^(?<schema>https?)://(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(?<subPath>(/[^\\s]+)*/?)$";
     public static final String BlobPathPattern = "^(wasb[s]?)://(.*)@(.*)$";
     public static final String AdlsPathPattern = "^adl://([^/.\\s]+\\.)+[^/.\\s]+(/[^/.\\s]+)*/?$";
 
@@ -44,7 +43,7 @@ public class StoragePathInfo {
     }
 
     private StorageAccountType setStorageType(@NotNull String path) {
-        if (path.matches(AdlsGen2PathPattern) || path.matches(AdlsGen2RestfulPathPattern)) {
+        if (path.matches(AbfsUri.AdlsGen2PathPattern) || path.matches(AbfsUri.AdlsGen2RestfulPathPattern)) {
             return StorageAccountType.ADLSGen2;
         }
 

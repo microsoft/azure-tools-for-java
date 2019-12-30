@@ -580,7 +580,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     ?.replace("/${Constants.submissionFolder}/?$".toRegex(), "")
 
             // Currently we only support VFS for Gen2 storage account
-            if (uploadRootPath.isNullOrEmpty() || !AbfsUri.isType(uploadRootPath)) {
+            if (!AbfsUri.isType(uploadRootPath)) {
                 return null
             }
 

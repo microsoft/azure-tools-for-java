@@ -23,6 +23,7 @@
 
 package com.microsoft.azure.hdinsight.common;
 
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.MalformedURLException;
@@ -46,7 +47,7 @@ public final class WasbUri {
     private final LaterInit<String> container = new LaterInit<>();
     private final LaterInit<String> storageAccount = new LaterInit<>();
     private final LaterInit<String> endpointSuffix = new LaterInit<>();
-    private final LaterInit<String> absolutePath = new LaterInit<>();
+    private final LaterInit<String> relativePath = new LaterInit<>();
 
     private WasbUri(final URI rawUri) {
         this.rawUri = rawUri;
@@ -58,13 +59,13 @@ public final class WasbUri {
 
     public URI getUri() {
         return URI.create(String.format("wasbs://%s@%s.blob.%s%s",
-                getContainer(), getStorageAccount(), getEndpointSuffix(), getAbsolutePath()));
+                getContainer(), getStorageAccount(), getEndpointSuffix(), getRelativePath()));
     }
 
     public URL getUrl() {
         try {
             return URI.create(String.format("https://%s.blob.%s/%s%s",
-                    getStorageAccount(), getContainer(), getEndpointSuffix(), getAbsolutePath())).toURL();
+                    getStorageAccount(), getContainer(), getEndpointSuffix(), getRelativePath())).toURL();
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
@@ -82,8 +83,8 @@ public final class WasbUri {
         return this.endpointSuffix.get();
     }
 
-    public String getAbsolutePath() {
-        return this.absolutePath.get();
+    public String getRelativePath() {
+        return this.relativePath.get();
     }
 
     public String getHadoopBlobFsPropertyKey() {
@@ -113,8 +114,8 @@ public final class WasbUri {
             wasbUri.endpointSuffix.set(matcher.group("endpointSuffix"));
 
             final String pathMatched = matcher.group("path");
-            final String absolutePathMatched = URI.create("/" + (pathMatched == null ? "" : pathMatched)).getPath();
-            wasbUri.absolutePath.set(absolutePathMatched);
+            final String relativePathMatched = URI.create("/" + (pathMatched == null ? "" : pathMatched)).getPath();
+            wasbUri.relativePath.set(relativePathMatched);
 
             return wasbUri;
         }
@@ -122,7 +123,7 @@ public final class WasbUri {
         throw new UnknownFormatConversionException("Unmatched Azure blob URI: " + blobUri);
     }
 
-    public static boolean isType(final String uri) {
-        return WASB_URI_PATTERN.matcher(uri).matches() || HTTP_URI_PATTERN.matcher(uri).matches();
+    public static boolean isType(@Nullable final String uri) {
+        return uri != null && (WASB_URI_PATTERN.matcher(uri).matches() || HTTP_URI_PATTERN.matcher(uri).matches());
     }
 }

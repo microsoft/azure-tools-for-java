@@ -33,6 +33,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observer
 import java.io.IOException
 import java.util.*
+import java.util.stream.Collectors
 
 class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -41,6 +42,17 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
 
     override fun getRunnerId(): String {
         return "CosmosServerlessSparkBatchRun"
+    }
+
+    override fun prepareSubmissionParameterWithTransformedGen2Uri(parameter: SparkSubmissionParameter): SparkSubmissionParameter {
+        return CreateSparkBatchJobParameters.copyOf(parameter as CreateSparkBatchJobParameters).apply {
+            referencedJars = this.referencedJars.stream()
+                .map { transformToGen2Uri(it) }
+                .collect(Collectors.toList())
+            referencedFiles = this.referencedFiles.stream()
+                .map { transformToGen2Uri(it) }
+                .collect(Collectors.toList())
+        }
     }
 
     @Throws(ExecutionException::class)
@@ -58,6 +70,11 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         }
         val storageRootPath = account.storageRootPath ?: throw ExecutionException("Error getting ADLS storage root path for account ${account.name}")
 
-        return CosmosServerlessSparkBatchJob(account, AdlsDeploy(storageRootPath, accessToken),submissionParameter, SparkBatchSubmission.getInstance(), ctrlSubject)
+        return CosmosServerlessSparkBatchJob(
+            account,
+            AdlsDeploy(storageRootPath, accessToken),
+            prepareSubmissionParameterWithTransformedGen2Uri(submissionParameter) as CreateSparkBatchJobParameters,
+            SparkBatchSubmission.getInstance(),
+            ctrlSubject)
     }
 }

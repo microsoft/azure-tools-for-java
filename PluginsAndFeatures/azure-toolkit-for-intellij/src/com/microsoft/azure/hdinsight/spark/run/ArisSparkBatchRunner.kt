@@ -91,7 +91,10 @@ class ArisSparkBatchRunner : SparkBatchJobRunner() {
             // In the latest 0.6.0-incubating livy, livy prevents user from creating sessions that have the same session name
             // Livy release notes: https://livy.apache.org/history/
             // JIRA: https://issues.apache.org/jira/browse/LIVY-41
-            submitModel.submissionParameter.apply { name = mainClassName + "_$currentUtcTime" },
+            submitModel.submissionParameter.apply {
+                name = mainClassName + "_$currentUtcTime"
+                prepareSubmissionParameterWithTransformedGen2Uri(this)
+            },
             SparkBatchSubmission.getInstance(),
             ctrlSubject,
             jobDeploy

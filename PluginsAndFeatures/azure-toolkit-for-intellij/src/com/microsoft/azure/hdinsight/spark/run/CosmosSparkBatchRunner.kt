@@ -59,7 +59,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
                 ?: clusterDetail.get().toBlocking().singleOrDefault(clusterDetail).livyUri
 
             return CosmosSparkBatchJob(
-                submitModel.submissionParameter,
+                prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
                 SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri),
                 ctrlSubject)
         } catch (e: Exception) {

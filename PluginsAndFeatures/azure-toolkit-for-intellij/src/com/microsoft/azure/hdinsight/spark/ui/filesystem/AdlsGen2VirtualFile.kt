@@ -29,7 +29,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable
 
 open class AdlsGen2VirtualFile(val abfsUri: AbfsUri, private val myIsDirectory: Boolean, private val myFileSystem: VirtualFileSystem) : AzureStorageVirtualFile() {
     private var parent: VirtualFile? = null
-    override fun getPath(): String = abfsUri.uri.path
+    override fun getPath(): String = abfsUri.url.path
     override fun getName(): String {
         return path.substring(path.lastIndexOf("/") + 1)
     }
@@ -50,7 +50,7 @@ open class AdlsGen2VirtualFile(val abfsUri: AbfsUri, private val myIsDirectory: 
     override fun getChildren(): Array<VirtualFile>? = myLazyChildren
 
     override fun getUrl(): String {
-        return abfsUri.uri.toString()
+        return abfsUri.url.toString()
     }
 
     private val myLazyChildren: Array<VirtualFile>? by lazy {

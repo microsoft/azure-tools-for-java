@@ -37,11 +37,10 @@ import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
 import com.microsoft.azure.hdinsight.spark.common.*;
@@ -63,6 +62,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
     @NotNull
@@ -77,6 +77,27 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 && profile.getClass() == LivySparkBatchJobRunConfiguration.class;
     }
 
+    protected String transformToGen2Uri(String url) {
+        return AbfsUri.isType(url)
+                ? AbfsUri.parse(url).getUri().toString()
+                : url;
+    }
+
+    // If we use virtual file system to select referenced jars or files on ADLS Gen2 storage, the selected file path will
+    // be of URI schema which starts with "https://". Then job submission will fail with error like
+    // "Server returned HTTP response code: 401 for URL: https://accountName.dfs.core.windows.net/fs0/Reference.jar"
+    // Therefore, we need to transform the Gen2 "https" URI to "abfs" url to avoid the error.
+    protected SparkSubmissionParameter prepareSubmissionParameterWithTransformedGen2Uri(SparkSubmissionParameter parameter) {
+        SparkSubmissionParameter newParameter = SparkSubmissionParameter.copyOf(parameter);
+        newParameter.setReferencedJars(newParameter.getReferencedJars().stream()
+                .map(jar -> transformToGen2Uri(jar))
+                .collect(Collectors.toList()));
+        newParameter.setReferencedFiles(newParameter.getReferencedFiles().stream()
+                .map(file -> transformToGen2Uri(file))
+                .collect(Collectors.toList()));
+        return newParameter;
+    }
+
     @Override
     @NotNull
     public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
@@ -88,7 +109,10 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
                 submitModel, clusterDetail, ctrlSubject);
 
-        return new SparkBatchJob(clusterDetail, submitModel.getSubmissionParameter(), getSparkBatchSubmission(clusterDetail), ctrlSubject, jobDeploy);
+        SparkSubmissionParameter submissionParameter =
+                prepareSubmissionParameterWithTransformedGen2Uri(submitModel.getSubmissionParameter());
+
+        return new SparkBatchJob(clusterDetail, submissionParameter, getSparkBatchSubmission(clusterDetail), ctrlSubject, jobDeploy);
     }
 
     @NotNull

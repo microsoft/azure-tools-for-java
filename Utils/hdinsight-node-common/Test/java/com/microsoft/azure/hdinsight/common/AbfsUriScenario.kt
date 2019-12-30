@@ -80,7 +80,7 @@ class AbfsUriScenario {
         val actualBaseRestfulPath = this.restfulGen2Paths.stream()
             .map { path ->
                 try {
-                    AbfsUri.parse(path).rootUrl.toString()
+                    AbfsUri.parse(path).root.url.toString()
                 } catch (ex: UnknownFormatConversionException) {
                     "invalid Gen2 URI"
                 }

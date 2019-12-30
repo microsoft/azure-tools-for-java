@@ -24,6 +24,7 @@ package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.microsoft.azure.hdinsight.common.AbfsUri;
+import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
@@ -63,15 +64,13 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
         List<AdlsGen2VirtualFile> childrenList = new ArrayList<>();
         if (vf.isDirectory()) {
             // sample rootUrl: https://accountName.dfs.core.windows.net/fileSystem
-            URI rootUrl = this.rootPathUri.getRootUrl();
-            // sample rootUri: abfs://fileSystem@accountName.dfs.core.windows.net
-            URI rootUri = this.rootPathUri.getRootUri();
+            URI rootUrl = this.rootPathUri.getRoot().getUrl();
             // sample directoryParam: sub/path/to
             URI directoryParam = vf.getAbfsUri().getDirectoryParam();
             childrenList = this.op.list(rootUrl.toString(), directoryParam.toString())
                     // sample remoteFile.getName(): sub/path/to/SparkSubmission
                     .map(remoteFile -> new AdlsGen2VirtualFile(
-                            AbfsUri.parse(rootUri.resolve("/" + remoteFile.getName()).toString()),
+                            AbfsUri.parse(UriUtil.normalizeWithSlashEnding(rootUrl).resolve(remoteFile.getName()).toString()),
                             remoteFile.isDirectory(),
                             this))
                     .doOnNext(file -> file.setParent(vf))

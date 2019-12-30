@@ -26,10 +26,10 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -117,9 +117,9 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
     @Nullable
     private String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
         //convert https://fullAccountName/fileSystem/subfolder/guid/artifact.jar to /subfolder/xxxx
-        Matcher m = Pattern.compile(StoragePathInfo.AdlsGen2RestfulPathPattern).matcher(rootPath);
+        Matcher m = Pattern.compile(AbfsUri.AdlsGen2RestfulPathPattern).matcher(rootPath);
         if (m.find()) {
-            return m.group("subPath");
+            return m.group("relativePath");
         }
 
         throw new URISyntaxException(rootPath, "Cannot get valid artifact path");

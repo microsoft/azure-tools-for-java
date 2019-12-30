@@ -24,6 +24,8 @@ package com.microsoft.azure.hdinsight.spark.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -112,6 +114,22 @@ public class SparkSubmissionParameter implements IConvertible {
         this.args = args;
     }
 
+    public static SparkSubmissionParameter copyOf(SparkSubmissionParameter parameter) {
+        SparkSubmissionParameter copiedParameter = new SparkSubmissionParameter(
+                parameter.getClusterName(),
+                parameter.isLocalArtifact(),
+                parameter.getArtifactName(),
+                parameter.getLocalArtifactPath(),
+                parameter.getFile(),
+                parameter.getMainClassName(),
+                ImmutableList.copyOf(parameter.getReferencedFiles()),
+                ImmutableList.copyOf(parameter.getReferencedJars()),
+                ImmutableList.copyOf(parameter.getArgs()),
+                ImmutableMap.copyOf(parameter.getJobConfig()));
+        copiedParameter.setName(parameter.getName());
+        return copiedParameter;
+    }
+
     public void setName(@NotNull String name) {
         this.name = name;
     }
@@ -180,9 +198,17 @@ public class SparkSubmissionParameter implements IConvertible {
         return files;
     }
 
+    public void setReferencedFiles(List<String> files) {
+        this.files = files;
+    }
+
     @JsonProperty("jars")
     public List<String> getReferencedJars() {
         return jars;
+    }
+
+    public void setReferencedJars(List<String> jars) {
+        this.jars = jars;
     }
 
     @JsonProperty("args")
