@@ -26,16 +26,14 @@ import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.AzureAdAccountDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
 import com.microsoft.azure.hdinsight.sdk.common.*;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.storage.*;
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
-import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -45,11 +43,8 @@ import org.jetbrains.annotations.NotNull;
 import rx.Observer;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.AbstractMap;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SparkBatchJobDeployFactory implements ILogger {
     private static SparkBatchJobDeployFactory ourInstance = new SparkBatchJobDeployFactory();
@@ -117,8 +112,8 @@ public class SparkBatchJobDeployFactory implements ILogger {
                                 .resolve(SparkSubmissionContentPanel.Constants.submissionFolder + "/")
                                 .toString();
 
-                        if (clusterDetail instanceof MfaEspCluster || clusterDetail instanceof ArcadiaSparkCompute) {
-                            httpObservable = new ADLSGen2OAuthHttpObservable(clusterDetail.getSubscription().getTenantId());
+                        if (clusterDetail instanceof AzureAdAccountDetail) {
+                            httpObservable = new ADLSGen2OAuthHttpObservable(((AzureAdAccountDetail)clusterDetail).getTenantId());
                         } else {
                             accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
                             httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
@@ -181,8 +176,8 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     throw new ExecutionException("Invalid ADLS GEN2 root path: " + destinationRootPath);
                 }
 
-                if (clusterDetail instanceof MfaEspCluster) {
-                    httpObservable = new ADLSGen2OAuthHttpObservable(((MfaEspCluster) clusterDetail).getTenantId());
+                if (clusterDetail instanceof AzureAdAccountDetail) {
+                    httpObservable = new ADLSGen2OAuthHttpObservable(((AzureAdAccountDetail) clusterDetail).getTenantId());
                 } else {
                     accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
                     if (StringUtils.isBlank(accessKey)) {

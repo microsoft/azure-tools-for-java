@@ -56,4 +56,8 @@ open class AdlsGen2VirtualFile(val abfsUri: AbfsUri, private val myIsDirectory: 
     private val myLazyChildren: Array<VirtualFile>? by lazy {
         (myFileSystem as? ADLSGen2FileSystem)?.listFiles(this)
     }
+
+    override fun toString(): String {
+        return abfsUri.uri.toString()
+    }
 }

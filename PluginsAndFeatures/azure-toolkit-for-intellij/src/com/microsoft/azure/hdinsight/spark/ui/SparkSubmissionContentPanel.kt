@@ -319,7 +319,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 val chooseFiles = chooser.chooseFile()
                 // Only override reference jar text field when jar file is selected and ok button is clicked
                 if (chooseFiles.isNotEmpty()) {
-                    text = chooseFiles.joinToString(";") { vf -> vf.url }
+                    // Warning: We have overridden toString method in class AdlsGen2VirtualFile
+                    // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
+                    // for those virtual file class later.
+                    text = chooseFiles.joinToString(";") { vf -> vf.toString() }
                 }
             }
         }
@@ -346,7 +349,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                 val chooser = StorageChooser(root, StorageChooser.ALL_DIRS_AND_FILES)
                 val chooseFiles = chooser.chooseFile()
                 if (chooseFiles.isNotEmpty()) {
-                    text = chooseFiles.joinToString(";") { vf -> vf.url }
+                    // Warning: We have overridden toString method in class AdlsGen2VirtualFile
+                    // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
+                    // for those virtual file class later.
+                    text = chooseFiles.joinToString(";") { vf -> vf.toString() }
                 }
             }
         }

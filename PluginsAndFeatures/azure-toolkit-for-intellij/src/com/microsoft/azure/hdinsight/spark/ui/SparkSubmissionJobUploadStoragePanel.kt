@@ -31,6 +31,7 @@ import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxModelDelegated
 import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
+import com.microsoft.azure.hdinsight.sdk.cluster.AzureAdAccountDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.ADLSGen2OAuthHttpObservable
 import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable
@@ -42,7 +43,6 @@ import com.microsoft.azure.hdinsight.spark.ui.filesystem.ADLSGen2FileSystem
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.AdlsGen2VirtualFile
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFileSystem
-import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
@@ -202,12 +202,12 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
 
                     // Prepare HttpObservable for different cluster type
                     val http =
-                        if (cluster is ArcadiaSparkCompute) {
+                        if (cluster is AzureAdAccountDetail) {
                             // Use Azure AD account to access storage data corresponding to Synapse Spark pool.
                             // In this way at least "Storage Blob Data Reader" role is required, or else we will get
                             // HTTP 403 Error when list files on the storage.
                             // https://docs.microsoft.com/en-us/azure/storage/common/storage-access-blobs-queues-portal
-                            ADLSGen2OAuthHttpObservable(cluster.subscription.tenantId)
+                            ADLSGen2OAuthHttpObservable(cluster.tenantId)
                         } else {
                             if (StringUtils.isBlank(accessKey)) {
                                 return null

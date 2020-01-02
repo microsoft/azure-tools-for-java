@@ -26,6 +26,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.UnknownFormatConversionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -110,5 +111,20 @@ public class AbfsUri {
     @Override
     public String toString() {
         return rawUri.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbfsUri abfsUri = (AbfsUri) o;
+        return getFileSystem().equals(abfsUri.getFileSystem()) &&
+                getAccountName().equals(abfsUri.getAccountName()) &&
+                getRelativePath().equals(abfsUri.getRelativePath());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFileSystem(), getAccountName(), getRelativePath());
     }
 }

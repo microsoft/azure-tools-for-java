@@ -22,7 +22,9 @@
 
 package com.microsoft.azure.projectarcadia.common;
 
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.AzureAdAccountDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.ComparableCluster;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolProvisioningState;
@@ -30,7 +32,6 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolRe
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.DataLakeStorageAccountDetails;
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -40,7 +41,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import java.net.URI;
 import java.util.Optional;
 
-public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
+public class ArcadiaSparkCompute extends SparkCluster implements AzureAdAccountDetail, ILogger {
     public static final String ApiVersion = "2019-11-01-preview";
 
     @NotNull
@@ -124,6 +125,11 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
         return this.workSpace.getSubscription();
     }
 
+    @Override
+    public String getTenantId() {
+        return getSubscription().getTenantId();
+    }
+
     @Nullable
     @Override
     public String getSparkVersion() {
@@ -145,8 +151,8 @@ public class ArcadiaSparkCompute extends SparkCluster implements ILogger {
         // Sample response:
         // "accountUrl": "https://accountName.dfs.core.windows.net",
         // "filesystem": "fileSystemName"
-        StoragePathInfo pathInfo = new StoragePathInfo(storageAccountDetails.accountUrl() + "/" + storageAccountDetails.filesystem());
-        return new ADLSGen2StorageAccount(this, pathInfo.path.getHost(), true, storageAccountDetails.filesystem());
+        URI storageUri = AbfsUri.parse(storageAccountDetails.accountUrl() + "/" + storageAccountDetails.filesystem()).getUri();
+        return new ADLSGen2StorageAccount(this, storageUri.getHost(), true, storageAccountDetails.filesystem());
     }
 
     @Nullable
