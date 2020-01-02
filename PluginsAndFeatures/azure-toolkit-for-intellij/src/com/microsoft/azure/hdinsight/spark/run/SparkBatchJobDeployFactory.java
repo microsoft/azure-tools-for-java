@@ -25,6 +25,7 @@ import com.intellij.execution.ExecutionException;
 import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.AzureAdAccountDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
@@ -43,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import rx.Observer;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.AbstractMap;
 import java.util.Optional;
 
@@ -108,9 +110,10 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
                     if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
-                        destinationRootPath = AbfsUri.parse(clusterDetail.getDefaultStorageRootPath() + "/").getUrl()
-                                .resolve(SparkSubmissionContentPanel.Constants.submissionFolder + "/")
-                                .toString();
+                        URI rawDestinationRootURI =
+                                UriUtil.normalizeWithSlashEnding(URI.create(clusterDetail.getDefaultStorageRootPath()))
+                                        .resolve(SparkSubmissionContentPanel.Constants.submissionFolder + "/");
+                        destinationRootPath = AbfsUri.parse(rawDestinationRootURI.toString()).getUrl().toString();
 
                         if (clusterDetail instanceof AzureAdAccountDetail) {
                             httpObservable = new ADLSGen2OAuthHttpObservable(((AzureAdAccountDetail)clusterDetail).getTenantId());

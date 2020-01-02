@@ -35,6 +35,7 @@ import rx.Observable;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,13 +65,14 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
         List<AdlsGen2VirtualFile> childrenList = new ArrayList<>();
         if (vf.isDirectory()) {
             // sample rootUrl: https://accountName.dfs.core.windows.net/fileSystem
-            URI rootUrl = this.rootPathUri.getRoot().getUrl();
+            URL rootUrl = this.rootPathUri.getRoot().getUrl();
             // sample directoryParam: sub/path/to
             URI directoryParam = vf.getAbfsUri().getDirectoryParam();
             childrenList = this.op.list(rootUrl.toString(), directoryParam.toString())
                     // sample remoteFile.getName(): sub/path/to/SparkSubmission
                     .map(remoteFile -> new AdlsGen2VirtualFile(
-                            AbfsUri.parse(UriUtil.normalizeWithSlashEnding(rootUrl).resolve(remoteFile.getName()).toString()),
+                            AbfsUri.parse(UriUtil.normalizeWithSlashEnding(URI.create(rootUrl.toString()))
+                                    .resolve(remoteFile.getName()).toString()),
                             remoteFile.isDirectory(),
                             this))
                     .doOnNext(file -> file.setParent(vf))

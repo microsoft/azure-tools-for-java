@@ -25,7 +25,9 @@ package com.microsoft.azure.hdinsight.common;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Objects;
 import java.util.UnknownFormatConversionException;
 import java.util.regex.Matcher;
@@ -71,9 +73,13 @@ public class AbfsUri {
                 getFileSystem(), getAccountName(), getRelativePath()));
     }
 
-    public URI getUrl() {
-        return URI.create(String.format("https://%s.dfs.core.windows.net/%s%s",
-                getAccountName(), getFileSystem(), getRelativePath()));
+    public URL getUrl() {
+        try {
+            return URI.create(String.format("https://%s.dfs.core.windows.net/%s%s",
+                    getAccountName(), getFileSystem(), getRelativePath())).toURL();
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
     }
 
     // get subPath starting without "/" except when subPath is empty
