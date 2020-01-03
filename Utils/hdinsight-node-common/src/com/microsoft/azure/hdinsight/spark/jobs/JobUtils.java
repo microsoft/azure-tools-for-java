@@ -55,8 +55,6 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchEspMfaSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
-import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -441,7 +439,13 @@ public class JobUtils {
     public static HttpEntity getEntity(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws IOException, HDIException {
         final HttpClient client;
         if (clusterDetail instanceof MfaEspCluster) {
-            client = new SparkBatchEspMfaSubmission(((MfaEspCluster) clusterDetail).getTenantId(), clusterDetail.getName()).getHttpClient();
+            final String tenantId = ((MfaEspCluster) clusterDetail).getTenantId();
+
+            if (tenantId == null) {
+                throw new UnknownServiceException("Can't get HIB cluster Tenant ID");
+            }
+
+            client = new SparkBatchEspMfaSubmission(tenantId, clusterDetail.getName()).getHttpClient();
         } else {
             provider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword()));
             client = HttpClients.custom()

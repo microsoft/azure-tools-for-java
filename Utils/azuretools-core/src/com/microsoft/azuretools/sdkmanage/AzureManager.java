@@ -26,6 +26,8 @@ import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azuretools.adauth.PromptBehavior;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.utils.Pair;
@@ -43,11 +45,15 @@ public interface AzureManager {
 //    public List<Tenant> getTenants() throws Throwable;
     KeyVaultClient getKeyVaultClient(String tid) throws Exception;
     String getCurrentUserId() throws IOException;
-    String getAccessToken(String tid) throws IOException;
+    String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException;
     String getManagementURI() throws IOException;
     String getStorageEndpointSuffix();
     String getTenantIdBySubscription(String subscriptionId) throws IOException;
     String getScmSuffix();
     Environment getEnvironment();
     String getPortalUrl();
+
+    default String getAccessToken(String tid) throws IOException {
+        return getAccessToken(tid, CommonSettings.getAdEnvironment().resourceManagerEndpoint(), PromptBehavior.Auto);
+    }
 }

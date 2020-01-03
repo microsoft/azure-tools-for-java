@@ -21,10 +21,13 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
@@ -42,7 +45,13 @@ public class SparkBatchEspMfaSubmission extends SparkBatchSubmission {
 
     @NotNull
     public String getAccessToken() throws IOException {
-        return AdAuthManager.getInstance().getAccessToken(getTenantId(), resource, PromptBehavior.Auto);
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        // not signed in
+        if (azureManager == null) {
+            throw new AuthException("Not signed in. Can't send out the request.");
+        }
+
+        return azureManager.getAccessToken(getTenantId(), resource, PromptBehavior.Auto);
     }
 
     @NotNull

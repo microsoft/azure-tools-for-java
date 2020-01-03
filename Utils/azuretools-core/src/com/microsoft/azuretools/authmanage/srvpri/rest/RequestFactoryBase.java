@@ -23,7 +23,7 @@
 package com.microsoft.azuretools.authmanage.srvpri.rest;
 
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -60,6 +60,6 @@ abstract class RequestFactoryBase implements IRequestFactory {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is null");
         if (resource == null) throw new IllegalArgumentException("resource is null");
 
-        return AdAuthManager.getInstance().getAccessToken(tenantId, resource, promptBehavior);
+        return AuthMethodManager.getInstance().getAzureManager().getAccessToken(tenantId, resource, promptBehavior);
     }
 }

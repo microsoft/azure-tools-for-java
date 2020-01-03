@@ -41,11 +41,11 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.BaseADAuthManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.DCAuthManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.interact.AuthMethod;
+import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
@@ -103,6 +103,10 @@ public class SignInWindow extends AzureDialogWrapper {
         }
 
         return null;
+    }
+
+    private AuthMethodManager getAuthMethodManager() {
+        return AuthMethodManager.getInstance();
     }
 
     private SignInWindow(AuthMethodDetails authMethodDetails, Project project) {
@@ -179,21 +183,26 @@ public class SignInWindow extends AzureDialogWrapper {
         }
     }
 
-    private void doDeviceLogin() {
+    @Nullable
+    private synchronized BaseADAuthManager doDeviceLogin() {
         try {
-            final DCAuthManager dcAuthManager = DCAuthManager.getInstance();
+            BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
             if (dcAuthManager.isSignedIn()) {
                 doSignOut();
             }
             deviceLoginAsync(dcAuthManager);
             accountEmail = dcAuthManager.getAccountEmail();
+
+            return dcAuthManager;
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
         }
+
+        return null;
     }
 
-    private void deviceLoginAsync(@NotNull final DCAuthManager dcAuthManager) {
+    private void deviceLoginAsync(@NotNull final BaseADAuthManager dcAuthManager) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         ProgressManager.getInstance().run(
             new Task.Modal(project, "Sign In Progress", false) {
@@ -202,7 +211,7 @@ public class SignInWindow extends AzureDialogWrapper {
                     try {
                         EventUtil.logEvent(EventType.info, operation, signInDCProp);
                         operation.start();
-                        dcAuthManager.deviceLogin(null);
+                        dcAuthManager.signIn(null);
                     } catch (AuthCanceledException ex) {
                         EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                         System.out.println(ex.getMessage());
@@ -220,7 +229,8 @@ public class SignInWindow extends AzureDialogWrapper {
     private void doSignOut() {
         try {
             accountEmail = null;
-            AdAuthManager.getInstance().signOut();
+            // AuthMethod.AD is deprecated.
+            AuthMethod.DC.getAdAuthManager().signOut();
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), "Sign Out Error");
@@ -228,22 +238,20 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     private void doCreateServicePrincipal() {
-        DCAuthManager dcAuthManager = null;
+        BaseADAuthManager dcAuthManager = null;
         try {
-            dcAuthManager = DCAuthManager.getInstance();
-            if (dcAuthManager.isSignedIn()) {
-                dcAuthManager.signOut();
+            if (getAuthMethodManager().isSignedIn()) {
+                getAuthMethodManager().signOut();
             }
 
-            doDeviceLogin();
-
-            if (!dcAuthManager.isSignedIn()) {
+            dcAuthManager = doDeviceLogin();
+            if (dcAuthManager == null || !dcAuthManager.isSignedIn()) {
                 // canceled by the user
                 System.out.println(">> Canceled by the user");
                 return;
             }
 
-            AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager();
+            AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
 
             ProgressManager.getInstance().run(new Task.Modal(project, "Load Subscriptions Progress", true) {
