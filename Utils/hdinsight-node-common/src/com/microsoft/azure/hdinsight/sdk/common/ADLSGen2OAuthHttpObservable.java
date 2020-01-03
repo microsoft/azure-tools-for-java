@@ -22,8 +22,11 @@
 
 package com.microsoft.azure.hdinsight.sdk.common;
 
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
+
 import java.io.IOException;
 
 public class ADLSGen2OAuthHttpObservable extends OAuthTokenHttpObservable {
@@ -35,12 +38,14 @@ public class ADLSGen2OAuthHttpObservable extends OAuthTokenHttpObservable {
     }
 
     @Override
-    public String getAccessToken() {
-        try {
-           return AdAuthManager.getInstance().getAccessToken(tenantId, resource, PromptBehavior.Auto);
-        } catch (IOException ignore) {
+    public String getAccessToken() throws IOException {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+
+        // not signed in
+        if (azureManager == null) {
+            throw new AuthException("Not signed in. Can't send out the request.");
         }
 
-        return "";
+        return azureManager.getAccessToken(tenantId, resource, PromptBehavior.Auto);
     }
 }

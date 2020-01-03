@@ -22,6 +22,8 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.Constants;
@@ -38,10 +40,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class AdAuthManager extends BaseADAuthManager {
+class AdAuthManager extends BaseADAuthManager {
     private IWebUi webUi;
-    private static final String AUTHORIZATIONREQUIRED = "Authorization is required, please sign out and sign in again";
-
     private static class LazyLoader {
         static final AdAuthManager INSTANCE = new AdAuthManager();;
     }
@@ -52,10 +52,6 @@ public class AdAuthManager extends BaseADAuthManager {
      */
     public static AdAuthManager getInstance() {
         return LazyLoader.INSTANCE;
-    }
-
-    public String getAccessToken(String tid) throws IOException {
-        return getAccessToken(tid, env.resourceManagerEndpoint(), PromptBehavior.Auto);
     }
 
     /**
@@ -75,7 +71,7 @@ public class AdAuthManager extends BaseADAuthManager {
         } catch (AuthException e) {
             if (AuthError.InvalidGrant.equalsIgnoreCase(e.getError())
                     || AuthError.InteractionRequired.equalsIgnoreCase(e.getError())) {
-                throw new IOException(AUTHORIZATIONREQUIRED, e);
+                throw new IOException(AUTHORIZATION_REQUIRED_MESSAGE, e);
             } else {
                 throw e;
             }
@@ -107,7 +103,7 @@ public class AdAuthManager extends BaseADAuthManager {
             AuthResult savedAuth = loadFromSecureStore();
 
             if (savedAuth != null) {
-                signIn(savedAuth);
+                signIn(savedAuth, null);
 
                 return true;
             }
@@ -125,8 +121,9 @@ public class AdAuthManager extends BaseADAuthManager {
      * @return AuthResult, auth result.
      * @throws IOException thrown when failed to get auth result.
      */
-    public AuthResult signIn() throws IOException {
-        return signIn(null);
+    @Override
+    public AuthResult signIn(@Nullable AuthenticationCallback<AuthenticationResult> callback) throws IOException {
+        return signIn(null, callback);
     }
 
     /**
@@ -136,7 +133,9 @@ public class AdAuthManager extends BaseADAuthManager {
      * @return AuthResult, auth result.
      * @throws IOException thrown when failed to get auth result.
      */
-    public AuthResult signIn(@Nullable AuthResult savedAuth) throws IOException {
+    private AuthResult signIn(@Nullable AuthResult savedAuth,
+                              @Nullable AuthenticationCallback<AuthenticationResult> callback)
+            throws IOException {
 
         // build token cache for azure and graph api
         // using azure sdk directly

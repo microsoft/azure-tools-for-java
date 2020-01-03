@@ -31,9 +31,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.interact.AuthMethod;
+import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.core.utils.AzureAbstractHandler;
 
 public class SignOutCommandHandler extends AzureAbstractHandler {
@@ -63,11 +62,9 @@ public class SignOutCommandHandler extends AzureAbstractHandler {
             
             int response = messageBox.open();
             if (response == SWT.YES) {
-                AdAuthManager adAuthManager = AdAuthManager.getInstance();
-                if (adAuthManager.isSignedIn()) {
-                    adAuthManager.signOut();
+                if (authMethodManager.isSignedIn()) {
+                    authMethodManager.signOut();
                 }
-                authMethodManager.signOut();
             }
         }, (ex) -> ex.printStackTrace());
 	}

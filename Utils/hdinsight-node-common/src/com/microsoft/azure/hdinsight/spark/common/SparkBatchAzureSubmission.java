@@ -28,7 +28,6 @@ import org.apache.http.message.BasicHeader;
 
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -77,7 +76,7 @@ public class SparkBatchAzureSubmission extends SparkBatchSubmission {
             throw new AuthException("Not signed in. Can't send out the request.");
         }
 
-        return AdAuthManager.getInstance().getAccessToken(getTenantId(), getResourceEndpoint(), PromptBehavior.Auto);
+        return azureManager.getAccessToken(getTenantId(), getResourceEndpoint(), PromptBehavior.Auto);
     }
 
     @NotNull

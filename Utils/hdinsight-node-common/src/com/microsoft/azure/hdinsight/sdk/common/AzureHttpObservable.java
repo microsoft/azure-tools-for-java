@@ -22,19 +22,18 @@
 
 package com.microsoft.azure.hdinsight.sdk.common;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.impl.client.HttpClients;
+
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.hdinsight.common.appinsight.AppInsightsHttpRequestInstallIdMapRecord;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
-import org.apache.http.NameValuePair;
-import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.util.List;
@@ -96,7 +95,7 @@ public class AzureHttpObservable extends OAuthTokenHttpObservable {
             throw new AuthException("Not signed in. Can't send out the request.");
         }
 
-        return AdAuthManager.getInstance().getAccessToken(getTenantId(), getResourceEndpoint(), PromptBehavior.Auto);
+        return azureManager.getAccessToken(getTenantId(), getResourceEndpoint(), PromptBehavior.Auto);
     }
 
     @NotNull

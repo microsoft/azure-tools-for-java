@@ -26,7 +26,6 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -85,7 +84,7 @@ public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager imp
             throw new AuthException("Not signed in. Can't send out the request.");
         }
 
-        return AdAuthManager.getInstance().getAccessToken(tenantId, getResourceEndpoint(), PromptBehavior.Auto);
+        return azureManager.getAccessToken(tenantId, getResourceEndpoint(), PromptBehavior.Auto);
     }
 
     public boolean isSignedIn() {
@@ -99,7 +98,7 @@ public class AzureSparkClusterManager extends AzureSparkCosmosClusterManager imp
 
     @Nullable
     public String getAzureAccountEmail() {
-        if (AuthMethodManager.getInstance() == null || AuthMethodManager.getInstance().getAuthMethodDetails() == null) {
+        if (AuthMethodManager.getInstance() == null) {
             return null;
         } else if (AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail() == null) {
             return AuthMethodManager.getInstance().getAuthMethodDetails().getCredFilePath();
