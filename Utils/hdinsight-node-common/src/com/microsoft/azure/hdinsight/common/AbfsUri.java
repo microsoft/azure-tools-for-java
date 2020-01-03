@@ -124,9 +124,7 @@ public class AbfsUri {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AbfsUri abfsUri = (AbfsUri) o;
-        return getFileSystem().equals(abfsUri.getFileSystem()) &&
-                getAccountName().equals(abfsUri.getAccountName()) &&
-                getRelativePath().equals(abfsUri.getRelativePath());
+        return hashCode() == abfsUri.hashCode();
     }
 
     @Override
