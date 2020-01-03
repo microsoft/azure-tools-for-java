@@ -38,7 +38,6 @@ import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
-import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.azuretools.authmanage.AuthMethodManager
@@ -52,7 +51,6 @@ import rx.schedulers.Schedulers
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
-import java.net.URI
 import java.util.stream.Collectors
 import javax.swing.ComboBoxModel
 import javax.swing.DefaultComboBoxModel
@@ -135,11 +133,14 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
             }
         }
 
-        view.storagePanel.adlsGen2Card.gen2RootPathField.addFocusListener(object : FocusAdapter() {
-            override fun focusLost(e: FocusEvent?) {
-                view.viewModel.uploadStorage.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS GEN2"))
+        arrayOf(view.storagePanel.adlsGen2Card.gen2RootPathField, view.storagePanel.adlsGen2OAuthCard.gen2RootPathField)
+            .forEach {
+                it.addFocusListener(object : FocusAdapter() {
+                    override fun focusLost(e: FocusEvent?) {
+                        view.viewModel.uploadStorage.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS GEN2"))
+                    }
+                })
             }
-        })
     }
 
     private fun refreshSubscriptions(): Observable<SparkSubmitJobUploadStorageModel> {

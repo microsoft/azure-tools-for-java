@@ -31,7 +31,7 @@ import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JLabel
 
 class SparkSubmissionJobUploadStorageGen2OAuthCard : SparkSubmissionJobUploadStorageBasicCard() {
-    private val gen2RootPathTip = "e.g. https://<mystorageaccount>.dfs.core.windows.net/<root path>."
+    private val gen2RootPathTip = "e.g. abfs://<file_system>@<account_name>.dfs.core.windows.net/<path>"
     private val gen2RootPathLabel = JLabel("ADLS GEN2 Root Path")
     val gen2RootPathField = HintTextField (gen2RootPathTip).apply { name = "gen2OAuthCardRootPathField" }
 

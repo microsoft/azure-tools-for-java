@@ -42,8 +42,6 @@ import rx.exceptions.Exceptions;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -117,9 +115,8 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
     @Nullable
     private String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
         //convert https://fullAccountName/fileSystem/subfolder/guid/artifact.jar to /subfolder/xxxx
-        Matcher m = Pattern.compile(AbfsUri.AdlsGen2RestfulPathPattern).matcher(rootPath);
-        if (m.find()) {
-            return m.group("relativePath");
+        if (AbfsUri.isType(rootPath)) {
+            return AbfsUri.parse(rootPath).getRelativePath();
         }
 
         throw new URISyntaxException(rootPath, "Cannot get valid artifact path");

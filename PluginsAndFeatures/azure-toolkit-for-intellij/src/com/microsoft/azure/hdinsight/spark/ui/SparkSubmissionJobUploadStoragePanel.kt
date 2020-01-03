@@ -185,6 +185,11 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
                         accessKey = adlsGen2Card.storageKeyField.text.trim()
                     }
 
+                    SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> {
+                        fsType = AzureStorageVirtualFileSystem.VFSSupportStorageType.ADLSGen2
+                        account = uploadRootPathUri.accountName
+                    }
+
                     else -> {
                     }
                 }

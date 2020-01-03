@@ -30,6 +30,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
+import com.microsoft.azure.hdinsight.common.UriUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
@@ -62,7 +63,10 @@ import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
-import javax.swing.*
+import javax.swing.DefaultComboBoxModel
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextField
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel
     : JPanel(), Disposable, SettableControl<SparkSubmitJobUploadStorageModel>, ILogger {
@@ -185,7 +189,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                         when (cluster.defaultStorageType) {
                             SparkSubmitStorageType.ADLS_GEN1 -> model.adlsRootPath = pathUri.toString()
                             SparkSubmitStorageType.BLOB -> model.storageAccount = pathUri.host.let { it.substring(0, it.indexOf(".")) }
-                            SparkSubmitStorageType.ADLS_GEN2 -> model.gen2RootPath = "https://${pathUri.host}/${pathUri.userInfo}/"
+                            SparkSubmitStorageType.ADLS_GEN2 -> model.gen2RootPath = AbfsUri.parse("https://${pathUri.host}/${pathUri.userInfo}/")
                             else -> { }
                         }
                     }
@@ -236,7 +240,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         val path = (cluster.defaultStorageRootPath?.trimEnd('/') ?: "") +
                                                 "/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
 
-                                        uploadPath = if (AbfsUri.isType(path)) AbfsUri.parse(path).url.toString() else path
+                                        uploadPath = if (AbfsUri.isType(path)) AbfsUri.parse(path).uri.toString() else path
                                         errorMsg = null
                                     }
                                 } catch (ex: Exception) {
@@ -279,7 +283,7 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 }
                             }
                             SparkSubmitStorageType.ADLS_GEN2, SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> model.apply {
-                                if (gen2RootPath != null && ! AbfsUri.AdlsGen2RestfulPathPattern.toRegex().matches(gen2RootPath!!)) {
+                                if (gen2RootPath == null) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "ADLS GEN2 Root Path is invalid"
                                 } else if (this.storageAccountType == SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH
@@ -287,9 +291,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                     uploadPath = invalidUploadPath
                                     errorMsg = "Need to use azure account to login in first"
                                 } else {
-                                    var formatAdlsRootPath = if (gen2RootPath?.endsWith("/") == true) gen2RootPath else "$gen2RootPath/"
-                                    if (cluster is MfaEspCluster) formatAdlsRootPath += cluster.userPath
-                                    uploadPath = "${formatAdlsRootPath}SparkSubmission/"
+                                    var normalizedGen2RootPath = UriUtil.normalizeWithSlashEnding(gen2RootPath!!.uri)
+                                    if (cluster is MfaEspCluster) normalizedGen2RootPath = normalizedGen2RootPath.resolve(cluster.userPath + "/")
+                                    uploadPath = "${normalizedGen2RootPath}SparkSubmission/"
                                     errorMsg = null
                                 }
                             }
@@ -371,13 +375,14 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                 data.webHdfsRootPath= storagePanel.webHdfsCard.webHdfsRootPathField.text.trim()
             }
             SparkSubmitStorageType.ADLS_GEN2 -> {
-                data.gen2RootPath = storagePanel.adlsGen2Card.gen2RootPathField.text.trim()
-                data.gen2Account = if (!StringUtils.isEmpty(data.gen2RootPath))
-                    getAccount(AbfsUri.AdlsGen2RestfulPathPattern, data.gen2RootPath) else ""
+                val rootPathText = storagePanel.adlsGen2Card.gen2RootPathField.text.trim()
+                data.gen2RootPath = if (AbfsUri.isType(rootPathText)) AbfsUri.parse(rootPathText) else null
+                data.gen2Account = data.gen2RootPath?.accountName ?: ""
                 data.accessKey = storagePanel.adlsGen2Card.storageKeyField.text.trim()
             }
             SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> {
-                data.gen2RootPath = storagePanel.adlsGen2OAuthCard.gen2RootPathField.text.trim()
+                val rootPathText = storagePanel.adlsGen2OAuthCard.gen2RootPathField.text.trim()
+                data.gen2RootPath = if (AbfsUri.isType(rootPathText)) AbfsUri.parse(rootPathText) else null
             }
             else -> {}
         }
@@ -455,12 +460,11 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     storagePanel.webHdfsCard.signOutCard.authUserNameLabel.text = data.webHdfsAuthUser
                 }
                 SparkSubmitStorageType.ADLS_GEN2 -> {
-                    if (storagePanel.adlsGen2Card.gen2RootPathField.text != data.gen2RootPath){
-                        storagePanel.adlsGen2Card.gen2RootPathField.text = data.gen2RootPath
+                    if (data.gen2RootPath?.toString() != storagePanel.adlsGen2Card.gen2RootPathField.text.trim()) {
+                        storagePanel.adlsGen2Card.gen2RootPathField.text = data.gen2RootPath?.uri?.toString() ?: ""
                     }
 
-                    val credentialAccount = SparkSubmitStorageType.ADLS_GEN2.getSecureStoreServiceOf(
-                            getAccount(AbfsUri.AdlsGen2RestfulPathPattern, data.gen2RootPath))
+                    val credentialAccount = SparkSubmitStorageType.ADLS_GEN2.getSecureStoreServiceOf(data.gen2RootPath?.accountName)
                     storagePanel.adlsGen2Card.storageKeyField.text =
                             if (StringUtils.isEmpty(data.accessKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.gen2Account) ?: "" }
@@ -469,8 +473,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                             }
                 }
                 SparkSubmitStorageType.ADLS_GEN2_FOR_OAUTH -> {
-                    if (storagePanel.adlsGen2OAuthCard.gen2RootPathField.text != data.gen2RootPath){
-                        storagePanel.adlsGen2OAuthCard.gen2RootPathField.text = data.gen2RootPath
+                    val gen2PathText = storagePanel.adlsGen2OAuthCard.gen2RootPathField.text.trim()
+                    val parsedGen2Path = if (AbfsUri.isType(gen2PathText)) AbfsUri.parse(gen2PathText) else null
+                    if (data.gen2RootPath != parsedGen2Path) {
+                        storagePanel.adlsGen2OAuthCard.gen2RootPathField.text = data.gen2RootPath?.uri?.toString() ?: ""
                     }
                 }
                 else -> { }
@@ -480,13 +486,6 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
         try {
             ApplicationManager.getApplication().invokeAndWait(applyData, ModalityState.any())
         } catch (ignore: ProcessCanceledException) {
-        }
-
-    }
-
-    private fun getAccount(pattern: String, rootPath: String?): String? {
-        return rootPath?.let {
-            pattern.toRegex().find(rootPath)?.groupValues?.get(2)
         }
     }
 

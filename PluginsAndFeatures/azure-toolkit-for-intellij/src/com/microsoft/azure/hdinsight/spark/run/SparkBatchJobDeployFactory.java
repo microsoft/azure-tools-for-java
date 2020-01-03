@@ -179,6 +179,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     throw new ExecutionException("Invalid ADLS GEN2 root path: " + destinationRootPath);
                 }
 
+                AbfsUri destinationUri = AbfsUri.parse(destinationRootPath);
                 if (clusterDetail instanceof AzureAdAccountDetail) {
                     httpObservable = new ADLSGen2OAuthHttpObservable(((AzureAdAccountDetail) clusterDetail).getTenantId());
                 } else {
@@ -187,11 +188,11 @@ public class SparkBatchJobDeployFactory implements ILogger {
                         throw new ExecutionException("Invalid access key input");
                     }
 
-                    String accountName = AbfsUri.parse(destinationRootPath).getAccountName();
+                    String accountName = destinationUri.getAccountName();
                     httpObservable = new SharedKeyHttpObservable(accountName, accessKey);
                 }
 
-                jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
+                jobDeploy = new ADLSGen2Deploy(httpObservable, destinationUri.getUrl().toString());
                 break;
             case WEBHDFS:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
