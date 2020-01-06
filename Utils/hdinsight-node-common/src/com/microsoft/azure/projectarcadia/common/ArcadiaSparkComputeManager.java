@@ -110,7 +110,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
         try {
             return fetchWorkSpaces().toBlocking().singleOrDefault(this);
         } catch (Exception ignored) {
-            log().warn("Got exceptions when refreshing Arcadia workspaces. " + ExceptionUtils.getStackTrace(ignored));
+            log().warn("Got exceptions when refreshing Synapse workspaces. " + ExceptionUtils.getStackTrace(ignored));
             return this;
         }
     }
@@ -123,7 +123,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
                 .flatMap(workSpace ->
                         workSpace.fetchClusters()
                                 .onErrorResumeNext(err -> {
-                                    String errMsg = String.format("Got exceptions when refreshing spark computes. Workspace: %s. %s",
+                                    String errMsg = String.format("Got exceptions when refreshing spark pools. Workspace: %s. %s",
                                             workSpace.getName(), ExceptionUtils.getStackTrace(err));
                                     log().warn(errMsg);
                                     return Observable.empty();
@@ -164,7 +164,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
         AzureManager azureManager = getAzureManager();
         if (azureManager == null) {
             return Observable.error(new AuthException(
-                    "Can't get Arcadia workspaces since user doesn't sign in, please sign in by Azure Explorer."));
+                    "Can't get Synapse workspaces since user doesn't sign in, please sign in by Azure Explorer."));
         }
 
         return Observable.fromCallable(() -> azureManager.getSubscriptionManager().getSelectedSubscriptionDetails())

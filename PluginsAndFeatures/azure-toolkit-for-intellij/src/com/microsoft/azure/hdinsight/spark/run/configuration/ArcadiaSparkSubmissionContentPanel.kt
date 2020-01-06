@@ -31,13 +31,13 @@ import com.microsoft.azure.hdinsight.spark.ui.SparkClusterListRefreshableCombo
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
 
-class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionContentPanel(project, "Arcadia Spark") {
+class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionContentPanel(project, "Synapse Spark") {
     override val clustersSelection: SparkClusterListRefreshableCombo by lazy { ArcadiaSparkClusterListRefreshableCombo().apply {
         Disposer.register(this@ArcadiaSparkSubmissionContentPanel, this@apply)
     } }
 
     override val clusterHint: String
-        get() = "Spark Pools"
+        get() = "Spark pool"
 
     override fun getData(data: SparkSubmitModel) {
         // Component -> Data
@@ -53,7 +53,7 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
             arcadiaData.sparkWorkspace = cluster.workSpace.name
             arcadiaData.sparkCompute = cluster.name
             arcadiaData.livyUri = cluster.connectionUrl
-                    ?: throw RuntimeConfigurationWarning("Can't get Arcadia compute connection URL")
+                    ?: throw RuntimeConfigurationWarning("Can't get Synapse Spark pool connection URL")
         }
     }
 }

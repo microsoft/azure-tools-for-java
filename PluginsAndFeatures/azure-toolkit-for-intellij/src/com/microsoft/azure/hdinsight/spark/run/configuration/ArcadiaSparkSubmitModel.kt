@@ -36,5 +36,5 @@ class ArcadiaSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
     @Attribute("tenant_id")
     var tenantId: String? = null
 
-    override fun getSparkClusterTypeDisplayName(): String = "Arcadia Spark cluster"
+    override fun getSparkClusterTypeDisplayName(): String = "Synapse Spark Pool"
 }

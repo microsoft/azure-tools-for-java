@@ -54,9 +54,9 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
 
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val sparkCluster = cluster as? ArcadiaSparkCompute ?: throw ExecutionException(RuntimeConfigurationError(
-                "Can't prepare Arcadia Spark interactive session since the spark compute cannot be found"))
+                "Can't prepare Synapse Spark interactive session since the spark pool cannot be found"))
         val livyUrl = sparkCluster.connectionUrl ?: throw ExecutionException(RuntimeConfigurationError(
-                "Can't prepare Arcadia Spark interactive session since Livy URL is empty"))
+                "Can't prepare Synapse Spark interactive session since Livy URL is empty"))
 
         val session = ArcadiaSparkSession(
                 name, URI.create(livyUrl), sparkCluster.subscription.tenantId)
@@ -66,9 +66,9 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
     override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {
         val arcadiaModel = (submitModel as? ArcadiaSparkSubmitModel)?.apply {
             if (sparkCompute == null || tenantId == null || sparkWorkspace == null) {
-                log().warn("Arcadia Spark Compute is not selected. " +
-                            "spark compute: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
-                throw RuntimeConfigurationError("Arcadia Spark Compute is not selected")
+                log().warn("Synapse Spark pool is not selected. " +
+                            "Spark pool: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
+                throw RuntimeConfigurationError("Synapse Spark pool is not selected")
             }
         }
             ?: throw RuntimeConfigurationError("Can't cast submitModel to ArcadiaSparkSubmitModel")
@@ -80,7 +80,7 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
                 .first()
         } catch (ex: NoSuchElementException) {
             throw RuntimeConfigurationError(
-                    "Can't find Arcadia spark compute (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
+                    "Can't find Synapse Spark pool (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
                             + " at tenant ${arcadiaModel.tenantId}.")
         }
     }

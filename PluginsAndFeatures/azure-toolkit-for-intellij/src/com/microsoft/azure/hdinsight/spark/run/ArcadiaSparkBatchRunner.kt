@@ -51,9 +51,9 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
     override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
         val arcadiaModel = (submitModel as ArcadiaSparkSubmitModel).apply {
             if (sparkCompute == null || tenantId == null || sparkWorkspace == null) {
-                log().warn("Arcadia Spark Compute is not selected. " +
-                        "spark compute: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
-                throw ExecutionException("Arcadia Spark Compute is not selected")
+                log().warn("Synapse Spark pool is not selected. " +
+                        "spark pool: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
+                throw ExecutionException("Synapse Spark pool is not selected")
             }
         }
         val submission = SparkBatchArcadiaSubmission(
@@ -66,7 +66,7 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
                 .first()
         } catch (ex: NoSuchElementException) {
             throw ExecutionException(
-                "Can't find Arcadia Spark Compute (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
+                "Can't find Synapse Spark pool (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
                         + " at tenant ${arcadiaModel.tenantId}.")
         }
 
