@@ -61,13 +61,16 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
     private final @NotNull String workspaceName;
     private final @NotNull String tenantId;
     private final @NotNull URI livyUri;
+    private final @NotNull String jobName;
 
     public SparkBatchArcadiaSubmission(final @NotNull String tenantId,
                                        final @NotNull String workspaceName,
-                                       final @NotNull URI livyUri) {
+                                       final @NotNull URI livyUri,
+                                       final @NotNull String jobName) {
         this.workspaceName = workspaceName;
         this.tenantId = tenantId;
         this.livyUri = UriUtil.normalizeWithSlashEnding(livyUri);
+        this.jobName = jobName;
     }
 
     @Override
@@ -188,8 +191,13 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
                                 .findWorkspace(getTenantId(), getWorkspaceName())
                                 .toBlocking()
                                 .first();
-                return new URL(String.format("https://web.azuresynapse.net/monitoring/sparkapplication?" +
+                // Currently we just concatenate the string and show it as the Spark job detail page URL.
+                // We don't check if the URL is valid or not because we have never met any exceptions when clicking the
+                // link during test. If there are errors reported by user that URL is invalid in the future, we will
+                // add more validation code here at that time.
+                return new URL(String.format("https://web.azuresynapse.net/monitoring/sparkapplication/%s?" +
                                 "workspace=%s&livyId=%d&sparkPoolName=%s",
+                        this.jobName,
                         workSpace.getId(),
                         livyId,
                         matcher.group("compute")));

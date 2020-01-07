@@ -57,7 +57,7 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
             }
         }
         val submission = SparkBatchArcadiaSubmission(
-                arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, URI.create(arcadiaModel.livyUri))
+                arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, URI.create(arcadiaModel.livyUri), arcadiaModel.jobName)
 
         val compute = try {
             ArcadiaSparkComputeManager.getInstance().findCompute(
