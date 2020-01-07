@@ -165,11 +165,11 @@ object AppDeployStateUtil {
      */
     private fun requestRunWindowFocus(project: Project) {
         try {
-            ToolWindowManager.getInstance(project).invokeLater {
+            ToolWindowManager.getInstance(project).invokeLater(Runnable {
                 val window = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.RUN)
                 if (window != null && window.isAvailable)
                     window.show(null)
-            }
+            })
         } catch (e: Throwable) {
             logger.error(e)
         }

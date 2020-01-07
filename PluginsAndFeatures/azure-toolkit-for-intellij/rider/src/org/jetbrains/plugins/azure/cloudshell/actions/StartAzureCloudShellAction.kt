@@ -239,7 +239,7 @@ class StartAzureCloudShellAction : AnAction() {
                     val terminalWindow = ToolWindowManager.getInstance(project)
                             .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
 
-                    terminalWindow.show {
+                    terminalWindow?.show {
                         // HACK: Because local terminal always opens, we want to make sure it is available before opening cloud terminal
                         ApplicationManager.getApplication().invokeLater {
                             Thread.sleep(500)
