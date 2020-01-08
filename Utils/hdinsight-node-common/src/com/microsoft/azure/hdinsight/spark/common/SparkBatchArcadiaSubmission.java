@@ -57,20 +57,24 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
     public static final Pattern LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN = Pattern.compile(
             "(?<baseUrl>https?://[^/]+)/livyApi/versions/(?<apiVersion>[^/]+)/sparkPools/(?<compute>[^/]+)/?",
             Pattern.CASE_INSENSITIVE);
+    public static final String SYNAPSE_STUDIO_WEB_ROOT_URL = "https://web.azuresynapse.net";
 
     private final @NotNull String workspaceName;
     private final @NotNull String tenantId;
     private final @NotNull URI livyUri;
     private final @NotNull String jobName;
+    private final @Nullable String webUrl;
 
     public SparkBatchArcadiaSubmission(final @NotNull String tenantId,
                                        final @NotNull String workspaceName,
                                        final @NotNull URI livyUri,
-                                       final @NotNull String jobName) {
+                                       final @NotNull String jobName,
+                                       final @Nullable String webUrl) {
         this.workspaceName = workspaceName;
         this.tenantId = tenantId;
         this.livyUri = UriUtil.normalizeWithSlashEnding(livyUri);
         this.jobName = jobName;
+        this.webUrl = webUrl;
     }
 
     @Override
@@ -195,12 +199,12 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
                 // We don't check if the URL is valid or not because we have never met any exceptions when clicking the
                 // link during test. If there are errors reported by user that URL is invalid in the future, we will
                 // add more validation code here at that time.
-                return new URL(String.format("https://web.azuresynapse.net/monitoring/sparkapplication/%s?" +
-                                "workspace=%s&livyId=%d&sparkPoolName=%s",
-                        this.jobName,
-                        workSpace.getId(),
-                        livyId,
-                        matcher.group("compute")));
+                return URI.create(this.webUrl == null ? SYNAPSE_STUDIO_WEB_ROOT_URL : this.webUrl).resolve(
+                        String.format("/monitoring/sparkapplication/%s?workspace=%s&livyId=%d&sparkPoolName=%s",
+                                this.jobName,
+                                workSpace.getId(),
+                                livyId,
+                                matcher.group("compute"))).toURL();
             } catch (NoSuchElementException ex) {
                 log().warn(String.format("Can't find workspace %s under tenant %s", getWorkspaceName(), getTenantId()), ex);
             } catch (MalformedURLException ex) {

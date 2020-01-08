@@ -56,8 +56,6 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
                 throw ExecutionException("Synapse Spark pool is not selected")
             }
         }
-        val submission = SparkBatchArcadiaSubmission(
-                arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, URI.create(arcadiaModel.livyUri), arcadiaModel.jobName)
 
         val compute = try {
             ArcadiaSparkComputeManager.getInstance().findCompute(
@@ -69,6 +67,14 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
                 "Can't find Synapse Spark pool (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
                         + " at tenant ${arcadiaModel.tenantId}.")
         }
+
+        val submission = SparkBatchArcadiaSubmission(
+            arcadiaModel.tenantId,
+            arcadiaModel.sparkWorkspace,
+            URI.create(arcadiaModel.livyUri),
+            arcadiaModel.jobName,
+            compute.workSpace.webUrl
+        )
 
         if (submitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
             val fsRoot = WasbUri.parse(arcadiaModel.jobUploadStorageModel.uploadPath
