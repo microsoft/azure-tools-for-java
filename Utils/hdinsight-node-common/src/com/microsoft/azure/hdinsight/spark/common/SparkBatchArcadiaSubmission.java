@@ -34,15 +34,14 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownServiceException;
+import java.net.*;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -199,16 +198,19 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
                 // We don't check if the URL is valid or not because we have never met any exceptions when clicking the
                 // link during test. If there are errors reported by user that URL is invalid in the future, we will
                 // add more validation code here at that time.
-                return URI.create(this.webUrl == null ? SYNAPSE_STUDIO_WEB_ROOT_URL : this.webUrl).resolve(
-                        String.format("/monitoring/sparkapplication/%s?workspace=%s&livyId=%d&sparkPoolName=%s",
-                                this.jobName,
-                                workSpace.getId(),
-                                livyId,
-                                matcher.group("compute"))).toURL();
+                URI rootUri = URI.create(this.webUrl == null ? SYNAPSE_STUDIO_WEB_ROOT_URL : this.webUrl).resolve("/");
+                return new URIBuilder(rootUri)
+                        .setPath("/monitoring/sparkapplication/" + jobName)
+                        .setParameters(Arrays.asList(
+                                new BasicNameValuePair("workspace", workSpace.getId()),
+                                new BasicNameValuePair("livyId", String.valueOf(livyId)),
+                                new BasicNameValuePair("sparkPoolName", matcher.group("compute"))
+                        )).build().toURL();
             } catch (NoSuchElementException ex) {
                 log().warn(String.format("Can't find workspace %s under tenant %s", getWorkspaceName(), getTenantId()), ex);
-            } catch (MalformedURLException ex) {
-                throw new IllegalArgumentException("Bad Synapse history server URL", ex);
+            } catch (MalformedURLException | URISyntaxException ex) {
+                log().warn("Build Spark job detail web URL failed with error " + ex.getMessage(), ex);
+                throw new IllegalArgumentException("Bad Spark job detail URL", ex);
             }
         }
 
