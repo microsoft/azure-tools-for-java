@@ -138,7 +138,7 @@ public class AzureViewDockerDialog extends AzureDialogWrapper {
           dockerHost.certVault.uri);
       dockerHostKeyvaultTextPane.setVisible(false);
     } else if (dockerHost.hostVM.vaultName != null && !dockerHost.hostVM.vaultName.isEmpty()) {
-      setTextField(dockerHostKeyvaultTextField, String.format("Error reading http://%s.vault.azure.net", dockerHost.hostVM.vaultName));
+      setTextField(dockerHostKeyvaultTextField, String.format("Error reading https://%s.vault.azure.net", dockerHost.hostVM.vaultName));
       dockerHostKeyvaultTextPane.setVisible(true);
     } else {
       setTextField(dockerHostKeyvaultTextField, "Not using Key Vault");

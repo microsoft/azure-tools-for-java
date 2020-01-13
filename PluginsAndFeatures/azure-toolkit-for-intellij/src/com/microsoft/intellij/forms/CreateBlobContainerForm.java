@@ -66,7 +66,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
         this.project = project;
 
         setTitle("Create Blob Container");
-        namingGuidelinesLink.addMouseListener(new LinkListener("http://go.microsoft.com/fwlink/?LinkId=255555"));
+        namingGuidelinesLink.addMouseListener(new LinkListener("https://go.microsoft.com/fwlink/?LinkId=255555"));
 
         init();
     }

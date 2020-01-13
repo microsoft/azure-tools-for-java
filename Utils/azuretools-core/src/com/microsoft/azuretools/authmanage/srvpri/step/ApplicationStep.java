@@ -135,9 +135,9 @@ public class ApplicationStep implements IStep {
             {
               "availableToOtherTenants": false,
               "displayName": "ShchAadApp",
-              "homepage": "http://github.com/Microsoft/azure-tools-for-java",
+              "homepage": "https://github.com/Microsoft/azure-tools-for-java",
               "identifierUris": [
-                "http://github.com/Microsoft/azure-tools-for-java"
+                "https://github.com/Microsoft/azure-tools-for-java"
               ],
               "passwordCredentials": [
                 {

@@ -15,7 +15,7 @@ public class EnvironmentUtil {
      * {@code ProcessEnvironment#validateVariable} ({@code ProcessEnvironment#validateName} on Windows).
      *
      * @see #isValidValue(String)
-     * @see <a href="http://pubs.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap08.html">Environment Variables in Unix</a>
+     * @see <a href="https://pubs.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap08.html">Environment Variables in Unix</a>
      * @see <a href="https://docs.microsoft.com/en-us/windows/desktop/ProcThread/environment-variables">Environment Variables in Windows</a>
      */
     @Contract(value = "null -> false", pure = true)

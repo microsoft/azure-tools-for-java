@@ -53,7 +53,7 @@ public class UploadBlobFileForm extends AzureDialogWrapper {
     private File selectedFile;
     private Runnable uploadSelected;
 
-    private static String linkBlob = "http://go.microsoft.com/fwlink/?LinkID=512749";
+    private static String linkBlob = "https://go.microsoft.com/fwlink/?LinkID=512749";
 
     public UploadBlobFileForm(Project project) {
         super(project, true);

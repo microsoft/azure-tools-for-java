@@ -54,7 +54,7 @@ public class ExternalStorageAccountForm extends AzureDialogWrapper {
     private JTextField queueURLTextField;
     private JPanel customEndpointsPanel;
 
-    private static final String PRIVACY_LINK = "http://go.microsoft.com/fwlink/?LinkID=286720";
+    private static final String PRIVACY_LINK = "https://go.microsoft.com/fwlink/?LinkID=286720";
     private Runnable onFinish;
 
     public ExternalStorageAccountForm(Project project) {

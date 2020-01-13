@@ -113,7 +113,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
                     deployModel.getWebAppName()));
             WebApp app = AzureWebAppMvpModel.getInstance().createWebAppWithPrivateRegistryImage(deployModel);
             if (app != null && app.name() != null) {
-                processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
+                processHandler.setText(String.format("URL:  https://%s.azurewebsites.net/", app.name()));
                 updateConfigurationDataModel(app);
 
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
@@ -126,7 +126,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
             WebApp app = AzureWebAppMvpModel.getInstance()
                     .updateWebAppOnDocker(deployModel.getSubscriptionId(), deployModel.getWebAppId(), acrInfo);
             if (app != null && app.name() != null) {
-                processHandler.setText(String.format("URL:  http://%s.azurewebsites.net/", app.name()));
+                processHandler.setText(String.format("URL:  https://%s.azurewebsites.net/", app.name()));
             }
         }
         return null;

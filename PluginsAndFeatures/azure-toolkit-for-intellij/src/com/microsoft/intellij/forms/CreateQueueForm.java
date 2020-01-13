@@ -55,7 +55,7 @@ public class CreateQueueForm extends AzureDialogWrapper {
         setModal(true);
 
         setTitle("Create Queue");
-        namingGuidelinesLink.addMouseListener(new LinkListener("http://go.microsoft.com/fwlink/?LinkId=255557"));
+        namingGuidelinesLink.addMouseListener(new LinkListener("https://go.microsoft.com/fwlink/?LinkId=255557"));
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override

@@ -34,9 +34,9 @@ class PublicIpAddressProvider {
         private val logger = Logger.getInstance(PublicIpAddressProvider::class.java)
 
         private val plainTextProviderUrls = listOf(
-                "http://ipv4bot.whatismyipaddress.com",
-                "http://ip4.seeip.org",
-                "http://v4.ident.me"
+                "https://ipv4bot.whatismyipaddress.com",
+                "https://ip4.seeip.org",
+                "https://v4.ident.me"
         )
 
         fun retrieveCurrentPublicIpAddress() : Result {

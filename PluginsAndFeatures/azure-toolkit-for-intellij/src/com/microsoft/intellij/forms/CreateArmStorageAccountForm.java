@@ -92,7 +92,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     private com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount; // use this field only when creating from 'Create vm'
     private Project project;
 
-    private static final String PRICING_LINK = "http://go.microsoft.com/fwlink/?LinkID=400838";
+    private static final String PRICING_LINK = "https://go.microsoft.com/fwlink/?LinkID=400838";
 
     public CreateArmStorageAccountForm(Project project) {
         super(project, true);

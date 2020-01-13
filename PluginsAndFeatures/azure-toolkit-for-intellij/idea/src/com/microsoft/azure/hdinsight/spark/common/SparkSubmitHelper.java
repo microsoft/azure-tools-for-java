@@ -37,5 +37,5 @@ public class SparkSubmitHelper {
         return path.endsWith(".jar");
     }
 
-    public static final String HELP_LINK = "http://go.microsoft.com/fwlink/?LinkID=722349&clcid=0x409";
+    public static final String HELP_LINK = "https://go.microsoft.com/fwlink/?LinkID=722349&clcid=0x409";
 }

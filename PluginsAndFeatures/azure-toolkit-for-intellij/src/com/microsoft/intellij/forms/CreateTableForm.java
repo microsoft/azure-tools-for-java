@@ -52,7 +52,7 @@ public class CreateTableForm extends AzureDialogWrapper {
 
         setModal(true);
         setTitle("Create Table");
-        namingGuidelinesLink.addMouseListener(new LinkListener("http://go.microsoft.com/fwlink/?LinkId=267429"));
+        namingGuidelinesLink.addMouseListener(new LinkListener("https://go.microsoft.com/fwlink/?LinkId=267429"));
 
         nameTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
