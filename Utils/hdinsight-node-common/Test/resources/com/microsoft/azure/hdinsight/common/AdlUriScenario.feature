@@ -56,16 +56,15 @@ Feature: ADLS Gen1 URI operation
 
   Scenario: Check Gen1 URI resolve as root path
     Then check ADL URI resolve as root path as below
-      | uri                                            | path     | result                                            |
-      | adl://account.azuredatalakestore.net/          | sp0      | adl://account.azuredatalakestore.net/sp0          |
-      | adl://account.azuredatalakestore.net           | sp0      | adl://account.azuredatalakestore.net/sp0          |
-      | adl://account.azuredatalakestore.net/sp0       | sp1      | adl://account.azuredatalakestore.net/sp1          |
-      | adl://account.azuredatalakestore.net/sp0/      | sp1      | adl://account.azuredatalakestore.net/sp0/sp1      |
-      | adl://account.azuredatalakestore.net/sp0       | /sp1     | adl://account.azuredatalakestore.net/sp1          |
-      | adl://account.azuredatalakestore.net/sp0/      | /sp1     | adl://account.azuredatalakestore.net/sp0/sp1      |
-      | adl://account.azuredatalakestore.net/sp0/      | /sp1/    | adl://account.azuredatalakestore.net/sp0/sp1/     |
-      | adl://account.azuredatalakestore.net/root/sp0  | sp1      | adl://account.azuredatalakestore.net/root/sp1     |
-      | adl://account.azuredatalakestore.net/root/sp0/ | sp1      | adl://account.azuredatalakestore.net/root/sp0/sp1 |
+      | uri                                           | path     | result                                            |
+      | adl://account.azuredatalakestore.net/         | sp0      | adl://account.azuredatalakestore.net/sp0          |
+      | adl://account.azuredatalakestore.net          | sp0      | adl://account.azuredatalakestore.net/sp0          |
+      | adl://account.azuredatalakestore.net/sp0      | sp1      | adl://account.azuredatalakestore.net/sp0/sp1      |
+      | adl://account.azuredatalakestore.net/sp0/     | sp1      | adl://account.azuredatalakestore.net/sp0/sp1      |
+      | adl://account.azuredatalakestore.net/sp0      | /sp1     | adl://account.azuredatalakestore.net/sp0/sp1      |
+      | adl://account.azuredatalakestore.net/sp0/     | /sp1     | adl://account.azuredatalakestore.net/sp0/sp1      |
+      | adl://account.azuredatalakestore.net/sp0/     | /sp1/    | adl://account.azuredatalakestore.net/sp0/sp1/     |
+      | adl://account.azuredatalakestore.net/root/sp0 | sp1      | adl://account.azuredatalakestore.net/root/sp0/sp1 |
 
   Scenario: Check Gen1 URI relativize
     Then check ADL URI relativize as below

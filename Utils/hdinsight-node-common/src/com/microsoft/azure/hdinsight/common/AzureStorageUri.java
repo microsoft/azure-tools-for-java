@@ -85,11 +85,9 @@ abstract public class AzureStorageUri {
     /**
      * Treat current Azure Storage URI as root to resolve the target path
      * eg:
-     *   this("https://host/root").resolveAsRoot("/tmp") and
-     *   this("https://host/root").resolveAsRoot("tmp") will both return "https://host/tmp"
-     *
+     *   this("https://host/root").resolveAsRoot("/tmp"),
      *   this("https://host/root/").resolveAsRoot("/tmp") and
-     *   this("https://host/root/").resolveAsRoot("tmp") will both return "https://host/root/tmp"
+     *   this("https://host/root/").resolveAsRoot("tmp") will all return "https://host/root/tmp"
      *
      * @param target the target path to resolve
      * @return A new instance with connecting the current URI as root path with target
@@ -97,7 +95,7 @@ abstract public class AzureStorageUri {
     public AzureStorageUri resolveAsRoot(String target) {
         String normalizedTarget = URI.create("/").relativize(URI.create(target)).toString();
 
-        return resolve(normalizedTarget);
+        return normalizeWithSlashEnding().resolve(normalizedTarget);
     }
 
     /**

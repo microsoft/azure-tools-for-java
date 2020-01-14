@@ -54,16 +54,15 @@ Feature: Wasb URI operation
 
   Scenario: Check Wasb URI resolve as root path
     Then check Wasb URI resolve as root path as below
-      | uri                                                        | path     | result                                                        |
-      | wasbs://container0@account.blob.core.windows.net/          | sp0      | wasbs://container0@account.blob.core.windows.net/sp0          |
-      | wasbs://container0@account.blob.core.windows.net           | sp0      | wasbs://container0@account.blob.core.windows.net/sp0          |
-      | wasbs://container0@account.blob.core.windows.net/sp0       | sp1      | wasbs://container0@account.blob.core.windows.net/sp1          |
-      | wasbs://container0@account.blob.core.windows.net/sp0/      | sp1      | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
-      | wasbs://container0@account.blob.core.windows.net/sp0       | /sp1     | wasbs://container0@account.blob.core.windows.net/sp1          |
-      | wasbs://container0@account.blob.core.windows.net/sp0/      | /sp1     | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
-      | wasbs://container0@account.blob.core.windows.net/sp0/      | /sp1/    | wasbs://container0@account.blob.core.windows.net/sp0/sp1/     |
-      | wasbs://container0@account.blob.core.windows.net/root/sp0  | sp1      | wasbs://container0@account.blob.core.windows.net/root/sp1     |
-      | wasbs://container0@account.blob.core.windows.net/root/sp0/ | sp1      | wasbs://container0@account.blob.core.windows.net/root/sp0/sp1 |
+      | uri                                                       | path     | result                                                        |
+      | wasbs://container0@account.blob.core.windows.net/         | sp0      | wasbs://container0@account.blob.core.windows.net/sp0          |
+      | wasbs://container0@account.blob.core.windows.net          | sp0      | wasbs://container0@account.blob.core.windows.net/sp0          |
+      | wasbs://container0@account.blob.core.windows.net/sp0      | sp1      | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
+      | wasbs://container0@account.blob.core.windows.net/sp0/     | sp1      | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
+      | wasbs://container0@account.blob.core.windows.net/sp0      | /sp1     | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
+      | wasbs://container0@account.blob.core.windows.net/sp0/     | /sp1     | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
+      | wasbs://container0@account.blob.core.windows.net/sp0/     | /sp1/    | wasbs://container0@account.blob.core.windows.net/sp0/sp1/     |
+      | wasbs://container0@account.blob.core.windows.net/root/sp0 | sp1      | wasbs://container0@account.blob.core.windows.net/root/sp0/sp1 |
 
   Scenario: Check Wasb URI relativize
     Then check Wasb URI relativize as below
