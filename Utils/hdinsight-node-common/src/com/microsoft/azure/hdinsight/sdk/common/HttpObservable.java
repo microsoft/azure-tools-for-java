@@ -301,6 +301,8 @@ public class HttpObservable implements ILogger {
             return new MethodNotAllowedHttpErrorStatus(message, headers, httpEntity);
         } else if (statusCode == 500) {
             return new InternalServerErrorHttpErrorStatus(message, headers, httpEntity);
+        } else if (statusCode == 504) {
+            return new GatewayTimeoutErrorStatus(message, headers, httpEntity);
         } else {
             return new UnclassifiedHttpErrorStatus(statusCode, message, headers, httpEntity);
         }
