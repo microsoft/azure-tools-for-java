@@ -34,30 +34,25 @@ Feature: ADLS Gen2 URI operation
       | https://accountName.dfs.core.windows.net/fs0/subPath0/         |
       | https://accountName.dfs.core.windows.net/fs0/subPath0/subPath1 |
 
-  Scenario: Get Gen2 directory param from ABFS URI
-    Given ABFS URI is
-      | abfs://accountName.dfs.core.windows.net                        |
-      | abfs://fs0@accountName.dfs.core.windows.net                    |
-      | abfs://fs0@accountName.dfs.core.windows.net/                   |
-      | abfs://fs0@accountName.dfs.core.windows.net/subPath0           |
-      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/          |
-      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/subPath1  |
-      | https://accountName.dfs.core.windows.net                       |
-      | https://accountName.dfs.core.windows.net/fs0                   |
-      | https://accountName.dfs.core.windows.net/fs0/                  |
-      | https://accountName.dfs.core.windows.net/fs0/subPath0          |
-      | https://accountName.dfs.core.windows.net/fs0/subPath0/         |
-      | https://accountName.dfs.core.windows.net/fs0/subPath0/subPath1 |
-    Then the Gen two directory param should be
-      | invalid Gen2 URI  |
-      | /                 |
-      | /                 |
-      | subPath0          |
-      | subPath0/         |
-      | subPath0/subPath1 |
-      | invalid Gen2 URI  |
-      | /                 |
-      | /                 |
-      | subPath0          |
-      | subPath0/         |
-      | subPath0/subPath1 |
+  Scenario: Get properties from ABFS URI
+    Then properties of abfs URI should be
+      | url                                                            | accountName | fileSystem | rawPath             | path               | directoryParam    |
+      | abfs://accountName.dfs.core.windows.net                        | <invalid>   | <invalid>  | <invalid>           | <invalid>          | <invalid>         |
+      | abfs://fs0@accountName.dfs.core.windows.net                    | accountName | fs0        |                     |                    | /                 |
+      | abfs://fs0@accountName.dfs.core.windows.net/                   | accountName | fs0        | /                   | /                  | /                 |
+      | abfs://fs0@accountName.dfs.core.windows.net/subPath0           | accountName | fs0        | /subPath0           | /subPath0          | subPath0          |
+      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/          | accountName | fs0        | /subPath0/          | /subPath0/         | subPath0/         |
+      | abfs://fs0@accountName.dfs.core.windows.net/subPath0/subPath1  | accountName | fs0        | /subPath0/subPath1  | /subPath0/subPath1 | subPath0/subPath1 |
+      | https://accountName.dfs.core.windows.net                       | <invalid>   | <invalid>  | <invalid>           | <invalid>          | <invalid>         |
+      | https://accountName.dfs.core.windows.net/fs0                   | accountName | fs0        |                     |                    | /                 |
+      | https://accountName.dfs.core.windows.net/fs0/                  | accountName | fs0        | /                   | /                  | /                 |
+      | https://accountName.dfs.core.windows.net/fs0/subPath0          | accountName | fs0        | /subPath0           | /subPath0          | subPath0          |
+      | https://accountName.dfs.core.windows.net/fs0/subPath0/         | accountName | fs0        | /subPath0/          | /subPath0/         | subPath0/         |
+      | https://accountName.dfs.core.windows.net/fs0/subPath0/subPath1 | accountName | fs0        | /subPath0/subPath1  | /subPath0/subPath1 | subPath0/subPath1 |
+      | abfs://fs0@accountName.dfs.core.windows.net/new%20%23%25folder | accountName | fs0        | /new%20%23%25folder | /new #%folder      | new #%folder      |
+      | abfs://fs0@accountName.dfs.core.windows.net/.~_@:!$'()*+,;=    | accountName | fs0        | /.~_@:!$'()*+,;=    | /.~_@:!$'()*+,;=   | .~_@:!$'()*+,;=   |
+      | abfs://fs0@accountName.dfs.core.windows.net/aaa%3Fbbb          | accountName | fs0        | /aaa%3Fbbb          | /aaa?bbb           | aaa?bbb           |
+      | abfs://fs0@accountName.dfs.core.windows.net/aaa?bbb            | <invalid>   | <invalid>  | <invalid>           | <invalid>          | <invalid>         |
+      | abfs://fs0@accountName.dfs.core.windows.net/new folder         | <invalid>   | <invalid>  | <invalid>           | <invalid>          | <invalid>         |
+      | abfs://fs0@accountName.dfs.core.windows.net/new#folder         | <invalid>   | <invalid>  | <invalid>           | <invalid>          | <invalid>         |
+      | abfs://fs0@accountName.dfs.core.windows.net/new%folder         | <invalid>   | <invalid>  | <invalid>           | <invalid>          | <invalid>         |

@@ -27,8 +27,16 @@ import cucumber.api.java.en.Given
 import cucumber.api.java.en.Then
 import java.util.*
 import java.util.stream.Collectors
+import kotlin.test.assertEquals
 
 class AbfsUriScenario {
+    data class AbfsUriAndProperties(val url: String,
+                                    val accountName: String,
+                                    val fileSystem: String,
+                                    val rawPath: String,
+                                    val path: String,
+                                    val directoryParam: String)
+
     private var restfulGen2Paths: List<String> = emptyList()
     private var abfsUris: List<String> = emptyList()
 
@@ -75,20 +83,23 @@ class AbfsUriScenario {
         }
     }
 
-    @Then("^the Gen two directory param should be$")
-    fun gen2SubPathShouldBe(expectedSubPath: DataTable) {
-        val actualSubPath = this.abfsUris.stream()
-            .map { path ->
-                try {
-                    AbfsUri.parse(path).directoryParam.toString()
-                } catch (ex: Throwable) {
-                    "invalid Gen2 URI"
-                }
+    @Then("^properties of abfs URI should be$")
+    fun pathAndRawPathShouldBe(checkTable: List<AbfsUriAndProperties>) {
+        checkTable.forEach {
+            try {
+                val abfsUri = AbfsUri.parse(it.url)
+                assertEquals(abfsUri.accountName, it.accountName)
+                assertEquals(abfsUri.fileSystem, it.fileSystem)
+                assertEquals(abfsUri.rawPath, it.rawPath)
+                assertEquals(abfsUri.path, it.path)
+                assertEquals(abfsUri.directoryParam, it.directoryParam)
+            } catch (ex: Throwable) {
+                assertEquals("<invalid>", it.accountName, "Get error when parsing accountName from AbfsUri ${it.url}. ${ex.message}")
+                assertEquals("<invalid>", it.fileSystem, "Get error when parsing fileSystem from AbfsUri ${it.url}. ${ex.message}")
+                assertEquals("<invalid>", it.rawPath, "Get error when parsing rawPath from AbfsUri ${it.url}. ${ex.message}")
+                assertEquals("<invalid>", it.path, "Get error when parsing path from AbfsUri ${it.url}. ${ex.message}")
+                assertEquals("<invalid>", it.directoryParam, "Get error when parsing directoryParam from AbfsUri ${it.url}. ${ex.message}")
             }
-            .collect(Collectors.toList())
-
-        (0 until actualSubPath.size).forEach {
-            assert(actualSubPath[it] == expectedSubPath.asList(String::class.java)[it])
         }
     }
 }

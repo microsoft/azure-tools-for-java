@@ -38,7 +38,6 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.uiDesigner.core.GridConstraints.*
-import com.intellij.util.execution.ParametersListUtil
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri
 import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
@@ -298,10 +297,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     }
 
     private val refJarsPrompt: JLabel = JLabel("Referenced Jars(spark.jars)").apply {
-        toolTipText = "Files to be placed on the java classpath; The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;)"
+        toolTipText = "Files to be placed on the java classpath. Multiple paths should be split by space."
     }
 
-    private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
+    private val referencedJarsTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField().apply {
         toolTipText = "Artifact from remote storage account."
     }).apply {
         textField.name = "referencedJarsTextFieldText"
@@ -322,17 +321,17 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     // Warning: We have overridden toString method in class AdlsGen2VirtualFile
                     // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
                     // for those virtual file class later.
-                    text = chooseFiles.joinToString(";") { vf -> vf.toString() }
+                    text = chooseFiles.joinToString(" ") { vf -> vf.toString() }
                 }
             }
         }
     }
 
     private val refFilesPrompt: JLabel = JLabel("Referenced Files(spark.files)").apply {
-        toolTipText = "Files to be placed in executor working directory. The path needs to be an Azure Blob Storage Path (path started with wasb://); Multiple paths should be split by semicolon (;) "
+        toolTipText = "Files to be placed in executor working directory. Multiple paths should be split by space."
     }
 
-    private val referencedFilesTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField(ParametersListUtil.COLON_LINE_PARSER, ParametersListUtil.COLON_LINE_JOINER).apply {
+    private val referencedFilesTextField: TextFieldWithBrowseButton = TextFieldWithBrowseButton(ExpandableTextField().apply {
         toolTipText = refFilesPrompt.toolTipText
     }).apply {
         textField.name = "referencedFilesTextFieldText"
@@ -352,7 +351,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
                     // Warning: We have overridden toString method in class AdlsGen2VirtualFile
                     // If we implement virtual file for Gen1, blob or other storage later, remember to implement toString method
                     // for those virtual file class later.
-                    text = chooseFiles.joinToString(";") { vf -> vf.toString() }
+                    text = chooseFiles.joinToString(" ") { vf -> vf.toString() }
                 }
             }
         }
@@ -613,8 +612,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
             localArtifactTextField.text = data.localArtifactPath
             commandLineTextField.text = data.commandLineArgs.joinToString(" ")
-            referencedJarsTextField.text = data.referenceJars.joinToString(";")
-            referencedFilesTextField.text = data.referenceFiles.joinToString(";")
+            referencedJarsTextField.text = data.referenceJars.joinToString(" ")
+            referencedFilesTextField.text = data.referenceFiles.joinToString(" ")
 
             // update job configuration table
             if (jobConfigurationTable.model != data.tableModel) {
@@ -647,13 +646,13 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
         val selectedClusterName = viewModel.clusterSelection.selectedCluster?.name
         val selectedClusterId = viewModel.clusterSelection.toSelectClusterByIdBehavior.value as? String
 
-        val referencedFileList = referencedFilesTextField.text.split(";").dropLastWhile { it.isEmpty() }
+        val referencedFileList = referencedFilesTextField.text.split(" ").dropLastWhile { it.isEmpty() }
                 .asSequence()
                 .map { it.trim() }
                 .filter { s -> !s.isEmpty() }
                 .toList()
 
-        val uploadedFilePathList = referencedJarsTextField.text.split(";").dropLastWhile { it.isEmpty() }
+        val uploadedFilePathList = referencedJarsTextField.text.split(" ").dropLastWhile { it.isEmpty() }
                 .asSequence()
                 .map { it.trim() }
                 .filter { s -> !s.isEmpty() }

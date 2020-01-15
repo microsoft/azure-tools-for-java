@@ -33,6 +33,7 @@ class WasbUriScenario {
     data class UrlUriEqualEntry(val src: String, val dest: String, val isEqualed: Boolean)
     data class UriPathResolveAsRootEntry(val uri: String, val path: String, val result: String)
     data class UriRelativizeCheckEntry(val src: String, val dest: String, val result: String)
+    data class rawPathEncodedPathEntry(val rawPath: String, val encodedPath: String)
 
     @Then("convert Wasb URL restful path to URI should be")
     fun checkWasb2HttpConversion(checkTable: List<UrlUriEntry>) {
@@ -114,6 +115,19 @@ class WasbUriScenario {
                     src.relativize(dest),
                     "Check Wasb URI ${it.src} relativite ${it.dest} as root path"
             )
+        }
+    }
+
+    @Then("^check the encoded path as below$")
+    fun checkEncodedPath(checkTable: List<rawPathEncodedPathEntry>) {
+        checkTable.forEach {
+            val rawPath = it.rawPath
+            val expectedEncodedPath = it.encodedPath
+            try {
+                assertEquals(AzureStorageUri.encodePath(rawPath), expectedEncodedPath, "Check encode path $rawPath")
+            } catch (ex: Throwable) {
+                assertEquals("<invalid>", expectedEncodedPath, "Get error when encode path $rawPath. ${ex.message}")
+            }
         }
     }
 }

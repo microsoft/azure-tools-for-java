@@ -83,17 +83,17 @@ public final class WasbUri extends AzureStorageUri {
 
     @Override
     public String getPath() {
+        return URI.create(this.path.get()).getPath();
+    }
+
+    @Override
+    public String getRawPath() {
         return this.path.get();
     }
 
     @Override
-    AzureStorageUri resolve(String path) {
-        return WasbUri.parse(getUri().resolve(path).toString());
-    }
-
-    @Override
-    AzureStorageUri normalizeWithSlashEnding() {
-        return WasbUri.parse(UriUtil.normalizeWithSlashEnding(getUri()).toString());
+    AzureStorageUri parseUri(String encodedUri) {
+        return WasbUri.parse(encodedUri);
     }
 
     @Override

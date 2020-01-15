@@ -34,14 +34,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class AbfsUri extends AzureStorageUri {
-    public static final String AdlsGen2PathPattern = "^(?<schema>abfss?)://(?<fileSystem>[^/.\\s]+)@(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(?<relativePath>(/[^\\s]+)*/?)$";
-    public static final String AdlsGen2RestfulPathPattern = "^(?<schema>https?)://(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(?<relativePath>(/[^\\s]+)*/?)$";
+    public static final String AdlsGen2PathPattern = "^(?<schema>abfss?)://(?<fileSystem>[^/.\\s]+)@(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(?<relativePath>(/[-a-zA-Z0-9.~_@:!$'()*+,;=%]+)*/?)$";
+    public static final String AdlsGen2RestfulPathPattern = "^(?<schema>https?)://(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(?<relativePath>(/[-a-zA-Z0-9.~_@:!$'()*+,;=%]+)*/?)$";
     public static final Pattern ABFS_URI_PATTERN = Pattern.compile(AdlsGen2PathPattern, Pattern.CASE_INSENSITIVE);
     public static final Pattern HTTP_URI_PATTERN = Pattern.compile(AdlsGen2RestfulPathPattern, Pattern.CASE_INSENSITIVE);
 
     private final LaterInit<String> fileSystem = new LaterInit<>();
     private final LaterInit<String> accountName = new LaterInit<>();
-    private final LaterInit<String> relativePath = new LaterInit<>();
+    private final LaterInit<String> path = new LaterInit<>();
 
     private AbfsUri(URI rawUri) {
         super(rawUri);
@@ -57,42 +57,43 @@ public final class AbfsUri extends AzureStorageUri {
 
     @Override
     public String getPath() {
-        return relativePath.get();
+        return URI.create(path.get()).getPath();
     }
 
     @Override
-    AzureStorageUri resolve(String path) {
-        return AbfsUri.parse(getUri().resolve(path).toString());
+    public String getRawPath() {
+        return path.get();
     }
 
     @Override
-    AzureStorageUri normalizeWithSlashEnding() {
-        return AbfsUri.parse(UriUtil.normalizeWithSlashEnding(getUri()).toString());
+    AzureStorageUri parseUri(String encodedUri) {
+        return AbfsUri.parse(encodedUri);
     }
 
     @Override
     public URI getUri() {
         return URI.create(String.format("abfs://%s@%s.dfs.core.windows.net%s",
-                getFileSystem(), getAccountName(), getPath()));
+                getFileSystem(), getAccountName(), getRawPath()));
     }
 
     @Override
     public URL getUrl() {
         try {
             return URI.create(String.format("https://%s.dfs.core.windows.net/%s%s",
-                    getAccountName(), getFileSystem(), getPath())).toURL();
+                    getAccountName(), getFileSystem(), getRawPath())).toURL();
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
     }
 
     // get subPath starting without "/" except when subPath is empty
-    public URI getDirectoryParam() {
+    public String getDirectoryParam() {
         return getPath().length() == 0 || getPath().equals("/")
-                ? URI.create("/")
-                : URI.create(getPath().substring(1));
+                ? "/"
+                : getPath().substring(1);
     }
 
+    // We assume rawUri is already encoded
     public static AbfsUri parse(final String rawUri) {
         Matcher matcher;
         if (StringUtils.startsWithIgnoreCase(rawUri, "abfs")) {
@@ -107,7 +108,7 @@ public final class AbfsUri extends AzureStorageUri {
             AbfsUri abfsUri = new AbfsUri(URI.create(rawUri));
             abfsUri.accountName.set(matcher.group("accountName"));
             abfsUri.fileSystem.set(matcher.group("fileSystem"));
-            abfsUri.relativePath.set(matcher.group("relativePath"));
+            abfsUri.path.set(matcher.group("relativePath"));
             return abfsUri;
         }
 

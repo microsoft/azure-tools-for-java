@@ -22,9 +22,8 @@
 
 package com.microsoft.azure.hdinsight.common;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -73,17 +72,17 @@ public class AdlUri extends AzureStorageUri {
 
     @Override
     public String getPath() {
+        return URI.create(this.path.get()).getPath();
+    }
+
+    @Override
+    public String getRawPath() {
         return this.path.get();
     }
 
     @Override
-    AzureStorageUri resolve(String path) {
-        return AdlUri.parse(getUri().resolve(path).toString());
-    }
-
-    @Override
-    AzureStorageUri normalizeWithSlashEnding() {
-        return AdlUri.parse(UriUtil.normalizeWithSlashEnding(getUri()).toString());
+    AzureStorageUri parseUri(String encodedUri) {
+        return AdlUri.parse(encodedUri);
     }
 
     @Override

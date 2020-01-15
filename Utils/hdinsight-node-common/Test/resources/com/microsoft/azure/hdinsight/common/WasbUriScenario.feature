@@ -23,18 +23,18 @@ Feature: Wasb URI operation
 
   Scenario: Check Wasb path parameters from URI
     Then check Wasb URI parameters as below
-      | uri                                                                    | container  | endpointSuffix   | path                | account |
-      | wasbs://container0@accountName.blob.core.windows.net                   | container0 | core.windows.net | /                   | accountName |
-      | wasbs://container0@accountName.blob.core.windows.net/                  | container0 | core.windows.net | /                   | accountName |
-      | wasbs://container0@accountName.blob.core.windows.net/subPath0          | container0 | core.windows.net | /subPath0           | accountName |
-      | wasbs://container0@accountName.blob.core.windows.net/subPath0/         | container0 | core.windows.net | /subPath0/          | accountName |
-      | wasbs://container0@accountName.blob.core.windows.net/subPath0/subPath1 | container0 | core.windows.net | /subPath0/subPath1  | accountName |
-      | https://accountName.blob.core.windows.net                              | <invalid>  | <invalid>        | <invalid>           | <invalid>   |
-      | https://accountName.blob.core.windows.net/fs0                          | fs0        | core.windows.net | /                   | accountName |
-      | https://accountName.blob.core.windows.net/                             | <invalid>  | <invalid>        | <invalid>           | <invalid>   |
-      | https://accountName.blob.core.windows.net/fs0/subPath0                 | fs0        | core.windows.net | /subPath0           | accountName |
-      | https://accountName.blob.core.windows.net/fs0/subPath0/                | fs0        | core.windows.net | /subPath0/          | accountName |
-      | https://accountName.blob.core.windows.net/fs0/subPath0/subPath1        | fs0        | core.windows.net | /subPath0/subPath1  | accountName |
+      | uri                                                                    | container  | endpointSuffix   | path               | account     |
+      | wasbs://container0@accountName.blob.core.windows.net                   | container0 | core.windows.net | /                  | accountName |
+      | wasbs://container0@accountName.blob.core.windows.net/                  | container0 | core.windows.net | /                  | accountName |
+      | wasbs://container0@accountName.blob.core.windows.net/subPath0          | container0 | core.windows.net | /subPath0          | accountName |
+      | wasbs://container0@accountName.blob.core.windows.net/subPath0/         | container0 | core.windows.net | /subPath0/         | accountName |
+      | wasbs://container0@accountName.blob.core.windows.net/subPath0/subPath1 | container0 | core.windows.net | /subPath0/subPath1 | accountName |
+      | https://accountName.blob.core.windows.net                              | <invalid>  | <invalid>        | <invalid>          | <invalid>   |
+      | https://accountName.blob.core.windows.net/fs0                          | fs0        | core.windows.net | /                  | accountName |
+      | https://accountName.blob.core.windows.net/                             | <invalid>  | <invalid>        | <invalid>          | <invalid>   |
+      | https://accountName.blob.core.windows.net/fs0/subPath0                 | fs0        | core.windows.net | /subPath0          | accountName |
+      | https://accountName.blob.core.windows.net/fs0/subPath0/                | fs0        | core.windows.net | /subPath0/         | accountName |
+      | https://accountName.blob.core.windows.net/fs0/subPath0/subPath1        | fs0        | core.windows.net | /subPath0/subPath1 | accountName |
 
   Scenario: Check Wasb URI equality
     Then check Wasb URI equality as below
@@ -54,15 +54,20 @@ Feature: Wasb URI operation
 
   Scenario: Check Wasb URI resolve as root path
     Then check Wasb URI resolve as root path as below
-      | uri                                                       | path     | result                                                        |
-      | wasbs://container0@account.blob.core.windows.net/         | sp0      | wasbs://container0@account.blob.core.windows.net/sp0          |
-      | wasbs://container0@account.blob.core.windows.net          | sp0      | wasbs://container0@account.blob.core.windows.net/sp0          |
-      | wasbs://container0@account.blob.core.windows.net/sp0      | sp1      | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
-      | wasbs://container0@account.blob.core.windows.net/sp0/     | sp1      | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
-      | wasbs://container0@account.blob.core.windows.net/sp0      | /sp1     | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
-      | wasbs://container0@account.blob.core.windows.net/sp0/     | /sp1     | wasbs://container0@account.blob.core.windows.net/sp0/sp1      |
-      | wasbs://container0@account.blob.core.windows.net/sp0/     | /sp1/    | wasbs://container0@account.blob.core.windows.net/sp0/sp1/     |
-      | wasbs://container0@account.blob.core.windows.net/root/sp0 | sp1      | wasbs://container0@account.blob.core.windows.net/root/sp0/sp1 |
+      | uri                                                       | path                                 | result                                                                               |
+      | wasbs://container0@account.blob.core.windows.net/         | sp0                                  | wasbs://container0@account.blob.core.windows.net/sp0                                 |
+      | wasbs://container0@account.blob.core.windows.net          | sp0                                  | wasbs://container0@account.blob.core.windows.net/sp0                                 |
+      | wasbs://container0@account.blob.core.windows.net/sp0      | sp1                                  | wasbs://container0@account.blob.core.windows.net/sp0/sp1                             |
+      | wasbs://container0@account.blob.core.windows.net/sp0/     | sp1                                  | wasbs://container0@account.blob.core.windows.net/sp0/sp1                             |
+      | wasbs://container0@account.blob.core.windows.net/sp0      | /sp1                                 | wasbs://container0@account.blob.core.windows.net/sp0/sp1                             |
+      | wasbs://container0@account.blob.core.windows.net/sp0/     | /sp1                                 | wasbs://container0@account.blob.core.windows.net/sp0/sp1                             |
+      | wasbs://container0@account.blob.core.windows.net/sp0/     | /sp1/                                | wasbs://container0@account.blob.core.windows.net/sp0/sp1/                            |
+      | wasbs://container0@account.blob.core.windows.net/root/sp0 | sp1                                  | wasbs://container0@account.blob.core.windows.net/root/sp0/sp1                        |
+      | wasbs://container0@account.blob.core.windows.net/         | -a-zA-Z0-9.~_@:!$'()*+,;=            | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=           |
+      | wasbs://container0@account.blob.core.windows.net          | -a-zA-Z0-9.~_@:!$'()*+,;=/words.txt  | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt |
+      | wasbs://container0@account.blob.core.windows.net          | /-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt |
+      | wasbs://container0@account.blob.core.windows.net/         | -a-zA-Z0-9.~_@:!$'()*+,;=/words.txt  | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt |
+      | wasbs://container0@account.blob.core.windows.net/         | /-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt |
 
   Scenario: Check Wasb URI relativize
     Then check Wasb URI relativize as below
@@ -77,3 +82,13 @@ Feature: Wasb URI operation
       | wasbs://container0@accountName.blob.core.windows.net/sp0/ | wasbs://container0@otherName.blob.core.windows.net/sp1       | <null> |
       | wasbs://container0@accountName.blob.core.windows.net/sp0/ | wasbs://container0@otherName.blob.core.windows.net/sp0/sp1   | <null> |
 
+  Scenario: Encode path
+    Then check the encoded path as below
+      | rawPath            | encodedPath            |
+      | subPath            | subPath                |
+      | /subPath           | /subPath               |
+      | /subPath/file      | /subPath/file          |
+      | new folder         | new%20folder           |
+      | new folder/file    | new%20folder/file      |
+      | .~_@:!$'()*+,;=%?  | .~_@:!$'()*+,;=%25%3F  |
+      | /.~_@:!$'()*+,;=%? | /.~_@:!$'()*+,;=%25%3F |

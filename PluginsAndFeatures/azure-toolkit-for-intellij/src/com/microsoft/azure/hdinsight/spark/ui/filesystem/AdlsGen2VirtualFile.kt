@@ -29,7 +29,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable
 
 open class AdlsGen2VirtualFile(val abfsUri: AbfsUri, private val myIsDirectory: Boolean, private val myFileSystem: VirtualFileSystem) : AzureStorageVirtualFile() {
     private var parent: VirtualFile? = null
-    override fun getPath(): String = abfsUri.url.path
+    override fun getPath(): String = abfsUri.path
     override fun getName(): String {
         return path.substring(path.lastIndexOf("/") + 1)
     }
