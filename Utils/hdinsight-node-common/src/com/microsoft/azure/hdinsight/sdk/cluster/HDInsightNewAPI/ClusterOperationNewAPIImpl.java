@@ -28,13 +28,16 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterOperationImpl;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterRawInfo;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
+import com.microsoft.azure.hdinsight.sdk.common.errorresponse.GatewayTimeoutErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.HttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.NotFoundHttpErrorStatus;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.entity.StringEntity;
@@ -62,8 +65,18 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
         return this.http;
     }
 
+    private AzureManager getAzureManager() throws IOException {
+        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+
+        if (azureManager == null) {
+            throw new AuthException("Not signed in. Can't send out the request.");
+        }
+
+        return azureManager;
+    }
+
     public Observable<Map> getClusterCoreSiteRequest(@NotNull final String clusterId) throws IOException {
-        String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
+        String managementURI = getAzureManager().getManagementURI();
         String url = URI.create(managementURI)
                 .resolve(clusterId.replaceAll("/+$", "") + "/configurations/core-site").toString();
         return getHttp()
@@ -74,7 +87,7 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
     private Observable<ClusterConfiguration> getClusterConfigurationRequest(
             @NotNull final String clusterId) {
         try {
-            String managementURI = AuthMethodManager.getInstance().getAzureManager().getManagementURI();
+            String managementURI = getAzureManager().getManagementURI();
             String url = URI.create(managementURI)
                     .resolve(clusterId.replaceAll("/+$", "") + "/configurations").toString();
             StringEntity entity = new StringEntity("", StandardCharsets.UTF_8);
@@ -124,10 +137,13 @@ public class ClusterOperationNewAPIImpl extends ClusterOperationImpl implements 
                     } else {
                         if (err instanceof HttpErrorStatus) {
                             HDInsightNewApiUnavailableException ex = new HDInsightNewApiUnavailableException(err);
-                            if (!(err instanceof NotFoundHttpErrorStatus)) {
-                                log().error("Error getting cluster configurations with NEW HDInsight API. " + clusterId, ex);
+                            if (!(err instanceof NotFoundHttpErrorStatus
+                                    || err instanceof GatewayTimeoutErrorStatus)) {
+                                log().error(String.format(
+                                        "Error getting cluster configurations with NEW HDInsight API: %s, %s",
+                                        clusterId,
+                                        ((HttpErrorStatus) err).getErrorDetails()), ex);
                             }
-                            log().warn(((HttpErrorStatus) err).getErrorDetails());
 
                             final Map<String, String> properties = new HashMap<>();
                             properties.put("ClusterID", clusterId);
