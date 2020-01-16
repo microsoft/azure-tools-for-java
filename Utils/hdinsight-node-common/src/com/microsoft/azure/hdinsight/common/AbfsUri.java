@@ -41,7 +41,6 @@ public final class AbfsUri extends AzureStorageUri {
 
     private final LaterInit<String> fileSystem = new LaterInit<>();
     private final LaterInit<String> accountName = new LaterInit<>();
-    private final LaterInit<String> path = new LaterInit<>();
 
     private AbfsUri(URI rawUri) {
         super(rawUri);
@@ -56,18 +55,8 @@ public final class AbfsUri extends AzureStorageUri {
     }
 
     @Override
-    public String getPath() {
-        return URI.create(path.get()).getPath();
-    }
-
-    @Override
-    public String getRawPath() {
-        return path.get();
-    }
-
-    @Override
-    AzureStorageUri parseUri(String encodedUri) {
-        return AbfsUri.parse(encodedUri);
+    AzureStorageUri parseUri(URI encodedUri) {
+        return AbfsUri.parse(encodedUri.toString());
     }
 
     @Override
@@ -108,7 +97,7 @@ public final class AbfsUri extends AzureStorageUri {
             AbfsUri abfsUri = new AbfsUri(URI.create(rawUri));
             abfsUri.accountName.set(matcher.group("accountName"));
             abfsUri.fileSystem.set(matcher.group("fileSystem"));
-            abfsUri.path.set(matcher.group("relativePath"));
+            abfsUri.path.set(URI.create(matcher.group("relativePath")));
             return abfsUri;
         }
 

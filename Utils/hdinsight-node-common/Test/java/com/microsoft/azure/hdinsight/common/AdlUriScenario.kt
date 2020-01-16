@@ -66,7 +66,7 @@ class AdlUriScenario {
             try {
                 val adlUri = AdlUri.parse(it.uri)
 
-                assertEquals(it.path, adlUri.path.toString(), "Check ADL Gen1 URI ${it.uri} path parameter")
+                assertEquals(it.path, adlUri.getPath(), "Check ADL Gen1 URI ${it.uri} path parameter")
                 assertEquals(it.storageName, adlUri.storageName.toString(), "Check ADL Gen1 URI ${it.uri} storage parameter")
             } catch (ex: UnknownFormatConversionException) {
                 assertEquals(it.path, "<invalid>", "Get ${ex.message} when parsing ${it.uri} to GEN 1 AdlURI")

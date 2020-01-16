@@ -73,7 +73,7 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
                     // sample remoteFile.getName(): sub/path/to/SparkSubmission
                     .map(remoteFile -> new AdlsGen2VirtualFile(
                             (AbfsUri) AbfsUri.parse(rootUrl.toString())
-                                    .resolveAsRoot(AzureStorageUri.encodePath(remoteFile.getName())),
+                                    .resolveAsRoot(AzureStorageUri.encodeAndNormalizePath(remoteFile.getName())),
                             remoteFile.isDirectory(),
                             this))
                     .doOnNext(file -> file.setParent(vf))

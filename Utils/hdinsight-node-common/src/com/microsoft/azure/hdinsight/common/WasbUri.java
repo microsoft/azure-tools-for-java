@@ -47,7 +47,6 @@ public final class WasbUri extends AzureStorageUri {
     private final LaterInit<String> container = new LaterInit<>();
     private final LaterInit<String> storageAccount = new LaterInit<>();
     private final LaterInit<String> endpointSuffix = new LaterInit<>();
-    private final LaterInit<String> path = new LaterInit<>();
 
     private WasbUri(final URI rawUri) {
         super(rawUri);
@@ -82,18 +81,8 @@ public final class WasbUri extends AzureStorageUri {
     }
 
     @Override
-    public String getPath() {
-        return URI.create(this.path.get()).getPath();
-    }
-
-    @Override
-    public String getRawPath() {
-        return this.path.get();
-    }
-
-    @Override
-    AzureStorageUri parseUri(String encodedUri) {
-        return WasbUri.parse(encodedUri);
+    AzureStorageUri parseUri(URI encodedUri) {
+        return WasbUri.parse(encodedUri.toString());
     }
 
     @Override
@@ -124,7 +113,7 @@ public final class WasbUri extends AzureStorageUri {
 
             final String pathMatched = matcher.group("path");
             final String relativePathMatched = URI.create("/" + (pathMatched == null ? "" : pathMatched)).getPath();
-            wasbUri.path.set(relativePathMatched);
+            wasbUri.path.set(URI.create(relativePathMatched));
 
             return wasbUri;
         }

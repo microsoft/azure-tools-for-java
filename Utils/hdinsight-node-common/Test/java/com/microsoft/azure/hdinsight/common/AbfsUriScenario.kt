@@ -84,14 +84,14 @@ class AbfsUriScenario {
     }
 
     @Then("^properties of abfs URI should be$")
-    fun pathAndRawPathShouldBe(checkTable: List<AbfsUriAndProperties>) {
+    fun abfsUriPropertiesShouldBe(checkTable: List<AbfsUriAndProperties>) {
         checkTable.forEach {
             try {
                 val abfsUri = AbfsUri.parse(it.url)
                 assertEquals(abfsUri.accountName, it.accountName)
                 assertEquals(abfsUri.fileSystem, it.fileSystem)
                 assertEquals(abfsUri.rawPath, it.rawPath)
-                assertEquals(abfsUri.path, it.path)
+                assertEquals(abfsUri.getPath(), it.path)
                 assertEquals(abfsUri.directoryParam, it.directoryParam)
             } catch (ex: Throwable) {
                 assertEquals("<invalid>", it.accountName, "Get error when parsing accountName from AbfsUri ${it.url}. ${ex.message}")

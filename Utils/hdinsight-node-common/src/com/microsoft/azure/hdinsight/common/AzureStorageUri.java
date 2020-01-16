@@ -34,6 +34,7 @@ import java.net.URL;
  */
 abstract public class AzureStorageUri {
     private final URI rawUri;
+    protected final LaterInit<URI> path = new LaterInit<>();
 
     protected AzureStorageUri(URI rawUri) {
         this.rawUri = rawUri;
@@ -67,14 +68,18 @@ abstract public class AzureStorageUri {
      *
      * @return the path of current URI
      */
-    abstract public String getPath();
+    public String getPath() {
+        return path.get().getPath();
+    }
 
     /**
      * Get Raw URI path like URI.getRawPath()
      *
      * @return raw path of current URI
      */
-    abstract public String getRawPath();
+    public String getRawPath() {
+        return path.get().getRawPath();
+    }
 
     /**
      * Resolve target path as URI.resolve(target)
@@ -83,7 +88,7 @@ abstract public class AzureStorageUri {
      * @return resolved Azure storage URI
      */
     public AzureStorageUri resolve(String target) {
-        return parseUri(getUri().resolve("./" + target).toString());
+        return parseUri(getUri().resolve("./" + target));
     }
 
     /**
@@ -91,7 +96,7 @@ abstract public class AzureStorageUri {
      * @param encodedUri the encoded Uri to parse
      * @return parsed Azure storage URI
      */
-    abstract AzureStorageUri parseUri(String encodedUri);
+    abstract AzureStorageUri parseUri(URI encodedUri);
 
     /**
      * Normalize the URI with slash ending
@@ -99,7 +104,7 @@ abstract public class AzureStorageUri {
      * @return a new instance with slash ended
      */
     public AzureStorageUri normalizeWithSlashEnding() {
-        return parseUri(UriUtil.normalizeWithSlashEnding(getUri()).toString());
+        return parseUri(UriUtil.normalizeWithSlashEnding(getUri()));
     }
 
     /**
@@ -134,14 +139,21 @@ abstract public class AzureStorageUri {
     }
 
     /**
-     * Encode the relative path in the Azure Storage URI
+     * Encode and normalize the relative path in the Azure Storage URI.
+     *
+     * Note: There is a different behavior between this method and URI.normalize()
+     * even if both methods return URI with correct format.
+     *
+     * URI.create("./:bbb").normalize().toString will return "./:bbb"
+     * this.encodeAndNormalizePath("./:bbb") will return ":bbb"
+     *
      * @param rawPath un-encoded raw path in the Azure Storage URI
-     * @return encoded path in the Azure Storage URI
+     * @return encoded and normalized path in the Azure Storage URI
      */
-    public static String encodePath(String rawPath) {
+    public static String encodeAndNormalizePath(String rawPath) {
         try {
-            String encodedPath =  new URIBuilder().setPath("/" + rawPath).build().toString();
-            return rawPath.startsWith("/") ? encodedPath : encodedPath.substring(1);
+            String encodedPath = URI.create("/").relativize(new URIBuilder().setPath("/" + rawPath).build()).getRawPath();
+            return rawPath.startsWith("/") ? "/" + encodedPath : encodedPath;
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(
                     String.format("Error when encode raw path %s. Error:%s", rawPath, ex.getMessage()), ex);

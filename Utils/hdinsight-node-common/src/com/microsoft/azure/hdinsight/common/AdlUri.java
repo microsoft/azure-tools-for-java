@@ -44,7 +44,6 @@ public class AdlUri extends AzureStorageUri {
             Pattern.CASE_INSENSITIVE);
 
     private final LaterInit<String> storageName = new LaterInit<>();
-    private final LaterInit<String> path = new LaterInit<>();
 
     private AdlUri(URI rawUri) {
         super(rawUri);
@@ -71,18 +70,8 @@ public class AdlUri extends AzureStorageUri {
     }
 
     @Override
-    public String getPath() {
-        return URI.create(this.path.get()).getPath();
-    }
-
-    @Override
-    public String getRawPath() {
-        return this.path.get();
-    }
-
-    @Override
-    AzureStorageUri parseUri(String encodedUri) {
-        return AdlUri.parse(encodedUri);
+    AzureStorageUri parseUri(URI encodedUri) {
+        return AdlUri.parse(encodedUri.toString());
     }
 
     @Override
@@ -114,7 +103,7 @@ public class AdlUri extends AzureStorageUri {
 
         final String pathMatched = matcher.group("path");
         final String relativePathMatched = URI.create("/" + (pathMatched == null ? "" : pathMatched)).getPath();
-        uri.path.set(relativePathMatched);
+        uri.path.set(URI.create(relativePathMatched));
 
         // TODO: matcher.group("port") is ignored now, should be fixed later
 

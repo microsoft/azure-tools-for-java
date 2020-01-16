@@ -67,7 +67,7 @@ class WasbUriScenario {
             try {
                 val wasbUri = WasbUri.parse(it.uri)
 
-                assertEquals(it.path, wasbUri.path.toString(), "Check Wasb URI ${it.uri} path parameter")
+                assertEquals(it.path, wasbUri.getPath(), "Check Wasb URI ${it.uri} path parameter")
                 assertEquals(it.account, wasbUri.storageAccount.toString(), "Check Wasb URI ${it.uri} account parameter")
                 assertEquals(it.container, wasbUri.container.toString(), "Check Wasb URI ${it.uri} container parameter")
                 assertEquals(it.endpointSuffix, wasbUri.endpointSuffix.toString(), "Check Wasb URI ${it.uri} endpointSuffix parameter")
@@ -124,7 +124,7 @@ class WasbUriScenario {
             val rawPath = it.rawPath
             val expectedEncodedPath = it.encodedPath
             try {
-                assertEquals(AzureStorageUri.encodePath(rawPath), expectedEncodedPath, "Check encode path $rawPath")
+                assertEquals(AzureStorageUri.encodeAndNormalizePath(rawPath), expectedEncodedPath, "Check encode path $rawPath")
             } catch (ex: Throwable) {
                 assertEquals("<invalid>", expectedEncodedPath, "Get error when encode path $rawPath. ${ex.message}")
             }

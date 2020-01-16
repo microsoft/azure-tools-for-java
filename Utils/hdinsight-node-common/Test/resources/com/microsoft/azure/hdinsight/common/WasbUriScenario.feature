@@ -84,11 +84,13 @@ Feature: Wasb URI operation
 
   Scenario: Encode path
     Then check the encoded path as below
-      | rawPath            | encodedPath            |
-      | subPath            | subPath                |
-      | /subPath           | /subPath               |
-      | /subPath/file      | /subPath/file          |
-      | new folder         | new%20folder           |
-      | new folder/file    | new%20folder/file      |
-      | .~_@:!$'()*+,;=%?  | .~_@:!$'()*+,;=%25%3F  |
-      | /.~_@:!$'()*+,;=%? | /.~_@:!$'()*+,;=%25%3F |
+      | rawPath                          | encodedPath                     |
+      | subPath                          | subPath                         |
+      | /subPath                         | /subPath                        |
+      | /subPath/file                    | /subPath/file                   |
+      | new folder                       | new%20folder                    |
+      | % ?                              | %25%20%3F                       |
+      | /.~_@:!$'()*+,;=% ?              | /.~_@:!$'()*+,;=%25%20%3F       |
+      | ./.~_@:!$'()*+,;////=%?%?aa//./ | .~_@:!$'()*+,;/=%25%3F%25%3Faa/ |
+      | ./bbb                            | bbb                             |
+      | ./:bbb                           | :bbb                            |
