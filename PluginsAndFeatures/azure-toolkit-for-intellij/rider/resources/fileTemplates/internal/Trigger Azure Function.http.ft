@@ -11,7 +11,7 @@ ${comment} Call the following endpoint to locally run HTTP and webhook-triggered
 
 GET http://localhost:7071/api/${functionName}
 
-###
+${comment}${comment}${comment}
 
 ${comment} Call the following administrative endpoint to trigger non-HTTP functions:
 
