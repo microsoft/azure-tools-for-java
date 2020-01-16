@@ -77,6 +77,11 @@ public class ClusterManagerEx implements ILogger {
             synchronized (ClusterManagerEx.class) {
                 if (instance == null) {
                     instance = new ClusterManagerEx();
+
+                    AuthMethodManager.getInstance().addSignOutEventListener(() -> {
+                        // Clean cached clusters
+                        instance.setCachedClusters(instance.additionalClusterDetails);
+                    });
                 }
             }
         }
