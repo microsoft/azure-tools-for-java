@@ -25,18 +25,16 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.AzureStorageUri;
-import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.errorresponse.ForbiddenHttpErrorStatus;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.common.ADLSGen2Deploy;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,14 +63,14 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
     public VirtualFile[] listFiles(AdlsGen2VirtualFile vf) {
         List<AdlsGen2VirtualFile> childrenList = new ArrayList<>();
         if (vf.isDirectory()) {
-            // sample rootUrl: https://accountName.dfs.core.windows.net/fileSystem
-            URL rootUrl = this.rootPathUri.getUrl();
+            // sample fileSystemRootPath: https://accountName.dfs.core.windows.net/fileSystem
+            String fileSystemRootPath = StringUtils.stripEnd(rootPathUri.resolve("/").getUrl().toString(), "/");
             // sample directoryParam: sub/path/to
             String directoryParam = vf.getAbfsUri().getDirectoryParam();
-            childrenList = this.op.list(rootUrl.toString(), directoryParam)
+            childrenList = this.op.list(fileSystemRootPath, directoryParam)
                     // sample remoteFile.getName(): sub/path/to/SparkSubmission
                     .map(remoteFile -> new AdlsGen2VirtualFile(
-                            (AbfsUri) AbfsUri.parse(rootUrl.toString())
+                            (AbfsUri) AbfsUri.parse(fileSystemRootPath)
                                     .resolveAsRoot(AzureStorageUri.encodeAndNormalizePath(remoteFile.getName())),
                             remoteFile.isDirectory(),
                             this))
@@ -80,7 +78,7 @@ public class ADLSGen2FileSystem extends AzureStorageVirtualFileSystem {
                     .onErrorResumeNext(err -> {
                                 String errorMessage = "Failed to list folders and files with error " + err.getMessage() + ". ";
                                 if (err instanceof ForbiddenHttpErrorStatus) {
-                                    errorMessage += ADLSGen2Deploy.getForbiddenErrorHints(rootUrl.toString());
+                                    errorMessage += ADLSGen2Deploy.getForbiddenErrorHints(fileSystemRootPath);
                                 }
                                 return Observable.error(new IOException(errorMessage));
                             }

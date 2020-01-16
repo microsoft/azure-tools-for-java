@@ -88,7 +88,7 @@ abstract public class AzureStorageUri {
      * @return resolved Azure storage URI
      */
     public AzureStorageUri resolve(String target) {
-        return parseUri(getUri().resolve("./" + target));
+        return parseUri(getUri().resolve(target.startsWith("/") ? target : "./" + target));
     }
 
     /**

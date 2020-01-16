@@ -52,6 +52,25 @@ Feature: Wasb URI operation
       | https://accountName.blob.core.windows.net/container0/sp0/sp1/ | wasbs://container0@accountName.blob.core.windows.net/sp0/sp1/ | true      |
       | https://accountName.blob.core.windows.net/container0/sp0/s1/  | wasbs://container0@accountName.blob.core.windows.net/sp0/sp1/ | false     |
 
+  Scenario: Check Wasb URI resolve method
+    Then check Wasb URI resolve method as below
+      | uri                                                        | path                                 | result                                                                               |
+      | wasbs://container0@account.blob.core.windows.net/          | sp0                                  | wasbs://container0@account.blob.core.windows.net/sp0                                 |
+      | wasbs://container0@account.blob.core.windows.net           | sp0                                  | <invalid>                                                                            |
+      | wasbs://container0@account.blob.core.windows.net           | /                                    | wasbs://container0@account.blob.core.windows.net/                                    |
+      | wasbs://container0@account.blob.core.windows.net/sp0/      | sp1                                  | wasbs://container0@account.blob.core.windows.net/sp0/sp1                             |
+      | wasbs://container0@account.blob.core.windows.net/sp0       | /sp1                                 | wasbs://container0@account.blob.core.windows.net/sp1                                 |
+      | wasbs://container0@account.blob.core.windows.net/sp0/      | /sp1                                 | wasbs://container0@account.blob.core.windows.net/sp1                                 |
+      | wasbs://container0@account.blob.core.windows.net/sp0/      | /sp1/                                | wasbs://container0@account.blob.core.windows.net/sp1/                                |
+      | wasbs://container0@account.blob.core.windows.net/user/test | /sp0                                 | wasbs://container0@account.blob.core.windows.net/sp0                                 |
+      | wasbs://container0@account.blob.core.windows.net/user/test | /                                    | wasbs://container0@account.blob.core.windows.net/                                    |
+      | wasbs://container0@account.blob.core.windows.net/user/test | ///                                  | wasbs://container0@account.blob.core.windows.net/                                    |
+      | wasbs://container0@account.blob.core.windows.net/user/test | ./                                   | wasbs://container0@account.blob.core.windows.net/user/                               |
+      | wasbs://container0@account.blob.core.windows.net/          | -a-zA-Z0-9.~_@:!$'()*+,;=            | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=           |
+      | wasbs://container0@account.blob.core.windows.net           | -a-zA-Z0-9.~_@:!$'()*+,;=/words.txt  | <invalid>                                                                            |
+      | wasbs://container0@account.blob.core.windows.net/          | -a-zA-Z0-9.~_@:!$'()*+,;=/words.txt  | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt |
+      | wasbs://container0@account.blob.core.windows.net/          | /-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt | wasbs://container0@account.blob.core.windows.net/-a-zA-Z0-9.~_@:!$'()*+,;=/words.txt |
+
   Scenario: Check Wasb URI resolve as root path
     Then check Wasb URI resolve as root path as below
       | uri                                                       | path                                 | result                                                                               |
@@ -84,13 +103,13 @@ Feature: Wasb URI operation
 
   Scenario: Encode path
     Then check the encoded path as below
-      | rawPath                          | encodedPath                     |
-      | subPath                          | subPath                         |
-      | /subPath                         | /subPath                        |
-      | /subPath/file                    | /subPath/file                   |
-      | new folder                       | new%20folder                    |
-      | % ?                              | %25%20%3F                       |
-      | /.~_@:!$'()*+,;=% ?              | /.~_@:!$'()*+,;=%25%20%3F       |
+      | rawPath                         | encodedPath                     |
+      | subPath                         | subPath                         |
+      | /subPath                        | /subPath                        |
+      | /subPath/file                   | /subPath/file                   |
+      | new folder                      | new%20folder                    |
+      | % ?                             | %25%20%3F                       |
+      | /.~_@:!$'()*+,;=% ?             | /.~_@:!$'()*+,;=%25%20%3F       |
       | ./.~_@:!$'()*+,;////=%?%?aa//./ | .~_@:!$'()*+,;/=%25%3F%25%3Faa/ |
-      | ./bbb                            | bbb                             |
-      | ./:bbb                           | :bbb                            |
+      | ./bbb                           | bbb                             |
+      | ./:bbb                          | :bbb                            |

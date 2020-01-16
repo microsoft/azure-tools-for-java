@@ -31,6 +31,7 @@ class WasbUriScenario {
     data class UrlUriEntry(val url: String, val uri: String)
     data class UriParameterEntry(val uri: String, val container: String, val path: String, val account: String, val endpointSuffix: String)
     data class UrlUriEqualEntry(val src: String, val dest: String, val isEqualed: Boolean)
+    data class UriPathResolveEntry(val uri: String, val path: String, val result: String)
     data class UriPathResolveAsRootEntry(val uri: String, val path: String, val result: String)
     data class UriRelativizeCheckEntry(val src: String, val dest: String, val result: String)
     data class rawPathEncodedPathEntry(val rawPath: String, val encodedPath: String)
@@ -94,6 +95,19 @@ class WasbUriScenario {
         }
     }
 
+    @Then("check Wasb URI resolve method as below")
+    fun checkWasbUriResolve(checkTable: List<UriPathResolveEntry>) {
+        checkTable.forEach {
+            try {
+                val src = WasbUri.parse(it.uri)
+                val dest = WasbUri.parse(it.result)
+                assertEquals(src.resolve(it.path), dest)
+            } catch (ex: UnknownFormatConversionException) {
+                assertEquals("<invalid>", it.result)
+            }
+        }
+    }
+
     @Then("check Wasb URI resolve as root path as below")
     fun checkWasbUriResolveAsRoot(checkTable: List<UriPathResolveAsRootEntry>) {
         checkTable.forEach {
@@ -111,7 +125,7 @@ class WasbUriScenario {
             val dest = WasbUri.parse(it.dest)
 
             assertEquals(
-                    it.result.takeIf { result -> result != "<null>"},
+                    it.result.takeIf { result -> result != "<null>" },
                     src.relativize(dest),
                     "Check Wasb URI ${it.src} relativite ${it.dest} as root path"
             )
