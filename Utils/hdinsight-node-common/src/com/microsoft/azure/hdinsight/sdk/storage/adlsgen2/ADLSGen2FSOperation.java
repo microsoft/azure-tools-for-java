@@ -26,6 +26,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.api.GetRemoteFilesResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPut;
@@ -99,7 +100,11 @@ public class ADLSGen2FSOperation {
                 .enableRecursive(false)
                 .setResource("filesystem");
 
-        return http.get(rootPath, listReqBuilder.setDirectory(relativePath).build(), null, GetRemoteFilesResponse.class)
+        return http.get(
+                StringUtils.stripEnd(rootPath, "/"),
+                listReqBuilder.setDirectory(relativePath).build(),
+                null,
+                GetRemoteFilesResponse.class)
                 .flatMap(pathList -> Observable.from(pathList.getRemoteFiles()));
     }
 
