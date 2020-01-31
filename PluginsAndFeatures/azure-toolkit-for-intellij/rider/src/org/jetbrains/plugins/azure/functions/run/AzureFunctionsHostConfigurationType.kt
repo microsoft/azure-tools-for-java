@@ -26,6 +26,7 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.openapi.project.Project
+import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.run.configurations.IRunConfigurationWithDefault
@@ -34,6 +35,8 @@ import com.jetbrains.rider.run.configurations.launchSettings.LaunchSettingsConfi
 import com.jetbrains.rider.run.configurations.launchSettings.LaunchSettingsJsonService
 import com.jetbrains.rider.run.configurations.project.DotNetProjectConfiguration
 import com.microsoft.icons.CommonIcons
+import org.jetbrains.concurrency.Promise
+import org.jetbrains.concurrency.resolvedPromise
 
 class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunctionsHost", "Azure Functions host",
         "Azure Functions host", CommonIcons.AzureFunctions.FunctionAppRunConfiguration), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
@@ -54,7 +57,7 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunction
 
     override fun isApplicable(kind: RunnableProjectKind) = isTypeApplicable(kind)
 
-    override fun tryCreateDefault(projects: List<RunnableProject>, project: Project, runManager: RunManager): RunnerAndConfigurationSettings? =
+    override fun tryCreateDefault(project: Project, lifetime: Lifetime, projects: List<RunnableProject>, runManager: RunManager): Promise<RunnerAndConfigurationSettings?>? =
             if (runManager.allConfigurationsList.all { it !is DotNetProjectConfiguration && it !is AzureFunctionsHostConfiguration && it !is LaunchSettingsConfiguration }
                     && projects.any { isApplicable(it.kind) }
                     && !projects.any {
@@ -63,7 +66,7 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunction
                     }) {
                 val defaultSettings = runManager.createConfiguration("Default", factory)
                 runManager.addConfiguration(defaultSettings, false)
-                defaultSettings
+                resolvedPromise(defaultSettings)
             } else {
                 null
             }
