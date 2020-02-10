@@ -28,6 +28,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.*;
+import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -93,7 +94,10 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
     private ArcadiaWorkSpace updateWithResponse(@NotNull BigDataPoolResourceInfoListResult response) {
         this.clusters =
                 ImmutableSortedSet.copyOf(response.items().stream()
-                        .map(sparkCompute -> new ArcadiaSparkCompute(this, sparkCompute))
+                        .map(sparkCompute ->
+                                this.workspaceResponse.adlaResourceId() == null
+                                        ? new ArcadiaSparkCompute(this, sparkCompute)
+                                        : new SynapseCosmosSparkPool(this, sparkCompute))
                         .iterator());
         return this;
     }
