@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.synapsesoc.common;
 
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
@@ -50,7 +51,10 @@ public class SynapseCosmosSparkPool extends ArcadiaSparkCompute {
     public static final Pattern ADLA_RESOURCE_ID_PATTERN = Pattern.compile("^/subscriptions/(?<sid>[0-9a-z-]+)/resourceGroups/(.*)$");
     private boolean isConfigInfoAvailable = false;
     private final String adlaResourceId;
+    @Nullable
     private IHDIStorageAccount storageAccount;
+    @Nullable
+    private AzureHttpObservable http;
 
     public SynapseCosmosSparkPool(ArcadiaWorkSpace workSpace, BigDataPoolResourceInfo sparkComputeResponse, String adlaResourceId) {
         super(workSpace, sparkComputeResponse);
@@ -91,10 +95,10 @@ public class SynapseCosmosSparkPool extends ArcadiaSparkCompute {
                     }
 
                     // Get ADLA account details through Azure REST API
-                    AzureManagementHttpObservable http = new AzureManagementHttpObservable(subscription, ApiVersion.VERSION);
+                    this.http = new AzureManagementHttpObservable(subscription, ApiVersion.VERSION);
                     AzureSparkServerlessAccount azureSparkServerlessAccount =
                             AzureSparkCosmosClusterManager.getInstance()
-                                    .getAzureDataLakeAccountDetail(http, getAdlaResourceId())
+                                    .getAzureDataLakeAccountDetail(getHttp(), getAdlaResourceId())
                                     .doOnError(err ->
                                             log().warn("Error getting ADLA account details with error: " + err.getMessage()))
                                     .map(dataLakeAnalyticsAccount ->
@@ -113,9 +117,16 @@ public class SynapseCosmosSparkPool extends ArcadiaSparkCompute {
                             azureSparkServerlessAccount.getDetailResponse().defaultDataLakeStoreAccount(),
                             storageRootPath,
                             azureSparkServerlessAccount.getSubscription().getSubscriptionId());
+
+                    isConfigInfoAvailable = true;
                 }
             }
         }
+    }
+
+    @Nullable
+    public AzureHttpObservable getHttp() {
+        return this.http;
     }
 
     @Nullable

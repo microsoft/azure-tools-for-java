@@ -36,6 +36,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.*;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
+import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.lang3.StringUtils;
@@ -128,7 +129,12 @@ public class SparkBatchJobDeployFactory implements ILogger {
                         jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
                     } else if (storageAccount.getAccountType() == StorageAccountType.BLOB ||
                             storageAccount.getAccountType() == StorageAccountType.ADLS) {
-                        jobDeploy = new LegacySDKDeploy(storageAccount, ctrlSubject);
+                        if (clusterDetail instanceof SynapseCosmosSparkPool) {
+                            accessToken = ((SynapseCosmosSparkPool) clusterDetail).getHttp().getAccessToken();
+                            jobDeploy = new AdlsDeploy(clusterDetail.getDefaultStorageRootPath(), accessToken);
+                        } else {
+                            jobDeploy = new LegacySDKDeploy(storageAccount, ctrlSubject);
+                        }
                     }
                 } catch (Exception ex) {
                     log().warn("Error getting cluster storage configuration. Error: " + ExceptionUtils.getStackTrace(ex));
