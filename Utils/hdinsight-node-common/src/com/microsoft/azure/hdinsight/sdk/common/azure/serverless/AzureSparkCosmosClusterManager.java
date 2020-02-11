@@ -242,16 +242,10 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                 .flatMap(accountsResp -> Observable.from(accountsResp.items()))
                                 .map(accountBasic -> Pair.of(subAccountsObPair.getLeft(), accountBasic)))
                 .flatMap(subAccountBasicPair -> {
-                    // accountBasic.id is the account detail absolute URI path
-                    URI accountDetailUri = getResourceManagerEndpoint().resolve(subAccountBasicPair.getRight().id());
-
                     // Get account details
-                    return getHttp(subAccountBasicPair.getLeft())
-                            .withUuidUserAgent()
-                            .get(accountDetailUri.toString(), null, null, DataLakeAnalyticsAccount.class)
+                    return getAzureDataLakeAccountDetail(getHttp(subAccountBasicPair.getLeft()), subAccountBasicPair.getRight().id())
                             .onErrorResumeNext(err -> {
-                                log().warn("Failed to get the account detail: " + accountDetailUri, err);
-
+                                log().warn("Failed to get the account detail: " + subAccountBasicPair.getRight().id(), err);
                                 return empty();
                             })
                             .map(accountDetail -> Triple.of(
@@ -259,6 +253,13 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                 })
                 .toList()
                 .doOnNext(triples -> log().debug("Triple(Subscription, AccountBasic, AccountDetails) list: " + triples.toString()));
+    }
+
+    public Observable<DataLakeAnalyticsAccount> getAzureDataLakeAccountDetail(AzureHttpObservable http, String adlaResouceId) {
+        URI accountDetailUri = getResourceManagerEndpoint().resolve(adlaResouceId);
+        return http
+                .withUuidUserAgent()
+                .get(accountDetailUri.toString(), null, null, DataLakeAnalyticsAccount.class);
     }
 
     @NotNull

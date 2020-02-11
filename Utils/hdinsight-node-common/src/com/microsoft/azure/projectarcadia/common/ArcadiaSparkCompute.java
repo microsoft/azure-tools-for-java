@@ -42,7 +42,7 @@ import java.net.URI;
 import java.util.Optional;
 
 public class ArcadiaSparkCompute extends SparkCluster implements AzureAdAccountDetail, ILogger {
-    public static final String ApiVersion = "2019-11-01-preview";
+    public static final String DATA_PLANE_API_VERSION = "2019-11-01-preview";
 
     @NotNull
     private final ArcadiaWorkSpace workSpace;
@@ -116,7 +116,7 @@ public class ArcadiaSparkCompute extends SparkCluster implements AzureAdAccountD
         }
 
         return URI.create(workSpace.getSparkUrl())
-                .resolve(String.format("/livyApi/versions/%s/sparkPools/%s/", ApiVersion, getName())).toString();
+                .resolve(String.format("/livyApi/versions/%s/sparkPools/%s/", DATA_PLANE_API_VERSION, getName())).toString();
     }
 
     @NotNull

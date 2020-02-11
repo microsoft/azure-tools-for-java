@@ -97,7 +97,8 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
                         .map(sparkCompute ->
                                 this.workspaceResponse.adlaResourceId() == null
                                         ? new ArcadiaSparkCompute(this, sparkCompute)
-                                        : new SynapseCosmosSparkPool(this, sparkCompute))
+                                        : new SynapseCosmosSparkPool(
+                                        this, sparkCompute, this.workspaceResponse.adlaResourceId()))
                         .iterator());
         return this;
     }
