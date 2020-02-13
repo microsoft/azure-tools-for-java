@@ -276,43 +276,54 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         // If exception happens, isConfigInfoAvailable is still false, which means
         // next time we call getConfigurationInfo(), load configuration codes will still be executed.
         if (!isConfigInfoAvailable()) {
-            synchronized (this) {
-                if (!isConfigInfoAvailable()) {
-                    ClusterConfiguration clusterConfiguration =
-                            clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
-                    if (clusterConfiguration != null && clusterConfiguration.getConfigurations() != null) {
-                        Configurations configurations = clusterConfiguration.getConfigurations();
-                        Gateway gateway = configurations.getGateway();
-                        if (gateway != null) {
-                            this.userName = gateway.getUsername();
-                            this.passWord = gateway.getPassword();
-                        }
+            String userName = null;
+            String passWord = null;
+            Map<String, String> coresiteMap = null;
+            IHDIStorageAccount defaultStorageAccount = null;
+            List<HDStorageAccount> additionalStorageAccounts = null;
 
-                        Map<String, String> coresSiteMap = configurations.getCoresite();
-                        ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
-                        if (coresSiteMap != null) {
-                            this.coresiteMap = coresSiteMap;
-                            try {
-                                this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
-                            } catch (HDIException exp) {
-                                String errMsg = String.format("Encounter exception when getting storage configuration for cluster name:%s,type:%s,location:%s," +
-                                                "state:%s,version:%s,osType:%s,kind:%s,spark version:%s",
-                                        clusterRawInfo.getName(),
-                                        clusterRawInfo.getType(),
-                                        clusterRawInfo.getLocation(),
-                                        clusterRawInfo.getProperties().getClusterState(),
-                                        clusterRawInfo.getProperties().getClusterVersion(),
-                                        clusterRawInfo.getProperties().getOsType(),
-                                        clusterRawInfo.getProperties().getClusterDefinition().getKind(),
-                                        clusterRawInfo.getProperties().getClusterDefinition().getComponentVersion().getSpark());
-                                log().warn(errMsg, exp);
-                                throw new HDIException(errMsg, exp);
-                            }
+            ClusterConfiguration clusterConfiguration =
+                    clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
+            if (clusterConfiguration != null && clusterConfiguration.getConfigurations() != null) {
+                Configurations configurations = clusterConfiguration.getConfigurations();
+                Gateway gateway = configurations.getGateway();
+                if (gateway != null) {
+                    userName = gateway.getUsername();
+                    passWord = gateway.getPassword();
+                }
 
-                            this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
-                        }
+                Map<String, String> coresSiteMap = configurations.getCoresite();
+                ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
+                if (coresSiteMap != null) {
+                    coresiteMap = coresSiteMap;
+                    try {
+                        defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
+                    } catch (HDIException exp) {
+                        String errMsg = String.format("Encounter exception when getting storage configuration for cluster name:%s,type:%s,location:%s," +
+                                        "state:%s,version:%s,osType:%s,kind:%s,spark version:%s",
+                                clusterRawInfo.getName(),
+                                clusterRawInfo.getType(),
+                                clusterRawInfo.getLocation(),
+                                clusterRawInfo.getProperties().getClusterState(),
+                                clusterRawInfo.getProperties().getClusterVersion(),
+                                clusterRawInfo.getProperties().getOsType(),
+                                clusterRawInfo.getProperties().getClusterDefinition().getKind(),
+                                clusterRawInfo.getProperties().getClusterDefinition().getComponentVersion().getSpark());
+                        log().warn(errMsg, exp);
+                        throw new HDIException(errMsg, exp);
                     }
 
+                    additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
+                }
+            }
+
+            synchronized (this) {
+                if (!isConfigInfoAvailable()) {
+                    this.userName = userName;
+                    this.passWord = passWord;
+                    this.coresiteMap = coresiteMap;
+                    this.defaultStorageAccount = defaultStorageAccount;
+                    this.additionalStorageAccounts = additionalStorageAccounts;
                     isConfigInfoAvailable = true;
                 }
             }
