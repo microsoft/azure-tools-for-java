@@ -33,6 +33,7 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
@@ -95,7 +96,7 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
         this.clusters =
                 ImmutableSortedSet.copyOf(response.items().stream()
                         .map(sparkCompute ->
-                                this.workspaceResponse.adlaResourceId() == null
+                                StringUtils.isBlank(this.workspaceResponse.adlaResourceId())
                                         ? new ArcadiaSparkCompute(this, sparkCompute)
                                         : new SynapseCosmosSparkPool(
                                         this, sparkCompute, this.workspaceResponse.adlaResourceId()))

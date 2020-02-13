@@ -25,9 +25,9 @@ package com.microsoft.azure.synapsesoc.common;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.ApiVersion;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.BigDataPoolResourceInfo;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
@@ -35,6 +35,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsF
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute;
 import com.microsoft.azure.projectarcadia.common.ArcadiaWorkSpace;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -72,52 +73,59 @@ public class SynapseCosmosSparkPool extends ArcadiaSparkCompute {
     @Override
     public void getConfigurationInfo() throws IOException {
         if (!isConfigInfoAvailable()) {
-            synchronized (this) {
-                if (!isConfigInfoAvailable()) {
-                    // Extract Subscription ID from ADLA resource ID
-                    // Sample adlaResouceId: /subscriptions/a00b00a0-00a0-0000-b000-a000b0a00000/resourceGroups/testRG/providers/Microsoft.DataLakeAnalytics/accounts/testAccount
-                    Matcher matcher = ADLA_RESOURCE_ID_PATTERN.matcher(getAdlaResourceId());
-                    if (!matcher.matches()) {
-                        String errorMsg = String.format(
-                                "ADLA resource ID doesn't match with pattern. AdlaResourceId: %s. Pattern: %s",
-                                getAdlaResourceId(),
-                                ADLA_RESOURCE_ID_PATTERN);
-                        throw new IOException(errorMsg);
-                    }
-                    String subscriptionId = matcher.group("sid");
+            // Extract Subscription ID from ADLA resource ID
+            // Sample adlaResouceId: /subscriptions/a00b00a0-00a0-0000-b000-a000b0a00000/resourceGroups/testRG/providers/Microsoft.DataLakeAnalytics/accounts/testAccount
+            Matcher matcher = ADLA_RESOURCE_ID_PATTERN.matcher(getAdlaResourceId());
+            if (!matcher.matches()) {
+                String errorMsg = String.format(
+                        "ADLA resource ID doesn't match with pattern. AdlaResourceId: %s. Pattern: %s",
+                        getAdlaResourceId(),
+                        ADLA_RESOURCE_ID_PATTERN);
+                throw new IOException(errorMsg);
+            }
+            String subscriptionId = matcher.group("sid");
 
-                    // Get SubscriptionDetail from subscription ID
-                    AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-                    SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-                    SubscriptionDetail subscription = subscriptionManager.getSubscriptionIdToSubscriptionDetailsMap().getOrDefault(subscriptionId, null);
-                    if (subscription == null) {
-                        throw new IOException("User has no permission to access subscription " + subscriptionId + ".");
-                    }
+            // Get SubscriptionDetail from subscription ID
+            AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
+            SubscriptionDetail subscription = subscriptionManager.getSubscriptionIdToSubscriptionDetailsMap().getOrDefault(subscriptionId, null);
+            if (subscription == null) {
+                throw new IOException("User has no permission to access subscription " + subscriptionId + ".");
+            }
 
-                    // Get ADLA account details through Azure REST API
-                    this.http = new AzureManagementHttpObservable(subscription, ApiVersion.VERSION);
-                    AzureSparkServerlessAccount azureSparkServerlessAccount =
-                            AzureSparkCosmosClusterManager.getInstance()
-                                    .getAzureDataLakeAccountDetail(getHttp(), getAdlaResourceId())
-                                    .doOnError(err ->
-                                            log().warn("Error getting ADLA account details with error: " + err.getMessage()))
-                                    .map(dataLakeAnalyticsAccount ->
-                                            new AzureSparkServerlessAccount(
-                                                    subscription,
-                                                    URI.create("https://" + dataLakeAnalyticsAccount.endpoint()),
-                                                    dataLakeAnalyticsAccount.name())
+            // Get ADLA account details through Azure REST API
+            AzureHttpObservable managementHttp =
+                    new AzureManagementHttpObservable(subscription, ApiVersion.VERSION);
+            String resourceManagerEndpoint = CommonSettings.getAdEnvironment().resourceManagerEndpoint();
+            URI accountDetailUri = URI.create(resourceManagerEndpoint).resolve(getAdlaResourceId());
+            AzureSparkServerlessAccount azureSparkServerlessAccount =
+                    managementHttp
+                            .withUuidUserAgent()
+                            .get(accountDetailUri.toString(), null, null, DataLakeAnalyticsAccount.class)
+                            .doOnError(err ->
+                                    log().warn("Error getting ADLA account details with error: " + err.getMessage()))
+                            .map(dataLakeAnalyticsAccount ->
+                                    new AzureSparkServerlessAccount(
+                                            subscription,
+                                            URI.create("https://" + dataLakeAnalyticsAccount.endpoint()),
+                                            dataLakeAnalyticsAccount.name())
                                             .setDetailResponse(dataLakeAnalyticsAccount))
-                                    .subscribeOn(Schedulers.io())
-                                    .toBlocking()
-                                    .singleOrDefault(null);
+                            .subscribeOn(Schedulers.io())
+                            .toBlocking()
+                            .singleOrDefault(null);
 
-                    // Get default storage account info from ADLA account
-                    String storageRootPath = azureSparkServerlessAccount.getStorageRootPath();
-                    this.storageAccount = storageRootPath == null ? null : new AzureSparkCosmosCluster.StorageAccount(
+            // Get default storage account info from ADLA account
+            String storageRootPath = azureSparkServerlessAccount.getStorageRootPath();
+            IHDIStorageAccount adlsGen1StorageAccount =
+                    storageRootPath == null ? null : new AzureSparkCosmosCluster.StorageAccount(
                             azureSparkServerlessAccount.getDetailResponse().defaultDataLakeStoreAccount(),
                             storageRootPath,
                             azureSparkServerlessAccount.getSubscription().getSubscriptionId());
 
+            synchronized (this) {
+                if (!isConfigInfoAvailable()) {
+                    this.http = managementHttp;
+                    this.storageAccount = adlsGen1StorageAccount;
                     isConfigInfoAvailable = true;
                 }
             }
@@ -150,11 +158,12 @@ public class SynapseCosmosSparkPool extends ArcadiaSparkCompute {
     @Nullable
     @Override
     public String getDefaultStorageRootPath() {
-        if (getStorageAccount() == null) {
+        IHDIStorageAccount storageAccount = getStorageAccount();
+        if (storageAccount == null) {
             return null;
         }
 
-        return getStorageAccount().getDefaultContainerOrRootPath();
+        return storageAccount.getDefaultContainerOrRootPath();
     }
 
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
