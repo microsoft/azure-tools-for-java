@@ -110,7 +110,11 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 try {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
-                    if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
+                    if (storageAccount == null) {
+                        String errorMsg = "Cannot get storage account from cluster";
+                        log().warn(String.format("%s. Cluster: %s.", errorMsg, clusterDetail.getName()));
+                        throw new ExecutionException(errorMsg);
+                    } else if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
                         URI rawDestinationRootURI =
                                 UriUtil.normalizeWithSlashEnding(URI.create(clusterDetail.getDefaultStorageRootPath()))
                                         .resolve(SparkSubmissionContentPanel.Constants.submissionFolder + "/");
@@ -130,8 +134,21 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     } else if (storageAccount.getAccountType() == StorageAccountType.BLOB ||
                             storageAccount.getAccountType() == StorageAccountType.ADLS) {
                         if (clusterDetail instanceof SynapseCosmosSparkPool) {
-                            accessToken = ((SynapseCosmosSparkPool) clusterDetail).getHttp().getAccessToken();
-                            jobDeploy = new AdlsDeploy(clusterDetail.getDefaultStorageRootPath(), accessToken);
+                            AzureHttpObservable http = ((SynapseCosmosSparkPool) clusterDetail).getHttp();
+                            if (http == null) {
+                                String errorMsg = "Error preparing access token for ADLS Gen1 storage account";
+                                log().warn(String.format("%s. Cluster: %s. Storage account: %s.",
+                                        errorMsg, clusterDetail.getName(), storageAccount.getName()));
+                                throw new ExecutionException("Error preparing access token for ADLS Gen1 storage account");
+                            }
+                            String defaultStorageRootPath = clusterDetail.getDefaultStorageRootPath();
+                            if (StringUtils.isBlank(defaultStorageRootPath)) {
+                                String errorMsg = "Error getting default storage root path for ADLS Gen1 storage account";
+                                log().warn(String.format("%s. Cluster: %s. Storage account: %s.",
+                                        errorMsg, clusterDetail.getName(), storageAccount.getName()));
+                                throw new ExecutionException(errorMsg);
+                            }
+                            jobDeploy = new AdlsDeploy(defaultStorageRootPath, http.getAccessToken());
                         } else {
                             jobDeploy = new LegacySDKDeploy(storageAccount, ctrlSubject);
                         }
