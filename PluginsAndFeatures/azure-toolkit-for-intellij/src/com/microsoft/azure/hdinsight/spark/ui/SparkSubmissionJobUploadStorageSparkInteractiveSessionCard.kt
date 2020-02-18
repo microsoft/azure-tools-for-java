@@ -22,8 +22,11 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION
 
-class SparkSubmissionJobUploadStorageSparkInteractiveSessionCard: SparkSubmissionJobUploadStorageBasicCard() {
-    override val title: String = SparkSubmitStorageType.SPARK_INTERACTIVE_SESSION.description
+class SparkSubmissionJobUploadStorageSparkInteractiveSessionCard
+    : SparkSubmissionJobUploadStorageBasicCard(SPARK_INTERACTIVE_SESSION.description) {
+    override fun createViewModel(): ViewModel = object: ViewModel() {
+        override fun getValidatedStorageUploadPath(config: Model): String = "/SparkSubmission/"
+    }
 }

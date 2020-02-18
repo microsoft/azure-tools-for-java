@@ -66,9 +66,6 @@ public class SparkSubmitModel {
     final private SparkSubmitJobUploadStorageModel jobUploadStorageModel;
 
     @Transient
-    private List<String> errors = new ArrayList<>();
-
-    @Transient
     private boolean isClusterSelectable = true;
 
     @Transient
@@ -338,12 +335,6 @@ public class SparkSubmitModel {
         }
 
         return this;
-    }
-
-    @NotNull
-    @Transient
-    public List<String> getErrors() {
-        return errors;
     }
 
     @NotNull

@@ -34,6 +34,7 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.packaging.artifacts.Artifact;
@@ -50,6 +51,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
 import com.microsoft.azure.hdinsight.spark.run.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageWithUploadPathPanel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.securestore.SecureStore;
@@ -316,9 +318,13 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration 
                     getSubmitModel().getTableModel().getFirstCheckResults().getMessaqge());
         }
 
-        String modelError = getSubmitModel().getErrors().stream().filter(StringUtils::isNotBlank).findFirst().orElse(null);
-        if (StringUtils.isNotBlank(modelError)) {
-            throw new RuntimeConfigurationError("There are errors in submit model: " + modelError);
+        // Validate Storage Configurations
+        SparkSubmissionJobUploadStorageWithUploadPathPanel storageConfigPanels =
+                new SparkSubmissionJobUploadStorageWithUploadPathPanel();
+        try {
+            storageConfigPanels.checkConfigurationBeforeRun(runner, getSubmitModel().getJobUploadStorageModel());
+        } finally {
+            Disposer.dispose(storageConfigPanels);
         }
 
         checkBuildSparkJobBeforeRun(runner, getSubmitModel());

@@ -34,11 +34,14 @@ import com.microsoft.azuretools.authmanage.interact.IUIFactory
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.azuretools.utils.IProgressTaskImpl
+import com.microsoft.tooling.msservices.components.DefaultLoader
+import com.microsoft.tooling.msservices.helpers.IDEHelper
 import cucumber.api.DataTable
 import cucumber.api.java.Before
 import cucumber.api.java.en.Given
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.mockito.Mockito.*
 import java.util.*
@@ -59,6 +62,7 @@ class ClusterManagerExScenario {
     private var emulatedClusters: List<EmulatorClusterDetail> = ArrayList()
     private var subscriptionClusters: List<ClusterDetail> = ArrayList()
     private var selectedSubscriptions = mapOf<String, SubscriptionDetail>()
+    private val mockedApplicationProperties = mutableMapOf<String, String>()
 
     @Before
     fun setUp() {
@@ -79,6 +83,12 @@ class ClusterManagerExScenario {
                 return mock(IProgressTaskImpl::class.java)
             }
         })
+
+        val mockedIdeHelper = mock(IDEHelper::class.java)
+        doAnswer { mockedApplicationProperties[it.getArgument(0)] }.`when`(mockedIdeHelper).getApplicationProperty(anyString())
+
+        DefaultLoader.setIdeHelper(mockedIdeHelper)
+
         clusterMagr = mock(ClusterManagerEx::class.java, CALLS_REAL_METHODS)
     }
 
@@ -109,7 +119,7 @@ class ClusterManagerExScenario {
                     clusterMock
                 }
 
-        doReturn(emulatedClusters).`when`(clusterMagr!!).emulatorClusters
+        doReturn(emulatedClusters).`when`(clusterMagr!!).loadEmulatorClusters()
     }
 
 

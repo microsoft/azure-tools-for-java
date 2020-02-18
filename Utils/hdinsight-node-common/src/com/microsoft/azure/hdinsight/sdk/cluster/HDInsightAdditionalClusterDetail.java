@@ -26,8 +26,6 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
-import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.adauth.StringUtils;
@@ -37,8 +35,6 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.net.URI;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyCluster, YarnCluster {
     @NotNull
@@ -152,7 +148,7 @@ public class HDInsightAdditionalClusterDetail implements IClusterDetail, LivyClu
             return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterWithUndetermineStorage;
         }
 
-        StorageAccountType type = new StoragePathInfo(defaultStorageRootPath).storageType;
+        StorageAccountType type = StorageAccountType.parseUri(URI.create(defaultStorageRootPath));
         switch (type) {
             case BLOB:
                 return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterForReaderWithBlob;

@@ -20,16 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.ui
+package com.microsoft.azure.hdinsight.common.mvvm
 
-import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.NOT_SUPPORT_STORAGE_TYPE
+import javax.swing.JComponent
 
-class SparkSubmissionJobUploadStorageClusterNotSupportStorageCard
-    : SparkSubmissionJobUploadStorageBasicCard(NOT_SUPPORT_STORAGE_TYPE.description) {
-    override fun createViewModel(): ViewModel = object: ViewModel() {
-        override fun getValidatedStorageUploadPath(config: Model): String {
-            throw RuntimeConfigurationError("Storage type is not supported")
-        }
-    }
+interface Mvvm {
+    interface Model
+    interface ViewModel
+
+    val model: Model
+    val view: JComponent
+    val viewModel: ViewModel
 }

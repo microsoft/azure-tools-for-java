@@ -179,8 +179,6 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
                             // Notify storage type to change
                             storageWithUploadPathPanel.viewModel.clusterSelectedSubject.onNext(it)
-                            storageWithUploadPathPanel.viewModel.uploadStorage.storageCheckSubject.onNext(
-                                SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it, it.name))
                             // refresh the cluster list
                             viewModel.clusterSelection.doRefreshSubject.onNext(true)
                         }
@@ -535,7 +533,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             row { c(refFilesPrompt
                     .apply { labelFor = referencedFilesTextField });
                                                           c(referencedFilesTextField) }
-            row { c(storageWithUploadPathPanel) { colSpan = 2; fill = FILL_HORIZONTAL }; }
+            row { c(storageWithUploadPathPanel.view) { colSpan = 2; fill = FILL_HORIZONTAL }; }
         }
 
         formBuilder.buildPanel().apply {
@@ -549,32 +547,10 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     open val component: JComponent
         get() = submissionPanel
 
-    interface Control : SparkSubmissionJobUploadStorageWithUploadPathPanel.Control
-
-    val control: Control by lazy { SparkSubmissionContentPanelControl(storageWithUploadPathPanel.control) }
-
     open inner class ViewModel: DisposableObservers() {
         val clusterSelection by lazy { clustersSelection.viewModel.apply {
             clusterIsSelected.subscribe {
                 storageWithUploadPathPanel.viewModel.clusterSelectedSubject.onNext(it)
-
-                if (it != null) {
-                    //check precluster value,this can prevent loading saved config with refreshing storage type.
-                    //clusterdetails.size == clusterSelectCapacity means this msg comes from selecting cluster in list
-                    //clusterdetails.size == 1 means this msg comes from loading saved config
-                    val clusterDetails = storageWithUploadPathPanel.viewModel.clusterSelectedSubject.values
-                    val preClusterIndex = clusterDetails.size - storageWithUploadPathPanel.viewModel.clusterSelectedCapacity
-                    val preSelectCluster : IClusterDetail? =
-                            if (preClusterIndex >= 0) {
-                                storageWithUploadPathPanel.viewModel.clusterSelectedSubject.values[preClusterIndex] as? IClusterDetail
-                            } else {
-                                null
-                            }
-
-                    storageWithUploadPathPanel.viewModel.uploadStorage.storageCheckSubject.onNext(
-                            SparkSubmissionJobUploadStorageCtrl.StorageCheckSelectedClusterEvent(it,
-                                    preSelectCluster?.name))
-                }
                 checkInputsWithErrorLabels()
                 checkHdiReaderCluster(it)
             }
@@ -682,16 +658,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
         // get Job upload storage panel data
         storageWithUploadPathPanel.getData(data.jobUploadStorageModel)
-        data.errors.apply {
-            removeAll { true }
-            add(control.resultMessage)
-        }
     }
 
     override fun dispose() {
     }
 }
-
-class SparkSubmissionContentPanelControl(private val jobUploadStorageCtrl: SparkSubmissionJobUploadStorageWithUploadPathPanel.Control)
-    : SparkSubmissionJobUploadStorageWithUploadPathPanel.Control by jobUploadStorageCtrl,
-        SparkSubmissionContentPanel.Control, ILogger

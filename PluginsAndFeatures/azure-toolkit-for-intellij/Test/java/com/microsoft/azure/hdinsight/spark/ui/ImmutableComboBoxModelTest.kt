@@ -22,14 +22,33 @@
 
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.NOT_SUPPORT_STORAGE_TYPE
+import com.microsoft.intellij.ui.util.findFirst
+import com.microsoft.intellij.ui.util.iterator
+import junit.framework.TestCase
+import org.assertj.core.api.Assertions.*
+import org.junit.Test
 
-class SparkSubmissionJobUploadStorageClusterNotSupportStorageCard
-    : SparkSubmissionJobUploadStorageBasicCard(NOT_SUPPORT_STORAGE_TYPE.description) {
-    override fun createViewModel(): ViewModel = object: ViewModel() {
-        override fun getValidatedStorageUploadPath(config: Model): String {
-            throw RuntimeConfigurationError("Storage type is not supported")
-        }
+class ImmutableComboBoxModelTest: TestCase() {
+    @Test
+    fun testIterator() {
+        val data = listOf(3, 5, 4, 2)
+        val comboBoxModel = ImmutableComboBoxModel(data.toTypedArray())
+
+        assertThat(comboBoxModel.iterator.asSequence().toList().toTypedArray()).containsExactlyElementsOf(data)
+
+        val emptyModel: ImmutableComboBoxModel<Int>? = null
+        assertFalse(emptyModel.iterator.hasNext())
+    }
+
+    @Test
+    fun testFindFirst() {
+        val data = listOf(3, 5, 4, 2)
+        val comboBoxModel = ImmutableComboBoxModel(data.toTypedArray())
+
+        assertEquals(3, comboBoxModel.findFirst { true })
+        assertEquals(4, comboBoxModel.findFirst { it % 2 == 0 })
+
+        val emptyModel: ImmutableComboBoxModel<Int>? = null
+        assertNull(emptyModel.findFirst { true })
     }
 }

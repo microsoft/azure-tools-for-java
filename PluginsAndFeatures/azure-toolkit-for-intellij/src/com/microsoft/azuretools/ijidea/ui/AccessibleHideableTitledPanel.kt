@@ -36,7 +36,7 @@ import javax.swing.UIManager
 class AccessibleHideableTitledPanel(
         title: String,
         val content: JComponent,
-        val canAdjustWindow: Boolean = true,
+        val canAdjustWindow: Boolean = false,
         val isStartedOn: Boolean = false
 ) : HideableTitledPanel(title, canAdjustWindow, content, isStartedOn), AccessibleAction {
     override fun getAccessibleActionDescription(i: Int): String? {

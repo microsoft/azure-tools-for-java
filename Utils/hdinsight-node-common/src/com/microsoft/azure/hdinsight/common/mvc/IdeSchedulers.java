@@ -31,4 +31,6 @@ public interface IdeSchedulers {
     public Scheduler processBarVisibleSync(@NotNull String title);
 
     public Scheduler dispatchUIThread();
+
+    public Scheduler dispatchPooledThread();
 }

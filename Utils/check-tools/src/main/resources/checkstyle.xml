@@ -18,6 +18,7 @@
     <property name="fileExtensions" value="java, properties, xml"/>
     <module name="RegexpHeader">
         <property name="header" value="^/\*+$\n^\s*\* Copyright \(c\) Microsoft Corporation.*$"/>
+        <property name="fileExtensions" value="java"/>
     </module>
     <!-- Checks for whitespace
      See http://checkstyle.sf.net/config_whitespace.html -->
@@ -244,11 +245,8 @@
         <module name="JavadocMethod">
             <property name="scope" value="public"/>
             <property name="allowMissingParamTags" value="true"/>
-            <property name="allowMissingThrowsTags" value="true"/>
             <property name="allowMissingReturnTag" value="true"/>
-            <property name="minLineCount" value="2"/>
             <property name="allowedAnnotations" value="Override, Test"/>
-            <property name="allowThrowsTagsForSubclasses" value="true"/>
         </module>
         <module name="MethodName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
