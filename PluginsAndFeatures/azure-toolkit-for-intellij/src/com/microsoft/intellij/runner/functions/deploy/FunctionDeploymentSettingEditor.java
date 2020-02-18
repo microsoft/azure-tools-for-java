@@ -20,48 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions;
+package com.microsoft.intellij.runner.functions.deploy;
 
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.execution.configurations.ConfigurationTypeUtil;
-import com.microsoft.intellij.util.PluginUtil;
+import com.intellij.openapi.project.Project;
+import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.AzureSettingsEditor;
+import com.microsoft.intellij.runner.functions.deploy.ui.FunctionDeploymentPanel;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+public class FunctionDeploymentSettingEditor extends AzureSettingsEditor<FunctionDeployConfiguration> {
 
-public class AzureFunctionSupportConfigurationType implements ConfigurationType {
+    private final AzureSettingPanel mainPanel;
+    private final FunctionDeployConfiguration functionDeployConfiguration;
 
-    private static final String ICON_PATH = "/icons/azure-functions-small.png";
-
-    public static AzureFunctionSupportConfigurationType getInstance() {
-        return ConfigurationTypeUtil.findConfigurationType(AzureFunctionSupportConfigurationType.class);
+    public FunctionDeploymentSettingEditor(Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
+        super(project);
+        this.mainPanel = new FunctionDeploymentPanel(project, functionDeployConfiguration);
+        this.functionDeployConfiguration = functionDeployConfiguration;
     }
 
     @Override
-    public String getDisplayName() {
-        return AzureFunctionsConstants.DISPLAY_NAME;
-    }
-
-    @Override
-    public String getConfigurationTypeDescription() {
-        return AzureFunctionsConstants.DISPLAY_NAME;
-    }
-
-    @Override
-    public Icon getIcon() {
-        return PluginUtil.getIcon(ICON_PATH);
-    }
-
     @NotNull
-    @Override
-    public String getId() {
-        return "AZURE_FUNCTION_SUPPORT";
-    }
-
-    @Override
-    public ConfigurationFactory[] getConfigurationFactories() {
-        // Todo: update after commit specified configuration factory
-        return new ConfigurationFactory[]{};
+    protected AzureSettingPanel getPanel() {
+        return this.mainPanel;
     }
 }

@@ -20,48 +20,34 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions;
+package com.microsoft.intellij.runner.functions.deploy;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
-import com.intellij.execution.configurations.ConfigurationTypeUtil;
-import com.microsoft.intellij.util.PluginUtil;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+public class FunctionDeploymentConfigurationFactory extends ConfigurationFactory {
+    private static final String FACTORY_NAME = "Deploy Functions";
 
-public class AzureFunctionSupportConfigurationType implements ConfigurationType {
-
-    private static final String ICON_PATH = "/icons/azure-functions-small.png";
-
-    public static AzureFunctionSupportConfigurationType getInstance() {
-        return ConfigurationTypeUtil.findConfigurationType(AzureFunctionSupportConfigurationType.class);
-    }
-
-    @Override
-    public String getDisplayName() {
-        return AzureFunctionsConstants.DISPLAY_NAME;
-    }
-
-    @Override
-    public String getConfigurationTypeDescription() {
-        return AzureFunctionsConstants.DISPLAY_NAME;
-    }
-
-    @Override
-    public Icon getIcon() {
-        return PluginUtil.getIcon(ICON_PATH);
+    public FunctionDeploymentConfigurationFactory(@NotNull ConfigurationType type) {
+        super(type);
     }
 
     @NotNull
     @Override
-    public String getId() {
-        return "AZURE_FUNCTION_SUPPORT";
+    public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
+        return new FunctionDeployConfiguration(project, this, project.getName());
     }
 
     @Override
-    public ConfigurationFactory[] getConfigurationFactories() {
-        // Todo: update after commit specified configuration factory
-        return new ConfigurationFactory[]{};
+    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
+        return new FunctionDeployConfiguration(template.getProject(), this, name);
+    }
+
+    @Override
+    public String getName() {
+        return FACTORY_NAME;
     }
 }
