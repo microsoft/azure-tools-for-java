@@ -88,7 +88,10 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     }
 
     public Module getModule() {
-        return module == null ? FunctionUtils.getFunctionModuleByFilePath(getProject(), getModuleFilePath()) : module;
+        if (module == null) {
+            module = FunctionUtils.getFunctionModuleByFilePath(getProject(), getModuleFilePath());
+        }
+        return module;
     }
 
     public JsonObject getAppSettingsJsonObject() {
@@ -152,7 +155,7 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         this.appSettingsJsonObject = appSettingsJsonObject;
     }
 
-    public void setModule(Module module) {
+    public void saveModule(Module module) {
         this.module = module;
         this.setModuleFilePath(module.getModuleFilePath());
     }
