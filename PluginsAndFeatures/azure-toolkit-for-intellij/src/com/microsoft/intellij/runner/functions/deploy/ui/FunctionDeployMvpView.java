@@ -18,31 +18,24 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
-package com.microsoft.intellij.runner.functions;
+package com.microsoft.intellij.runner.functions.deploy.ui;
 
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class AzureFunctionsConstants {
+public interface FunctionDeployMvpView extends MvpView {
+    void beforeFillFunctionApps();
 
-    public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
-    public static final String DISPLAY_NAME = "Azure Functions";
-    public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
-    public static final String LOADING_TEXT = "Loading...";
-    public static final String EMPTY_TEXT = "Empty";
+    void fillFunctionApps(@NotNull List<ResourceEx<FunctionApp>> webAppLists);
 
-    public static final Map<String, String> HINT = new HashMap<String, String>() {{
-            put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
-                    "string for all functions except for HTTP triggered functions.");
-            put("FUNCTIONS_WORKER_RUNTIME", "The language worker runtime to load in the function app.");
-        }};
+    void beforeFillAppSettings();
 
-    public static String getAppSettingHint(String appSettingKey) {
-        return HINT.containsKey(appSettingKey) ? HINT.get(appSettingKey) : StringUtils.EMPTY;
-    }
+    void fillAppSettings(Map<String, String> appSettings);
 }

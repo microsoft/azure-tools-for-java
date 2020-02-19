@@ -54,8 +54,6 @@ import java.util.Map;
 public class ImportAppSettingsDialog extends JDialog implements ImportAppSettingsView {
     private static final String LOCAL_SETTINGS_JSON = "local.settings.json";
     private static final String TITLE_IMPORT_APP_SETTINGS = "Import App Settings";
-    private static final String LOADING_TEXT = "Loading...";
-    private static final String EMPTY_TEXT = "Empty";
     private JPanel contentPanel;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -152,13 +150,13 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     public void fillFunctionAppSettings(Map<String, String> appSettings) {
         tblAppSettings.setAppSettings(appSettings);
         if (appSettings.size() == 0) {
-            tblAppSettings.getEmptyText().setText(EMPTY_TEXT);
+            tblAppSettings.getEmptyText().setText(AzureFunctionsConstants.EMPTY_TEXT);
         }
     }
 
     @Override
     public void beforeFillAppSettings() {
-        tblAppSettings.getEmptyText().setText(LOADING_TEXT);
+        tblAppSettings.getEmptyText().setText(AzureFunctionsConstants.LOADING_TEXT);
         tblAppSettings.clear();
     }
 
@@ -172,7 +170,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
 
     private void createUIComponents() {
         tblAppSettings = new AppSettingsTable("");
-        tblAppSettings.getEmptyText().setText(LOADING_TEXT);
+        tblAppSettings.getEmptyText().setText(AzureFunctionsConstants.LOADING_TEXT);
         pnlAppSettings = ToolbarDecorator.createDecorator(tblAppSettings).createPanel();
     }
 
