@@ -63,7 +63,7 @@ public class AppSettingsTableUtils {
     private static final String LOCAL_SETTINGS_JSON = "local.settings.json";
     private static final String EXPORT_LOCAL_SETTINGS_TITLE = "Export to local settings";
 
-    public static JPanel decorateAppSettingTable(AppSettingsTable appSettingsTable) {
+    public static JPanel createAppSettingPanel(AppSettingsTable appSettingsTable) {
         final JPanel result = new JPanel();
         // create the parent panel which contains app settings table and prompt panel
         result.setLayout(new GridLayoutManager(2, 1));
@@ -154,6 +154,10 @@ public class AppSettingsTableUtils {
         if (target == null) {
             return;
         }
+        final File parentFolder = target.getParentFile();
+        if (!parentFolder.exists()) {
+            parentFolder.mkdirs();
+        }
         if (!target.exists()) {
             target.createNewFile();
         }
@@ -170,6 +174,7 @@ public class AppSettingsTableUtils {
         }
     }
 
+    // todo: use `JsonUtils` when it moved to azure-tools-common
     private static JsonObject readLocalSettingsJsonFile(File target) {
         try (FileInputStream fis = new FileInputStream(target);
              InputStreamReader isr = new InputStreamReader(fis)) {
