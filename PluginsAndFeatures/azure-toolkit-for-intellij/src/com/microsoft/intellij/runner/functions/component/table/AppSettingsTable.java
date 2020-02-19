@@ -27,6 +27,8 @@ import com.intellij.ui.table.JBTable;
 import javax.swing.ListSelectionModel;
 import java.awt.Dimension;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class AppSettingsTable extends JBTable {
@@ -43,13 +45,11 @@ public class AppSettingsTable extends JBTable {
         this.setAutoscrolls(true);
         this.setMinimumSize(new Dimension(-1, 100));
         this.setPreferredScrollableViewportSize(null);
-
-        loadLocalSetting();
     }
 
     public void loadLocalSetting() {
         final Map<String, String> appSettings = AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(localSettingPath));
-        loadAppSettings(appSettings);
+        setAppSettings(appSettings);
     }
 
     public void addAppSettings(String key, String value) {
@@ -58,15 +58,20 @@ public class AppSettingsTable extends JBTable {
         scrollToRow(index);
     }
 
+    public void addAppSettings(Map<String, String> appSettingMap) {
+        appSettingMap.entrySet().stream().forEach(entry -> addAppSettings(entry.getKey(), entry.getValue()));
+        this.refresh();
+        scrollToRow(0);
+    }
+
     public void removeAppSettings(int row) {
         appSettingModel.removeAppSettings(row);
         this.refresh();
     }
 
-    public void loadAppSettings(Map<String, String> appSettingMap) {
-        appSettingModel.loadAppSettings(appSettingMap);
-        this.refresh();
-        scrollToRow(0);
+    public void setAppSettings(Map<String, String> appSettingMap) {
+        clear();
+        addAppSettings(appSettingMap);
     }
 
     public void clear() {
@@ -80,6 +85,10 @@ public class AppSettingsTable extends JBTable {
 
     public Map<String, String> getAppSettings() {
         return appSettingModel.getAppSettings();
+    }
+
+    public Path getLocalSettingsPath() {
+        return Paths.get(localSettingPath);
     }
 
     private void scrollToRow(int target) {

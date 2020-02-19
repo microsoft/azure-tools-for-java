@@ -45,6 +45,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -92,7 +94,23 @@ public class AppSettingsTableUtils {
         final AnActionButton importButton = new AnActionButton("Import", AllIcons.General.ImportProject) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                // todo: add import dialog
+                final ImportAppSettingsDialog importAppSettingsDialog = new ImportAppSettingsDialog(appSettingsTable.getLocalSettingsPath());
+                importAppSettingsDialog.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent windowEvent) {
+                        super.windowClosed(windowEvent);
+                        final Map<String, String> appSettings = importAppSettingsDialog.getAppSettings();
+                        if (importAppSettingsDialog.shouldErase()) {
+                            appSettingsTable.clear();
+                        }
+                        if (appSettings != null) {
+                            appSettingsTable.addAppSettings(appSettings);
+                        }
+                    }
+                });
+                importAppSettingsDialog.setLocationRelativeTo(appSettingsTable);
+                importAppSettingsDialog.pack();
+                importAppSettingsDialog.setVisible(true);
             }
         };
 
