@@ -51,33 +51,33 @@ public class AppSettingModel implements TableModel {
     }
 
     @Override
-    public String getColumnName(int i) {
-        return TITLE[i];
+    public String getColumnName(int col) {
+        return TITLE[col];
     }
 
     @Override
-    public Class<?> getColumnClass(int i) {
+    public Class<?> getColumnClass(int col) {
         return String.class;
     }
 
     @Override
-    public boolean isCellEditable(int i, int i1) {
+    public boolean isCellEditable(int row, int col) {
         return true;
     }
 
     @Override
-    public Object getValueAt(int i, int i1) {
-        final Pair<String, String> target = appSettings.get(i);
-        return i1 == 0 ? target.getKey() : target.getValue();
+    public Object getValueAt(int row, int col) {
+        final Pair<String, String> target = appSettings.get(row);
+        return col == 0 ? target.getKey() : target.getValue();
     }
 
     @Override
-    public void setValueAt(Object o, int i, int i1) {
-        while (i >= appSettings.size()) {
+    public void setValueAt(Object value, int row, int col) {
+        while (row >= appSettings.size()) {
             appSettings.add(Pair.of("", ""));
         }
-        final Pair<String, String> target = appSettings.get(i);
-        appSettings.set(i, Pair.of((String) (i1 == 0 ? o : target.getLeft()), (String) (i1 == 0 ? target.getRight() : o)));
+        final Pair<String, String> target = appSettings.get(row);
+        appSettings.set(row, Pair.of((String) (col == 0 ? value : target.getLeft()), (String) (col == 0 ? target.getRight() : value)));
     }
 
     public int addAppSettings(String key, String value) {
