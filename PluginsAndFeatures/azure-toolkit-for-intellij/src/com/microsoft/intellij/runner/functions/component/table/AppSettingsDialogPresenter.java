@@ -34,33 +34,30 @@ import java.util.Map;
 
 public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends MvpPresenter<V> {
     public void onLoadFunctionApps() {
-        Observable.fromCallable(() -> {
-                    return AzureFunctionMvpModel.getInstance().listAllFunctions(false);
-                }
-        ).subscribeOn(getSchedulerProvider().io())
+        Observable.fromCallable(() -> AzureFunctionMvpModel.getInstance().listAllFunctions(false))
+                .subscribeOn(getSchedulerProvider().io())
                 .subscribe(functionApps -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
                     getMvpView().fillFunctionApps(functionApps);
-                }), e -> DefaultLoader.getIdeHelper().invokeLater(() -> getMvpView().onErrorWithException("Failed to load function apps", (Exception) e)));
+                }), this::errorHandler);
     }
 
     public void onLoadFunctionAppSettings(String subscriptionId, String functionId) {
         Observable.fromCallable(() -> {
-                    getMvpView().prepareFillAppSettings();
-                    FunctionApp functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionId);
-                    return functionApp.getAppSettings();
-                }
-        ).subscribeOn(getSchedulerProvider().io())
+            getMvpView().prepareFillAppSettings();
+            final FunctionApp functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionId);
+            return functionApp.getAppSettings();
+        }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (isViewDetached()) {
                         return;
                     }
-                    Map<String, String> result = new HashMap<>();
+                    final Map<String, String> result = new HashMap<>();
                     appSettings.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().value()));
                     getMvpView().fillFunctionAppSettings(result);
-                }), e -> DefaultLoader.getIdeHelper().invokeLater(() -> getMvpView().onErrorWithException("Failed to load app settings", (Exception) e)));
+                }), this::errorHandler);
     }
 
     public void onLoadLocalSettings(Path localSettingsJsonPath) {
@@ -73,6 +70,10 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
                         return;
                     }
                     getMvpView().fillFunctionAppSettings(appSettings);
-                }), e -> DefaultLoader.getIdeHelper().invokeLater(() -> getMvpView().onErrorWithException("Failed to load app settings", (Exception) e)));
+                }), this::errorHandler);
+    }
+
+    private void errorHandler(Throwable e) {
+        DefaultLoader.getIdeHelper().invokeLater(() -> getMvpView().onErrorWithException("Failed to load app settings", (Exception) e));
     }
 }
