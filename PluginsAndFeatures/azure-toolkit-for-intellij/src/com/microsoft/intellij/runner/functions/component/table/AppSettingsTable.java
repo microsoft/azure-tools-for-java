@@ -91,4 +91,3 @@ public class AppSettingsTable extends JBTable {
         this.repaint();
     }
 }
-
