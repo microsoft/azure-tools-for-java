@@ -167,8 +167,6 @@ public class AppSettingsTableUtils {
         jsonObject.add(LOCAL_SETTINGS_VALUES, valueObject);
         try (Writer writer = new FileWriter(target)) {
             gson.toJson(jsonObject, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
