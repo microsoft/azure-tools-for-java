@@ -73,6 +73,9 @@ public class AppSettingModel implements TableModel {
 
     @Override
     public void setValueAt(Object value, int row, int col) {
+        if (value != null && !(value instanceof String)) {
+            throw new IllegalArgumentException("Illegal value type, only String is supported");
+        }
         while (row >= appSettings.size()) {
             appSettings.add(Pair.of("", ""));
         }

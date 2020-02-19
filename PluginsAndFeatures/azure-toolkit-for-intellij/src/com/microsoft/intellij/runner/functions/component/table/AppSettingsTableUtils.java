@@ -141,7 +141,7 @@ public class AppSettingsTableUtils {
     public static Map<String, String> getAppSettingsFromLocalSettingsJson(File target) {
         final Map<String, String> result = new HashMap<>();
         try {
-            final JsonObject jsonObject = getLocalSettingsJsonObject(target);
+            final JsonObject jsonObject = readLocalSettingsJsonFile(target);
             final JsonObject valueObject = jsonObject.getAsJsonObject(LOCAL_SETTINGS_VALUES);
             valueObject.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().getAsString()));
             return result;
@@ -158,7 +158,7 @@ public class AppSettingsTableUtils {
             target.createNewFile();
         }
         final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-        JsonObject jsonObject = getLocalSettingsJsonObject(target);
+        JsonObject jsonObject = readLocalSettingsJsonFile(target);
         if (jsonObject == null) {
             jsonObject = gson.fromJson(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
         }
@@ -170,7 +170,7 @@ public class AppSettingsTableUtils {
         }
     }
 
-    private static JsonObject getLocalSettingsJsonObject(File target) {
+    private static JsonObject readLocalSettingsJsonFile(File target) {
         try (FileInputStream fis = new FileInputStream(target);
              InputStreamReader isr = new InputStreamReader(fis)) {
             final Gson gson = new Gson();
