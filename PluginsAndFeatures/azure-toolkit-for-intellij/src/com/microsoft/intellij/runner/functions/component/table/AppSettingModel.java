@@ -108,7 +108,7 @@ public class AppSettingModel implements TableModel {
         return result;
     }
 
-    public void setAppSettings(Map<String, String> appSettingMap) {
+    public void loadAppSettings(Map<String, String> appSettingMap) {
         appSettings.clear();
         appSettingMap.entrySet().forEach(entry -> appSettings.add(Pair.of(entry.getKey(), entry.getValue())));
     }

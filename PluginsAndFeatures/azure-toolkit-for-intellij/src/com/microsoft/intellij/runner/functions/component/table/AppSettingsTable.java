@@ -49,7 +49,7 @@ public class AppSettingsTable extends JBTable {
 
     public void loadLocalSetting() {
         final Map<String, String> appSettings = AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(localSettingPath));
-        setAppSettings(appSettings);
+        loadAppSettings(appSettings);
     }
 
     public void addAppSettings(String key, String value) {
@@ -63,8 +63,8 @@ public class AppSettingsTable extends JBTable {
         this.refresh();
     }
 
-    public void setAppSettings(Map<String, String> appSettingMap) {
-        appSettingModel.setAppSettings(appSettingMap);
+    public void loadAppSettings(Map<String, String> appSettingMap) {
+        appSettingModel.loadAppSettings(appSettingMap);
         this.refresh();
         scrollToRow(0);
     }
