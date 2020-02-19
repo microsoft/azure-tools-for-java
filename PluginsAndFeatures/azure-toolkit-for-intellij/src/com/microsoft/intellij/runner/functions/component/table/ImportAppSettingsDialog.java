@@ -56,7 +56,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     private static final String TITLE_IMPORT_APP_SETTINGS = "Import App Settings";
     private static final String LOADING_TEXT = "Loading...";
     private static final String EMPTY_TEXT = "Empty";
-    private JPanel contentPane;
+    private JPanel contentPanel;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox cbAppSettingsSource;
@@ -66,12 +66,12 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     private JCheckBox chkErase;
 
     private Path localSettingsPath;
-    private boolean shouldErase;
+    private boolean eraseExistingSettings;
     private Map<String, String> appSettings = null;
     private AppSettingsDialogPresenter<ImportAppSettingsDialog> presenter = new AppSettingsDialogPresenter<>();
 
     public ImportAppSettingsDialog(Path localSettingsPath) {
-        setContentPane(contentPane);
+        setContentPane(contentPanel);
         setModal(true);
         setTitle(TITLE_IMPORT_APP_SETTINGS);
         setMinimumSize(new Dimension(-1, 250));
@@ -120,7 +120,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
             }
         });
 
-        chkErase.addActionListener(e -> shouldErase = chkErase.isSelected());
+        chkErase.addActionListener(e -> eraseExistingSettings = chkErase.isSelected());
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -129,7 +129,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
             }
         });
 
-        contentPane.registerKeyboardAction(new ActionListener() {
+        contentPanel.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
@@ -157,13 +157,13 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     }
 
     @Override
-    public void prepareFillAppSettings() {
+    public void beforeFillAppSettings() {
         tblAppSettings.getEmptyText().setText(LOADING_TEXT);
         tblAppSettings.clear();
     }
 
     public boolean shouldErase() {
-        return shouldErase;
+        return eraseExistingSettings;
     }
 
     public Map<String, String> getAppSettings() {

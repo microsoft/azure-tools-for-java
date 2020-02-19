@@ -31,6 +31,8 @@ import java.util.Map;
 
 public interface ImportAppSettingsView extends MvpView {
     void fillFunctionApps(List<ResourceEx<FunctionApp>> functionApps);
+
     void fillFunctionAppSettings(Map<String, String> appSettings);
-    void prepareFillAppSettings();
+
+    void beforeFillAppSettings();
 }

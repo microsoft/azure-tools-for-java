@@ -46,7 +46,7 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
 
     public void onLoadFunctionAppSettings(String subscriptionId, String functionId) {
         Observable.fromCallable(() -> {
-            getMvpView().prepareFillAppSettings();
+            getMvpView().beforeFillAppSettings();
             final FunctionApp functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionId);
             return functionApp.getAppSettings();
         }).subscribeOn(getSchedulerProvider().io())
@@ -62,7 +62,7 @@ public class AppSettingsDialogPresenter<V extends ImportAppSettingsView> extends
 
     public void onLoadLocalSettings(Path localSettingsJsonPath) {
         Observable.fromCallable(() -> {
-            getMvpView().prepareFillAppSettings();
+            getMvpView().beforeFillAppSettings();
             return AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(localSettingsJsonPath.toFile());
         }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {
