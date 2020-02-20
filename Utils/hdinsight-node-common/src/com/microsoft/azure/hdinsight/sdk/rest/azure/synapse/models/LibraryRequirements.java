@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -37,7 +36,7 @@ public class LibraryRequirements {
      * The last update time of the library requirements file.
      */
     @JsonProperty(value = "time", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime time;
+    private String time;
 
     /**
      * The library requirements.
@@ -56,7 +55,7 @@ public class LibraryRequirements {
      *
      * @return the time value
      */
-    public DateTime time() {
+    public String time() {
         return this.time;
     }
 

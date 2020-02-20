@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.rxjava;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -36,8 +37,14 @@ import org.jetbrains.annotations.Nullable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
+import javax.swing.*;
+
 public class IdeaSchedulers implements IdeSchedulers {
     @Nullable final private Project project;
+
+    public IdeaSchedulers() {
+        this(null);
+    }
 
     public IdeaSchedulers(@Nullable Project project) {
         this.project = project;
@@ -74,9 +81,36 @@ public class IdeaSchedulers implements IdeSchedulers {
     }
 
     public Scheduler dispatchUIThread() {
+        return dispatchUIThread(ModalityState.any());
+    }
+
+    public Scheduler dispatchUIThread(ModalityState state) {
+        Application application = ApplicationManager.getApplication();
+
         return Schedulers.from(command -> {
             try {
-                ApplicationManager.getApplication().invokeAndWait(command);
+                if (application == null) {
+                    SwingUtilities.invokeLater(command);
+                } else {
+                    application.invokeLater(command, state);
+                }
+            } catch (ProcessCanceledException ignored) {
+                // FIXME!!! Not support process canceling currently, just ignore it
+            }
+        });
+    }
+
+    @Override
+    public Scheduler dispatchPooledThread() {
+        Application application = ApplicationManager.getApplication();
+
+        return Schedulers.from(command -> {
+            try {
+                if (application == null) {
+                    Schedulers.io();
+                } else {
+                    application.executeOnPooledThread(command);
+                }
             } catch (ProcessCanceledException ignored) {
                 // FIXME!!! Not support process canceling currently, just ignore it
             }

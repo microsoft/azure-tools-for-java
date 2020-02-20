@@ -164,17 +164,18 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
                     { log().warn("Can't get cluster list model", it) }
             )
 
+            val myIdeaSchedulers = IdeaSchedulers(null)
+
             // Refreshing behavior
             doRefreshSubject
                     .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
+                    .filter { it } // TODO: If to add cancelling operation, remove the filter please
+                    .observeOn(myIdeaSchedulers.dispatchUIThread())
+                    .doOnNext { isRefreshButtonEnabled = false }
                     .observeOn(IdeaSchedulers(null).processBarVisibleAsync("Refreshing Spark clusters list"))
-                    .flatMap { doesRefresh -> if (doesRefresh) {
-                        isRefreshButtonEnabled = false
-                        clusterDetailsWithRefresh.doOnEach { isRefreshButtonEnabled = true }
-                    } else  {
-                        // TODO: We can add cancelling operation here
-                        empty()
-                    }}
+                    .flatMap { clusterDetailsWithRefresh }
+                    .observeOn(myIdeaSchedulers.dispatchUIThread())
+                    .doOnEach { isRefreshButtonEnabled = true }
                     .subscribe(
                             { clusterListModelBehavior.onNext(ImmutableComboBoxModel(it.toTypedArray())) },
                             { log().warn("Refresh cluster failure", it) }

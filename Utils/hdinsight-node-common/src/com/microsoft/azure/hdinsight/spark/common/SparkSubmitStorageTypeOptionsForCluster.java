@@ -75,6 +75,12 @@ public enum SparkSubmitStorageTypeOptionsForCluster {
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT
     }),
 
+    // New Spark on Cosmos cluster which aligns API with Synapse supports Gen1 and Blob storage for now
+    SynapseCosmosSparkCluster(new SparkSubmitStorageType[]{
+            SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
+            SparkSubmitStorageType.BLOB
+    }),
+
     // arcadia cluster now suppports blob
     ArcadiaSparkCluster(new SparkSubmitStorageType[]{
             SparkSubmitStorageType.DEFAULT_STORAGE_ACCOUNT,
