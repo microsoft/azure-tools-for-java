@@ -34,6 +34,7 @@
     <artifactId>azuretools-core</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <profiles>
         <profile>
