@@ -33,6 +33,10 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
+import com.microsoft.azure.common.utils.AppServiceUtils;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
@@ -107,6 +111,18 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public void setAppSettings(Map<String, String> appSettings) {
         this.appSettings = appSettings;
     }
+
+    public void setTargetFunction(FunctionApp targetFunction) {
+        final AppServicePlan appServicePlan = AppServiceUtils.getAppServicePlanByAppService(targetFunction);
+        final IntelliJFunctionRuntimeConfiguration runtimeConfiguration = new IntelliJFunctionRuntimeConfiguration();
+        runtimeConfiguration.setOs(appServicePlan.operatingSystem() == OperatingSystem.WINDOWS ? "windows" : "linux");
+        setRuntime(runtimeConfiguration);
+        setPricingTier(appServicePlan.pricingTier().toSkuDescription().size());
+        setAppName(targetFunction.name());
+        setFunctionId(targetFunction.id());
+        setResourceGroup(targetFunction.resourceGroupName());
+    }
+
 
     @Override
     public FunctionDeployModel getModel() {

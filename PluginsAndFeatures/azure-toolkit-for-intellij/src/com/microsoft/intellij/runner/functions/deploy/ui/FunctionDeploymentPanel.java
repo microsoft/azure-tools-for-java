@@ -32,12 +32,9 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
-import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.intellij.runner.AzureSettingPanel;
-import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
@@ -57,7 +54,6 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,9 +68,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private static final String CREATE_NEW_FUNCTION = "No available function, click to create a new one";
 
     private ResourceEx<FunctionApp> selectedFunctionApp = null;
-    private AppServicePlan selectedFunctionAppServicePlan = null;
     private FunctionDeployViewPresenter presenter = null;
-    private Map<String, AppServicePlan> appServicePlanMap = new HashMap<>();
 
     private JPanel pnlRoot;
     private JComboBox cbxFunctionApp;
@@ -97,7 +91,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         cbxFunctionApp.addPopupMenuListener(new PopupMenuListenerAdapter() {
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                selectFunction();
+                onFunctionSelected();
             }
         });
         // Set the editor of combobox, otherwise it will use box render when popup is invisible, which may render the
@@ -200,7 +194,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                     .findFirst().orElse(functionList.get(0));
             cbxFunctionApp.setSelectedItem(selectedFunction);
         }
-        selectFunction();
+        onFunctionSelected();
         cbxFunctionApp.setEnabled(true);
     }
 
@@ -267,37 +261,19 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
             return;
         }
-        final FunctionApp targetFunction = selectedFunctionApp.getResource();
-        configuration.setAppName(targetFunction.name());
-        configuration.setResourceGroup(targetFunction.resourceGroupName());
-        configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
-        configuration.setFunctionId(targetFunction.id());
-
-        final IntelliJFunctionRuntimeConfiguration runtimeConfiguration = new IntelliJFunctionRuntimeConfiguration();
-        final AppServicePlan appServicePlan = getAppServicePlan(targetFunction);
-        runtimeConfiguration.setOs(appServicePlan.operatingSystem() == OperatingSystem.WINDOWS ? "windows" : "linux");
-        configuration.setRuntime(runtimeConfiguration);
-
-        configuration.setPricingTier(appServicePlan.pricingTier().toSkuDescription().size());
+        configuration.setTargetFunction(selectedFunctionApp.getResource());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.setModule((Module) cbFunctionModule.getSelectedItem());
         configuration.setDeploymentStagingDirectory(txtStagingFolder.getText());
     }
 
-    private AppServicePlan getAppServicePlan(FunctionApp functionApp) {
-        if (!appServicePlanMap.containsKey(functionApp.id())) {
-            appServicePlanMap.put(functionApp.id(), functionApp.manager().appServicePlans().getById(functionApp.appServicePlanId()));
-        }
-        return appServicePlanMap.get(functionApp.id());
-    }
-
-    private void selectFunction() {
+    private void onFunctionSelected() {
         final Object value = cbxFunctionApp.getSelectedItem();
         if (value != null && value instanceof ResourceEx) {
             selectedFunctionApp = (ResourceEx<FunctionApp>) cbxFunctionApp.getSelectedItem();
             presenter.loadAppSettings(selectedFunctionApp.getResource());
         } else if (Comparing.equal(CREATE_NEW_FUNCTION_APP, value)) {
-            // Create new web app
+            // Create new function app
             cbxFunctionApp.setSelectedItem(null);
             ApplicationManager.getApplication().invokeLater(() -> createNewFunctionApp());
         }
@@ -337,7 +313,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 setText(getStringLabelText((String) value));
             } else {
                 final ResourceEx<FunctionApp> function = (ResourceEx<FunctionApp>) value;
-                // For label in combobox textfield, just show webapp name
+                // For label in combobox textfield, just show function app name
                 final String text = index >= 0 ? getFunctionAppLabelText(function.getResource()) : function.getResource().name();
                 setText(text);
             }
