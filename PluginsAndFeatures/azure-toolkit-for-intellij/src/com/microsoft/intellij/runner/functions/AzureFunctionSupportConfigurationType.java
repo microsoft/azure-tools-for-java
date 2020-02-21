@@ -25,6 +25,8 @@ package com.microsoft.intellij.runner.functions;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
+import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigurationFactory;
+import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,6 +64,6 @@ public class AzureFunctionSupportConfigurationType implements ConfigurationType 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
         // Todo: update after commit specified configuration factory
-        return new ConfigurationFactory[]{};
+        return new ConfigurationFactory[]{new FunctionDeploymentConfigurationFactory(this), new FunctionRunConfigurationFactory(this)};
     }
 }

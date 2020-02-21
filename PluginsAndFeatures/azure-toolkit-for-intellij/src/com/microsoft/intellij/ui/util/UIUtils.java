@@ -36,6 +36,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.Consumer;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +60,26 @@ public class UIUtils {
                 if (files.length > 0) {
                     final StringBuilder builder = new StringBuilder();
                     for (VirtualFile file : files) {
+                        if (builder.length() > 0) {
+                            builder.append(File.pathSeparator);
+                        }
+                        builder.append(FileUtil.toSystemDependentName(file.getPath()));
+                    }
+                    parent.setText(builder.toString());
+                }
+            }
+        };
+    }
+
+    public static ActionListener createFileChooserListenerWithTextPath(final TextFieldWithBrowseButton parent, final @Nullable Project project,
+                                                                       final FileChooserDescriptor descriptor) {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final VirtualFile[] files = FileChooser.chooseFiles(descriptor, parent, project,
+                        StringUtils.isNotEmpty(parent.getText()) ? LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
+                if (files.length > 0) {
+                    final StringBuilder builder = new StringBuilder();
+                    for (final VirtualFile file : files) {
                         if (builder.length() > 0) {
                             builder.append(File.pathSeparator);
                         }
@@ -161,16 +182,16 @@ public class UIUtils {
         showNotification(statusBar, message, type);
     }
 
-    public static boolean showYesNoDialog(String title, String prompt){
+    public static boolean showYesNoDialog(String title, String prompt) {
         return Messages.showYesNoDialog(null, prompt, title, "Yes", "No", null) == 0;
     }
 
-    public static boolean isUnderIntelliJTheme(){
+    public static boolean isUnderIntelliJTheme() {
         UIManager.LookAndFeelInfo theme = LafManager.getInstance().getCurrentLookAndFeel();
         return theme.getName().equalsIgnoreCase("intellij");
     }
 
-    public static void setPanelBackGroundColor(JPanel panel, Color color){
+    public static void setPanelBackGroundColor(JPanel panel, Color color) {
         panel.setBackground(color);
         for (Component child : panel.getComponents()) {
             if (child instanceof JPanel) {
