@@ -57,7 +57,6 @@ import java.util.Map;
 import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.EMPTY_TEXT;
 import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.LOADING_TEXT;
 
-
 public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> implements FunctionDeployMvpView {
 
     private static final String CREATE_NEW_FUNCTION_APP = "Create New FunctionApp";
