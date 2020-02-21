@@ -33,7 +33,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
 
 checkstyle {
-    toolVersion = '8.24'
+    toolVersion = '8.29'
     configFile = new File('config/checkstyle/checkstyle.xml')
     showViolations = false
 }
