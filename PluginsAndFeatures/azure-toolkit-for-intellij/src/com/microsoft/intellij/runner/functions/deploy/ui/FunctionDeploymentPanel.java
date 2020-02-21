@@ -35,23 +35,20 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.intellij.runner.AzureSettingPanel;
+import com.microsoft.intellij.runner.functions.component.FunctionAppCombineBoxEditor;
+import com.microsoft.intellij.runner.functions.component.FunctionAppCombineBoxRender;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
-import javax.swing.ComboBoxEditor;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.event.EventListenerList;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.Component;
-import java.awt.event.ActionListener;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -87,58 +84,14 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         this.presenter = new FunctionDeployViewPresenter();
         this.presenter.onAttachView(this);
 
+        // Set the editor of combobox, otherwise it will use box render when popup is invisible, which may render the
+        // combobox to twoline
+        cbxFunctionApp.setEditor(new FunctionAppCombineBoxEditor());
         cbxFunctionApp.setRenderer(new FunctionAppCombineBoxRender(cbxFunctionApp));
         cbxFunctionApp.addPopupMenuListener(new PopupMenuListenerAdapter() {
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 onFunctionSelected();
-            }
-        });
-        // Set the editor of combobox, otherwise it will use box render when popup is invisible, which may render the
-        // combobox to twoline
-        cbxFunctionApp.setEditor(new ComboBoxEditor() {
-            private Object item;
-            private JLabel label = new JLabel();
-            private EventListenerList listenerList = new EventListenerList();
-
-            @Override
-            public Component getEditorComponent() {
-                return label;
-            }
-
-            @Override
-            public void setItem(Object anObject) {
-                item = anObject;
-                if (anObject == null) {
-                    return;
-                } else if (anObject instanceof String) {
-                    label.setText((String) anObject);
-                } else {
-                    final ResourceEx<FunctionApp> function = (ResourceEx<FunctionApp>) anObject;
-                    label.setText(function.getResource().name());
-                }
-                label.getAccessibleContext().setAccessibleName(label.getText());
-                label.getAccessibleContext().setAccessibleDescription(label.getText());
-            }
-
-            @Override
-            public Object getItem() {
-                return item;
-            }
-
-            @Override
-            public void selectAll() {
-                return;
-            }
-
-            @Override
-            public void addActionListener(ActionListener l) {
-                listenerList.add(ActionListener.class, l);
-            }
-
-            @Override
-            public void removeActionListener(ActionListener l) {
-                listenerList.remove(ActionListener.class, l);
             }
         });
 
@@ -290,49 +243,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         final String localSettingPath = Paths.get(project.getBasePath(), "local.settings.json").toString();
         appSettingsTable = new AppSettingsTable(localSettingPath);
         pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
-    }
-
-    class FunctionAppCombineBoxRender extends ListCellRendererWrapper {
-
-        private final JComboBox comboBox;
-        private final int cellHeight;
-        private static final String TEMPLATE_STRING = "<html><div>TEMPLATE</div><small>TEMPLATE</small></html>";
-
-        public FunctionAppCombineBoxRender(JComboBox comboBox) {
-            this.comboBox = comboBox;
-            final JLabel template = new JLabel(TEMPLATE_STRING);
-            //Create a multi-line jlabel and calculate its preferred size
-            this.cellHeight = template.getPreferredSize().height;
-        }
-
-        @Override
-        public void customize(JList list, Object value, int index, boolean b, boolean b1) {
-            if (value == null) {
-                return;
-            } else if (value instanceof String) {
-                setText(getStringLabelText((String) value));
-            } else {
-                final ResourceEx<FunctionApp> function = (ResourceEx<FunctionApp>) value;
-                // For label in combobox textfield, just show function app name
-                final String text = index >= 0 ? getFunctionAppLabelText(function.getResource()) : function.getResource().name();
-                setText(text);
-            }
-            list.setFixedCellHeight(cellHeight);
-        }
-
-        private String getStringLabelText(String message) {
-            return comboBox.isPopupVisible() ?
-                    String.format("<html><div>%s</div><small></small></html>", message) : message;
-        }
-
-        private String getFunctionAppLabelText(FunctionApp functionApp) {
-            final String name = functionApp.name();
-            final String os = StringUtils.capitalize(functionApp.operatingSystem().toString());
-            final String resourceGroup = functionApp.resourceGroupName();
-
-            return comboBox.isPopupVisible() ? String.format("<html><div>%s</div></div><small>OS:%s " +
-                    "ResourceGroup:%s</small></html>", name, os, resourceGroup) : name;
-        }
     }
 
     private void fillModules() {
