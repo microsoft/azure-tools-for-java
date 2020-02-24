@@ -61,13 +61,17 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
         super.notifyProcessTerminated(exitCode);
     }
 
+    public boolean isProcessRunning() {
+        return !this.isProcessTerminating() && !this.isProcessTerminated();
+    }
+
     /**
      *
      * @param message String value.
      * @param type Key value.
      */
     public void print(String message, Key type) {
-        if (!this.isProcessTerminating() && !this.isProcessTerminated()) {
+        if (isProcessRunning()) {
             this.notifyTextAvailable(message, type);
         } else {
             throw new Error(PROCESS_TERMINATED);
@@ -80,7 +84,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
      * @param type Key value.
      */
     public void println(String message, Key type) {
-        if (!this.isProcessTerminating() && !this.isProcessTerminated()) {
+        if (isProcessRunning()) {
             this.notifyTextAvailable(message + "\n", type);
         } else {
             throw new Error(PROCESS_TERMINATED);

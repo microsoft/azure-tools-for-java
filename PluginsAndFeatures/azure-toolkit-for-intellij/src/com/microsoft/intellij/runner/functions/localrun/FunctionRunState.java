@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.functions.localrun;
 
 import com.intellij.execution.Executor;
 import com.intellij.execution.ExecutorRegistry;
+import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.impl.RunManagerImpl;
@@ -46,7 +47,7 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
-import com.microsoft.intellij.util.InputStreamMonitor;
+import com.microsoft.intellij.util.ReadStreamLineThread;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
@@ -72,7 +73,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         this.functionRunConfiguration = functionRunConfiguration;
     }
 
-
     @Override
     protected String getDeployTarget() {
         return "null";
@@ -89,7 +89,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             remoteConfig.SERVER_MODE = false;
             remoteConfig.setName("azure functions");
 
-            final RunnerAndConfigurationSettingsImpl configuration = new RunnerAndConfigurationSettingsImpl(manager, remoteConfig, false);
+            final RunnerAndConfigurationSettings configuration = new RunnerAndConfigurationSettingsImpl(manager, remoteConfig, false);
             manager.setTemporaryConfiguration(configuration);
             ExecutionUtil.runConfiguration(configuration, ExecutorRegistry.getInstance().getExecutorById(ToolWindowId.DEBUG));
         };
@@ -114,20 +114,26 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         // Add listener to close func.exe
         addProcessTerminatedListener(processHandler, process);
         // Redirect function cli output to console
-        processProcessInputStream(process.getInputStream(), string -> {
-            if (isDebugMode() && StringUtils.containsIgnoreCase(string, "Job host started")) {
+        readInputStreamByLines(process.getInputStream(), inputLine -> {
+            if (isDebugMode() && StringUtils.containsIgnoreCase(inputLine, "Job host started")) {
                 // launch debugger when func ready
                 launchDebugger(project, debugPort);
             }
-            processHandler.setText(string);
+            if (processHandler.isProcessRunning()) {
+                processHandler.setText(inputLine);
+            }
         });
-        processProcessInputStream(process.getErrorStream(), string -> processHandler.println(string, ProcessOutputTypes.STDERR));
+        readInputStreamByLines(process.getErrorStream(), inputLine -> {
+            if (processHandler.isProcessRunning()) {
+                processHandler.println(inputLine, ProcessOutputTypes.STDERR);
+            }
+        });
         // Pending for function cli
         process.waitFor();
     }
 
-    private void processProcessInputStream(InputStream inputStream, Consumer<String> stringConsumer) {
-        new InputStreamMonitor(inputStream, stringConsumer).run();
+    private void readInputStreamByLines(InputStream inputStream, Consumer<String> stringConsumer) {
+        new ReadStreamLineThread(inputStream, stringConsumer).run();
     }
 
     private void addProcessTerminatedListener(RunProcessHandler processHandler, Process process) {
@@ -147,7 +153,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         final String debugConfiguration = String.format("\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"", debugPort);
         String[] command = {funcPath, "host", "start", "--port", String.valueOf(funcPort)};
         if (isDebugMode()) {
-            command = ArrayUtils.addAll(command, new String[]{"--language-worker", "--", debugConfiguration});
+            command = ArrayUtils.addAll(command, new String[] { "--language-worker", "--", debugConfiguration });
         }
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);

@@ -24,7 +24,6 @@ package com.microsoft.intellij.runner.functions.core;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.lang.jvm.JvmAnnotation;
@@ -52,6 +51,7 @@ import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.maven.common.utils.SneakyThrowUtils;
 import com.sun.tools.sjavac.Log;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,11 +60,9 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -151,14 +149,12 @@ public class FunctionUtils {
     }
 
     private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
-        final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+        final Gson gson = JsonUtils.getGson();
         final JsonObject jsonObject = gson.fromJson(FileUtils.readFileToString(target), JsonObject.class);
         final JsonObject valueObject = new JsonObject();
         appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
         jsonObject.add("Values", valueObject);
-        try (Writer writer = new FileWriter(target)) {
-            gson.toJson(jsonObject, writer);
-        }
+        JsonUtils.writeJsonToFile(target, jsonObject);
     }
 
     public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Path localSettingJson, Module module,
@@ -179,7 +175,9 @@ public class FunctionUtils {
         copyFilesWithDefaultContent(hostJson, hostJsonFile, DEFAULT_HOST_JSON);
         final File localSettingsFile = new File(stagingFolder.toFile(), "local.settings.json");
         copyFilesWithDefaultContent(localSettingJson, localSettingsFile, DEFAULT_LOCAL_SETTINGS_JSON);
-        updateLocalSettingValues(localSettingsFile, appSettings);
+        if (MapUtils.isNotEmpty(appSettings)) {
+            updateLocalSettingValues(localSettingsFile, appSettings);
+        }
 
         final List<File> jarFiles = new ArrayList<>();
         OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {

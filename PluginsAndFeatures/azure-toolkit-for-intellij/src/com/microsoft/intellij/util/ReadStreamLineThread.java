@@ -28,17 +28,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.function.Consumer;
 
-public class InputStreamMonitor extends Thread {
+public class ReadStreamLineThread extends Thread {
 
     private InputStream inputStream;
     private Consumer<String> stringConsumer;
     private Consumer<IOException> errorHandler;
 
-    public InputStreamMonitor(InputStream inputStream, Consumer<String> stringConsumer) {
-        this(inputStream, stringConsumer, null);
+    public ReadStreamLineThread(InputStream inputStream, Consumer<String> lineConsumer) {
+        this(inputStream, lineConsumer, null);
     }
 
-    public InputStreamMonitor(InputStream inputStream, Consumer<String> stringConsumer, Consumer<IOException> errorHandler) {
+    public ReadStreamLineThread(InputStream inputStream, Consumer<String> stringConsumer, Consumer<IOException> errorHandler) {
         this.inputStream = inputStream;
         this.stringConsumer = stringConsumer;
         this.errorHandler = errorHandler;
