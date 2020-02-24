@@ -16,7 +16,6 @@ import java.io.StringWriter;
 
 public final class Log {
     private static Logger logger = LoggerFactory.getLogger(com.microsoft.azure.common.logging.Log.class);
-    private static IPrompter prompter = null;
 
     public static void error(String message) {
         logger.error(message);
@@ -55,11 +54,6 @@ public final class Log {
     }
 
     public static void prompt(String message) {
-        if (prompter != null) {
-            prompter.prompt(message);
-            return;
-        }
-        // legacy code for prompt, will be replaced by new method: Notifier.noticeUser later
         if (logger.isInfoEnabled()) {
             logger.info(message);
             System.out.println(message);
@@ -78,9 +72,5 @@ public final class Log {
             // swallow error to avoid deadlock
         }
         return exceptionDetails;
-    }
-
-    public static void setPrompter(IPrompter prompter) {
-        Log.prompter = prompter;
     }
 }

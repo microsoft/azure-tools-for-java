@@ -6,6 +6,6 @@
 
 package com.microsoft.intellij.runner.functions.library;
 
-public interface IFunctionContext extends IAppServiceContext, IProviderContext {
+public interface IFunctionContext extends IAppServiceContext {
 
 }

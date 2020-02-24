@@ -28,7 +28,6 @@ import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
-import com.microsoft.intellij.runner.functions.library.IProviderContext;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -67,14 +66,11 @@ public class CreateFunctionHandler {
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private IAppServiceContext ctx;
-    private IProviderContext providerContext;
 
 
-    public CreateFunctionHandler(IAppServiceContext ctx, IProviderContext providerContext) {
+    public CreateFunctionHandler(IAppServiceContext ctx) {
         Preconditions.checkNotNull(ctx);
-        Preconditions.checkNotNull(providerContext);
         this.ctx = ctx;
-        this.providerContext = providerContext;
     }
 
     public void execute() throws Exception {
@@ -155,11 +151,7 @@ public class CreateFunctionHandler {
                 builder = new LinuxFunctionRuntimeHandler.Builder();
                 break;
             case Docker:
-                final RuntimeConfiguration runtime = this.ctx.getRuntime();
-                builder = new DockerFunctionRuntimeHandler.Builder().image(runtime.getImage())
-                        .dockerCredentialProvider(providerContext.getProvider(IDockerCredentialProvider.class))
-                        .registryUrl(runtime.getRegistryUrl());
-                break;
+                throw new UnsupportedOperationException("The 'docker' runtime is not supported in current version.");
             default:
                 throw new AzureExecutionException(String.format("Unsupported runtime %s", os));
         }

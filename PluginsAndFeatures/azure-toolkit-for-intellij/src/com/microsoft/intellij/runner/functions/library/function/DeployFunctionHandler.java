@@ -28,7 +28,6 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
-import com.microsoft.intellij.runner.functions.library.IProviderContext;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
@@ -67,13 +66,10 @@ public class DeployFunctionHandler {
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private IAppServiceContext ctx;
-    private IProviderContext providerContext;
 
-    public DeployFunctionHandler(IAppServiceContext ctx, IProviderContext providerContext) {
+    public DeployFunctionHandler(IAppServiceContext ctx) {
         Preconditions.checkNotNull(ctx);
-        Preconditions.checkNotNull(providerContext);
         this.ctx = ctx;
-        this.providerContext = providerContext;
     }
 
     public void execute() throws Exception {

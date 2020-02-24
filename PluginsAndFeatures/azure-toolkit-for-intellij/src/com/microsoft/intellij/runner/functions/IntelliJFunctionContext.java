@@ -203,33 +203,7 @@ public class IntelliJFunctionContext implements IFunctionContext {
         // todo: add validation method
     }
 
-    public void registerProvider(Class<? extends Object> clazz, Object provider) {
-        if (clazz == null) {
-            throw new IllegalArgumentException("Null provider class is illegal.");
-        }
-
-        if (provider == null) {
-            throw new IllegalArgumentException("Null provider is illegal.");
-        }
-
-        if (providerMap.containsKey(clazz)) {
-            throw new IllegalArgumentException(String.format("%s has already been registered.", clazz.getName()));
-        }
-        if (!clazz.isInterface()) {
-            throw new IllegalArgumentException("The provider class should be an interface");
-        }
-
-        providerMap.put(clazz, provider);
-    }
-
     public Map<String, String> getTelemetryProperties(Map<String, String> properties) {
         return new HashMap<>();
-    }
-
-    public <T> T getProvider(Class<T> clazz) {
-        if (!providerMap.containsKey(clazz)) {
-            return null;
-        }
-        return (T) providerMap.get(clazz);
     }
 }
