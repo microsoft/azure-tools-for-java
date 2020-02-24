@@ -25,10 +25,26 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
+import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool
 
 class ArcadiaSparkConfiguration (name: String, val module: ArcadiaSparkConfigurationModule, factory: ArcadiaSparkConfigurationFactory) : LivySparkBatchJobRunConfiguration(module.model, factory, module, name) {
     override fun getSparkApplicationType(): SparkApplicationType {
-        return SparkApplicationType.ArcadiaSpark
+        val cluster = try {
+            val arcadiaModel = module.model.submitModel as ArcadiaSparkSubmitModel
+            ArcadiaSparkComputeManager.getInstance()
+                    .findCompute(arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
+                    .toBlocking()
+                    .first()
+        } catch (ignore: Exception) {
+        }
+
+        return when (cluster) {
+            is SynapseCosmosSparkPool -> SparkApplicationType.CosmosSpark
+            is ArcadiaSparkCompute -> SparkApplicationType.ArcadiaSpark
+            else -> SparkApplicationType.None
+        }
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
