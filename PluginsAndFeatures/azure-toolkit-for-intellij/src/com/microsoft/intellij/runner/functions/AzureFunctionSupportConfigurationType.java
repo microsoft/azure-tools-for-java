@@ -64,6 +64,6 @@ public class AzureFunctionSupportConfigurationType implements ConfigurationType 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
         // Todo: update after commit specified configuration factory
-        return new ConfigurationFactory[]{new FunctionDeploymentConfigurationFactory(this), new FunctionRunConfigurationFactory(this)};
+        return new ConfigurationFactory[] { new FunctionDeploymentConfigurationFactory(this), new FunctionRunConfigurationFactory(this) };
     }
 }
