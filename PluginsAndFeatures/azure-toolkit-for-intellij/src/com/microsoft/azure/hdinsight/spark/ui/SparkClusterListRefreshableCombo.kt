@@ -134,7 +134,8 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
                 clustersSelection.comboBox as JComboBox<IClusterDetail>)
 
         // Only getter here since the select setter has a special behavior
-        open val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = hdinsightSparkClustersRefreshed
+        open val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = hdinsightSparkClustersRefreshed
 
         val selectedCluster: IClusterDetail?
             get() = clusterListModelBehavior.value.selectedItem as? IClusterDetail
@@ -201,7 +202,8 @@ class CosmosSparkClustersCombo: SparkClusterListRefreshableCombo() {
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().clusters
             .toTypedArray()) {
 
-        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = cosmosSparkClustersRefreshed
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = cosmosSparkClustersRefreshed
     }
 
     override val viewModel = ViewModel().apply { Disposer.register(this@CosmosSparkClustersCombo, this@apply) }
@@ -213,7 +215,8 @@ class ArisSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
             .filterIsInstance<SqlBigDataLivyLinkClusterDetail>()
             .toTypedArray()) {
 
-        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = arisSparkClustersRefreshed
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = arisSparkClustersRefreshed
     }
 
     override val viewModel = ViewModel().apply { Disposer.register(this@ArisSparkClusterListRefreshableCombo, this@apply) }
@@ -226,7 +229,8 @@ class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().accounts
             .toTypedArray()) {
 
-        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = cosmosServerlessSparkAccountsRefreshed
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = cosmosServerlessSparkAccountsRefreshed
     }
 
     override val viewModel: SparkClusterListRefreshableCombo.ViewModel by lazy { ViewModel() }
@@ -238,7 +242,8 @@ class ArcadiaSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo(
     inner class ViewModel
         : SparkClusterListRefreshableCombo.ViewModel(ArcadiaSparkComputeManager.getInstance().clusters
             .toTypedArray()) {
-        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = arcadiaSparkClustersRefreshed
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = arcadiaSparkClustersRefreshed
     }
 
     override val viewModel = ViewModel().apply { Disposer.register(this@ArcadiaSparkClusterListRefreshableCombo, this@apply) }
