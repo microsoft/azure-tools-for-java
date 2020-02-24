@@ -15,6 +15,7 @@
         <project.build.encoding>UTF-8</project.build.encoding>
         <scala.version>2.11.11</scala.version>
         <spark.version>2.1.0</spark.version>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
         <sourceDirectory>src/main</sourceDirectory>

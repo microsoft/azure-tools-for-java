@@ -32,6 +32,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
+import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
@@ -41,12 +42,14 @@ import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
 import java.net.URI
 import java.util.*
 
-open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel, operation: Operation?) :
-    RunProfileStateWithAppInsightsEvent(
-        UUID.randomUUID().toString(),
-        HDInsightBundle.message("SparkRunConfigRunButtonClick")!!,
-        operation
-    ), SparkBatchRemoteRunProfileState, TelemetryProperties {
+open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel,
+                                    operation: Operation?,
+                                    override var sparkBatch: ISparkBatchJob)
+    : RunProfileStateWithAppInsightsEvent(UUID.randomUUID().toString(),
+                                          HDInsightBundle.message("SparkRunConfigRunButtonClick")!!,
+                                          operation),
+      SparkBatchRemoteRunProfileState,
+      TelemetryProperties {
     override var remoteProcessCtrlLogHandler: SparkBatchJobProcessCtrlLogOut? = null
     override var executionResult: ExecutionResult? = null
     override var consoleView: ConsoleView? = null

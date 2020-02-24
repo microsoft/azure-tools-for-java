@@ -31,16 +31,20 @@ import com.microsoft.azure.hdinsight.spark.common.SparkJobUploadArtifactExceptio
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.log4j.Level;
 import rx.Observable;
 import rx.Subscription;
 import rx.subjects.PublishSubject;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 
 public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     @NotNull
@@ -177,6 +181,10 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                         ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
+                    // Receive the remaining Livy submission log if there be for errors
+                    startJobSubmissionLogReceiver(getSparkJob())
+                            .subscribe();
+
                     ctrlSubject.onError(err);
                     destroy();
                 }, () -> {
@@ -220,8 +228,49 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
         return eventSubject;
     }
 
+    private final List<Level> log4jAllLevels = Arrays.asList(
+            Level.FATAL,
+            Level.ERROR,
+            Level.WARN,
+            Level.INFO,
+            Level.DEBUG,
+            Level.TRACE);
+
+    private final Pattern log4jLevelRegex = Pattern.compile(
+            "\\b(?<level>"
+                    + log4jAllLevels.stream().map(Level::toString).collect(Collectors.joining("|")) + ")\\b");
+
+    private SimpleImmutableEntry<MessageInfoType, String> mapTypedMessageByLog4jLevels(
+            final SimpleImmutableEntry<MessageInfoType, String> previous,
+            final SimpleImmutableEntry<MessageInfoType, String> current) {
+        if (current.getKey() == Log) {
+            final String msg = current.getValue();
+            final Matcher matcher = log4jLevelRegex.matcher(msg);
+
+            if (matcher.find()) {
+                Level level = Level.toLevel(matcher.group("level"));
+                if (level.isGreaterOrEqual(Level.ERROR)) {
+                    return new SimpleImmutableEntry<>(Error, msg);
+                }
+
+                if (level == Level.WARN) {
+                    return new SimpleImmutableEntry<>(Warning, msg);
+                }
+
+                // Keep the current level
+                return current;
+            }
+
+            // No level keyword found, use the previous's level
+            return new SimpleImmutableEntry<>(previous.getKey(), msg);
+        }
+
+        return current;
+    }
+
     protected Observable<ISparkBatchJob> startJobSubmissionLogReceiver(ISparkBatchJob job) {
         return job.getSubmissionLog()
+                .scan(this::mapTypedMessageByLog4jLevels)
                 .doOnNext(ctrlSubject::onNext)
                 // "ctrlSubject::onNext" lead to uncaught exception
                 // while "ctrlError" only print error message in console view

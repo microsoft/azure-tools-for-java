@@ -28,18 +28,25 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.Task.Backgroundable;
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 
-public class IdeaSchedulers implements IdeSchedulers {
+import static com.intellij.openapi.progress.PerformInBackgroundOption.DEAF;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static rx.schedulers.Schedulers.computation;
+import static rx.schedulers.Schedulers.from;
+
+public class IdeaSchedulers implements IdeSchedulers, ILogger {
     @Nullable final private Project project;
 
     public IdeaSchedulers() {
@@ -51,8 +58,8 @@ public class IdeaSchedulers implements IdeSchedulers {
     }
 
     public Scheduler processBarVisibleAsync(@NotNull String title) {
-        return Schedulers.from(command -> ApplicationManager.getApplication().invokeLater(() -> {
-            final Task.Backgroundable task = new Task.Backgroundable(project, title, false) {
+        return from(command -> ApplicationManager.getApplication().invokeLater(() -> {
+            final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     command.run();
@@ -66,8 +73,8 @@ public class IdeaSchedulers implements IdeSchedulers {
     }
 
     public Scheduler processBarVisibleSync( @NotNull String title) {
-        return Schedulers.from(command -> ApplicationManager.getApplication().invokeAndWait(() -> {
-            final Task.Backgroundable task = new Task.Backgroundable(project, title, false) {
+        return from(command -> ApplicationManager.getApplication().invokeAndWait(() -> {
+            final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     command.run();
@@ -87,7 +94,7 @@ public class IdeaSchedulers implements IdeSchedulers {
     public Scheduler dispatchUIThread(ModalityState state) {
         Application application = ApplicationManager.getApplication();
 
-        return Schedulers.from(command -> {
+        return from(command -> {
             try {
                 if (application == null) {
                     SwingUtilities.invokeLater(command);
@@ -104,7 +111,7 @@ public class IdeaSchedulers implements IdeSchedulers {
     public Scheduler dispatchPooledThread() {
         Application application = ApplicationManager.getApplication();
 
-        return Schedulers.from(command -> {
+        return from(command -> {
             try {
                 if (application == null) {
                     Schedulers.io();
@@ -115,5 +122,23 @@ public class IdeaSchedulers implements IdeSchedulers {
                 // FIXME!!! Not support process canceling currently, just ignore it
             }
         });
+    }
+
+    public Scheduler backgroundableTask(final String title) {
+        return from(command -> ProgressManager.getInstance().run(new Backgroundable(project, title, true, DEAF) {
+            @Override
+            public void run(final @NotNull ProgressIndicator indicator) {
+                final Thread workerThread = Thread.currentThread();
+
+                // Check if indicator's cancelled every 0.5s and interrupt the worker thread if it be.
+                Observable.interval(500, MILLISECONDS, computation())
+                        .takeUntil(i -> indicator.isCanceled())
+                        .filter(i -> indicator.isCanceled())
+                        .subscribe(data -> workerThread.interrupt(),
+                                   err -> log().warn("Can't interrupt thread {}", workerThread.getName(), err));
+
+                command.run();
+            }
+        }));
     }
 }

@@ -43,11 +43,7 @@ import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTask;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
+import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.*;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
@@ -64,6 +60,7 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
+import rx.Observable;
 import rx.subjects.PublishSubject;
 
 import java.io.File;
@@ -76,8 +73,12 @@ import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadSto
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN2;
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.BLOB;
 
-public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration implements ILogger
+public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
+        implements RunProfileStatePrepare<ISparkBatchJob>, ILogger
 {
+    @Nullable
+    private ISparkBatchJob sparkRemoteBatch = null;
+
     enum RunMode {
         LOCAL,
         REMOTE,
@@ -270,13 +271,14 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration 
         super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings);
     }
 
-    protected void checkBuildSparkJobBeforeRun(@NotNull SparkSubmissionRunner runner,
-                                               @NotNull SparkSubmitModel submitModel) throws RuntimeConfigurationError {
-        try {
-            runner.buildSparkBatchJob(submitModel, PublishSubject.create());
-        } catch (Exception err) {
-            throw new RuntimeConfigurationError(err.getMessage());
+    @Override
+    public Observable<ISparkBatchJob> prepare(final ProgramRunner<RunnerSettings> runner) {
+        if (!(runner instanceof SparkSubmissionRunner)) {
+            return Observable.empty();
         }
+
+        return ((SparkSubmissionRunner) runner).buildSparkBatchJob(getSubmitModel(), PublishSubject.create())
+                .doOnNext(batch -> sparkRemoteBatch = batch);
     }
 
     protected String getErrorMessageClusterNull() {
@@ -326,8 +328,6 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration 
         } finally {
             Disposer.dispose(storageConfigPanels);
         }
-
-        checkBuildSparkJobBeforeRun(runner, getSubmitModel());
     }
 
     private void checkLocalRunConfigurationBeforeRun() throws RuntimeConfigurationException {
@@ -378,24 +378,34 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration 
                 .findFirst().orElse(null);
 
         if (executor instanceof SparkBatchJobDebugExecutor) {
+            final ISparkBatchJob remoteDebugBatch = sparkRemoteBatch;
+            if (!(remoteDebugBatch instanceof SparkBatchRemoteDebugJob)) {
+                throw new ExecutionException("Spark Batch Job is not prepared for " + executor.getId());
+            }
+
             if (isExecutor) {
                 setRunMode(RunMode.REMOTE_DEBUG_EXECUTOR);
-                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel(), operation);
+                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel(), operation, remoteDebugBatch);
             } else {
                 if (selectedArtifact != null) {
                     BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, selectedArtifact);
                 }
 
                 setRunMode(RunMode.REMOTE);
-                state = new SparkBatchRemoteDebugState(getModel().getSubmitModel(), operation);
+                state = new SparkBatchRemoteDebugState(getModel().getSubmitModel(), operation, sparkRemoteBatch);
             }
         } else if (executor instanceof SparkBatchJobRunExecutor) {
+            final ISparkBatchJob remoteBatch = sparkRemoteBatch;
+            if (remoteBatch == null) {
+                throw new ExecutionException("Spark Batch Job is not prepared for " + executor.getId());
+            }
+
             if (selectedArtifact != null) {
                 BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, selectedArtifact);
             }
 
             setRunMode(RunMode.REMOTE);
-            state = new SparkBatchRemoteRunState(getModel().getSubmitModel(), operation);
+            state = new SparkBatchRemoteRunState(getModel().getSubmitModel(), operation, remoteBatch);
         } else if (executor instanceof DefaultDebugExecutor) {
             setRunMode(RunMode.LOCAL);
             if (operation == null) {
