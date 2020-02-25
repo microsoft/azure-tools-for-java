@@ -47,6 +47,7 @@ public class ResourceGroupPanel extends JPanel {
 
     private Window window;
     private String subscriptionId;
+    private ResourceGroupWrapper selectedResourceGroup;
 
     public ResourceGroupPanel(Window window) {
         this();
@@ -78,6 +79,7 @@ public class ResourceGroupPanel extends JPanel {
     }
 
     private void createResourceGroup() {
+        cbResourceGroup.setSelectedItem(null);
         final NewResourceGroupDialog dialog = new NewResourceGroupDialog();
         dialog.pack();
         dialog.setLocationRelativeTo(this);
@@ -89,6 +91,8 @@ public class ResourceGroupPanel extends JPanel {
                 if (newResourceGroup != null) {
                     cbResourceGroup.addItem(newResourceGroup);
                     cbResourceGroup.setSelectedItem(newResourceGroup);
+                } else {
+                    cbResourceGroup.setSelectedItem(selectedResourceGroup);
                 }
             }
         });
@@ -121,6 +125,8 @@ public class ResourceGroupPanel extends JPanel {
         final Object selectedObject = cbResourceGroup.getSelectedItem();
         if (CREATE_RESOURCE_GROUP.equals(selectedObject)) {
             createResourceGroup();
+        } else if (selectedObject instanceof ResourceGroupWrapper) {
+            selectedResourceGroup = (ResourceGroupWrapper) selectedObject;
         }
     }
 
@@ -139,7 +145,8 @@ public class ResourceGroupPanel extends JPanel {
         } else {
             resourceGroups.stream().forEach(resourceGroup -> cbResourceGroup.addItem(new ResourceGroupWrapper(resourceGroup)));
             // Choose the first resource group by default
-            cbResourceGroup.setSelectedItem(cbResourceGroup.getItemAt(1));
+            selectedResourceGroup = (ResourceGroupWrapper) cbResourceGroup.getItemAt(1);
+            cbResourceGroup.setSelectedItem(selectedResourceGroup);
         }
         if (window != null) {
             window.pack();
