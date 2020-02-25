@@ -30,6 +30,7 @@ import com.microsoft.azure.hdinsight.spark.ui.ArcadiaSparkClusterListRefreshable
 import com.microsoft.azure.hdinsight.spark.ui.SparkClusterListRefreshableCombo
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
+import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool
 
 class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionContentPanel(project, "Synapse Spark") {
     override val clustersSelection: SparkClusterListRefreshableCombo by lazy { ArcadiaSparkClusterListRefreshableCombo().apply {
@@ -54,6 +55,7 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
             arcadiaData.sparkCompute = cluster.name
             arcadiaData.livyUri = cluster.connectionUrl
                     ?: throw RuntimeConfigurationWarning("Can't get Synapse Spark pool connection URL")
+            arcadiaData.isCosmosCluster = cluster is SynapseCosmosSparkPool
         }
     }
 }

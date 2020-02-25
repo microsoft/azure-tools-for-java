@@ -35,6 +35,8 @@ class ArcadiaSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
     var sparkCompute: String? = null
     @Attribute("tenant_id")
     var tenantId: String? = null
+    @Attribute("is_cosmos_cluster")
+    var isCosmosCluster: Boolean? = null
 
     override fun getSparkClusterTypeDisplayName(): String = "Synapse Spark Pool"
 }
