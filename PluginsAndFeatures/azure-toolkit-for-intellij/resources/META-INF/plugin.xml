@@ -372,6 +372,12 @@
     <action id="Actions.RunArisSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction" text="Spark on SQL Server Big Data Cluster"
             description="Start a Spark local console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+    <action id="page.new" class="com.microsoft.intellij.actions.CreateFunctionAction"
+            text="Azure Function Class"
+            description="Create New Azure Function Class">
+      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
+    </action>
     </actions>
+
     <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>

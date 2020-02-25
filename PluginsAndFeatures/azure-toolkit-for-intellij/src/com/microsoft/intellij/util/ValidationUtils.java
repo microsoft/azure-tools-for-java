@@ -27,6 +27,7 @@ public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
     private static final String GROUP_ARTIFACT_ID_REGEX = "[0-9a-zA-Z]([\\.a-zA-Z0-9\\-_])*";
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
+    private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
 
     public static boolean isValidJavaPackageName(String packageName) {
         return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
@@ -34,6 +35,10 @@ public class ValidationUtils {
 
     public static boolean isValidGroupIdArtifactId(String name) {
         return name != null && name.matches(GROUP_ARTIFACT_ID_REGEX);
+    }
+
+    public static boolean isValidFunctionName(String name) {
+        return name != null && name.matches(AZURE_FUNCTION_NAME_REGEX);
     }
 
     public static boolean isValidVersion(String version) {
