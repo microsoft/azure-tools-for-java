@@ -47,7 +47,7 @@ public class JsonUtils {
         }
     }
 
-    public static JsonObject readLocalSettingsJsonFile(File target) {
+    public static JsonObject readJsonFile(File target) {
         try (FileInputStream fis = new FileInputStream(target);
              InputStreamReader isr = new InputStreamReader(fis)) {
             final Gson gson = new Gson();

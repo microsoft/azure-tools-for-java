@@ -25,7 +25,6 @@ package com.microsoft.intellij.runner.functions.component.table;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -157,7 +156,7 @@ public class AppSettingsTableUtils {
 
     public static Map<String, String> getAppSettingsFromLocalSettingsJson(File target) {
         final Map<String, String> result = new HashMap<>();
-        final JsonObject jsonObject = JsonUtils.readLocalSettingsJsonFile(target);
+        final JsonObject jsonObject = JsonUtils.readJsonFile(target);
         if (jsonObject == null) {
             return new HashMap<>();
         }
@@ -178,7 +177,7 @@ public class AppSettingsTableUtils {
             target.createNewFile();
         }
         final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-        JsonObject jsonObject = JsonUtils.readLocalSettingsJsonFile(target);
+        JsonObject jsonObject = JsonUtils.readJsonFile(target);
         if (jsonObject == null) {
             jsonObject = gson.fromJson(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
         }
