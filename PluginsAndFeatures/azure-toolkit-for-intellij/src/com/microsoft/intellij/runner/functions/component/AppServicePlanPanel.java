@@ -59,7 +59,6 @@ public class AppServicePlanPanel extends JPanel {
     private Subscription subscription;
 
     private String subscriptionId;
-    private String resourceGroup;
     private OperatingSystem operatingSystem;
     private AppServicePlanWrapper selectedAppServicePlan = null;
     private List<AppServicePlanWrapper> appServicePlanWrapperList = new ArrayList<>();
@@ -112,9 +111,12 @@ public class AppServicePlanPanel extends JPanel {
         return selectedAppServicePlan == null ? null : selectedAppServicePlan.getPricingTier();
     }
 
-    public void loadAppServicePlan(String subscriptionId, String resourceGroup, OperatingSystem operatingSystem) {
+    public String getAppServicePlanResourceGroup() {
+        return selectedAppServicePlan == null ? null : selectedAppServicePlan.resourceGroup;
+    }
+
+    public void loadAppServicePlan(String subscriptionId, OperatingSystem operatingSystem) {
         this.subscriptionId = subscriptionId;
-        this.resourceGroup = resourceGroup;
         this.operatingSystem = operatingSystem;
         if (subscription != null && !subscription.isUnsubscribed()) {
             subscription.unsubscribe();
@@ -122,8 +124,7 @@ public class AppServicePlanPanel extends JPanel {
         beforeLoadAppServicePlan();
         subscription = Observable.fromCallable(() -> {
             return AzureFunctionMvpModel.getInstance()
-                    .listAppServicePlanBySubscriptionIdAndResourceGroupName(subscriptionId, resourceGroup).stream()
-                    .filter(appServicePlan -> operatingSystem == null || operatingSystem.equals(appServicePlan.operatingSystem()))
+                    .listAppServicePlanBySubscriptionId(subscriptionId).stream()
                     .sorted((first, second) -> StringUtils.compare(first.name(), second.name()))
                     .collect(Collectors.toList());
         }).subscribeOn(Schedulers.newThread()).subscribe(this::fillAppServicePlan);
@@ -191,17 +192,16 @@ public class AppServicePlanPanel extends JPanel {
         cbAppServicePlan.removeAllItems();
         cbAppServicePlan.setEnabled(true);
         cbAppServicePlan.addItem(CREATE_APP_SERVICE_PLAN);
+
         final List<AppServicePlanWrapper> items = appServicePlanWrapperList.stream()
                 .filter(appServicePlanWrapper -> appServicePlanWrapper.isNewCreate() || operatingSystem.equals(appServicePlanWrapper.getOperatingSystem()))
                 .collect(Collectors.toList());
-        if (items.size() == 0) {
-            cbAppServicePlan.setSelectedItem(null);
-            showAppServicePlan(null);
-        } else {
-            items.stream().forEachOrdered(appServicePlanWrapper -> cbAppServicePlan.addItem(appServicePlanWrapper));
-            final AppServicePlanWrapper selectedItem = (selectedAppServicePlan == null || !items.contains(selectedAppServicePlan)) ? items.get(0) : selectedAppServicePlan;
-            cbAppServicePlan.setSelectedItem(selectedItem);
-        }
+        items.stream().forEach(appServicePlanWrapper -> cbAppServicePlan.addItem(appServicePlanWrapper));
+        final AppServicePlanWrapper selectedItem = items.size() == 0 ? null :
+                (selectedAppServicePlan == null || !items.contains(selectedAppServicePlan)) ? items.get(0) : selectedAppServicePlan;
+        cbAppServicePlan.setSelectedItem(selectedItem);
+        showAppServicePlan(selectedItem);
+
         if (window != null) {
             window.pack();
         }
@@ -213,6 +213,7 @@ public class AppServicePlanPanel extends JPanel {
 
         private boolean isNewCreate;
         private String name;
+        private String resourceGroup;
         private Region region;
         private PricingTier pricingTier;
         private OperatingSystem operatingSystem;
@@ -223,6 +224,7 @@ public class AppServicePlanPanel extends JPanel {
             this.region = appServicePlan.region();
             this.pricingTier = appServicePlan.pricingTier();
             this.operatingSystem = appServicePlan.operatingSystem();
+            this.resourceGroup = appServicePlan.resourceGroupName();
         }
 
         public AppServicePlanWrapper(String name, Location location, PricingTier pricingTier) {
@@ -252,9 +254,13 @@ public class AppServicePlanPanel extends JPanel {
             return operatingSystem;
         }
 
+        public String getResourceGroup() {
+            return resourceGroup;
+        }
+
         @Override
         public String toString() {
-            return isNewCreate ? String.format(NEW_CREATED_PATTERN, name) : name;
+            return isNewCreate ? String.format(NEW_CREATED_PATTERN, name) : String.format("%s (Resource Group: %s)", name, resourceGroup);
         }
     }
 }
