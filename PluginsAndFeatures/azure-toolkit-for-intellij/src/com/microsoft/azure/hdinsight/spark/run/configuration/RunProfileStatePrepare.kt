@@ -20,18 +20,19 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.run
+package com.microsoft.azure.hdinsight.spark.run.configuration
 
-import com.intellij.execution.Executor
-import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-import com.microsoft.azuretools.telemetrywrapper.Operation
+import com.intellij.execution.configurations.RunnerSettings
+import com.intellij.execution.runners.ProgramRunner
+import rx.Observable
 
-class SparkBatchRemoteDebugExecutorState(serverlessSparkSubmitModel: SparkSubmitModel,
-                                         operation: Operation?,
-                                         batchDebugJob: ISparkBatchJob)
-    : SparkBatchRemoteDebugState(serverlessSparkSubmitModel, operation, batchDebugJob) {
-
-    override fun onComplete(executor: Executor) {
-    }
+interface RunProfileStatePrepare<T> {
+    /**
+     * Prepare some internal data which may be heavy cost, such as IO operation, for Run Profile State before
+     * invoking the method [com.intellij.execution.configurations.RunProfile.getState].
+     *
+     * @param runner: The target run profile runner
+     * @return: An Observable of produced internal data
+     */
+    fun prepare(runner: ProgramRunner<RunnerSettings>): Observable<T>
 }

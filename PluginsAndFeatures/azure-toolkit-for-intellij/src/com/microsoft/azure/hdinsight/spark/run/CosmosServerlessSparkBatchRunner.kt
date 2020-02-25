@@ -30,6 +30,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.Crea
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfiguration
 import org.apache.commons.lang3.exception.ExceptionUtils
+import rx.Observable
 import rx.Observer
 import java.io.IOException
 import java.util.*
@@ -55,8 +56,9 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         }
     }
 
-    @Throws(ExecutionException::class)
-    override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel,
+                                    ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>)
+            : Observable<ISparkBatchJob> = Observable.fromCallable {
         val submissionParameter = submitModel.submissionParameter as CreateSparkBatchJobParameters
         val adlAccountName = submissionParameter.clusterName
         val account = AzureSparkCosmosClusterManager.getInstance().getAccountByName(adlAccountName)
@@ -70,7 +72,7 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         }
         val storageRootPath = account.storageRootPath ?: throw ExecutionException("Error getting ADLS storage root path for account ${account.name}")
 
-        return CosmosServerlessSparkBatchJob(
+        CosmosServerlessSparkBatchJob(
             account,
             AdlsDeploy(storageRootPath, accessToken),
             prepareSubmissionParameterWithTransformedGen2Uri(submissionParameter) as CreateSparkBatchJobParameters,

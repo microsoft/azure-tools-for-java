@@ -54,6 +54,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import rx.Observable;
 import rx.Observer;
 import rx.subjects.PublishSubject;
 
@@ -64,12 +65,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission.getClusterSubmission;
+import static com.microsoft.intellij.rxjava.IdeaSchedulers.updateCurrentBackgroundableTaskIndicator;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
+    public static final String RUNNER_ID = "SparkJobRun";
+
     @NotNull
     @Override
     public String getRunnerId() {
-        return "SparkBatchJobRun";
+        return RUNNER_ID;
     }
 
     @Override
@@ -101,19 +105,39 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     @Override
     @NotNull
-    public ISparkBatchJob buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
-                                             @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
-        String clusterName = submitModel.getSubmissionParameter().getClusterName();
-        IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
-                .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
+    public Observable<ISparkBatchJob> buildSparkBatchJob(
+            @NotNull SparkSubmitModel submitModel,
+            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject
+    ) {
+        return Observable.fromCallable(() -> {
+            String clusterName = submitModel.getSubmissionParameter().getClusterName();
 
-        Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
-                submitModel, clusterDetail, ctrlSubject);
+            updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
+                progressIndicator.setFraction(0.2f);
+                progressIndicator.setText("Get Spark cluster [" + clusterName + "] information from subscriptions");
+            });
 
-        SparkSubmissionParameter submissionParameter =
-                prepareSubmissionParameterWithTransformedGen2Uri(submitModel.getSubmissionParameter());
+            IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
+                    .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
-        return new SparkBatchJob(clusterDetail, submissionParameter, getClusterSubmission(clusterDetail), ctrlSubject, jobDeploy);
+            updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
+                progressIndicator.setFraction(0.7f);
+                progressIndicator.setText("Get the storage configuration for artifacts deployment");
+            });
+
+            Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
+                    submitModel, clusterDetail, ctrlSubject);
+
+            SparkSubmissionParameter submissionParameter =
+                    prepareSubmissionParameterWithTransformedGen2Uri(submitModel.getSubmissionParameter());
+
+            updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
+                progressIndicator.setFraction(1.0f);
+                progressIndicator.setText("All checks are passed.");
+            });
+
+            return new SparkBatchJob(clusterDetail, submissionParameter, getClusterSubmission(clusterDetail), ctrlSubject, jobDeploy);
+        });
     }
 
     protected void addConsoleViewFilter(@NotNull ISparkBatchJob job, @NotNull ConsoleView consoleView) {
@@ -172,10 +196,12 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         String artifactPath = submitModel.getArtifactPath().orElse(null);
         assert artifactPath != null : "artifactPath should be checked in LivySparkBatchJobRunConfiguration::checkSubmissionConfigurationBeforeRun";
 
-        PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
+        final ISparkBatchJob sparkBatch = submissionState.getSparkBatch();
+        final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject =
+                (PublishSubject<SimpleImmutableEntry<MessageInfoType, String>>) sparkBatch.getCtrlSubject();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
-                buildSparkBatchJob(submitModel, ctrlSubject),
+                sparkBatch,
                 artifactPath,
                 submitModel.getSubmissionParameter().getMainClassName(),
                 ctrlSubject);

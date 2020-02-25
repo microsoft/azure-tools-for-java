@@ -26,9 +26,9 @@ import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.common.CommonConst;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 import java.util.Optional;
 
@@ -39,7 +39,7 @@ public class SparkBatchJobDebugExecutor extends Executor {
 
     @Override
     public String getToolWindowId() {
-        return CommonConst.DEBUG_SPARK_JOB_WINDOW_ID;
+        return SparkBatchJobDebuggerRunner.RUNNER_ID;
     }
 
     @Override

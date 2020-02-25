@@ -70,6 +70,12 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     private Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
 
+    /**
+     * Livy log fetching offset in Spark Batch Job context. Accessing with {@link #livyLogOffsetLock}
+     */
+    private int nextLivyLogOffset = 0;
+    private final Object livyLogOffsetLock = new Object();
+
     @Nullable
     private String getCurrentLogUrl() {
         return currentLogUrl;
@@ -806,13 +812,14 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
         return Observable.create(ob -> {
             try {
-                int start = 0;
                 final int maxLinesPerGet = 128;
                 int linesGot;
-                boolean isSubmitting = true;
+                boolean isFetching = true;
 
-                while (isSubmitting) {
-                    Boolean isAppIdAllocated = !this.getSparkJobApplicationIdObservable().isEmpty().toBlocking().lastOrDefault(true);
+                while (isFetching) {
+                    final int start = nextLivyLogOffset;
+                    final boolean isAppIdAllocated = !this.getSparkJobApplicationIdObservable().isEmpty().toBlocking()
+                            .lastOrDefault(true);
                     String logUrl = String.format("%s/%d/log?from=%d&size=%d",
                             this.getConnectUri().toString(), batchId, start, maxLinesPerGet);
 
@@ -823,17 +830,24 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                             .orElseThrow(() -> new UnknownServiceException(
                                     "Bad spark log response: " + httpResponse.getMessage()));
 
-                    // To subscriber
-                    sparkJobLog.getLog().stream()
-                            .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
-                            .forEach(line -> ob.onNext(new SimpleImmutableEntry<>(Log, line)));
+                    synchronized (livyLogOffsetLock) {
+                        if (start != nextLivyLogOffset) {
+                            // The offset is moved by another fetching thread, re-do it with new offset
+                            continue;
+                        }
 
-                    linesGot = sparkJobLog.getLog().size();
-                    start += linesGot;
+                        // To subscriber
+                        sparkJobLog.getLog().stream()
+                                .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
+                                .forEach(line -> ob.onNext(new SimpleImmutableEntry<>(Log, line)));
+
+                        linesGot = sparkJobLog.getLog().size();
+                        nextLivyLogOffset += linesGot;
+                    }
 
                     // Retry interval
                     if (linesGot == 0) {
-                        isSubmitting = this.getState().equals("starting") && !isAppIdAllocated;
+                        isFetching = this.getState().equals("starting") && !isAppIdAllocated;
 
                         sleep(TimeUnit.SECONDS.toMillis(this.getDelaySeconds()));
                     }

@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.spark.run;
 import com.intellij.execution.Executor;
 import com.intellij.icons.AllIcons;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
-import com.microsoft.intellij.common.CommonConst;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,7 +36,7 @@ public class SparkBatchJobRunExecutor extends Executor {
 
     @Override
     public String getToolWindowId() {
-        return CommonConst.REMOTE_SPARK_JOB_WINDOW_ID;
+        return SparkBatchJobRunner.RUNNER_ID;
     }
 
     @Override

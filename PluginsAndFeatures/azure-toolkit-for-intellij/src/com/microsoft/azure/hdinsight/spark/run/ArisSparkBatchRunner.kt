@@ -36,6 +36,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration
 import com.microsoft.azure.sqlbigdata.spark.common.ArisSparkBatchJob
+import rx.Observable
 import rx.Observer
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -76,9 +77,9 @@ class ArisSparkBatchRunner : SparkBatchJobRunner() {
     }
 
     override fun buildSparkBatchJob(
-        submitModel: SparkSubmitModel,
-        ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>
-    ): ISparkBatchJob {
+            submitModel: SparkSubmitModel,
+            ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>
+    ): Observable<ISparkBatchJob> = Observable.fromCallable {
         val clusterName = submitModel.submissionParameter.clusterName
         val clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
             .orElseThrow { ExecutionException("Can't find cluster named $clusterName") }
@@ -86,7 +87,8 @@ class ArisSparkBatchRunner : SparkBatchJobRunner() {
         val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, clusterDetail, ctrlSubject)
         // UTC Time sample: 2019-07-09T02:47:34.245Z
         val currentUtcTime = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-        return ArisSparkBatchJob(
+
+        ArisSparkBatchJob(
             clusterDetail,
             // In the latest 0.6.0-incubating livy, livy prevents user from creating sessions that have the same session name
             // Livy release notes: https://livy.apache.org/history/
