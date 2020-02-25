@@ -47,6 +47,10 @@ public class JarUtils {
     private static final int BUFFER_SIZE = 4096;
 
     public static Path buildJarFileToStagingPath(String stagingFolder, Module module) throws IOException, AzureExecutionException {
+        final File stagingFolderFile = new File(stagingFolder);
+        if (!stagingFolderFile.exists()) {
+            stagingFolderFile.mkdirs();
+        }
         final String moduleName = module.getName();
         final String path = CompilerPaths.getModuleOutputPath(module, false);
         final Path outputFile = Paths.get(stagingFolder, moduleName + ".jar");

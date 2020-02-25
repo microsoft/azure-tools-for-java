@@ -143,6 +143,8 @@
       implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
     <completion.contributor language="JSON" order="first"
       implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
+    <facetType implementation="com.microsoft.intellij.wizards.functions.facet.FunctionsFacetType"/>
+    <moduleBuilder builderClass="com.microsoft.intellij.wizards.functions.module.FunctionsModuleBuilder"/>
   </extensions>
 
   <application-components>

@@ -23,6 +23,8 @@
 package com.microsoft.intellij.runner.functions.core;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.lang.jvm.JvmAnnotation;
 import com.intellij.lang.jvm.JvmParameter;
@@ -46,11 +48,10 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
-import com.microsoft.azure.common.function.utils.CommandUtils;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.maven.common.utils.SneakyThrowUtils;
 import com.sun.tools.sjavac.Log;
-import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -133,9 +134,9 @@ public class FunctionUtils {
         }
     }
 
-    public static void prepareStagingFolderForDeploy(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
-            throws AzureExecutionException, IOException {
-        prepareStagingFolder(stagingFolder, hostJson, null, module, methods);
+    public static void prepareStagingFolderForDeploy(Path stagingFolder, Path hostJson, Module module, Map<String, String> appSettings,
+                                                     PsiMethod[] methods) throws AzureExecutionException, IOException {
+        prepareStagingFolder(stagingFolder, hostJson, null, module, appSettings, methods);
     }
 
     private static void copyFilesWithDefaultContent(Path sourcePath, File dest, String defaultContent) throws IOException {
@@ -147,8 +148,17 @@ public class FunctionUtils {
         }
     }
 
+    private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
+        final Gson gson = JsonUtils.getGson();
+        final JsonObject jsonObject = gson.fromJson(FileUtils.readFileToString(target), JsonObject.class);
+        final JsonObject valueObject = new JsonObject();
+        appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
+        jsonObject.add("Values", valueObject);
+        JsonUtils.writeJsonToFile(target, jsonObject);
+    }
+
     public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Path localSettingJson, Module module,
-                                            PsiMethod[] methods) throws AzureExecutionException, IOException {
+                                            Map<String, String> appSettings, PsiMethod[] methods) throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
         final Path jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);
         final String scriptFilePath = "../" + jarFile.getFileName().toString();
@@ -161,8 +171,13 @@ public class FunctionUtils {
             }
         }
 
-        copyFilesWithDefaultContent(hostJson, new File(stagingFolder.toFile(), "host.json"), DEFAULT_HOST_JSON);
-        copyFilesWithDefaultContent(localSettingJson, new File(stagingFolder.toFile(), "local.settings.json"), DEFAULT_LOCAL_SETTINGS_JSON);
+        final File hostJsonFile = new File(stagingFolder.toFile(), "host.json");
+        copyFilesWithDefaultContent(hostJson, hostJsonFile, DEFAULT_HOST_JSON);
+        final File localSettingsFile = new File(stagingFolder.toFile(), "local.settings.json");
+        copyFilesWithDefaultContent(localSettingJson, localSettingsFile, DEFAULT_LOCAL_SETTINGS_JSON);
+        if (MapUtils.isNotEmpty(appSettings)) {
+            updateLocalSettingValues(localSettingsFile, appSettings);
+        }
 
         final List<File> jarFiles = new ArrayList<>();
         OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
@@ -237,7 +252,7 @@ public class FunctionUtils {
         patchStorageBinding(method, bindings);
         config.setEntryPoint(method.getContainingClass().getQualifiedName() + "." + method.getName());
         // Todo: add set bindings method in tools-common
-        //config.setBindings(bindings);
+        config.setBindings(bindings);
         return config;
     }
 
@@ -360,5 +375,4 @@ public class FunctionUtils {
         }
         return binding;
     }
-
 }

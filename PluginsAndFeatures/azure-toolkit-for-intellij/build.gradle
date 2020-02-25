@@ -75,9 +75,6 @@ repositories {
     maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
     mavenLocal()
     mavenCentral()
-    maven {
-        url 'https://oss.sonatype.org/content/repositories/commicrosoftazure-3722/'
-    }
 }
 
 configurations {
