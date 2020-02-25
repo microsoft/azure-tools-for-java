@@ -22,8 +22,8 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AppServicePlanPanel extends JPanel {
-    public static final String CREATE_APP_SERVICE_PLAN = "Create app service plan";
+    private static final String CREATE_APP_SERVICE_PLAN = "Create app service plan";
     private JComboBox cbAppServicePlan;
     private JLabel lblLocation;
     private JLabel lblPricingTier;
@@ -64,7 +64,7 @@ public class AppServicePlanPanel extends JPanel {
     private List<AppServicePlanWrapper> appServicePlanWrapperList = new ArrayList<>();
 
     public AppServicePlanPanel() {
-        cbAppServicePlan.setRenderer(new ListCellRendererWrapper() {
+        cbAppServicePlan.setRenderer(new SimpleListCellRenderer() {
             @Override
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof AppServicePlanWrapper || object instanceof String) {
