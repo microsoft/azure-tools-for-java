@@ -78,27 +78,6 @@ public class ResourceGroupPanel extends JPanel {
         });
     }
 
-    private void createResourceGroup() {
-        cbResourceGroup.setSelectedItem(null);
-        final NewResourceGroupDialog dialog = new NewResourceGroupDialog();
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent windowEvent) {
-                super.windowClosed(windowEvent);
-                final ResourceGroupWrapper newResourceGroup = dialog.getResourceGroup();
-                if (newResourceGroup != null) {
-                    cbResourceGroup.addItem(newResourceGroup);
-                    cbResourceGroup.setSelectedItem(newResourceGroup);
-                } else {
-                    cbResourceGroup.setSelectedItem(selectedResourceGroup);
-                }
-            }
-        });
-        dialog.setVisible(true);
-    }
-
     public String getResourceGroup() {
         final Object selectedObject = cbResourceGroup.getSelectedItem();
         return selectedObject instanceof ResourceGroupWrapper ? ((ResourceGroupWrapper) selectedObject).resourceGroup : null;
@@ -119,6 +98,27 @@ public class ResourceGroupPanel extends JPanel {
 
     public void addItemListener(ItemListener actionListener) {
         cbResourceGroup.addItemListener(actionListener);
+    }
+
+    private void createResourceGroup() {
+        cbResourceGroup.setSelectedItem(null);
+        final NewResourceGroupDialog dialog = new NewResourceGroupDialog();
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent windowEvent) {
+                super.windowClosed(windowEvent);
+                final ResourceGroupWrapper newResourceGroup = dialog.getResourceGroup();
+                if (newResourceGroup != null) {
+                    cbResourceGroup.addItem(newResourceGroup);
+                    cbResourceGroup.setSelectedItem(newResourceGroup);
+                } else {
+                    cbResourceGroup.setSelectedItem(selectedResourceGroup);
+                }
+            }
+        });
+        dialog.setVisible(true);
     }
 
     private void onSelectResourceGroup() {
