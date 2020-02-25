@@ -25,10 +25,13 @@ package com.microsoft.intellij.runner.functions.core;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
 
 public class JsonUtils {
@@ -41,6 +44,16 @@ public class JsonUtils {
     public static void writeJsonToFile(File targetFile, JsonObject jsonObject) throws IOException {
         try (Writer writer = new FileWriter(targetFile)) {
             GSON.toJson(jsonObject, writer);
+        }
+    }
+
+    public static JsonObject readJsonFile(File target) {
+        try (FileInputStream fis = new FileInputStream(target);
+             InputStreamReader isr = new InputStreamReader(fis)) {
+            final Gson gson = new Gson();
+            return gson.fromJson(isr, JsonObject.class);
+        } catch (IOException | JsonParseException e) {
+            return null;
         }
     }
 }

@@ -25,7 +25,6 @@ package com.microsoft.intellij.runner.functions.component.table;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -35,6 +34,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.intellij.runner.functions.AzureFunctionsConstants;
+import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.swing.JOptionPane;
@@ -48,10 +48,8 @@ import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -158,14 +156,13 @@ public class AppSettingsTableUtils {
 
     public static Map<String, String> getAppSettingsFromLocalSettingsJson(File target) {
         final Map<String, String> result = new HashMap<>();
-        try {
-            final JsonObject jsonObject = readLocalSettingsJsonFile(target);
-            final JsonObject valueObject = jsonObject.getAsJsonObject(LOCAL_SETTINGS_VALUES);
-            valueObject.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().getAsString()));
-            return result;
-        } catch (JsonParseException e) {
+        final JsonObject jsonObject = JsonUtils.readJsonFile(target);
+        if (jsonObject == null) {
             return new HashMap<>();
         }
+        final JsonObject valueObject = jsonObject.getAsJsonObject(LOCAL_SETTINGS_VALUES);
+        valueObject.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().getAsString()));
+        return result;
     }
 
     public static void exportLocalSettingsJsonFile(File target, Map<String, String> appSettings) throws IOException {
@@ -180,7 +177,7 @@ public class AppSettingsTableUtils {
             target.createNewFile();
         }
         final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-        JsonObject jsonObject = readLocalSettingsJsonFile(target);
+        JsonObject jsonObject = JsonUtils.readJsonFile(target);
         if (jsonObject == null) {
             jsonObject = gson.fromJson(DEFAULT_LOCAL_SETTINGS_JSON, JsonObject.class);
         }
@@ -192,14 +189,4 @@ public class AppSettingsTableUtils {
         }
     }
 
-    // todo: use `JsonUtils` when it moved to azure-tools-common
-    private static JsonObject readLocalSettingsJsonFile(File target) {
-        try (FileInputStream fis = new FileInputStream(target);
-             InputStreamReader isr = new InputStreamReader(fis)) {
-            final Gson gson = new Gson();
-            return gson.fromJson(isr, JsonObject.class);
-        } catch (IOException | JsonParseException e) {
-            return null;
-        }
-    }
 }

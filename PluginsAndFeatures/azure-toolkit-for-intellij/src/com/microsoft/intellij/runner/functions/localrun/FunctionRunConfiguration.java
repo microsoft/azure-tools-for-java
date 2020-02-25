@@ -156,6 +156,9 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     }
 
     public void saveModule(Module module) {
+        if (module == null) {
+            return;
+        }
         this.module = module;
         this.setModuleFilePath(module.getModuleFilePath());
     }

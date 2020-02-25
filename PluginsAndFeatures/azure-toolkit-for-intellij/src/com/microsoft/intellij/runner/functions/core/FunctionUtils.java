@@ -207,7 +207,8 @@ public class FunctionUtils {
         }
         final Project project = module.getProject();
         final MavenProject mavenProject = MavenProjectsManager.getInstance(project).findProject(module);
-        final String stagingFolderName = mavenProject == null ? project.getName() : mavenProject.getProperties().getProperty("functionAppName");
+        final String functionAppName = mavenProject == null ? null : mavenProject.getProperties().getProperty("functionAppName");;
+        final String stagingFolderName = StringUtils.isEmpty(functionAppName) ? module.getName() : functionAppName;
         return Paths.get(project.getBasePath(), "target", "azure-functions", stagingFolderName).toString();
     }
 
