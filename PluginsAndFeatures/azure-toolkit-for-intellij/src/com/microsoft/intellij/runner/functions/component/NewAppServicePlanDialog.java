@@ -157,7 +157,7 @@ public class NewAppServicePlanDialog extends JDialog {
             final List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
             pricingTiers.stream().forEach(pricingTier -> cbPricing.addItem(pricingTier));
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            DefaultLoader.getUIHelper().logError("Failed to load pricing tier", e);
         }
     }
 }
