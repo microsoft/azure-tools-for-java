@@ -22,8 +22,8 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import rx.Observable;
@@ -55,7 +55,7 @@ public class ResourceGroupPanel extends JPanel {
     }
 
     public ResourceGroupPanel() {
-        cbResourceGroup.setRenderer(new ListCellRendererWrapper() {
+        cbResourceGroup.setRenderer(new SimpleListCellRenderer() {
             @Override
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof ResourceGroupWrapper) {
