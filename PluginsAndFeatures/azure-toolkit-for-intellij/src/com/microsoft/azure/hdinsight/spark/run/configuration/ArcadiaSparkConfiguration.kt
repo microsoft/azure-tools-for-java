@@ -29,9 +29,7 @@ import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 class ArcadiaSparkConfiguration (name: String, val module: ArcadiaSparkConfigurationModule, factory: ArcadiaSparkConfigurationFactory) : LivySparkBatchJobRunConfiguration(module.model, factory, module, name) {
     override fun getSparkApplicationType(): SparkApplicationType {
         val arcadiaModel = module.model.submitModel as ArcadiaSparkSubmitModel
-        return arcadiaModel.isCosmosCluster?.let {
-            if (it) SparkApplicationType.CosmosSpark else SparkApplicationType.ArcadiaSpark
-        } ?: SparkApplicationType.None
+        return arcadiaModel.sparkApplicationType
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {

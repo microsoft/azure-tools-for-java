@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.annotations.Attribute
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 
 class ArcadiaSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
     @Attribute("livy_uri")
@@ -35,8 +36,8 @@ class ArcadiaSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
     var sparkCompute: String? = null
     @Attribute("tenant_id")
     var tenantId: String? = null
-    @Attribute("is_cosmos_cluster")
-    var isCosmosCluster: Boolean? = null
+    @Attribute("spark_app_type")
+    var sparkApplicationType: SparkApplicationType = SparkApplicationType.None
 
     override fun getSparkClusterTypeDisplayName(): String = "Synapse Spark Pool"
 }
