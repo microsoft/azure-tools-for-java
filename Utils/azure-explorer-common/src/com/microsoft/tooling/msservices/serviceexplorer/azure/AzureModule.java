@@ -38,6 +38,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
@@ -75,6 +76,8 @@ public class AzureModule extends AzureRefreshableNode {
     private ContainerRegistryModule containerRegistryModule;
     @NotNull
     private ResourceManagementModule resourceManagementModule;
+    @NotNull
+    private FunctionModule functionModule;
 
     /**
      * Constructor.
@@ -92,6 +95,7 @@ public class AzureModule extends AzureRefreshableNode {
         dockerHostModule = new DockerHostModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
         resourceManagementModule = new ResourceManagementModule(this);
+        functionModule = new FunctionModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -166,6 +170,9 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(resourceManagementModule)) {
             addChildNode(resourceManagementModule);
         }
+        if(!isDirectChild(functionModule)){
+            addChildNode(functionModule);
+        }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
         }
@@ -202,6 +209,7 @@ public class AzureModule extends AzureRefreshableNode {
                 storageModule.load(true);
                 webAppModule.load(true);
                 resourceManagementModule.load(true);
+                functionModule.load(true);
 
                 if (hdInsightModule != null) {
                     hdInsightModule.load(true);
