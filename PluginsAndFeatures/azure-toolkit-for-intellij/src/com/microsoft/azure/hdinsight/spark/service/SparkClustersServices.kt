@@ -31,31 +31,32 @@ import rx.Observable
 import rx.Observable.fromCallable
 
 object SparkClustersServices {
-    val arisSparkClustersRefreshed: Observable<List<IClusterDetail>> = fromCallable {
-        ClusterManagerEx.getInstance().clusterDetails.asSequence()
-                .filter { it is SqlBigDataLivyLinkClusterDetail }
-                .toList()
-    }.share()
+    val arisSparkClustersRefreshed: Observable<List<IClusterDetail>>
+        get() = fromCallable {
+            ClusterManagerEx.getInstance().clusterDetails.asSequence()
+                    .filter { it is SqlBigDataLivyLinkClusterDetail }
+                    .toList()
+        }.share()
 
-    val cosmosSparkClustersRefreshed: Observable<List<IClusterDetail>> =
-            AzureSparkCosmosClusterManager.getInstance().fetchClusters()
+    val cosmosSparkClustersRefreshed: Observable<List<IClusterDetail>>
+        get() = AzureSparkCosmosClusterManager.getInstance().fetchClusters()
                     .map { it.clusters.asIterable().toList() }
                     .share()
 
-    val arcadiaSparkClustersRefreshed: Observable<List<IClusterDetail>> =
-            ArcadiaSparkComputeManager.getInstance().fetchClusters()
+    val arcadiaSparkClustersRefreshed: Observable<List<IClusterDetail>>
+        get() = ArcadiaSparkComputeManager.getInstance().fetchClusters()
                     .map { it.clusters.asIterable().toList() }
                     .share()
 
-    val cosmosServerlessSparkAccountsRefreshed: Observable<out List<IClusterDetail>> =
-            AzureSparkCosmosClusterManager.getInstance().fetchClusters()
+    val cosmosServerlessSparkAccountsRefreshed: Observable<out List<IClusterDetail>>
+        get() = AzureSparkCosmosClusterManager.getInstance().fetchClusters()
                     .map { it.accounts.asIterable().toList() }
                     .share()
 
-    val hdinsightSparkClustersRefreshed: Observable<List<IClusterDetail>> = fromCallable {
-        ClusterManagerEx.getInstance().clusterDetails.asSequence()
-                .filter { ClusterManagerEx.getInstance().hdInsightClusterFilterPredicate.test(it) }
-                .toList()
-    }.share()
-
+    val hdinsightSparkClustersRefreshed: Observable<List<IClusterDetail>>
+        get() = fromCallable {
+            ClusterManagerEx.getInstance().clusterDetails.asSequence()
+                    .filter { ClusterManagerEx.getInstance().hdInsightClusterFilterPredicate.test(it) }
+                    .toList()
+        }.share()
 }

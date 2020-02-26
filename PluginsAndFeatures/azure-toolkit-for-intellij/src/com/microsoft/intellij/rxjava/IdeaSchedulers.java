@@ -35,11 +35,16 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 import javax.swing.*;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static com.intellij.openapi.progress.PerformInBackgroundOption.DEAF;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -124,6 +129,21 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
         });
     }
 
+    private final static ConcurrentMap<Thread, ProgressIndicator> thread2Indicator = new ConcurrentHashMap<>(32);
+    public static void updateCurrentBackgroundableTaskIndicator(Action1<ProgressIndicator> action) {
+        final Thread currentThread = Thread.currentThread();
+        final ProgressIndicator indicator = thread2Indicator.get(currentThread);
+
+        if (indicator == null) {
+            LoggerFactory.getLogger(IdeaSchedulers.class)
+                    .warn("No ProgressIndicator found for thread " + currentThread.getName());
+
+            return;
+        }
+
+        action.call(indicator);
+    }
+
     public Scheduler backgroundableTask(final String title) {
         return from(command -> ProgressManager.getInstance().run(new Backgroundable(project, title, true, DEAF) {
             @Override
@@ -137,7 +157,13 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
                         .subscribe(data -> workerThread.interrupt(),
                                    err -> log().warn("Can't interrupt thread {}", workerThread.getName(), err));
 
-                command.run();
+                thread2Indicator.putIfAbsent(workerThread, indicator);
+
+                try {
+                    command.run();
+                } finally {
+                    thread2Indicator.remove(workerThread);
+                }
             }
         }));
     }
