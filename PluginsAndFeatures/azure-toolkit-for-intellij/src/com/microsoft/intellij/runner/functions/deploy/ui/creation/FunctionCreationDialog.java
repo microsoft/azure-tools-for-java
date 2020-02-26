@@ -23,6 +23,7 @@ import com.microsoft.intellij.runner.functions.component.SubscriptionPanel;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
 import com.microsoft.intellij.runner.functions.library.function.CreateFunctionHandler;
+import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.AbstractButton;
@@ -32,7 +33,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -53,8 +53,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_APP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
 
 public class FunctionCreationDialog extends JDialog {
 
@@ -229,7 +229,7 @@ public class FunctionCreationDialog extends JDialog {
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 final Map<String, String> properties = functionConfiguration.getTelemetryProperties(null);
-                EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, properties, null, (operation) -> {
+                EventUtil.executeWithLog(FUNCTION, CREATE_FUNCTION_APP, properties, null, (operation) -> {
                     progressIndicator.setIndeterminate(true);
                     EventUtil.logEvent(EventType.info, operation, properties);
                     final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionConfiguration);
@@ -245,8 +245,7 @@ public class FunctionCreationDialog extends JDialog {
                     });
                     dispose();
                 }, (ex) -> {
-                    JOptionPane.showMessageDialog(null, "Create Function Failed : " + ex.getMessage(),
-                            "Create Function Failed", JOptionPane.ERROR_MESSAGE);
+                    PluginUtil.displayErrorDialog("Create Function App Failed", "Create Function Failed : " + ex.getMessage());
                     sendTelemetry(false, ex.getMessage());
                 });
             }
