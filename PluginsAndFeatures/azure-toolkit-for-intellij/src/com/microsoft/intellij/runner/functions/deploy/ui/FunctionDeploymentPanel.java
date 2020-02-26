@@ -46,10 +46,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.event.PopupMenuEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.file.Paths;
@@ -252,7 +257,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 }
             }
         });
-        dialog.setVisible(true);
+        dialog.show();
     }
 
     private void createUIComponents() {
