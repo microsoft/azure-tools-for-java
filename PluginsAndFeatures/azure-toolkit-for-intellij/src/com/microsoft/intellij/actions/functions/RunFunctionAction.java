@@ -37,7 +37,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
+import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +52,7 @@ import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.FU
 
 public class RunFunctionAction extends AzureAnAction {
 
+    private static final String RUN_FUNCTIONS_TITLE = "Run Functions";
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
@@ -61,27 +64,14 @@ public class RunFunctionAction extends AzureAnAction {
 
     @Override
     public void update(AnActionEvent event) {
-        event.getPresentation().setEnabledAndVisible(false);
-        OrderEnumerator.orderEntries(event.getProject()).forEachLibrary(library -> {
-            if (StringUtils.contains(library.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
-                event.getPresentation().setEnabledAndVisible(true);
-            }
-            return true;
-        });
+        event.getPresentation().setEnabledAndVisible(FunctionUtils.isFunctionProject(event.getProject()));
     }
 
     private void runConfiguration(Module module) {
         final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final ConfigurationFactory factory = new FunctionRunConfigurationFactory(configType);
-        RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
-                String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()));
-        if (settings == null) {
-            settings = manager.createConfiguration(
-                    String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()),
-                    factory);
-        }
-        if (RunDialog.editConfiguration(project, settings, "Run Functions", DefaultRunExecutor.getRunExecutorInstance())) {
+        final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(module, manager, configType);
+        if (RunDialog.editConfiguration(project, settings, RUN_FUNCTIONS_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);
             manager.setSelectedConfiguration(settings);

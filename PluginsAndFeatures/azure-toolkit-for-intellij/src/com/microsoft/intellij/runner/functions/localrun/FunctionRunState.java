@@ -153,7 +153,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         final String debugConfiguration = String.format("\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"", debugPort);
         String[] command = {funcPath, "host", "start", "--port", String.valueOf(funcPort)};
         if (isDebugMode()) {
-            command = ArrayUtils.addAll(command, new String[]{"--language-worker", "--", debugConfiguration});
+            command = ArrayUtils.addAll(command, new String[] {"--language-worker", "--", debugConfiguration});
         }
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
