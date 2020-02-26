@@ -65,6 +65,7 @@ public class AppSettingsTableUtils {
         final JTextPane promptPanel = new JTextPane();
         final GridConstraints paneConstraint = new GridConstraints(1, 0, 1, 1, 0,
                 GridConstraints.FILL_BOTH, 7, 7, null, null, null);
+        promptPanel.setFocusable(false);
         result.add(promptPanel, paneConstraint);
 
         final AnActionButton btnAdd = new AnActionButton("Add", AllIcons.General.Add) {

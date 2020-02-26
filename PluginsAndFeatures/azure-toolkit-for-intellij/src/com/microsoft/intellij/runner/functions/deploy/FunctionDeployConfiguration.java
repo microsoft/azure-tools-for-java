@@ -118,7 +118,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     }
 
     public void setAppSettings(Map<String, String> appSettings) {
-        this.appSettings = appSettings;
+        functionDeployModel.setAppSettings(appSettings);
     }
 
     public void setTargetFunction(FunctionApp targetFunction) {

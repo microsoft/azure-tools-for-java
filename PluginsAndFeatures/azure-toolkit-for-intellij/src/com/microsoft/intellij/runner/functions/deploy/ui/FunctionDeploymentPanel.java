@@ -203,6 +203,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     @Override
     protected void resetFromConfig(@NotNull FunctionDeployConfiguration configuration) {
         configuration.setFunctionId(configuration.getFunctionId());
+        appSettingsTable.setAppSettings(configuration.getAppSettings());
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
             for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
@@ -221,6 +222,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
             return;
         }
+        configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
         configuration.setTargetFunction(selectedFunctionApp.getResource());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.setModule((Module) cbFunctionModule.getSelectedItem());

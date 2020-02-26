@@ -222,6 +222,16 @@
             text="Deploy to Azure" description="Deploy to Azure"
             icon="/icons/PublishWebApp_16.png">
     </action>
+    <!-- Functions Start -->
+    <action id="Actions.RunFunction" class="com.microsoft.intellij.actions.functions.RunFunctionAction"
+            text="Run Function" description="Run function project locally"
+            icon="/icons/azure-functions-small.png">
+    </action>
+    <action id="Actions.DeployFunction" class="com.microsoft.intellij.actions.functions.DeployFunctionAction"
+            text="Deploy to Azure Functions" description="Deploy Java Function to Azure"
+            icon="/icons/azure-functions-small.png">
+    </action>
+    <!-- Functions End -->
     <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
             text="Add Docker Support" description="Add Docker Support"
             icon="/icons/AddDockerSupport_16.png">
@@ -270,6 +280,9 @@
 
     <group id="AzurePopupGroup" text="Azure" description="Azure" icon="/icons/azure.png" popup="true"
            class="com.microsoft.intellij.actions.AzurePopupGroup">
+      <reference ref="Actions.RunFunction"/>
+      <reference ref="Actions.DeployFunction"/>
+      <separator/>
       <reference ref="Actions.WebDeployAction"/>
       <separator/>
       <reference ref="Actions.AddDockerSupport"/>

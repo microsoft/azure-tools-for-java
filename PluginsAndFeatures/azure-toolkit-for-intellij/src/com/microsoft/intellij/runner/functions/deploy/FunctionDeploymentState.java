@@ -23,16 +23,27 @@
 package com.microsoft.intellij.runner.functions.deploy;
 
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiMethod;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
+import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import com.microsoft.intellij.runner.functions.library.function.DeployFunctionHandler;
+import org.codehaus.plexus.util.StringOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
@@ -54,7 +65,34 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         // todo: implement function deployment
+        final File stagingFolder = new File(functionDeployConfiguration.getDeploymentStagingDirectory());
+        prepareStagingFolder(stagingFolder, processHandler);
+        final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel);
+        final PrintStream systemOut = new PrintStream(System.out, true);
+        try {
+            System.setOut(new PrintStream(new StringOutputStream()) {
+                public void println(String s) {
+                    processHandler.setText(s);
+                }
+            });
+            deployFunctionHandler.execute();
+
+        } finally {
+            System.setOut(systemOut);
+        }
         return null;
+    }
+
+    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) {
+        ReadAction.run(() -> {
+            final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
+            final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
+            try {
+                FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
+            } catch (AzureExecutionException | IOException e) {
+                processHandler.println(String.format("Failed to prepare staging folder, %s", e.getMessage()), ProcessOutputTypes.STDERR);
+            }
+        });
     }
 
     @Override
@@ -69,7 +107,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
+    protected void onFail(String errMsg, @NotNull RunProcessHandler processHandler) {
         processHandler.println(errMsg, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
     }

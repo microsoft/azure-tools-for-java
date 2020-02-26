@@ -153,7 +153,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         final String debugConfiguration = String.format("\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"", debugPort);
         String[] command = {funcPath, "host", "start", "--port", String.valueOf(funcPort)};
         if (isDebugMode()) {
-            command = ArrayUtils.addAll(command, new String[] { "--language-worker", "--", debugConfiguration });
+            command = ArrayUtils.addAll(command, new String[]{"--language-worker", "--", debugConfiguration});
         }
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
@@ -166,8 +166,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule());
             try {
-                FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, localSettingsJson,
-                        functionRunConfiguration.getModule(), functionRunConfiguration.getAppSettings(), methods);
+                FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
+                FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(), localSettingsJson, functionRunConfiguration.getAppSettings());
             } catch (AzureExecutionException | IOException e) {
                 processHandler.println(String.format("Failed to prepare staging folder, %s", e.getMessage()), ProcessOutputTypes.STDERR);
             }

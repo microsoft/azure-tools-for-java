@@ -128,11 +128,6 @@ public class FunctionUtils {
         }
     }
 
-    public static void prepareStagingFolderForDeploy(Path stagingFolder, Path hostJson, Module module, Map<String, String> appSettings,
-                                                     PsiMethod[] methods) throws AzureExecutionException, IOException {
-        prepareStagingFolder(stagingFolder, hostJson, null, module, appSettings, methods);
-    }
-
     private static void copyFilesWithDefaultContent(Path sourcePath, File dest, String defaultContent) throws IOException {
         final File src = sourcePath == null ? null : sourcePath.toFile();
         if (src != null && src.exists()) {
@@ -150,8 +145,15 @@ public class FunctionUtils {
         JsonUtils.writeJsonToFile(target, jsonObject);
     }
 
-    public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Path localSettingJson, Module module,
-                                            Map<String, String> appSettings, PsiMethod[] methods) throws AzureExecutionException, IOException {
+    public static void copyLocalSettingsToStagingFolder(Path stagingFolder, Path localSettingJson, Map<String, String> appSettings) throws IOException {
+        final File localSettingsFile = new File(stagingFolder.toFile(), "local.settings.json");
+        copyFilesWithDefaultContent(localSettingJson, localSettingsFile, DEFAULT_LOCAL_SETTINGS_JSON);
+        if (MapUtils.isNotEmpty(appSettings)) {
+            updateLocalSettingValues(localSettingsFile, appSettings);
+        }
+    }
+
+    public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods) throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
         final Path jarFile = JarUtils.buildJarFileToStagingPath(stagingFolder.toString(), module);
         final String scriptFilePath = "../" + jarFile.getFileName().toString();
@@ -167,11 +169,6 @@ public class FunctionUtils {
 
         final File hostJsonFile = new File(stagingFolder.toFile(), "host.json");
         copyFilesWithDefaultContent(hostJson, hostJsonFile, DEFAULT_HOST_JSON);
-        final File localSettingsFile = new File(stagingFolder.toFile(), "local.settings.json");
-        copyFilesWithDefaultContent(localSettingJson, localSettingsFile, DEFAULT_LOCAL_SETTINGS_JSON);
-        if (MapUtils.isNotEmpty(appSettings)) {
-            updateLocalSettingValues(localSettingsFile, appSettings);
-        }
 
         final List<File> jarFiles = new ArrayList<>();
         OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
@@ -201,7 +198,8 @@ public class FunctionUtils {
         }
         final Project project = module.getProject();
         final MavenProject mavenProject = MavenProjectsManager.getInstance(project).findProject(module);
-        final String functionAppName = mavenProject == null ? null : mavenProject.getProperties().getProperty("functionAppName");;
+        final String functionAppName = mavenProject == null ? null : mavenProject.getProperties().getProperty("functionAppName");
+        ;
         final String stagingFolderName = StringUtils.isEmpty(functionAppName) ? module.getName() : functionAppName;
         return Paths.get(project.getBasePath(), "target", "azure-functions", stagingFolderName).toString();
     }
