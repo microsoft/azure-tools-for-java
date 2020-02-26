@@ -196,9 +196,14 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         String artifactPath = submitModel.getArtifactPath().orElse(null);
         assert artifactPath != null : "artifactPath should be checked in LivySparkBatchJobRunConfiguration::checkSubmissionConfigurationBeforeRun";
 
+        // To address issue https://github.com/microsoft/azure-tools-for-java/issues/4021.
+        // In this issue, when user click rerun button, we are still using the legacy ctrlSubject which has already sent
+        // "onComplete" message when the job is done in the previous time. To avoid this issue,  We need to create a new ctrlSubject
+        // each time user run or rerun the spark batch job.
+        final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
         final ISparkBatchJob sparkBatch = submissionState.getSparkBatch();
-        final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject =
-                (PublishSubject<SimpleImmutableEntry<MessageInfoType, String>>) sparkBatch.getCtrlSubject();
+        ((SparkBatchJob) sparkBatch).setCtrlSubject(ctrlSubject);
+
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
                 sparkBatch,

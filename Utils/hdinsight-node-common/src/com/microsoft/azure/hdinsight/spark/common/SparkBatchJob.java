@@ -1081,6 +1081,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         return ctrlSubject;
     }
 
+    public void setCtrlSubject(Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+        this.ctrlSubject = ctrlSubject;
+    }
+
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
