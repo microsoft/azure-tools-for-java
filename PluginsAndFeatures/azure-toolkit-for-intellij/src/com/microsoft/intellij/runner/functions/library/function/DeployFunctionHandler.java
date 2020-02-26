@@ -33,7 +33,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.common.appservice.DeploymentType.*;
+import static com.microsoft.azure.common.appservice.DeploymentType.DOCKER;
+import static com.microsoft.azure.common.appservice.DeploymentType.RUN_FROM_BLOB;
+import static com.microsoft.azure.common.appservice.DeploymentType.RUN_FROM_ZIP;
 
 /**
  * Deploy artifacts to target Azure Functions in Azure. If target Azure
@@ -72,7 +74,7 @@ public class DeployFunctionHandler {
         this.ctx = ctx;
     }
 
-    public void execute() throws Exception {
+    public FunctionApp execute() throws Exception {
 
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
@@ -80,6 +82,7 @@ public class DeployFunctionHandler {
         Log.prompt(DEPLOY_START);
         getArtifactHandler().publish(deployTarget);
         Log.prompt(String.format(DEPLOY_FINISH, ctx.getAppName()));
+        return (FunctionApp) deployTarget.getApp();
     }
 
     // endregion
