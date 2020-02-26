@@ -94,8 +94,8 @@ public class FunctionCreationDialog extends JDialog {
         buttonOK.addActionListener(e -> onOK());
         buttonCancel.addActionListener(e -> onCancel());
 
-        rdoLinuxOS.addActionListener(e -> selectOS(false));
-        rdoWindowsOS.addActionListener(e -> selectOS(false));
+        rdoLinuxOS.addActionListener(e -> selectOS());
+        rdoWindowsOS.addActionListener(e -> selectOS());
 
         final ButtonGroup osButtonGroup = new ButtonGroup();
         osButtonGroup.add(rdoLinuxOS);
@@ -165,7 +165,7 @@ public class FunctionCreationDialog extends JDialog {
         }
     }
 
-    private void selectOS(boolean isWindows) {
+    private void selectOS() {
         appServicePlanPanel.setOSType(getSelectedOperationSystemEnum());
         pack();
     }
