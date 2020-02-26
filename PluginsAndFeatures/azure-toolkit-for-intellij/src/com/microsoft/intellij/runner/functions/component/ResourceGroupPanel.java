@@ -78,12 +78,12 @@ public class ResourceGroupPanel extends JPanel {
         });
     }
 
-    public String getResourceGroup() {
+    public String getResourceGroupName() {
         final Object selectedObject = cbResourceGroup.getSelectedItem();
         return selectedObject instanceof ResourceGroupWrapper ? ((ResourceGroupWrapper) selectedObject).resourceGroup : null;
     }
 
-    public boolean isCreateNewResourceGroup() {
+    public boolean isNewResourceGroup() {
         final Object selectedObject = cbResourceGroup.getSelectedItem();
         return selectedObject instanceof ResourceGroupWrapper ? ((ResourceGroupWrapper) selectedObject).isCreateNewResourceGroup() : false;
     }

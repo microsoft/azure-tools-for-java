@@ -164,16 +164,14 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         accoountKindCombo.setRenderer(new ListCellRendererWrapper<Kind>() {
             @Override
             public void customize(JList jList, Kind kind, int i, boolean b, boolean b1) {
-                switch (kind) {
-                    case STORAGE:
-                        setText("General Purpose v1");
-                        break;
-                    case STORAGE_V2:
-                        setText("General Purpose v2");
-                        break;
-                    case BLOB_STORAGE:
-                        setText("Blob Storage");
-                        break;
+                if (kind == null) {
+                    return;
+                } else if (kind == Kind.STORAGE) {
+                    setText("General Purpose v1");
+                } else if (kind == Kind.STORAGE_V2) {
+                    setText("General Purpose v2");
+                } else if (kind == Kind.BLOB_STORAGE) {
+                    setText("Blob Storage");
                 }
             }
         });
@@ -345,7 +343,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     public void fillFields(final SubscriptionDetail subscription, Location region) {
         if (subscription == null) {
 //            loadRegions();
-            accoountKindCombo.setModel(new DefaultComboBoxModel(Kind.values()));
+            accoountKindCombo.setModel(new DefaultComboBoxModel(Kind.values().toArray()));
             accoountKindCombo.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {

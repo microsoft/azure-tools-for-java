@@ -65,9 +65,9 @@ public class SubscriptionPanel extends JPanel {
         label.setLabelFor(cbSubscription);
     }
 
-    public Subscription getSubscription() {
+    public String getSubscriptionId() {
         final Object selectedObject = cbSubscription.getSelectedItem();
-        return selectedObject instanceof Subscription ? (Subscription) selectedObject : null;
+        return selectedObject instanceof Subscription ? ((Subscription) selectedObject).subscriptionId() : null;
     }
 
     public void loadSubscription() {

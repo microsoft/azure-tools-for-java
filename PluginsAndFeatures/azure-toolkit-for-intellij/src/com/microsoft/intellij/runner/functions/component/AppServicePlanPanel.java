@@ -103,12 +103,12 @@ public class AppServicePlanPanel extends JPanel {
         return selectedAppServicePlan == null ? null : selectedAppServicePlan.getName();
     }
 
-    public Region getAppServicePlanRegion() {
-        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getRegion();
+    public String getAppServicePlanRegion() {
+        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getRegion().name();
     }
 
-    public PricingTier getAppServicePlanPricingTier() {
-        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getPricingTier();
+    public String getAppServicePlanPricingTier() {
+        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getPricingTier().toSkuDescription().tier();
     }
 
     public String getAppServicePlanResourceGroup() {

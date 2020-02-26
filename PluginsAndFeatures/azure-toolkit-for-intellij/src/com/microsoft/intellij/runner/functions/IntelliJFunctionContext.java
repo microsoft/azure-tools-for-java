@@ -175,6 +175,10 @@ public class IntelliJFunctionContext implements IFunctionContext {
         this.appServicePlanName = appServicePlanName;
     }
 
+    public void setAppServicePlanResourceGroup(String appServicePlanResourceGroup) {
+        this.appServicePlanName = appServicePlanResourceGroup;
+    }
+
     public void setAuthentication(AuthConfiguration authentication) {
         this.authentication = authentication;
     }
