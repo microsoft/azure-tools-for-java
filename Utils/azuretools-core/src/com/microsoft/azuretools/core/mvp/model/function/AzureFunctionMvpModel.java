@@ -29,11 +29,14 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApps;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.core.mvp.model.webapp.AppServiceUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -41,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -134,6 +138,21 @@ public class AzureFunctionMvpModel {
         PagedList<FunctionEnvelope> functions = app.manager().functionApps().listFunctions(app.resourceGroupName(), app.name());
         functions.loadAll();
         return new ArrayList<>(functions);
+    }
+
+    public boolean getPublishingProfileXmlWithSecrets(String sid, String functionAppId, String filePath) throws IOException {
+        final FunctionApp app = getFunctionById(sid, functionAppId);
+        return AppServiceUtils.getPublishingProfileXmlWithSecrets(app, filePath);
+    }
+
+    public void updateWebAppSettings(String sid, String functionAppId, Map<String, String> toUpdate, Set<String> toRemove)
+            throws IOException {
+        final FunctionApp app = getFunctionById(sid, functionAppId);
+        WebAppBase.Update<FunctionApp> update = app.update().withAppSettings(toUpdate);
+        for (String key : toRemove) {
+            update = update.withoutAppSetting(key);
+        }
+        update.apply();
     }
 
     /**

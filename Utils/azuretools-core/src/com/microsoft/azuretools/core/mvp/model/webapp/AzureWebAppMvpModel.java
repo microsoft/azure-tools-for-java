@@ -656,20 +656,7 @@ public class AzureWebAppMvpModel {
      */
     public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) throws Exception {
         WebApp app = getWebAppById(sid, webAppId);
-        File file = new File(Paths.get(filePath, app.name() + "_" + System.currentTimeMillis() + ".PublishSettings")
-                .toString());
-        file.createNewFile();
-        try (InputStream inputStream = app.manager().inner().webApps()
-                .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(),
-                        new CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP));
-             OutputStream outputStream = new FileOutputStream(file);
-        ) {
-            IOUtils.copy(inputStream, outputStream);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return AppServiceUtils.getPublishingProfileXmlWithSecrets(app, filePath);
     }
 
     /**

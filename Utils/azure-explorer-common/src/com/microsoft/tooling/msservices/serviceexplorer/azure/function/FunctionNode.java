@@ -26,6 +26,7 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -113,7 +114,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
                 new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) {
-                        // Todo: Support show property of function app
+                        DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionNode.this);
                     }
                 }));
         super.loadActions();
