@@ -63,6 +63,9 @@ import java.util.function.Consumer;
 
 public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
+    private static final int DEFAULT_FUNC_PORT = 7071;
+    private static final int MAX_PORT = 65535;
+
     private Process process;
     private Executor executor;
     private FunctionRunConfiguration functionRunConfiguration;
@@ -180,17 +183,19 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private static int findFreePortForApi() {
         ServerSocket socket = null;
-        try {
-            socket = new ServerSocket(0);
-            return socket.getLocalPort();
-        } catch (IOException e) {
-            // swallow this exception
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    // swallow this exception
+        for (int port = DEFAULT_FUNC_PORT; port <= MAX_PORT; port++) {
+            try {
+                socket = new ServerSocket(port);
+                return socket.getLocalPort();
+            } catch (IOException e) {
+                // swallow this exception
+            } finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        // swallow this exception
+                    }
                 }
             }
         }
