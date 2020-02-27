@@ -29,7 +29,8 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApps;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.SkuName;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -153,6 +154,15 @@ public class AzureFunctionMvpModel {
             update = update.withoutAppSetting(key);
         }
         update.apply();
+    }
+
+    public List<PricingTier> listFunctionPricingTier() throws IllegalAccessException {
+        final List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
+        // Add Premium pricing tiers
+        pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP1"));
+        pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP2"));
+        pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP3"));
+        return pricingTiers;
     }
 
     /**

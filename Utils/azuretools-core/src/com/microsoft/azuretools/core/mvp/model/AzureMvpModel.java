@@ -323,15 +323,11 @@ public class AzureMvpModel {
                 StringUtils.compareIgnoreCase(toStringMethod.apply(first), toStringMethod.apply(second));
     }
 
-    // workaround for SDK not updated the PREMIUM pricing tiers to latest ones
-    // https://github.com/Azure/azure-libraries-for-java/issues/660
+    // Remove Premium pricing tier which has performance issues with java app services
     private List<PricingTier> correctPricingTiers(final List<PricingTier> pricingTiers) {
         pricingTiers.remove(PricingTier.PREMIUM_P1);
         pricingTiers.remove(PricingTier.PREMIUM_P2);
         pricingTiers.remove(PricingTier.PREMIUM_P3);
-        pricingTiers.add(new PricingTier("Premium", "P1V2"));
-        pricingTiers.add(new PricingTier("Premium", "P2V2"));
-        pricingTiers.add(new PricingTier("Premium", "P3V2"));
         return pricingTiers;
     }
 

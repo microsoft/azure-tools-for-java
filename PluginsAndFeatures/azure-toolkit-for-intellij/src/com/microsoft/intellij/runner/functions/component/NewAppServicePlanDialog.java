@@ -26,6 +26,7 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -46,6 +47,8 @@ import java.awt.event.WindowEvent;
 import java.util.List;
 
 public class NewAppServicePlanDialog extends JDialog {
+    private static final PricingTier CONSUMPTION = new PricingTier("Consumption", "");
+
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -109,7 +112,8 @@ public class NewAppServicePlanDialog extends JDialog {
             @Override
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof PricingTier) {
-                    setText(((PricingTier) object).toSkuDescription().name());
+                    final PricingTier pricingTier = (PricingTier) object;
+                    setText(pricingTier == CONSUMPTION ? CONSUMPTION.toSkuDescription().name() : pricingTier.toString());
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
@@ -154,8 +158,10 @@ public class NewAppServicePlanDialog extends JDialog {
     public void onLoadPricingTier() {
         try {
             cbPricing.removeAllItems();
-            final List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
-            pricingTiers.stream().forEach(pricingTier -> cbPricing.addItem(pricingTier));
+            cbPricing.addItem(CONSUMPTION);
+            cbPricing.setSelectedItem(CONSUMPTION);
+            AzureFunctionMvpModel.getInstance().listFunctionPricingTier().stream()
+                    .forEach(pricingTier -> cbPricing.addItem(pricingTier));
         } catch (IllegalAccessException e) {
             DefaultLoader.getUIHelper().logError("Failed to load pricing tier", e);
         }

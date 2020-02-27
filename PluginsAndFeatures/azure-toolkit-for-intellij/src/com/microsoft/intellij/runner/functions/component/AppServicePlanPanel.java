@@ -108,7 +108,7 @@ public class AppServicePlanPanel extends JPanel {
     }
 
     public String getAppServicePlanPricingTier() {
-        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getPricingTier().toSkuDescription().tier();
+        return selectedAppServicePlan == null ? null : selectedAppServicePlan.getPricingTier().toSkuDescription().size();
     }
 
     public String getAppServicePlanResourceGroup() {
