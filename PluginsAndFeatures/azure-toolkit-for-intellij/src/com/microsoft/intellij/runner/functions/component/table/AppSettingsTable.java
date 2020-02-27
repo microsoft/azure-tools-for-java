@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.functions.component.table;
 
 import com.intellij.ui.table.JBTable;
+import org.apache.commons.collections4.MapUtils;
 
 import javax.swing.ListSelectionModel;
 import java.awt.Dimension;
@@ -71,7 +72,9 @@ public class AppSettingsTable extends JBTable {
 
     public void setAppSettings(Map<String, String> appSettingMap) {
         clear();
-        addAppSettings(appSettingMap);
+        if (MapUtils.isNotEmpty(appSettingMap)) {
+            addAppSettings(appSettingMap);
+        }
     }
 
     public void clear() {
