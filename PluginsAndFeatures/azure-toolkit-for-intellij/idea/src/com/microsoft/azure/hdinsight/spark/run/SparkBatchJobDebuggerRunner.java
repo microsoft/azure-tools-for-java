@@ -120,7 +120,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
      * Running in Event dispatch thread
      */
     @Override
-    protected void execute(ExecutionEnvironment environment, ProgramRunner.Callback callback, RunProfileState state) throws ExecutionException {
+    protected RunContentDescriptor doExecute(RunProfileState state, ExecutionEnvironment environment) throws ExecutionException {
+        super.doExecute(state, environment);
+
         final Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
         final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<> ();
         final SparkBatchRemoteDebugState submissionState = (SparkBatchRemoteDebugState) state;
@@ -278,7 +280,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                 jobDriverEnvReady.setResult(forkEnv);
                             } else {
                                 // Call supper class method to attach Java virtual machine
-                                super.execute(forkEnv, null, forkState);
+                                super.execute(forkEnv);
                             }
                         } else if (debugEvent instanceof SparkBatchJobExecutorCreatedEvent) {
                             SparkBatchJobExecutorCreatedEvent executorCreatedEvent =
@@ -316,8 +318,10 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         // Driver side execute, leverage Intellij Async Promise, to wait for the Spark app deployed
         ExecutionManager.getInstance(project).startRunProfile(new RunProfileStarter() {
             @Override
-            public Promise<RunContentDescriptor> executeAsync(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
+            public Promise<RunContentDescriptor> executeAsync(@NotNull ExecutionEnvironment env) throws ExecutionException {
                 driverDebugHandler.getRemoteDebugProcess().start();
+
+                RunProfileState state = environment.getState();
 
                 return jobDriverEnvReady
                         .then(forkEnv -> Observable.fromCallable(() -> doExecute(state, forkEnv))
@@ -335,13 +339,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                 }
                             }
 
-                            if (callback != null) {
-                                callback.processStarted(descriptor);
-                            }
                             return descriptor;
                         });
             }
         }, submissionState, environment);
+
+        return submissionDesc;
     }
 
     /*

@@ -45,6 +45,6 @@ class SparkScalaLivyConsole(module: Module, title: String) : ScalaLanguageConsol
         ScalaConsoleInfo.disposeConsole(this)
 
         // Add to Spark Console Manager
-        SparkConsoleManager.add(this, ConsoleHistoryController.getController(this), processHandler)
+        SparkConsoleManager.add(this, ConsoleHistoryController.getController(this)!!, processHandler)
     }
 }

@@ -40,7 +40,7 @@ class SparkJobRunAction
         StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobRunIcon_13x_Path)?: AllIcons.Actions.Upload) {
 
     override val runExecutor: Executor
-        get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
+        get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)!!
 
     override fun getServiceName(event: AnActionEvent): String {
         val project = event.project ?: return super.getServiceName(event)

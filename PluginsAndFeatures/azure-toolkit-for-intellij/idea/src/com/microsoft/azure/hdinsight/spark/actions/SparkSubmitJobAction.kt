@@ -105,7 +105,7 @@ open class SparkSubmitJobAction : AzureAnAction() {
 
         model.isLocalRunConfigEnabled = false   // Disable local run configuration tab
 
-        val environment = ExecutionEnvironmentBuilder.create(executor, runConfigurationSetting).build()
+        val environment = ExecutionEnvironmentBuilder.create(executor!!, runConfigurationSetting).build()
         environment.putUserData(TelemetryKeys.OPERATION, operation)
 
         RunConfigurationActionUtils.runEnvironmentProfileWithCheckSettings(environment)
