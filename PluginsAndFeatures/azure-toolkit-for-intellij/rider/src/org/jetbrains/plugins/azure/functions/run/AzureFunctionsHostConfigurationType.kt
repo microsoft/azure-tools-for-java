@@ -57,7 +57,7 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunction
 
     override fun isApplicable(kind: RunnableProjectKind) = isTypeApplicable(kind)
 
-    override fun tryCreateDefault(project: Project, lifetime: Lifetime, projects: List<RunnableProject>, runManager: RunManager): Promise<RunnerAndConfigurationSettings?>? =
+    override fun tryCreateDefault(project: Project, lifetime: Lifetime, projects: List<RunnableProject>, runManager: RunManager): Promise<List<RunnerAndConfigurationSettings>>? =
             if (runManager.allConfigurationsList.all { it !is DotNetProjectConfiguration && it !is AzureFunctionsHostConfiguration && it !is LaunchSettingsConfiguration }
                     && projects.any { isApplicable(it.kind) }
                     && !projects.any {
@@ -66,7 +66,7 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunction
                     }) {
                 val defaultSettings = runManager.createConfiguration("Default", factory)
                 runManager.addConfiguration(defaultSettings, false)
-                resolvedPromise(defaultSettings)
+                resolvedPromise(listOf(defaultSettings))
             } else {
                 null
             }

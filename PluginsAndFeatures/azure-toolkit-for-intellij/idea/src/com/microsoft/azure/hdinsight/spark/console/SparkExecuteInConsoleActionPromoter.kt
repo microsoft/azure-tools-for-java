@@ -23,8 +23,9 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.DataContext
 import org.jetbrains.plugins.scala.actions.SingleActionPromoterBase
 
 class SparkExecuteInConsoleActionPromoter : SingleActionPromoterBase() {
-    override fun shouldPromote(anAction: AnAction?): Boolean = anAction is SparkConsoleExecuteAction
+    override fun shouldPromote(anAction: AnAction?, context: DataContext?): Boolean = anAction is SparkConsoleExecuteAction
 }

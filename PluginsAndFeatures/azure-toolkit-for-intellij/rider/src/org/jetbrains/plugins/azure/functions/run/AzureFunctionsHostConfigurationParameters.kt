@@ -114,16 +114,16 @@ open class AzureFunctionsHostConfigurationParameters(
         }
 
         val effectiveArguments = if (trackProjectArguments && programParameters.isEmpty() && projectOutput != null && projectOutput.defaultArguments.isNotEmpty()) {
-            projectOutput.defaultArguments
+            ParametersListUtil.join(projectOutput.defaultArguments)
         } else {
-            ParametersListUtil.parse(programParameters)
+            programParameters
         }
 
         return DotNetExecutable(
                 exePath = coreToolsInfo!!.coreToolsExecutable,
                 projectTfm = projectOutput?.tfm ?: projectTfm,
                 workingDirectory = effectiveWorkingDirectory,
-                programParameters = effectiveArguments,
+                programParameterString = effectiveArguments,
                 useMonoRuntime = useMonoRuntime,
                 useExternalConsole = useExternalConsole,
                 environmentVariables = envs,

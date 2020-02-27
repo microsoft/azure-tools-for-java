@@ -96,7 +96,7 @@ class AzureFunctionsDotNetCoreDebugProfile(
             setResult(DotNetCoreExeStartInfo(
                     DotNetCoreInfo(coreToolsExecutablePath, funcCoreToolsPath),
                     dotNetExecutable.exePath, dotNetExecutable.workingDirectory,
-                    ParametersListUtil.join(dotNetExecutable.programParameters),
+                    dotNetExecutable.programParameterString,
                     dotNetExecutable.environmentVariables.toModelMap, dotNetExecutable.runtimeArguments,
                     dotNetExecutable.executeAsIs, dotNetExecutable.useExternalConsole, false))
         }
