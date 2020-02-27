@@ -40,6 +40,7 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigurationFactory;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +71,8 @@ public class RunFunctionAction extends AzureAnAction {
     private void runConfiguration(Module module) {
         final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
-        final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(module, manager, configType);
+        final ConfigurationFactory factory = new FunctionRunConfigurationFactory(configType);
+        final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(module, manager, factory);
         if (RunDialog.editConfiguration(project, settings, RUN_FUNCTIONS_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);

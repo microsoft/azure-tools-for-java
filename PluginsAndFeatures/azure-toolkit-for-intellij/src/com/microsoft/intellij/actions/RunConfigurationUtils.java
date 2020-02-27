@@ -32,9 +32,8 @@ import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigur
 
 public class RunConfigurationUtils {
 
-    public static RunnerAndConfigurationSettings getOrCreateRunConfigurationSettings(Module module, RunManagerEx manager, ConfigurationType configType) {
+    public static RunnerAndConfigurationSettings getOrCreateRunConfigurationSettings(Module module, RunManagerEx manager, ConfigurationFactory factory) {
         final Project project = module.getProject();
-        final ConfigurationFactory factory = new FunctionDeploymentConfigurationFactory(configType);
         RunnerAndConfigurationSettings settings = manager.findConfigurationByName(
                 String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()));
         if (settings == null) {
