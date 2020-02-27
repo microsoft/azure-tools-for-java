@@ -245,8 +245,10 @@ public class FunctionCreationDialog extends JDialog {
                     });
                     dispose();
                 }, (ex) -> {
-                    PluginUtil.displayErrorDialog("Create Function App Failed", "Create Function Failed : " + ex.getMessage());
-                    sendTelemetry(false, ex.getMessage());
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        PluginUtil.displayErrorDialog("Create Function App Failed", "Create Function Failed : " + ex.getMessage());
+                        sendTelemetry(false, ex.getMessage());
+                    });
                 });
             }
         });
