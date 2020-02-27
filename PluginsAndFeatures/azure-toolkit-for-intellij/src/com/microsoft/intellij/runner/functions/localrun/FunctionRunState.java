@@ -110,8 +110,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     private void runFunctionCli(RunProcessHandler processHandler, File stagingFolder) throws IOException, InterruptedException {
-        final int funcPort = findFreePortForApi();
-        final int debugPort = findFreePortForApi();
+        final int funcPort = findFreePortForApi(DEFAULT_FUNC_PORT);
+        final int debugPort = findFreePortForApi(funcPort + 1);
         processHandler.println(String.format("Func host start at port : %s", funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
         // Add listener to close func.exe
@@ -181,9 +181,9 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return executor instanceof DefaultDebugExecutor;
     }
 
-    private static int findFreePortForApi() {
+    private static int findFreePortForApi(int targetPort) {
         ServerSocket socket = null;
-        for (int port = DEFAULT_FUNC_PORT; port <= MAX_PORT; port++) {
+        for (int port = targetPort; port <= MAX_PORT; port++) {
             try {
                 socket = new ServerSocket(port);
                 return socket.getLocalPort();
