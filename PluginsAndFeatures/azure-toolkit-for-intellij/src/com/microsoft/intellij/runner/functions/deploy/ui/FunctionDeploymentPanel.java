@@ -67,7 +67,7 @@ import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.LO
 
 public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> implements FunctionDeployMvpView {
 
-    private static final String CREATE_NEW_FUNCTION_APP = "Create New FunctionApp";
+    private static final String CREATE_NEW_FUNCTION_APP = "Create Function App...";
     private static final String REFRESHING_FUNCTION_APP = "Refreshing...";
     private static final String CREATE_NEW_FUNCTION = "No available function, click to create a new one";
 

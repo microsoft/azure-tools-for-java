@@ -41,7 +41,7 @@ import java.awt.event.WindowEvent;
 import java.util.List;
 
 public class ResourceGroupPanel extends JPanel {
-    public static final String CREATE_RESOURCE_GROUP = "Create resource group";
+    public static final String CREATE_RESOURCE_GROUP = "Create resource group...";
     private JComboBox cbResourceGroup;
     private JPanel panel1;
 

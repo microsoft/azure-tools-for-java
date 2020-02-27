@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AppServicePlanPanel extends JPanel {
-    private static final String CREATE_APP_SERVICE_PLAN = "Create app service plan";
+    private static final String CREATE_APP_SERVICE_PLAN = "Create app service plan...";
     private JComboBox cbAppServicePlan;
     private JLabel lblLocation;
     private JLabel lblPricingTier;
