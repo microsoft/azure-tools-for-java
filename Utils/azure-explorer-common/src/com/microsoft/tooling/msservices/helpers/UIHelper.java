@@ -85,7 +85,9 @@ public interface UIHelper {
 
     void openWebAppPropertyView(@NotNull WebAppNode node);
 
-    void openFunctionAppPropertyView(@NotNull FunctionNode node);
+    default void openFunctionAppPropertyView(@NotNull FunctionNode node) {
+
+    }
 
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
 
