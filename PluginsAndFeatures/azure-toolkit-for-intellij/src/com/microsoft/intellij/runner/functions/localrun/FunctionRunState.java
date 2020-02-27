@@ -181,9 +181,9 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return executor instanceof DefaultDebugExecutor;
     }
 
-    private static int findFreePortForApi(int targetPort) {
+    private static int findFreePortForApi(int startPort) {
         ServerSocket socket = null;
-        for (int port = targetPort; port <= MAX_PORT; port++) {
+        for (int port = startPort; port <= MAX_PORT; port++) {
             try {
                 socket = new ServerSocket(port);
                 return socket.getLocalPort();
