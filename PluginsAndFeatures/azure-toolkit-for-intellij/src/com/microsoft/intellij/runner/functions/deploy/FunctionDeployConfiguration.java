@@ -122,11 +122,9 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     }
 
     public void setTargetFunction(FunctionApp targetFunction) {
-        final AppServicePlan appServicePlan = AppServiceUtils.getAppServicePlanByAppService(targetFunction);
-        final IntelliJFunctionRuntimeConfiguration runtimeConfiguration = new IntelliJFunctionRuntimeConfiguration();
-        runtimeConfiguration.setOs(appServicePlan.operatingSystem() == OperatingSystem.WINDOWS ? "windows" : "linux");
-        setRuntime(runtimeConfiguration);
-        setPricingTier(appServicePlan.pricingTier().toSkuDescription().size());
+        if (targetFunction == null) {
+            return;
+        }
         setAppName(targetFunction.name());
         setFunctionId(targetFunction.id());
         setResourceGroup(targetFunction.resourceGroupName());
