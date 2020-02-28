@@ -220,7 +220,7 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
             throw new ConfigurationException("Please specify function cli path");
         }
         final File func = new File(getFuncPath());
-        if (!func.exists() || !func.isFile() || !func.getName().equals("func.exe")) {
+        if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException("Please specify correct function cli path");
         }
     }
