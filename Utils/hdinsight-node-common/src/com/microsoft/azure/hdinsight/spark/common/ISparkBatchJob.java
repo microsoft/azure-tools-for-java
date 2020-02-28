@@ -32,7 +32,7 @@ import java.net.URI;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
-public interface ISparkBatchJob {
+public interface ISparkBatchJob extends Cloneable {
     /**
      * Getter of the base connection URI for HDInsight Spark Job service
      *
@@ -190,4 +190,10 @@ public interface ISparkBatchJob {
      * @return true for success
      */
     boolean isSuccess(@NotNull String state);
+
+    /**
+     * a clone of this instance
+     * @return the clone of this instance
+     */
+    ISparkBatchJob clone();
 }

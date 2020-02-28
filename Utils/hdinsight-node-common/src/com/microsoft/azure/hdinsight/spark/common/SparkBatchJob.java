@@ -46,6 +46,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.subjects.PublishSubject;
 
 import java.io.File;
 import java.io.IOException;
@@ -178,27 +179,24 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
-            SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this(null, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
+            SparkBatchSubmission sparkBatchSubmission) {
+        this(null, submissionParameter, sparkBatchSubmission, null, null, null);
     }
 
     public SparkBatchJob(
             @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
             @Nullable String destinationRootPath) {
-        this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, storageAccount, accessToken, destinationRootPath, null, null);
+        this(cluster, submissionParameter, sparkBatchSubmission, storageAccount, accessToken, destinationRootPath, null, null);
     }
 
     public SparkBatchJob(
             @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
             @Nullable String destinationRootPath,
@@ -208,7 +206,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
-        this.ctrlSubject = ctrlSubject;
+        this.ctrlSubject = PublishSubject.create();
         this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
         this.httpObservable = httpObservable;
@@ -219,12 +217,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable Deployable jobDeploy) {
         this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.submission = sparkBatchSubmission;
-        this.ctrlSubject = ctrlSubject;
+        this.ctrlSubject = PublishSubject.create();
         this.jobDeploy = jobDeploy;
     }
 
@@ -318,6 +315,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     public IHDIStorageAccount getStorageAccount() {
         return storageAccount;
+    }
+
+    @Nullable
+    public Deployable getJobDeploy() {
+        return jobDeploy;
     }
 
     /**
@@ -1081,14 +1083,10 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         return ctrlSubject;
     }
 
-    public void setCtrlSubject(Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this.ctrlSubject = ctrlSubject;
-    }
-
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return jobDeploy.deploy(new File(artifactPath))
+        return jobDeploy.deploy(new File(artifactPath), getCtrlSubject())
                 .map(redirectPath -> {
                     getSubmissionParameter().setFilePath(redirectPath);
                     return this;
@@ -1207,5 +1205,14 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Override
     public Observable<String> awaitPostDone() {
         return getJobLogAggregationDoneObservable();
+    }
+
+    @Override
+    public SparkBatchJob clone() {
+        return new SparkBatchJob(
+                this.getCluster(),
+                this.getSubmissionParameter(),
+                this.getSubmission(),
+                this.getJobDeploy());
     }
 }

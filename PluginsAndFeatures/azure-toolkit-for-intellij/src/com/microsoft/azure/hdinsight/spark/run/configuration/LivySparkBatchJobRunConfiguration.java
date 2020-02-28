@@ -277,7 +277,7 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
             return Observable.empty();
         }
 
-        return ((SparkSubmissionRunner) runner).buildSparkBatchJob(getSubmitModel(), PublishSubject.create())
+        return ((SparkSubmissionRunner) runner).buildSparkBatchJob(getSubmitModel())
                 .doOnNext(batch -> sparkRemoteBatch = batch);
     }
 

@@ -105,10 +105,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     @Override
     @NotNull
-    public Observable<ISparkBatchJob> buildSparkBatchJob(
-            @NotNull SparkSubmitModel submitModel,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject
-    ) {
+    public Observable<ISparkBatchJob> buildSparkBatchJob(@NotNull SparkSubmitModel submitModel) {
         return Observable.fromCallable(() -> {
             String clusterName = submitModel.getSubmissionParameter().getClusterName();
 
@@ -126,7 +123,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
             });
 
             Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
-                    submitModel, clusterDetail, ctrlSubject);
+                    submitModel, clusterDetail);
 
             SparkSubmissionParameter submissionParameter =
                     prepareSubmissionParameterWithTransformedGen2Uri(submitModel.getSubmissionParameter());
@@ -136,7 +133,7 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 progressIndicator.setText("All checks are passed.");
             });
 
-            return new SparkBatchJob(clusterDetail, submissionParameter, getClusterSubmission(clusterDetail), ctrlSubject, jobDeploy);
+            return new SparkBatchJob(clusterDetail, submissionParameter, getClusterSubmission(clusterDetail), jobDeploy);
         });
     }
 
@@ -198,12 +195,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
         // To address issue https://github.com/microsoft/azure-tools-for-java/issues/4021.
         // In this issue, when user click rerun button, we are still using the legacy ctrlSubject which has already sent
-        // "onComplete" message when the job is done in the previous time. To avoid this issue,  We need to create a new ctrlSubject
-        // each time user run or rerun the spark batch job.
-        final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject = PublishSubject.create();
-        final ISparkBatchJob sparkBatch = submissionState.getSparkBatch();
-        ((SparkBatchJob) sparkBatch).setCtrlSubject(ctrlSubject);
-
+        // "onComplete" message when the job is done in the previous time. To avoid this issue,  We clone a new Spark
+        // batch job instance to re-initialize everything in the object.
+        final ISparkBatchJob sparkBatch = submissionState.getSparkBatch().clone();
+        final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject =
+                (PublishSubject<SimpleImmutableEntry<MessageInfoType, String>>) sparkBatch.getCtrlSubject();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
                 sparkBatch,
