@@ -200,7 +200,7 @@ public class AppServicePlanPanel extends JPanel {
         final AppServicePlanWrapper selectedItem = items.size() == 0 ? null :
                 (selectedAppServicePlan == null || !items.contains(selectedAppServicePlan)) ? items.get(0) : selectedAppServicePlan;
         cbAppServicePlan.setSelectedItem(selectedItem);
-        showAppServicePlan(selectedItem);
+        onSelectAppServicePlan();
 
         if (window != null) {
             window.pack();

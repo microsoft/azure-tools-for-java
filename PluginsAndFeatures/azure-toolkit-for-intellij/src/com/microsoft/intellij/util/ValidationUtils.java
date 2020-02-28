@@ -23,6 +23,13 @@
 
 package com.microsoft.intellij.util;
 
+import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.IOException;
+
 public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
     private static final String GROUP_ARTIFACT_ID_REGEX = "[0-9a-zA-Z]([\\.a-zA-Z0-9\\-_])*";
@@ -43,5 +50,23 @@ public class ValidationUtils {
 
     public static boolean isValidVersion(String version) {
         return version != null && version.matches(VERSION_REGEX);
+    }
+
+    public static void validFunctionAppName(String subscriptionId, String functionAppName) {
+        if (StringUtils.isEmpty(subscriptionId)) {
+            throw new IllegalArgumentException("Subscription can not be null");
+        }
+        if (!isValidFunctionName(functionAppName)) {
+            throw new IllegalArgumentException("Function App names only allow alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period.");
+        }
+        try {
+            final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
+            final FunctionApp target = azure.appServices().functionApps().getByResourceGroup(subscriptionId, functionAppName);
+            if (target != null) {
+                throw new IllegalArgumentException(String.format("App Service Plan %s exists in subscription %s", functionAppName, subscriptionId));
+            }
+        } catch (IOException e) {
+            // swallow exception when get azure client
+        }
     }
 }

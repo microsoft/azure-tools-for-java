@@ -24,6 +24,7 @@ import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
 import com.microsoft.intellij.runner.functions.library.function.CreateFunctionHandler;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.util.ValidationUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.AbstractButton;
@@ -36,9 +37,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -55,6 +59,7 @@ import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_APP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
+import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEED_SIGN_IN;
 
 public class FunctionCreationDialog extends JDialog {
 
@@ -69,12 +74,12 @@ public class FunctionCreationDialog extends JDialog {
     private JRadioButton rdoLinuxOS;
     private JRadioButton rdoWindowsOS;
     private JLabel lblOS;
-    private JLabel lblMessage;
     private JPanel lblPanelRoot;
     private JPanel pnlAppSettings;
     private ResourceGroupPanel resourceGroupPanel;
     private SubscriptionPanel subscriptionPanel;
     private AppServicePlanPanel appServicePlanPanel;
+    private JTextPane paneMessage;
     private AppSettingsTable appSettingsTable;
 
     private IntelliJFunctionContext functionConfiguration;
@@ -116,7 +121,7 @@ public class FunctionCreationDialog extends JDialog {
             }
         });
 
-        addValidationListener(contentPanel, e -> validateConfiguration());
+        addUpdateListener(contentPanel, e -> updateConfiguration());
         init();
 
         subscriptionPanel.addItemListener(e -> {
@@ -136,7 +141,7 @@ public class FunctionCreationDialog extends JDialog {
         return rdoWindowsOS.isSelected() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
     }
 
-    private void addValidationListener(Container parent, ActionListener actionListener) {
+    private void addUpdateListener(Container parent, ActionListener actionListener) {
         for (final Component component : parent.getComponents()) {
             if (component instanceof AbstractButton) {
                 ((AbstractButton) component).addActionListener(actionListener);
@@ -146,21 +151,21 @@ public class FunctionCreationDialog extends JDialog {
                 ((JTextField) component).getDocument().addDocumentListener(new DocumentListener() {
                     @Override
                     public void insertUpdate(DocumentEvent e) {
-                        validateConfiguration();
+                        updateConfiguration();
                     }
 
                     @Override
                     public void removeUpdate(DocumentEvent e) {
-                        validateConfiguration();
+                        updateConfiguration();
                     }
 
                     @Override
                     public void changedUpdate(DocumentEvent e) {
-                        validateConfiguration();
+                        updateConfiguration();
                     }
                 });
             } else if (component instanceof Container) {
-                addValidationListener((Container) component, actionListener);
+                addUpdateListener((Container) component, actionListener);
             }
         }
     }
@@ -205,17 +210,33 @@ public class FunctionCreationDialog extends JDialog {
         runtimeConfiguration.setOs(getSelectedOperationSystemEnum() == OperatingSystem.WINDOWS ? "windows" : "linux");
         functionConfiguration.setRuntime(runtimeConfiguration);
         functionConfiguration.setAppSettings(appSettingsTable.getAppSettings());
+        // Clear validation prompt
+        paneMessage.setForeground(UIManager.getColor("Panel.foreground"));
+        paneMessage.setText("");
     }
 
-    private void validateConfiguration() {
+    private boolean validateConfiguration() {
         updateConfiguration();
         try {
-            functionConfiguration.validate();
-            lblMessage.setText("");
-            buttonOK.setEnabled(true);
+            paneMessage.setText("Validating...");
+            doValidate(functionConfiguration);
+            paneMessage.setText("");
+            return true;
         } catch (ConfigurationException e) {
-            lblMessage.setText(String.format(WARNING_MESSAGE, e.getMessage()));
-            buttonOK.setEnabled(false);
+            paneMessage.setForeground(Color.RED);
+            paneMessage.setText(e.getMessage());
+            return false;
+        }
+    }
+
+    private void doValidate(IntelliJFunctionContext functionConfiguration) throws ConfigurationException {
+        if (!AuthMethodManager.getInstance().isSignedIn()) {
+            throw new ConfigurationException(NEED_SIGN_IN);
+        }
+        try {
+            ValidationUtils.validFunctionAppName(functionConfiguration.getSubscription(), functionConfiguration.getAppName());
+        } catch (IllegalArgumentException iae) {
+            throw new ConfigurationException(iae.getMessage());
         }
     }
 
@@ -224,7 +245,9 @@ public class FunctionCreationDialog extends JDialog {
     }
 
     private void createFunctionApp() {
-        updateConfiguration();
+        if (!validateConfiguration()) {
+            return;
+        }
         ProgressManager.getInstance().run(new Task.Modal(null, "Creating New Function App...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
