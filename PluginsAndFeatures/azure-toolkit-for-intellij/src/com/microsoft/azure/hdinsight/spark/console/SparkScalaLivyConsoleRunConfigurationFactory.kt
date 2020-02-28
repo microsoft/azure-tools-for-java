@@ -29,7 +29,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfigu
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.projectarcadia.spark.console.ArcadiaSparkScalaLivyConsoleRunConfiguration
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLivyConsoleConfigurationType)
     : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {

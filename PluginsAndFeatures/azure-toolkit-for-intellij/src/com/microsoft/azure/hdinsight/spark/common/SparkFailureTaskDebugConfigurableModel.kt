@@ -23,7 +23,6 @@
 package com.microsoft.azure.hdinsight.spark.common
 
 import com.intellij.execution.CommonJavaRunConfigurationParameters
-import com.intellij.execution.configurations.RunConfigurationModule
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializer
 import com.microsoft.azure.hdinsight.spark.run.SparkFailureTaskDebugSettingsModel
@@ -31,8 +30,11 @@ import org.jdom.Element
 import java.nio.file.Paths
 
 // As a model adapter
-class SparkFailureTaskDebugConfigurableModel(project: Project)
-    : RunConfigurationModule(project), CommonJavaRunConfigurationParameters {
+class SparkFailureTaskDebugConfigurableModel(val myProject: Project) : CommonJavaRunConfigurationParameters {
+    override fun getProject(): Project {
+        return myProject
+    }
+
     var settings: SparkFailureTaskDebugSettingsModel = SparkFailureTaskDebugSettingsModel()
 
     val log4jProperties: String?
@@ -100,9 +102,7 @@ class SparkFailureTaskDebugConfigurableModel(project: Project)
         return null
     }
 
-    override fun readExternal(element: Element) {
-        super.readExternal(element)
-
+    fun readExternal(element: Element) {
         val settingsElement : Element? = element.getChild(SparkFailureTaskDebugSettingsModel::class.simpleName)
 
         if (settingsElement != null) {
@@ -110,9 +110,7 @@ class SparkFailureTaskDebugConfigurableModel(project: Project)
         }
     }
 
-    override fun writeExternal(parent: Element) {
-        super.writeExternal(parent)
-
+    fun writeExternal(parent: Element) {
         parent.addContent(XmlSerializer.serialize(settings))
     }
 }

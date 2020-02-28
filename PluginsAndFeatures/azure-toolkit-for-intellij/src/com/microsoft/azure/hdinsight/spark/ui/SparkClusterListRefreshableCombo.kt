@@ -71,7 +71,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 
         comboBox.apply {
             setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {
-                override fun customize(list: JList<out IClusterDetail>?,
+                override fun customize(list: JList<out IClusterDetail>,
                                        cluster: IClusterDetail?,
                                        index: Int,
                                        selected: Boolean,

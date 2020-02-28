@@ -26,6 +26,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.hdinsight.spark.common.CosmosSparkConfigurableModel
 
 open class CosmosSparkConfigurationFactory (type: ConfigurationType) : ConfigurationFactory(type) {
     companion object {
@@ -33,7 +34,7 @@ open class CosmosSparkConfigurationFactory (type: ConfigurationType) : Configura
     }
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return CosmosSparkRunConfiguration(NAME, CosmosSparkConfigurationModule(project), this)
+        return CosmosSparkRunConfiguration(project, NAME, CosmosSparkConfigurableModel(project), this);
     }
 
     override fun getName(): String {

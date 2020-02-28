@@ -63,7 +63,7 @@ abstract class SparkLivySessionInputStream(val session: Session) : InputStream()
                     .map { stm ->
                         createStatementBytesQueue(stm.output)?.let {
                             log().debug("Statement $nextStatementId result $it")
-                            ArrayDeque(it.toByteArray(UTF_8).toList())
+                            ArrayDeque("$it\n".toByteArray(UTF_8).toList())
                         }
                     }
                     .toBlocking()

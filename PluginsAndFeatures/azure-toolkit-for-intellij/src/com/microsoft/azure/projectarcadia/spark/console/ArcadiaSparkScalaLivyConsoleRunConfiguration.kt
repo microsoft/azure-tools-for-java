@@ -60,7 +60,8 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
 
         val session = ArcadiaSparkSession(
                 name, URI.create(livyUrl), sparkCluster.subscription.tenantId)
-        return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
+
+        return SparkScalaLivyConsoleRunProfileState(consoleBuilder, session)
     }
 
     override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {

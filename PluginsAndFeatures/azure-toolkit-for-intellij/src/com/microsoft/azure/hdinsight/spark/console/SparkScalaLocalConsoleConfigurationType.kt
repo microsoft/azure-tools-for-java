@@ -23,8 +23,8 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.configurations.ConfigurationTypeUtil
-import org.jetbrains.plugins.scala.console.ScalaConsoleConfigurationType
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleConfigurationType
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLocalConsoleConfigurationType : ScalaConsoleConfigurationType() {
     companion object {

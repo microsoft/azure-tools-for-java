@@ -22,9 +22,16 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.openapi.actionSystem.ActionPromoter
 import com.intellij.openapi.actionSystem.AnAction
-import org.jetbrains.plugins.scala.actions.SingleActionPromoterBase
+import com.intellij.openapi.actionSystem.DataContext
+import com.microsoft.azure.hdinsight.common.logger.ILogger
 
-class SparkExecuteInConsoleActionPromoter : SingleActionPromoterBase() {
-    override fun shouldPromote(anAction: AnAction?): Boolean = anAction is SparkConsoleExecuteAction
+class SparkExecuteInConsoleActionPromoter : ActionPromoter, ILogger {
+    private fun shouldPromote(anAction: AnAction): Boolean = anAction is SparkConsoleExecuteAction
+
+    override fun promote(actions: MutableList<AnAction>, context: DataContext?): MutableList<AnAction> =
+            actions.firstOrNull { shouldPromote(it) }
+                    ?.let { mutableListOf(it) }
+                    ?: mutableListOf()
 }

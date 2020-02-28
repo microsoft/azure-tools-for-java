@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.microsoft.azuretools.telemetry.TelemetryConstants
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
     override val selectedMenuActionId: String
