@@ -36,7 +36,6 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmo
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkItemGroupState
 import com.microsoft.azure.hdinsight.spark.common.CosmosSparkSubmitModel
-import com.microsoft.azure.hdinsight.spark.console.SparkScalaConsoleBuilder
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfiguration
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfigurationFactory
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunProfileState
@@ -64,7 +63,7 @@ class CosmosSparkScalaLivyConsoleRunConfiguration(project: Project,
                 sparkCluster.tenantId,
                 sparkCluster.account)
 
-        return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
+        return SparkScalaLivyConsoleRunProfileState(consoleBuilder, session)
     }
 
     override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {

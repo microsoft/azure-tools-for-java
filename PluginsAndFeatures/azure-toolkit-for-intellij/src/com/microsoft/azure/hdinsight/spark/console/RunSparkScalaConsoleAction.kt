@@ -35,6 +35,7 @@ import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.spark.run.SparkLocalRun
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
@@ -43,8 +44,8 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.util.runInReadAction
-import org.jetbrains.plugins.scala.console.RunConsoleAction
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.actions.RunConsoleAction
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import scala.Function1
 import scala.runtime.BoxedUnit
@@ -105,6 +106,11 @@ abstract class RunSparkScalaConsoleAction
             // Newly created config should let the user to edit
             setting.isEditBeforeRun = true
             handler.apply(setting.configuration)
+
+            (setting.configuration as? LivySparkBatchJobRunConfiguration)?.run {
+                this.setModule(SparkLocalRun.defaultModule(project))
+            }
+
             runFromSetting(setting, runManagerEx, operation)
 
             // Skip edit the next time
@@ -151,5 +157,6 @@ abstract class RunSparkScalaConsoleAction
     override fun getMyConfigurationType(): LivySparkBatchJobRunConfigurationType? =
         LivySparkBatchJobRunConfigurationType.getInstance()
 
-    override fun checkFile(psiFile: PsiFile): Boolean = psiFile is ScalaFile
+
+    override fun checkFile(psiFile: PsiFile?): Boolean = psiFile is ScalaFile
 }

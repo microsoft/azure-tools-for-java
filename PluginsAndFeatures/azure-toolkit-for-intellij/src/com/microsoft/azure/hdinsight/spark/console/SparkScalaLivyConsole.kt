@@ -24,11 +24,11 @@ package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.console.ConsoleHistoryController
 import com.intellij.execution.process.ProcessHandler
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.module.Module
 import org.jetbrains.plugins.scala.console.ScalaConsoleInfo
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 
-class SparkScalaLivyConsole(project: Project, title: String) : ScalaLanguageConsole(project, title), SparkConsole {
+class SparkScalaLivyConsole(module: Module) : ScalaLanguageConsole(module), SparkConsole {
     override fun indexCodes(codes: String) {
         super.textSent(codes)
     }

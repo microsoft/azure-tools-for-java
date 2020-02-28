@@ -110,9 +110,8 @@ open class SparkSubmissionJobUploadStoragePanel: JPanel(), Disposable, ILogger {
             }
         }
 
-        @Suppress("MissingRecentApi") // Supported after 192.3099
         renderer = object: SimpleListCellRenderer<SparkSubmitStorageType>() {
-            override fun customize(list: JList<out SparkSubmitStorageType>?, type: SparkSubmitStorageType?, index: Int, selected: Boolean, hasFocus: Boolean) {
+            override fun customize(list: JList<out SparkSubmitStorageType>, type: SparkSubmitStorageType?, index: Int, selected: Boolean, hasFocus: Boolean) {
                 text = type?.description
             }
         }

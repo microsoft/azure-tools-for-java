@@ -74,7 +74,8 @@ import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadSto
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN2;
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.BLOB;
 
-public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration implements ILogger
+public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule, Element>
+        implements ILogger
 {
     enum RunMode {
         LOCAL,
@@ -99,15 +100,11 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration 
     @NotNull
     final private Properties actionProperties = new Properties();
 
-    public LivySparkBatchJobRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, @NotNull RunConfigurationModule configurationModule, @NotNull String name) {
-        this(new SparkBatchJobConfigurableModel(project), factory, configurationModule, name);
-    }
-
-    public LivySparkBatchJobRunConfiguration(@NotNull SparkBatchJobConfigurableModel jobModel,
+    public LivySparkBatchJobRunConfiguration(@NotNull Project project,
+                                             @NotNull SparkBatchJobConfigurableModel jobModel,
                                              @NotNull ConfigurationFactory factory,
-                                             @NotNull RunConfigurationModule configurationModule,
                                              @NotNull String name) {
-        super(name, configurationModule, factory);
+        super(name, new JavaRunConfigurationModule(project, true), factory);
 
         this.jobModel = jobModel;
         // FIXME: Too many telemetries will be sent if we uncomment the following code
@@ -446,6 +443,13 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration 
 
     public String getSuggestedNamePrefix() {
         return "[Spark on HDInsight]";
+    }
+
+    @Nullable
+    @Override
+    public String getActionName() {
+        // To avoid to be shorten
+        return this.getName() + this.getPresentableType();
     }
 }
 

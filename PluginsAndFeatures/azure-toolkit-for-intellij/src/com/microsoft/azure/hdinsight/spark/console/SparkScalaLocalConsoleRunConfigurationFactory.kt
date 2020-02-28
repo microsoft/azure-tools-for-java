@@ -25,8 +25,9 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.hdinsight.spark.run.SparkLocalRun
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLocalConsoleConfigurationType)
     : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {
@@ -45,7 +46,7 @@ class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScala
 
         val localClassModule = template.model.localRunConfigurableModel?.classpathModule
         configuration.setModule(localClassModule?.let { moduleManager.findModuleByName(it) }
-                ?: moduleManager.modules.first { it.name.equals(template.project.name, ignoreCase = true) })
+                ?: SparkLocalRun.defaultModule(template.project))
 
         return configuration
     }

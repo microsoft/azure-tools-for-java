@@ -38,8 +38,9 @@ open class ArcadiaSparkConfigurationFactory (type: ConfigurationType) :
     }
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration = ArcadiaSparkConfiguration(
+            project,
             NAME,
-            ArcadiaSparkConfigurationModule(project),
+            ArcadiaSparkConfigurableModel(project),
             this
     )
 
