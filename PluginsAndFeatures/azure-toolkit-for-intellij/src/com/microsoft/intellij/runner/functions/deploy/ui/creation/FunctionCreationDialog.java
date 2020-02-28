@@ -59,7 +59,6 @@ import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_APP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
-import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEED_SIGN_IN;
 
 public class FunctionCreationDialog extends JDialog {
 
@@ -231,7 +230,7 @@ public class FunctionCreationDialog extends JDialog {
 
     private void doValidate(IntelliJFunctionContext functionConfiguration) throws ConfigurationException {
         if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException(NEED_SIGN_IN);
+            throw new ConfigurationException("Please sign in with your Azure account.");
         }
         try {
             ValidationUtils.validFunctionAppName(functionConfiguration.getSubscription(), functionConfiguration.getAppName());
