@@ -233,7 +233,7 @@ public class FunctionCreationDialog extends JDialog {
             throw new ConfigurationException("Please sign in with your Azure account.");
         }
         try {
-            ValidationUtils.validFunctionAppName(functionConfiguration.getSubscription(), functionConfiguration.getAppName());
+            ValidationUtils.checkFunctionAppName(functionConfiguration.getSubscription(), functionConfiguration.getAppName());
         } catch (IllegalArgumentException iae) {
             throw new ConfigurationException(iae.getMessage());
         }

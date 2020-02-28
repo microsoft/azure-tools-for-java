@@ -24,7 +24,11 @@
 package com.microsoft.intellij.util;
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
+import com.microsoft.azure.management.appservice.implementation.WebSiteManagementClientImpl;
+import com.microsoft.azure.management.graphrbac.ResourceType;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import org.apache.commons.lang.StringUtils;
 
@@ -52,18 +56,20 @@ public class ValidationUtils {
         return version != null && version.matches(VERSION_REGEX);
     }
 
-    public static void validFunctionAppName(String subscriptionId, String functionAppName) {
+    public static void checkFunctionAppName(String subscriptionId, String functionAppName) {
         if (StringUtils.isEmpty(subscriptionId)) {
             throw new IllegalArgumentException("Subscription can not be null");
         }
         if (!isValidFunctionName(functionAppName)) {
-            throw new IllegalArgumentException("Function App names only allow alphanumeric characters, periods, underscores, hyphens and parenthesis and cannot end in a period.");
+            throw new IllegalArgumentException("Function App names only allow alphanumeric characters, periods, " +
+                    "underscores, hyphens and parenthesis and cannot end in a period.");
         }
         try {
             final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
-            final FunctionApp target = azure.appServices().functionApps().getByResourceGroup(subscriptionId, functionAppName);
-            if (target != null) {
-                throw new IllegalArgumentException(String.format("App Service Plan %s exists in subscription %s", functionAppName, subscriptionId));
+            final ResourceNameAvailabilityInner result = azure.appServices().inner()
+                    .checkNameAvailability(functionAppName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
+            if (!result.nameAvailable()) {
+                throw new IllegalArgumentException(result.message());
             }
         } catch (IOException e) {
             // swallow exception when get azure client
