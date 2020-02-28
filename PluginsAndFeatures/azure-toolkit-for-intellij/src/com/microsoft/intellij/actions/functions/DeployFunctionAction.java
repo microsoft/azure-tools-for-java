@@ -42,6 +42,7 @@ import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigurationFactory;
+import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,7 +62,8 @@ public class DeployFunctionAction extends AzureAnAction {
                 ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ApplicationManager.getApplication().invokeLater(() ->
+                    PluginUtil.displayErrorDialog("Failed to deploy function", e.getMessage()));
         }
         return true;
     }
