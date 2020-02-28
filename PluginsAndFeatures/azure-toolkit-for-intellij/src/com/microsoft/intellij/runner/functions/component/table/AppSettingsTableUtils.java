@@ -71,8 +71,8 @@ public class AppSettingsTableUtils {
         final AnActionButton btnAdd = new AnActionButton("Add", AllIcons.General.Add) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                final String key = JOptionPane.showInputDialog("Please input value for key: ");
-                final String value = JOptionPane.showInputDialog("Please input value for key: ");
+                final String key = JOptionPane.showInputDialog(appSettingsTable, "Please input value for key: ");
+                final String value = JOptionPane.showInputDialog(appSettingsTable, "Please input value for key: ");
                 appSettingsTable.addAppSettings(key, value);
                 appSettingsTable.repaint();
             }

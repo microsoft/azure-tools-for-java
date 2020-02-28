@@ -24,6 +24,7 @@ package com.microsoft.intellij.runner.functions.deploy.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -42,6 +43,7 @@ import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableU
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.deploy.ui.creation.FunctionCreationDialog;
+import com.microsoft.intellij.ui.util.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
@@ -116,6 +118,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             final String targetFolder = FunctionUtils.getTargetFolder((Module) cbFunctionModule.getSelectedItem());
             txtStagingFolder.setText(targetFolder);
         });
+
+        txtStagingFolder.addActionListener(
+                UIUtils.createFileChooserListenerWithTextPath(txtStagingFolder, project,
+                        FileChooserDescriptorFactory.createSingleFolderDescriptor()));
 
         fillModules();
     }

@@ -85,7 +85,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
         txtFunc.addActionListener(
                 UIUtils.createFileChooserListenerWithTextPath(txtFunc, project,
-                        FileChooserDescriptorFactory.createSingleFileDescriptor("exe")));
+                        FileChooserDescriptorFactory.createSingleFileDescriptor()));
 
         try {
             txtFunc.setText(FunctionUtils.getFuncPath());
