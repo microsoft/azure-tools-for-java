@@ -39,17 +39,23 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
+import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEED_SIGN_IN;
+
 public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
     implements RunProfileWithCompileBeforeLaunchOption {
 
+    public static final String NEED_SPECIFY_MODULE = "Please specify module";
+    public static final String NEED_SPECIFY_TARGET_FUNCTION = "Please specify target function";
     private final FunctionDeployModel functionDeployModel;
     private Map<String, String> appSettings;
     private Module module;
@@ -185,6 +191,15 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     @Override
     public void validate() throws ConfigurationException {
         // Todo: implement validation
+        if (!AuthMethodManager.getInstance().isSignedIn()) {
+            throw new ConfigurationException(NEED_SIGN_IN);
+        }
+        if (this.module == null) {
+            throw new ConfigurationException(NEED_SPECIFY_MODULE);
+        }
+        if (StringUtils.isEmpty(this.getFunctionId())) {
+            throw new ConfigurationException(NEED_SPECIFY_TARGET_FUNCTION);
+        }
     }
 
 }

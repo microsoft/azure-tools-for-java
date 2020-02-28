@@ -33,15 +33,19 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
+
+import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEED_SIGN_IN;
 
 public class FunctionRunConfiguration extends AzureRunConfigurationBase<FunctionRunModel>
     implements LocatableConfiguration, RunProfileWithCompileBeforeLaunchOption {
@@ -207,7 +211,16 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
     @Override
     public void validate() throws ConfigurationException {
-
+        if (getModel() == null) {
+            throw new ConfigurationException("Please specify module");
+        }
+        if (StringUtils.isEmpty(getFuncPath())) {
+            throw new ConfigurationException("Please specify function cli path");
+        }
+        final File func = new File(getFuncPath());
+        if (!func.exists() || !func.isFile() || !func.getName().equals("func.exe")) {
+            throw new ConfigurationException("Please specify correct function cli path");
+        }
     }
 
     @Override

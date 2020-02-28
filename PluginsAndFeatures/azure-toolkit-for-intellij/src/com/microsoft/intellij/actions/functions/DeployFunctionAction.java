@@ -34,6 +34,8 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.actions.RunConfigurationUtils;
@@ -54,7 +56,13 @@ public class DeployFunctionAction extends AzureAnAction {
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
-        ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+        try {
+            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
+                ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return true;
     }
 

@@ -35,6 +35,7 @@ public class AzureFunctionsConstants {
     public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
     public static final String LOADING_TEXT = "Loading...";
     public static final String EMPTY_TEXT = "Empty";
+    public static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
 
     public static final Map<String, String> HINT = new HashMap<String, String>() {{
             put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
