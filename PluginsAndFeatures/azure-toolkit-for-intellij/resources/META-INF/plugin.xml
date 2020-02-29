@@ -21,28 +21,33 @@
     <![CDATA[
     <html>
     <h3>3.32.0</h3>
-    <h4>Added</h4>
+    <h4">Added</h4>
     <ul>
-        <li>Support Synapse default ADLS Gen2 storage uploading artifacts</li>
-        <li>Support Synapse default ADLS Gen2 storage explorer for reference files/jars</li>
-        <li>Synapse Spark batch job detail page link after submission</li>
-        <li>Support HIB cluster default ADLS Gen2 storage explorer for reference files/jars</li>
-        <li>Support Spark Job remote debugging for HIB cluster</li>
-        <li>Support Authentication type detection when linking HIB cluster</li>
+        <li>Support upload artifact to ADLS Gen1 storage for Spark on Cosmos Spark Pool</li>
+        <li>Detect authentication type automatically when user types cluster name and lost focus when link an HDInsight
+            cluster</li>
+        <li>Fetch more Livy logs when submit Spark job to HDInsight cluster failed</li>
+        <li>Add background task indicator to improve user experience</li>
+        <li>Support virtual file system on ADLS Gen2 storage for HDInsight Spark cluster and Synapse Spark pool</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Mute warning messages when refreshing HDInsight cluster node in Azure explorer</li>
+        <li>Seperator for multiple referenced jars and referenced files is changed from semicolon to space in Spark batch
+            job configuration</li>
+        <li>"Continue Anyway" is changed to "Cancel submit" in "Change configuration settings" dialog when validation check
+            failed for spark batch job</li>
+        <li>The behavior of "Rerun" button action for Spark batch job is changed from re-run with current selected
+            configuration to re-run with previous job configuration</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3899">#3899</a> ADLS Gen2 Virtual File System
-            explorer special characters in path issue</li>
-        <li>Linked HDInsight cluster persistent issue</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3802">#3802</a> HIB linked cluster logout
-            issue</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3887">#3887</a> Stack Overflow issue of
-            SparkBatchJobDebugExecutor</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/3935">#3935</a> Clean up HDInsight clusters from
+            cache when user signs out</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3887">#3887</a>, <a
+                href="https://github.com/microsoft/azure-tools-for-java/pull/4023">#4023</a> Fix uncaught StackOverflowError
+            reported by user</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4045">#4045</a> Fix uncaught
+            NullPointerException reported by user</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
