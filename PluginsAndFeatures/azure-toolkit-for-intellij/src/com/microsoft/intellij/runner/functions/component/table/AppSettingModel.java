@@ -26,6 +26,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class AppSettingModel implements TableModel {
     private static final String[] TITLE = {"Key", "Value"};
 
     private List<Pair<String, String>> appSettings = new ArrayList<>();
+    private List<TableModelListener> tableModelListenerList = new ArrayList<>();
 
     @Override
     public int getRowCount() {
@@ -66,6 +68,9 @@ public class AppSettingModel implements TableModel {
 
     @Override
     public Object getValueAt(int row, int col) {
+        if (!isRowValid(row)) {
+            return null;
+        }
         final Pair<String, String> target = appSettings.get(row);
         return col == 0 ? target.getKey() : target.getValue();
     }
@@ -79,6 +84,7 @@ public class AppSettingModel implements TableModel {
             appSettings.add(Pair.of("", ""));
         }
         final Pair<String, String> target = appSettings.get(row);
+        fireTableChanged();
         appSettings.set(row, Pair.of((String) (col == 0 ? value : target.getLeft()), (String) (col == 0 ? target.getRight() : value)));
     }
 
@@ -90,15 +96,20 @@ public class AppSettingModel implements TableModel {
         } else {
             appSettings.add(result);
         }
+        fireTableChanged();
         return index > 0 ? index : appSettings.size() - 1;
     }
 
     public void removeAppSettings(int row) {
+        if (!isRowValid(row)) {
+            return;
+        }
+        fireTableChanged();
         appSettings.remove(row);
     }
 
     public String getAppSettingsKey(int row) {
-        if (appSettings == null || row > appSettings.size()) {
+        if (appSettings == null || !isRowValid(row)) {
             return null;
         }
         return appSettings.get(row).getKey();
@@ -110,21 +121,26 @@ public class AppSettingModel implements TableModel {
         return result;
     }
 
-    public void loadAppSettings(Map<String, String> appSettingMap) {
+    public void clear() {
+        fireTableChanged();
         appSettings.clear();
-        appSettingMap.entrySet().forEach(entry -> appSettings.add(Pair.of(entry.getKey(), entry.getValue())));
     }
 
-    public void clear() {
-        appSettings.clear();
+    public void fireTableChanged() {
+        tableModelListenerList.stream().forEach(listener -> listener.tableChanged(new TableModelEvent(this)));
     }
 
     @Override
     public void addTableModelListener(TableModelListener tableModelListener) {
+        tableModelListenerList.add(tableModelListener);
     }
 
     @Override
     public void removeTableModelListener(TableModelListener tableModelListener) {
+        tableModelListenerList.remove(tableModelListener);
+    }
 
+    private boolean isRowValid(int row) {
+        return row >= 0 && row < tableModelListenerList.size();
     }
 }
