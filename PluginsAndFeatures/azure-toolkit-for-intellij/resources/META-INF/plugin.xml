@@ -21,7 +21,7 @@
     <![CDATA[
     <html>
     <h3>3.32.0</h3>
-    <h4">Added</h4>
+    <h4>Added</h4>
     <ul>
         <li>Support upload artifact to ADLS Gen1 storage for Spark on Cosmos Spark Pool</li>
         <li>Detect authentication type automatically when user types cluster name and lost focus when link an HDInsight
