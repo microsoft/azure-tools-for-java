@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.common;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -43,10 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -240,48 +238,52 @@ public class ClusterManagerEx implements ILogger {
      * 4. SQL Big Data clusters
      * @return all kinds of cluster details
      */
-    public synchronized ImmutableList<IClusterDetail> getClusterDetails() {
+    public ImmutableList<IClusterDetail> getClusterDetails() {
+        List<IClusterDetail> linkedClusters;
         if (!isListAdditionalClusterSuccess()) {
-            setAdditionalClusterDetails(loadAdditionalClusters());
+            try {
+                linkedClusters = loadAdditionalClusters();
+            } catch (JsonSyntaxException ignored) {
+                linkedClusters = emptyList();
+            }
+        } else {
+            linkedClusters = getAdditionalClusterDetails();
         }
 
+        List<IClusterDetail> emulatorClusters;
         if (!isListEmulatorClusterSuccess()) {
-            setEmulatorClusterDetails(getEmulatorClusters());
+            try {
+                emulatorClusters = loadEmulatorClusters();
+            } catch (JsonSyntaxException ignored) {
+                emulatorClusters = emptyList();
+            }
+        } else {
+            emulatorClusters = getEmulatorClusterDetails();
         }
-
-        isListClusterSuccess = false;
-
-        // Prepare a cloned additional clusters to handle the intersect clusters in both subscription and linked
-        List<IClusterDetail> allAdditionalClusters = new ArrayList<>(getAdditionalClusterDetails());
 
         // Get clusters from Subscription, an empty list for non-logged in user.
-        Stream<ClusterDetail> clusterDetailsFromSubscription = getSubscriptionHDInsightClusters(getAzureManager())
-                .stream();
-
-        // Merge the clusters from subscription with linked one if the name is same
-        List<IClusterDetail> mergedClusters = clusterDetailsFromSubscription
-                .map(cluster -> { // replace the duplicated cluster with the linked one
-                    Optional<IClusterDetail> inLinkedAndSubscriptionCluster = allAdditionalClusters.stream()
-                            .filter(linkedCluster -> linkedCluster instanceof HDInsightAdditionalClusterDetail ||
-                                    linkedCluster instanceof HDInsightLivyLinkClusterDetail)
-                            .filter(linkedCluster -> linkedCluster.getName().equals(cluster.getName()))
-                            .findFirst();
-
-                    // remove the duplicated cluster from additional clusters
-                    inLinkedAndSubscriptionCluster.ifPresent(allAdditionalClusters::remove);
-
-                    return  inLinkedAndSubscriptionCluster.orElse(cluster);
-                })
-                .collect(Collectors.toList());
-
-        mergedClusters.addAll(allAdditionalClusters);
-        mergedClusters.addAll(getEmulatorClusterDetails());
+        List<ClusterDetail> clusterDetailsFromSubscription = getSubscriptionHDInsightClusters(getAzureManager());
 
         // Sort the merged clusters before set it to cache, sorting algorithm is based on cluster name
-        Collections.sort(mergedClusters);
+        ImmutableSortedSet<IClusterDetail> mergedClusters =
+                new ImmutableSortedSet.Builder<IClusterDetail>(ComparableCluster::compareTo)
+                        .addAll(linkedClusters)
+                        .addAll(emulatorClusters)
+                        .addAll(clusterDetailsFromSubscription)
+                        .build();
 
-        setCachedClusters(mergedClusters);
-        return getCachedClusters();
+        synchronized (this) {
+            setAdditionalClusterDetails(linkedClusters);
+            isListAdditionalClusterSuccess = true;
+
+            setEmulatorClusterDetails(emulatorClusters);
+            isListEmulatorClusterSuccess = true;
+
+            setCachedClusters(mergedClusters.asList());
+            isListClusterSuccess = true;
+
+            return getCachedClusters();
+        }
     }
 
     public synchronized  void addEmulatorCluster(EmulatorClusterDetail emulatorClusterDetail) {
@@ -408,13 +410,12 @@ public class ClusterManagerEx implements ILogger {
         DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SQL_BIG_DATA_LIVY_LINK_CLUSTERS, sqlBigDatalivyLinkClustersJson);
     }
 
-    synchronized List<IClusterDetail> loadAdditionalClusters() {
+    List<IClusterDetail> loadAdditionalClusters() {
         List<IClusterDetail> hdiAdditionalClusters = new ArrayList<>();
         List<IClusterDetail> hdiAdditionalMfaClusters = new ArrayList<>();
         List<IClusterDetail> hdiLivyLinkClusters = new ArrayList<>();
         List<IClusterDetail> sqlBigDataClusters = new ArrayList<>();
 
-        isListAdditionalClusterSuccess = false;
         Gson gson = new Gson();
         String additionalClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
         String additionalMfaClustersJson = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_MFA_CLUSTERS);
@@ -443,17 +444,11 @@ public class ClusterManagerEx implements ILogger {
                                     new TypeToken<ArrayList<SqlBigDataLivyLinkClusterDetail>>() { }.getType());
 
         } catch (JsonSyntaxException e) {
-            isListAdditionalClusterSuccess = false;
-            // clear local cache if we cannot get information from local json
-            DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_CLUSTERS);
-            DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_ADDITIONAL_MFA_CLUSTERS);
-            DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.HDINSIGHT_LIVY_LINK_CLUSTERS);
-            DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.SQL_BIG_DATA_LIVY_LINK_CLUSTERS);
             DefaultLoader.getUIHelper().showException("Failed to list linked clusters", e, "List Linked Clusters", false, true);
-            return new ArrayList<>();
+
+            throw e;
         }
 
-        isListAdditionalClusterSuccess = true;
         Stream<IClusterDetail> hdiLinkedClusters = Stream.concat(Stream.concat(hdiAdditionalClusters.stream(), hdiLivyLinkClusters.stream())
                 , hdiAdditionalMfaClusters.stream());
         if (sqlBigDataClusters == null) {
@@ -463,26 +458,22 @@ public class ClusterManagerEx implements ILogger {
         }
     }
 
-        List<IClusterDetail> getEmulatorClusters() {
+    List<IClusterDetail> loadEmulatorClusters() {
         Gson gson = new Gson();
         String json = DefaultLoader.getIdeHelper().getApplicationProperty(CommonConst.EMULATOR_CLUSTERS);
         List<IClusterDetail> emulatorClusters = new ArrayList<>();
 
-        isListEmulatorClusterSuccess = false;
         if(!StringHelper.isNullOrWhiteSpace(json)){
             try {
                 emulatorClusters = gson.fromJson(json, new TypeToken<ArrayList<EmulatorClusterDetail>>(){
                 }.getType());
             } catch (JsonSyntaxException e){
-
-                isListEmulatorClusterSuccess = false;
-                DefaultLoader.getIdeHelper().unsetApplicationProperty(CommonConst.EMULATOR_CLUSTERS);
                 DefaultLoader.getUIHelper().showException("Failed to list emulator cluster", e, "List Emulator Cluster", false, true);
-                return new ArrayList<>();
+
+                throw e;
             }
         }
 
-        isListEmulatorClusterSuccess = true;
         return emulatorClusters;
     }
 

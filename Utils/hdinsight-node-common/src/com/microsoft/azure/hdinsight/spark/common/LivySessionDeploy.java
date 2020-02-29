@@ -34,21 +34,19 @@ import rx.Observable;
 import rx.Observer;
 
 import java.io.File;
-import java.net.URI;
 import java.util.AbstractMap;
 
 public class LivySessionDeploy implements Deployable, ILogger {
-    private Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
     private String clusterName;
 
-    public LivySessionDeploy(@NotNull String clusterName, @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this.ctrlSubject = ctrlSubject;
+    public LivySessionDeploy(@NotNull String clusterName) {
         this.clusterName = clusterName;
     }
 
     @Override
-    public Observable<String> deploy(@NotNull File src) {
-        return JobUtils.deployArtifact(src.getAbsolutePath(), clusterName, ctrlSubject)
+    public Observable<String> deploy(File src,
+                                     Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+        return JobUtils.deployArtifact(src.getAbsolutePath(), clusterName, logSubject)
                 .map(clusterArtifactUriPair -> clusterArtifactUriPair.getValue())
                 .toObservable();
     }

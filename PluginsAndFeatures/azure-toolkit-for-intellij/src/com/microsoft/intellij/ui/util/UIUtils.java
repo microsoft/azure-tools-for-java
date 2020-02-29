@@ -22,7 +22,12 @@
 
 package com.microsoft.intellij.ui.util;
 
+import com.intellij.diagnostic.ThreadDumper;
 import com.intellij.ide.ui.LafManager;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Attachment;
+import com.intellij.openapi.diagnostic.RuntimeExceptionWithAttachments;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -30,6 +35,7 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.util.ShutDownTracker;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -177,5 +183,33 @@ public class UIUtils {
                 setPanelBackGroundColor((JPanel) child, color);
             }
         }
+    }
+
+    public static void assertInDispatchThread() {
+        ApplicationManager.getApplication().assertIsDispatchThread();
+    }
+
+    public static void assertInPooledThread() {
+        Application app = ApplicationManager.getApplication();
+
+        if (!app.isDispatchThread()) {
+            return;
+        }
+
+        if (ShutDownTracker.isShutdownHookRunning()) {
+            return;
+        }
+
+        throw new RuntimeExceptionWithAttachments(
+                "Accessing IO or performing other time consuming operations from event dispatch thread will block UI.",
+                "EventQueue.isDispatchThread()=" + EventQueue.isDispatchThread() +
+                        " Toolkit.getEventQueue()=" + Toolkit.getDefaultToolkit().getSystemEventQueue() +
+                        "\nCurrent thread: " + describe(Thread.currentThread()),
+                new Attachment("threadDump.txt", ThreadDumper.dumpThreadsToString()));
+    }
+
+    // copy from IntelliJ ApplicationImpl
+    private static String describe(Thread o) {
+        return o == null ? "null" : o + " " + System.identityHashCode(o);
     }
 }

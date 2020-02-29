@@ -23,24 +23,25 @@
 package com.microsoft.azure.hdinsight.common.viewmodels
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.ui.ComponentWithBrowseButton
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import javax.swing.ComboBoxModel
+import com.microsoft.azure.hdinsight.spark.ui.ImmutableComboBoxModel
 import javax.swing.JComboBox
+import javax.swing.SwingUtilities
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 abstract class SwingComponentPropertyDelegated<T>: ILogger, ReadWriteProperty<Any?, T>  {
     override operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-        try {
-            ApplicationManager.getApplication().invokeLater({
-                setValueInDispatch(thisRef, property, value)
-            }, ModalityState.any())
-        } catch (ex: ProcessCanceledException) {
-            log().debug(ex.message)
+        val application = ApplicationManager.getApplication()
+
+        if (application == null) {
+            assert(SwingUtilities.isEventDispatchThread())
+        } else {
+            application.assertIsDispatchThread()
         }
+
+        setValueInDispatch(thisRef, property, value)
     }
 
     abstract fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T)
@@ -74,17 +75,16 @@ class ComboBoxSelectionDelegated<T>(private val comboBox: JComboBox<T>): SwingCo
     }
 
     override fun setValueInDispatch(ref: Any?, property: KProperty<*>, v: T) {
-        comboBox.selectedItem = v
+        comboBox.model.selectedItem = v
     }
-
 }
 
-class ComboBoxModelDelegated<T>(private val comboBox: JComboBox<T>) {
-    operator fun getValue(ref: Any?, property: KProperty<*>): ComboBoxModel<T> {
-        return comboBox.model
+class ImmutableComboBoxModelDelegated<T>(private val comboBox: JComboBox<T>) {
+    operator fun getValue(ref: Any?, property: KProperty<*>): ImmutableComboBoxModel<T> {
+        return comboBox.model as ImmutableComboBoxModel<T>
     }
 
-    operator fun setValue(ref: Any?, property: KProperty<*>, v: ComboBoxModel<T>) {
+    operator fun setValue(ref: Any?, property: KProperty<*>, v: ImmutableComboBoxModel<T>) {
         if (comboBox.model != v) {
             comboBox.model = v
         }

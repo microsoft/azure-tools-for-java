@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
-import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.WasbUri
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfiguration
@@ -32,9 +31,8 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkSubmitM
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
-import rx.Observer
+import rx.Observable
 import java.net.URI
-import java.util.*
 
 class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -47,52 +45,43 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
 
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
 
-    @Throws(ExecutionException::class)
-    override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
-        val arcadiaModel = (submitModel as ArcadiaSparkSubmitModel).apply {
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel)
+            : Observable<ISparkBatchJob> = Observable.fromCallable {
+        (submitModel as ArcadiaSparkSubmitModel).apply {
             if (sparkCompute == null || tenantId == null || sparkWorkspace == null) {
                 log().warn("Synapse Spark pool is not selected. " +
                         "spark pool: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
                 throw ExecutionException("Synapse Spark pool is not selected")
             }
         }
+    }.flatMap { arcadiaModel -> ArcadiaSparkComputeManager.getInstance()
+            .findCompute( arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
+            .first()
+            .map { compute ->
+                val submission = SparkBatchArcadiaSubmission(
+                        arcadiaModel.tenantId,
+                        arcadiaModel.sparkWorkspace,
+                        URI.create(arcadiaModel.livyUri),
+                        arcadiaModel.jobName,
+                        compute.workSpace.webUrl
+                )
 
-        val compute = try {
-            ArcadiaSparkComputeManager.getInstance().findCompute(
-                arcadiaModel.tenantId, arcadiaModel.sparkWorkspace, arcadiaModel.sparkCompute)
-                .toBlocking()
-                .first()
-        } catch (ex: NoSuchElementException) {
-            throw ExecutionException(
-                "Can't find Synapse Spark pool (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
-                        + " at tenant ${arcadiaModel.tenantId}.")
-        }
+                if (submitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
+                    val fsRoot = WasbUri.parse(arcadiaModel.jobUploadStorageModel.uploadPath
+                            ?: throw ExecutionException("No uploading path set in Run Configuration"))
+                    val storageKey = arcadiaModel.jobUploadStorageModel.storageKey
+                    submitModel.submissionParameter.jobConfig.put(
+                            SparkSubmissionParameter.Conf,
+                            SparkConfigures(mapOf(
+                                    "spark.hadoop.fs.azure.account.key.${fsRoot.storageAccount}.blob.core.windows.net"
+                                            to storageKey)))
+                }
 
-        val submission = SparkBatchArcadiaSubmission(
-            arcadiaModel.tenantId,
-            arcadiaModel.sparkWorkspace,
-            URI.create(arcadiaModel.livyUri),
-            arcadiaModel.jobName,
-            compute.workSpace.webUrl
-        )
+                val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, compute)
 
-        if (submitModel.jobUploadStorageModel.storageAccountType == SparkSubmitStorageType.BLOB) {
-            val fsRoot = WasbUri.parse(arcadiaModel.jobUploadStorageModel.uploadPath
-                ?: throw ExecutionException("No uploading path set in Run Configuration"))
-            val storageKey = arcadiaModel.jobUploadStorageModel.storageKey
-            submitModel.submissionParameter.jobConfig.put(
-                SparkSubmissionParameter.Conf,
-                SparkConfigures(mapOf(
-                    "spark.hadoop.fs.azure.account.key.${fsRoot.storageAccount}.blob.core.windows.net" to storageKey)))
-        }
-
-        val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
-            submitModel, compute, ctrlSubject)
-
-        return ArcadiaSparkBatchJob(
-            prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
-            submission,
-            jobDeploy,
-            ctrlSubject)
-    }
+                ArcadiaSparkBatchJob(
+                        prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
+                        submission,
+                        jobDeploy)
+            }}
 }
