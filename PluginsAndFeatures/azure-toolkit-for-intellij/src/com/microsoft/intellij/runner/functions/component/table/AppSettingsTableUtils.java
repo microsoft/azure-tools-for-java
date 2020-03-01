@@ -72,7 +72,7 @@ public class AppSettingsTableUtils {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 final String key = JOptionPane.showInputDialog(appSettingsTable, "Please input value for key: ");
-                final String value = JOptionPane.showInputDialog(appSettingsTable, "Please input value for key: ");
+                final String value = JOptionPane.showInputDialog(appSettingsTable, "Please input value for value: ");
                 appSettingsTable.addAppSettings(key, value);
                 appSettingsTable.repaint();
             }
