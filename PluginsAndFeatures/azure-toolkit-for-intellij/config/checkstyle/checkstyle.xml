@@ -135,17 +135,6 @@ page at https://checkstyle.org/config.html -->
             <property name="severity" value="warning"/>
         </module>
 
-        <module name="StaticVariableNameCheck">
-            <!-- Validates static, non-final fields against the supplied
-            expression "^[a-z][a-zA-Z0-9]*_?$". -->
-            <metadata name="altname" value="StaticVariableName"/>
-            <property name="applyToPublic" value="true"/>
-            <property name="applyToProtected" value="true"/>
-            <property name="applyToPackage" value="true"/>
-            <property name="applyToPrivate" value="true"/>
-            <property name="format" value="^[a-z][a-zA-Z0-9]*_?$"/>
-            <property name="severity" value="warning"/>
-        </module>
 
         <module name="MemberNameCheck">
             <!-- Validates non-static members against the supplied expression. -->
@@ -175,12 +164,6 @@ page at https://checkstyle.org/config.html -->
             <!-- Validates identifiers for local final variables against the
               expression "^[a-z][a-zA-Z0-9]*$". -->
             <property name="severity" value="warning"/>
-        </module>
-
-        <module name="FinalLocalVariable">
-            <!-- Checks that local variables that never have their values changed are declared final. -->
-            <property name="tokens" value="VARIABLE_DEF"/>
-            <property name="validateEnhancedForLoopVariable" value="true"/>
         </module>
 
         <!--
@@ -307,7 +290,7 @@ page at https://checkstyle.org/config.html -->
             <property name="tokens"
                       value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR "/>
         </module>
-        <module name="AvoidStarImport"/>
+        <!-- <module name="AvoidStarImport"/> -->
         <module name="PackageName">
             <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
             <message key="name.invalidPattern"
@@ -321,12 +304,7 @@ page at https://checkstyle.org/config.html -->
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
             <message key="name.invalidPattern"
                      value="Member name ''{0}'' must match pattern ''{1}''."/>
-        </module>
-        <module name="ParameterName">
-            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
-            <message key="name.invalidPattern"
-                     value="Parameter name ''{0}'' must match pattern ''{1}''."/>
-        </module>
+        </module>        
         <module name="CatchParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <message key="name.invalidPattern"
