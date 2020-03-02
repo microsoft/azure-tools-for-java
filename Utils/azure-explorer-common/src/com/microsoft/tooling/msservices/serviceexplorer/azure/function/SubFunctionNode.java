@@ -41,20 +41,20 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.TRIGGER_FUNC
 public class SubFunctionNode extends Node {
 
     private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
-    private static final String HTTP_TRIGGER_UTL = "https://%s/api/%s";
-    private static final String HTTP_TRIGGER_UTL_WITH_CODE = "https://%s/api/%s?code=%s";
+    private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
+    private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
     private FunctionApp functionApp;
     private FunctionEnvelope functionEnvelope;
 
-    public SubFunctionNode(FunctionEnvelope functionEnvelope, Node parent) {
+    public SubFunctionNode(FunctionEnvelope functionEnvelope, FunctionNode parent) {
         super(functionEnvelope.inner().id(), getFunctionTriggerName(functionEnvelope), parent, SUB_FUNCTION_ICON_PATH);
         this.functionEnvelope = functionEnvelope;
-        this.functionApp = ((FunctionNode) parent).getFunctionApp();
+        this.functionApp = parent.getFunctionApp();
     }
 
     @Override
     protected void loadActions() {
-        addAction("Trigger",
+        addAction("Trigger Function",
                 new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
@@ -71,20 +71,20 @@ public class SubFunctionNode extends Node {
     private void trigger() {
         Map binding = getHTTPTriggerBinding();
         if (binding == null) {
-            DefaultLoader.getUIHelper().showInfo(this, "Only HTTPTrigger is supported for now");
+            DefaultLoader.getUIHelper().showInfo(this, "Only HTTP Trigger is supported for now");
         }
         final String authLevel = (String) binding.get("authLevel");
-        final String url = StringUtils.equalsIgnoreCase(authLevel, "ANONYMOUS") ? getHttpTriggerUtl() : getHttpTriggerUtlWithCode();
+        final String url = StringUtils.equalsIgnoreCase(authLevel, "ANONYMOUS") ? getHttpTriggerUrl() : getHttpTriggerUrlWithCode();
         DefaultLoader.getUIHelper().openInBrowser(url);
     }
 
-    private String getHttpTriggerUtl() {
-        return String.format(HTTP_TRIGGER_UTL, functionApp.defaultHostName(), this.name);
+    private String getHttpTriggerUrl() {
+        return String.format(HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
     }
 
-    private String getHttpTriggerUtlWithCode() {
+    private String getHttpTriggerUrlWithCode() {
         final String key = functionApp.getMasterKey();
-        return String.format(HTTP_TRIGGER_UTL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
     }
 
     private Map getHTTPTriggerBinding() {
