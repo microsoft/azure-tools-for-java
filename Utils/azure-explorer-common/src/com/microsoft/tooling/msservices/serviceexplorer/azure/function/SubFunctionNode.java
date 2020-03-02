@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -72,9 +73,11 @@ public class SubFunctionNode extends Node {
         Map binding = getHTTPTriggerBinding();
         if (binding == null) {
             DefaultLoader.getUIHelper().showInfo(this, "Only HTTP Trigger is supported for now");
+            return;
         }
         final String authLevel = (String) binding.get("authLevel");
-        final String url = StringUtils.equalsIgnoreCase(authLevel, "ANONYMOUS") ? getHttpTriggerUrl() : getHttpTriggerUrlWithCode();
+        final String url = StringUtils.equalsIgnoreCase(authLevel, AuthorizationLevel.ANONYMOUS.toString()) ?
+                getHttpTriggerUrl() : getHttpTriggerUrlWithCode();
         DefaultLoader.getUIHelper().openInBrowser(url);
     }
 
