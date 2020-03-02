@@ -62,7 +62,7 @@ page at https://checkstyle.org/config.html -->
     <module name="LineLengthCheck">
         <property name="fileExtensions" value="java" />
         <!-- Checks if a line is too long, default value of 120 is too short -->
-        <property name="max" value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}" default="160"/>
+        <property name="max" value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}" default="120"/>
         <property name="severity" value="error"/>
 
         <!--
