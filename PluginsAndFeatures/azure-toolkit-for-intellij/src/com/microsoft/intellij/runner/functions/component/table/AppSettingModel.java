@@ -44,7 +44,7 @@ public class AppSettingModel implements TableModel {
             Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, "java"),
             Pair.of(AZURE_WEB_JOB_STORAGE_KEY, "")
     );
-    public static final String REQUIRED_APP_SETTINGS_PROMPTION = "%s is required parameter";
+    public static final String REQUIRED_APP_SETTINGS_PROMPTION = "%s is a required parameter";
 
     private List<Pair<String, String>> appSettings = new ArrayList<>();
     private List<TableModelListener> tableModelListenerList = new ArrayList<>();
@@ -80,10 +80,7 @@ public class AppSettingModel implements TableModel {
         }
         final Pair<String, String> target = appSettings.get(row);
         // Should not modify FUNCTIONS_WORKER_RUNTIME and AzureWebJobsStorage
-        if (FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || (AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey()) && col == 0)) {
-            return false;
-        }
-        return true;
+        return !(FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || (AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey()) && col == 0));
     }
 
     @Override
