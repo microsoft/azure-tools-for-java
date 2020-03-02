@@ -73,6 +73,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
         setModal(true);
         setTitle(TITLE_IMPORT_APP_SETTINGS);
         setMinimumSize(new Dimension(-1, 250));
+        setAlwaysOnTop(true);
         getRootPane().setDefaultButton(buttonOK);
 
         this.localSettingsPath = localSettingsPath;

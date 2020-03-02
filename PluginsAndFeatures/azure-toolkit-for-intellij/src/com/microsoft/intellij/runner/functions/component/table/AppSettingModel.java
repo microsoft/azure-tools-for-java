@@ -30,6 +30,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +38,20 @@ import java.util.Map;
 public class AppSettingModel implements TableModel {
 
     private static final String[] TITLE = {"Key", "Value"};
+    private static final String FUNCTIONS_WORKER_RUNTIME_KEY = "FUNCTIONS_WORKER_RUNTIME";
+    private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
+    private static final List<Pair<String, String>> DEFAULT_APP_SETTINGS = Arrays.asList(
+            Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, "java"),
+            Pair.of(AZURE_WEB_JOB_STORAGE_KEY, "")
+    );
+    public static final String REQUIRED_APP_SETTINGS_PROMPTION = "%s is required parameter";
 
     private List<Pair<String, String>> appSettings = new ArrayList<>();
     private List<TableModelListener> tableModelListenerList = new ArrayList<>();
+
+    public AppSettingModel() {
+        appSettings.addAll(DEFAULT_APP_SETTINGS);
+    }
 
     @Override
     public int getRowCount() {
@@ -63,6 +75,14 @@ public class AppSettingModel implements TableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
+        if (!isRowValid(row)) {
+            return false;
+        }
+        final Pair<String, String> target = appSettings.get(row);
+        // Should not modify FUNCTIONS_WORKER_RUNTIME and AzureWebJobsStorage
+        if (FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || (AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey()) && col == 0)) {
+            return false;
+        }
         return true;
     }
 
@@ -84,14 +104,14 @@ public class AppSettingModel implements TableModel {
             appSettings.add(Pair.of("", ""));
         }
         final Pair<String, String> target = appSettings.get(row);
-        fireTableChanged();
         appSettings.set(row, Pair.of((String) (col == 0 ? value : target.getLeft()), (String) (col == 0 ? target.getRight() : value)));
+        fireTableChanged();
     }
 
     public int addAppSettings(String key, String value) {
         final Pair result = Pair.of(key, value);
         final int index = ListUtils.indexOf(appSettings, pair -> StringUtils.equalsIgnoreCase(pair.getKey(), key));
-        if (index > 0) {
+        if (index >= 0) {
             appSettings.set(index, result);
         } else {
             appSettings.add(result);
@@ -104,8 +124,12 @@ public class AppSettingModel implements TableModel {
         if (!isRowValid(row)) {
             return;
         }
-        fireTableChanged();
+        final Pair<String, String> target = appSettings.get(row);
+        if (FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey())) {
+            throw new IllegalArgumentException(String.format(REQUIRED_APP_SETTINGS_PROMPTION, target.getKey()));
+        }
         appSettings.remove(row);
+        fireTableChanged();
     }
 
     public String getAppSettingsKey(int row) {
@@ -122,8 +146,9 @@ public class AppSettingModel implements TableModel {
     }
 
     public void clear() {
-        fireTableChanged();
         appSettings.clear();
+        appSettings.addAll(DEFAULT_APP_SETTINGS);
+        fireTableChanged();
     }
 
     public void fireTableChanged() {
@@ -141,6 +166,6 @@ public class AppSettingModel implements TableModel {
     }
 
     private boolean isRowValid(int row) {
-        return row >= 0 && row < tableModelListenerList.size();
+        return row >= 0 && row < appSettings.size();
     }
 }

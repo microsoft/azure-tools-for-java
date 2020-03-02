@@ -36,6 +36,7 @@ import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableU
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfiguration;
 import com.microsoft.intellij.ui.util.UIUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -108,7 +109,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     @Override
     protected void resetFromConfig(@NotNull FunctionRunConfiguration configuration) {
-        if (!configuration.isFirstTimeCreated()) {
+        if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {

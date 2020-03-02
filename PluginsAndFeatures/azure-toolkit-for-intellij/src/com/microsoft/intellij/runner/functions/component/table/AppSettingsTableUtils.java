@@ -31,9 +31,12 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
+import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.runner.functions.AzureFunctionsConstants;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.UIHelper;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -81,8 +84,12 @@ public class AppSettingsTableUtils {
         final AnActionButton btnRemove = new AnActionButton("Remove", AllIcons.General.Remove) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                appSettingsTable.removeAppSettings(appSettingsTable.getSelectedRow());
-                appSettingsTable.repaint();
+                try {
+                    appSettingsTable.removeAppSettings(appSettingsTable.getSelectedRow());
+                    appSettingsTable.repaint();
+                } catch (IllegalArgumentException iae) {
+                    PluginUtil.displayErrorDialog("Failed to remove app settings", iae.getMessage());
+                }
             }
         };
 

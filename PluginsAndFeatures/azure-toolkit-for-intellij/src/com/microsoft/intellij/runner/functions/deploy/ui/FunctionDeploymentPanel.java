@@ -44,6 +44,7 @@ import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.deploy.ui.creation.FunctionCreationDialog;
 import com.microsoft.intellij.ui.util.UIUtils;
+import org.apache.commons.collections.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
@@ -208,8 +209,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     protected void resetFromConfig(@NotNull FunctionDeployConfiguration configuration) {
-        configuration.setFunctionId(configuration.getFunctionId());
-        appSettingsTable.setAppSettings(configuration.getAppSettings());
+        if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
+            appSettingsTable.setAppSettings(configuration.getAppSettings());
+        }
+        functionDeployConfiguration.setFunctionId(configuration.getFunctionId());
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
             for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
