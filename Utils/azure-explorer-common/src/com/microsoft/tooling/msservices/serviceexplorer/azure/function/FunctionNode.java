@@ -165,15 +165,6 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         }
     }
 
-    private String getFunctionTriggerName(FunctionEnvelope functionEnvelope) {
-        if (functionEnvelope == null) {
-            return null;
-        }
-        final String fullName = functionEnvelope.inner().name();
-        final String[] splitNames = fullName.split("/");
-        return splitNames.length > 1 ? splitNames[1] : fullName;
-    }
-
     private class DeleteFunctionAppAction extends AzureNodeActionPromptListener {
         DeleteFunctionAppAction() {
             super(FunctionNode.this, String.format(DELETE_FUNCTION_PROMPT_MESSAGE, getFunctionAppName()),
