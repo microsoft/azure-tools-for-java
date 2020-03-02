@@ -37,6 +37,7 @@ import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
@@ -55,8 +56,11 @@ abstract class RunSparkScalaConsoleAction
 
     abstract val selectedMenuActionId: String
 
-    override fun getServiceName(event: AnActionEvent?): String {
-        return SelectSparkApplicationTypeAction.getSelectedSparkApplicationType().value
+    override fun getServiceName(event: AnActionEvent): String {
+        val project = CommonDataKeys.PROJECT.getData(event.dataContext) ?: return SparkApplicationType.None.value
+        val selectedConfigSettings = RunManagerEx.getInstanceEx(project).selectedConfiguration
+        return (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.sparkApplicationType?.value
+                ?: SelectSparkApplicationTypeAction.getSelectedSparkApplicationType().value
     }
 
     override fun onActionPerformed(event: AnActionEvent, operation: Operation?): Boolean {

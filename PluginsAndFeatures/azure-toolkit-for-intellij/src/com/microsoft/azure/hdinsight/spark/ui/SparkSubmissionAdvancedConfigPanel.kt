@@ -54,6 +54,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAut
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
+import com.microsoft.intellij.rxjava.IdeaSchedulers
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
 import java.awt.Dimension
@@ -210,6 +211,8 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
                 getter = { CheckIndicatorState(checkSshCertIndicator.text, false) },
                 setterInDispatch = { _, v -> checkSshCertIndicator.setTextAndStatus(v.message, v.isRunning) })
 
+        private val ideaSchedulers = IdeaSchedulers()
+
         init {
             rx.Observable
                     .combineLatest(
@@ -220,11 +223,14 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
                     .filter { it != null }
                     .map { it -> Pair(advConfModel.apply { clusterName = it!!.name }, it) }
                     .filter { (model, _) -> model.enableRemoteDebug && isParameterReady(model) }
+                    .observeOn(ideaSchedulers.dispatchUIThread())
                     .doOnNext { (_, cluster) ->
                         log().info("Check SSH authentication for cluster ${cluster.name} ...")
                         checkStatus = CheckIndicatorState("SSH Authentication is checking...", true)
                     }
+                    .observeOn(ideaSchedulers.dispatchPooledThread())
                     .map { (model, cluster) -> probeAuth(model, cluster) }
+                    .observeOn(ideaSchedulers.dispatchUIThread())
                     .subscribe { (probedModel, message) ->
                         log().info("...Result: $message")
 

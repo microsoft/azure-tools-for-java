@@ -44,8 +44,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
     }
 
     @Throws(ExecutionException::class)
-    override fun buildSparkBatchJob(submitModel: SparkSubmitModel,
-                                    ctrlSubject: Observer<SimpleImmutableEntry<MessageInfoType, String>>)
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel)
             : Observable<ISparkBatchJob> = just(Triple((submitModel as CosmosSparkSubmitModel).tenantId,
                                                        submitModel.accountName,
                                                   submitModel.clusterId
@@ -57,8 +56,7 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
                     ?: clusterDetail.get().map { it.livyUri } }
             .map { livyUri -> CosmosSparkBatchJob(
                     prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
-                    SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri),
-                    ctrlSubject)
+                    SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri))
             }
     }
 }

@@ -28,7 +28,6 @@ import com.intellij.execution.filters.BrowserHyperlinkInfo
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.ui.ConsoleView
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
-import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.cluster.InternalUrlMapping
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
@@ -37,10 +36,8 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfiguration
 import com.microsoft.azure.sqlbigdata.spark.common.ArisSparkBatchJob
 import rx.Observable
-import rx.Observer
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.regex.Pattern
 
 class ArisSparkBatchRunner : SparkBatchJobRunner() {
@@ -76,30 +73,27 @@ class ArisSparkBatchRunner : SparkBatchJobRunner() {
         }
     }
 
-    override fun buildSparkBatchJob(
-            submitModel: SparkSubmitModel,
-            ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>
-    ): Observable<ISparkBatchJob> = Observable.fromCallable {
-        val clusterName = submitModel.submissionParameter.clusterName
-        val clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
-            .orElseThrow { ExecutionException("Can't find cluster named $clusterName") }
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel): Observable<ISparkBatchJob> =
+        Observable.fromCallable {
+            val clusterName = submitModel.submissionParameter.clusterName
+            val clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
+                .orElseThrow { ExecutionException("Can't find cluster named $clusterName") }
 
-        val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, clusterDetail, ctrlSubject)
-        // UTC Time sample: 2019-07-09T02:47:34.245Z
-        val currentUtcTime = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+            val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, clusterDetail)
+            // UTC Time sample: 2019-07-09T02:47:34.245Z
+            val currentUtcTime = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
 
-        ArisSparkBatchJob(
-            clusterDetail,
-            // In the latest 0.6.0-incubating livy, livy prevents user from creating sessions that have the same session name
-            // Livy release notes: https://livy.apache.org/history/
-            // JIRA: https://issues.apache.org/jira/browse/LIVY-41
-            submitModel.submissionParameter.apply {
-                name = mainClassName + "_$currentUtcTime"
-                prepareSubmissionParameterWithTransformedGen2Uri(this)
-            },
-            SparkBatchSubmission.getInstance(),
-            ctrlSubject,
-            jobDeploy
-        )
-    }
+            ArisSparkBatchJob(
+                clusterDetail,
+                // In the latest 0.6.0-incubating livy, livy prevents user from creating sessions that have the same session name
+                // Livy release notes: https://livy.apache.org/history/
+                // JIRA: https://issues.apache.org/jira/browse/LIVY-41
+                submitModel.submissionParameter.apply {
+                    name = mainClassName + "_$currentUtcTime"
+                    prepareSubmissionParameterWithTransformedGen2Uri(this)
+                },
+                SparkBatchSubmission.getInstance(),
+                jobDeploy
+            )
+        }
 }

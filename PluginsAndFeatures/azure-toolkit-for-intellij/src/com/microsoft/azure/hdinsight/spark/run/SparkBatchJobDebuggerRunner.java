@@ -144,7 +144,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         final Project project = submitModel.getProject();
         final IdeaSchedulers schedulers = new IdeaSchedulers(project);
         final PublishSubject<SparkBatchJobSubmissionEvent> debugEventSubject = PublishSubject.create();
-        final ISparkBatchDebugJob sparkDebugBatch = (ISparkBatchDebugJob) submissionState.getSparkBatch();
+        final ISparkBatchDebugJob sparkDebugBatch = (ISparkBatchDebugJob) submissionState.getSparkBatch().clone();
         final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject =
                 (PublishSubject<SimpleImmutableEntry<MessageInfoType, String>>) sparkDebugBatch.getCtrlSubject();
         final SparkBatchJobRemoteDebugProcess driverDebugProcess = new SparkBatchJobRemoteDebugProcess(
@@ -369,8 +369,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
     @NotNull
     @Override
-    public Observable<ISparkBatchJob> buildSparkBatchJob(@NotNull SparkSubmitModel submitModel,
-                                                         @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+    public Observable<ISparkBatchJob> buildSparkBatchJob(@NotNull SparkSubmitModel submitModel) {
         return Observable.fromCallable(() -> {
             SparkSubmissionAdvancedConfigPanel.Companion.checkSettings(submitModel.getAdvancedConfigModel());
             SparkSubmissionParameter debugSubmissionParameter = SparkBatchRemoteDebugJob.convertToDebugParameter(submitModel.getSubmissionParameter());
@@ -382,8 +381,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                     .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
             Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
-                    debugModel, clusterDetail, ctrlSubject);
-            return new SparkBatchRemoteDebugJob(clusterDetail, debugModel.getSubmissionParameter(), getClusterSubmission(clusterDetail), ctrlSubject, jobDeploy);
+                    debugModel, clusterDetail);
+            return new SparkBatchRemoteDebugJob(clusterDetail, debugModel.getSubmissionParameter(), getClusterSubmission(clusterDetail), jobDeploy);
         });
     }
 

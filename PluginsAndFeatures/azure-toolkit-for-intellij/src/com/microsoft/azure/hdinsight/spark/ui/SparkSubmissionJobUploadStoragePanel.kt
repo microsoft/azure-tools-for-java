@@ -94,6 +94,9 @@ open class SparkSubmissionJobUploadStoragePanel
 
                 // Send storage check event to current selected card
                 viewModel.currentCardViewModel?.storageCheckSubject?.onNext(SelectedStorageTypeEvent(selectedType))
+
+                // Recheck cluster for new selected type card
+                viewModel.clusterSelectedSubject.onNext(viewModel.clusterSelectedSubject.value)
             }
         }
 
@@ -191,7 +194,10 @@ open class SparkSubmissionJobUploadStoragePanel
                 // 3.reload config with null storage type -> set to default
                 // 4.create config  -> set to default
                 deployStorageTypesModel = storageTypesModelToSet
-                deployStorageTypeSelection = clusterDetail.defaultStorageType
+                deployStorageTypesModel.selectedItem = null
+                deployStorageTypeSelection = (currentStorageTypesModel.selectedItem as? SparkSubmitStorageType)
+                        ?.takeIf { currentSelected -> deployStorageTypesModel.getIndexOf(currentSelected) >= 0 }
+                        ?: clusterDetail.defaultStorageType
             }
 
             return storageTypesModelToSet.selectedItem as? SparkSubmitStorageType ?: clusterDetail.defaultStorageType
