@@ -65,6 +65,7 @@ public class NewAppServicePlanDialog extends JDialog {
     public NewAppServicePlanDialog(String subscriptionId) {
         setContentPane(contentPane);
         setModal(true);
+        setAlwaysOnTop(true);
         setTitle("Create App Service Plan");
         getRootPane().setDefaultButton(buttonOK);
 

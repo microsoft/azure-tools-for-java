@@ -47,6 +47,7 @@ public class NewResourceGroupDialog extends JDialog {
     public NewResourceGroupDialog() {
         setContentPane(contentPane);
         setModal(true);
+        setAlwaysOnTop(true);
         setTitle("Create Resource Group");
         getRootPane().setDefaultButton(buttonOK);
 
