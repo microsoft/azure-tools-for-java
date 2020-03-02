@@ -58,13 +58,14 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     private String functionAppName;
     private String functionAppId;
     private String region;
-
+    private FunctionApp functionApp;
     /**
      * Constructor.
      */
     public FunctionNode(AzureRefreshableNode parent, String subscriptionId, FunctionApp functionApp) {
         super(functionApp.id(), functionApp.name(), FUNCTION_LABEL, parent, subscriptionId,
                 functionApp.defaultHostName(), functionApp.operatingSystem().toString(), functionApp.state());
+        this.functionApp = functionApp;
         this.functionAppId = functionApp.id();
         this.functionAppName = functionApp.name();
         this.region = functionApp.regionName();
@@ -90,7 +91,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     @Override
     public void renderSubModules(List<FunctionEnvelope> functionEnvelopes) {
         for (FunctionEnvelope functionEnvelope : functionEnvelopes) {
-            addChildNode(new SubFunctionNode(functionEnvelope.inner().id(), getFunctionTriggerName(functionEnvelope), this));
+            addChildNode(new SubFunctionNode(functionEnvelope, this));
         }
     }
 
@@ -126,6 +127,10 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
         properties.put(AppInsightsConstants.Region, region);
         return properties;
+    }
+
+    public FunctionApp getFunctionApp() {
+        return functionApp;
     }
 
     public String getFunctionAppId() {

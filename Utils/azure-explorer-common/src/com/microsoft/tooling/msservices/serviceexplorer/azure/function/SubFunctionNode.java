@@ -22,24 +22,34 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
+import org.apache.commons.lang3.StringUtils;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import java.util.List;
+import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.TRIGGER_FUNCTION;
 
 public class SubFunctionNode extends Node {
 
     private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
+    private static final String HTTP_TRIGGER_UTL = "https://%s/api/%s";
+    private static final String HTTP_TRIGGER_UTL_WITH_CODE = "https://%s/api/%s?code=%s";
+    private FunctionApp functionApp;
+    private FunctionEnvelope functionEnvelope;
 
-    public SubFunctionNode(String id, String name, Node parent) {
-        super(id, name, parent, SUB_FUNCTION_ICON_PATH);
-    }
-
-    public SubFunctionNode(String id, String name, Node parent, boolean delayActionLoading) {
-        super(id, name, parent, SUB_FUNCTION_ICON_PATH, delayActionLoading);
+    public SubFunctionNode(FunctionEnvelope functionEnvelope, Node parent) {
+        super(functionEnvelope.inner().id(), getFunctionTriggerName(functionEnvelope), parent, SUB_FUNCTION_ICON_PATH);
+        this.functionEnvelope = functionEnvelope;
+        this.functionApp = ((FunctionNode) parent).getFunctionApp();
     }
 
     @Override
@@ -48,22 +58,54 @@ public class SubFunctionNode extends Node {
                 new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                        // Todo: Implement trigger method according to trigger type
+                        try {
+                            trigger();
+                        } catch (RuntimeException exception) {
+                            DefaultLoader.getUIHelper().showError(SubFunctionNode.this, exception.getMessage());
+                        }
                     }
                 }));
-        addAction("Enable",
-                new WrappedTelemetryNodeActionListener(FUNCTION, ENABLE_FUNCTION, new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                        // Todo: Implement enable method according to trigger type
-                    }
-                }));
-        addAction("Disable",
-                new WrappedTelemetryNodeActionListener(FUNCTION, DISABLE_FUNCTION, new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                        // Todo: Implement disable method according to trigger type
-                    }
-                }));
+        // todo: find whether there is sdk to enable/disable trigger
+    }
+
+    private void trigger() {
+        Map binding = getHTTPTriggerBinding();
+        if (binding == null) {
+            DefaultLoader.getUIHelper().showInfo(this, "Only HTTPTrigger is supported for now");
+        }
+        final String authLevel = (String) binding.get("authLevel");
+        final String url = StringUtils.equalsIgnoreCase(authLevel, "ANONYMOUS") ? getHttpTriggerUtl() : getHttpTriggerUtlWithCode();
+        DefaultLoader.getUIHelper().openInBrowser(url);
+    }
+
+    private String getHttpTriggerUtl() {
+        return String.format(HTTP_TRIGGER_UTL, functionApp.defaultHostName(), this.name);
+    }
+
+    private String getHttpTriggerUtlWithCode() {
+        final String key = functionApp.getMasterKey();
+        return String.format(HTTP_TRIGGER_UTL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
+    }
+
+    private Map getHTTPTriggerBinding() {
+        try {
+            final List bindings = (List) ((Map) functionEnvelope.config()).get("bindings");
+            return (Map) bindings.stream()
+                    .filter(object -> object instanceof Map && StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("direction"), "in"))
+                    .filter(object -> StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("type"), "httpTrigger"))
+                    .findFirst().orElse(null);
+        } catch (ClassCastException | NullPointerException e) {
+            // In case function.json lack some parameters
+            return null;
+        }
+    }
+
+    private static String getFunctionTriggerName(FunctionEnvelope functionEnvelope) {
+        if (functionEnvelope == null) {
+            return null;
+        }
+        final String fullName = functionEnvelope.inner().name();
+        final String[] splitNames = fullName.split("/");
+        return splitNames.length > 1 ? splitNames[1] : fullName;
     }
 }
