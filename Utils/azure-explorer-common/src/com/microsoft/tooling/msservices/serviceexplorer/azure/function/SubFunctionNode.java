@@ -61,7 +61,7 @@ public class SubFunctionNode extends Node {
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                         try {
                             trigger();
-                        } catch (RuntimeException exception) {
+                        } catch (Exception exception) {
                             DefaultLoader.getUIHelper().showError(SubFunctionNode.this, exception.getMessage());
                         }
                     }
@@ -98,7 +98,7 @@ public class SubFunctionNode extends Node {
                     .filter(object -> StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("type"), "httpTrigger"))
                     .findFirst().orElse(null);
         } catch (ClassCastException | NullPointerException e) {
-            // In case function.json lack some parameters
+            // In case function.json lacks some parameters
             return null;
         }
     }
