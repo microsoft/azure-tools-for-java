@@ -28,6 +28,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Map;
 
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -65,6 +66,7 @@ import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
 import com.microsoft.tooling.msservices.model.storage.Table;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
@@ -137,6 +139,12 @@ public class UIHelperImpl implements UIHelper {
         } else {
             return new File(fileName);
         }
+    }
+
+    @Override
+    public File showFileSaver(String s, String s1) {
+        // todo
+        return null;
     }
 
     @Override
@@ -293,6 +301,16 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
+    public void openDeploymentPropertyView(DeploymentNode deploymentNode) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void openResourceTemplateView(DeploymentNode deploymentNode, String s) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
     public void openContainerRegistryPropertyView(@NotNull ContainerRegistryNode node) {
         String sid = node.getSubscriptionId();
         String resId = node.getResourceId();
@@ -392,4 +410,16 @@ public class UIHelperImpl implements UIHelper {
         IEditorDescriptor descriptor = workbench.getEditorRegistry().findEditor(DeploymentSlotEditor.ID);
         openEditor(EditorType.WEBAPP_EXPLORER, input, descriptor);
     }
+
+    @Override
+    public void showInfo(Node node, String message) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void showError(Node node, String s) {
+        // TODO Auto-generated method stub
+    }
+
 }

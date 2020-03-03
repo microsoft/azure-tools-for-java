@@ -23,14 +23,8 @@
 package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.openapi.project.Project
-import com.intellij.util.xmlb.annotations.Tag
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 
-const val SUBMISSION_CONTENT_NAME: String = "aris_spark_submission"
-
-@Tag(SUBMISSION_CONTENT_NAME)
-class ArisSparkSubmitModel : SparkSubmitModel {
-    constructor(project: Project) : super(project)
-
+class ArisSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
     override fun getSparkClusterTypeDisplayName(): String = "Aris Spark cluster"
 }

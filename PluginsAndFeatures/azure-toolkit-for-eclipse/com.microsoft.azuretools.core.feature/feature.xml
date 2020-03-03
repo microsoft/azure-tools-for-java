@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.core.feature"
       label="Azure Common Plugin"
-      version="3.15.0.qualifier"
+      version="3.22.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>

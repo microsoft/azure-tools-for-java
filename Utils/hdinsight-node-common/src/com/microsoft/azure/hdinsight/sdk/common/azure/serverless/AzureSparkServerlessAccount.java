@@ -55,7 +55,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-public class AzureSparkServerlessAccount implements IClusterDetail, ClusterContainer, Comparable<AzureSparkServerlessAccount>, ILogger {
+public class AzureSparkServerlessAccount implements IClusterDetail, ClusterContainer, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
     private static final String REST_SEGMENT_SPARK_BATCH_JOB = "/activityTypes/spark/batchJobs";
     private static final String REST_SEGMENT_JOB_LIST = "/Jobs";
@@ -386,14 +386,5 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
                     .orElse(null);
         }
         return storageRootPath;
-    }
-
-    @Override
-    public int compareTo(@NotNull AzureSparkServerlessAccount other) {
-        if (this == other) {
-            return 0;
-        }
-
-        return getName().compareTo(other.getName());
     }
 }

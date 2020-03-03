@@ -26,16 +26,20 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleTypeId;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoft.intellij.ui.libraries.ApplicationInsightsPanel;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ApplicatioInsightsAction extends AzureAnAction {
     @Override
-    public void onActionPerformed(AnActionEvent event) {
+    public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         final Module module = event.getData(LangDataKeys.MODULE);
         DefaultDialogWrapper dialog = new DefaultDialogWrapper(module.getProject(), new ApplicationInsightsPanel(module));
         dialog.show();
+        return true;
     }
 
     @Override

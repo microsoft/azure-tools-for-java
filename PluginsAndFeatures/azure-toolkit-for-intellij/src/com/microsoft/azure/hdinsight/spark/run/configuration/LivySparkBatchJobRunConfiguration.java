@@ -25,7 +25,6 @@ import com.intellij.compiler.options.CompileStepBeforeRun;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaExecutionUtil;
-import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
@@ -35,21 +34,33 @@ import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTask;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel;
+
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.run.*;
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType;
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable;
+import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageWithUploadPathPanel;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.securestore.SecureStore;
+import com.microsoft.azuretools.service.ServiceManager;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import rx.Observable;
 import rx.subjects.PublishSubject;
 
 import java.io.File;
@@ -57,12 +68,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword;
+import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModelKt.getSecureStoreServiceOf;
+import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.ADLS_GEN2;
+import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.BLOB;
+
 public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
+        implements RunProfileStatePrepare<ISparkBatchJob>, ILogger
 {
+    @Nullable
+    private ISparkBatchJob sparkRemoteBatch = null;
+
     enum RunMode {
         LOCAL,
         REMOTE,
         REMOTE_DEBUG_EXECUTOR
+    }
+
+    public SparkApplicationType getSparkApplicationType() {
+        return SparkApplicationType.HDInsight;
     }
 
     @NotNull
@@ -70,6 +94,8 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
 
     // The prop to store the action trigger source if it can be got, such as Run Context
     final public static String ACTION_TRIGGER_PROP = "ActionTrigger";
+
+    private @Nullable SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
 
     @NotNull
     private SparkBatchJobConfigurableModel jobModel;
@@ -87,6 +113,8 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         super(name, configurationModule, factory);
 
         this.jobModel = jobModel;
+        // FIXME: Too many telemetries will be sent if we uncomment the following code
+        // EventUtil.logEvent(EventType.info, getSparkApplicationType().getValue(), TelemetryConstants.CREATE_NEW_RUN_CONFIG, null, null);
     }
 
     @Override
@@ -94,6 +122,9 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         super.readExternal(rootElement);
 
         jobModel.applyFromElement(rootElement);
+
+        // Load certificates from Secure Store
+        loadFromSecureStore(getSubmitModel());
     }
 
     @Override
@@ -102,6 +133,97 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
 
         Element jobConfigElement = jobModel.exportToElement();
         rootElement.addContent(jobConfigElement);
+    }
+
+    public void loadFromSecureStore(final SparkSubmitModel toSubmitModel) {
+        if (secureStore == null) {
+            return;
+        }
+
+        // SSH password
+        final SparkSubmitAdvancedConfigModel advModel = toSubmitModel.getAdvancedConfigModel();
+
+        if (advModel.enableRemoteDebug && advModel.getSshAuthType() == UsePassword) {
+            // Load password for no password input
+            try {
+                advModel.setClusterName(toSubmitModel.getClusterName());
+                advModel.setSshPassword(
+                        secureStore.loadPassword(advModel.getCredentialStoreAccount(), advModel.getSshUserName()));
+            } catch (Throwable ex) {
+                log().warn("Can't load SSH ${advModel.sshUserName}'s password from Secure Store", ex);
+            }
+        }
+
+        // Artifacts uploading storage credentials
+        final SparkSubmitJobUploadStorageModel storeModel = toSubmitModel.getJobUploadStorageModel();
+
+        // Blob access key
+        final String blobSecAccount = storeModel.getStorageAccount();
+        if (blobSecAccount != null && StringUtils.isNoneBlank(blobSecAccount)) {
+            final String blobSecService = getSecureStoreServiceOf(BLOB, blobSecAccount);
+
+            if (blobSecService != null) {
+                try {
+                    storeModel.setStorageKey(secureStore.loadPassword(blobSecService, blobSecAccount));
+                } catch (Throwable ex) {
+                    log().warn("Can't load Blob access key $storageAccount from Secure Store", ex);
+                }
+            }
+        }
+
+        // ADLS Gen2 access key
+        final String gen2SecAccount = storeModel.getGen2Account();
+        if (gen2SecAccount != null && StringUtils.isNoneBlank(gen2SecAccount)) {
+            final String gen2SecService = getSecureStoreServiceOf(ADLS_GEN2, gen2SecAccount);
+
+            if (gen2SecService != null) {
+                try {
+                    storeModel.setAccessKey(secureStore.loadPassword(gen2SecService, gen2SecAccount));
+                } catch (Throwable ex){
+                    log().warn("Can't load ADLS Gen2 access key $gen2Account from Secure Store", ex);
+                }
+            }
+        }
+    }
+
+    public void saveToSecureStore(final SparkSubmitModel fromSubmitModel) {
+        if (secureStore == null) {
+            return;
+        }
+
+        // SSH password
+        final SparkSubmitAdvancedConfigModel advModel = fromSubmitModel.getAdvancedConfigModel();
+
+        if (advModel.enableRemoteDebug
+                && advModel.getSshAuthType() == UsePassword && StringUtils.isNoneBlank(advModel.getSshPassword())) {
+            secureStore.savePassword(
+                    advModel.getCredentialStoreAccount(), advModel.getSshUserName(), advModel.getSshPassword());
+        }
+
+        // Artifacts uploading storage credentials
+        final SparkSubmitJobUploadStorageModel storeModel = fromSubmitModel.getJobUploadStorageModel();
+
+        // Blob access key
+        final String blobSecAccount = storeModel.getStorageAccount();
+        if (blobSecAccount != null && StringUtils.isNoneBlank(blobSecAccount)) {
+            final String blobSecService = getSecureStoreServiceOf(BLOB, blobSecAccount);
+
+            if (blobSecService != null) {
+                secureStore.savePassword(blobSecService, blobSecAccount, storeModel.getStorageKey());
+                log().info("The Blob access key for " + blobSecAccount + " has been saved into Secure Store.");
+            }
+        }
+
+        // ADLS Gen2 access key
+        final String gen2SecAccount = storeModel.getGen2Account();
+        if (gen2SecAccount != null && StringUtils.isNoneBlank(gen2SecAccount)) {
+            final String gen2SecService = getSecureStoreServiceOf(ADLS_GEN2, gen2SecAccount);
+
+            if (gen2SecService != null) {
+                secureStore.savePassword(gen2SecService, gen2SecAccount, storeModel.getAccessKey());
+                log().info("The ADLS Gen2 access key for " + gen2SecAccount + " has been saved into Secure Store.");
+            }
+        }
     }
 
     @NotNull
@@ -149,13 +271,14 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings);
     }
 
-    protected void checkBuildSparkJobBeforeRun(@NotNull SparkSubmissionRunner runner,
-                                               @NotNull SparkSubmitModel submitModel) throws RuntimeConfigurationError {
-        try {
-            runner.buildSparkBatchJob(submitModel, PublishSubject.create());
-        } catch (Exception err) {
-            throw new RuntimeConfigurationError(err.getMessage());
+    @Override
+    public Observable<ISparkBatchJob> prepare(final ProgramRunner<RunnerSettings> runner) {
+        if (!(runner instanceof SparkSubmissionRunner)) {
+            return Observable.empty();
         }
+
+        return ((SparkSubmissionRunner) runner).buildSparkBatchJob(getSubmitModel())
+                .doOnNext(batch -> sparkRemoteBatch = batch);
     }
 
     protected String getErrorMessageClusterNull() {
@@ -197,12 +320,14 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
                     getSubmitModel().getTableModel().getFirstCheckResults().getMessaqge());
         }
 
-        String modelError = getSubmitModel().getErrors().stream().filter(StringUtils::isNotBlank).findFirst().orElse(null);
-        if (StringUtils.isNotBlank(modelError)) {
-            throw new RuntimeConfigurationError("There are errors in submit model: " + modelError);
+        // Validate Storage Configurations
+        SparkSubmissionJobUploadStorageWithUploadPathPanel storageConfigPanels =
+                new SparkSubmissionJobUploadStorageWithUploadPathPanel();
+        try {
+            storageConfigPanels.checkConfigurationBeforeRun(runner, getSubmitModel().getJobUploadStorageModel());
+        } finally {
+            Disposer.dispose(storageConfigPanels);
         }
-
-        checkBuildSparkJobBeforeRun(runner, getSubmitModel());
     }
 
     private void checkLocalRunConfigurationBeforeRun() throws RuntimeConfigurationException {
@@ -244,6 +369,7 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
+        Operation operation = executionEnvironment.getUserData(TelemetryKeys.OPERATION);
         final String debugTarget = executionEnvironment.getUserData(SparkBatchJobDebuggerRunner.DebugTargetKey);
         final boolean isExecutor = StringUtils.equals(debugTarget, SparkBatchJobDebuggerRunner.DebugExecutor);
         RunProfileStateWithAppInsightsEvent state = null;
@@ -252,37 +378,62 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
                 .findFirst().orElse(null);
 
         if (executor instanceof SparkBatchJobDebugExecutor) {
+            final ISparkBatchJob remoteDebugBatch = sparkRemoteBatch;
+            if (!(remoteDebugBatch instanceof SparkBatchRemoteDebugJob)) {
+                throw new ExecutionException("Spark Batch Job is not prepared for " + executor.getId());
+            }
+
             if (isExecutor) {
                 setRunMode(RunMode.REMOTE_DEBUG_EXECUTOR);
-                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel());
+                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel(), operation, remoteDebugBatch);
             } else {
                 if (selectedArtifact != null) {
                     BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, selectedArtifact);
                 }
 
                 setRunMode(RunMode.REMOTE);
-                state = new SparkBatchRemoteDebugState(getModel().getSubmitModel());
+                state = new SparkBatchRemoteDebugState(getModel().getSubmitModel(), operation, sparkRemoteBatch);
             }
         } else if (executor instanceof SparkBatchJobRunExecutor) {
+            final ISparkBatchJob remoteBatch = sparkRemoteBatch;
+            if (remoteBatch == null) {
+                throw new ExecutionException("Spark Batch Job is not prepared for " + executor.getId());
+            }
+
             if (selectedArtifact != null) {
                 BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, selectedArtifact);
             }
 
             setRunMode(RunMode.REMOTE);
-            state = new SparkBatchRemoteRunState(getModel().getSubmitModel());
+            state = new SparkBatchRemoteRunState(getModel().getSubmitModel(), operation, remoteBatch);
         } else if (executor instanceof DefaultDebugExecutor) {
             setRunMode(RunMode.LOCAL);
-            state = new SparkBatchLocalDebugState(getProject(), getModel().getLocalRunConfigurableModel());
+            if (operation == null) {
+                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT, TelemetryConstants.DEBUG_LOCAL_SPARK_JOB);
+                operation.start();
+            }
+            state = new SparkBatchLocalDebugState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         } else if (executor instanceof DefaultRunExecutor) {
             setRunMode(RunMode.LOCAL);
-            state = new SparkBatchLocalRunState(getProject(), getModel().getLocalRunConfigurableModel());
+            if (operation == null) {
+                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT, TelemetryConstants.RUN_LOCAL_SPARK_JOB);
+                operation.start();
+            }
+            state = new SparkBatchLocalRunState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         }
 
         if (state != null) {
-            state.createAppInsightEvent(executor, getActionProperties().entrySet().stream().collect(Collectors.toMap(
+            Map<String, String> props = getActionProperties().entrySet().stream().collect(Collectors.toMap(
                     (Map.Entry<Object, Object> entry) -> entry.getKey() == null ? null : entry.getKey().toString(),
-                    (Map.Entry<Object, Object> entry) -> entry.getValue() == null ? "" : entry.getValue().toString()
-            )));
+                    (Map.Entry<Object, Object> entry) -> entry.getValue() == null ? "" : entry.getValue().toString()));
+            String configurationId =
+                    Optional.ofNullable(executionEnvironment.getRunnerAndConfigurationSettings())
+                            .map(settings -> settings.getType().getId())
+                            .orElse("");
+            props.put("configurationId", configurationId);
+
+            state.createAppInsightEvent(executor, props);
+            EventUtil.logEvent(EventType.info, operation, props);
 
             // Clear the action properties
             getActionProperties().clear();

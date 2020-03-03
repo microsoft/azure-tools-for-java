@@ -4,7 +4,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.22.0</version>
+        <version>3.34.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>spark-localrun-mock</artifactId>
@@ -15,13 +15,14 @@
         <project.build.encoding>UTF-8</project.build.encoding>
         <scala.version>2.11.11</scala.version>
         <spark.version>2.1.0</spark.version>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
         <sourceDirectory>src/main</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
         <testResources>
             <testResource>
-                <directory>Test/resources</directory>
+                <directory>test/resources</directory>
             </testResource>
         </testResources>
         <defaultGoal>install</defaultGoal>
@@ -89,7 +90,7 @@
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>Test/resources/data</directory>
+                                    <directory>test/resources/data</directory>
                                     <targetPath>data</targetPath>
                                 </resource>
                             </resources>
@@ -188,7 +189,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jre8</artifactId>
+            <artifactId>kotlin-stdlib</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

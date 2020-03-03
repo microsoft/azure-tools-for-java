@@ -19,22 +19,12 @@
  */
 package com.microsoft.azuretools.azureexplorer.views;
 
-import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azureexplorer.Activator;
-import com.microsoft.azuretools.azureexplorer.AzureModuleImpl;
-import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
-import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
-import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
-import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
-import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
-import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -53,6 +43,8 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
@@ -65,11 +57,22 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azureexplorer.Activator;
+import com.microsoft.azuretools.azureexplorer.AzureModuleImpl;
+import com.microsoft.azuretools.core.handlers.SelectSubsriptionsCommandHandler;
+import com.microsoft.azuretools.core.handlers.SignInCommandHandler;
+import com.microsoft.azuretools.core.handlers.SignOutCommandHandler;
+import com.microsoft.azuretools.core.utils.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.collections.ListChangeListener;
+import com.microsoft.tooling.msservices.helpers.collections.ListChangedEvent;
+import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
 public class ServiceExplorerView extends ViewPart implements PropertyChangeListener {
 
@@ -251,6 +254,11 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             case add:
                 // create child tree nodes for the new nodes
                 for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                    // Eclipse do no support arm, so here need to skip resource management node
+					if (childNode.getClass().getName().equals(
+							"com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule")) {
+						continue;
+					}
                     treeNode.add(createTreeNode(childNode));
                 }
                 break;
@@ -319,6 +327,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         makeActions();
         hookContextMenu();
         hookMouseActions();
+        hookShortcut();
         contributeToActionBars();
     }
 
@@ -465,6 +474,23 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     }
                 }
             }
+        });
+    }
+    
+    private void hookShortcut() {
+        Tree tree = (Tree) viewer.getControl();
+        tree.addKeyListener(new KeyAdapter() {
+          public void keyReleased(KeyEvent event) {
+            if (event.keyCode == SWT.CR && tree.getSelectionCount() > 0) {
+              final TreeItem item = tree.getSelection()[0];
+              Node node = ((TreeNode) item.getData()).node;
+              // if the node in question is in a "loading" state then
+              // we do not propagate the click event to it
+              if (!node.isLoading()) {
+                  node.getClickAction().fireNodeActionEvent();
+              }
+            }
+          }
         });
     }
 

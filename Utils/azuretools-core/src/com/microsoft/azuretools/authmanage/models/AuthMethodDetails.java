@@ -22,9 +22,10 @@
 
 package com.microsoft.azuretools.authmanage.models;
 
-import com.microsoft.azuretools.authmanage.interact.AuthMethod;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.microsoft.azuretools.authmanage.AuthMethod;
 
 /**
  * Created by shch on 10/8/2016.
@@ -80,5 +81,11 @@ public class AuthMethodDetails {
 
     public void setAzureEnv(String azureEnv) {
         this.azureEnv = azureEnv;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{ accountEmail: %s, credFilePath: %s, authMethod: %s, azureEnv: %s }",
+                getAccountEmail(), getCredFilePath(), getAuthMethod(), getAzureEnv());
     }
 }

@@ -7,7 +7,7 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 cd "$SCRIPTPATH"
 
 # Utils
-VERSION="3.22.0"
+VERSION="3.34.0"
 MAVEN_QUIET=""
 
 # Eclipse
@@ -18,13 +18,9 @@ BUILD_INTELLIJ=true
 
 INJECT_INTELLIJ_VERSION=false
 
-IJ_VERSION_LATEST=2019.1
-IJ_DISPLAY_VERSION_LATEST=2019.1
-IJ_SCALA_VERSION_LATEST=2019.1.6
-
-IJ_VERSION_FALLBACK=2018.3
-IJ_DISPLAY_VERSION_FALLBACK=2018.3
-IJ_SCALA_VERSION_FALLBACK=2018.3.2
+IJ_VERSION_LATEST=2019.2
+IJ_DISPLAY_VERSION_LATEST=2019.2
+IJ_SCALA_VERSION_LATEST=2019.2.7
 
 while getopts "hqve:" option; do
     case $option in
@@ -109,17 +105,9 @@ if $BUILD_INTELLIJ; then
   (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST)
   cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_LATEST.zip
 
-  # Build intellij plugin for fallback version
-  if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
-      ./tools/IntellijVersionHelper $IJ_DISPLAY_VERSION_FALLBACK
-  fi
-  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_FALLBACK -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_FALLBACK)
-  cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_FALLBACK.zip
-
   # Extract jars to sign
   rm -rf ${INTELLIJ_TOSIGN}/*
   unzip -p ./artifacts/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_LATEST.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_$IJ_DISPLAY_VERSION_LATEST.jar
-  unzip -p ./artifacts/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_FALLBACK.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_$IJ_DISPLAY_VERSION_FALLBACK.jar
 fi
 
 echo "ALL BUILD SUCCESSFUL"

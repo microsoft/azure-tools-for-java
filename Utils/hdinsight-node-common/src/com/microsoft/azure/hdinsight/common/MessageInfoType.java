@@ -27,5 +27,6 @@ public enum MessageInfoType {
     Log,
     Warning,
     Hyperlink,
-    HyperlinkWithText
+    HyperlinkWithText,
+    HtmlPersistentMessage
 }

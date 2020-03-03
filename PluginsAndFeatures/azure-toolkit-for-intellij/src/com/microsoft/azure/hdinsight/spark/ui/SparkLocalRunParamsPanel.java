@@ -32,6 +32,7 @@ import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.MacroAwareTextBrowseFolderListener;
+import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel;
 import org.apache.commons.lang3.SystemUtils;
@@ -54,8 +55,8 @@ public class SparkLocalRunParamsPanel {
     private JCheckBox myParallelExecutionCheckbox;
     private TextFieldWithBrowseButton myWinutilsPathTextFieldWithBrowserButton;
     private TextFieldWithBrowseButton myDataRootDirectoryFieldWithBrowseButton;
-    private JLabel myDataDefaultDirectory;
-    private JLabel myHadoopUserDefaultDirectoryLabel;
+    private JBTextField myDataDefaultDirectory;
+    private JBTextField myHadoopUserDefaultDirectoryLabel;
     private JPanel myWinutilsLocationPanel;
     private ModuleDescriptionsComboBox modules;
     private LabeledComponent<ModuleDescriptionsComboBox> myClasspathModule;
@@ -107,6 +108,12 @@ public class SparkLocalRunParamsPanel {
         } else {
             myWinutilsLocationPanel.setVisible(false);
         }
+
+        // Set name for telemetry listener purpose
+        myWinutilsPathTextFieldWithBrowserButton.getTextField().setName("winUtilsText");
+        myWinutilsPathTextFieldWithBrowserButton.getButton().setName("winUtilsButton");
+        myDataRootDirectoryFieldWithBrowseButton.getTextField().setName("dataRootPathText");
+        myDataRootDirectoryFieldWithBrowseButton.getButton().setName("dataRootPathButton");
     }
 
     public SparkLocalRunParamsPanel withInitialize() {

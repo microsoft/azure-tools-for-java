@@ -5,11 +5,12 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.22.0</version>
+        <version>3.34.0</version>
     </parent>
     <artifactId>azure-explorer-common</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <profiles>
         <profile>

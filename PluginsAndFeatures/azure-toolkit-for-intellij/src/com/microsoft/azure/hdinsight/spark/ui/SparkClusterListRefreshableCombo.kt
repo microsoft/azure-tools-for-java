@@ -25,7 +25,7 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.ComboboxWithBrowseButton
-import com.intellij.ui.ListCellRendererWrapper
+import com.intellij.ui.SimpleListCellRenderer
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
@@ -33,10 +33,12 @@ import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegate
 import com.microsoft.azure.hdinsight.common.viewmodels.ComponentWithBrowseButtonEnabledDelegated
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
+import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.arcadiaSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.arisSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosServerlessSparkAccountsRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.cosmosSparkClustersRefreshed
 import com.microsoft.azure.hdinsight.spark.service.SparkClustersServices.hdinsightSparkClustersRefreshed
+import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
@@ -59,12 +61,17 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
         const val REFRESH_BUTTON_PATH = "/icons/refresh.png"
     }
 
-    private val clustersSelection by lazy { ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
+    open fun getComboBoxNamePrefix(): String = "clusterListComboBox"
+
+    private val clustersSelection  = ComboboxWithBrowseButton(JComboBox<IClusterDetail>(ImmutableComboBoxModel.empty())).apply {
+        comboBox.name = getComboBoxNamePrefix() + "Combo"
+        button.name = getComboBoxNamePrefix() + "Button"
+
         setButtonIcon(StreamUtil.getImageResourceFile(REFRESH_BUTTON_PATH))
 
         comboBox.apply {
-            setRenderer(object : ListCellRendererWrapper<IClusterDetail>() {
-                override fun customize(list: JList<*>?,
+            setRenderer(object : SimpleListCellRenderer<IClusterDetail>() {
+                override fun customize(list: JList<out IClusterDetail>?,
                                        cluster: IClusterDetail?,
                                        index: Int,
                                        selected: Boolean,
@@ -85,7 +92,8 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
             addItemListener { event ->
                 when (event.stateChange) {
                     ItemEvent.SELECTED -> if (event.item != null) {
-                        viewModel.toSelectClusterByIdBehavior.onNext((event.item as IClusterDetail).name)
+                        viewModel.toSelectClusterByIdBehavior.onNext(
+                                viewModel.clusterIdMapper(event.item as IClusterDetail))
                     }
                 }
             }
@@ -97,7 +105,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
                 viewModel.doRefreshSubject.onNext(true)
             }
         }
-    }}
+    }
 
     val component: JComponent by lazy {
         val formBuilder = panel {
@@ -108,7 +116,7 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
     }
 
     open inner class ViewModel(private val initClusters: Array<IClusterDetail>,
-                               private val clusterIdMapper: (IClusterDetail?) -> String? = { cluster -> cluster?.name })
+                               val clusterIdMapper: (IClusterDetail?) -> String? = { cluster -> cluster?.clusterIdForConfiguration })
         : DisposableObservers() {
 
         val clusterListModelBehavior: BehaviorSubject<ImmutableComboBoxModel<IClusterDetail>> = disposableSubjectOf {
@@ -126,7 +134,11 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
                 clustersSelection.comboBox as JComboBox<IClusterDetail>)
 
         // Only getter here since the select setter has a special behavior
-        open val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = hdinsightSparkClustersRefreshed
+        open val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = hdinsightSparkClustersRefreshed
+
+        val selectedCluster: IClusterDetail?
+            get() = clusterListModelBehavior.value.selectedItem as? IClusterDetail
 
         // Monitoring cluster selection
         val clusterIsSelected: Observable<IClusterDetail?>
@@ -153,17 +165,18 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
                     { log().warn("Can't get cluster list model", it) }
             )
 
+            val myIdeaSchedulers = IdeaSchedulers(null)
+
             // Refreshing behavior
             doRefreshSubject
                     .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
+                    .filter { it } // TODO: If to add cancelling operation, remove the filter please
+                    .observeOn(myIdeaSchedulers.dispatchUIThread())
+                    .doOnNext { isRefreshButtonEnabled = false }
                     .observeOn(IdeaSchedulers(null).processBarVisibleAsync("Refreshing Spark clusters list"))
-                    .flatMap { doesRefresh -> if (doesRefresh) {
-                        isRefreshButtonEnabled = false
-                        clusterDetailsWithRefresh.doOnEach { isRefreshButtonEnabled = true }
-                    } else  {
-                        // TODO: We can add cancelling operation here
-                        empty()
-                    }}
+                    .flatMap { clusterDetailsWithRefresh }
+                    .observeOn(myIdeaSchedulers.dispatchUIThread())
+                    .doOnEach { isRefreshButtonEnabled = true }
                     .subscribe(
                             { clusterListModelBehavior.onNext(ImmutableComboBoxModel(it.toTypedArray())) },
                             { log().warn("Refresh cluster failure", it) }
@@ -178,7 +191,6 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 
     open val viewModel: ViewModel = ViewModel(ClusterManagerEx.getInstance().cachedClusters
             .filter { ClusterManagerEx.getInstance().hdInsightClusterFilterPredicate.test(it) }
-            .sortedBy { it.title }
             .toTypedArray()).apply { Disposer.register(this@SparkClusterListRefreshableCombo, this@apply) }
 
     override fun dispose() {
@@ -188,10 +200,10 @@ open class SparkClusterListRefreshableCombo: ILogger, Disposable {
 class CosmosSparkClustersCombo: SparkClusterListRefreshableCombo() {
     inner class ViewModel
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().clusters
-            .sortedBy { it.title }
             .toTypedArray()) {
 
-        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = cosmosSparkClustersRefreshed
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = cosmosSparkClustersRefreshed
     }
 
     override val viewModel = ViewModel().apply { Disposer.register(this@CosmosSparkClustersCombo, this@apply) }
@@ -200,23 +212,39 @@ class CosmosSparkClustersCombo: SparkClusterListRefreshableCombo() {
 class ArisSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
     inner class ViewModel
         : SparkClusterListRefreshableCombo.ViewModel(ClusterManagerEx.getInstance().cachedClusters
-            .filter { it is SqlBigDataLivyLinkClusterDetail }
+            .filterIsInstance<SqlBigDataLivyLinkClusterDetail>()
             .toTypedArray()) {
 
-        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = arisSparkClustersRefreshed
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = arisSparkClustersRefreshed
     }
 
     override val viewModel = ViewModel().apply { Disposer.register(this@ArisSparkClusterListRefreshableCombo, this@apply) }
 }
 
 class CosmosServerlessSparkAccountsCombo: SparkClusterListRefreshableCombo() {
+    override fun getComboBoxNamePrefix(): String = "accountListComboBox"
+
     inner class ViewModel
         :  SparkClusterListRefreshableCombo.ViewModel(AzureSparkCosmosClusterManager.getInstance().accounts
-            .sortedBy { it.title }
             .toTypedArray()) {
 
-        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>> = cosmosServerlessSparkAccountsRefreshed
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = cosmosServerlessSparkAccountsRefreshed
     }
 
     override val viewModel: SparkClusterListRefreshableCombo.ViewModel by lazy { ViewModel() }
+}
+
+class ArcadiaSparkClusterListRefreshableCombo: SparkClusterListRefreshableCombo() {
+    override fun getComboBoxNamePrefix(): String = "computeListComboBox"
+
+    inner class ViewModel
+        : SparkClusterListRefreshableCombo.ViewModel(ArcadiaSparkComputeManager.getInstance().clusters
+            .toTypedArray()) {
+        override val clusterDetailsWithRefresh: Observable<out List<IClusterDetail>>
+                get() = arcadiaSparkClustersRefreshed
+    }
+
+    override val viewModel = ViewModel().apply { Disposer.register(this@ArcadiaSparkClusterListRefreshableCombo, this@apply) }
 }

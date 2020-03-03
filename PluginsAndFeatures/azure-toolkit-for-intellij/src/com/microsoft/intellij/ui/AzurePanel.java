@@ -22,6 +22,20 @@
 package com.microsoft.intellij.ui;
 
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_ALLOW;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_DENY;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
+import java.io.File;
+
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextPane;
+
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azuretools.adauth.StringUtils;
@@ -31,7 +45,6 @@ import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
@@ -39,17 +52,8 @@ import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
+
 import org.w3c.dom.Document;
-
-import javax.swing.*;
-import java.io.File;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_ALLOW;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.TELEMETRY_DENY;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
 public class AzurePanel implements AzureAbstractConfigurablePanel {
@@ -101,8 +105,8 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
                     EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UPGRADE, null, null);
                 }
                 String instID = DataOperations.getProperty(dataFile, message("instID"));
-                if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
-                    DataOperations.updatePropertyValue(doc, message("instID"), GetHashMac.GetHashMac());
+                if (instID == null || instID.isEmpty() || !GetHashMac.isValidHashMac(instID)) {
+                    DataOperations.updatePropertyValue(doc, message("instID"), GetHashMac.getHashMac());
                     AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
                     EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
                 }
@@ -135,7 +139,7 @@ public class AzurePanel implements AzureAbstractConfigurablePanel {
     private void setValues(String dataFile) throws Exception {
         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
         DataOperations.updatePropertyValue(doc, message("pluginVersion"), AzurePlugin.PLUGIN_VERSION);
-        DataOperations.updatePropertyValue(doc, message("instID"), GetHashMac.GetHashMac());
+        DataOperations.updatePropertyValue(doc, message("instID"), GetHashMac.getHashMac());
         DataOperations.updatePropertyValue(doc, message("prefVal"), String.valueOf(checkBox1.isSelected()));
         ParserXMLUtility.saveXMLFile(dataFile, doc);
     }

@@ -25,8 +25,12 @@ package com.microsoft.intellij.serviceexplorer;
 import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
-import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.EditDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportParameterAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.ExportTemplateAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.CreateNewDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.DeleteDockerHostAction;
@@ -35,7 +39,6 @@ import com.microsoft.intellij.serviceexplorer.azure.docker.PublishDockerContaine
 import com.microsoft.intellij.serviceexplorer.azure.docker.ViewDockerHostAction;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
-import com.microsoft.intellij.serviceexplorer.azure.storage.CreateBlobContainer;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateQueueAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
@@ -44,6 +47,9 @@ import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
 import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
@@ -56,7 +62,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNod
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NodeActionsMap {
@@ -70,14 +79,10 @@ public class NodeActionsMap {
                 .add(CreateQueueAction.class).build());
         node2Actions.put(TableModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateTableAction.class).build());
-        node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateBlobContainer.class).build());
         node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateStorageAccountAction.class).build());
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateRedisCacheAction.class).build());
-        node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateBlobContainer.class).build());
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
         // todo: what is ConfirmDialogAction?
@@ -88,7 +93,7 @@ public class NodeActionsMap {
         //noinspection unchecked
         node2Actions.put(HDInsightRootModuleImpl.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
+                        .add(AddNewClusterAction.class).build());
         node2Actions.put(SqlBigDataClusterModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(LinkSqlServerBigDataClusterAction.class).build());
@@ -101,5 +106,24 @@ public class NodeActionsMap {
         node2Actions.put(DockerHostModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
+
+        List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>();
+        deploymentNodeList.addAll(Arrays.asList(ExportTemplateAction.class, ExportParameterAction.class,
+                UpdateDeploymentAction.class, EditDeploymentAction.class));
+
+        node2Actions.put(DeploymentNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .addAll(deploymentNodeList).build());
+
+        node2Actions.put(ResourceManagementModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(CreateDeploymentAction.class).build());
+
+        node2Actions.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+            .add(CreateDeploymentAction.class).build());
+
+//        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+//
+//        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 }

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Azure Core Plugin Library
 Bundle-SymbolicName: com.microsoft.azuretools.core;singleton:=true
-Bundle-Version: 3.15.0.qualifier
+Bundle-Version: 3.22.0.qualifier
 Bundle-Activator: com.microsoft.azuretools.core.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -15,7 +15,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.wst.common.frameworks;bundle-version="1.2.0";resolution:=optional,
  org.eclipse.jst.j2ee;bundle-version="1.1.802";resolution:=optional,
  org.eclipse.jst.j2ee.web;bundle-version="1.1.810";resolution:=optional,
- com.microsoft.azuretools.sdk;bundle-version="3.15.0",
+ com.microsoft.azuretools.sdk;bundle-version="3.22.0",
  com.jcraft.jsch;visibility:=reexport,
  org.eclipse.equinox.p2.ui,
  org.eclipse.equinox.p2.operations,
@@ -26,7 +26,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.m2e.core,
  org.eclipse.m2e.maven.runtime,
  org.eclipse.m2e.launching,
- org.eclipse.equinox.registry
+ org.eclipse.equinox.registry,
+ org.eclipse.mylyn.commons.core,
+ org.eclipse.mylyn.commons.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: Microsoft Corp.
@@ -112,6 +114,7 @@ Export-Package: com.microsoft.applicationinsights.preference,
  com.microsoft.tooling.msservices.model.vm,
  com.microsoft.tooling.msservices.serviceexplorer,
  com.microsoft.tooling.msservices.serviceexplorer.azure,
+ com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments,
  com.microsoft.tooling.msservices.serviceexplorer.azure.container,
  com.microsoft.tooling.msservices.serviceexplorer.azure.docker,
  com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache,

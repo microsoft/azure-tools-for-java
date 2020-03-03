@@ -22,7 +22,9 @@
 
 package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.ApplicationNotStartException;
@@ -35,6 +37,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.http.entity.StringEntity;
 import rx.Observable;
@@ -53,7 +56,7 @@ import java.util.stream.Stream;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
-public abstract class Session implements AutoCloseable, Closeable {
+public abstract class Session implements AutoCloseable, Closeable, ILogger {
     private static final String REST_SEGMENT_SESSION = "sessions";
 
     @NotNull
@@ -81,6 +84,10 @@ public abstract class Session implements AutoCloseable, Closeable {
     private int executorNum = 2;    // Default executor count to create
 
     private int driverCores = 2;    // Default driver cores to create
+
+    private String driverMemory = "4G";     // Default driver memory to create
+
+    private String executorMemory = "4G";   // Default executor memory to create
 
     /*
      * Constructor
@@ -118,7 +125,7 @@ public abstract class Session implements AutoCloseable, Closeable {
     }
 
     @NotNull
-    public URI getUri() throws SessionNotStartException {
+    public URI getUri() {
         return baseUrl.resolve(REST_SEGMENT_SESSION + "/" + String.valueOf(getId()));
     }
 
@@ -126,11 +133,7 @@ public abstract class Session implements AutoCloseable, Closeable {
         this.id = id;
     }
 
-    public int getId() throws SessionNotStartException {
-        if (getLastState() == SessionState.NOT_STARTED) {
-            throw new SessionNotStartException(getName() + " isn't created. Call create() firstly before getting ID.");
-        }
-
+    public int getId() {
         return id;
     }
 
@@ -156,6 +159,24 @@ public abstract class Session implements AutoCloseable, Closeable {
 
     public void setDriverCores(int driverCores) {
         this.driverCores = driverCores;
+    }
+
+    @NotNull
+    public String getDriverMemory() {
+        return driverMemory;
+    }
+
+    public void setDriverMemory(@NotNull String driverMemory) {
+        this.driverMemory = driverMemory;
+    }
+
+    @NotNull
+    public String getExecutorMemory() {
+        return executorMemory;
+    }
+
+    public void setExecutorMemory(@NotNull String executorMemory) {
+        this.executorMemory = executorMemory;
     }
 
     public Observable<String> getAppId() {
@@ -211,7 +232,9 @@ public abstract class Session implements AutoCloseable, Closeable {
      */
     @Override
     public void close() {
-        kill().toBlocking().subscribe();
+        kill().toBlocking().subscribe( session -> {}, err -> {
+            log().warn("Kill session failed. " + ExceptionUtils.getStackTrace(err));
+        });
     }
 
     /*
@@ -224,10 +247,10 @@ public abstract class Session implements AutoCloseable, Closeable {
 
     public boolean isStop() {
         return getLastState() == SessionState.SHUTTING_DOWN ||
-                getLastState() == SessionState.NOT_STARTED ||
                 getLastState() == SessionState.DEAD ||
                 getLastState() == SessionState.KILLED ||
-                getLastState() == SessionState.ERROR;
+                getLastState() == SessionState.ERROR ||
+                getLastState() == SessionState.SUCCESS;
     }
 
     public boolean isStatementRunnable() {
@@ -285,6 +308,13 @@ public abstract class Session implements AutoCloseable, Closeable {
         postBody.setExecutorCores(getExecutorCores());
         postBody.setNumExecutors(getExecutorNum());
         postBody.setDriverCores(getDriverCores());
+        postBody.setDriverMemory(getDriverMemory());
+        postBody.setExecutorMemory(getExecutorMemory());
+
+        // In Livy 0.5.0-incubating, we need to either specify code kind in post statement
+        // or set it in post session body here, or else "Code type should be specified if session kind is shared" error
+        // will be met in the response of the post statement request
+        postBody.setConf(ImmutableMap.of("spark.__livy__.livy.rsc.session.kind", getKind().toString().toLowerCase()));
 
         return postBody;
     }
@@ -319,13 +349,7 @@ public abstract class Session implements AutoCloseable, Closeable {
     }
 
     private Observable<HttpResponse> deleteSessionRequest() {
-        URI uri;
-
-        try {
-            uri = getUri();
-        } catch (SessionNotStartException e) {
-            return Observable.empty();
-        }
+        URI uri = getUri();
 
         return getHttp()
                 .setUserAgent(getUserAgent())
@@ -344,13 +368,7 @@ public abstract class Session implements AutoCloseable, Closeable {
     }
 
     private Observable<com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session> getSessionRequest() {
-        URI uri;
-
-        try {
-            uri = getUri();
-        } catch (SessionNotStartException e) {
-            return Observable.empty();
-        }
+        URI uri = getUri();
 
         return getHttp()
                 .setUserAgent(getUserAgent())

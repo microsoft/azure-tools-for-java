@@ -26,18 +26,15 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.SharedKeyHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import rx.Observable;
 import rx.Observer;
@@ -45,13 +42,7 @@ import rx.exceptions.Exceptions;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -71,7 +62,8 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
     }
 
     @Override
-    public Observable<String> deploy(@NotNull File src) {
+    public Observable<String> deploy(File src,
+                                     Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
         // four steps to upload via adls gen2 rest api
         // 1.put request to create new dir
         // 2.put request to create new file(artifact) which is empty
@@ -88,8 +80,13 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
         ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
         return op.createDir(dirPath)
                 .onErrorReturn(err -> {
-                    if (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))) {
-                        throw new IllegalArgumentException("Failed to upload Spark application artifacts.The access key is invalid.");
+                    if (err.getMessage()!= null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
+                            || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
+                        // Sample destinationRootPath: https://accountName.dfs.core.windows.net/fsName/SparkSubmission/
+                        String fileSystemRootPath = UriUtil.normalizeWithSlashEnding(URI.create(destinationRootPath)).resolve("../").toString();
+                        String errorMessage = String.format("Failed to create folder %s when uploading Spark application artifacts with error: %s. %s",
+                                dirPath, err.getMessage(), getForbiddenErrorHints(fileSystemRootPath));
+                        throw new IllegalArgumentException(errorMessage);
                     } else {
                         throw Exceptions.propagate(err);
                     }
@@ -98,19 +95,16 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                 .flatMap(ignore -> op.createFile(filePath))
                 .flatMap(ignore -> op.uploadData(filePath, src))
                 .doOnNext(ignore -> log().info(String.format("Append data to file %s successfully.", filePath)))
-                .map(ignored -> {
-                    try {
-                        return getArtifactUploadedPath(filePath);
-                    } catch (URISyntaxException ex) {
-                        throw new RuntimeException(new IllegalArgumentException("Can not get valid artifact upload path" + ex.toString()));
-                    }
-                });
+                .map(ignored -> AbfsUri.parse(filePath).getUri().toString());
     }
 
-    @Nullable
-    private String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        //convert https://fullAccountName/fileSystem/sparksubmission/guid/artifact.jar to /SparkSubmission/xxxx
-        int index = rootPath.indexOf("SparkSubmission");
-        return String.format("/%s", rootPath.substring(index));
+    public static String getForbiddenErrorHints(String fileSystemRootPath) {
+        String signInUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+        return new StringBuilder(" Please verify if\n")
+                .append("1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n")
+                .append("2. The signed in user " + signInUserEmail + " has Storage Blob Data Contributor or Storage Blob Data Owner role over the storage path " + fileSystemRootPath + ".\n")
+                .append("   If the role is recently granted, please wait a while and try again later.\n")
+                .append("   Find more details at https://docs.microsoft.com/en-us/azure/storage/common/storage-access-blobs-queues-portal#azure-ad-account")
+                .toString();
     }
 }

@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
@@ -30,10 +31,11 @@ import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.AzureManagementHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.ODataParam;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.api.GetAccountsListResponse;
+import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.DataLakeAnalyticsAccountBasic;
+import com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.accounts.models.api.GetAccountsListResponse;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
@@ -41,6 +43,10 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.NameValuePair;
@@ -51,6 +57,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static rx.Observable.*;
 
@@ -127,7 +134,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
         try {
             return AuthMethodManager.getInstance().getAzureManager();
         } catch (IOException e) {
-            log().info("Can't get Azure manager now. error: " + e);
+            log().info("Can't get Azure manager now, please sign in. error: " + e);
 
             return null;
         }
@@ -193,7 +200,6 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
 
                     return (AzureSparkCosmosCluster) cluster;
                 }))
-                .toSortedList()
                 .map(clusters -> this)
                 .defaultIfEmpty(this);
     }
@@ -225,6 +231,14 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
                                         GetAccountsListResponse.class)))
                 // account basic list -> account basic
                 .flatMap(subAccountsObPair -> subAccountsObPair.getRight()
+                                .onErrorResumeNext(err -> {
+                                    log().warn(String.format("Ignore subscription %s(%s) with exception",
+                                                             subAccountsObPair.getLeft().getSubscriptionName(),
+                                                             subAccountsObPair.getLeft().getSubscriptionId()),
+                                            err);
+
+                                    return empty();
+                                })
                                 .flatMap(accountsResp -> Observable.from(accountsResp.items()))
                                 .map(accountBasic -> Pair.of(subAccountsObPair.getLeft(), accountBasic)))
                 .flatMap(subAccountBasicPair -> {
@@ -308,5 +322,29 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
 
                     return false;
                 });
+    }
+
+    public void sendErrorTelemetry(@NotNull String operationName, @NotNull Throwable ex, @Nullable String clusterGuid) {
+        Map<String, String> props = new HashMap<>();
+        props.put("clusterGuid", clusterGuid);
+        props.put("isSucceed", "false");
+        if (ex instanceof SparkAzureDataLakePoolServiceException) {
+            SparkAzureDataLakePoolServiceException serviceException = (SparkAzureDataLakePoolServiceException) ex;
+            props.put("requestUri", serviceException.getRequestUri() != null ? serviceException.getRequestUri().toString() : "");
+            props.put("statusCode", String.valueOf(serviceException.getStatusCode()));
+            props.put("x-ms-request-id", serviceException.getRequestId());
+            EventUtil.logError(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.serviceError, serviceException,  props, null);
+        } else {
+            EventUtil.logError(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.unclassifiedError, ex,  props, null);
+        }
+    }
+
+    public void sendInfoTelemetry(@NotNull String operationName, @Nullable String clusterGuid) {
+        Map<String, String> props = ImmutableMap.of(
+                "statusCode", "200",
+                "isSucceed", "true",
+                "clusterGuid", clusterGuid);
+        EventUtil.logEvent(EventType.info, TelemetryConstants.SPARK_ON_COSMOS, operationName, props);
+
     }
 }

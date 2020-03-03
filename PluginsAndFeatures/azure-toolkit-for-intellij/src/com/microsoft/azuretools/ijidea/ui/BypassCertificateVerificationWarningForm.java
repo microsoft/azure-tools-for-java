@@ -24,6 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -43,6 +44,9 @@ public class BypassCertificateVerificationWarningForm extends DialogWrapper {
         setOKButtonText("Proceed");
     }
 
+    protected void createUIComponents() {
+        warningIconLabel = new JLabel(UIUtil.getWarningIcon());
+    }
 
     @Nullable
     @Override

@@ -3,7 +3,17 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
-
+  - [3.33.0](#3330)
+  - [3.32.0](#3320)
+  - [3.31.0](#3310)
+  - [3.30.0](#3300)
+  - [3.29.0](#3290)
+  - [3.28.0](#3280)
+  - [3.27.0](#3270)
+  - [3.26.0](#3260)
+  - [3.25.0](#3250)
+  - [3.24.0](#3240)
+  - [3.23.0](#3230)
   - [3.22.0](#3220)
   - [3.21.1](#3211)
   - [3.21.0](#3210)
@@ -34,6 +44,176 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.33.0
+
+### Added
+ - Support upload artifact to ADLS Gen1 storage for Spark on Cosmos Spark Pool
+ - Detect authentication type automatically when user types cluster name and lost focus when link an HDInsight cluster
+ - Fetch more Livy logs when submit Spark job to HDInsight cluster failed
+ - Add background task indicator to improve user experience
+ - Support virtual file system on ADLS Gen2 storage for HDInsight Spark cluster and Synapse Spark pool
+
+### Changed
+ - Seperator for multiple referenced jars and referenced files is changed from semicolon to space in Spark batch job configuration
+ - "Continue Anyway" is changed to "Cancel submit" in "Change configuration settings" dialog when validation check failed for spark batch job
+ - The behavior of "Rerun" button action for Spark batch job is changed from re-run with current selected configuration to re-run with previous job configuration
+
+### Fixed
+ - [#3935](https://github.com/microsoft/azure-tools-for-java/pull/3935) Clean up HDInsight clusters from cache when user signs out
+ - [#3887](https://github.com/microsoft/azure-tools-for-java/issues/3887), [#4023](https://github.com/microsoft/azure-tools-for-java/pull/4023) Fix uncaught StackOverflowError reported by user
+ - [#4045](https://github.com/microsoft/azure-tools-for-java/issues/4045) Fix uncaught NullPointerException reported by user
+
+## 3.32.0
+
+### Added
+
+- Support Synapse default ADLS Gen2 storage uploading artifacts
+- Support Synapse default ADLS Gen2 storage explorer for reference files/jars
+- Synapse Spark batch job detail page link after submission
+- Support HIB cluster default ADLS Gen2 storage explorer for reference files/jars
+- Support Spark Job remote debugging for HIB cluster
+- Support Authentication type detection when linking HIB cluster
+
+### Changed
+
+- Mute warning messages when refreshing HDInsight cluster node in Azure explorer
+
+### Fixed
+
+- [#3899](https://github.com/microsoft/azure-tools-for-java/issues/3899) ADLS Gen2 Virtual File System explorer special characters in path issue
+- Linked HDInsight cluster persistent issue
+- [#3802](https://github.com/microsoft/azure-tools-for-java/issues/3802) HIB linked cluster logout issue
+- [#3887](https://github.com/microsoft/azure-tools-for-java/issues/3887) Stack Overflow issue of SparkBatchJobDebugExecutor
+
+## 3.31.0
+
+### Added
+- Support for IntelliJ 2019.3
+- Support link an HDInsight HIB cluster for no ARM permission users(Supported by smiles-a-lot girl Yi Zhou [@lcadzy](https://github.com/lcadzy))
+
+### Changed
+- List only Synapse workspaces rather than mixed Arcadia and Synapse workspaces
+- Remove Storage Accounts explorer
+
+### Fixed
+- [#3831](https://github.com/microsoft/azure-tools-for-java/issues/3831) Fix ClassCastException when link an SQL Server big data cluster
+- [#3806](https://github.com/microsoft/azure-tools-for-java/issues/3806) Fix showing two 'scala>' when run Spark local console issue
+- [#3864](https://github.com/microsoft/azure-tools-for-java/issues/3864), [#3869](https://github.com/microsoft/azure-tools-for-java/issues/3869) Fix scala plugin version breaking change
+- [#3823](https://github.com/microsoft/azure-tools-for-java/issues/3823) Fix uncaught StackOverflowError when calling SparkBatchJobDebugExecutor.equals() issue
+
+## 3.30.0
+
+### Added
+- Add shorcut ctrl+shift+alt+F2 for disconnect spark application action
+- Integrate with HDInsight Identity Broker (HIB) for HDInsight ESP cluster MFA Authentication, cluster navigation, job submission, and interactive query.
+
+### Changed
+- Rename brand name from Arcadia to Synapse
+- Deprecate Storage Accounts(will be removed in v3.31.0)
+- Upload path changes to abfs scheme for default ADLS GEN2 storage type
+
+### Fixed
+- [#2891](https://github.com/microsoft/azure-tools-for-java/issues/2891) Hidden Toolkit directory in user home
+- [#3765](https://github.com/microsoft/azure-tools-for-java/issues/3765) Fix upload path shows null for spark serverless
+- [#3676](https://github.com/microsoft/azure-tools-for-java/issues/3676),[#3728](https://github.com/microsoft/azure-tools-for-java/issues/3728) Fix job view panel show failure
+- [#3700](https://github.com/microsoft/azure-tools-for-java/issues/3700),[#3710](https://github.com/microsoft/azure-tools-for-java/issues/3710) Fix Spark configuration name shorten issue in 193EAP
+- Fix Spark job submission dialog accessibility issues of Eclipse plugin
+
+## 3.29.0
+
+### Added
+- Support IntelliJ 2019.3 EAP
+- Add support for Windows Java SE web apps
+
+### Fixed
+- Improving the accessibility of IntelliJ plugin
+
+## 3.28.0
+
+### Changed
+- HDInsight emulator function is removed
+- Upgrade Azure SDK dependencies to most new versions
+
+### Fixed
+- [#3534](https://github.com/microsoft/azure-tools-for-java/issues/3534) Fix errors when starting Spark interactive console
+- [#3552](https://github.com/microsoft/azure-tools-for-java/issues/3552) Fix Spark remote debugging regresion
+- [#3641](https://github.com/microsoft/azure-tools-for-java/issues/3641) Fix NPE error in customer survey dialog
+- [#3642](https://github.com/microsoft/azure-tools-for-java/issues/3642) Fix Not Found error when HDInsight refreshing
+- [#3643](https://github.com/microsoft/azure-tools-for-java/issues/3643) Fix errors when create service principals
+
+## 3.27.0
+
+### Fixed
+- [#3316](https://github.com/microsoft/azure-tools-for-java/issues/3316), [#3322](https://github.com/microsoft/azure-tools-for-java/issues/3322), [#3334](https://github.com/microsoft/azure-tools-for-java/issues/3334), [#3337](https://github.com/microsoft/azure-tools-for-java/issues/3337), [#3339](https://github.com/microsoft/azure-tools-for-java/issues/3339), [#3346](https://github.com/microsoft/azure-tools-for-java/issues/3346), [#3385](https://github.com/microsoft/azure-tools-for-java/issues/3385), [#3387](https://github.com/microsoft/azure-tools-for-java/issues/3387) Fix Accessibility issues
+
+## 3.26.0
+
+### Added
+- Support spark 2.4 template projects
+- Introduce Spark console view message bars
+
+### Changed
+- Refine important message show in the error report 
+- Provide Spark Submission panel minimum size to help form building
+
+### Fixed
+- [#3308](https://github.com/microsoft/azure-tools-for-java/issues/3308) Fix Scala plugin 2019.2.15 regression
+- [#3440](https://github.com/microsoft/azure-tools-for-java/issues/3440) Fix can't open Yarn UI for Aris cluster issue
+- [#2414](https://github.com/microsoft/azure-tools-for-java/issues/2414) Fix NPE error when open multi IntelliJ window and sign in/out.
+- [#3058](https://github.com/microsoft/azure-tools-for-java/issues/3058) Remove duplicated error notification when auth with no subscription account
+- [#3454](https://github.com/microsoft/azure-tools-for-java/issues/3454) Fix ArrayIndexOutOfBoundsException when pop up customer survey window
+
+## 3.25.0
+
+### Added
+
+- Support IntelliJ 2019.2
+
+### Changed
+
+- Move customer survey to qualtrics and refactor survey ui.
+
+### Fixed
+
+- [#3297](https://github.com/microsoft/azure-tools-for-java/issues/3297) Fix NPE error when submit job to Spark on cosmos cluster 
+
+## 3.24.0
+
+### Added
+
+- Support EAP 2019.2
+- Support parameter file for Azure Resource Manager
+- Integrate intelliJ virtual file system with ADLS Gen2 storage on reference text field in HDI configuration
+- Show Yarn log for jobs submitted to Spark on SQL Server cluster
+
+### Changed
+
+- Change app service deploy method to war/zip deploy.
+- Given more cluster detail when refreshing Azure explorer encounters exceptions on report dialog
+- Better format JSON text of Spark serverless job detail
+
+### Fixed
+- [#3230](https://github.com/microsoft/azure-tools-for-java/issues/3230),[#3159](https://github.com/microsoft/azure-tools-for-java/issues/3159) Fix related issues for upload path refresh is not ready scenario
+- [#3223](https://github.com/microsoft/azure-tools-for-java/issues/3223),[#3256](https://github.com/microsoft/azure-tools-for-java/issues/3256) Fix main class and cluster info missing on Aris configuration after reopen
+- [#3190](https://github.com/microsoft/azure-tools-for-java/issues/3190),[#3234](https://github.com/microsoft/azure-tools-for-java/issues/3234) Fix Spark on Cosmos node disappear after sign in account of dogfood environment
+- [#3198](https://github.com/microsoft/azure-tools-for-java/issues/3198) Fix misclassified service exception
+
+## 3.23.0
+
+### Added
+
+- Support Azure Resource Manager, you can deploy and manage azure resource template with toolkit
+- Support choosing remote reference jars through folder browser button for HDI cluster with ADLS Gen2 account
+
+### Changed
+
+- Optimize refreshing HDInsight clusters performance
+- Handle access related exceptions for linked reader role cluster
+
+### Fixed
+- [#3104](https://github.com/microsoft/azure-tools-for-java/issues/3104) Fix linked role reader cluster issue
+- [#2895](https://github.com/microsoft/azure-tools-for-java/issues/2895) Fix unnecessarily killing finalizing or ended state job for serverless job
 
 ## 3.22.0
 

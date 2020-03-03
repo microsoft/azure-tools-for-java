@@ -418,10 +418,10 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         final DefaultComboBoxModel refreshedSAModel = new DefaultComboBoxModel(accounts) {
             @Override
             public void setSelectedItem(Object o) {
+                super.setSelectedItem(o);
                 if (CREATE_NEW.equals(o)) {
                     showNewStorageForm();
                 } else {
-                    super.setSelectedItem(o);
                     if (o instanceof StorageAccount) {
                         model.setStorageAccount((StorageAccount) o);
                     } else {
@@ -733,6 +733,8 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                             model.setWithNewStorageAccount(true);
                             ((DefaultComboBoxModel)storageComboBox.getModel()).insertElementAt(newStorageAccount.getName() + " (New)", 0);
                             storageComboBox.setSelectedIndex(0);
+                        } else {
+                            storageComboBox.setSelectedItem(null);
                         }
                     }
                 });

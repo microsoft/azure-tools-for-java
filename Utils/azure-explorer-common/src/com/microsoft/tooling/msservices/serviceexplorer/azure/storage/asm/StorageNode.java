@@ -79,7 +79,7 @@ public class StorageNode extends ClientStorageNode implements TelemetryPropertie
         }
 
         @Override
-        protected String getServiceName() {
+        protected String getServiceName(NodeActionEvent event) {
             return STORAGE;
         }
 

@@ -21,9 +21,7 @@
  */
 package com.microsoft.intellij.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -40,10 +38,13 @@ import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardDialog;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
 import com.microsoft.intellij.util.PluginUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,10 +56,10 @@ import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 public class AzureDockerHostDeployAction extends AzureAnAction {
   private static final Logger LOGGER = Logger.getInstance(AzureDockerHostDeployAction.class);
 
-  public void onActionPerformed(AnActionEvent actionEvent) {
+    public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
     try {
         Project project = getCurrentProject();
-        if (!AzureSignInAction.doSignIn( AuthMethodManager.getInstance(), project)) return;
+        if (!AzureSignInAction.doSignIn( AuthMethodManager.getInstance(), project)) return true;
         AzureDockerUIResources.CANCELED = false;
 
         Module module = PluginUtil.getSelectedModule();
@@ -74,7 +75,7 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
         // not signed in
         if (azureAuthManager == null) {
         System.out.println("ERROR! Not signed in!");
-        return;
+        return true;
         }
 
 
@@ -83,13 +84,13 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
         if (!dockerManager.isInitialized()) {
         AzureDockerUIResources.updateAzureResourcesWithProgressDialog(project);
         if (AzureDockerUIResources.CANCELED) {
-          return;
+          return true;
         }
       }
 
       if (dockerManager.getSubscriptionsMap().isEmpty()) {
         PluginUtil.displayErrorDialog("Publish Docker Container", "Please select a subscription first");
-        return;
+        return true;
       }
 
       DockerHost dockerHost = (dockerManager.getDockerPreferredSettings() != null) ? dockerManager.getDockerHostForURL(dockerManager.getDockerPreferredSettings().dockerApiName) : null;
@@ -113,10 +114,11 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    return true;
   }
 
     @Override
-    protected String getServiceName() {
+    protected String getServiceName(AnActionEvent event) {
         return TelemetryConstants.DOCKER;
     }
 

@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Shell;
 public abstract class AppServiceBaseDialog extends AzureTitleAreaDialogWrapper {
 
     private List<ControlDecoration> decorations = new LinkedList<>();
-    private static final String FORM_VALIDATION_ERROR = "Form validation error.";
+    private static final String FORM_VALIDATION_ERROR = "Validation error: %s";
 
     public AppServiceBaseDialog(Shell parentShell) {
         super(parentShell);
@@ -57,7 +57,7 @@ public abstract class AppServiceBaseDialog extends AzureTitleAreaDialogWrapper {
     protected void setError(ControlDecoration d, String message) {
         Display.getDefault().asyncExec(() -> {
             d.setDescriptionText(message);
-            setErrorMessage(FORM_VALIDATION_ERROR);
+            setErrorMessage(String.format(FORM_VALIDATION_ERROR, message));
             d.show();
         });
     }

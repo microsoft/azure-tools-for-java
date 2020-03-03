@@ -17,11 +17,12 @@ BUILD_ECLIPSE=true
 BUILD_INTELLIJ=true
 INJECT_INTELLIJ_VERSION=false
 
-IJ_VERSION_LATEST=2019.1
-IJ_SCALA_VERSION_LATEST=2019.1.6
-
-IJ_VERSION_FALLBACK=2018.3
-IJ_SCALA_VERSION_FALLBACK=2018.3.2
+IJ_VERSION_MAJOR_BUILD=192.5728
+IJ_VERSION_MAJOR=2019.2
+IJ_VERSION_MINOR=4
+IJ_VERSION_LATEST=$IJ_VERSION_MAJOR.$IJ_VERSION_MINOR \
+                  && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
+IJ_SCALA_VERSION_LATEST=2019.2.37
 
 while getopts "hqve:" option; do
   echo $option
@@ -51,37 +52,33 @@ set -x
 
 # Build Utils
 echo "Building Utils ..."
-mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository -Dcheckstyle.skip=$SKIP_CHECKSTYLE $MAVEN_QUIET
-mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
+mvn install -B -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository -Dcheckstyle.skip=$SKIP_CHECKSTYLE $MAVEN_QUIET
+mvn install -B -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
 
 # Build Eclipse plugin
 if $BUILD_ECLIPSE; then
   echo "Building Eclipse plugin ..."
-  mvn clean install -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
+  mvn clean install -B -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
   cp ./PluginsAndFeatures/azure-toolkit-for-eclipse/WindowsAzurePlugin4EJ/target/WindowsAzurePlugin4EJ*.zip ./$ARTIFACTS_DIR/WindowsAzurePlugin4EJ.zip
 fi
 
 # Build IntelliJ plugin
 if $BUILD_INTELLIJ; then
   echo "Building IntelliJ plugin ..."
-  chmod +x ./tools/IntellijVersionHelper
-  ## Build intellij plugin for latest version
-  if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
-      ./tools/IntellijVersionHelper $IJ_VERSION_LATEST
-  fi
 
-  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST)
+  ## Build intellij plugin for latest version
+  PATCH_PLUGIN_XML_ARGS="" \
+    && [ "$INJECT_INTELLIJ_VERSION" == "true" ] && \
+      PATCH_PLUGIN_XML_ARGS="-PpatchPluginXmlSinceBuild=$IJ_VERSION_MAJOR_BUILD"
+
+  GRADLE_TASKS="clean buildPlugin bundleBuildIdeaZip"
+  GRADLE_ARGS="-s -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST $PATCH_PLUGIN_XML_ARGS"
+
+  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew $GRADLE_TASKS $GRADLE_ARGS)
 
   cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_VERSION_LATEST.zip
+  cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/ideaIC-bundle-win-x64.zip ./$ARTIFACTS_DIR/ideaIC-bundle-win-x64-$IJ_VERSION_LATEST.zip
 
-  ## Build intellij plugin for fallback version
-  if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
-      ./tools/IntellijVersionHelper $IJ_VERSION_FALLBACK
-  fi
-
-  (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Pintellij_version=IC-$IJ_VERSION_FALLBACK -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_FALLBACK)
-
-  cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_VERSION_FALLBACK.zip
 fi
 
 echo "ALL BUILD SUCCESSFUL"

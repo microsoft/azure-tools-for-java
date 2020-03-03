@@ -1,17 +1,17 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.22.0</version>
+  <version>3.33.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
       <html>
-        <p>These plugins allow Java developers and Azure HDInsight users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
+        <p>These plugins allow Java developers, Azure HDInsight developers and SQL Server Spark users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
         <ul>
           <li>Azure Web App Workflow: You can run your web applications on Azure Web App with One-Click experience using Azure Toolkits for IntelliJ.</li>
           <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
           <li>Azure Explorer: You can view and manage your cloud resources on Azure with Azure Explorer in Azure Toolkits for IntelliJ.</li>
-          <li>Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor and debug Spark jobs easily. </li>
+          <li>Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor and debug Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.</li>
           <li>SQL Server Big Data Cluster: Link to SQL Server Big Data Cluster; Create a Spark project, author and submit Spark jobs to cluster; Monitor and debug Spark jobs easily</li>
         </ul>
       </html>
@@ -20,23 +20,34 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.22.0</h3>
+    <h3>3.32.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Automaticly fill in Azure Blob account name or ADLS Gen1/Gen2 root path for linked HDInsight Reader role cluster
-            in run configuration dialog</li>
+        <li>Support upload artifact to ADLS Gen1 storage for Spark on Cosmos Spark Pool</li>
+        <li>Detect authentication type automatically when user types cluster name and lost focus when link an HDInsight
+            cluster</li>
+        <li>Fetch more Livy logs when submit Spark job to HDInsight cluster failed</li>
+        <li>Add background task indicator to improve user experience</li>
+        <li>Support virtual file system on ADLS Gen2 storage for HDInsight Spark cluster and Synapse Spark pool</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Improve app service data loading performance</li>
-        <li>Restrict upload storage type to cluster default storage type and spark interactive session storage type for
-            linked HDInsight Reader role cluster</li>
+        <li>Seperator for multiple referenced jars and referenced files is changed from semicolon to space in Spark batch
+            job configuration</li>
+        <li>"Continue Anyway" is changed to "Cancel submit" in "Change configuration settings" dialog when validation check
+            failed for spark batch job</li>
+        <li>The behavior of "Rerun" button action for Spark batch job is changed from re-run with current selected
+            configuration to re-run with previous job configuration</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3094">#3094</a>, <a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/3096">#3096</a> Fix warning message spelling
-            issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/3935">#3935</a> Clean up HDInsight clusters from
+            cache when user signs out</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/3887">#3887</a>, <a
+                href="https://github.com/microsoft/azure-tools-for-java/pull/4023">#4023</a> Fix uncaught StackOverflowError
+            reported by user</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4045">#4045</a> Fix uncaught
+            NullPointerException reported by user</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
@@ -45,7 +56,7 @@
   </change-notes>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="182" until-build="182.*"/>
+  <idea-version since-build="192.5728" until-build="192.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true">org.intellij.scala</depends>
@@ -82,6 +93,8 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider"/>
     <toolWindow
           anchor="left"
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
@@ -96,6 +109,12 @@
         id="Cosmos Serverless Spark Jobs"
         canCloseContents="true"/>
 
+<!--    <toolWindow-->
+<!--            anchor="bottom"-->
+<!--            factoryClass="com.microsoft.azure.webapp.ui.WebAppStreamingLogToolWindowFactory"-->
+<!--            id="Azure Streaming Log"-->
+<!--            canCloseContents="true"/>-->
+
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
     <configurationType implementation="com.microsoft.intellij.runner.webapp.WebAppConfigurationType"/>
@@ -103,19 +122,31 @@
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArisSparkConfigurationType"/>
+    <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfigurationType"/>
     <configurationType implementation="com.microsoft.azure.hdinsight.spark.run.configuration.SparkFailureTaskDebugConfigurationType"/>
     <actionPromoter implementation="com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoterDelegate"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.LivySparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessRunConfigurationProducer"/>
     <runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkRunConfigurationProducer"/>
+    <!--<runConfigurationProducer implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkRunConfigurationProducer"/> -->
     <programRunner implementation="com.microsoft.intellij.runner.webapp.webappconfig.WebAppRunner"/>
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosSparkBatchRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebuggerRunner" />
     <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.CosmosServerlessSparkBatchRunner" />
+    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArisSparkBatchRunner" />
+    <programRunner implementation="com.microsoft.azure.hdinsight.spark.run.ArcadiaSparkBatchRunner" />
     <configurationType implementation="com.microsoft.intellij.runner.container.AzureDockerSupportConfigurationType"/>
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
+
+    <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
+    <lang.syntaxHighlighterFactory key="arm"
+      implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
+    <lang.parserDefinition language="arm"
+      implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
+    <completion.contributor language="JSON" order="first"
+      implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
   </extensions>
 
   <application-components>
@@ -172,6 +203,9 @@
     <action id="Actions.SubmitArisSparkApplicationAction"
             class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction" text="Spark on SQL Server Big Data Cluster"
             description="Submit Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+    <action id="Actions.SubmitArcadiaSparkApplicationAction"
+            class="com.microsoft.azure.hdinsight.spark.actions.ArcadiaSparkSelectAndSubmitAction" text="Spark on Synapse"
+            description="Submit Spark on Synapse Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -181,7 +215,9 @@
               class="com.microsoft.azuretools.ijidea.actions.DisableSslCertificateValidationAction"
               text="Disable"/>
     </group>
-    <action class="com.microsoft.azuretools.ijidea.actions.GithubSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback..." />
+    <action class="com.microsoft.azuretools.ijidea.actions.NewCustomerIssueFeedbackAction" id="AzureToolkit.GithubIssue" text="Report Issues" />
+    <action class="com.microsoft.azuretools.ijidea.actions.NewFeatureRequestFeedbackAction" id="AzureToolkit.FeatureRequest" text="Request Feature" />
+    <action class="com.microsoft.intellij.actions.QualtricsSurveyAction" id="AzureToolkit.Survey" text="Provide Feedback" />
     <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
             text="Deploy to Azure" description="Deploy to Azure"
             icon="/icons/PublishWebApp_16.png">
@@ -205,6 +241,7 @@
     <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
             text="Disconnect" description="Disconnect the log view from remote Spark Job"
             icon="/icons/SparkJobDisconnect.png">
+      <keyboard-shortcut first-keystroke="ctrl shift alt F2" keymap="$default"/>
     </action>
     <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"
             text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">
@@ -269,6 +306,8 @@
       <separator/>
       <reference ref="AzureToolkit.ValidateCertificate"/>
       <separator/>
+      <reference ref="AzureToolkit.GithubIssue"/>
+      <reference ref="AzureToolkit.FeatureRequest"/>
       <reference ref="AzureToolkit.Survey"/>
     </group>
 
@@ -297,6 +336,9 @@
       <action id="Actions.SelectArisSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
       </action>
+<!--      <action id="Actions.SelectArcadiaSparkType"-->
+<!--              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Arcadia Cluster" >-->
+<!--      </action>-->
     </group>
 
     <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
@@ -305,6 +347,9 @@
 
     <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Spark Local Console"/>
 
+<!--    <action id="Actions.RunArcadiaSparkConsoleAction"-->
+<!--            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLivyConsoleAction" text="Spark on Arcadia"-->
+<!--            description="Start an interactive console for Spark on Arcadia Application" icon="/icons/Spark.png"/>-->
     <action id="Actions.RunLivySparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Spark on HDInsight"
             description="Start an interactive console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
@@ -315,6 +360,9 @@
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction" text="Spark on SQL Server Big Data Cluster"
             description="Start an interactive console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
 
+<!--    <action id="Actions.RunArcadiaSparkLocalConsoleAction"-->
+<!--            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction" text="Spark on Arcadia"-->
+<!--            description="Start a Spark local console for Spark on Arcadia Application" icon="/icons/Spark.png"/>-->
     <action id="Actions.RunLivySparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
             description="Start a Spark local console for Spark on HDInsight Application" icon="/icons/Spark.png"/>

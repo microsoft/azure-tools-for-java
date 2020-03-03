@@ -21,32 +21,23 @@
  */
 package com.microsoft.azuretools.core.ui;
 
-import com.microsoft.aad.adal4j.AdalErrorCode;
-import com.microsoft.aad.adal4j.AuthenticationCallback;
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationException;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.DeviceCode;
-
-import com.microsoft.azuretools.core.components.AzureDialogWrapper;
-
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -54,11 +45,21 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
+import com.microsoft.aad.adal4j.AdalErrorCode;
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationContext;
+import com.microsoft.aad.adal4j.AuthenticationException;
+import com.microsoft.aad.adal4j.AuthenticationResult;
+import com.microsoft.aad.adal4j.DeviceCode;
 import com.microsoft.azuretools.adauth.IDeviceLoginUI;
 import com.microsoft.azuretools.core.Activator;
-import org.eclipse.ui.PlatformUI;
+import com.microsoft.azuretools.core.components.AzureDialogWrapper;
 
 public class DeviceLoginWindow implements IDeviceLoginUI {
 
@@ -93,6 +94,8 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         private final DeviceCode deviceCode;
         private final Future<?> future;
         private AuthenticationResult authenticationResult = null;
+        private Browser browser;
+        private Link link;
         private final ExecutorService es = Executors.newSingleThreadExecutor();
 
         public DeviceLoginDialog(Shell parentShell, AuthenticationContext authenticationContext, DeviceCode deviceCode,
@@ -107,34 +110,31 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         @Override
         protected Control createDialogArea(Composite parent) {
             Composite area = (Composite) super.createDialogArea(parent);
-            FillLayout fillLayout = new FillLayout(SWT.HORIZONTAL);
+            FillLayout fillLayout = new FillLayout(SWT.VERTICAL);
             fillLayout.marginHeight = 10;
+            fillLayout.marginWidth = 10;
             area.setLayout(fillLayout);
             GridData gridData = new GridData(GridData.FILL_BOTH);
             area.setLayoutData(gridData);
-
-            Browser browser = new Browser(area, SWT.NONE);
-            FillLayout layout = new FillLayout(SWT.HORIZONTAL);
-            browser.setLayout(layout);
-            browser.setText(createHtmlFormatMessage(area));
-            browser.addLocationListener(new LocationListener() {
-                @Override
-                public void changing(LocationEvent event) {
-                    try {
-                        if (event.location.contains("http")) {
-                            event.doit = false;
-                            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                                .openURL(new URL(event.location));
-                        }
-                    } catch (Exception ex) {
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
-                    }
-                }
-
-                @Override
-                public void changed(LocationEvent locationEvent) {
-                }
+            
+            
+            link = new Link(area,SWT.NONE);
+            link.setText(createHtmlFormatMessage(area));
+            link.addSelectionListener(new SelectionAdapter() {
+            	@Override
+            	public void widgetSelected(SelectionEvent e) {
+            		try {
+						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+              .openURL(new URL(deviceCode.getVerificationUrl()));
+					} catch (PartInitException | MalformedURLException ex) {
+						LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
+					}
+            	}
             });
+
+            Label label = new Label(area,SWT.NONE);
+            label.setText("Waiting for signing in with the code, do not close the window.");
+            
             return area;
         }
 
@@ -204,17 +204,9 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
         }
 
         private String createHtmlFormatMessage(Composite composite) {
-            Color color = composite.getBackground();
-            FontData browserFontData = composite.getFont().getFontData()[0];
-            String browserFontStyle = String.format("font-family: '%s'; font-size: 13", browserFontData.getName());
-            String bgcolor = String.format("rgb(%s,%s,%s)", color.getRed(), color.getGreen(), color.getBlue());
             final String verificationUrl = deviceCode.getVerificationUrl();
-            String formattedMsg = deviceCode.getMessage()
-                .replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl));
-
-            return String.format("<div style=\"%s\"><body style=\"background-color:%s\"><p>%s</p>"
-                + "<p>Waiting for signing in with the code, do not close the window.</p></div>",
-                browserFontStyle, bgcolor, formattedMsg);
+            return deviceCode.getMessage()
+                .replace(verificationUrl, String.format("<a href=\"%s\" id=\"%s\" title=\"%s\">%s</a>", verificationUrl, verificationUrl,verificationUrl,verificationUrl));
         }
     }
 }

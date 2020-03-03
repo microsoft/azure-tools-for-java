@@ -24,8 +24,8 @@ package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.HideableTitledPanel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azuretools.ijidea.ui.AccessibleHideableTitledPanel
 import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JComponent
 
@@ -34,8 +34,8 @@ class SparkSubmissionDebuggablePanel(project: Project) : SparkSubmissionContentP
         Disposer.register(this@SparkSubmissionDebuggablePanel, this@apply)
     }
 
-    private val hidableAdvancedConfigPanel = HideableTitledPanel(
-            "Advanced Configuration (Remote Debugging)", true, advancedConfigPanel, false)
+    private val hidableAdvancedConfigPanel = AccessibleHideableTitledPanel(
+            "Advanced Configuration (Remote Debugging)", advancedConfigPanel, canAdjustWindow = true, isStartedOn = false)
 
     private val submissionDebuggablePanel by lazy {
         val formBuilder = panel {

@@ -22,63 +22,104 @@
 
 package com.microsoft.azure.hdinsight.spark.run.action
 
-import com.intellij.execution.*
+import com.intellij.execution.ExecutionException
+import com.intellij.execution.ProgramRunnerUtil
 import com.intellij.execution.configuration.AbstractRunConfiguration
-import com.intellij.execution.configurations.*
+import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.impl.RunDialog
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.Messages.YES
+import com.intellij.openapi.ui.Messages.showYesNoDialog
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.spark.run.configuration.RunProfileStatePrepare
+import com.microsoft.azuretools.telemetrywrapper.ErrorType.userError
+import com.microsoft.azuretools.telemetrywrapper.EventUtil.logError
+import com.microsoft.azuretools.telemetrywrapper.EventUtil.logErrorWithComplete
+import com.microsoft.intellij.rxjava.IdeaSchedulers
+import com.microsoft.intellij.telemetry.TelemetryKeys
+import com.microsoft.intellij.ui.util.UIUtils.assertInDispatchThread
+import rx.Observable
+import rx.Observable.empty
+import rx.Observable.fromCallable
 
 object RunConfigurationActionUtils: ILogger {
-    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment) {
+    fun runEnvironmentProfileWithCheckSettings(environment: ExecutionEnvironment,
+                                               title: String = "Edit configuration") {
         val runner = ProgramRunner.getRunner(environment.executor.id, environment.runProfile) ?: return
         val setting = environment.runnerAndConfigurationSettings ?: return
+        val asyncOperation = environment.getUserData(TelemetryKeys.OPERATION)
 
-        try {
-            if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, "Edit configuration")) {
-                return
-            }
+        if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, title)) {
+            logErrorWithComplete(asyncOperation, userError, ExecutionException("run config dialog closed"), null, null)
+            return
+        }
 
-            var configError = getRunConfigurationError(environment.runProfile, runner)
-            while (configError != null) {
-                if (Messages.YES == Messages.showYesNoDialog(
-                                environment.project,
-                                "Configuration is incorrect: $configError. Do you want to edit it?",
-                                "Change Configuration Settings",
-                                "Edit",
-                                "Continue Anyway",
-                                Messages.getErrorIcon())) {
-                    if (!RunDialog.editConfiguration(environment, "Edit configuration")) {
-                        return
+        val ideaSchedulers = IdeaSchedulers(environment.project)
+
+        fromCallable { checkRunnerSettings(environment.runProfile as AbstractRunConfiguration, runner) }
+                .subscribeOn(ideaSchedulers.dispatchUIThread()) // Check Runner Settings in EDT
+                .flatMap { checkAndPrepareRunProfileState(it, runner, ideaSchedulers) }
+                .retryWhen { errOb -> errOb.observeOn(ideaSchedulers.dispatchUIThread() )
+                        .doOnNext { logError(asyncOperation, userError, ExecutionException(it), null, null) }
+                        .takeWhile { configError -> // Check when can retry
+                            showFixOrNotDialogForError(environment.project, configError.message ?: "Unknown").apply {
+                                if (!this) {
+                                    // User clicks `Cancel Submit` button
+                                    throw ExecutionException(configError);
+                                }
+                            } && RunDialog.editConfiguration(environment, "Edit configuration").apply {
+                                if (!this) {
+                                    // User clicks `Cancel` button in Run Configuration Editor dialog
+                                    throw ProcessCanceledException(configError)
+                                }
+                            }
+                        }
+                } .subscribe({ }, { err ->
+                    if (err is ProcessCanceledException) {
+                        // User cancelled edit configuration dialog
+                        logErrorWithComplete(asyncOperation, userError, ExecutionException("run config dialog closed"), null, null)
+
+                        return@subscribe
                     }
-                } else {
-                    break
-                }
 
-                configError = getRunConfigurationError(environment.runProfile, runner)
-            }
+                    logErrorWithComplete(asyncOperation, userError, err, null, null)
+                    ProgramRunnerUtil.handleExecutionError(environment.project, environment, err, setting.configuration)
+                }, {
+                    environment.assignNewExecutionId()
 
-            environment.assignNewExecutionId()
-            runner.execute(environment)
-        } catch (e: ExecutionException) {
-            ProgramRunnerUtil.handleExecutionError(environment.project, environment, e, setting.configuration)
-        }
+                    runner.execute(environment)
+                })
     }
 
-    fun checkRunnerSettings(runProfile: RunProfile?, runner: ProgramRunner<RunnerSettings>) {
-        (runProfile as? AbstractRunConfiguration)?.checkRunnerSettings(runner, null, null)
+    private fun showFixOrNotDialogForError(project: Project, configError: String): Boolean = showYesNoDialog(
+                            project,
+                            "Configuration is incorrect: $configError. Do you want to edit it?",
+                            "Change Configuration Settings",
+                            "Edit",
+                            "Cancel Submit",
+                            Messages.getErrorIcon()) == YES
+
+    private fun checkRunnerSettings(runProfile: AbstractRunConfiguration, runner: ProgramRunner<RunnerSettings>)
+            : AbstractRunConfiguration {
+        assertInDispatchThread()
+
+        runProfile.checkRunnerSettings(runner, null, null)
+
+        return runProfile
     }
 
-    fun getRunConfigurationError(runProfile: RunProfile?, runner: ProgramRunner<RunnerSettings>): String? {
-        try {
-            checkRunnerSettings(runProfile, runner)
-        } catch (err: RuntimeConfigurationError) {
-            return err.message
-        } catch (ignored: RuntimeConfigurationException) {
+    private fun checkAndPrepareRunProfileState(runProfile: AbstractRunConfiguration,
+                                               runner: ProgramRunner<RunnerSettings>,
+                                               ideaSchedulers: IdeaSchedulers): Observable<out Any?> {
+        if (runProfile !is RunProfileStatePrepare<*>) {
+            return empty()
         }
 
-        return null
+        return runProfile.prepare(runner)
+                .subscribeOn(ideaSchedulers.backgroundableTask("Checking Spark Job configuration settings"))
     }
 }

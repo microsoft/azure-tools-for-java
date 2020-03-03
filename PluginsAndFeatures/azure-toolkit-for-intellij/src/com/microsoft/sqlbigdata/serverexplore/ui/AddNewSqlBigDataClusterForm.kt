@@ -24,6 +24,7 @@ package com.microsoft.sqlbigdata.serverexplore.ui
 
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType
+import com.microsoft.azure.hdinsight.sdk.common.AuthType
 import com.microsoft.azure.hdinsight.serverexplore.AddNewClusterModel
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewClusterForm
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule
@@ -47,11 +48,10 @@ class AddNewSqlBigDataClusterForm(project: Project, module: SqlBigDataClusterMod
         val clusterLayout = clusterCardsPanel.layout as CardLayout
         clusterLayout.show(clusterCardsPanel, "Aris Livy Service")
 
-        val basicAuthTitle = "Basic Authentication"
-        authComboBox.model = DefaultComboBoxModel(arrayOf(basicAuthTitle))
+        authComboBox.model = DefaultComboBoxModel(arrayOf(AuthType.BasicAuth))
         authComboBox.isEnabled = true
         val authLayout = authCardsPanel.layout as CardLayout
-        authLayout.show(authCardsPanel, basicAuthTitle)
+        authLayout.show(authCardsPanel, AuthType.BasicAuth.typeName)
     }
 
     override fun getData(data: AddNewClusterModel) {

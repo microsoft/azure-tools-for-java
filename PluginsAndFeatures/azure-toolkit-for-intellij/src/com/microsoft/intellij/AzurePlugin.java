@@ -22,6 +22,32 @@
 
 package com.microsoft.intellij;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import javax.swing.event.EventListenerList;
+
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginInstaller;
+import com.intellij.ide.plugins.PluginStateListener;
 import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -42,40 +68,29 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.*;
+import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import com.microsoft.azuretools.azurecommons.util.GetHashMac;
+import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
+import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
-import com.microsoft.azuretools.ijidea.actions.GithubSurveyAction;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
-import rx.Observable;
-
-import javax.swing.event.EventListenerList;
-import java.io.*;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
 public class AzurePlugin extends AbstractProjectComponent {
@@ -84,6 +99,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
     public static final int REST_SERVICE_MAX_RETRY_COUNT = 7;
+    private static PluginStateListener pluginStateListener = null;
 
     // User-agent header for Azure SDK calls
     public static final String USER_AGENT = "Azure Toolkit for IntelliJ, v%s, machineid:%s";
@@ -107,7 +123,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     public AzurePlugin(Project project) {
         super(project);
         this.azureSettings = AzureSettings.getSafeInstance(project);
-        String hasMac = GetHashMac.GetHashMac();
+        String hasMac = GetHashMac.getHashMac();
         this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
         CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
             TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
@@ -120,21 +136,7 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void initializeFeedbackNotification() {
-        if (!isFirstInstallationByVersion()) {
-            return;
-        }
-
-        Notification feedbackNotification = new Notification(
-                "Azure Toolkit plugin",
-                "We're listening",
-                "Thanks for helping Microsoft improve Azure Toolkit experience!\nYour feedback is important. Please take a minute to fill out our",
-                NotificationType.INFORMATION);
-
-        feedbackNotification.addAction(new GithubSurveyAction());
-
-        Observable.timer(30, TimeUnit.SECONDS)
-                .take(1)
-                .subscribe(next -> Notifications.Bus.notify(feedbackNotification));
+        CustomerSurveyHelper.INSTANCE.showFeedbackNotification(myProject);
     }
 
     public void projectClosed() {
@@ -162,7 +164,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void initializeTelemetry() throws Exception {
+    private synchronized void initializeTelemetry() throws Exception {
         boolean install = false;
         boolean upgrade = false;
 
@@ -182,7 +184,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                     String instID = DataOperations.getProperty(dataFile, message("instID"));
                     if (prefValue == null || prefValue.isEmpty()) {
                         setValues(dataFile);
-                    } else if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
+                    } else if (StringUtils.isEmpty(instID) || !GetHashMac.isValidHashMac(instID)) {
                         upgrade = true;
                         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
 
@@ -212,6 +214,23 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
         AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Load, null, true);
         EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_LOAD, null, null);
+
+        if (pluginStateListener == null) {
+            pluginStateListener = new PluginStateListener() {
+                @Override
+                public void install(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
+                }
+
+                @Override
+                public void uninstall(@NotNull IdeaPluginDescriptor ideaPluginDescriptor) {
+                    String pluginId = ideaPluginDescriptor.getPluginId().toString();
+                    if (pluginId.equalsIgnoreCase(CommonConst.PLUGIN_ID)) {
+                        EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_UNINSTALL, null, null);
+                    }
+                }
+            };
+            PluginInstaller.addStateListener(pluginStateListener);
+        }
     }
 
     private void initializeAIRegistry() {

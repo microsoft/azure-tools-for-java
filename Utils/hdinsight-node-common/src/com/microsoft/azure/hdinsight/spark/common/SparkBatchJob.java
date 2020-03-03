@@ -46,6 +46,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.subjects.PublishSubject;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,12 +65,17 @@ import static rx.exceptions.Exceptions.propagate;
 
 public class SparkBatchJob implements ISparkBatchJob, ILogger {
     public static final String WebHDFSPathPattern = "^(https?://)([^/]+)(/.*)?(/webhdfs/v1)(/.*)?$";
-    public static final String AdlsGen2RestfulPathPattern = "^(https://)(?<accountName>[^/.\\s]+)(\\.)(dfs\\.core\\.windows\\.net)(/)(?<fileSystem>[^/.\\s]+)(/[^/.\\s]+)*/?$";
 
     @Nullable
     private String currentLogUrl;
     @NotNull
     private Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
+
+    /**
+     * Livy log fetching offset in Spark Batch Job context. Accessing with {@link #livyLogOffsetLock}
+     */
+    private int nextLivyLogOffset = 0;
+    private final Object livyLogOffsetLock = new Object();
 
     @Nullable
     private String getCurrentLogUrl() {
@@ -173,27 +179,24 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     public SparkBatchJob(
             SparkSubmissionParameter submissionParameter,
-            SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        this(null, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
+            SparkBatchSubmission sparkBatchSubmission) {
+        this(null, submissionParameter, sparkBatchSubmission, null, null, null);
     }
 
     public SparkBatchJob(
             @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
             @Nullable String destinationRootPath) {
-        this(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, storageAccount, accessToken, destinationRootPath, null, null);
+        this(cluster, submissionParameter, sparkBatchSubmission, storageAccount, accessToken, destinationRootPath, null, null);
     }
 
     public SparkBatchJob(
             @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable IHDIStorageAccount storageAccount,
             @Nullable String accessToken,
             @Nullable String destinationRootPath,
@@ -203,7 +206,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         this.submissionParameter = submissionParameter;
         this.storageAccount = storageAccount;
         this.submission = sparkBatchSubmission;
-        this.ctrlSubject = ctrlSubject;
+        this.ctrlSubject = PublishSubject.create();
         this.accessToken = accessToken;
         this.destinationRootPath = destinationRootPath;
         this.httpObservable = httpObservable;
@@ -214,12 +217,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable Deployable jobDeploy) {
         this.cluster = cluster;
         this.submissionParameter = submissionParameter;
         this.submission = sparkBatchSubmission;
-        this.ctrlSubject = ctrlSubject;
+        this.ctrlSubject = PublishSubject.create();
         this.jobDeploy = jobDeploy;
     }
 
@@ -315,6 +317,11 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
         return storageAccount;
     }
 
+    @Nullable
+    public Deployable getJobDeploy() {
+        return jobDeploy;
+    }
+
     /**
      * Getter of the LIVY Spark batch job ID got from job submission
      *
@@ -395,8 +402,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     httpResponse.getMessage(), SparkSubmitResponse.class)
                     .orElseThrow(() -> new UnknownServiceException(
                             "Bad spark job response: " + httpResponse.getMessage()));
-
             this.setBatchId(jobResp.getId());
+
+            getCtrlSubject().onNext(new SimpleImmutableEntry<>(Info, "Spark Batch submission " + httpResponse.toString()));
 
             return this;
         }
@@ -448,19 +456,28 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         return Observable.empty();
                     }
 
-                    String logGot = JobUtils.getInformationFromYarnLogDom(
-                            getSubmission().getCredentialsProvider(),
-                            getCurrentLogUrl(),
-                            type,
-                            offset,
-                            size);
-
-                    if (StringUtils.isEmpty(logGot)) {
-                        return Observable.empty();
-                    }
-
-                    return Observable.just(new SimpleImmutableEntry<>(logGot, offset));
+                    return getContainerLog(getCurrentLogUrl(), type, offset, size);
                 });
+    }
+
+    @NotNull
+    @Override
+    public Observable<SimpleImmutableEntry<String, Long>> getContainerLog(@NotNull String containerLogUrl,
+                                                                          @NotNull String type,
+                                                                          long logOffset,
+                                                                          int size) {
+        String logGot = JobUtils.getInformationFromYarnLogDom(
+                getSubmission().getAuthCode(),
+                containerLogUrl,
+                type,
+                logOffset,
+                size);
+
+        if (StringUtils.isEmpty(logGot)) {
+            return Observable.empty();
+        }
+
+        return Observable.just(new SimpleImmutableEntry<>(logGot, logOffset));
     }
 
     /**
@@ -566,7 +583,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     /**
      * Get Spark Job Yarn application with retries
      *
-     * @param batchBaseUri the connection URI of HDInsight Livy batch job, http://livy:8998/batches, the function will help translate it to Yarn connection URI.
+     * @param yarnConnectUri the connection URI of HDInsight Livy batch job, http://livy:8998/batches, the function will help translate it to Yarn connection URI.
      * @param applicationID the Yarn application ID
      * @return the Yarn application got
      * @throws IOException exceptions in transaction
@@ -650,7 +667,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @return Yarn Application Attempt info Observable
      */
-    Observable<AppAttempt> getSparkJobYarnCurrentAppAttempt() {
+    protected Observable<AppAttempt> getSparkJobYarnCurrentAppAttempt() {
         if (getConnectUri() == null) {
             return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
                     "please configure Spark cluster which the Spark job will be submitted."));
@@ -797,13 +814,14 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
         return Observable.create(ob -> {
             try {
-                int start = 0;
                 final int maxLinesPerGet = 128;
                 int linesGot;
-                boolean isSubmitting = true;
+                boolean isFetching = true;
 
-                while (isSubmitting) {
-                    Boolean isAppIdAllocated = !this.getSparkJobApplicationIdObservable().isEmpty().toBlocking().lastOrDefault(true);
+                while (isFetching) {
+                    final int start = nextLivyLogOffset;
+                    final boolean isAppIdAllocated = !this.getSparkJobApplicationIdObservable().isEmpty().toBlocking()
+                            .lastOrDefault(true);
                     String logUrl = String.format("%s/%d/log?from=%d&size=%d",
                             this.getConnectUri().toString(), batchId, start, maxLinesPerGet);
 
@@ -814,17 +832,24 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                             .orElseThrow(() -> new UnknownServiceException(
                                     "Bad spark log response: " + httpResponse.getMessage()));
 
-                    // To subscriber
-                    sparkJobLog.getLog().stream()
-                            .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
-                            .forEach(line -> ob.onNext(new SimpleImmutableEntry<>(Log, line)));
+                    synchronized (livyLogOffsetLock) {
+                        if (start != nextLivyLogOffset) {
+                            // The offset is moved by another fetching thread, re-do it with new offset
+                            continue;
+                        }
 
-                    linesGot = sparkJobLog.getLog().size();
-                    start += linesGot;
+                        // To subscriber
+                        sparkJobLog.getLog().stream()
+                                .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
+                                .forEach(line -> ob.onNext(new SimpleImmutableEntry<>(Log, line)));
+
+                        linesGot = sparkJobLog.getLog().size();
+                        nextLivyLogOffset += linesGot;
+                    }
 
                     // Retry interval
                     if (linesGot == 0) {
-                        isSubmitting = this.getState().equals("starting") && !isAppIdAllocated;
+                        isFetching = this.getState().equals("starting") && !isAppIdAllocated;
 
                         sleep(TimeUnit.SECONDS.toMillis(this.getDelaySeconds()));
                     }
@@ -973,7 +998,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
      *
      * @return Job Driver log URL observable
      */
-    Observable<String> getSparkJobDriverLogUrlObservable() {
+    protected Observable<String> getSparkJobDriverLogUrlObservable() {
         return getSparkJobYarnCurrentAppAttempt()
                 .map(AppAttempt::getLogsLink)
                 .map(URI::create)
@@ -1061,7 +1086,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return jobDeploy.deploy(new File(artifactPath))
+        return jobDeploy.deploy(new File(artifactPath), getCtrlSubject())
                 .map(redirectPath -> {
                     getSubmissionParameter().setFilePath(redirectPath);
                     return this;
@@ -1180,5 +1205,14 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Override
     public Observable<String> awaitPostDone() {
         return getJobLogAggregationDoneObservable();
+    }
+
+    @Override
+    public SparkBatchJob clone() {
+        return new SparkBatchJob(
+                this.getCluster(),
+                this.getSubmissionParameter(),
+                this.getSubmission(),
+                this.getJobDeploy());
     }
 }

@@ -109,11 +109,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
      */
     @Override
     public void validate() throws ConfigurationException {
-        try {
-            if (!AuthMethodManager.getInstance().isSignedIn()) {
-                throw new ConfigurationException(NEED_SIGN_IN);
-            }
-        } catch (IOException e) {
+        if (!AuthMethodManager.getInstance().isSignedIn()) {
             throw new ConfigurationException(NEED_SIGN_IN);
         }
         if (Utils.isEmptyString(deployModel.getDockerFilePath())

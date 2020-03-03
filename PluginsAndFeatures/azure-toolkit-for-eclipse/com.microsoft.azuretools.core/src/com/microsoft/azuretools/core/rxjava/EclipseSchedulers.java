@@ -89,4 +89,8 @@ public class EclipseSchedulers implements IdeSchedulers {
     public Scheduler dispatchUIThread() {
         return Schedulers.from(command -> Display.getDefault().asyncExec(command));
     }
+
+    public Scheduler dispatchPooledThread() {
+        return Schedulers.io();
+    }
 }

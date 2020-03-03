@@ -43,13 +43,9 @@ public class ADLSGen1HDFSDeploy extends WebHDFSDeploy {
     @Override
     @Nullable
     public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        try {
-            // convert https://xx/webhdfs/v1/hdi-root/SparkSubmission/artifact.jar to adl://xx/hdi-root/SparkSubmission/artifact.jar
-            URIBuilder builder = new URIBuilder(rootPath.replace("/webhdfs/v1", ""));
-            builder.setScheme(cluster.getStorageAccount().getDefaultStorageSchema());
-            return builder.build().toString();
-        } catch (HDIException ignore) {
-            return null;
-        }
+        // convert https://xx/webhdfs/v1/hdi-root/SparkSubmission/artifact.jar to adl://xx/hdi-root/SparkSubmission/artifact.jar
+        URIBuilder builder = new URIBuilder(rootPath.replace("/webhdfs/v1", ""));
+        builder.setScheme(cluster.getStorageAccount().getDefaultStorageSchema());
+        return builder.build().toString();
     }
 }

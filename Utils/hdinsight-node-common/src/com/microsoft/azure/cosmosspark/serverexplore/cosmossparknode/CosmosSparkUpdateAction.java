@@ -19,7 +19,7 @@ public class CosmosSparkUpdateAction extends NodeActionListener {
                                    @NotNull AzureSparkCosmosCluster cluster,
                                    @NotNull PublishSubject<Pair<AzureSparkCosmosCluster,
                                                CosmosSparkClusterNode>> updateAction) {
-        super(clusterNode);
+        super();
         this.cluster = cluster;
         this.clusterNode = clusterNode;
         this.updateAction = updateAction;

@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.jobs.framework;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
@@ -34,7 +35,7 @@ import org.jetbrains.annotations.NotNull;
 /*
     All the tool window should implement interface FileEditorProvider.
  */
-public class JobViewEditorProvider implements FileEditorProvider {
+public class JobViewEditorProvider implements FileEditorProvider, DumbAware {
 
     public static Key<IClusterDetail> JOB_VIEW_KEY = new Key<>("com.microsoft.azure.hdinsight.jobview");
     public static Key<String> JOB_VIEW_UUID = new Key<>("com.microsoft.azure.hdinsight.jobview.uuid");

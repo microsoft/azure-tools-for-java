@@ -25,6 +25,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -457,7 +458,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     public void openLinkInBrowser(@NotNull String url) {
         try {
-            Desktop.getDesktop().browse(URI.create(url));
+            BrowserUtil.browse(url);
         } catch (Exception e) {
             DefaultLoader.getUIHelper().showException("Unexpected exception: " + e.getMessage(), e, "Browse Web App", true, false);
             DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);

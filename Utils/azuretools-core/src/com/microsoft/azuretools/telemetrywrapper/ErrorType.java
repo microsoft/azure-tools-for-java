@@ -24,5 +24,8 @@ package com.microsoft.azuretools.telemetrywrapper;
 
 public enum ErrorType {
     userError,
-    systemError
+    systemError,
+    serviceError,
+    toolError,
+    unclassifiedError
 }

@@ -7,16 +7,81 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_CREATEW
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REFRESH_METADATA;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
+import java.io.File;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.window.DefaultToolTip;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
+import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
+import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
+
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -40,71 +105,6 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
-import java.io.InputStream;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jst.j2ee.datamodel.properties.IJ2EEComponentExportDataModelProperties;
-import org.eclipse.jst.j2ee.internal.web.archive.operations.WebComponentExportDataModelProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowData;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
-import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 
 
 @SuppressWarnings("restriction")
@@ -113,11 +113,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private static ILog LOG = Activator.getDefault().getLog();
 
     private Table table;
-    private Browser browserAppServiceDetailes;
+    private Link browserAppServiceDetails;
     private Button btnDeployToRoot;
-    private String browserFontStyle;
     private Button btnDelete;
-    private Link lnkWebConfig;
     private Button btnDeployToSlot;
     private Combo comboSlot;
     private Combo comboSlotConf;
@@ -133,11 +131,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
     private Shell parentShell;
 
     private static final String ftpLinkString = "ShowFtpCredentials";
-    private static final String WEB_CONFIG_DEFAULT = "web.config";
-    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
-    private static final String WEB_CONFIG_REMOTE_PATH = "/site/wwwroot/web.config";
-    private static final String TYPE_JAR = "jar";
-    private static final String WEB_CONFIG_LINK_FORMAT = "<a href=\"https://%s/dev/wwwroot/web.config\">web.config</a>";
     private static final String DATE_FORMAT = "yyMMddHHmmss";
     private static final String date = new SimpleDateFormat(DATE_FORMAT).format(new Date());
 
@@ -291,9 +284,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     AzureModel.getInstance().setResourceGroupToWebAppMap(null);
                     fillTable();
                     slotMap.clear();
-                    if (lnkWebConfig != null) {
-                        lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
-                    }
                     AppServiceCreateDialog.initAspCache();
                 });
             }
@@ -319,31 +309,21 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         grpAppServiceDetails.setLayoutData(gdGrpAppServiceDetails);
         grpAppServiceDetails.setText("App service details");
 
-        browserAppServiceDetailes = new Browser(grpAppServiceDetails, SWT.NONE);
-        FontData browserFontData = container.getFont().getFontData()[0];
-        browserFontStyle = String.format("font-family: '%s'; font-size: 9pt;", browserFontData.getName());
-        browserAppServiceDetailes.addLocationListener(new LocationListener() {
+        browserAppServiceDetails = new Link(grpAppServiceDetails, SWT.MULTI | SWT.FULL_SELECTION);
+        browserAppServiceDetails.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void changing(LocationEvent event) {
+            public void widgetSelected(SelectionEvent e) {
                 try {
-                    if (event.location.contains(ftpLinkString)) {
-                        event.doit = false;
+                    if (e.text.equals(ftpLinkString)) {
                         showFtpCreadentialsWindow();
-                    }
-                    if (event.location.contains("http")) {
-                        event.doit = false;
-                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                            .openURL(new URL(event.location));
+                    } else if (e.text.contains("http")) {
+                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-                        "changing@LocationListener@browserAppServiceDetailes@AppServiceCreateDialog", ex));
+                            "changing@LocationListener@browserAppServiceDetails@AppServiceCreateDialog", ex));
                 }
-            }
-
-            @Override
-            public void changed(LocationEvent event) {
             }
         });
 
@@ -352,41 +332,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 btnDeployToRoot.setSelection(true);
                 btnDeployToRoot.setVisible(false);
                 ((RowData) btnDeployToRoot.getLayoutData()).exclude = true;
-                Composite southComposite = new Composite(container, SWT.NONE);
-                GridLayout glSouthComposite = new GridLayout(3, false);
-                glSouthComposite.horizontalSpacing = 0;
-                glSouthComposite.marginWidth = 0;
-                glSouthComposite.marginHeight = 0;
-                southComposite.setLayout(glSouthComposite);
-                southComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-
-                Label lblWebConfigPrefix = new Label(southComposite, SWT.NONE);
-                lblWebConfigPrefix.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-                lblWebConfigPrefix.setAlignment(SWT.RIGHT);
-                lblWebConfigPrefix.setText("Please check the ");
-
-                lnkWebConfig = new Link(southComposite, SWT.NONE);
-                lnkWebConfig.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-                lnkWebConfig.setText(WEB_CONFIG_DEFAULT);
-
-                lnkWebConfig.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent event) {
-                        try {
-                            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-                                .openURL(new URL(event.text));
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", ex));
-                        }
-                    }
-                });
-
-                Label lblSuffix = new Label(southComposite, SWT.NONE);
-                lblSuffix.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-                lblSuffix.setText(" file used to deploy this JAR executable.");
-                container.layout(false);
-                new Label(container, SWT.NONE);
             }
         } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "WebAppDeployDialog", e));
@@ -427,21 +372,35 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
             }
         });
 
-        Label label = new Label(compositeSlotCb, SWT.NONE);
-        label.setText("");
-        Point point = label.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        RowData labelConf = new RowData();
-        labelConf.height = point.y;
-        label.setLayoutData(labelConf);
-        label.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
-            compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), point.y * 9 / 10, point.y * 9 / 10));
-        label.setToolTipText(DEPLOYMENT_SLOT_HOVER);
-        label.addMouseListener(new MouseAdapter() {
+        ToolBarManager barMgr = new ToolBarManager(SWT.FLAT);
+        ToolBar toolBar = barMgr.createControl(compositeSlotCb);
+        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+        item.setImage(scaleImage(compositeSlotCb.getDisplay(), compositeSlotCb.getBackground(),
+                compositeSlotCb.getDisplay().getSystemImage(SWT.ICON_INFORMATION), 15, 15));
+        toolBar.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
-            public void mouseDown(MouseEvent e) {
-                Program.launch("https://docs.microsoft.com/en-us/azure/app-service/deploy-staging-slots");
+            public void getName(AccessibleEvent e) {
+                e.result = DEPLOYMENT_SLOT_HOVER;
             }
         });
+
+        DefaultToolTip iconTooltip = new DefaultToolTip(toolBar, SWT.NONE, false);
+        iconTooltip.setText(DEPLOYMENT_SLOT_HOVER);
+        toolBar.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                iconTooltip.show(new Point(20, 20));
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                iconTooltip.hide();
+            }
+        });
+
+        toolBar.getParent().setTabList(new Control[] {btnDeployToSlot, toolBar });
+
         new Label(compositeSlot, SWT.NONE);
 
         btnSlotUseExisting = new Button(compositeSlot, SWT.RADIO);
@@ -585,7 +544,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         validated();
         int selectedRow = table.getSelectionIndex();
         if (selectedRow < 0) {
-            browserAppServiceDetailes.setText("");
+            browserAppServiceDetails.setText("");
             btnDelete.setEnabled(false);
             return;
         }
@@ -593,33 +552,20 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         btnDelete.setEnabled(true);
         String appServiceName = table.getItems()[selectedRow].getText(0);
 
-        try {
-            if (lnkWebConfig != null) {
-                String scmSuffix = AuthMethodManager.getInstance().getAzureManager().getScmSuffix();
-                lnkWebConfig.setText(String.format(WEB_CONFIG_LINK_FORMAT, appServiceName + scmSuffix));
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
         WebAppDetails wad = webAppDetailsMap.get(appServiceName);
         SubscriptionDetail sd = wad.subscriptionDetail;
         AppServicePlan asp = wad.appServicePlan;
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<div style=\"margin: 7px 7px 7px 7px; " + browserFontStyle + "\">");
-        sb.append(String.format("App Service name:&nbsp;<b>%s</b>;<br/>", appServiceName));
-        sb.append(String.format("Subscription name:&nbsp;<b>%s</b>;&nbsp;id:&nbsp;<b>%s</b>;<br/>",
-            sd.getSubscriptionName(), sd.getSubscriptionId()));
+        sb.append(String.format("App Service name: %s \n", appServiceName));
+        sb.append(String.format("Subscription name: %s ; id: %s \n", sd.getSubscriptionName(), sd.getSubscriptionId()));
         String aspName = asp == null ? "N/A" : asp.name();
         String aspPricingTier = asp == null ? "N/A" : asp.pricingTier().toString();
-        sb.append(String.format("App Service Plan name:&nbsp;<b>%s</b>;&nbsp;Pricing tier:&nbsp;<b>%s</b>;<br/>",
-            aspName, aspPricingTier));
-
+        sb.append(String.format("App Service Plan name: %s ; Pricing tier: %s \n", aspName, aspPricingTier));
         String link = buildSiteLink(wad.webApp, null);
-        sb.append(String.format("Link:&nbsp;<a href=\"%s\">%s</a><br/>", link, link));
-        sb.append(String.format("<a href=\"%s\">%s</a>", ftpLinkString, "Show FTP deployment credentials"));
-        sb.append("</div>");
-        browserAppServiceDetailes.setText(sb.toString());
+        sb.append(String.format("Link: <a href=\"%s\">%s</a> \n", link, link));
+        sb.append(String.format("<a href=\"%s\">%s</a> \n", ftpLinkString, "Show FTP deployment credentials"));
+        browserAppServiceDetails.setText(sb.toString());
     }
 
     private static String buildSiteLink(WebAppBase webApp, String artifactName) {
@@ -989,31 +935,8 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                     }
                     monitor.setTaskName(message);
                     AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, sitePath, 30, message);
-                    PublishingProfile pp = webApp.getPublishingProfile();
-                    boolean isJar = isJarBaseOnFileName(artifactPath);
-                    int uploadingTryCount;
-                    webApp.stop();
-
-                    if (isJar) {
-                        if (webApp.operatingSystem() == OperatingSystem.WINDOWS) {
-                            // We use root.jar in web.config before, now we use app.jar
-                            // for backward compatibility, here need upload web.config when we deploy the code.
-                            try (InputStream webConfigInput = WebAppUtils.class
-                                .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                                WebAppUtils.uploadToRemoteServer(webApp, WEB_CONFIG_DEFAULT, webConfigInput,
-                                    new UpdateProgressIndicator(monitor), WEB_CONFIG_REMOTE_PATH);
-                            } catch (Exception ignore) {
-                            }
-                        }
-                        uploadingTryCount = WebAppUtils.deployArtifactForJavaSE(artifactPath, pp,
-                            new UpdateProgressIndicator(monitor));
-                    } else {
-                        uploadingTryCount = WebAppUtils.deployArtifact(artifactName, artifactPath, pp, isDeployToRoot,
-                            new UpdateProgressIndicator(monitor));
-                    }
-                    postEventProperties
-                        .put(TelemetryConstants.ARTIFACT_UPLOAD_COUNT, String.valueOf(uploadingTryCount));
-                    webApp.start();
+                    WebAppUtils.deployArtifactsToAppService(webApp, new File(artifactPath),
+                            isDeployToRoot, new UpdateProgressIndicator(monitor));
 
                     if (monitor.isCanceled()) {
                         AzureDeploymentProgressNotification.notifyProgress(this, deploymentName, null, -1,
@@ -1120,14 +1043,6 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                 webAppSettingModel.setSlotName(index < 0 ? "" : comboSlot.getItem(index));
             }
         }
-    }
-
-    private boolean isJarBaseOnFileName(String filePath) {
-        int index = filePath.lastIndexOf(".");
-        if (index < 0) {
-            return false;
-        }
-        return filePath.substring(index + 1).equals(TYPE_JAR);
     }
 
     private void deleteAppService() {

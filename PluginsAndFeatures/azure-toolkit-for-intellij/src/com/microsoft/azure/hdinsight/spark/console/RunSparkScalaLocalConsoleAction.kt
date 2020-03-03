@@ -22,6 +22,8 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.microsoft.azuretools.telemetry.TelemetryConstants
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
@@ -35,7 +37,9 @@ class RunSparkScalaLocalConsoleAction : RunSparkScalaConsoleAction() {
         get() = 0
 
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLocalConsoleConfigurationType().confFactory()
+        get() = SparkScalaLocalConsoleConfigurationType().sparkLocalConfFactory()
 
     override fun getNewSettingName(): String = "Spark Local Console(Scala)"
+
+    override fun getOperationName(event: AnActionEvent?): String = TelemetryConstants.RUN_SPARK_LOCAL_CONSOLE
 }

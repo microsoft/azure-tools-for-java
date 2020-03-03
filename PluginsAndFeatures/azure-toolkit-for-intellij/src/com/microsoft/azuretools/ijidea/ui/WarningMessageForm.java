@@ -24,6 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.util.ui.UIUtil;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
@@ -54,6 +55,10 @@ public class WarningMessageForm extends DialogWrapper {
         if (okButtonText != null) {
             this.setOKButtonText(okButtonText);
         }
+    }
+
+    protected void createUIComponents() {
+        warningIconLabel = new JLabel(UIUtil.getWarningIcon());
     }
 
     @Nullable

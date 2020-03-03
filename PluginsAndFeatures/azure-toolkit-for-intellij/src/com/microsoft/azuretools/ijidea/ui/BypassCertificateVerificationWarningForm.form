@@ -15,10 +15,9 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="496e0" class="javax.swing.JLabel" binding="warningIconLabel">
+          <component id="496e0" class="javax.swing.JLabel" binding="warningIconLabel" custom-create="true">
             <constraints border-constraint="North"/>
             <properties>
-              <icon value="javax/swing/plaf/metal/icons/ocean/warning.png"/>
               <text value=""/>
             </properties>
           </component>

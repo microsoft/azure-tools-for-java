@@ -23,14 +23,20 @@
 package com.microsoft.azure.hdinsight.serverexplore.ui
 
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
+import com.microsoft.azure.hdinsight.sdk.common.AuthType
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule
 import org.apache.commons.lang3.StringUtils
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.DefaultComboBoxModel
 
-open class AddNewHDInsightReaderClusterForm(val project: Project, val module: HDInsightRootModule?, val clusterName: String) :
+open class AddNewHDInsightReaderClusterForm(val project: Project, val module: HDInsightRootModule?, val selectedClusterDetail: ClusterDetail) :
     AddNewClusterForm(project, module) {
+    private val defaultStorageRootPath = selectedClusterDetail.defaultStorageRootPath
+
     init {
         title = "Link HDInsight Cluster"
 
@@ -38,14 +44,13 @@ open class AddNewHDInsightReaderClusterForm(val project: Project, val module: HD
         clusterComboBox.model = DefaultComboBoxModel(arrayOf(hdiLinkTitle))
         clusterComboBox.isEnabled = true
 
-        val basicAuthTitle = "Basic Authentication"
-        authComboBox.model = DefaultComboBoxModel(arrayOf(basicAuthTitle))
+        authComboBox.model = DefaultComboBoxModel(arrayOf(AuthType.BasicAuth))
         authComboBox.isEnabled = true
 
 
         window.addWindowListener(object : WindowAdapter() {
             override fun windowOpened(e: WindowEvent?) {
-                clusterNameOrUrlField.text = clusterName
+                clusterNameOrUrlField.text = selectedClusterDetail.name
                 clusterNameOrUrlField.isEditable = false
                 super.windowOpened(e)
             }
@@ -61,5 +66,20 @@ open class AddNewHDInsightReaderClusterForm(val project: Project, val module: HD
             }
 
         okAction.isEnabled = StringUtils.isEmpty(validationErrorMessageField.text)
+    }
+
+    override fun afterOkActionPerformed() {
+        val linkedCluster =
+            ClusterManagerEx.getInstance().findClusterDetail({ clusterDetail ->
+                clusterDetail is HDInsightAdditionalClusterDetail
+                        && clusterDetail.getName() == selectedClusterDetail.name
+            }, true) as? HDInsightAdditionalClusterDetail
+
+        linkedCluster?.let {
+            it.defaultStorageRootPath = defaultStorageRootPath
+            ClusterManagerEx.getInstance().updateHdiAdditionalClusterDetail(it)
+        }
+
+        super.afterOkActionPerformed()
     }
 }

@@ -21,12 +21,13 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SparkSubmitResponse {
     private int id;
     private String state;
@@ -44,7 +45,7 @@ public class SparkSubmitResponse {
     }
 
     public List<String> getLog() {
-        return log;
+        return log == null ? Collections.emptyList() : log;
     }
 
     public int getId(){
@@ -59,9 +60,5 @@ public class SparkSubmitResponse {
         return !this.getState().equals("error") &&
                 !this.getState().equals("success") &&
                 !this.getState().equals("dead");
-    }
-
-    static public SparkSubmitResponse parseJSON(String json) {
-        return new Gson().fromJson(json, new TypeToken<SparkSubmitResponse>() {}.getType());
     }
 }

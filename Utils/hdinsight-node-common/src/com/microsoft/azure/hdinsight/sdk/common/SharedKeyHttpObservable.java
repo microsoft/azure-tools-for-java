@@ -26,17 +26,17 @@ import com.microsoft.azure.storage.core.Utility;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import rx.Observable;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +51,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
         defaultHeaders.addHeader(new BasicHeader("x-ms-client-request-id", UUID.randomUUID().toString()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-date", Utility.getGMTTime()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-version", ApiVersion));
-        defaultHeaders.addHeader(new BasicHeader("authorization", ""));
+        defaultHeaders.addHeader(new BasicHeader("Authorization", ""));
         defaultHeaders.addHeader(new BasicHeader("Content-Type", "application/json"));
 
         setDefaultHeaderGroup(defaultHeaders);
@@ -65,7 +65,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
 
     public SharedKeyHttpObservable setAuthorization(@NotNull HttpRequestBase req, List<NameValuePair> pairs) {
         String key = cred.generateSharedKey(req, getDefaultHeaderGroup(), pairs);
-        getDefaultHeaderGroup().updateHeader(new BasicHeader("authorization", key));
+        getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", key));
         return this;
     }
 
@@ -85,16 +85,27 @@ public class SharedKeyHttpObservable extends HttpObservable {
     }
 
     @Override
-    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs) {
-        long entityLen = req.getEntity() != null ? req.getEntity().getContentLength() : 0;
+    public Observable<CloseableHttpResponse> request(@NotNull final HttpRequestBase httpRequest,
+                                                     @Nullable final HttpEntity entity,
+                                                     @Nullable final List<NameValuePair> parameters,
+                                                     @Nullable final List<Header> addOrReplaceHeaders) {
+        HttpEntity entityFromRequest = httpRequest instanceof HttpEntityEnclosingRequestBase
+                ? ((HttpEntityEnclosingRequestBase) httpRequest).getEntity()
+                : null;
 
-        // Job deployment needs to set content-length to generate shared key
-        // but httpclient auto adds this header and calculates length when executing
-        // so remove this header after key generation otherwise header already exists exp happens
-        setContentLength(String.valueOf(entityLen));
-        this.setAuthorization(req, pairs);
-        this.removeContentLength();
-        return super.executeReqAndCheckStatus(req, validStatueCode, pairs);
+        if (entityFromRequest != null) {
+            // Job deployment needs to set content-length to generate shared key
+            // httpclient auto adds this header and calculates length when executing
+            // so remove this header after key generation otherwise header already exists exp happens
+            // MUST follow the order when content length is needed to generate key
+            setContentLength(String.valueOf(entityFromRequest.getContentLength()));
+            this.setAuthorization(httpRequest, parameters);
+            this.removeContentLength();
+        } else {
+            this.setAuthorization(httpRequest, parameters);
+        }
+
+        return super.request(httpRequest, entityFromRequest, parameters, null);
     }
 
     @Override

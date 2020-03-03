@@ -73,6 +73,11 @@ public class SparkBatchJobRemoteDebugExecutorProcess extends SparkBatchJobRemote
     }
 
     @Override
+    protected Observable<? extends ISparkBatchJob> submitJob(ISparkBatchJob parentJob) {
+        return Observable.just(parentJob);
+    }
+
+    @Override
     public InputStream getInputStream() {
         return stdOutInputStream;
     }

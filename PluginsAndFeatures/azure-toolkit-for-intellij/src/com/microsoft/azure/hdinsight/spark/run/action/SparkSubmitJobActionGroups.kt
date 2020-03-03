@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.microsoft.azuretools.authmanage.CommonSettings
 
 
 class SparkSubmitJobActionGroups : QuickSwitchSchemeAction() {
@@ -35,5 +36,9 @@ class SparkSubmitJobActionGroups : QuickSwitchSchemeAction() {
         group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosSparkApplicationAction"))
         group.add(ActionManager.getInstance().getAction("Actions.SubmitCosmosServerlessSparkApplicationAction"))
         group.add(ActionManager.getInstance().getAction("Actions.SubmitArisSparkApplicationAction"))
+//      TODO: Enable the following codes when Arcadia feature is ready
+//        if(CommonSettings.isProjectArcadiaFeatureEnabled){
+//            group.add(ActionManager.getInstance().getAction("Actions.SubmitArcadiaSparkApplicationAction"))
+//        }
     }
 }

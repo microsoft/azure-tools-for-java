@@ -179,7 +179,7 @@ public class Statement implements ILogger {
         try {
             uri = URI.create(getSession().getUri().toString() + "/" + REST_SEGMENT_STATEMENTS);
             postBody.setCode(IOUtils.toString(getCodeInputStream(), StandardCharsets.UTF_8));
-        } catch (SessionNotStartException | IOException e) {
+        } catch (IOException e) {
             return Observable.error(e);
         }
 

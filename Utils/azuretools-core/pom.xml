@@ -29,11 +29,12 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.22.0</version>
+        <version>3.34.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <profiles>
         <profile>
@@ -142,7 +143,21 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-keyvault</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.microsoft.azure</groupId>
+                    <artifactId>azure-client-runtime</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-keyvault-core</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>com.microsoft.azure</groupId>
@@ -162,6 +177,10 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.rest</groupId>
+            <artifactId>client-runtime</artifactId>
         </dependency>
         <dependency>
             <groupId>eu.infomas</groupId>

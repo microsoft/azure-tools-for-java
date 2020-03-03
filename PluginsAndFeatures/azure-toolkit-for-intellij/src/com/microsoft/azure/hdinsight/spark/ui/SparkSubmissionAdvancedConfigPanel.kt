@@ -54,8 +54,10 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAut
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
+import com.microsoft.intellij.rxjava.IdeaSchedulers
 import org.apache.commons.lang3.StringUtils
 import rx.subjects.PublishSubject
+import java.awt.Dimension
 import java.awt.event.ItemEvent.DESELECTED
 import java.awt.event.ItemEvent.SELECTED
 import java.io.File
@@ -116,6 +118,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
     private val useKeyFileToolTip = "For secure shell (SSH) password, use the key file specified here"
 
     private val enableRemoteDebugCheckBox = JCheckBox("Enable Spark remote debug", true).apply {
+        name = "enableRemoteDebugCheckBox"
         toolTipText = enableRemoteDebugTip
         isSelected = false
     }
@@ -124,7 +127,9 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
         toolTipText = sshUserNameTip
     }
     private val sshUserNameTextField = JTextField("sshuser").apply {
+        name = "sshUserNameTextField"
         toolTipText = sshUserNameTip
+        preferredSize = Dimension(500, 0)
     }
 
     private val sshAuthTypeLabel = JLabel("Secure Shell (SSH) Auth Type").apply {
@@ -133,19 +138,26 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
 
     // Password inputs
     private val sshUsePasswordRadioButton = JRadioButton("Use SSH password:", false).apply {
+        name = "sshUsePasswordRadioButton"
         toolTipText = usePasswordTip
         isSelected = true
     }
     private val sshPasswordField = JPasswordField().apply {
+        name = "sshPasswordField"
         toolTipText = usePasswordTip
+        // FIXME!!! The change won't take effects until IntelliJ fixes DarculaPasswordFieldUI::getMinimumSize() issue
+        preferredSize = Dimension(500, 0)
     }
 
     // Key file inputs
     private val sshUseKeyFileRadioButton = JRadioButton("Use private key file:", false).apply {
+        name = "sshUseKeyFileRadioButton"
         toolTipText = useKeyFileToolTip
         isSelected = false
     }
     private val sshKeyFileTextField = TextFieldWithBrowseButton().apply {
+        textField.name = "sshKeyFileTextFieldText"
+        button.name = "sshKeyFileTextFieldButton"
         toolTipText = useKeyFileToolTip
     }
 
@@ -159,7 +171,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
 
     private val helpButton = InplaceButton(IconButton("Help about connection to HDInsight using SSH", Help)) {
         BrowserUtil.browse(helpUrl)
-    }
+    }.apply { name = "remoteDebugHelpButton" }
 
     private val formBuilder = panel {
         columnTemplate {
@@ -199,6 +211,8 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
                 getter = { CheckIndicatorState(checkSshCertIndicator.text, false) },
                 setterInDispatch = { _, v -> checkSshCertIndicator.setTextAndStatus(v.message, v.isRunning) })
 
+        private val ideaSchedulers = IdeaSchedulers()
+
         init {
             rx.Observable
                     .combineLatest(
@@ -209,11 +223,14 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
                     .filter { it != null }
                     .map { it -> Pair(advConfModel.apply { clusterName = it!!.name }, it) }
                     .filter { (model, _) -> model.enableRemoteDebug && isParameterReady(model) }
+                    .observeOn(ideaSchedulers.dispatchUIThread())
                     .doOnNext { (_, cluster) ->
                         log().info("Check SSH authentication for cluster ${cluster.name} ...")
                         checkStatus = CheckIndicatorState("SSH Authentication is checking...", true)
                     }
+                    .observeOn(ideaSchedulers.dispatchPooledThread())
                     .map { (model, cluster) -> probeAuth(model, cluster) }
+                    .observeOn(ideaSchedulers.dispatchUIThread())
                     .subscribe { (probedModel, message) ->
                         log().info("...Result: $message")
 

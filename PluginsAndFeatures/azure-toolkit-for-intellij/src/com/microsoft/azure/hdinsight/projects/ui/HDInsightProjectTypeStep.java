@@ -64,6 +64,7 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
         this.externalSystemsLabel.setText("Build tool:");
         this.externalSystemsLabel.setDisplayedMnemonic('u');
+        this.externalSystemsLabel.setLabelFor(externalSystemsComboBox);
     }
 
     @Override

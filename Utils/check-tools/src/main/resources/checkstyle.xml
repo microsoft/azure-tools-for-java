@@ -18,13 +18,14 @@
     <property name="fileExtensions" value="java, properties, xml"/>
     <module name="RegexpHeader">
         <property name="header" value="^/\*+$\n^\s*\* Copyright \(c\) Microsoft Corporation.*$"/>
+        <property name="fileExtensions" value="java"/>
     </module>
-    <!-- Checks for whitespace                              
+    <!-- Checks for whitespace
      See http://checkstyle.sf.net/config_whitespace.html -->
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
-    
+
     <!-- No trailing spaces allowed -->
     <module name="RegexpSingleline">
         <property name="format" value="\s+$"/>
@@ -83,10 +84,6 @@
             <property name="allowByTailComment" value="true"/>
             <property name="allowNonPrintableEscapes" value="true"/>
         </module>
-        <module name="LineLength">
-            <property name="max" value="120"/>
-            <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
-        </module>
         <module name="AvoidStarImport"/>
         <module name="OneTopLevelClass"/>
         <module name="NoLineWrap"/>
@@ -96,7 +93,7 @@
         </module>
         <module name="NeedBraces"/>
         <module name="LeftCurly">
-            <property name="maxLineLength" value="120"/>
+            <property name="severity" value="warning"/>
         </module>
         <module name="RightCurly">
             <property name="id" value="RightCurlySame"/>
@@ -248,11 +245,8 @@
         <module name="JavadocMethod">
             <property name="scope" value="public"/>
             <property name="allowMissingParamTags" value="true"/>
-            <property name="allowMissingThrowsTags" value="true"/>
             <property name="allowMissingReturnTag" value="true"/>
-            <property name="minLineCount" value="2"/>
             <property name="allowedAnnotations" value="Override, Test"/>
-            <property name="allowThrowsTagsForSubclasses" value="true"/>
         </module>
         <module name="MethodName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>

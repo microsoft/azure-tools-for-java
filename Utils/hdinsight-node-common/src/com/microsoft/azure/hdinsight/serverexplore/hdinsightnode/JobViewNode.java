@@ -25,12 +25,13 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
 public class JobViewNode extends RefreshableNode implements ILogger {
@@ -45,18 +46,19 @@ public class JobViewNode extends RefreshableNode implements ILogger {
         super(NODE_ID, NODE_NAME, parent, NODE_ICON_PATH, true);
         this.clusterDetail = clusterDetail;
 
-        this.addClickActionListener(new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
-                    HDInsightLoader.getHDInsightHelper().createRefreshHdiReaderClusterWarningForm(
-                            getHDInsightRootModule(), clusterDetail.getName());
-                } else {
-                    HDInsightLoader.getHDInsightHelper().openJobViewEditor(getProject(), clusterDetail.getName());
-                }
-            }
-        });
         this.loadActions();
+    }
+
+    @Override
+    protected void onNodeClick(NodeActionEvent e) {
+        if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
+            HDInsightLoader.getHDInsightHelper().createRefreshHdiReaderJobsWarningForm(
+                    getHDInsightRootModule(), (ClusterDetail) clusterDetail);
+        } else {
+            HDInsightLoader.getHDInsightHelper().openJobViewEditor(getProject(), clusterDetail.getName());
+        }
+
+        super.onNodeClick(e);
     }
 
     @NotNull
@@ -68,5 +70,10 @@ public class JobViewNode extends RefreshableNode implements ILogger {
 
     @Override
     protected void refreshItems() throws AzureCmdException {
+    }
+
+    @Override
+    public String getServiceName() {
+        return TelemetryConstants.HDINSIGHT;
     }
 }

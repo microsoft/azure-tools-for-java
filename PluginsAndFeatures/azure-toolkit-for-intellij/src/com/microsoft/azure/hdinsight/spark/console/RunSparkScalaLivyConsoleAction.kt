@@ -28,6 +28,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.*
+import com.microsoft.azuretools.telemetry.TelemetryConstants
 import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfigurationFactory
 
 class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
@@ -41,7 +42,7 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
         get() = false
 
     override val consoleRunConfigurationFactory: ScalaConsoleRunConfigurationFactory
-        get() = SparkScalaLivyConsoleConfigurationType().confFactory()
+        get() = SparkScalaLivyConsoleConfigurationType().sparkLivyConfFactory()
 
     override fun getNewSettingName(): String = "Spark Livy Interactive Session Console(Scala)"
 
@@ -53,9 +54,13 @@ class RunSparkScalaLivyConsoleAction : RunSparkScalaConsoleAction() {
         var runConfig = selectedConfigSettings?.configuration
 
         event.presentation.isEnabled = when {
+            // FIXME: when there is no configuration file, we disabled interactive console feature for Spark on Arcadia
             runConfig == null -> SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != SparkApplicationType.CosmosServerlessSpark
+                    && SelectSparkApplicationTypeAction.getSelectedSparkApplicationType() != SparkApplicationType.ArcadiaSpark
             runConfig.javaClass == CosmosServerlessSparkConfiguration::class.java -> false
             else -> true
         }
     }
+
+    override fun getOperationName(event: AnActionEvent?): String = TelemetryConstants.RUN_SPARK_LIVY_INTERACTIVE_CONSOLE
 }

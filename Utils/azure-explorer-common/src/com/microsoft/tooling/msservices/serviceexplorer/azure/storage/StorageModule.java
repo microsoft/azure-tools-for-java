@@ -43,7 +43,7 @@ import java.util.Set;
 public class StorageModule extends AzureRefreshableNode {
     private static final String STORAGE_MODULE_ID = com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule.class.getName();
     private static final String ICON_PATH = "StorageAccount_16.png";
-    private static final String BASE_MODULE_NAME = "Storage Accounts";
+    private static final String BASE_MODULE_NAME = "Storage Accounts(Deprecated)";
 
     public StorageModule(Node parent) {
         super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);

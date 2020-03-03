@@ -21,7 +21,9 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
+import com.microsoft.azure.hdinsight.common.WasbUri;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.HDInsightUserRoleType;
@@ -31,6 +33,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageTypeOptionsForCluster;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.StringUtils;
@@ -42,9 +45,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, ILogger {
+public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, ILogger  {
 
     private static final String ADL_HOME_PREFIX = "adl://home";
     private static final String ADLS_HOME_HOST_NAME = "dfs.adls.home.hostname";
@@ -143,6 +145,10 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
     }
 
+    public String getId() {
+        return clusterRawInfo.getId();
+    }
+
     public String getState(){
         ClusterProperties clusterProperties = this.clusterRawInfo.getProperties();
         return clusterProperties == null ? null : clusterProperties.getClusterState();
@@ -161,14 +167,18 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         return clusterProperties == null ? null : clusterProperties.getCreatedDate();
     }
 
-    public ClusterType getType(){
+    public static ClusterType getType(@NotNull ClusterRawInfo clusterRawInfo) {
         ClusterType type =  null;
         try {
-            type = ClusterType.valueOf(this.clusterRawInfo.getProperties().getClusterDefinition().getKind().toLowerCase());
+            type = ClusterType.valueOf(clusterRawInfo.getProperties().getClusterDefinition().getKind().toLowerCase());
         } catch (IllegalArgumentException e) {
             type = ClusterType.unkown;
         }
         return type == null ? ClusterType.unkown : type;
+    }
+
+    public ClusterType getType(){
+        return getType(this.clusterRawInfo);
     }
 
     public String getResourceGroup(){
@@ -220,9 +230,13 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         }
     }
 
-    public String getOSType(){
-        ClusterProperties clusterProperties = this.clusterRawInfo.getProperties();
+    public static String getOSType(@NotNull ClusterRawInfo clusterRawInfo) {
+        ClusterProperties clusterProperties = clusterRawInfo.getProperties();
         return clusterProperties == null ? null : clusterProperties.getOsType();
+    }
+
+    public String getOSType(){
+        return getOSType(this.clusterRawInfo);
     }
 
     @Nullable
@@ -262,27 +276,54 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         // If exception happens, isConfigInfoAvailable is still false, which means
         // next time we call getConfigurationInfo(), load configuration codes will still be executed.
         if (!isConfigInfoAvailable()) {
-            synchronized (this) {
-                if (!isConfigInfoAvailable()) {
-                    ClusterConfiguration clusterConfiguration =
-                            clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
-                    if (clusterConfiguration != null && clusterConfiguration.getConfigurations() != null) {
-                        Configurations configurations = clusterConfiguration.getConfigurations();
-                        Gateway gateway = configurations.getGateway();
-                        if (gateway != null) {
-                            this.userName = gateway.getUsername();
-                            this.passWord = gateway.getPassword();
-                        }
+            String userName = null;
+            String passWord = null;
+            Map<String, String> coresiteMap = null;
+            IHDIStorageAccount defaultStorageAccount = null;
+            List<HDStorageAccount> additionalStorageAccounts = null;
 
-                        Map<String, String> coresSiteMap = configurations.getCoresite();
-                        ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
-                        if (coresSiteMap != null) {
-                            this.coresiteMap = coresSiteMap;
-                            this.defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
-                            this.additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
-                        }
+            ClusterConfiguration clusterConfiguration =
+                    clusterOperation.getClusterConfiguration(subscription, clusterRawInfo.getId());
+            if (clusterConfiguration != null && clusterConfiguration.getConfigurations() != null) {
+                Configurations configurations = clusterConfiguration.getConfigurations();
+                Gateway gateway = configurations.getGateway();
+                if (gateway != null) {
+                    userName = gateway.getUsername();
+                    passWord = gateway.getPassword();
+                }
+
+                Map<String, String> coresSiteMap = configurations.getCoresite();
+                ClusterIdentity clusterIdentity = configurations.getClusterIdentity();
+                if (coresSiteMap != null) {
+                    coresiteMap = coresSiteMap;
+                    try {
+                        defaultStorageAccount = getDefaultStorageAccount(coresSiteMap, clusterIdentity);
+                    } catch (HDIException exp) {
+                        String errMsg = String.format("Encounter exception when getting storage configuration for cluster name:%s,type:%s,location:%s," +
+                                        "state:%s,version:%s,osType:%s,kind:%s,spark version:%s",
+                                clusterRawInfo.getName(),
+                                clusterRawInfo.getType(),
+                                clusterRawInfo.getLocation(),
+                                clusterRawInfo.getProperties().getClusterState(),
+                                clusterRawInfo.getProperties().getClusterVersion(),
+                                clusterRawInfo.getProperties().getOsType(),
+                                clusterRawInfo.getProperties().getClusterDefinition().getKind(),
+                                clusterRawInfo.getProperties().getClusterDefinition().getComponentVersion().getSpark());
+                        log().warn(errMsg, exp);
+                        throw new HDIException(errMsg, exp);
                     }
 
+                    additionalStorageAccounts = getAdditionalStorageAccounts(coresSiteMap);
+                }
+            }
+
+            synchronized (this) {
+                if (!isConfigInfoAvailable()) {
+                    this.userName = userName;
+                    this.passWord = passWord;
+                    this.coresiteMap = coresiteMap;
+                    this.defaultStorageAccount = defaultStorageAccount;
+                    this.additionalStorageAccounts = additionalStorageAccounts;
                     isConfigInfoAvailable = true;
                 }
             }
@@ -290,6 +331,7 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
     }
 
     @Nullable
+    @Override
     public String getDefaultStorageRootPath() {
         log().info("Cluster ID: " + clusterRawInfo.getId());
         Map<String, String> requestedCoresiteMap = null;
@@ -313,18 +355,18 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             return null;
         }
 
-        String containerAddress = null;
+        String defaultFs = null;
         if (requestedCoresiteMap.containsKey(DefaultFS)) {
-            containerAddress = requestedCoresiteMap.get(DefaultFS);
+            defaultFs = requestedCoresiteMap.get(DefaultFS);
         } else if (requestedCoresiteMap.containsKey(FSDefaultName)) {
-            containerAddress = requestedCoresiteMap.get(FSDefaultName);
+            defaultFs = requestedCoresiteMap.get(FSDefaultName);
         } else {
             log().warn("Error getting cluster default storage account. containerAddress is null.");
             return null;
         }
 
-        String scheme = URI.create(containerAddress).getScheme();
-        if (ADL_HOME_PREFIX.equalsIgnoreCase(containerAddress)) {
+        String scheme = URI.create(defaultFs).getScheme();
+        if (ADL_HOME_PREFIX.equalsIgnoreCase(defaultFs)) {
             String accountName = "";
             String defaultRootPath = "";
 
@@ -338,14 +380,13 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             return URI.create(String.format("%s://%s.azuredatalakestore.net", scheme, accountName))
                     .resolve(defaultRootPath)
                     .toString();
-        } else if (Pattern.compile(StoragePathInfo.BlobPathPattern).matcher(containerAddress).matches()
-                || Pattern.compile(StoragePathInfo.AdlsGen2PathPattern).matcher(containerAddress).matches()) {
-            return containerAddress;
+        } else if (WasbUri.isType(defaultFs) || AbfsUri.isType(defaultFs)) {
+            return defaultFs;
         } else {
             final Map<String, String> properties = new HashMap<>();
             properties.put("ErrorType", "Unknown HDInsight default storage type");
             properties.put("coreSiteMap", StringUtils.join(requestedCoresiteMap));
-            properties.put("containerAddress", containerAddress);
+            properties.put("containerAddress", defaultFs);
             properties.put("ClusterID", this.clusterRawInfo.getId());
             AppInsightsClient.createByType(AppInsightsClient.EventType.Error, this.getClass().getSimpleName(), null, properties);
 
@@ -360,19 +401,17 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
             throw new HDIException("Failed to get default storage root path");
         }
 
-        StoragePathInfo pathInfo = new StoragePathInfo(defaultStorageRootPath);
-        switch (pathInfo.storageType) {
+        StorageAccountType storageType = StorageAccountType.parseUri(URI.create(defaultStorageRootPath));
+        switch (storageType) {
             case ADLS:
                 return new ADLSStorageAccount(this, true, clusterIdentity, URI.create(defaultStorageRootPath));
 
             case BLOB:
-                String storageAccountName = pathInfo.path.getHost();
-                if (StringUtils.isBlank(storageAccountName)) {
-                    throw new HDIException("Failed to get default storage account name");
-                }
-
-                String defaultContainerName = pathInfo.path.getUserInfo();
-                String defaultStorageAccountKey = StorageAccountKeyPrefix + storageAccountName;
+                WasbUri wasbUri = WasbUri.parse(defaultStorageRootPath);
+                String storageAccountName = wasbUri.getStorageAccount() + ".blob." + wasbUri.getEndpointSuffix();
+                String defaultContainerName = wasbUri.getContainer();
+                String defaultStorageAccountKey =
+                        StorageAccountKeyPrefix + storageAccountName;
                 String storageAccountKey = null;
                 if (coresiteMap.containsKey(defaultStorageAccountKey)) {
                     storageAccountKey = coresiteMap.get(defaultStorageAccountKey);
@@ -385,13 +424,10 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
                 return new HDStorageAccount(this, storageAccountName, storageAccountKey, true, defaultContainerName);
 
             case ADLSGen2:
-                String accountName = pathInfo.path.getHost();
-                if (StringUtils.isBlank(accountName)) {
-                    throw new HDIException("Failed to get default storage account name");
-                }
-
-                String fileSystem = pathInfo.path.getUserInfo();
-                return new ADLSGen2StorageAccount(this, accountName, null, true, fileSystem, pathInfo.path.getScheme());
+                AbfsUri abfsUri = AbfsUri.parse(defaultStorageRootPath);
+                String accountName = abfsUri.getAccountName();
+                String fileSystem = abfsUri.getFileSystem();
+                return new ADLSGen2StorageAccount(this, accountName, null, true, fileSystem, abfsUri.getUri().getScheme());
 
             default:
                 return null;
@@ -462,5 +498,23 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof IClusterDetail)) {
+            return false;
+        }
+
+        return o.hashCode() == this.hashCode();
     }
 }

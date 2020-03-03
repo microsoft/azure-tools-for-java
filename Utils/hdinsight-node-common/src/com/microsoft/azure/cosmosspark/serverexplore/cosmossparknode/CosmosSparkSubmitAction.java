@@ -41,7 +41,7 @@ public class CosmosSparkSubmitAction extends NodeActionListener {
     public CosmosSparkSubmitAction(@NotNull CosmosSparkClusterNode clusterNode,
                                    @NotNull AzureSparkCosmosCluster cluster,
                                    @NotNull PublishSubject<Pair<AzureSparkCosmosCluster, CosmosSparkClusterNode>> submitAction) {
-        super(clusterNode);
+        super();
         this.cluster = cluster;
         this.clusterNode = clusterNode;
         this.submitAction = submitAction;

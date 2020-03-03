@@ -287,6 +287,19 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
 //        );
     }
 
+    @Override
+    public void doCancelAction() {
+        DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (onCreate != null) {
+                    onCreate.run();
+                }
+            }
+        });
+        super.doCancelAction();
+    }
+
     private boolean createStorageAccount() {
         Operation operation = TelemetryManager.createOperation(STORAGE, CREATE_STORAGE_ACCOUNT);
         try {

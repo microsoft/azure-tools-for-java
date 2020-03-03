@@ -25,19 +25,36 @@ package com.microsoft.azure.hdinsight.spark.run
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.microsoft.azuretools.telemetry.AppInsightsClient
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
+import com.microsoft.azuretools.telemetrywrapper.Operation
 
-interface RunProfileStateWithAppInsightsEvent : RunProfileState {
-    val uuid: String
+abstract class RunProfileStateWithAppInsightsEvent(val uuid: String,
+                                                   val appInsightsMessage: String,
+                                                   val operation: Operation?) : RunProfileState {
+    fun getPostEventProperties(executor: Executor, addedEventProps: Map<String, String>?): Map<String, String> {
+        return mapOf(
+            "Executor" to executor.id,
+            "ActionUuid" to uuid).plus(addedEventProps ?: emptyMap())
+    }
 
-    val appInsightsMessage: String
-
+    // FIXME: This is legacy telemetry API, please use createErrorEventWithComplete or createInfoEventWithComplete instead
     fun createAppInsightEvent(executor: Executor, addedEventProps: Map<String, String>?): RunProfileState {
-        val postEventProps = mapOf(
-                "Executor" to executor.id,
-                "ActionUuid" to uuid).plus(addedEventProps ?: emptyMap())
+        val postEventProps = getPostEventProperties(executor, addedEventProps)
 
         AppInsightsClient.create(appInsightsMessage, null, postEventProps)
 
         return this
+    }
+
+    fun createErrorEventWithComplete(executor: Executor?, exp: Throwable, errorType: ErrorType, addedEventProps: Map<String, String>?) {
+        val postEventProps = executor?.let { getPostEventProperties(it, addedEventProps) } ?: emptyMap()
+        EventUtil.logErrorWithComplete(operation, errorType, exp, postEventProps, null)
+    }
+
+    fun createInfoEventWithComplete(executor: Executor?, addedEventProps: Map<String, String>?) {
+        val postEventProps = executor?.let { getPostEventProperties(it, addedEventProps) } ?: emptyMap()
+        EventUtil.logEventWithComplete(EventType.info, operation, postEventProps, null)
     }
 }
