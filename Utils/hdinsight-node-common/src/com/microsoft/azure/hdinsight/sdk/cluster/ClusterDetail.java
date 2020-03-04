@@ -408,10 +408,10 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
 
             case BLOB:
                 WasbUri wasbUri = WasbUri.parse(defaultStorageRootPath);
-                String storageAccountName = wasbUri.getStorageAccount();
+                String storageAccountName = wasbUri.getStorageAccount() + ".blob." + wasbUri.getEndpointSuffix();
                 String defaultContainerName = wasbUri.getContainer();
                 String defaultStorageAccountKey =
-                        StorageAccountKeyPrefix + storageAccountName + ".blob." + wasbUri.getEndpointSuffix();
+                        StorageAccountKeyPrefix + storageAccountName;
                 String storageAccountKey = null;
                 if (coresiteMap.containsKey(defaultStorageAccountKey)) {
                     storageAccountKey = coresiteMap.get(defaultStorageAccountKey);
@@ -498,5 +498,23 @@ public class ClusterDetail implements IClusterDetail, LivyCluster, YarnCluster, 
         } else {
             return SparkSubmitStorageTypeOptionsForCluster.ClusterWithUnknown;
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof IClusterDetail)) {
+            return false;
+        }
+
+        return o.hashCode() == this.hashCode();
     }
 }

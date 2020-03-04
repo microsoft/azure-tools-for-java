@@ -54,12 +54,6 @@ class SparkSubmitJobUploadStorageModel: ILogger, SparkSubmissionJobUploadStorage
     @get:Transient @set:Transient
     override var accessKey: String? = null
 
-    @get:Transient @set:Transient
-    override var containersModel: ComboBoxModel<Any> = DefaultComboBoxModel()
-
-    @get:Transient @set:Transient
-    override var subscriptionsModel: ComboBoxModel<Any> = DefaultComboBoxModel()
-
     @Attribute("upload_path")
     var uploadPath: String? = null
 

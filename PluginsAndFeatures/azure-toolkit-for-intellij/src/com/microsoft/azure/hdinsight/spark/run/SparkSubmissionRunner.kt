@@ -34,10 +34,7 @@ interface SparkSubmissionRunner {
     /**
      * Build a Spark Batch Job observable, may produce {@see ExecutionException}
      */
-    fun buildSparkBatchJob(
-            submitModel: SparkSubmitModel,
-            ctrlSubject: Observer<SimpleImmutableEntry<MessageInfoType, String>>
-    ): Observable<ISparkBatchJob>
+    fun buildSparkBatchJob(submitModel: SparkSubmitModel): Observable<ISparkBatchJob>
 
     fun setFocus(runConfiguration: RunConfiguration)
 }

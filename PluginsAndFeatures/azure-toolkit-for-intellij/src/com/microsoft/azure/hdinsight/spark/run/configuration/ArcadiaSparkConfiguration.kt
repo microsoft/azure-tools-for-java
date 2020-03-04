@@ -28,7 +28,8 @@ import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 
 class ArcadiaSparkConfiguration (name: String, val module: ArcadiaSparkConfigurationModule, factory: ArcadiaSparkConfigurationFactory) : LivySparkBatchJobRunConfiguration(module.model, factory, module, name) {
     override fun getSparkApplicationType(): SparkApplicationType {
-        return SparkApplicationType.ArcadiaSpark
+        val arcadiaModel = module.model.submitModel as ArcadiaSparkSubmitModel
+        return arcadiaModel.sparkApplicationType
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {

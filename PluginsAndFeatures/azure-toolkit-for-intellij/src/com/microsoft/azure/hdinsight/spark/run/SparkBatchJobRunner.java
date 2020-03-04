@@ -65,6 +65,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission.getClusterSubmission;
+import static com.microsoft.intellij.rxjava.IdeaSchedulers.updateCurrentBackgroundableTaskIndicator;
 
 public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSubmissionRunner, ILogger {
     public static final String RUNNER_ID = "SparkJobRun";
@@ -104,22 +105,35 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     @Override
     @NotNull
-    public Observable<ISparkBatchJob> buildSparkBatchJob(
-            @NotNull SparkSubmitModel submitModel,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject
-    ) {
+    public Observable<ISparkBatchJob> buildSparkBatchJob(@NotNull SparkSubmitModel submitModel) {
         return Observable.fromCallable(() -> {
             String clusterName = submitModel.getSubmissionParameter().getClusterName();
+
+            updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
+                progressIndicator.setFraction(0.2f);
+                progressIndicator.setText("Get Spark cluster [" + clusterName + "] information from subscriptions");
+            });
+
             IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
                     .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
+            updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
+                progressIndicator.setFraction(0.7f);
+                progressIndicator.setText("Get the storage configuration for artifacts deployment");
+            });
+
             Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
-                    submitModel, clusterDetail, ctrlSubject);
+                    submitModel, clusterDetail);
 
             SparkSubmissionParameter submissionParameter =
                     prepareSubmissionParameterWithTransformedGen2Uri(submitModel.getSubmissionParameter());
 
-            return new SparkBatchJob(clusterDetail, submissionParameter, getClusterSubmission(clusterDetail), ctrlSubject, jobDeploy);
+            updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
+                progressIndicator.setFraction(1.0f);
+                progressIndicator.setText("All checks are passed.");
+            });
+
+            return new SparkBatchJob(clusterDetail, submissionParameter, getClusterSubmission(clusterDetail), jobDeploy);
         });
     }
 
@@ -179,7 +193,11 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         String artifactPath = submitModel.getArtifactPath().orElse(null);
         assert artifactPath != null : "artifactPath should be checked in LivySparkBatchJobRunConfiguration::checkSubmissionConfigurationBeforeRun";
 
-        final ISparkBatchJob sparkBatch = submissionState.getSparkBatch();
+        // To address issue https://github.com/microsoft/azure-tools-for-java/issues/4021.
+        // In this issue, when user click rerun button, we are still using the legacy ctrlSubject which has already sent
+        // "onComplete" message when the job is done in the previous time. To avoid this issue,  We clone a new Spark
+        // batch job instance to re-initialize everything in the object.
+        final ISparkBatchJob sparkBatch = submissionState.getSparkBatch().clone();
         final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject =
                 (PublishSubject<SimpleImmutableEntry<MessageInfoType, String>>) sparkBatch.getCtrlSubject();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(

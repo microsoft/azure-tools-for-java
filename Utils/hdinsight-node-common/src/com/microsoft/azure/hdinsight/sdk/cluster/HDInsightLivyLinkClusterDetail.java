@@ -120,4 +120,22 @@ public class HDInsightLivyLinkClusterDetail implements IClusterDetail, LivyClust
     public SparkSubmitStorageTypeOptionsForCluster getStorageOptionsType() {
         return SparkSubmitStorageTypeOptionsForCluster.HdiAdditionalClusterWithUndetermineStorage;
     }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof IClusterDetail)) {
+            return false;
+        }
+
+        return o.hashCode() == this.hashCode();
+    }
 }

@@ -26,7 +26,6 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import rx.Observable;
-import rx.Observer;
 
 import java.io.File;
 import java.net.URI;
@@ -38,16 +37,15 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
 
     public ArcadiaSparkBatchJob(final @NotNull SparkSubmissionParameter submissionParameter,
                                 final @NotNull SparkBatchSubmission sparkBatchSubmission,
-                                final @NotNull Deployable deployDelegate,
-                                final @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        super(submissionParameter, sparkBatchSubmission, ctrlSubject);
+                                final @NotNull Deployable deployDelegate) {
+        super(submissionParameter, sparkBatchSubmission);
         this.deployDelegate = deployDelegate;
     }
 
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return deployDelegate.deploy(new File(artifactPath))
+        return deployDelegate.deploy(new File(artifactPath), getCtrlSubject())
                 .map(uploadedUri -> {
                     ctrlInfo(String.format("File %s has been uploaded to %s.", artifactPath, uploadedUri));
 
@@ -119,5 +117,14 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
 
     private void ctrlInfo(@NotNull String message) {
         getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Info, message));
+    }
+
+    @Override
+    public ArcadiaSparkBatchJob clone() {
+        return new ArcadiaSparkBatchJob(
+                this.getSubmissionParameter(),
+                this.getSubmission(),
+                this.deployDelegate
+        );
     }
 }

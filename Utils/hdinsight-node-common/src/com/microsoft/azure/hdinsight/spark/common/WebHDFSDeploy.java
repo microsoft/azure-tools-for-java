@@ -26,6 +26,7 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
@@ -43,6 +44,7 @@ import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import rx.Observable;
+import rx.Observer;
 import rx.exceptions.Exceptions;
 
 import java.io.File;
@@ -51,6 +53,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownServiceException;
+import java.util.AbstractMap;
 import java.util.List;
 
 public class WebHDFSDeploy implements Deployable, ILogger {
@@ -91,7 +94,8 @@ public class WebHDFSDeploy implements Deployable, ILogger {
     }
 
     @Override
-    public Observable<String> deploy(@NotNull File src) {
+    public Observable<String> deploy(File src,
+                                     Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
         //three steps to upload via webhdfs
         // 1.put request to create new dir
         // 2.put request to get 307 redirect uri from response

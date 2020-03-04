@@ -87,9 +87,6 @@ class ImmutableComboBoxModelDelegated<T>(private val comboBox: JComboBox<T>) {
     operator fun setValue(ref: Any?, property: KProperty<*>, v: ImmutableComboBoxModel<T>) {
         if (comboBox.model != v) {
             comboBox.model = v
-            // By default the model selects model(0)
-            // reset selectedItem will help trigger a selected event when next set happens
-            comboBox.model.selectedItem = null
         }
     }
 }
