@@ -36,6 +36,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.execution.ui.RunContentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
@@ -122,7 +123,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
      * Running in Event dispatch thread
      */
     @Override
-    protected void execute(ExecutionEnvironment environment, Callback callback, RunProfileState state) throws ExecutionException {
+    public void execute(@NotNull ExecutionEnvironment environment) throws ExecutionException {
+        RunProfileState state = environment.getState();
+        if (state == null) {
+            return;
+        }
+
         final Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
         final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<> ();
         final SparkBatchRemoteDebugState submissionState = (SparkBatchRemoteDebugState) state;
@@ -294,7 +300,12 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                 jobDriverEnvReady.setResult(forkEnv);
                             } else {
                                 // Call supper class method to attach Java virtual machine
-                                super.execute(forkEnv, null, forkState);
+                                // Previously super.execute(forkEnv, null, forkState) is calling method
+                                // from GenericProgrammerRunner.execute(). But there is a code change since EAP2020.1
+                                // where GenericDebuggerRunner is not extending from class GenericProgrammerRunner anymore.
+                                // Therefore, now we are calling super.doExecute(forkState, forkEnv) which is actually
+                                // GenericDebuggerRunner.doExecute(forkState, forkEnv)
+                                super.doExecute(forkState, forkEnv);
                             }
                         } else if (debugEvent instanceof SparkBatchJobExecutorCreatedEvent) {
                             SparkBatchJobExecutorCreatedEvent executorCreatedEvent =
@@ -332,9 +343,10 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         // Driver side execute, leverage Intellij Async Promise, to wait for the Spark app deployed
         ExecutionManager.getInstance(project).startRunProfile(new RunProfileStarter() {
             @Override
-            public Promise<RunContentDescriptor> executeAsync(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
+            public Promise<RunContentDescriptor> executeAsync(@NotNull ExecutionEnvironment env) throws ExecutionException {
                 driverDebugHandler.getRemoteDebugProcess().start();
 
+                RunProfileState state = env.getState();
                 return jobDriverEnvReady
                         .then(forkEnv -> Observable.fromCallable(() -> doExecute(state, forkEnv))
                                 .subscribeOn(schedulers.dispatchUIThread(ModalityState.defaultModalityState()))
@@ -346,20 +358,17 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                 descriptor.setExecutionId(env.getExecutionId());
                                 RunnerAndConfigurationSettings settings = env.getRunnerAndConfigurationSettings();
                                 if (settings != null) {
-                                    descriptor.setContentToolWindowId(ExecutionManager.getInstance(env.getProject()).getContentManager()
+                                    descriptor.setContentToolWindowId(RunContentManager.getInstance(env.getProject())
                                             .getContentDescriptorToolWindowId(settings.getConfiguration()));
 
                                     descriptor.setActivateToolWindowWhenAdded(settings.isActivateToolWindowBeforeRun());
                                 }
                             }
 
-                            if (callback != null) {
-                                callback.processStarted(descriptor);
-                            }
                             return descriptor;
                         });
             }
-        }, submissionState, environment);
+        }, environment);
     }
 
     /*
