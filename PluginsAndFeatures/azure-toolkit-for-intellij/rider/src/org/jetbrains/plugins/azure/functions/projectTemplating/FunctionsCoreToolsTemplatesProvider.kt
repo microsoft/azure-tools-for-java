@@ -22,6 +22,7 @@
 
 package org.jetbrains.plugins.azure.functions.projectTemplating
 
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.IOptProperty
 import com.jetbrains.rd.util.reactive.OptProperty
@@ -34,7 +35,6 @@ import com.jetbrains.rider.projectView.actions.projectTemplating.common.InfoProj
 import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTemplateDialog
 import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTemplateDialogContext
 import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTemplateTransferableModel
-import com.jetbrains.rider.util.idea.application
 import com.microsoft.icons.CommonIcons
 import javax.swing.Icon
 import javax.swing.JComponent

@@ -23,8 +23,8 @@
 package com.microsoft.intellij.runner.webapp.config
 
 import com.intellij.openapi.project.Project
+import com.jetbrains.rd.platform.util.lifetime
 import com.jetbrains.rdclient.protocol.IPermittedModalities
-import com.jetbrains.rider.util.idea.lifetime
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.AzureRiderSettingsEditor
 import com.microsoft.intellij.runner.webapp.config.ui.WebAppPublishPanel

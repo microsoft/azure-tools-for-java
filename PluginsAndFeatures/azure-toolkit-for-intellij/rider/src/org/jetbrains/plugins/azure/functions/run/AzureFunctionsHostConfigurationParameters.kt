@@ -29,7 +29,6 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.ide.browsers.BrowserStarter
 import com.intellij.ide.browsers.StartBrowserSettings
-import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.util.execution.ParametersListUtil
@@ -46,11 +45,9 @@ import com.jetbrains.rider.runtime.DotNetExecutable
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.util.idea.getComponent
 import com.jetbrains.rider.util.idea.getLogger
-import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jdom.Element
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
-import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 import java.io.File
 
 open class AzureFunctionsHostConfigurationParameters(
@@ -114,16 +111,16 @@ open class AzureFunctionsHostConfigurationParameters(
         }
 
         val effectiveArguments = if (trackProjectArguments && programParameters.isEmpty() && projectOutput != null && projectOutput.defaultArguments.isNotEmpty()) {
-            projectOutput.defaultArguments
+            ParametersListUtil.join(projectOutput.defaultArguments)
         } else {
-            ParametersListUtil.parse(programParameters)
+            programParameters
         }
 
         return DotNetExecutable(
                 exePath = coreToolsInfo!!.coreToolsExecutable,
                 projectTfm = projectOutput?.tfm ?: projectTfm,
                 workingDirectory = effectiveWorkingDirectory,
-                programParameters = effectiveArguments,
+                programParameterString = effectiveArguments,
                 useMonoRuntime = useMonoRuntime,
                 useExternalConsole = useExternalConsole,
                 environmentVariables = envs,

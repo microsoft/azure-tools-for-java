@@ -23,12 +23,12 @@
 package com.microsoft.intellij.runner.appbase.config.ui
 
 import com.intellij.openapi.project.Project
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.reactive.Signal
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
-import com.jetbrains.rider.util.idea.application
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.resources.Location

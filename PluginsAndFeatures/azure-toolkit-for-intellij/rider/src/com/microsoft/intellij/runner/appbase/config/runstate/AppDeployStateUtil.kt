@@ -28,13 +28,13 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.wm.ToolWindowId
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.util.io.ZipUtil
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.spinUntil
 import com.jetbrains.rd.util.threading.SpinWait
 import com.jetbrains.rdclient.util.idea.toIOFile
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
-import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase

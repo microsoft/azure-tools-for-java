@@ -30,11 +30,11 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.util.Key
 import com.intellij.util.concurrency.Semaphore
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.build.BuildHost
 import com.jetbrains.rider.build.BuildParameters
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.BuildTarget
-import com.jetbrains.rider.util.idea.application
 import com.jetbrains.rider.util.idea.getComponent
 import org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfiguration
 import javax.swing.Icon

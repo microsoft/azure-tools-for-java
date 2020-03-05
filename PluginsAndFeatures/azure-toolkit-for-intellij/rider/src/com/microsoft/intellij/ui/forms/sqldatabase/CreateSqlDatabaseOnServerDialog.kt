@@ -34,9 +34,9 @@ import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.update.Activatable
 import com.intellij.util.ui.update.UiNotifyConnector
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.LifetimeDefinition
 import com.jetbrains.rd.util.threading.SpinWait
-import com.jetbrains.rider.util.idea.application
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.sql.*

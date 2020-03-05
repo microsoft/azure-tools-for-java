@@ -28,6 +28,7 @@ import com.google.gson.Gson;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
@@ -111,26 +112,34 @@ public abstract class AzureActionsComponent implements ApplicationComponent, Plu
     }
 
     public void initComponent() {
-        if (!AzurePlugin.IS_ANDROID_STUDIO) {
-            ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
-            ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
-            initAuthManage();
-            ActionManager am = ActionManager.getInstance();
-            DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
-            toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
-            loadWebApps();
-        }
+        // TODO: This should all become a Service instead of a component
+        // similar to https://github.com/krasa/StringManipulation/issues/92
+        ApplicationManager.getApplication().invokeLater(() -> {
+            try {
+                if (!AzurePlugin.IS_ANDROID_STUDIO) {
+                    ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
+                    ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
+                    AzureActionsComponent.this.initAuthManage();
+                    ActionManager am = ActionManager.getInstance();
+                    DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
+                    toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
+                    AzureActionsComponent.this.loadWebApps();
+                }
 
-        try {
-            PlatformDependent.isAndroid();
-        } catch (Throwable ignored) {
-            DefaultLoader.getUIHelper().showError("A problem with your Android Support plugin setup is preventing the"
-                    + " Azure Toolkit from functioning correctly (Retrofit2 and RxJava failed to initialize)"
-                    + ".\nTo fix this issue, try disabling the Android Support plugin or installing the "
-                    + "Android SDK", "Azure Toolkit for Rider");
-            // DefaultLoader.getUIHelper().showException("Android Support Error: isAndroid() throws " + ignored
-            //         .getMessage(), ignored, "Error Android", true, false);
-        }
+                try {
+                    PlatformDependent.isAndroid();
+                } catch (Throwable ignored) {
+                    DefaultLoader.getUIHelper().showError("A problem with your Android Support plugin setup is preventing the"
+                            + " Azure Toolkit from functioning correctly (Retrofit2 and RxJava failed to initialize)"
+                            + ".\nTo fix this issue, try disabling the Android Support plugin or installing the "
+                            + "Android SDK", "Azure Toolkit for Rider");
+                    // DefaultLoader.getUIHelper().showException("Android Support Error: isAndroid() throws " + ignored
+                    //         .getMessage(), ignored, "Error Android", true, false);
+                }
+            } catch (Exception e) {
+                LOG.error(e);
+            }
+        });
     }
 
     private void initAuthManage() {

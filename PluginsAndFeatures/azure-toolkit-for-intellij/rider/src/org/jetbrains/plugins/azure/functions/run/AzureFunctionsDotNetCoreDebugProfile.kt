@@ -28,7 +28,6 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.debugger.DebuggerHelperHost
 import com.jetbrains.rider.debugger.DebuggerWorkerPlatform
@@ -96,7 +95,7 @@ class AzureFunctionsDotNetCoreDebugProfile(
             setResult(DotNetCoreExeStartInfo(
                     DotNetCoreInfo(coreToolsExecutablePath, funcCoreToolsPath),
                     dotNetExecutable.exePath, dotNetExecutable.workingDirectory,
-                    ParametersListUtil.join(dotNetExecutable.programParameters),
+                    dotNetExecutable.programParameterString,
                     dotNetExecutable.environmentVariables.toModelMap, dotNetExecutable.runtimeArguments,
                     dotNetExecutable.executeAsIs, dotNetExecutable.useExternalConsole, false))
         }
