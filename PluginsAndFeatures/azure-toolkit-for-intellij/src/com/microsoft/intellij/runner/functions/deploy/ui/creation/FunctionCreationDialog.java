@@ -89,7 +89,6 @@ public class FunctionCreationDialog extends JDialog {
         this.project = project;
 
         setModal(true);
-        setAlwaysOnTop(true);
         setTitle(DIALOG_TITLE);
         setContentPane(contentPanel);
         getRootPane().setDefaultButton(buttonOK);

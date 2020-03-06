@@ -114,7 +114,7 @@ public class NewAppServicePlanDialog extends JDialog {
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof PricingTier) {
                     final PricingTier pricingTier = (PricingTier) object;
-                    setText(pricingTier == CONSUMPTION ? CONSUMPTION.toSkuDescription().name() : pricingTier.toString());
+                    setText(pricingTier == CONSUMPTION ? CONSUMPTION.toSkuDescription().tier() : pricingTier.toString());
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }

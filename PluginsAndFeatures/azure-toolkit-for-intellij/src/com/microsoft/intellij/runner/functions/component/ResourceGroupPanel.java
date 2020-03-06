@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -102,6 +103,7 @@ public class ResourceGroupPanel extends JPanel {
 
     private void createResourceGroup() {
         cbResourceGroup.setSelectedItem(null);
+        cbResourceGroup.setPopupVisible(false);
         final NewResourceGroupDialog dialog = new NewResourceGroupDialog();
         dialog.pack();
         dialog.setLocationRelativeTo(this);
@@ -124,7 +126,7 @@ public class ResourceGroupPanel extends JPanel {
     private void onSelectResourceGroup() {
         final Object selectedObject = cbResourceGroup.getSelectedItem();
         if (CREATE_RESOURCE_GROUP.equals(selectedObject)) {
-            createResourceGroup();
+            ApplicationManager.getApplication().invokeLater(this::createResourceGroup);
         } else if (selectedObject instanceof ResourceGroupWrapper) {
             selectedResourceGroup = (ResourceGroupWrapper) selectedObject;
         }

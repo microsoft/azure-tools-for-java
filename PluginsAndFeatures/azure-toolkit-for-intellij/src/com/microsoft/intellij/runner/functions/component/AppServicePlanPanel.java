@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
@@ -140,12 +141,13 @@ public class AppServicePlanPanel extends JPanel {
             selectedAppServicePlan = (AppServicePlanWrapper) selectedObject;
             showAppServicePlan(selectedAppServicePlan);
         } else if (CREATE_APP_SERVICE_PLAN.equals(selectedObject)) {
-            createAppServicePlan();
+            ApplicationManager.getApplication().invokeLater(this::createAppServicePlan);
         }
     }
 
     private void createAppServicePlan() {
         cbAppServicePlan.setSelectedItem(null);
+        cbAppServicePlan.setPopupVisible(false);
         final NewAppServicePlanDialog dialog = new NewAppServicePlanDialog(subscriptionId);
         dialog.pack();
         dialog.setLocationRelativeTo(this);
