@@ -194,33 +194,6 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         this.txtPackageName.setText(packageName);
     }
 
-    private void onSelectTriggerType() {
-        final String trigger = (String) cbTriggerType.getSelectedItem();
-        hideDynamicComponents();
-        if (StringUtils.isNotEmpty(trigger)) {
-            Arrays.stream(triggerComponents.get(trigger)).forEach(jComponent -> jComponent.setVisible(true));
-        }
-        if (trigger.equals(EVENT_HUB_TRIGGER)) {
-            fillJComboBox(cbEventHubNamespace, this::getEventHubNameSpaces, this::onSelectEventHubNameSpace);
-        }
-        CreateFunctionForm.this.pack();
-    }
-
-    private void onSelectEventHubNameSpace() {
-        Object selectedEventHubNameSpace = cbEventHubNamespace.getSelectedItem();
-        if (selectedEventHubNameSpace instanceof EventHubNamespace) {
-            fillJComboBox(cbEventHubName, () -> getEventHubByNamespaces((EventHubNamespace) selectedEventHubNameSpace), this::onSelectEventHubName);
-            txtConnection.setText(String.format("CONNECTION_%s", ((EventHubNamespace) selectedEventHubNameSpace).name()));
-        }
-    }
-
-    private void onSelectEventHubName() {
-        Object eventHub = cbEventHubName.getSelectedItem();
-        if (eventHub instanceof EventHub) {
-            fillJComboBox(cbConsumerGroup, () -> getConsumerGroupByEventHub((EventHub) eventHub));
-        }
-    }
-
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
@@ -408,6 +381,33 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         TimerCron result = new TimerCron(String.format("Customized: %s", cron), cron);
         cbCron.addItem(result);
         cbCron.setSelectedItem(result);
+    }
+
+    private void onSelectTriggerType() {
+        final String trigger = (String) cbTriggerType.getSelectedItem();
+        hideDynamicComponents();
+        if (StringUtils.isNotEmpty(trigger)) {
+            Arrays.stream(triggerComponents.get(trigger)).forEach(jComponent -> jComponent.setVisible(true));
+        }
+        if (trigger.equals(EVENT_HUB_TRIGGER)) {
+            fillJComboBox(cbEventHubNamespace, this::getEventHubNameSpaces, this::onSelectEventHubNameSpace);
+        }
+        CreateFunctionForm.this.pack();
+    }
+
+    private void onSelectEventHubNameSpace() {
+        Object selectedEventHubNameSpace = cbEventHubNamespace.getSelectedItem();
+        if (selectedEventHubNameSpace instanceof EventHubNamespace) {
+            fillJComboBox(cbEventHubName, () -> getEventHubByNamespaces((EventHubNamespace) selectedEventHubNameSpace), this::onSelectEventHubName);
+            txtConnection.setText(String.format("CONNECTION_%s", ((EventHubNamespace) selectedEventHubNameSpace).name()));
+        }
+    }
+
+    private void onSelectEventHubName() {
+        Object eventHub = cbEventHubName.getSelectedItem();
+        if (eventHub instanceof EventHub) {
+            fillJComboBox(cbConsumerGroup, () -> getConsumerGroupByEventHub((EventHub) eventHub));
+        }
     }
 
     static class TimerCron {
