@@ -55,6 +55,8 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -152,39 +154,25 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             }
         });
 
+
         cbTriggerType.addPopupMenuListener(new PopupMenuListenerAdapter() {
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                final String trigger = (String) cbTriggerType.getSelectedItem();
-                hideDynamicComponents();
-                if (StringUtils.isNotEmpty(trigger)) {
-                    Arrays.stream(triggerComponents.get(trigger)).forEach(jComponent -> jComponent.setVisible(true));
-                }
-                if (trigger.equals(EVENT_HUB_TRIGGER)) {
-                    fillEventHubNamespaces();
-                }
-                CreateFunctionForm.this.pack();
+                onSelectTriggerType();
             }
         });
 
         cbEventHubNamespace.addPopupMenuListener(new PopupMenuListenerAdapter() {
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                Object selectedEventHubNameSpace = cbEventHubNamespace.getSelectedItem();
-                if (selectedEventHubNameSpace instanceof EventHubNamespace) {
-                    fillJComboBox(cbEventHubName, () -> getEventHubByNamespaces((EventHubNamespace) selectedEventHubNameSpace));
-                    txtConnection.setText(String.format("CONNECTION_%s", ((EventHubNamespace) selectedEventHubNameSpace).name()));
-                }
+                onSelectEventHubNameSpace();
             }
         });
 
         cbEventHubName.addPopupMenuListener(new PopupMenuListenerAdapter() {
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                Object eventHub = cbEventHubName.getSelectedItem();
-                if (eventHub instanceof EventHub) {
-                    fillJComboBox(cbConsumerGroup, () -> getConsumerGroupByEventHub((EventHub) eventHub));
-                }
+                onSelectEventHubName();
             }
         });
 
@@ -271,6 +259,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private void initTriggers() {
         triggerComponents.keySet().stream().filter(StringUtils::isNoneBlank).forEach(triggerType -> cbTriggerType.addItem(triggerType));
         hideDynamicComponents();
+        onSelectTriggerType();
     }
 
     private void hideDynamicComponents() {
@@ -323,10 +312,6 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         Arrays.stream(AuthorizationLevel.values()).forEach(authLevel -> cbAuthLevel.addItem(authLevel));
     }
 
-    private void fillEventHubNamespaces() {
-        fillJComboBox(cbEventHubNamespace, () -> getEventHubNameSpaces());
-    }
-
     private List<EventHub> getEventHubByNamespaces(EventHubNamespace eventHubNamespace) {
         PagedList<EventHub> result = eventHubNamespace.listEventHubs();
         result.loadAll();
@@ -340,6 +325,10 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     }
 
     private void fillJComboBox(JComboBox jComboBox, Supplier<List<?>> listFunction) {
+        fillJComboBox(jComboBox, listFunction, null);
+    }
+
+    private void fillJComboBox(JComboBox jComboBox, Supplier<List<?>> listFunction, Runnable callback) {
         jComboBox.removeAllItems();
         jComboBox.addItem("Refreshing");
         jComboBox.setEnabled(false);
@@ -351,6 +340,9 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
                     jComboBox.setEnabled(true);
                     jComboBox.setSelectedItem(null);
                     list.forEach(item -> jComboBox.addItem(item));
+                    if (callback != null) {
+                        callback.run();
+                    }
                 }));
     }
 
@@ -389,6 +381,33 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         TimerCron result = new TimerCron(String.format("Customized: %s", cron), cron);
         cbCron.addItem(result);
         cbCron.setSelectedItem(result);
+    }
+
+    private void onSelectTriggerType() {
+        final String trigger = (String) cbTriggerType.getSelectedItem();
+        hideDynamicComponents();
+        if (StringUtils.isNotEmpty(trigger)) {
+            Arrays.stream(triggerComponents.get(trigger)).forEach(jComponent -> jComponent.setVisible(true));
+        }
+        if (trigger.equals(EVENT_HUB_TRIGGER)) {
+            fillJComboBox(cbEventHubNamespace, this::getEventHubNameSpaces, this::onSelectEventHubNameSpace);
+        }
+        CreateFunctionForm.this.pack();
+    }
+
+    private void onSelectEventHubNameSpace() {
+        Object selectedEventHubNameSpace = cbEventHubNamespace.getSelectedItem();
+        if (selectedEventHubNameSpace instanceof EventHubNamespace) {
+            fillJComboBox(cbEventHubName, () -> getEventHubByNamespaces((EventHubNamespace) selectedEventHubNameSpace), this::onSelectEventHubName);
+            txtConnection.setText(String.format("CONNECTION_%s", ((EventHubNamespace) selectedEventHubNameSpace).name()));
+        }
+    }
+
+    private void onSelectEventHubName() {
+        Object eventHub = cbEventHubName.getSelectedItem();
+        if (eventHub instanceof EventHub) {
+            fillJComboBox(cbConsumerGroup, () -> getConsumerGroupByEventHub((EventHub) eventHub));
+        }
     }
 
     static class TimerCron {
