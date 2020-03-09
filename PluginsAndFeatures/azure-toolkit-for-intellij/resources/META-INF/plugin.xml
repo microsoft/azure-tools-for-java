@@ -38,7 +38,7 @@
   <idea-version since-build="193.5233" until-build="193.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
-  <depends optional="true">org.intellij.scala</depends>
+  <depends>org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
@@ -52,8 +52,7 @@
           factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
           id="Azure Activity Log"
           canCloseContents="true"
-          icon="/icons/RoleFolder.gif"
-          conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
+          icon="/icons/RoleFolder.gif"/>
     <projectConfigurable groupId="root"
                        id="com.microsoft.intellij.AzureConfigurable"
                        provider="com.microsoft.intellij.AzureConfigurableProvider"
@@ -120,7 +119,7 @@
     <errorHandler implementation="com.microsoft.intellij.feedback.MSErrorReportHandler" />
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
-    <lang.syntaxHighlighterFactory key="arm"
+    <lang.syntaxHighlighterFactory language="arm"
       implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
     <lang.parserDefinition language="arm"
       implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
