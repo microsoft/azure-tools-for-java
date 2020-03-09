@@ -34,9 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public abstract class RefreshableNode extends Node {
-    protected boolean initialized;
-    private static String REFRESH_ICON_LIGHT = "RefreshLight_16.png";
-    private static String REFRESH_ICON_DARK = "RefreshDark_16.png";
+    public static String REFRESH_ICON_LIGHT = "RefreshLight_16.png";
+    public static String REFRESH_ICON_DARK = "RefreshDark_16.png";
+	protected boolean initialized;
     private static final String REFRESH = "Refresh";
 
     public RefreshableNode(String id, String name, Node parent, String iconPath) {

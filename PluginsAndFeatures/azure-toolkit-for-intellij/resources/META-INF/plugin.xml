@@ -74,6 +74,7 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider"/>
     <toolWindow
           anchor="left"
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
