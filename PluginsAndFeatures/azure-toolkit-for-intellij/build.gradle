@@ -115,6 +115,7 @@ dependencies {
         exclude group: "com.google.guava", module: "guava"
         exclude group: "commons-io", module: "commons-io"
     }
+    compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2'
     compile 'com.spotify:docker-client:8.11.7'
 
     testCompile 'junit:junit:4.12'
