@@ -40,16 +40,12 @@ import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
-import com.microsoft.intellij.runner.functions.library.IPrompter;
 import com.microsoft.intellij.runner.functions.library.function.DeployFunctionHandler;
-import org.codehaus.plexus.util.StringOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Map;
 
