@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.component.table;
 
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -149,7 +150,7 @@ public class AppSettingModel implements TableModel {
     }
 
     public void fireTableChanged() {
-        tableModelListenerList.stream().forEach(listener -> listener.tableChanged(new TableModelEvent(this)));
+        tableModelListenerList.stream().forEach(listener -> DefaultLoader.getIdeHelper().invokeLater(() -> listener.tableChanged(new TableModelEvent(this))));
     }
 
     @Override
