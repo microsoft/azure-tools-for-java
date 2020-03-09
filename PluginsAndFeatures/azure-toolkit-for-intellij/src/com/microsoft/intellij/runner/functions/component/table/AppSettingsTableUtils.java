@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -37,6 +38,7 @@ import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -57,7 +59,7 @@ public class AppSettingsTableUtils {
             "{\"IsEncrypted\":false,\"Values\":{\"AzureWebJobsStorage\":\"\",\"FUNCTIONS_WORKER_RUNTIME\":\"java\"}}";
     private static final String LOCAL_SETTINGS_VALUES = "Values";
     private static final String EXPORT_APP_SETTINGS = "Export app settings to local.settings.json";
-    private static final String EXPORT_APP_SETTINGS_FAILED = "Fail to save app settings to local.settings.json";
+    private static final String EXPORT_APP_SETTINGS_FAILED = "Fail to save app settings to local.settings.json : %s";
     private static final String LOCAL_SETTINGS_JSON = "local.settings.json";
     private static final String EXPORT_LOCAL_SETTINGS_TITLE = "Export to local settings";
 
@@ -75,6 +77,9 @@ public class AppSettingsTableUtils {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 final String key = JOptionPane.showInputDialog(appSettingsTable, "Please input value for key: ");
+                if (StringUtils.isEmpty(key)) {
+                    return;
+                }
                 final String value = JOptionPane.showInputDialog(appSettingsTable, "Please input value for value: ");
                 appSettingsTable.addAppSettings(key, value);
                 appSettingsTable.repaint();
@@ -122,8 +127,9 @@ public class AppSettingsTableUtils {
                 try {
                     final File file = DefaultLoader.getUIHelper().showFileSaver(EXPORT_APP_SETTINGS, LOCAL_SETTINGS_JSON);
                     AppSettingsTableUtils.exportLocalSettingsJsonFile(file, appSettingsTable.getAppSettings());
+                    PluginUtil.displayInfoDialog("Export successfully", "Export app settings successfully");
                 } catch (IOException e) {
-                    MvpUIHelperFactory.getInstance().getMvpUIHelper().showException(EXPORT_APP_SETTINGS_FAILED, e);
+                    PluginUtil.displayErrorDialog("Export failed", String.format(EXPORT_APP_SETTINGS_FAILED, e.getMessage()));
                 }
             }
         };
