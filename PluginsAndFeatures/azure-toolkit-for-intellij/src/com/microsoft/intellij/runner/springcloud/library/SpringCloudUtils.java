@@ -33,6 +33,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementa
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ResourceUploadDefinitionInner;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.file.CloudFile;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.intellij.runner.springcloud.SpringCloudConstants;
@@ -43,6 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,10 +61,6 @@ public class SpringCloudUtils {
             managerMap.put(subscriptionId, manager);
         }
         return managerMap.get(subscriptionId);
-    }
-
-    public static AppResourceInner execute(SpringCloudModel springCloudModel) throws IOException {
-        return null;
     }
 
     public static AppResourceInner activeDeployment(AppResourceInner appResourceInner, DeploymentResourceInner deploymentResourceInner, SpringCloudModel springCloudModel) throws IOException {
@@ -108,7 +106,7 @@ public class SpringCloudUtils {
     }
 
 
-    public static UserSourceInfo deployArtifact(SpringCloudModel springCloudModel) throws IOException {
+    public static UserSourceInfo deployArtifact(SpringCloudModel springCloudModel) throws IOException, URISyntaxException, StorageException {
         // Upload artifact to correspond url
         final AppPlatformManager appPlatformManager = getAppPlatformManager(springCloudModel.getSubscriptionId());
         final ResourceUploadDefinitionInner resourceUploadDefinition = appPlatformManager.apps().inner()
@@ -152,12 +150,8 @@ public class SpringCloudUtils {
         return persistentDisk;
     }
 
-    private static void uploadFileToStorage(File file, String sasUrl) throws IOException {
-        try {
-            final CloudFile cloudFile = new CloudFile(new URI(sasUrl));
-            cloudFile.uploadFromFile(file.getPath());
-        } catch (Exception e) {
-            throw new IOException(e.getMessage(), e);
-        }
+    private static void uploadFileToStorage(File file, String sasUrl) throws IOException, StorageException, URISyntaxException {
+        final CloudFile cloudFile = new CloudFile(new URI(sasUrl));
+        cloudFile.uploadFromFile(file.getPath());
     }
 }

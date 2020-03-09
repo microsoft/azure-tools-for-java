@@ -29,6 +29,7 @@ import java.util.Map;
 
 public class SpringCloudModel {
 
+    private String moduleName;
     private String artifactPath;
     // app
     private boolean isPublic;
@@ -94,6 +95,10 @@ public class SpringCloudModel {
         return jvmOptions;
     }
 
+    public String getModuleName() {
+        return moduleName;
+    }
+
     public boolean isEnablePersistentStorage() {
         return enablePersistentStorage;
     }
@@ -152,6 +157,10 @@ public class SpringCloudModel {
 
     public void setEnablePersistentStorage(boolean enablePersistentStorage) {
         this.enablePersistentStorage = enablePersistentStorage;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
     }
 
     public void setEnvironment(Map<String, String> environment) {

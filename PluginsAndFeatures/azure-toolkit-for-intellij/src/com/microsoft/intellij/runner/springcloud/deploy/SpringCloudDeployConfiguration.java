@@ -47,10 +47,8 @@ import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NE
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel>
         implements RunProfileWithCompileBeforeLaunchOption {
 
-    public static final String NEED_SPECIFY_MODULE = "Please specify module";
+    private static final String NEED_SPECIFY_MODULE = "Please specify module";
     private final SpringCloudModel springCloudModel;
-
-    private Module module;
 
     public SpringCloudDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -134,6 +132,10 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         return springCloudModel.getJvmOptions();
     }
 
+    public String getModuleName() {
+        return springCloudModel.getModuleName();
+    }
+
     public boolean isEnablePersistentStorage() {
         return springCloudModel.isEnablePersistentStorage();
     }
@@ -196,6 +198,10 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
 
     public void setEnvironment(Map<String, String> environment) {
         springCloudModel.setEnvironment(environment);
+    }
+
+    public void setModuleName(String moduleName) {
+        springCloudModel.setModuleName(moduleName);
     }
 
     @Override
