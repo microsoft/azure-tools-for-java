@@ -30,6 +30,7 @@ public class TelemetryConstants {
     // production name
     public static final String WEBAPP = "webapp";
     public static final String FUNCTION = "function";
+    public static final String SPRING_CLOUD = "springcloud";
     public static final String ACR = "acr";
     public static final String ARM = "arm";
     public static final String DOCKER = "docker";
@@ -79,6 +80,16 @@ public class TelemetryConstants {
     public static final String RESTART_FUNCTION_APP = "restart-function-app";
     public static final String SHOWPROP_FUNCTION_APP = "showprop-function-app";
     public static final String OPEN_INBROWSER_FUNCTION_APP = "open-inbrowser-function-app";
+
+    public static final String CREATE_SPRING_CLOUD_APP = "create-springcloud-app";
+    public static final String DEPLOY_SPRING_CLOUD_APP = "deploy-springcloud-app";
+    public static final String DELETE_SPRING_CLOUD_APP = "delete-springcloud-app";
+    public static final String START_SPRING_CLOUD_APP = "start-springcloud-app";
+    public static final String STOP_SPRING_CLOUD_APP = "stop-springcloud-app";
+    public static final String RESTART_SPRING_CLOUD_APP = "restart-springcloud-app";
+    public static final String SHOWPROP_SPRING_CLOUD_APP = "showprop-springcloud-app";
+    public static final String OPEN_IN_BROWSER_SPRING_CLOUD_APP = "open-inbrowser-springcloud-app";
+
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
     public static final String CREATE_DOCKER_HOST = "create-docker-host";
     public static final String DEPLOY_DOCKER_HOST = "deploy-docker-host";

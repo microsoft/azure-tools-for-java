@@ -18,9 +18,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
-
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
@@ -30,7 +28,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import java.util.List;
 
-public class SpringCloudModule extends AzureRefreshableNode implements SpringCloudModuleView  {
+public class SpringCloudModule extends AzureRefreshableNode implements SpringCloudModuleView {
     protected static final String ICON_FILE = "azure-springcloud-small.png";
     private static final String SPRING_SERVICE_MODULE_ID = SpringCloudModule.class.getName();
     private static final String BASE_MODULE_NAME = "Spring Cloud";

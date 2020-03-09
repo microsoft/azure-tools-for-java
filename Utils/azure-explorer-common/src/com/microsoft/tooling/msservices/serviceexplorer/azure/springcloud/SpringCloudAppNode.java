@@ -18,9 +18,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
-
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResource;
@@ -32,6 +30,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     private final AppResourceInner app;
@@ -81,25 +81,27 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_START, new WrappedTelemetryNodeActionListener("AZURE_SPRING_CLOUD", "start-springcloud-app",
+        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, START_SPRING_CLOUD_APP,
                 createBackgroundActionListener("Starting", () -> startSpringCloudApp())));
-        addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener("AZURE_SPRING_CLOUD", "stop-springcloud-app",
+        addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, STOP_SPRING_CLOUD_APP,
                 createBackgroundActionListener("Stopping", () -> stopSpringCloudApp())));
 
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener("AZURE_SPRING_CLOUD", "retstart-springcloud-app",
+        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, RESTART_SPRING_CLOUD_APP,
                 createBackgroundActionListener("Restarting", () -> restartSpringCloudApp())));
-        addAction(ACTION_DELETE, new WrappedTelemetryNodeActionListener("AZURE_SPRING_CLOUD", "delete-springcloud-app",
+        addAction(ACTION_DELETE, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, DELETE_SPRING_CLOUD_APP,
                 createBackgroundActionListener("Deleting", () -> deleteSpringCloudApp())));
-        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener("AZURE_SPRING_CLOUD", "open-inbrowser-springcloud",
+        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_BROWSER_SPRING_CLOUD_APP,
                 new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) {
                         if (StringUtils.isNotBlank(app.properties().url())) {
                             DefaultLoader.getUIHelper().openInBrowser(app.properties().url());
+                        } else {
+                            DefaultLoader.getUIHelper().showInfo(SpringCloudAppNode.this, "Public url is not available for app: " + app.name());
                         }
                     }
                 }));
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener("AZURE_SPRING_CLOUD", "showprop-springcloud-app",
+        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, SHOWPROP_SPRING_CLOUD_APP,
                 new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) {

@@ -99,7 +99,7 @@ public class AzureModule extends AzureRefreshableNode {
         containerRegistryModule = new ContainerRegistryModule(this);
         resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
-        springCloudModule= new SpringCloudModule(this);
+        springCloudModule = new SpringCloudModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -174,10 +174,10 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(resourceManagementModule)) {
             addChildNode(resourceManagementModule);
         }
-        if(!isDirectChild(functionModule)){
+        if (!isDirectChild(functionModule)) {
             addChildNode(functionModule);
         }
-        if(!isDirectChild(springCloudModule)){
+        if (!isDirectChild(springCloudModule)) {
             addChildNode(springCloudModule);
         }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {

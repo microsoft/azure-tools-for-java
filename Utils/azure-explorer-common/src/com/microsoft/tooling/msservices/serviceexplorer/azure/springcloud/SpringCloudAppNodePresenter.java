@@ -18,9 +18,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
-
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
@@ -49,10 +47,5 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
 
     private void updateSelfStatus(String appId, String activeDeploymentName) {
         // todo: update status
-//        final SpringCloudAppNodeView view = getMvpView();
-//        if (view != null) {
-//            final DeploymentResourceInner target = AzureSpringCloudMvpModel.getInstance().getActiveDeploymentForApp(resourceGroup, serviceName, app);
-//            view.updateStatus(convertStateToString(target.properties().status()));
-//        }
     }
 }

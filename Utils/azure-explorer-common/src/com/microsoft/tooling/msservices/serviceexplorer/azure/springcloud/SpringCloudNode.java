@@ -43,12 +43,13 @@ import static com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud
  * SpringCloudNode
  */
 public class SpringCloudNode extends RefreshableNode implements TelemetryProperties, SpringCloudNodeView {
-    private final static Logger LOGGER = Logger.getLogger(SpringCloudNode.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SpringCloudNode.class.getName());
     private static final String FAILED_TO_LOAD_APPS = "Failed to load apps in: %s";
     private final String subscriptionId;
     private String clusterId;
     private String clusterName;
     private SpringCloudNodePresenter springCloudNodePresenter;
+
     public SpringCloudNode(AzureRefreshableNode parent, String subscriptionId, ServiceResourceInner serviceInner) {
         super(serviceInner.id(), serviceInner.name(), parent, ICON_FILE, true);
 
