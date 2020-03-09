@@ -30,6 +30,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.De
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
@@ -89,6 +90,8 @@ public interface UIHelper {
 
     }
 
+    default void openSpringCloudAppPropertyView(@NotNull SpringCloudAppNode node) {
+    }
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
 
     @Nullable

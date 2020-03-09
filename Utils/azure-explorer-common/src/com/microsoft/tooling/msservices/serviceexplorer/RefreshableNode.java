@@ -138,7 +138,9 @@ public abstract class RefreshableNode extends Node {
                                     DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                                         @Override
                                         public void run() {
+                                            if (node.getName().endsWith("(Refreshing...)")) {
                                             updateName(nodeName, null);
+                                            }
                                             updateNodeNameAfterLoading();
                                             expandNodeAfterLoading();
                                         }
