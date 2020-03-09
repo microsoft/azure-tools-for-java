@@ -336,6 +336,10 @@ public class LivySparkBatchJobRunConfiguration extends AbstractRunConfiguration
         }
     }
 
+    public void setSparkRemoteBatch(ISparkBatchJob sparkRemoteBatch) {
+        this.sparkRemoteBatch = sparkRemoteBatch;
+    }
+
     public void setRunMode(@NotNull RunMode mode) {
         this.mode = mode;
     }

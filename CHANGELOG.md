@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.33.1](#3331)
   - [3.33.0](#3330)
   - [3.32.0](#3320)
   - [3.31.0](#3310)
@@ -44,6 +45,12 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.33.1
+
+### Fixed
+- [#4061](https://github.com/microsoft/azure-tools-for-java/issues/4061) The error of Spark job remote debugging
+- [#4079](https://github.com/microsoft/azure-tools-for-java/issues/4079) The regression of Spark console can not start
 
 ## 3.33.0
 

@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.spark.run.action
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ProgramRunnerUtil
-import com.intellij.execution.configuration.AbstractRunConfiguration
+import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.impl.RunDialog
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -60,7 +60,7 @@ object RunConfigurationActionUtils: ILogger {
 
         val ideaSchedulers = IdeaSchedulers(environment.project)
 
-        fromCallable { checkRunnerSettings(environment.runProfile as AbstractRunConfiguration, runner) }
+        fromCallable { checkRunnerSettings(environment.runProfile as RunConfigurationBase<*>, runner) }
                 .subscribeOn(ideaSchedulers.dispatchUIThread()) // Check Runner Settings in EDT
                 .flatMap { checkAndPrepareRunProfileState(it, runner, ideaSchedulers) }
                 .retryWhen { errOb -> errOb.observeOn(ideaSchedulers.dispatchUIThread() )
@@ -91,7 +91,11 @@ object RunConfigurationActionUtils: ILogger {
                 }, {
                     environment.assignNewExecutionId()
 
-                    runner.execute(environment)
+                    try {
+                        runner.execute(environment)
+                    } catch (err: ExecutionException) {
+                        ProgramRunnerUtil.handleExecutionError(environment.project, environment, err, setting.configuration)
+                    }
                 })
     }
 
@@ -103,8 +107,8 @@ object RunConfigurationActionUtils: ILogger {
                             "Cancel Submit",
                             Messages.getErrorIcon()) == YES
 
-    private fun checkRunnerSettings(runProfile: AbstractRunConfiguration, runner: ProgramRunner<RunnerSettings>)
-            : AbstractRunConfiguration {
+    private fun <T : Any?> checkRunnerSettings(runProfile: RunConfigurationBase<T>, runner: ProgramRunner<RunnerSettings>)
+            : RunConfigurationBase<T> {
         assertInDispatchThread()
 
         runProfile.checkRunnerSettings(runner, null, null)
@@ -112,7 +116,7 @@ object RunConfigurationActionUtils: ILogger {
         return runProfile
     }
 
-    private fun checkAndPrepareRunProfileState(runProfile: AbstractRunConfiguration,
+    private fun <T : Any?> checkAndPrepareRunProfileState(runProfile: RunConfigurationBase<T>,
                                                runner: ProgramRunner<RunnerSettings>,
                                                ideaSchedulers: IdeaSchedulers): Observable<out Any?> {
         if (runProfile !is RunProfileStatePrepare<*>) {

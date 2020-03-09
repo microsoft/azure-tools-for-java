@@ -35,6 +35,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
@@ -55,7 +56,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
 import rx.Observable;
-import rx.Observer;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
@@ -232,6 +232,18 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                     jdbReadyEvent.getRemoteHost().orElse("unknown"),
                                     jdbReadyEvent.isDriver());
 
+                            final RunProfile runProfile = forkEnv.getRunProfile();
+                            if (!(runProfile instanceof LivySparkBatchJobRunConfiguration)) {
+                                ctrlSubject.onError(new UnsupportedOperationException(
+                                        "Only supports LivySparkBatchJobRunConfiguration type, but got type"
+                                                + runProfile.getClass().getCanonicalName()));
+
+                                return;
+                            }
+
+                            // Reuse the driver's Spark batch job
+                            ((LivySparkBatchJobRunConfiguration) runProfile).setSparkRemoteBatch(sparkDebugBatch);
+
                             SparkBatchRemoteDebugState forkState = jdbReadyEvent.isDriver() ?
                                     submissionState :
                                     (SparkBatchRemoteDebugState) forkEnv.getState();
@@ -325,7 +337,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
 
                 return jobDriverEnvReady
                         .then(forkEnv -> Observable.fromCallable(() -> doExecute(state, forkEnv))
-                                .subscribeOn(schedulers.dispatchUIThread()).toBlocking().singleOrDefault(null))
+                                .subscribeOn(schedulers.dispatchUIThread(ModalityState.defaultModalityState()))
+                                .toBlocking()
+                                .singleOrDefault(null))
                         .then(descriptor -> {
                             // Borrow BaseProgramRunner.postProcess() codes since it's only package public accessible.
                             if (descriptor != null) {
