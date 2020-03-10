@@ -247,7 +247,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     private void createNewFunctionApp() {
         // todo: add create function dialog
-        cbxFunctionApp.setPopupVisible(false);q
+        cbxFunctionApp.setPopupVisible(false);
         final FunctionCreationDialog dialog = new FunctionCreationDialog(this.project);
         dialog.pack();
         dialog.setLocationRelativeTo(this.getMainPanel());

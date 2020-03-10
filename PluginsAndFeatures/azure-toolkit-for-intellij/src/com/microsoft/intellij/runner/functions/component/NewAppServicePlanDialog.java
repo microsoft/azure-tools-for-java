@@ -44,10 +44,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.List;
 
 public class NewAppServicePlanDialog extends JDialog {
-    private static final PricingTier CONSUMPTION = new PricingTier("Consumption", "");
+
+    public static final String CONSUMPTION = "Consumption";
+    public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -114,7 +115,7 @@ public class NewAppServicePlanDialog extends JDialog {
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof PricingTier) {
                     final PricingTier pricingTier = (PricingTier) object;
-                    setText(pricingTier == CONSUMPTION ? CONSUMPTION.toSkuDescription().tier() : pricingTier.toString());
+                    setText(pricingTier == CONSUMPTION_PRICING_TIER ? CONSUMPTION : pricingTier.toString());
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
@@ -159,8 +160,8 @@ public class NewAppServicePlanDialog extends JDialog {
     public void onLoadPricingTier() {
         try {
             cbPricing.removeAllItems();
-            cbPricing.addItem(CONSUMPTION);
-            cbPricing.setSelectedItem(CONSUMPTION);
+            cbPricing.addItem(CONSUMPTION_PRICING_TIER);
+            cbPricing.setSelectedItem(CONSUMPTION_PRICING_TIER);
             AzureFunctionMvpModel.getInstance().listFunctionPricingTier().stream()
                     .forEach(pricingTier -> cbPricing.addItem(pricingTier));
         } catch (IllegalAccessException e) {

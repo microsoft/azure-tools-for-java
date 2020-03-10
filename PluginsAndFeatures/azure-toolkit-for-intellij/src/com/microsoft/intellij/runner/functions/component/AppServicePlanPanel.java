@@ -49,6 +49,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION;
+import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION_PRICING_TIER;
+
 public class AppServicePlanPanel extends JPanel {
     private static final String CREATE_APP_SERVICE_PLAN = "Create app service plan...";
     private JComboBox cbAppServicePlan;
@@ -172,7 +175,8 @@ public class AppServicePlanPanel extends JPanel {
             lblPricingTier.setText("N/A");
         } else {
             lblLocation.setText(appServicePlanWrapper.getRegion().name());
-            lblPricingTier.setText(appServicePlanWrapper.getPricingTier().toString());
+            final PricingTier pricingTier = appServicePlanWrapper.getPricingTier();
+            lblPricingTier.setText(pricingTier == CONSUMPTION_PRICING_TIER ? CONSUMPTION : pricingTier.toString());
         }
     }
 
