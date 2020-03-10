@@ -28,6 +28,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.startup.StartupManager;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
@@ -111,11 +112,9 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
 
             ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
             initAuthManage();
-            ActionManager am = ActionManager.getInstance();
-            DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
-            toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
-            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
-            popupGroup.add(am.getAction("AzurePopupGroup"));
+            // Calling ActionManager.getInstance() here in EAP 2020.1 will cause the following error
+            // Should be called at least in the state COMPONENTS_LOADED, the current state is: CONFIGURATION_STORE_INITIALIZED
+            // Instead we put these codes in ProjectComponent com.microsoft.intellij.AzurePlugin
             loadWebApps();
         }
         try {

@@ -22,29 +22,6 @@
 
 package com.microsoft.intellij;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.swing.event.EventListenerList;
-
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginInstaller;
 import com.intellij.ide.plugins.PluginStateListener;
@@ -52,6 +29,9 @@ import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.application.PermanentInstallationID;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -68,11 +48,7 @@ import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -86,11 +62,22 @@ import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
+
+import javax.swing.event.EventListenerList;
+import java.io.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
 public class AzurePlugin extends AbstractProjectComponent {
@@ -156,12 +143,29 @@ public class AzurePlugin extends AbstractProjectComponent {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings();
+                // Put Azure action group initialization code here to avoid the following error in EAP2020.1.
+                // Should be called at least in the state COMPONENTS_LOADED, the current state is: CONFIGURATION_STORE_INITIALIZED
+                initializeAzureActionGroup();
             } catch (Exception e) {
             /* This is not a user initiated task
                So user should not get any exception prompt.*/
                 LOG.error(AzureBundle.message("expErlStrtUp"), e);
             }
         }
+    }
+
+    private void initializeAzureActionGroup() {
+        if (myProject.isDefault()) {
+            return;
+        }
+
+        ActionManager am = ActionManager.getInstance();
+        DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
+        toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
+        DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
+        popupGroup.add(am.getAction("AzurePopupGroup"));
+        DefaultActionGroup projectPopupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
+        projectPopupGroup.add(am.getAction("Actions.SubmitSparkApplicationAction"));
     }
 
     private synchronized void initializeTelemetry() throws Exception {
@@ -298,6 +302,11 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void loadWebappsSettings() {
+        // Skip default project to avoid the following error in EAP 2020.1
+        // java.lang.Throwable: Assertion failed: Please don't register startup activities for the default project: they won't ever be run
+        if (myProject.isDefault()) {
+            return;
+        }
         StartupManager.getInstance(myProject).runWhenProjectIsInitialized(
                 new Runnable() {
                     @Override

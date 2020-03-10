@@ -21,18 +21,15 @@
  */
 package com.microsoft.azure.hdinsight.projects;
 
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.IdeActions;
 import com.intellij.openapi.components.ApplicationComponent;
 import org.jetbrains.annotations.NotNull;
 
 public class HDInsightActionsComponent implements ApplicationComponent {
     @Override
     public void initComponent() {
-        ActionManager actionManager = ActionManager.getInstance();
-        DefaultActionGroup projectPopupGroup = (DefaultActionGroup) actionManager.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
-        projectPopupGroup.add(actionManager.getAction("Actions.SubmitSparkApplicationAction"));
+        // Calling ActionManager.getInstance() here in EAP 2020.1 will cause the following error
+        // Should be called at least in the state COMPONENTS_LOADED, the current state is: CONFIGURATION_STORE_INITIALIZED
+        // Instead we put these codes in ProjectComponent com.microsoft.intellij.AzurePlugin
     }
 
     @Override
