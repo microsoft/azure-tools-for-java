@@ -73,7 +73,7 @@
                 </constraints>
                 <properties>
                   <labelFor value="72d80"/>
-                  <text value="PricingTier:"/>
+                  <text value="Pricing Tier:"/>
                 </properties>
               </component>
               <component id="38ad" class="javax.swing.JComboBox" binding="cbPricing">
@@ -118,7 +118,7 @@
                 </constraints>
                 <properties>
                   <labelFor value="bc0d5"/>
-                  <text value="ServicePlan:"/>
+                  <text value="Name:"/>
                 </properties>
               </component>
             </children>
