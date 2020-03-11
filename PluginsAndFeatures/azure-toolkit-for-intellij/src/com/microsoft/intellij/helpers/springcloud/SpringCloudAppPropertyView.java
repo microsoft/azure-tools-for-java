@@ -244,9 +244,6 @@ public class SpringCloudAppPropertyView extends BaseEditor {
         lblURL.setText(LOADING);
         lblCreateTime.setText(LOADING);
         lblAppName.setText(LOADING);
-
-        btnIsPublic.setText(LOADING);
-
         tblInstances.getEmptyText().setText(LOADING);
         instancesTableModel.getDataVector().removeAllElements();
         tblInstances.updateUI();
@@ -343,7 +340,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 try {
                     progressIndicator.setIndeterminate(true);
-                        AzureSpringCloudMvpModel.updatePublic(appResourceInner.id(), updatePublicTrue);
+                    AzureSpringCloudMvpModel.updatePublic(appResourceInner.id(), updatePublicTrue);
 
                     ApplicationManager.getApplication().invokeLater(() -> {
                         SpringCloudAppPropertyView.this.dispose();
