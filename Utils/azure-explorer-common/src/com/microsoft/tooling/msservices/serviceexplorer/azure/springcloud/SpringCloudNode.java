@@ -99,6 +99,10 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         return clusterId;
     }
 
+    public String getClusterName() {
+        return this.clusterName;
+    }
+
     @Override
     public String getServiceName() {
         return TelemetryConstants.SPRING_CLOUD;
