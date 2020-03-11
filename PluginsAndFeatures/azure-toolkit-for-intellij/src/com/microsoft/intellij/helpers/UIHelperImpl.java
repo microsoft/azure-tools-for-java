@@ -74,6 +74,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -448,7 +449,7 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         final String id = node.getAppId();
-        final String subscription = "subs";
+        final String subscription = getSubscriptionId(id);
         final String resourceGroup = node.getResourceGroup();
         final String cluster = node.getClusterName();
         final String appName = node.getAppName();
@@ -461,6 +462,11 @@ public class UIHelperImpl implements UIHelper {
         itemVirtualFile.putUserData(CLUSTER_NAME, cluster);
         itemVirtualFile.putUserData(APP_NAME, appName);
         fileEditorManager.openFile(itemVirtualFile, true, true);
+    }
+
+    private static String getSubscriptionId(String resourceId) {
+        final String[] attributes = resourceId.split("/");
+        return attributes[ArrayUtils.indexOf(attributes, "subscriptions") + 1];
     }
 
     @Override
@@ -591,9 +597,8 @@ public class UIHelperImpl implements UIHelper {
             StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
             ClientStorageAccount editedClientStorageAccount = editedFile.getUserData(CLIENT_STORAGE_KEY);
             if (((editedStorageAccount != null && editedStorageAccount.name().equals(accountName)) ||
-                    (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
-                    && editedItem != null
-                    && editedItem.getName().equals(item.getName())) {
+                    (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName))) &&
+                    editedItem != null && editedItem.getName().equals(item.getName())) {
                 return editedFile;
             }
         }

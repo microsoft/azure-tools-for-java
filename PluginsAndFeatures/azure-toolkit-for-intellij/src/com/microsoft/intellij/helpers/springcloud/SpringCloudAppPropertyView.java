@@ -48,6 +48,7 @@ import com.microsoft.rest.LogLevel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -79,6 +80,8 @@ public class SpringCloudAppPropertyView extends BaseEditor {
     private JButton btnRefresh;
     private JPanel pnlEnvironmentHolder;
     private JPanel pnlInstances;
+    private JButton btnDelete;
+    private JButton btnIsPublic;
     private JBTable tblEnvironmentVariables;
     private DefaultTableModel environmentVariablesTableModel;
     private JBTable tblInstances;
@@ -104,6 +107,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
         this.appName = appName;
 
         btnSave.addActionListener(e -> save());
+        btnDelete.addActionListener(e -> deleteApp());
         btnDiscard.addActionListener(e -> discard());
         btnRefresh.addActionListener(e -> onLoadSpringCloudApp(subscription, resourceGroup, cluster, appName));
         txtJVMOptions.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -114,6 +118,8 @@ public class SpringCloudAppPropertyView extends BaseEditor {
         });
 
         onLoadSpringCloudApp(subscription, resourceGroup, cluster, appName);
+
+        btnIsPublic.addActionListener(e -> changeIsPublic());
     }
 
     @NotNull
@@ -239,6 +245,8 @@ public class SpringCloudAppPropertyView extends BaseEditor {
         lblCreateTime.setText(LOADING);
         lblAppName.setText(LOADING);
 
+        btnIsPublic.setText(LOADING);
+
         tblInstances.getEmptyText().setText(LOADING);
         instancesTableModel.getDataVector().removeAllElements();
         tblInstances.updateUI();
@@ -254,6 +262,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
         DefaultLoader.getIdeHelper().invokeLater(() -> {
             fillSpringCloudApp(appInner, resourceInner);
         });
+        btnIsPublic.setEnabled(false);
     }
 
     private void fillSpringCloudApp(AppResourceInner appResourceInner, DeploymentResourceInner activeDeployment) {
@@ -268,6 +277,8 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             lblURL.setHyperlinkTarget(appResourceInner.properties().url());
         }
         fillSpringCloudDeployment(activeDeployment);
+        this.btnIsPublic.setText(BooleanUtils.isTrue(appResourceInner.properties().publicProperty()) ? "Unassign endpoint" : "Assign endpoint");
+        btnIsPublic.setEnabled(true);
     }
 
     private void fillSpringCloudDeployment(DeploymentResourceInner deploymentResourceInner) {
@@ -322,6 +333,50 @@ public class SpringCloudAppPropertyView extends BaseEditor {
         fillEnvironmentVariables(deploymentResourceInner.properties().deploymentSettings().environmentVariables());
         txtJVMOptions.setText(deploymentResourceInner.properties().deploymentSettings().jvmOptions());
         syncButtonStatus();
+    }
+
+    private void changeIsPublic() {
+        final String text = this.btnIsPublic.getText();
+        boolean updatePublicTrue = text.startsWith("Assign");
+        ProgressManager.getInstance().run(new Task.Modal(null, text, true) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                try {
+                    progressIndicator.setIndeterminate(true);
+                        AzureSpringCloudMvpModel.updatePublic(appResourceInner.id(), updatePublicTrue);
+
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        SpringCloudAppPropertyView.this.dispose();
+                        onLoadSpringCloudApp(subscription, resourceGroup, cluster, appName);
+                        PluginUtil.displayInfoDialog(text + " successfully", text + " successfully");
+
+                    });
+                } catch (Exception e) {
+                    ApplicationManager.getApplication().invokeLater(() ->
+                            PluginUtil.displayErrorDialog(String.format("Failed to %s", text,
+                                    SpringCloudAppPropertyView.this.appResourceInner.name()), e.getMessage()));
+                }
+            }
+        });
+    }
+
+    private void deleteApp() {
+        ProgressManager.getInstance().run(new Task.Modal(null, "Deleting spring cloud app", true) {
+            @Override
+            public void run(@NotNull ProgressIndicator progressIndicator) {
+                try {
+                    progressIndicator.setIndeterminate(true);
+                    AzureSpringCloudMvpModel.deleteApp(appResourceInner.id()).await();
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        SpringCloudAppPropertyView.this.dispose();
+                        PluginUtil.displayInfoDialog("Delete successfully", "Delete app successfully");
+                    });
+                } catch (Exception e) {
+                    ApplicationManager.getApplication().invokeLater(() ->
+                        PluginUtil.displayErrorDialog("Failed to delete app: " + SpringCloudAppPropertyView.this.appResourceInner.name(), e.getMessage()));
+                }
+            }
+        });
     }
 
     private void save() {

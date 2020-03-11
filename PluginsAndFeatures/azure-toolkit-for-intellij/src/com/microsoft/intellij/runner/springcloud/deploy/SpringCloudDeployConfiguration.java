@@ -27,14 +27,11 @@ import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.configurations.RunProfileWithCompileBeforeLaunchOption;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
 import org.jetbrains.annotations.NotNull;
@@ -42,12 +39,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEED_SIGN_IN;
-
-public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel>
-        implements RunProfileWithCompileBeforeLaunchOption {
-
-    private static final String NEED_SPECIFY_MODULE = "Please specify module";
+public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
     private final SpringCloudModel springCloudModel;
 
     public SpringCloudDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -148,8 +140,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         springCloudModel.setArtifactPath(artifactPath);
     }
 
-    public void setPublic(boolean aPublic) {
-        springCloudModel.setPublic(aPublic);
+    public void setPublic(boolean isPublic) {
+        springCloudModel.setPublic(isPublic);
     }
 
     public void setSubscriptionId(String subscriptionId) {
@@ -206,13 +198,5 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
 
     @Override
     public void validate() throws ConfigurationException {
-        // Todo: implement validation
-//        if (!AuthMethodManager.getInstance().isSignedIn()) {
-//            throw new ConfigurationException(NEED_SIGN_IN);
-//        }
-//        if (this.module == null) {
-//            throw new ConfigurationException(NEED_SPECIFY_MODULE);
-//        }
     }
-
 }

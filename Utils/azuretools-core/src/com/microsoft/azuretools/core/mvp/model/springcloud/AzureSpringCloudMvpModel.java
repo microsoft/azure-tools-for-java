@@ -25,6 +25,7 @@ package com.microsoft.azuretools.core.mvp.model.springcloud;
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.credentials.AzureCliCredentials;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.AppResourceProperties;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResource;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
@@ -113,6 +114,10 @@ public class AzureSpringCloudMvpModel {
 
     public static Completable deleteApp(String appId) {
         return springManager.apps().deleteAsync(getResourceGroup(appId), getClusterName(appId), getAppName(appId));
+    }
+
+    public static AppResourceInner updatePublic(String appId, boolean isPublic) {
+        return springManager.apps().inner().update(getResourceGroup(appId), getClusterName(appId), getAppName(appId), new AppResourceProperties().withPublicProperty(isPublic));
     }
 
     public List<AppResourceInner> listAppsByClusterId(String id) {

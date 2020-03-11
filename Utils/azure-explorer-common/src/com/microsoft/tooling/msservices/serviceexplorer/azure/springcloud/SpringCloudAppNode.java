@@ -51,7 +51,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 String.format("azure-springcloud-app-%s.png", getStatusIcon(deploy)));
         this.app = app;
         this.deploy = deploy;
-        this.clusterName = parent.getServiceName();
+        this.clusterName = parent.getClusterName();
         springCloudAppNodePresenter = new SpringCloudAppNodePresenter();
         springCloudAppNodePresenter.onAttachView(this);
 
