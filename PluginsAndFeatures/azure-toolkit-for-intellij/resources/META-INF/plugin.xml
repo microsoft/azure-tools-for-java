@@ -40,6 +40,7 @@
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends>org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
+  <depends>com.intellij.modules.java</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
