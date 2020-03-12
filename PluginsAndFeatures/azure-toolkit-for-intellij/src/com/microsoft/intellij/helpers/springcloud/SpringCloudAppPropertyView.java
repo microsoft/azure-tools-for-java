@@ -38,6 +38,7 @@ import com.microsoft.azure.credentials.AzureCliCredentials;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceProperties;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentSettings;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.TestKeys;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
@@ -86,6 +87,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
     private DefaultTableModel environmentVariablesTableModel;
     private JBTable tblInstances;
     private DefaultTableModel instancesTableModel;
+    private HyperlinkLabel lblTestEndpoint;
 
     private final Map<String, String> editedEnvironmentVariable;
 
@@ -245,6 +247,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
         lblCreateTime.setText(LOADING);
         lblAppName.setText(LOADING);
         tblInstances.getEmptyText().setText(LOADING);
+        lblTestEndpoint.setText(LOADING);
         instancesTableModel.getDataVector().removeAllElements();
         tblInstances.updateUI();
         tblEnvironmentVariables.getEmptyText().setText(LOADING);
@@ -263,7 +266,20 @@ public class SpringCloudAppPropertyView extends BaseEditor {
     }
 
     private void fillSpringCloudApp(AppResourceInner appResourceInner, DeploymentResourceInner activeDeployment) {
-
+        DefaultLoader.getIdeHelper().invokeLater(() -> {
+            try {
+                final TestKeys testKeys = getAppPlatformManager().services().listTestKeysAsync(resourceGroup, cluster).toBlocking().first();
+                if (testKeys == null) {
+                    lblTestEndpoint.setText("N/a");
+                } else {
+                    final String testEndpoint = String.format("%s/%s/default/", testKeys.primaryTestEndpoint(), appName);
+                    lblTestEndpoint.setHyperlinkText(testEndpoint);
+                    lblTestEndpoint.setHyperlinkTarget(testEndpoint);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
         this.appResourceInner = appResourceInner;
         lblAppName.setText(appName);
         lblCreateTime.setText(appResourceInner.properties().createdTime().toString());
@@ -370,7 +386,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                     });
                 } catch (Exception e) {
                     ApplicationManager.getApplication().invokeLater(() ->
-                        PluginUtil.displayErrorDialog("Failed to delete app: " + SpringCloudAppPropertyView.this.appResourceInner.name(), e.getMessage()));
+                            PluginUtil.displayErrorDialog("Failed to delete app: " + SpringCloudAppPropertyView.this.appResourceInner.name(), e.getMessage()));
                 }
             }
         });
