@@ -27,10 +27,14 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
+import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
+
+import javax.swing.Icon;
 
 public class FunctionRunConfigurationFactory extends ConfigurationFactory {
     private static final String FACTORY_NAME = "Run Functions";
+    private static final String ICON_PATH = "/icons/azure-functions-run.png";
 
     public FunctionRunConfigurationFactory(@NotNull ConfigurationType type) {
         super(type);
@@ -52,4 +56,8 @@ public class FunctionRunConfigurationFactory extends ConfigurationFactory {
         return FACTORY_NAME;
     }
 
+    @Override
+    public Icon getIcon() {
+        return PluginUtil.getIcon(ICON_PATH);
+    }
 }
