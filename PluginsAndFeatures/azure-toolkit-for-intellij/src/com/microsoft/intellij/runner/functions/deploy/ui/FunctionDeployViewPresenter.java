@@ -37,7 +37,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
     private static final String CANNOT_LIST_WEB_APP = "Failed to list function apps.";
     private static final String CANNOT_SHOW_APP_SETTINGS = "Failed to show app settings";
 
-    public void loadFunctionApps(boolean forceRefresh) {
+    public void loadFunctionApps(boolean forceRefresh, boolean fillAppSettings) {
         Observable.fromCallable(() -> {
             getMvpView().beforeFillFunctionApps();
             return AzureFunctionMvpModel.getInstance().listAllFunctions(forceRefresh)
@@ -47,7 +47,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
         }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(functionApps -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     if (!isViewDetached()) {
-                        getMvpView().fillFunctionApps(functionApps);
+                        getMvpView().fillFunctionApps(functionApps, fillAppSettings);
                     }
                 }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }

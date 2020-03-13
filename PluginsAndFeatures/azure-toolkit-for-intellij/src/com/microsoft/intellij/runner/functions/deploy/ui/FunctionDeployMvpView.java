@@ -33,7 +33,7 @@ import java.util.Map;
 public interface FunctionDeployMvpView extends MvpView {
     void beforeFillFunctionApps();
 
-    void fillFunctionApps(@NotNull List<ResourceEx<FunctionApp>> webAppLists);
+    void fillFunctionApps(@NotNull List<ResourceEx<FunctionApp>> webAppLists, boolean fillAppSettings);
 
     void beforeFillAppSettings();
 
