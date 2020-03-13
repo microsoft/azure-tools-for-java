@@ -22,41 +22,37 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 
-public class NewAppServicePlanDialog extends JDialog {
+public class NewAppServicePlanDialog extends AzureDialogWrapper {
 
     public static final String CONSUMPTION = "Consumption";
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
 
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
     private JPanel pnlNewAppServicePlan;
     private JComboBox cbPricing;
     private JComboBox cbLocation;
-    private JTextField txtCreateAppServicePlan;
+    private JTextField txtAppServicePlanName;
 
     private String subscriptionId;
 
@@ -64,40 +60,11 @@ public class NewAppServicePlanDialog extends JDialog {
     private AppServicePlanPanel.AppServicePlanWrapper appServicePlan;
 
     public NewAppServicePlanDialog(String subscriptionId) {
-        setContentPane(contentPane);
+        super(false);
         setModal(true);
-        setAlwaysOnTop(true);
         setTitle("Create App Service Plan");
-        getRootPane().setDefaultButton(buttonOK);
 
         this.subscriptionId = subscriptionId;
-
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
-
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
-
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         cbLocation.setRenderer(new ListCellRendererWrapper() {
             @Override
@@ -122,6 +89,9 @@ public class NewAppServicePlanDialog extends JDialog {
             }
         });
 
+        onLoadPricingTier();
+        onLoadLocation(subscriptionId);
+
         init();
     }
 
@@ -129,23 +99,37 @@ public class NewAppServicePlanDialog extends JDialog {
         return appServicePlan;
     }
 
-    private void onOK() {
-        appServicePlan = new AppServicePlanPanel.AppServicePlanWrapper(txtCreateAppServicePlan.getText(),
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return contentPane;
+    }
+
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        List<ValidationInfo> res = new ArrayList<>();
+        try {
+            ValidationUtils.checkAppServicePlanName(txtAppServicePlanName.getText());
+        } catch (IllegalArgumentException iae) {
+            res.add(new ValidationInfo(iae.getMessage(), txtAppServicePlanName));
+        }
+        return res;
+    }
+
+    @Override
+    protected void doOKAction() {
+        appServicePlan = new AppServicePlanPanel.AppServicePlanWrapper(txtAppServicePlanName.getText(),
                 (Location) cbLocation.getSelectedItem(), (PricingTier) cbPricing.getSelectedItem());
-        dispose();
+        super.doOKAction();
     }
 
-    private void onCancel() {
+    @Override
+    public void doCancelAction() {
         appServicePlan = null;
-        dispose();
+        super.doCancelAction();
     }
 
-    private void init() {
-        onLoadPricingTier();
-        onLoadLocation(subscriptionId);
-    }
-
-    public void onLoadLocation(String sid) {
+    private void onLoadLocation(String sid) {
         cbLocation.removeAllItems();
         Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
                 .subscribeOn(Schedulers.newThread())
@@ -157,7 +141,7 @@ public class NewAppServicePlanDialog extends JDialog {
     /**
      * Load pricing tier from model.
      */
-    public void onLoadPricingTier() {
+    private void onLoadPricingTier() {
         try {
             cbPricing.removeAllItems();
             cbPricing.addItem(CONSUMPTION_PRICING_TIER);

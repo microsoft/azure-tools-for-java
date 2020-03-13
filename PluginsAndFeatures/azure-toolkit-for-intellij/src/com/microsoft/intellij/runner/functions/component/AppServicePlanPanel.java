@@ -43,8 +43,6 @@ import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.Window;
 import java.awt.event.ItemListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -152,21 +150,14 @@ public class AppServicePlanPanel extends JPanel {
         cbAppServicePlan.setSelectedItem(null);
         cbAppServicePlan.setPopupVisible(false);
         final NewAppServicePlanDialog dialog = new NewAppServicePlanDialog(subscriptionId);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent windowEvent) {
-                super.windowClosed(windowEvent);
-                final AppServicePlanWrapper newCreateAppServicePlan = dialog.getAppServicePlan();
-                if (newCreateAppServicePlan != null) {
-                    selectedAppServicePlan = newCreateAppServicePlan;
-                    appServicePlanWrapperList.add(selectedAppServicePlan);
-                }
-                reloadAppServicePlan();
+        if (dialog.showAndGet()) {
+            final AppServicePlanWrapper newCreateAppServicePlan = dialog.getAppServicePlan();
+            if (newCreateAppServicePlan != null) {
+                selectedAppServicePlan = newCreateAppServicePlan;
+                appServicePlanWrapperList.add(selectedAppServicePlan);
             }
-        });
-        dialog.setVisible(true);
+        }
+        reloadAppServicePlan();
     }
 
     private void showAppServicePlan(AppServicePlanWrapper appServicePlanWrapper) {

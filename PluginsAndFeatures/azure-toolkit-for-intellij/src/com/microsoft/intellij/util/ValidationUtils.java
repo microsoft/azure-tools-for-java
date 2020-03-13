@@ -23,11 +23,13 @@
 
 package com.microsoft.intellij.util;
 
+import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
 import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 
+import com.microsoft.rest.RestException;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
@@ -37,6 +39,7 @@ public class ValidationUtils {
     private static final String GROUP_ARTIFACT_ID_REGEX = "[0-9a-zA-Z]([\\.a-zA-Z0-9\\-_])*";
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
     private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
+    private static final String RESOURCE_GROUP_PATTERN = "[a-zA-Z0-9\\.\\_\\-\\(\\)]{1,90}";
 
     public static boolean isValidJavaPackageName(String packageName) {
         return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
@@ -71,6 +74,33 @@ public class ValidationUtils {
             }
         } catch (IOException e) {
             // swallow exception when get azure client
+        }
+    }
+
+    public static void checkResourceGroupName(String subscriptionId, String resourceGroup) {
+        if (StringUtils.isEmpty(subscriptionId)) {
+            throw new IllegalArgumentException("Subscription can not be null");
+        }
+        if (StringUtils.isEmpty(resourceGroup)) {
+            throw new IllegalArgumentException("Resource group name can not be null");
+        }
+        try {
+            final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
+            if (azure.resourceGroups().getByName(resourceGroup) != null) {
+                throw new IllegalArgumentException("A resource group with the same name already exists in the selected subscription.");
+            }
+        } catch (RestException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        } catch (IOException e) {
+            // swallow exception when get azure client
+        }
+    }
+
+    public static void checkAppServicePlanName(String appServicePlan){
+        if (StringUtils.isEmpty(appServicePlan)) {
+            throw new IllegalArgumentException("App Service Plan name is required");
+        } else if (!appServicePlan.matches(RESOURCE_GROUP_PATTERN)) {
+            throw new IllegalArgumentException(String.format("App Service Plan Name should match %s", RESOURCE_GROUP_PATTERN));
         }
     }
 }

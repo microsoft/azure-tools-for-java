@@ -37,8 +37,6 @@ import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.Window;
 import java.awt.event.ItemListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.List;
 
 public class ResourceGroupPanel extends JPanel {
@@ -104,23 +102,19 @@ public class ResourceGroupPanel extends JPanel {
     private void createResourceGroup() {
         cbResourceGroup.setSelectedItem(null);
         cbResourceGroup.setPopupVisible(false);
-        final NewResourceGroupDialog dialog = new NewResourceGroupDialog();
+        final NewResourceGroupDialog dialog = new NewResourceGroupDialog(subscriptionId);
         dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent windowEvent) {
-                super.windowClosed(windowEvent);
-                final ResourceGroupWrapper newResourceGroup = dialog.getResourceGroup();
-                if (newResourceGroup != null) {
-                    cbResourceGroup.addItem(newResourceGroup);
-                    cbResourceGroup.setSelectedItem(newResourceGroup);
-                } else {
-                    cbResourceGroup.setSelectedItem(selectedResourceGroup);
-                }
+        if (dialog.showAndGet()) {
+            final ResourceGroupWrapper newResourceGroup = dialog.getResourceGroup();
+            if (newResourceGroup != null) {
+                cbResourceGroup.addItem(newResourceGroup);
+                cbResourceGroup.setSelectedItem(newResourceGroup);
+            } else {
+                cbResourceGroup.setSelectedItem(selectedResourceGroup);
             }
-        });
-        dialog.setVisible(true);
+        } else {
+            cbResourceGroup.setSelectedItem(selectedResourceGroup);
+        }
     }
 
     private void onSelectResourceGroup() {
