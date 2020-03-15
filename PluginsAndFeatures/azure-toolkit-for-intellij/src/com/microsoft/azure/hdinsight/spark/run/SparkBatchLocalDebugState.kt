@@ -44,7 +44,7 @@ class SparkBatchLocalDebugState(myProject: Project, model: SparkLocalRunConfigur
 
     override fun getCommandLineVmParameters(executor: Executor?, params: JavaParameters, moduleName: String): List<String> {
         // TODO: Add onthrow and onuncaught with Breakpoint UI settings later
-        val debugConnection = "-agentlib:jdwp=transport=dt_socket,server=n,address=127.0.0.1:${remoteConnection.address},suspend=y"
+        val debugConnection = "-agentlib:jdwp=transport=dt_socket,server=n,address=127.0.0.1:${remoteConnection.applicationAddress},suspend=y"
 
         return super.getCommandLineVmParameters(executor, params, moduleName).plus(debugConnection)
     }

@@ -22,12 +22,14 @@
 
 package com.microsoft.intellij.feedback
 
-import com.intellij.ide.plugins.PluginManager
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.extensions.PluginId
 
 open class Reportable(private val shortMessage: String) {
-    val plugin = PluginManager.getPlugin(PluginId.getId("com.microsoft.tooling.msservices.intellij.azure"))!!
+    val plugin = PluginManagerCore.getPlugin(
+        PluginId.getId("com.microsoft.tooling.msservices.intellij.azure")
+    )!!
     private val appInfo = ApplicationInfo.getInstance()
 
     private val platformInfo = mutableMapOf<String, String>(

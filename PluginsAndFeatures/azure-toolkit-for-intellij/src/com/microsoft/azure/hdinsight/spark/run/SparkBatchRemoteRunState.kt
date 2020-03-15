@@ -121,8 +121,6 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                     },
                     { onComplete(it) })
 
-            programRunner.onProcessStarted(null, executionResult)
-
             executionResult
         }
     }
