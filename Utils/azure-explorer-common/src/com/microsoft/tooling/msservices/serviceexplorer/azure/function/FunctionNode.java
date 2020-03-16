@@ -77,7 +77,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
 
     @Override
     public String getIconPath() {
-        return this.state== WebAppBaseState.STOPPED ? "azure-functions-stop.png": "azure-functions-small.png";
+        return this.state == WebAppBaseState.STOPPED ? "azure-functions-stop.png" : "azure-functions-small.png";
     }
 
     @Override
