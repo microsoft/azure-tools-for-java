@@ -22,6 +22,7 @@
 package com.microsoft.intellij.runner.functions;
 
 import com.intellij.execution.Location;
+import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.LazyRunConfigurationProducer;
@@ -30,8 +31,10 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiMethod;
+import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.helper.StringUtil;
@@ -47,16 +50,25 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
 
     @Override
     protected boolean setupConfigurationFromContext(AzureRunConfigurationBase configuration, ConfigurationContext context, Ref ref) {
-        if (!(configuration instanceof FunctionRunConfiguration)) {
+        if (!(configuration instanceof FunctionRunConfiguration || configuration instanceof FunctionDeployConfiguration)) {
             return false;
         }
-        FunctionRunConfiguration runConfiguration = (FunctionRunConfiguration) configuration;
+
         final Location contextLocation = context.getLocation();
         assert contextLocation != null;
         Location<PsiMethod> methodLocation = getAzureFunctionMethods(contextLocation);
         if (methodLocation == null) {
             return false;
         }
+        if (configuration instanceof FunctionDeployConfiguration) {
+            final RunManagerEx manager = RunManagerEx.getInstanceEx(context.getProject());
+            // since deploy configuration doesn't support, we need to create a FunctionRunConfiguration
+            final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(
+                    context.getModule(), manager, getConfigurationFactory());
+            configuration = (AzureRunConfigurationBase) settings.getConfiguration();
+        }
+
+        FunctionRunConfiguration runConfiguration = (FunctionRunConfiguration) configuration;
         final RunnerAndConfigurationSettings template = context.getRunManager().getConfigurationTemplate(getConfigurationFactory());
 
         final Module contextModule = context.getModule();
