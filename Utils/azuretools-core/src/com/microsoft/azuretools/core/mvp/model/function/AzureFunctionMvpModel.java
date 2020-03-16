@@ -43,6 +43,7 @@ import rx.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -175,12 +176,10 @@ public class AzureFunctionMvpModel {
             return subscriptionIdToFunctionApps.get(subscriptionId);
         }
 
-        List<ResourceEx<FunctionApp>> functions = new ArrayList<>();
-
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-        functions = azure.appServices().functionApps()
-                .list()
-                .stream()
+        List<ResourceEx<FunctionApp>> functions = azure.appServices().functionApps()
+                .inner().list().stream().filter(inner -> inner.kind() != null && Arrays.asList(inner.kind().split(",")).contains("functionapp"))
+                .map(inner -> new FunctionAppWrapper(subscriptionId, inner))
                 .map(app -> new ResourceEx<FunctionApp>(app, subscriptionId))
                 .collect(Collectors.toList());
         subscriptionIdToFunctionApps.put(subscriptionId, functions);
