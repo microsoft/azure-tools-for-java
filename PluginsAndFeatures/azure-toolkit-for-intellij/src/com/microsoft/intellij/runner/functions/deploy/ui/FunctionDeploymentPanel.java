@@ -229,7 +229,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
         configuration.setTargetFunction(selectedFunctionApp.getResource());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
-        configuration.setModule((Module) cbFunctionModule.getSelectedItem());
+        configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         configuration.setDeploymentStagingDirectory(txtStagingFolder.getText());
     }
 
