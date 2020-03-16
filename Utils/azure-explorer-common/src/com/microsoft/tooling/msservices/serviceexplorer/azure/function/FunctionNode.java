@@ -33,6 +33,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -76,7 +77,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
 
     @Override
     public String getIconPath() {
-        return "azure-functions-small.png";
+        return this.state == WebAppBaseState.STOPPED ? "azure-functions-stop.png" : "azure-functions-small.png";
     }
 
     @Override
@@ -90,6 +91,11 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
 
     @Override
     public void renderSubModules(List<FunctionEnvelope> functionEnvelopes) {
+        if (functionEnvelopes.isEmpty()) {
+            this.setName(this.functionAppName + " *(Empty)");
+        } else {
+            this.setName(this.functionAppName);
+        }
         for (FunctionEnvelope functionEnvelope : functionEnvelopes) {
             addChildNode(new SubFunctionNode(functionEnvelope, this));
         }

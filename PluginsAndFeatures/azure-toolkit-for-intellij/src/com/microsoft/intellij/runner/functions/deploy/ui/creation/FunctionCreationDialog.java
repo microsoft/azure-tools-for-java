@@ -25,6 +25,7 @@ import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableU
 import com.microsoft.intellij.runner.functions.library.function.CreateFunctionHandler;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.ValidationUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.AbstractButton;
@@ -64,6 +65,7 @@ public class FunctionCreationDialog extends JDialog {
 
     private static final String DIALOG_TITLE = "Create Function App";
     private static final String WARNING_MESSAGE = "<html><font size=\"3\" color=\"red\">%s</font></html>";
+    private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
 
     private JPanel contentPanel;
     private JButton buttonOK;
@@ -208,10 +210,21 @@ public class FunctionCreationDialog extends JDialog {
         final IntelliJFunctionRuntimeConfiguration runtimeConfiguration = new IntelliJFunctionRuntimeConfiguration();
         runtimeConfiguration.setOs(getSelectedOperationSystemEnum() == OperatingSystem.WINDOWS ? "windows" : "linux");
         functionConfiguration.setRuntime(runtimeConfiguration);
-        functionConfiguration.setAppSettings(appSettingsTable.getAppSettings());
+
+        functionConfiguration.setAppSettings(getFixedAppSettings());
         // Clear validation prompt
         paneMessage.setForeground(UIManager.getColor("Panel.foreground"));
         paneMessage.setText("");
+    }
+
+    private Map<String, String> getFixedAppSettings() {
+        final Map<String, String> appSettings = appSettingsTable.getAppSettings();
+        // SDK will not create storage if user specify `AZURE_WEB_JOB_STORAGE_KEY` in app settings
+        // So remove the empty `AZURE_WEB_JOB_STORAGE_KEY` which is the default values in local.settings.json
+        if (appSettings.containsKey(AZURE_WEB_JOB_STORAGE_KEY) && StringUtils.isEmpty(appSettings.get(AZURE_WEB_JOB_STORAGE_KEY))) {
+            appSettings.remove(AZURE_WEB_JOB_STORAGE_KEY);
+        }
+        return appSettings;
     }
 
     private boolean validateConfiguration() {

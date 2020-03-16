@@ -140,7 +140,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     }
 
     @Override
-    public synchronized void fillFunctionApps(List<ResourceEx<FunctionApp>> functionList) {
+    public synchronized void fillFunctionApps(List<ResourceEx<FunctionApp>> functionList, boolean fillAppSettings) {
         cbxFunctionApp.removeAllItems();
         if (functionList.size() == 0) {
             lblCreateFunctionApp.setVisible(true);
@@ -155,8 +155,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                     .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(functionDeployConfiguration.getFunctionId()))
                     .findFirst().orElse(functionList.get(0));
             cbxFunctionApp.setSelectedItem(selectedFunction);
+            selectedFunctionApp = selectedFunction;
+            if (fillAppSettings) {
+                presenter.loadAppSettings(selectedFunctionApp.getResource());
+            }
         }
-        onFunctionSelected();
         cbxFunctionApp.setEnabled(true);
     }
 
@@ -218,7 +221,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 }
             }
         }
-        presenter.loadFunctionApps(false);
+        presenter.loadFunctionApps(false, false);
     }
 
     @Override
@@ -229,7 +232,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
         configuration.setTargetFunction(selectedFunctionApp.getResource());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
-        configuration.setModule((Module) cbFunctionModule.getSelectedItem());
+        configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         configuration.setDeploymentStagingDirectory(txtStagingFolder.getText());
     }
 
@@ -258,9 +261,10 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 final FunctionApp functionApp = dialog.getCreatedWebApp();
                 if (functionApp != null) {
                     functionDeployConfiguration.setFunctionId(functionApp.id());
-                    presenter.loadFunctionApps(true);
+                    // We need to reload the app settings as new created function will generate some required properties as well
+                    presenter.loadFunctionApps(true, true);
                 } else {
-                    presenter.loadFunctionApps(false);
+                    presenter.loadFunctionApps(false, false);
                 }
             }
         });

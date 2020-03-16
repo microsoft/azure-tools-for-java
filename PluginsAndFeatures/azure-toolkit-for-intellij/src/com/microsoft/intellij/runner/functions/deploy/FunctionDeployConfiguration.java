@@ -57,7 +57,6 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public static final String NEED_SPECIFY_MODULE = "Please specify module";
     public static final String NEED_SPECIFY_TARGET_FUNCTION = "Please specify target function";
     private final FunctionDeployModel functionDeployModel;
-    private Map<String, String> appSettings;
     private Module module;
 
     public FunctionDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -92,7 +91,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     }
 
     public Map getAppSettings() {
-        return appSettings;
+        return functionDeployModel.getAppSettings();
     }
 
     public void setSubscription(String subscription) {
@@ -181,9 +180,11 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         return module == null ? FunctionUtils.getFunctionModuleByName(getProject(), functionDeployModel.getModuleName()) : module;
     }
 
-    public void setModule(Module module) {
-        this.module = module;
-        functionDeployModel.setModuleName(module.getName());
+    public void saveTargetModule(Module module) {
+        if (module != null) {
+            this.module = module;
+            functionDeployModel.setModuleName(module.getName());
+        }
     }
 
     @Override

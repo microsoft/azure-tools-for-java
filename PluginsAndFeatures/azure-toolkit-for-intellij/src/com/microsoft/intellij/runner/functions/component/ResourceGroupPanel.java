@@ -39,6 +39,8 @@ import java.awt.Window;
 import java.awt.event.ItemListener;
 import java.util.List;
 
+import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEW_CREATED_RESOURCE;
+
 public class ResourceGroupPanel extends JPanel {
     public static final String CREATE_RESOURCE_GROUP = "Create resource group...";
     private JComboBox cbResourceGroup;
@@ -172,7 +174,7 @@ public class ResourceGroupPanel extends JPanel {
         }
 
         public String getDisplayName() {
-            return isCreateNewResourceGroup ? String.format("%s (New created)", resourceGroup) : resourceGroup;
+            return isCreateNewResourceGroup ? String.format(NEW_CREATED_RESOURCE, resourceGroup) : resourceGroup;
         }
     }
 }

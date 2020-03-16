@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEW_CREATED_RESOURCE;
 import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION;
 import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION_PRICING_TIER;
 
@@ -206,8 +207,6 @@ public class AppServicePlanPanel extends JPanel {
 
     static class AppServicePlanWrapper {
 
-        private static final String NEW_CREATED_PATTERN = "%s (New Created)";
-
         private boolean isNewCreate;
         private String name;
         private String resourceGroup;
@@ -257,7 +256,7 @@ public class AppServicePlanPanel extends JPanel {
 
         @Override
         public String toString() {
-            return isNewCreate ? String.format(NEW_CREATED_PATTERN, name) : String.format("%s (Resource Group: %s)", name, resourceGroup);
+            return isNewCreate ? String.format(NEW_CREATED_RESOURCE, name) : String.format("%s (Resource Group: %s)", name, resourceGroup);
         }
     }
 }

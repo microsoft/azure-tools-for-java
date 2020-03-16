@@ -126,8 +126,10 @@ public class AppSettingsTableUtils {
             public void actionPerformed(AnActionEvent anActionEvent) {
                 try {
                     final File file = DefaultLoader.getUIHelper().showFileSaver(EXPORT_APP_SETTINGS, LOCAL_SETTINGS_JSON);
-                    AppSettingsTableUtils.exportLocalSettingsJsonFile(file, appSettingsTable.getAppSettings());
-                    PluginUtil.displayInfoDialog("Export successfully", "Export app settings successfully");
+                    if (file != null) {
+                        AppSettingsTableUtils.exportLocalSettingsJsonFile(file, appSettingsTable.getAppSettings());
+                        PluginUtil.displayInfoDialog("Export successfully", "Export app settings successfully");
+                    }
                 } catch (IOException e) {
                     PluginUtil.displayErrorDialog("Export failed", String.format(EXPORT_APP_SETTINGS_FAILED, e.getMessage()));
                 }

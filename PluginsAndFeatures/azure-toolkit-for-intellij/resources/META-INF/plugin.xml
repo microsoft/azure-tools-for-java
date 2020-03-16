@@ -212,11 +212,11 @@
     <!-- Functions Start -->
     <action id="Actions.RunFunction" class="com.microsoft.intellij.actions.functions.RunFunctionAction"
             text="Run Function" description="Run function project locally"
-            icon="/icons/azure-functions-small.png">
+            icon="/icons/azure-functions-run.png">
     </action>
     <action id="Actions.DeployFunction" class="com.microsoft.intellij.actions.functions.DeployFunctionAction"
             text="Deploy to Azure Functions" description="Deploy Java Function to Azure"
-            icon="/icons/azure-functions-small.png">
+            icon="/icons/azure-functions-deploy.png">
     </action>
     <!-- Functions End -->
     <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"

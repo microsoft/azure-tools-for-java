@@ -36,6 +36,7 @@ public class AzureFunctionsConstants {
     public static final String LOADING_TEXT = "Loading...";
     public static final String EMPTY_TEXT = "Empty";
     public static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
+    public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
 
     public static final Map<String, String> HINT = new HashMap<String, String>() {{
             put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
