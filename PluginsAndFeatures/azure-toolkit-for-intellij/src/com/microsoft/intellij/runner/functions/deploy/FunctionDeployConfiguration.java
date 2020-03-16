@@ -180,9 +180,11 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         return module == null ? FunctionUtils.getFunctionModuleByName(getProject(), functionDeployModel.getModuleName()) : module;
     }
 
-    public void setModule(Module module) {
-        this.module = module;
-        functionDeployModel.setModuleName(module.getName());
+    public void saveTargetModule(Module module) {
+        if (module != null) {
+            this.module = module;
+            functionDeployModel.setModuleName(module.getName());
+        }
     }
 
     @Override
