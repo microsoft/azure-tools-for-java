@@ -74,6 +74,7 @@ public class AppSettingsTable extends JBTable {
         clear();
         if (MapUtils.isNotEmpty(appSettingMap)) {
             addAppSettings(appSettingMap);
+            appSettingModel.addRequiredAttributes();
         }
     }
 
@@ -92,6 +93,10 @@ public class AppSettingsTable extends JBTable {
 
     public Path getLocalSettingsPath() {
         return Paths.get(localSettingPath);
+    }
+
+    public boolean isDefaultAppSettings() {
+        return appSettingModel.isDefaultAppSettings();
     }
 
     private void scrollToRow(int target) {
