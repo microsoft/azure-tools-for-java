@@ -31,7 +31,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,17 +40,17 @@ public class AppSettingModel implements TableModel {
     private static final String[] TITLE = {"Key", "Value"};
     private static final String FUNCTIONS_WORKER_RUNTIME_KEY = "FUNCTIONS_WORKER_RUNTIME";
     private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
-    private static final List<Pair<String, String>> DEFAULT_APP_SETTINGS = Arrays.asList(
-            Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, "java"),
-            Pair.of(AZURE_WEB_JOB_STORAGE_KEY, "")
-    );
+    private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
+    private static final String AZURE_WEB_JOB_STORAGE_VALUE = "";
+
     public static final String REQUIRED_APP_SETTINGS_PROMPTION = "%s is a required parameter";
 
     private List<Pair<String, String>> appSettings = new ArrayList<>();
     private List<TableModelListener> tableModelListenerList = new ArrayList<>();
 
     public AppSettingModel() {
-        appSettings.addAll(DEFAULT_APP_SETTINGS);
+        appSettings.add(Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, FUNCTIONS_WORKER_RUNTIME_VALUE));
+        appSettings.add(Pair.of(AZURE_WEB_JOB_STORAGE_KEY, AZURE_WEB_JOB_STORAGE_VALUE));
     }
 
     @Override
@@ -145,7 +144,6 @@ public class AppSettingModel implements TableModel {
 
     public void clear() {
         appSettings.clear();
-        appSettings.addAll(DEFAULT_APP_SETTINGS);
         fireTableChanged();
     }
 
@@ -161,6 +159,23 @@ public class AppSettingModel implements TableModel {
     @Override
     public void removeTableModelListener(TableModelListener tableModelListener) {
         tableModelListenerList.remove(tableModelListener);
+    }
+
+    public boolean isDefaultAppSettings() {
+        final Map<String, String> appSettingsMap = getAppSettings();
+        return appSettingsMap.size() == 2 &&
+                StringUtils.equals(appSettingsMap.get(FUNCTIONS_WORKER_RUNTIME_KEY), FUNCTIONS_WORKER_RUNTIME_VALUE) &&
+                StringUtils.equals(appSettingsMap.get(AZURE_WEB_JOB_STORAGE_KEY), AZURE_WEB_JOB_STORAGE_VALUE);
+    }
+
+    public void addRequiredAttributes() {
+        final Map<String, String> appSettingsMap = getAppSettings();
+        if (!appSettingsMap.containsKey(FUNCTIONS_WORKER_RUNTIME_KEY)) {
+            appSettings.add(Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, FUNCTIONS_WORKER_RUNTIME_VALUE));
+        }
+        if (!appSettingsMap.containsKey(AZURE_WEB_JOB_STORAGE_KEY)) {
+            appSettings.add(Pair.of(AZURE_WEB_JOB_STORAGE_KEY, AZURE_WEB_JOB_STORAGE_VALUE));
+        }
     }
 
     private boolean isRowValid(int row) {

@@ -182,6 +182,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
 
     private void onCancel() {
         this.appSettings = null;
+        this.eraseExistingSettings = false;
         dispose();
     }
 }

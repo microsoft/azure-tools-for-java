@@ -156,7 +156,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                     .findFirst().orElse(functionList.get(0));
             cbxFunctionApp.setSelectedItem(selectedFunction);
             selectedFunctionApp = selectedFunction;
-            if (fillAppSettings) {
+            if (fillAppSettings || appSettingsTable.isDefaultAppSettings()) {
                 presenter.loadAppSettings(selectedFunctionApp.getResource());
             }
         }
