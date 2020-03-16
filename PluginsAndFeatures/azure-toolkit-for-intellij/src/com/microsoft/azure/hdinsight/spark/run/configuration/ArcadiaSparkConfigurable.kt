@@ -31,14 +31,6 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 
 class ArcadiaSparkConfigurable(project: Project) : SparkBatchJobConfigurable(project) {
-    override fun getComponent(): JComponent {
-        if (CommonSettings.isProjectArcadiaFeatureEnabled) {
-            return super.getComponent()
-        }
-
-        return JLabel("The feature is coming soon.");
-    }
-
     override fun createSubmissionPanel(): SparkSubmissionContentPanel =
             ArcadiaSparkSubmissionContentPanel(project)
 

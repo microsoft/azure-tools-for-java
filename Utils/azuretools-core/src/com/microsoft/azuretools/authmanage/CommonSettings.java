@@ -52,7 +52,6 @@ public class CommonSettings {
     private static final String ENV_NAME_KEY = "EnvironmentName";
     private static final String MOVE_RESOURCE_FILE_FAIL = "Fail to move Azure Toolkit resource file %s to %s";
     private static final String CLEAN_DEPRECATED_FOLDER_FAIL = "Fail to clean deprecated folder %s";
-    private static final String PROJECT_ARCADIA_KEY = "EnableProjectArcadia";
     private static final List<String> RESOURCE_FILE_LIST = Arrays.asList(
             FILE_NAME_AAD_PROVIDER,
             FILE_NAME_AUTH_METHOD_DETAILS,
@@ -65,8 +64,6 @@ public class CommonSettings {
     private static String settingsBaseDir = null;
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
-
-    public static boolean isProjectArcadiaFeatureEnabled = false;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
@@ -126,9 +123,6 @@ public class CommonSettings {
                         ENV = providedEnv;
                     }
                 }
-
-                JsonElement arcadiaElement = jsonObject.get(PROJECT_ARCADIA_KEY);
-                isProjectArcadiaFeatureEnabled = arcadiaElement != null && arcadiaElement.getAsBoolean();
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -39,7 +39,7 @@ object ArcadiaSparkConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Apache Spark on Synapse" + if (!CommonSettings.isProjectArcadiaFeatureEnabled) " (coming soon)" else ""
+        return "Apache Spark on Synapse"
     }
 
     override fun getId(): String {
