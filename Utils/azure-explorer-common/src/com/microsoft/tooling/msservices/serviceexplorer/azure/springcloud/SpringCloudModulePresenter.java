@@ -19,21 +19,23 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
-package com.microsoft.azure.hdinsight.common.mvc
+import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
+import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 
-import com.microsoft.intellij.util.runInReadAction
-import com.microsoft.intellij.util.runInWriteAction
+import java.io.IOException;
 
-interface IdeaSettableControlWithRwLock<T> : IdeaSettableControlView<T> {
-    override fun setDataInDispatch(from: T) {
-        runInWriteAction { writeWithLock(from) }
+public class SpringCloudModulePresenter<V extends SpringCloudModuleView> extends MvpPresenter<V> {
+    public void onSpringCloudRefresh() {
+        final SpringCloudModuleView view = getMvpView();
+        if (view != null) {
+            try {
+                view.renderChildren(AzureSpringCloudMvpModel.getInstance().listAllSpringCloudClusters());
+            } catch (IOException e) {
+                // swallow exception and skip error subscription
+            }
+        }
     }
 
-    override fun getData(to: T) {
-        runInReadAction { readWithLock(to) }
-    }
-
-    fun readWithLock(to: T)
-    fun writeWithLock(from: T)
 }

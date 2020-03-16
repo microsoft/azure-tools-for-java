@@ -18,22 +18,16 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
-package com.microsoft.azure.hdinsight.common.mvc
+package com.microsoft.intellij.runner.springcloud;
 
-import com.microsoft.intellij.util.runInReadAction
-import com.microsoft.intellij.util.runInWriteAction
+public class SpringCloudConstants {
 
-interface IdeaSettableControlWithRwLock<T> : IdeaSettableControlView<T> {
-    override fun setDataInDispatch(from: T) {
-        runInWriteAction { writeWithLock(from) }
-    }
-
-    override fun getData(to: T) {
-        runInReadAction { readWithLock(to) }
-    }
-
-    fun readWithLock(to: T)
-    fun writeWithLock(from: T)
+    public static final String DISPLAY_NAME = "Azure Spring Cloud Services";
+    public static final int DEFAULT_PERSISTENT_DISK_SIZE = 50;
+    public static final String DEFAULT_DEPLOYMENT_NAME = "default";
+    public static final String DEFAULT_PERSISTENT_DISK_MOUNT_PATH = "/persistent";
+    public static final String AZURE_SPRING_CLOUD_ICON = "azure-springcloud-small.png";
 }

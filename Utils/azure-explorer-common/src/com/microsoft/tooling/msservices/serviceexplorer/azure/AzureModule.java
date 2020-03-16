@@ -40,6 +40,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
@@ -78,6 +79,8 @@ public class AzureModule extends AzureRefreshableNode {
     private ResourceManagementModule resourceManagementModule;
     @NotNull
     private FunctionModule functionModule;
+    @NotNull
+    private SpringCloudModule springCloudModule;
 
     /**
      * Constructor.
@@ -96,6 +99,7 @@ public class AzureModule extends AzureRefreshableNode {
         containerRegistryModule = new ContainerRegistryModule(this);
         resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
+        springCloudModule = new SpringCloudModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -170,8 +174,11 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(resourceManagementModule)) {
             addChildNode(resourceManagementModule);
         }
-        if(!isDirectChild(functionModule)){
+        if (!isDirectChild(functionModule)) {
             addChildNode(functionModule);
+        }
+        if (!isDirectChild(springCloudModule)) {
+            addChildNode(springCloudModule);
         }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);

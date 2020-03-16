@@ -94,28 +94,42 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     compile 'net.minidev:json-smart:2.3'
+    compile group: 'com.google.guava', name: 'guava', version: '20.0'
     compile 'com.microsoft.azure:azure-client-runtime:1.6.13', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.6.13', { force = true }
     compile 'com.microsoft.azuretools:azuretools-core:3.34.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
+        exclude group: "com.google.guava", module: "guava"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
+        exclude group: "commons-io", module: "commons-io"
+        exclude group: "com.microsoft.azure", module: "azure-auth-helper"
     }
     compile 'com.microsoft.azuretools:azure-explorer-common:3.34.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
+        exclude group: "com.google.guava", module: "guava"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
+        exclude group: "commons-io", module: "commons-io"
+        exclude group: "com.microsoft.azure", module: "azure-auth-helper"
     }
     compile 'com.microsoft.azuretools:hdinsight-node-common:3.34.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
+        exclude group: "commons-io", module: "commons-io"
     }
     compile 'com.microsoft.azure:azure-tools-common:0.1.0', {
         exclude group: "com.google.guava", module: "guava"
         exclude group: "commons-io", module: "commons-io"
     }
+    compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2'
     compile 'com.spotify:docker-client:8.11.7'
+    compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2', {
+        exclude group: "com.google.guava", module: "guava"
+        exclude group: "commons-io", module: "commons-io"
+    }
+    compile group: 'org.dom4j', name: 'dom4j', version: '2.1.1'
 
     testCompile 'junit:junit:4.12'
     testCompile 'info.cukes:cucumber-junit:1.2.5'

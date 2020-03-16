@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -34,9 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public abstract class RefreshableNode extends Node {
-    protected boolean initialized;
     public static String REFRESH_ICON_LIGHT = "RefreshLight_16.png";
     public static String REFRESH_ICON_DARK = "RefreshDark_16.png";
+	protected boolean initialized;
     private static final String REFRESH = "Refresh";
 
     public RefreshableNode(String id, String name, Node parent, String iconPath) {
@@ -138,7 +138,9 @@ public abstract class RefreshableNode extends Node {
                                     DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                                         @Override
                                         public void run() {
-                                            updateName(nodeName, null);
+                                            if (node.getName().endsWith("(Refreshing...)")) {
+                                                updateName(nodeName, null);
+                                            }
                                             updateNodeNameAfterLoading();
                                             expandNodeAfterLoading();
                                         }
@@ -178,7 +180,7 @@ public abstract class RefreshableNode extends Node {
 
         return future;
     }
-    
+
     public void showNode(HashMap<String, ArrayList<NodeContent>> nodeMap) {
         for (String sid: nodeMap.keySet()) {
             for (NodeContent content: nodeMap.get(sid)) {

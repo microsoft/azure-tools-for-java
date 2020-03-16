@@ -1,18 +1,18 @@
-/*
+/**
  * Copyright (c) Microsoft Corporation
- *
+ * <p/>
  * All rights reserved.
- *
+ * <p/>
  * MIT License
- *
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
+ * <p/>
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- *
+ * <p/>
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -20,20 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.common.mvc
+package com.microsoft.intellij.runner.springcloud.deploy;
 
-import com.microsoft.intellij.util.runInReadAction
-import com.microsoft.intellij.util.runInWriteAction
+import com.intellij.execution.configurations.RunProfile;
+import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.runners.DefaultProgramRunner;
+import org.jetbrains.annotations.NotNull;
 
-interface IdeaSettableControlWithRwLock<T> : IdeaSettableControlView<T> {
-    override fun setDataInDispatch(from: T) {
-        runInWriteAction { writeWithLock(from) }
+public class SpringCloudDeploymentRunner extends DefaultProgramRunner {
+
+    private static final String ID = "SPRING_CLOUD_DEPLOYMENT_RUNNER";
+
+    @Override
+    public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
+        return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof SpringCloudDeployConfiguration;
     }
 
-    override fun getData(to: T) {
-        runInReadAction { readWithLock(to) }
+    @NotNull
+    @Override
+    public String getRunnerId() {
+        return ID;
     }
 
-    fun readWithLock(to: T)
-    fun writeWithLock(from: T)
 }
