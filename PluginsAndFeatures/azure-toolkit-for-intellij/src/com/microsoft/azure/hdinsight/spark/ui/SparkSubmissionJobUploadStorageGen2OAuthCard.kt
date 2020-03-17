@@ -49,7 +49,7 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
 
     private val gen2RootPathTip = "e.g. abfs://<file_system>@<account_name>.dfs.core.windows.net/<path>"
     private val gen2RootPathLabel = JLabel("ADLS GEN2 Root Path")
-    private val gen2RootPathField = HintTextField (gen2RootPathTip).apply {
+    private val gen2RootPathRawField = HintTextField (gen2RootPathTip).apply {
         name = "gen2OAuthCardRootPathField"
         preferredSize = Dimension(500, 0)
 
@@ -73,7 +73,7 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
                 }
             }
             row {
-                c(gen2RootPathLabel.apply { labelFor = gen2RootPathField });    c(gen2RootPathField)
+                c(gen2RootPathLabel.apply { labelFor = gen2RootPathRawField });    c(gen2RootPathRawField)
             }
         }
 
@@ -107,7 +107,7 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
             return
         }
 
-        to.gen2RootPathRawText = gen2RootPathField.text?.trim()
+        to.gen2RootPathRawText = gen2RootPathRawField.text?.trim()
         to.gen2RootPath = if (AbfsUri.isType(to.gen2RootPathRawText)) AbfsUri.parse(to.gen2RootPathRawText) else null
     }
 
@@ -116,6 +116,6 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
             return
         }
 
-        gen2RootPathField.text = from.gen2RootPathRawText
+        gen2RootPathRawField.text = from.gen2RootPathRawText
     }
 }
