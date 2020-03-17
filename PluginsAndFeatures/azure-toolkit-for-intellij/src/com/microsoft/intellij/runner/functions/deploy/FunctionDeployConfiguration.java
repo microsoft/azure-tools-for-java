@@ -56,6 +56,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     public static final String NEED_SPECIFY_MODULE = "Please specify module";
     public static final String NEED_SPECIFY_TARGET_FUNCTION = "Please specify target function";
+    public static final String NEED_SPECIFY_VALID_STAGING_DIRECTORY_PATH = "Please specify valid staging directory path";
     private final FunctionDeployModel functionDeployModel;
     private Module module;
 
@@ -198,6 +199,9 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         }
         if (StringUtils.isEmpty(this.getFunctionId())) {
             throw new ConfigurationException(NEED_SPECIFY_TARGET_FUNCTION);
+        }
+        if (FunctionUtils.isValidStagingFolderPath(getDeploymentStagingDirectory())) {
+            throw new ConfigurationException(NEED_SPECIFY_VALID_STAGING_DIRECTORY_PATH);
         }
     }
 

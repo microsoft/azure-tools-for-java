@@ -226,13 +226,13 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
+        configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
             return;
         }
         configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
         configuration.setTargetFunction(selectedFunctionApp.getResource());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
-        configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         configuration.setDeploymentStagingDirectory(txtStagingFolder.getText());
     }
 
