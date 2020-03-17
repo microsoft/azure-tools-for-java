@@ -41,7 +41,10 @@ import javax.swing.JLabel
 class SparkSubmissionJobUploadStorageGen2OAuthCard
     : SparkSubmissionJobUploadStorageBasicCard(ADLS_GEN2_FOR_OAUTH.description) {
     interface Model: SparkSubmissionJobUploadStorageBasicCard.Model {
+        // gen2RootPath only save a legal Gen2 path. If user input an illegal path, gen2RootPath will be null
         var gen2RootPath: AbfsUri?
+        // gen2RootPathText save raw user input string, which might be an illegal gen2 path
+        var gen2RootPathRawText: String?
     }
 
     private val gen2RootPathTip = "e.g. abfs://<file_system>@<account_name>.dfs.core.windows.net/<path>"
@@ -104,8 +107,8 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
             return
         }
 
-        val rootPathText = gen2RootPathField.text?.trim()
-        to.gen2RootPath = if (AbfsUri.isType(rootPathText)) AbfsUri.parse(rootPathText) else null
+        to.gen2RootPathRawText = gen2RootPathField.text?.trim()
+        to.gen2RootPath = if (AbfsUri.isType(to.gen2RootPathRawText)) AbfsUri.parse(to.gen2RootPathRawText) else null
     }
 
     override fun writeWithLock(from: SparkSubmissionJobUploadStorageBasicCard.Model) {
@@ -113,10 +116,6 @@ class SparkSubmissionJobUploadStorageGen2OAuthCard
             return
         }
 
-        val gen2PathText = gen2RootPathField.text?.trim()
-        val parsedGen2Path = if (AbfsUri.isType(gen2PathText)) AbfsUri.parse(gen2PathText) else null
-        if (from.gen2RootPath != parsedGen2Path) {
-            gen2RootPathField.text = from.gen2RootPath?.uri?.toString() ?: ""
-        }
+        gen2RootPathField.text = from.gen2RootPathRawText
     }
 }

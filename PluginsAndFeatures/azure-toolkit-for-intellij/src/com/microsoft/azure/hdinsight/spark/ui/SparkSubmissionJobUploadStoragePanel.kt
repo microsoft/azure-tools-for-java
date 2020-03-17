@@ -333,6 +333,10 @@ open class SparkSubmissionJobUploadStoragePanel
                             from.storageAccountType?.let { arrayOf(it) } ?: emptyArray())
                 }
 
+                // To fix issue https://github.com/microsoft/azure-tools-for-java/issues/4071
+                // When the config dialog is reloading config with not null type, we need to set the selected item to
+                // null first and then set it with a non-null value, therefore it will trigger the "card" to show
+                deployStorageTypesModel.selectedItem = null
                 deployStorageTypeSelection = from.storageAccountType
             }
         }
