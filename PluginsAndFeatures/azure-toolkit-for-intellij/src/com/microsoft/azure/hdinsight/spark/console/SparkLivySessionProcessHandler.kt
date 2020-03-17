@@ -64,6 +64,10 @@ class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess)
         process.outputStream.flush()
     }
 
+    fun onProcessTerminated(error: Throwable?) {
+        super.notifyProcessTerminated(if (error == null) 0 else -1)
+    }
+
     override fun startNotify() {
         notifyTextAvailable("Start Spark Livy Interactive Session Console in cluster ${process.session.baseUrl.host}...\n", SYSTEM)
         addProcessListener(object : ProcessAdapter() {

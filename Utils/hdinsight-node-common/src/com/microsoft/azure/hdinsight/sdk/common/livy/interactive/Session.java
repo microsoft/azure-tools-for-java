@@ -29,6 +29,7 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
+import com.microsoft.azure.hdinsight.sdk.common.livy.MemorySize;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.ApplicationNotStartException;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.SessionNotStartException;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.StatementExecutionError;
@@ -88,23 +89,232 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     private final List<String> artifactsToDeploy = new ArrayList<>(); // Artifacts to deploy
 
-    private ImmutableList<String> uploadedArtifactsUris = ImmutableList.of();   // To store uploaded artifacts URI
+    public static class CreateParameters {
+        public static final String DRIVER_MEMORY = "driverMemory";
+        public static final String DRIVER_MEMORY_DEFAULT_VALUE = "4G";
 
-    private int executorCores = 1;  // Default cores per executor to create
+        public static final String DRIVER_CORES = "driverCores";
+        public static final int DRIVER_CORES_DEFAULT_VALUE = 2;
 
-    private int executorNum = 2;    // Default executor count to create
+        public static final String EXECUTOR_MEMORY = "executorMemory";
+        public static final String EXECUTOR_MEMORY_DEFAULT_VALUE = "4G";
 
-    private int driverCores = 2;    // Default driver cores to create
+        public static final String NUM_EXECUTORS = "numExecutors";
+        public static final int NUM_EXECUTORS_DEFAULT_VALUE = 2;
 
-    private String driverMemory = "4G";     // Default driver memory to create
+        public static final String EXECUTOR_CORES = "executorCores";
+        public static final int EXECUTOR_CORES_DEFAULT_VALUE = 1;
 
-    private String executorMemory = "4G";   // Default executor memory to create
+        private static final List<String> jobConfigKeyBlackList = Arrays.asList(
+                DRIVER_MEMORY, DRIVER_CORES, EXECUTOR_MEMORY, NUM_EXECUTORS, EXECUTOR_CORES);
 
-    private List<String> files = new ArrayList<>(); // Files for reference
+        private @Nullable String name = null;
 
-    private List<String> jars = new ArrayList<>(); // Jars for reference
+        private final SessionKind kind;
 
-    private Map<? extends String, ? extends String> conf = new HashMap<>(); // Job Configs
+        private @Nullable String proxyUser = null;
+
+        private final List<String> referenceFiles = new ArrayList<>();
+
+        private final List<String> referencedJars = new ArrayList<>();
+
+        private final List<String> archives = new ArrayList<>();
+
+        private final List<String> pyFiles = new ArrayList<>();
+
+        private final Map<String, String> jobConfig = new HashMap<>();
+
+        private @Nullable String yarnQueue = null;
+
+        private final List<String> uploadedArtifactsUris = new ArrayList<>();
+
+        public CreateParameters(final SessionKind kind) {
+            this.kind = kind;
+        }
+
+        /**
+         * Set Spark session name.
+         *
+         * @param sessionName session name to set
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters name(final String sessionName) {
+            this.name = sessionName;
+
+            return this;
+        }
+
+        /**
+         * Set Spark session proxy user.
+         *
+         * @param user proxy user name to set
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters proxyUser(final String user) {
+            this.proxyUser = user;
+
+            return this;
+        }
+
+        /**
+         * Set Spark session reference artifactUrls.
+         *
+         * @param artifactUrls the artifactUrls for session references
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters uploadedArtifactUrls(final String... artifactUrls) {
+            this.uploadedArtifactsUris.addAll(Arrays.asList(artifactUrls));
+
+            return this;
+        }
+
+        /**
+         * Set Spark session reference files.
+         *
+         * @param files session referece files to set into option
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters referFiles(final String... files) {
+            Collections.addAll(this.referenceFiles, files);
+
+            return this;
+        }
+
+        /**
+         * Set Spark session reference Jar files.
+         *
+         * @param jars session reference Jar files to set into option
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters referJars(final String... jars) {
+            Collections.addAll(this.referencedJars, jars);
+
+            return this;
+        }
+
+        /**
+         * Set Spark session archives.
+         *
+         * @param archives session archives to set into option
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters archives(final String... archives) {
+            Collections.addAll(this.archives, archives);
+
+            return this;
+        }
+
+        /**
+         * Set Spark session configuration.
+         *
+         * @param key key for Spark configuration to set into option
+         * @param value value for Spark configuration to set into option
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters conf(final String key, final String value) {
+            jobConfig.put(key, value);
+
+            return this;
+        }
+
+        /**
+         * Set Spark session configuration.
+         *
+         * @param kvPairs key-value pairs for Spark configuration to set into option
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters conf(final Iterable<? extends SimpleImmutableEntry<String, String>> kvPairs) {
+            for (final SimpleImmutableEntry<String, String> kv : kvPairs) {
+                jobConfig.put(kv.getKey(), kv.getValue());
+            }
+
+            return this;
+        }
+
+        /**
+         * Set Spark session Yarn queue.
+         *
+         * @param yarnQueue the Yarn queue for Spark session to schedule
+         * @return current {@link CreateParameters} instance for fluent calling
+         */
+        public CreateParameters setYarnQueue(final String yarnQueue) {
+            this.yarnQueue = yarnQueue;
+
+            return this;
+        }
+
+        /**
+         * Build POST request body for Spark session.
+         * @return current {@link PostSessions} instance Post body
+         */
+        public PostSessions build() {
+            final PostSessions postBody = new PostSessions();
+
+            if (StringUtils.isNoneBlank(this.name)) {
+                postBody.setName(this.name);
+            }
+
+            postBody.setKind(this.kind);
+
+            if (StringUtils.isNoneBlank(this.proxyUser)) {
+                postBody.setProxyUser(this.proxyUser);
+            }
+
+            postBody.setExecutorCores(Integer.parseInt(jobConfig.getOrDefault(EXECUTOR_CORES,
+                    Integer.toString(EXECUTOR_CORES_DEFAULT_VALUE))));
+            postBody.setNumExecutors(Integer.parseInt(jobConfig.getOrDefault(NUM_EXECUTORS,
+                    Integer.toString(NUM_EXECUTORS_DEFAULT_VALUE))));
+            postBody.setDriverCores(Integer.parseInt(jobConfig.getOrDefault(DRIVER_CORES,
+                    Integer.toString(DRIVER_CORES_DEFAULT_VALUE))));
+            postBody.setDriverMemory(new MemorySize(jobConfig.getOrDefault(DRIVER_MEMORY,
+                    DRIVER_MEMORY_DEFAULT_VALUE)).toString());
+            postBody.setExecutorMemory(new MemorySize(jobConfig.getOrDefault(EXECUTOR_MEMORY,
+                    EXECUTOR_MEMORY_DEFAULT_VALUE)).toString());
+
+            if (!this.referenceFiles.isEmpty()) {
+                postBody.setFiles(this.referenceFiles);
+            }
+
+            if (!this.archives.isEmpty()) {
+                postBody.setArchives(this.archives);
+            }
+
+            final List<String> jars = new ImmutableList.Builder<String>()
+                    .addAll(this.uploadedArtifactsUris)
+                    .addAll(this.referencedJars)
+                    .build();
+
+            if (!jars.isEmpty()) {
+                postBody.setJars(jars);
+            }
+
+            if (StringUtils.isNoneBlank(this.yarnQueue)) {
+                postBody.setQueue(yarnQueue);
+            }
+
+            final ImmutableMap.Builder<String, String> confBuilder = new ImmutableMap.Builder<>();
+
+            // Put only spark or yarn configurations
+            this.jobConfig.entrySet().stream()
+                    .filter(entry -> !jobConfigKeyBlackList.contains(entry.getKey()))
+                    .forEach(confBuilder::put);
+
+            // In Livy 0.5.0-incubating, we have to either specify code kind in post statement
+            // or set it in post session body here, or else "Code type should be specified if session kind is shared"
+            // error will be met in the response of the post statement request
+            confBuilder.put("spark.__livy__.livy.rsc.session.kind", this.kind.toString().toLowerCase());
+
+            final Map<String, String> configs = confBuilder.build();
+
+            if (!configs.isEmpty()) {
+                postBody.setConf(configs);
+            }
+
+            return postBody;
+        }
+    }
+
+    private final CreateParameters createParameters;
 
     final private PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
 
@@ -112,26 +322,25 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
      * Constructor
      */
 
-    public Session(final String name, final URI baseUrl) {
-        this(name, baseUrl, null, null);
-    }
-
     /**
      * Create a Livy session instance.
      *
      * @param name the session name which will be found in resource manager, such as Yarn
      * @param baseUrl the connect URL of Livy, also the parent URL of submitting POST Livy session request,
      *                ending with '/'
+     * @param createParameters the session options for creation
      * @param username the username of Basic Authentication, leave NULL for other authentication methods
      * @param password the password of Basic Authentication, leave NULL for other authentication methods
      */
     public Session(final String name,
                    final URI baseUrl,
+                   final CreateParameters createParameters,
                    final @Nullable String username,
                    final @Nullable String password) {
         this.name = name;
         this.baseUrl = baseUrl;
         this.lastState = SessionState.NOT_STARTED;
+        this.createParameters = createParameters;
 
         if (username == null || password == null) {
             this.http = new HttpObservable();
@@ -165,46 +374,6 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return id;
     }
 
-    public void setExecutorCores(final int executorCores) {
-        this.executorCores = executorCores;
-    }
-
-    public int getExecutorCores() {
-        return executorCores;
-    }
-
-    public int getExecutorNum() {
-        return executorNum;
-    }
-
-    public void setExecutorNum(final int executorNum) {
-        this.executorNum = executorNum;
-    }
-
-    public int getDriverCores() {
-        return driverCores;
-    }
-
-    public void setDriverCores(final int driverCores) {
-        this.driverCores = driverCores;
-    }
-
-    public String getDriverMemory() {
-        return driverMemory;
-    }
-
-    public void setDriverMemory(final String driverMemory) {
-        this.driverMemory = driverMemory;
-    }
-
-    public String getExecutorMemory() {
-        return executorMemory;
-    }
-
-    public void setExecutorMemory(final String executorMemory) {
-        this.executorMemory = executorMemory;
-    }
-
     public Observable<String> getAppId() {
         return appId != null ?
                 Observable.just(appId) :
@@ -229,36 +398,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     public abstract SessionKind getKind();
 
-    public List<String> getFiles() {
-        return files;
-    }
-
-    public void setFiles(final List<String> files) {
-        this.files = files;
-    }
-
-    public void addFiles(final String... files) {
-        this.files.addAll(Arrays.asList(files));
-    }
-
-    public List<String> getJars() {
-        return jars;
-    }
-
-    public void setJars(final List<String> jars) {
-        this.jars = jars;
-    }
-
-    public void addJars(final String... jars) {
-        this.jars.addAll(Arrays.asList(jars));
-    }
-
-    public Map<? extends String, ? extends String> getConf() {
-        return conf;
-    }
-
-    public void setConf(final Map<? extends String, ? extends String> conf) {
-        this.conf = conf;
+    public CreateParameters getCreateParameters() {
+        return createParameters;
     }
 
     @Nullable
@@ -266,7 +407,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return deploy;
     }
 
-    public void setDeploy(final Deployable deploy) {
+    public void setDeploy(final @Nullable Deployable deploy) {
         this.deploy = deploy;
     }
 
@@ -320,6 +461,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     public boolean isStop() {
         return getLastState() == SessionState.SHUTTING_DOWN ||
+                getLastState() == SessionState.NOT_STARTED ||
                 getLastState() == SessionState.DEAD ||
                 getLastState() == SessionState.KILLED ||
                 getLastState() == SessionState.ERROR ||
@@ -367,7 +509,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
                 .doOnNext(uri -> ctrlSubject.onNext(new SimpleImmutableEntry<>(Info, "Uploaded to " + uri)) )
                 .toList()
                 .map(uploadedUris -> {
-                    this.uploadedArtifactsUris = ImmutableList.copyOf(uploadedUris);
+                    this.createParameters.uploadedArtifactsUris.addAll(uploadedUris);
 
                     return this;
                 })
@@ -394,36 +536,10 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return this;
     }
 
-    private PostSessions preparePostSessions() {
-        final PostSessions postBody = new PostSessions();
-        postBody.setName(getName());
-        postBody.setKind(getKind());
-        postBody.setExecutorCores(getExecutorCores());
-        postBody.setNumExecutors(getExecutorNum());
-        postBody.setDriverCores(getDriverCores());
-        postBody.setDriverMemory(getDriverMemory());
-        postBody.setExecutorMemory(getExecutorMemory());
-        postBody.setFiles(getFiles());
-        postBody.setJars(new ImmutableList.Builder<String>()
-                .addAll(this.uploadedArtifactsUris)
-                .addAll(getJars())
-                .build());
-
-        // In Livy 0.5.0-incubating, we need to either specify code kind in post statement
-        // or set it in post session body here, or else "Code type should be specified if session kind is shared" error
-        // will be met in the response of the post statement request
-        postBody.setConf(new ImmutableMap.Builder<String, String>()
-                .putAll(getConf())
-                .put("spark.__livy__.livy.rsc.session.kind", getKind().toString().toLowerCase())
-                .build());
-
-        return postBody;
-    }
-
     private Observable<com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session> createSessionRequest() {
         final URI uri = baseUrl.resolve(REST_SEGMENT_SESSION);
 
-        final PostSessions postBody = preparePostSessions();
+        final PostSessions postBody = getCreateParameters().build();
         final String json = postBody.convertToJson()
                 .orElseThrow(() -> new IllegalArgumentException("Bad session arguments to post."));
 

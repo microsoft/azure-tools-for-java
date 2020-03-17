@@ -47,7 +47,12 @@ class SparkLivySessionProcess(
 
     override fun waitFor(): Int = 0
 
-    override fun destroy() = session.close()
+    override fun destroy() {
+        session.close()
+        outputStream.close()
+        errorStream.close()
+        inputStream.close()
+    }
 
     override fun getOutputStream(): OutputStream = stdInStream
 
@@ -68,4 +73,5 @@ class SparkLivySessionProcess(
             .flatMap { it.create() }
             .flatMap { it.awaitReady(rxSchedulers.processBarVisibleAsync(
                     "The Spark Livy interactive console session is starting..." )) }
+            .doOnError { destroy() }
 }

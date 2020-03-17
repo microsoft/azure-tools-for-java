@@ -47,6 +47,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.run.configuration.RunProfileStatePrepare
 import rx.Observable
 import java.net.URI
+import java.util.AbstractMap.SimpleImmutableEntry
 
 open class SparkScalaLivyConsoleRunConfiguration(project: Project,
                                                  configurationFactory: SparkScalaLivyConsoleRunConfigurationFactory,
@@ -131,9 +132,10 @@ open class SparkScalaLivyConsoleRunConfiguration(project: Project,
                     ?: throw RuntimeConfigurationError("Can't find Spark batch job configuration to inherit")
 
     open fun applyRunConfiguration(sparkCluster: IClusterDetail, session: SparkSession, deploy: Deployable) {
-        session.jars = batchSubmitModel.referenceJars
-        session.files = batchSubmitModel.referenceFiles
-        session.conf = batchSubmitModel.jobConfigs.map { it[0] to it[1] } .toMap()
+        session.createParameters
+                .referJars(*batchSubmitModel.referenceJars.toTypedArray())
+                .referFiles(*batchSubmitModel.referenceFiles.toTypedArray())
+                .conf(batchSubmitModel.jobConfigs.map { SimpleImmutableEntry(it[0], it[1]) })
 
         batchSubmitModel.artifactPath.ifPresent {
             session.deploy = deploy

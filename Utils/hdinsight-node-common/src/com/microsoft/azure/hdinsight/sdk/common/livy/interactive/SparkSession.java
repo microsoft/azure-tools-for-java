@@ -23,20 +23,21 @@
 package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionKind;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.net.URI;
 
 public class SparkSession extends Session {
     public SparkSession(final String name,
                         final URI baseUrl) {
-        super(name, baseUrl);
+        this(name, baseUrl, null, null);
     }
 
     public SparkSession(final String name,
                         final URI baseUrl,
-                        final String username,
-                        final String password) {
-        super(name, baseUrl, username, password);
+                        final @Nullable String username,
+                        final @Nullable String password) {
+        super(name, baseUrl, new CreateParameters(SessionKind.SPARK).name(name), username, password);
     }
 
     @Override
