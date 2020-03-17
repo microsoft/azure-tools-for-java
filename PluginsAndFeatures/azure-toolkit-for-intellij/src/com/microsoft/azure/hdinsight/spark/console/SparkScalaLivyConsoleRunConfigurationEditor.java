@@ -22,29 +22,21 @@
 
 package com.microsoft.azure.hdinsight.spark.console;
 
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class SparkScalaLivyConsoleRunConfigurationEditor extends SettingsEditor<SparkScalaLivyConsoleRunConfiguration> {
-    private JTextField clusterNameField;
     private JPanel mainPanel;
 
     @Override
-    protected void resetEditorFrom(@NotNull SparkScalaLivyConsoleRunConfiguration srcConf) {
-        // Reset the panel from the RunConfiguration
-        clusterNameField.setText(srcConf.getClusterName());
+    protected void resetEditorFrom(final SparkScalaLivyConsoleRunConfiguration srcConf) {
     }
 
     @Override
-    protected void applyEditorTo(@NotNull SparkScalaLivyConsoleRunConfiguration destConf) throws ConfigurationException {
-        // Apply the panel's setting to RunConfiguration
-        destConf.setClusterName(clusterNameField.getText());
+    protected void applyEditorTo(final SparkScalaLivyConsoleRunConfiguration destConf) {
     }
 
-    @NotNull
     @Override
     protected JComponent createEditor() {
         return mainPanel;

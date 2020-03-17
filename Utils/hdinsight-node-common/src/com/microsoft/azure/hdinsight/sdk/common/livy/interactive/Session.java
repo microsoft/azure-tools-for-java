@@ -22,8 +22,10 @@
 
 package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
@@ -33,7 +35,7 @@ import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.Stat
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionKind;
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionState;
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.api.PostSessions;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azure.hdinsight.spark.common.Deployable;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.StringUtils;
@@ -43,41 +45,50 @@ import org.apache.http.entity.StringEntity;
 import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.Debug;
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
 public abstract class Session implements AutoCloseable, Closeable, ILogger {
     private static final String REST_SEGMENT_SESSION = "sessions";
 
-    @NotNull
-    private URI baseUrl;            // Session base URL
+    // @NotNull annotation is removed since Not Null is by default,
+    // refer to https://checkerframework.org/manual/#null-defaults
+    private final URI baseUrl;            // Session base URL
 
     private int id;                 // Session ID of server
 
     @Nullable
-    private String appId;           // Application ID of server
+    private String appId = null;           // Application ID of server
 
-    @NotNull
-    private HttpObservable http;    // Http connection
+    private final HttpObservable http;    // Http connection
 
-    @NotNull
-    private String name;            // Session name
+    private final String name;            // Session name
 
-    @NotNull
     private SessionState lastState; // Last session state gotten
 
+    private List<String> lastLogs = Collections.emptyList();  // Last session logs
+
     @Nullable
-    private List<String> lastLogs;  // Last session logs
+    private Deployable deploy = null;      // Deploy delegate
+
+    private final List<String> artifactsToDeploy = new ArrayList<>(); // Artifacts to deploy
+
+    private ImmutableList<String> uploadedArtifactsUris = ImmutableList.of();   // To store uploaded artifacts URI
 
     private int executorCores = 1;  // Default cores per executor to create
 
@@ -89,47 +100,64 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     private String executorMemory = "4G";   // Default executor memory to create
 
+    private List<String> files = new ArrayList<>(); // Files for reference
+
+    private List<String> jars = new ArrayList<>(); // Jars for reference
+
+    private Map<? extends String, ? extends String> conf = new HashMap<>(); // Job Configs
+
+    final private PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
+
     /*
      * Constructor
      */
 
-    public Session(@NotNull String name, @NotNull URI baseUrl) {
-        this.name = name;
-        this.baseUrl = baseUrl;
-        this.lastState = SessionState.NOT_STARTED;
-        this.http = new HttpObservable();
+    public Session(final String name, final URI baseUrl) {
+        this(name, baseUrl, null, null);
     }
 
-    public Session(@NotNull String name, @NotNull final URI baseUrl, @NotNull final String username, @NotNull final String password) {
+    /**
+     * Create a Livy session instance.
+     *
+     * @param name the session name which will be found in resource manager, such as Yarn
+     * @param baseUrl the connect URL of Livy, also the parent URL of submitting POST Livy session request,
+     *                ending with '/'
+     * @param username the username of Basic Authentication, leave NULL for other authentication methods
+     * @param password the password of Basic Authentication, leave NULL for other authentication methods
+     */
+    public Session(final String name,
+                   final URI baseUrl,
+                   final @Nullable String username,
+                   final @Nullable String password) {
         this.name = name;
         this.baseUrl = baseUrl;
         this.lastState = SessionState.NOT_STARTED;
-        this.http = new HttpObservable(username, password);
+
+        if (username == null || password == null) {
+            this.http = new HttpObservable();
+        } else {
+            this.http = new HttpObservable(username, password);
+        }
+
+        this.ctrlSubject = PublishSubject.create();
     }
 
     /*
      * Getter / Setter
      */
-    @NotNull
     public String getName() {
         return name;
     }
 
-    public void setName(@NotNull String name) {
-        this.name = name;
-    }
-
-    @NotNull
     public URI getBaseUrl() {
         return baseUrl;
     }
 
-    @NotNull
     public URI getUri() {
-        return baseUrl.resolve(REST_SEGMENT_SESSION + "/" + String.valueOf(getId()));
+        return baseUrl.resolve(REST_SEGMENT_SESSION + "/" + getId());
     }
 
-    public void setId(int id) {
+    public void setId(final int id) {
         this.id = id;
     }
 
@@ -137,7 +165,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return id;
     }
 
-    public void setExecutorCores(int executorCores) {
+    public void setExecutorCores(final int executorCores) {
         this.executorCores = executorCores;
     }
 
@@ -149,7 +177,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return executorNum;
     }
 
-    public void setExecutorNum(int executorNum) {
+    public void setExecutorNum(final int executorNum) {
         this.executorNum = executorNum;
     }
 
@@ -157,25 +185,23 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return driverCores;
     }
 
-    public void setDriverCores(int driverCores) {
+    public void setDriverCores(final int driverCores) {
         this.driverCores = driverCores;
     }
 
-    @NotNull
     public String getDriverMemory() {
         return driverMemory;
     }
 
-    public void setDriverMemory(@NotNull String driverMemory) {
+    public void setDriverMemory(final String driverMemory) {
         this.driverMemory = driverMemory;
     }
 
-    @NotNull
     public String getExecutorMemory() {
         return executorMemory;
     }
 
-    public void setExecutorMemory(@NotNull String executorMemory) {
+    public void setExecutorMemory(final String executorMemory) {
         this.executorMemory = executorMemory;
     }
 
@@ -197,34 +223,79 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
                     });
     }
 
-    private void setAppId(@Nullable String appId) {
+    private void setAppId(final @Nullable String appId) {
         this.appId = appId;
     }
 
-    @NotNull
     public abstract SessionKind getKind();
 
-    @NotNull
+    public List<String> getFiles() {
+        return files;
+    }
+
+    public void setFiles(final List<String> files) {
+        this.files = files;
+    }
+
+    public void addFiles(final String... files) {
+        this.files.addAll(Arrays.asList(files));
+    }
+
+    public List<String> getJars() {
+        return jars;
+    }
+
+    public void setJars(final List<String> jars) {
+        this.jars = jars;
+    }
+
+    public void addJars(final String... jars) {
+        this.jars.addAll(Arrays.asList(jars));
+    }
+
+    public Map<? extends String, ? extends String> getConf() {
+        return conf;
+    }
+
+    public void setConf(final Map<? extends String, ? extends String> conf) {
+        this.conf = conf;
+    }
+
+    @Nullable
+    public Deployable getDeploy() {
+        return deploy;
+    }
+
+    public void setDeploy(final Deployable deploy) {
+        this.deploy = deploy;
+    }
+
+    public List<String> getArtifactsToDeploy() {
+        return artifactsToDeploy;
+    }
+
     public HttpObservable getHttp() {
         return http;
     }
 
-    @NotNull
     public SessionState getLastState() {
         return lastState;
     }
 
-    private void setLastState(@NotNull SessionState lastState) {
+    private void setLastState(final SessionState lastState) {
         this.lastState = lastState;
     }
 
-    public void setLastLogs(@Nullable List<String> lastLogs) {
+    public void setLastLogs(final List<String> lastLogs) {
         this.lastLogs = lastLogs;
     }
 
-    @NotNull
     public List<String> getLastLogs() {
-        return lastLogs == null ? new ArrayList<>() : lastLogs;
+        return lastLogs;
+    }
+
+    public PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
+        return ctrlSubject;
     }
 
     /*
@@ -235,6 +306,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         kill().toBlocking().subscribe( session -> {}, err -> {
             log().warn("Kill session failed. " + ExceptionUtils.getStackTrace(err));
         });
+
+        this.ctrlSubject.onCompleted();
     }
 
     /*
@@ -258,7 +331,6 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
                 getLastState() == SessionState.BUSY;
     }
 
-    @NotNull
     public String getInstallationID() {
         if (HDInsightLoader.getHDInsightHelper() == null) {
             return "";
@@ -269,8 +341,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     @Nullable
     public String getUserAgent() {
-        String userAgentPrefix = getHttp().getUserAgentPrefix();
-        String requestId = AppInsightsClient.getConfigurationSessionId() == null ?
+        final String userAgentPrefix = getHttp().getUserAgentPrefix();
+        final String requestId = AppInsightsClient.getConfigurationSessionId() == null ?
                 UUID.randomUUID().toString() :
                 AppInsightsClient.getConfigurationSessionId();
 
@@ -280,6 +352,27 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
     /*
      * Observable APIs, all IO operations
      */
+
+    public Observable<Session> deploy() {
+        final Deployable deployDelegate = getDeploy();
+
+        if (deployDelegate == null) {
+            return Observable.just(this);
+        }
+
+        return Observable.from(getArtifactsToDeploy())
+                .doOnNext(artifactPath -> ctrlSubject.onNext(new SimpleImmutableEntry<>(
+                        Info, "Start uploading artifact " + artifactPath)))
+                .flatMap(artifactPath -> deployDelegate.deploy(new File(artifactPath), ctrlSubject))
+                .doOnNext(uri -> ctrlSubject.onNext(new SimpleImmutableEntry<>(Info, "Uploaded to " + uri)) )
+                .toList()
+                .map(uploadedUris -> {
+                    this.uploadedArtifactsUris = ImmutableList.copyOf(uploadedUris);
+
+                    return this;
+                })
+                .defaultIfEmpty(this);
+    }
 
     /**
      * To create a session with specified kind.
@@ -291,7 +384,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
                 .map(this::updateWithResponse);
     }
 
-    private Session updateWithResponse(com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session sessionResp) {
+    private Session updateWithResponse(
+            final com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session sessionResp) {
         this.setId(sessionResp.getId());
         this.setAppId(sessionResp.getAppId());
         this.setLastState(sessionResp.getState());
@@ -300,9 +394,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return this;
     }
 
-    @NotNull
     private PostSessions preparePostSessions() {
-        PostSessions postBody = new PostSessions();
+        final PostSessions postBody = new PostSessions();
         postBody.setName(getName());
         postBody.setKind(getKind());
         postBody.setExecutorCores(getExecutorCores());
@@ -310,28 +403,43 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         postBody.setDriverCores(getDriverCores());
         postBody.setDriverMemory(getDriverMemory());
         postBody.setExecutorMemory(getExecutorMemory());
+        postBody.setFiles(getFiles());
+        postBody.setJars(new ImmutableList.Builder<String>()
+                .addAll(this.uploadedArtifactsUris)
+                .addAll(getJars())
+                .build());
 
         // In Livy 0.5.0-incubating, we need to either specify code kind in post statement
         // or set it in post session body here, or else "Code type should be specified if session kind is shared" error
         // will be met in the response of the post statement request
-        postBody.setConf(ImmutableMap.of("spark.__livy__.livy.rsc.session.kind", getKind().toString().toLowerCase()));
+        postBody.setConf(new ImmutableMap.Builder<String, String>()
+                .putAll(getConf())
+                .put("spark.__livy__.livy.rsc.session.kind", getKind().toString().toLowerCase())
+                .build());
 
         return postBody;
     }
 
     private Observable<com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session> createSessionRequest() {
-        URI uri = baseUrl.resolve(REST_SEGMENT_SESSION);
+        final URI uri = baseUrl.resolve(REST_SEGMENT_SESSION);
 
-        PostSessions postBody = preparePostSessions();
-        String json = postBody.convertToJson()
+        final PostSessions postBody = preparePostSessions();
+        final String json = postBody.convertToJson()
                 .orElseThrow(() -> new IllegalArgumentException("Bad session arguments to post."));
 
-        StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
+        getCtrlSubject().onNext(new SimpleImmutableEntry<>(Debug,
+                "Create Livy Session by sending request to " + uri + " with body " + json));
+
+        final StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
         entity.setContentType("application/json");
 
         return getHttp()
                 .setUserAgent(getUserAgent())
-                .post(uri.toString(), entity, null, null, com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session.class);
+                .post(uri.toString(),
+                      entity,
+                      null,
+                      null,
+                      com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session.class);
     }
 
     /**
@@ -349,7 +457,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
     }
 
     private Observable<HttpResponse> deleteSessionRequest() {
-        URI uri = getUri();
+        final URI uri = getUri();
 
         return getHttp()
                 .setUserAgent(getUserAgent())
@@ -368,19 +476,19 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
     }
 
     private Observable<com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session> getSessionRequest() {
-        URI uri = getUri();
+        final URI uri = getUri();
 
         return getHttp()
                 .setUserAgent(getUserAgent())
                 .get(uri.toString(), null, null, com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.Session.class);
     }
 
-    public Observable<Map<String, String>> runStatement(@NotNull Statement statement) {
+    public Observable<Map<String, String>> runStatement(final Statement statement) {
         return awaitReady()
             .flatMap(session -> statement
                     .run()
                     .map(result -> {
-                        if (!result.getStatus().toLowerCase().equals("ok")) {
+                        if (!"ok".equalsIgnoreCase(result.getStatus())) {
                             throw propagate(new StatementExecutionError(
                                     result.getEname(), result.getEvalue(), result.getTraceback()));
                         }
@@ -389,7 +497,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
                     }));
     }
 
-    public Observable<Session> awaitReady(@Nullable Scheduler scheduler) {
+    public Observable<Session> awaitReady(final @Nullable Scheduler scheduler) {
         return get()
                 .repeatWhen(ob -> scheduler != null ?
                                 // Use specified scheduler to delay
@@ -402,9 +510,10 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
                     List<String> currentLogs = ses.getLastLogs();
 
                     if (ses.isStop()) {
-                        String exceptionMessage = StringUtils.join(sesLogsPair.right).equals(StringUtils.join(currentLogs)) ?
-                                StringUtils.join(currentLogs, " ; ") :
-                                StringUtils.join(Stream.of(sesLogsPair.right, currentLogs)
+                        String exceptionMessage = StringUtils.join(sesLogsPair.right)
+                                                        .equals(StringUtils.join(currentLogs))
+                                ? StringUtils.join(currentLogs, " ; ")
+                                : StringUtils.join(Stream.of(sesLogsPair.right, currentLogs)
                                                        .flatMap(Collection::stream)
                                                        .collect(Collectors.toList()),
                                                  " ; ");
@@ -423,7 +532,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return awaitReady(null);
     }
 
-    public Observable<Map<String, String>> runCodes(@NotNull String codes) {
+    public Observable<Map<String, String>> runCodes(final String codes) {
         return runStatement(new Statement(this, new ByteArrayInputStream(codes.getBytes(StandardCharsets.UTF_8))));
     }
 

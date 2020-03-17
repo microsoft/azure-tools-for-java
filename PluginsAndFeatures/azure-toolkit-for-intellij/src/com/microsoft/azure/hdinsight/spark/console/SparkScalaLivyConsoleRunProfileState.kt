@@ -23,19 +23,19 @@
 package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.DefaultExecutionResult
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.execution.ui.ConsoleViewContentType
-import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
+import com.intellij.execution.ui.ConsoleViewContentType.LOG_ERROR_OUTPUT
+import com.microsoft.azure.hdinsight.common.print
+import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
-import rx.Observable
-import rx.schedulers.Schedulers
 
-class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScalaConsoleBuilder, val session: Session): RunProfileState {
+class SparkScalaLivyConsoleRunProfileState(
+        private val consoleBuilder: SparkScalaConsoleBuilder,
+        private val session: SparkSession): RunProfileState {
     private val postStartCodes = """
         val __welcome = List(
             "Spark context available as 'sc' (master = " + sc.master + ", app id = " + sc.getConf.getAppId + ").",
@@ -49,26 +49,25 @@ class SparkScalaLivyConsoleRunProfileState(private val consoleBuilder: SparkScal
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult? {
         val console = consoleBuilder.console
-
-        val livySessionProcessHandler = SparkLivySessionProcessHandler(SparkLivySessionProcess(session))
+        val progressBarScheduler = IdeaSchedulers(consoleBuilder.project)
+        val livySessionProcess = SparkLivySessionProcess(progressBarScheduler, session)
+        val livySessionProcessHandler = SparkLivySessionProcessHandler(livySessionProcess)
 
         console.attachToProcess(livySessionProcessHandler)
+        session.ctrlSubject.subscribe({ typedMessage -> console.print(typedMessage) }, { err ->
+            console.print("Livy interactive session is stopped or not started due to the error ${err.message}\n",
+                          LOG_ERROR_OUTPUT)
+        })
 
-        val progressBarScheduler = IdeaSchedulers(consoleBuilder.project)
-                .processBarVisibleAsync("Start Spark Livy interactive console session...")
-
-        session.create()
-                .subscribeOn(progressBarScheduler)
-                .flatMap { it.awaitReady(progressBarScheduler) }
+        livySessionProcess
+                .start()
                 .subscribe({
                     livySessionProcessHandler.execute(postStartCodes)
                     (console as? ScalaLanguageConsole)?.apply {
                         // Customize the Spark Livy interactive console
                         prompt = "\nSpark>"
                     }
-                }, { ex ->
-                    console.print("Can't start Livy interactive session: ${ex.message}\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
-                })
+                }, { err -> session.ctrlSubject.onError(err) })
 
         return DefaultExecutionResult(console, livySessionProcessHandler)
     }
