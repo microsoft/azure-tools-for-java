@@ -307,8 +307,6 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
             currentSelection.isSelected = true
         } else {
             checkSshCertIndicator.setTextAndStatus("", false)
-            sshPasswordField.text = ""
-            sshKeyFileTextField.text = ""
         }
     }
 
