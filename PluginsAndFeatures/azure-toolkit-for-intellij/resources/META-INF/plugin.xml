@@ -34,6 +34,12 @@
                 <li>Trigger azure functions</li>
             </ul>
         </li>
+        <li>Support project artifact dependencies in Spark interactive console</li>
+        <li>Add more debug log when creating Spark Livy interactive console</li>
+    </ul>
+    <h4>Changed</h4>
+    <ul>
+        <li>Enable Spark on Synapse feature by default</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

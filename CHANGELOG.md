@@ -58,6 +58,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
     * List/view existing Function apps on Azure
     * Stop/start/restart Function apps on Azure
     * Trigger azure functions
+- Support project artifact dependencies in Spark interactive console
+- Add more debug log when creating Spark Livy interactive console
+
+### Changed
+- Enable Spark on Synapse feature by default
 
 ## 3.33.1
 
