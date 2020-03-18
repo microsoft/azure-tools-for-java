@@ -118,13 +118,6 @@ class SelectArcadiaSparkTypeAction : SelectSparkApplicationTypeAction() {
         override fun getSparkApplicationType() : SparkApplicationType {
             return SparkApplicationType.ArcadiaSpark
         }
-
-    override fun update(e: AnActionEvent) {
-        super.update(e)
-        if (!CommonSettings.isProjectArcadiaFeatureEnabled) {
-            e.presentation.isEnabledAndVisible = false
-        }
-    }
 }
 
 enum class SparkApplicationType(val value: String) {

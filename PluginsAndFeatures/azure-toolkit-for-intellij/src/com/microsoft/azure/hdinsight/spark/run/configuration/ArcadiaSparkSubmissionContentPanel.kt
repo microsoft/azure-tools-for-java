@@ -26,10 +26,12 @@ import com.intellij.execution.configurations.RuntimeConfigurationWarning
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.ui.ArcadiaSparkClusterListRefreshableCombo
 import com.microsoft.azure.hdinsight.spark.ui.SparkClusterListRefreshableCombo
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkCompute
+import com.microsoft.azure.synapsesoc.common.SynapseCosmosSparkPool
 
 class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionContentPanel(project, "Synapse Spark") {
     override val clustersSelection: SparkClusterListRefreshableCombo by lazy { ArcadiaSparkClusterListRefreshableCombo().apply {
@@ -54,6 +56,11 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
             arcadiaData.sparkCompute = cluster.name
             arcadiaData.livyUri = cluster.connectionUrl
                     ?: throw RuntimeConfigurationWarning("Can't get Synapse Spark pool connection URL")
+            arcadiaData.sparkApplicationType = when (cluster) {
+                is SynapseCosmosSparkPool -> SparkApplicationType.CosmosSpark
+                is ArcadiaSparkCompute -> SparkApplicationType.ArcadiaSpark
+                else -> SparkApplicationType.None
+            }
         }
     }
 }

@@ -3,6 +3,8 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.33.1](#3331)
+  - [3.33.0](#3330)
   - [3.32.0](#3320)
   - [3.31.0](#3310)
   - [3.30.0](#3300)
@@ -43,6 +45,31 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.33.1
+
+### Fixed
+- [#4061](https://github.com/microsoft/azure-tools-for-java/issues/4061) The error of Spark job remote debugging
+- [#4079](https://github.com/microsoft/azure-tools-for-java/issues/4079) The regression of Spark console can not start
+
+## 3.33.0
+
+### Added
+ - Support upload artifact to ADLS Gen1 storage for Spark on Cosmos Spark Pool
+ - Detect authentication type automatically when user types cluster name and lost focus when link an HDInsight cluster
+ - Fetch more Livy logs when submit Spark job to HDInsight cluster failed
+ - Add background task indicator to improve user experience
+ - Support virtual file system on ADLS Gen2 storage for HDInsight Spark cluster and Synapse Spark pool
+
+### Changed
+ - Seperator for multiple referenced jars and referenced files is changed from semicolon to space in Spark batch job configuration
+ - "Continue Anyway" is changed to "Cancel submit" in "Change configuration settings" dialog when validation check failed for spark batch job
+ - The behavior of "Rerun" button action for Spark batch job is changed from re-run with current selected configuration to re-run with previous job configuration
+
+### Fixed
+ - [#3935](https://github.com/microsoft/azure-tools-for-java/pull/3935) Clean up HDInsight clusters from cache when user signs out
+ - [#3887](https://github.com/microsoft/azure-tools-for-java/issues/3887), [#4023](https://github.com/microsoft/azure-tools-for-java/pull/4023) Fix uncaught StackOverflowError reported by user
+ - [#4045](https://github.com/microsoft/azure-tools-for-java/issues/4045) Fix uncaught NullPointerException reported by user
 
 ## 3.32.0
 

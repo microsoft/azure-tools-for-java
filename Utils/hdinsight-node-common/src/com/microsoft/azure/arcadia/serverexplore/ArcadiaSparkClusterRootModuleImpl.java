@@ -54,7 +54,7 @@ public class ArcadiaSparkClusterRootModuleImpl extends HDInsightRootModule {
 
     @Override
     public boolean isFeatureEnabled() {
-        return CommonSettings.isProjectArcadiaFeatureEnabled;
+        return true;
     }
 
     @Override

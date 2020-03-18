@@ -39,7 +39,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import rx.Observable;
-import rx.Observer;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,9 +63,8 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     public CosmosServerlessSparkBatchJob(@NotNull AzureSparkServerlessAccount account,
                                          @NotNull Deployable jobDeploy,
                                          @NotNull CreateSparkBatchJobParameters submissionParameter,
-                                         @NotNull SparkBatchSubmission sparkBatchSubmission,
-                                         @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        super(account, submissionParameter, sparkBatchSubmission, ctrlSubject, null, null, null);
+                                         @NotNull SparkBatchSubmission sparkBatchSubmission) {
+        super(account, submissionParameter, sparkBatchSubmission, null, null, null);
         this.account = account;
         this.jobUuid = UUID.randomUUID().toString();
         this.jobDeploy = jobDeploy;
@@ -143,7 +141,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
-        return jobDeploy.deploy(new File(artifactPath))
+        return jobDeploy.deploy(new File(artifactPath), getCtrlSubject())
                 .map(path -> {
                     ctrlInfo(String.format("Upload to Azure Datalake store %s successfully", path));
                     getSubmissionParameter().setFilePath(path);
@@ -427,5 +425,15 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
 
     private void ctrlHyperLink(@NotNull String url) {
         getCtrlSubject().onNext(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Hyperlink, url));
+    }
+
+    @Override
+    public CosmosServerlessSparkBatchJob clone() {
+        return new CosmosServerlessSparkBatchJob(
+                this.getAccount(),
+                this.jobDeploy,
+                this.getSubmissionParameter(),
+                this.getSubmission()
+        );
     }
 }

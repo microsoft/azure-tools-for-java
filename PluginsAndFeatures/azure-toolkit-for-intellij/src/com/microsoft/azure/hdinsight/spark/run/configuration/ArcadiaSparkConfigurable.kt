@@ -25,7 +25,10 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.ui.SparkBatchJobConfigurable
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel
+import com.microsoft.azuretools.authmanage.CommonSettings
 import com.microsoft.azuretools.telemetry.TelemetryConstants
+import javax.swing.JComponent
+import javax.swing.JLabel
 
 class ArcadiaSparkConfigurable(project: Project) : SparkBatchJobConfigurable(project) {
     override fun createSubmissionPanel(): SparkSubmissionContentPanel =

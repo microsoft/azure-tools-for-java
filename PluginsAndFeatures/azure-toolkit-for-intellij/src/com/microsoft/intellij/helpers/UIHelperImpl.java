@@ -57,6 +57,7 @@ import com.microsoft.intellij.helpers.arm.ResourceTemplateView;
 import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
+import com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider;
@@ -71,6 +72,7 @@ import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
@@ -522,6 +524,24 @@ public class UIHelperImpl implements UIHelper {
             userData.put(SLOT_NAME, node.getName());
             itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(),
                 type, iconPath, userData);
+        }
+        fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
+    }
+
+    @Override
+    public void openFunctionAppPropertyView(FunctionNode functionNode) {
+        final String subscriptionId = functionNode.getSubscriptionId();
+        final String functionApId = functionNode.getFunctionAppId();
+        final FileEditorManager fileEditorManager = getFileEditorManager(subscriptionId, functionApId, (Project) functionNode.getProject());
+        if (fileEditorManager == null) {
+            return;
+        }
+        final String type = FunctionAppPropertyViewProvider.TYPE;
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, functionApId);
+        if (itemVirtualFile == null) {
+            final String iconPath = functionNode.getParent() == null ? functionNode.getIconPath()
+                    : functionNode.getParent().getIconPath();
+            itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), type, iconPath, subscriptionId, functionApId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }

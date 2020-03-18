@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.common;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -43,10 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -264,33 +262,15 @@ public class ClusterManagerEx implements ILogger {
         }
 
         // Get clusters from Subscription, an empty list for non-logged in user.
-        Stream<ClusterDetail> clusterDetailsFromSubscription = getSubscriptionHDInsightClusters(getAzureManager())
-                .stream();
-
-        // Merge the clusters from subscription with linked one if the name is same
-        final List<IClusterDetail> toReplaceClusters = linkedClusters.stream()
-                .filter(linkedCluster -> linkedCluster instanceof HDInsightAdditionalClusterDetail ||
-                        linkedCluster instanceof HDInsightLivyLinkClusterDetail)
-                .collect(Collectors.toList());
-
-        final List<IClusterDetail> mergedClusters = clusterDetailsFromSubscription
-                .map(cluster -> { // replace the duplicated cluster with the linked one
-                    Optional<IClusterDetail> inLinkedAndSubscriptionCluster = toReplaceClusters.stream()
-                            .filter(linkedCluster -> linkedCluster.getName().equals(cluster.getName()))
-                            .findFirst();
-
-                    // remove the duplicated cluster from additional clusters
-                    inLinkedAndSubscriptionCluster.ifPresent(toReplaceClusters::remove);
-
-                    return  inLinkedAndSubscriptionCluster.orElse(cluster);
-                })
-                .collect(Collectors.toList());
-
-        mergedClusters.addAll(linkedClusters);
-        mergedClusters.addAll(emulatorClusters);
+        List<ClusterDetail> clusterDetailsFromSubscription = getSubscriptionHDInsightClusters(getAzureManager());
 
         // Sort the merged clusters before set it to cache, sorting algorithm is based on cluster name
-        Collections.sort(mergedClusters);
+        ImmutableSortedSet<IClusterDetail> mergedClusters =
+                new ImmutableSortedSet.Builder<IClusterDetail>(ComparableCluster::compareTo)
+                        .addAll(linkedClusters)
+                        .addAll(emulatorClusters)
+                        .addAll(clusterDetailsFromSubscription)
+                        .build();
 
         synchronized (this) {
             setAdditionalClusterDetails(linkedClusters);
@@ -299,7 +279,7 @@ public class ClusterManagerEx implements ILogger {
             setEmulatorClusterDetails(emulatorClusters);
             isListEmulatorClusterSuccess = true;
 
-            setCachedClusters(mergedClusters);
+            setCachedClusters(mergedClusters.asList());
             isListClusterSuccess = true;
 
             return getCachedClusters();

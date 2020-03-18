@@ -26,11 +26,14 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.ui.ComboboxWithBrowseButton
 import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.StreamUtil
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.common.viewmodels.ComboBoxSelectionDelegated
+import com.microsoft.azure.hdinsight.common.viewmodels.ImmutableComboBoxModelDelegated
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount.DefaultScheme
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.BLOB
@@ -40,14 +43,18 @@ import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
+import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.ui.util.UIUtils
+import com.microsoft.intellij.ui.util.findFirst
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
 import com.microsoft.tooling.msservices.model.storage.BlobContainer
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount
 import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.apache.commons.lang3.exception.ExceptionUtils
 import rx.Observable
 import rx.schedulers.Schedulers
+import java.awt.Font
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
@@ -59,7 +66,6 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
     interface Model : SparkSubmissionJobUploadStorageBasicCard.Model {
         var storageAccount : String?
         var storageKey : String?
-        var containersModel : ComboBoxModel<Any>
         var selectedContainer: String?
     }
 
@@ -92,23 +98,34 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
     }
 
     private val storageContainerLabel = JLabel("Storage Container")
-    private val storageContainerUI = ComboboxWithBrowseButton().apply {
+    private val storageContainerUI = ComboboxWithBrowseButton(JComboBox(ImmutableComboBoxModel.empty<String>())).apply {
         comboBox.name = "blobCardStorageContainerComboBoxCombo"
 
         // after container is selected or new model is set, update upload path
         comboBox.addPropertyChangeListener("model") {
             if ((it.oldValue as? ComboBoxModel<*>)?.selectedItem != (it.newValue as? ComboBoxModel<*>)?.selectedItem) {
-                updateStorageAfterContainerSelected().subscribe(
-                        { },
-                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+                viewModel.storageCheckSubject.onNext(StorageCheckEvent.InputChangedEvent(comboBox))
             }
         }
 
         comboBox.addItemListener { itemEvent ->
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
-                updateStorageAfterContainerSelected().subscribe(
-                        { },
-                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+                viewModel.storageCheckSubject.onNext(StorageCheckEvent.InputChangedEvent(comboBox))
+            }
+        }
+
+        comboBox.renderer = object : SimpleListCellRenderer<Any>() {
+            override fun customize(list: JList<out Any>, value: Any?, index: Int, selected: Boolean, hasFocus: Boolean) {
+                font = if (value != null) {
+                    text = value.toString()
+                    font.deriveFont(Font.PLAIN)
+                } else {
+                    text = (viewModel as ViewModel).refreshContainerError
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { "<$it>" }
+                            ?: "<No selection>"
+                    font.deriveFont(Font.ITALIC)
+                }
             }
         }
 
@@ -128,7 +145,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
     private fun doRefresh() {
         if (storageContainerUI.button.isEnabled) {
             storageContainerUI.button.isEnabled = false
-            refreshContainers()
+            (viewModel as ViewModel).refreshContainers()
                     .doOnEach { storageContainerUI.button.isEnabled = true }
                     .subscribe(
                             { },
@@ -162,107 +179,21 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
         formBuilder.buildPanel()
     }
 
-    private fun refreshContainers(): Observable<SparkSubmitJobUploadStorageModel> {
-        ApplicationManager.getApplication().assertIsDispatchThread()
+    inner class ViewModel: SparkSubmissionJobUploadStorageBasicCard.ViewModel() {
+        var blobContainerSelection: Any? by ComboBoxSelectionDelegated(storageContainerUI.comboBox)
+        var blobContainerModel: ImmutableComboBoxModel<Any> by ImmutableComboBoxModelDelegated(storageContainerUI.comboBox)
+        var refreshContainerError: String? = null
 
-        return Observable.just(SparkSubmitJobUploadStorageModel())
-                .doOnNext { getData(it) }
-                // set error message to prevent user from applying the change when refreshing is not completed
-                .map { it.apply { errorMsg = "refreshing storage containers is not completed" } }
-                .doOnNext { setData(it) }
-                .observeOn(Schedulers.io())
-                .map { toUpdate ->
-                    toUpdate.apply {
-                        if (StringUtils.isEmpty(toUpdate.storageAccount) || StringUtils.isEmpty(toUpdate.storageKey)) {
-                            errorMsg = "Storage account and key can't be empty"
-                        } else {
-                            try {
-                                val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
-                                        .apply { primaryKey = toUpdate.storageKey }
-
-                                // Add Timeout for list containers operation to avoid getting stuck
-                                // when storage account or key is invalid
-                                val requestOptions = BlobRequestOptions().apply { maximumExecutionTimeInMs = 5000 }
-                                val containers = StorageClientSDKManager
-                                        .getManager()
-                                        .getBlobContainers(clientStorageAccount.connectionString, requestOptions)
-                                        .map(BlobContainer::getName)
-                                        .toTypedArray()
-                                if (containers.isNotEmpty()) {
-                                    containersModel = DefaultComboBoxModel(containers)
-                                    containersModel.selectedItem = containersModel.getElementAt(0)
-                                    selectedContainer = containersModel.getElementAt(0)?.toString()
-
-                                    val blobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccount)
-                                    uploadPath = buildBlobUri(blobName, selectedContainer)
-                                    errorMsg = null
-                                } else {
-                                    errorMsg = "No container found in this storage account"
-                                }
-                            } catch (ex: Exception) {
-                                log().info("Refresh Azure Blob contains error. " + ExceptionUtils.getStackTrace(ex))
-                                errorMsg = "Can't get storage containers, check if account and key matches"
-                            }
-                        }
-                    }
-                }
-                .doOnNext { data ->
-                    if (data.errorMsg != null) {
-                        log().info("Refresh Azure Blob containers error: " + data.errorMsg)
-                    }
-                    setData(data)
-                }
-    }
-
-    private fun updateStorageAfterContainerSelected(): Observable<SparkSubmitJobUploadStorageModel> {
-        ApplicationManager.getApplication().assertIsDispatchThread()
-
-        return Observable.just(SparkSubmitJobUploadStorageModel())
-                .doOnNext { getData(it) }
-                // set error message to prevent user from applying the change when updating is not completed
-                .map { it.apply { errorMsg = "updating upload path is not completed" } }
-                .doOnNext { setData(it) }
-                .observeOn(Schedulers.io())
-                .map { toUpdate ->
-                    if (toUpdate.containersModel.size == 0) {
-                        toUpdate.apply { errorMsg = "Storage account has no containers" }
-                    } else {
-                        toUpdate.apply {
-                            val selectedContainer = toUpdate.containersModel.selectedItem as String
-                            uploadPath = buildBlobUri(
-                                    ClusterManagerEx.getInstance().getBlobFullName(storageAccount),
-                                    selectedContainer)
-                            errorMsg = null
-                        }
-                    }
-                }
-                .doOnNext { data ->
-                    if (data.errorMsg != null) {
-                        log().info("Update storage info after container selected error: " + data.errorMsg)
-                    }
-                    setData(data)
-                }
-    }
-
-    private fun buildBlobUri(fullStorageBlobName: String?, container: String?): String {
-        if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container))
-            throw IllegalArgumentException("Blob Name ,container and scheme name cannot be empty")
-
-        return "$DefaultScheme://$container@$fullStorageBlobName/$submissionFolder/"
-    }
-
-    override fun createViewModel(): ViewModel = object : ViewModel() {
         override fun getValidatedStorageUploadPath(config: SparkSubmissionJobUploadStorageBasicCard.Model)
                 : String {
             if (config !is Model) {
-                return INVALID_UPLOAD_PATH;
+                return INVALID_UPLOAD_PATH
             }
 
             // There are IO operations
             UIUtils.assertInPooledThread()
 
-            if (config.containersModel.size == 0
-                    || config.containersModel.selectedItem == null
+            if (config.selectedContainer.isNullOrBlank()
                     || config.storageAccount.isNullOrBlank()
                     || config.storageKey.isNullOrBlank()) {
                 throw RuntimeConfigurationError("Azure Blob storage form is not completed")
@@ -270,9 +201,65 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
 
             return buildBlobUri(
                     ClusterManagerEx.getInstance().getBlobFullName(config.storageAccount),
-                    config.containersModel.selectedItem as String)
+                    config.selectedContainer as String)
+        }
+
+        private val ideaSchedulers = IdeaSchedulers()
+
+        fun refreshContainers(): Observable<ImmutableComboBoxModel<Any>> {
+            ApplicationManager.getApplication().assertIsDispatchThread()
+
+            return Observable.just(SparkSubmitJobUploadStorageModel())
+                    .doOnNext { getData(it) }
+                    .observeOn(Schedulers.io())
+                    .map { config ->
+                        if (StringUtils.isEmpty(config.storageAccount) || StringUtils.isEmpty(config.storageKey)) {
+                            throw RuntimeConfigurationError("Storage account and key can't be empty")
+                        }
+
+                        val clientStorageAccount = ClientStorageAccount(config.storageAccount)
+                                .apply { primaryKey = config.storageKey }
+
+                        // Add Timeout for list containers operation to avoid getting stuck
+                        // when storage account or key is invalid
+                        val requestOptions = BlobRequestOptions().apply { maximumExecutionTimeInMs = 5000 }
+                        val containers = StorageClientSDKManager
+                                .getManager()
+                                .getBlobContainers(clientStorageAccount.connectionString, requestOptions)
+                                .map { it.name as Any }
+                                .toTypedArray()
+
+                        if (containers.isEmpty()) {
+                            throw RuntimeConfigurationError("No container found in this storage account")
+                        }
+
+                        refreshContainerError = null
+                        ImmutableComboBoxModel(containers).apply {
+                            findFirst { containerName -> containerName == config.selectedContainer }
+                                    ?.let { found -> selectedItem = found }
+                        }
+                    }
+                    .doOnError {
+                        log().info("Refresh Azure Blob containers error: $it")
+
+                        refreshContainerError = it.message
+                        blobContainerModel = ImmutableComboBoxModel.empty()
+
+                        storageCheckSubject.onNext(StorageCheckEvent.InputFocusLostEvent(storageContainerUI.comboBox))
+                    }
+                    .observeOn(ideaSchedulers.dispatchUIThread())
+                    .doOnNext { containersComboModel -> blobContainerModel = containersComboModel }
+        }
+
+        private fun buildBlobUri(fullStorageBlobName: String?, container: String?): String {
+            if (StringUtils.isBlank(fullStorageBlobName) || StringUtils.isBlank(container))
+                throw IllegalArgumentException("Blob Name ,container and scheme name cannot be empty")
+
+            return "$DefaultScheme://$container@$fullStorageBlobName/$submissionFolder/"
         }
     }
+
+    override fun createViewModel(): ViewModel = ViewModel()
 
     override fun readWithLock(to: SparkSubmissionJobUploadStorageBasicCard.Model) {
         if (to !is Model) {
@@ -281,8 +268,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
 
         to.storageAccount = storageAccountField.text?.trim()
         to.storageKey = storageKeyField.text?.trim()
-        to.containersModel = storageContainerUI.comboBox.model
-        to.selectedContainer = storageContainerUI.comboBox.selectedItem?.toString()
+        to.selectedContainer = (viewModel as ViewModel).blobContainerSelection?.toString()
     }
 
     override fun writeWithLock(from: SparkSubmissionJobUploadStorageBasicCard.Model) {
@@ -296,7 +282,7 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
 
         val credentialAccount = BLOB.getSecureStoreServiceOf(from.storageAccount)
         val storageKeyToSet =
-                if (StringUtils.isBlank(from.errorMsg) && StringUtils.isEmpty(from.storageKey)) {
+                if (StringUtils.isBlank(viewModel.errorMessage) && StringUtils.isEmpty(from.storageKey)) {
                     credentialAccount?.let { secureStore?.loadPassword(credentialAccount, from.storageAccount) }
                 } else {
                     from.storageKey
@@ -306,12 +292,12 @@ class SparkSubmissionJobUploadStorageAzureBlobCard
             storageKeyField.text = storageKeyToSet
         }
 
-        if (storageContainerUI.comboBox.model != from.containersModel) {
-            if (from.containersModel.size == 0
-                    && StringUtils.isNotEmpty(from.selectedContainer)) {
-                storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(from.selectedContainer))
+        (viewModel as ViewModel).apply {
+            val found = blobContainerModel.findFirst { it == from.selectedContainer }
+            if (found != null) {
+                blobContainerSelection = found
             } else {
-                storageContainerUI.comboBox.model = from.containersModel
+                blobContainerModel = ImmutableComboBoxModel<Any>(arrayOf(from.selectedContainer ?: EMPTY))
             }
         }
     }

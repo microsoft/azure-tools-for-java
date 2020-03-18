@@ -24,7 +24,6 @@ package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
-import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.WasbUri
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfiguration
@@ -33,9 +32,7 @@ import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import rx.Observable
-import rx.Observer
 import java.net.URI
-import java.util.*
 
 class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -48,8 +45,7 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
 
     val secureStore: SecureStore? = ServiceManager.getServiceProvider(SecureStore::class.java)
 
-    override fun buildSparkBatchJob(submitModel: SparkSubmitModel,
-                                    ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>)
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel)
             : Observable<ISparkBatchJob> = Observable.fromCallable {
         (submitModel as ArcadiaSparkSubmitModel).apply {
             if (sparkCompute == null || tenantId == null || sparkWorkspace == null) {
@@ -81,13 +77,11 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
                                             to storageKey)))
                 }
 
-                val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
-                        submitModel, compute, ctrlSubject)
+                val jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(submitModel, compute)
 
                 ArcadiaSparkBatchJob(
                         prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
                         submission,
-                        jobDeploy,
-                        ctrlSubject)
+                        jobDeploy)
             }}
 }

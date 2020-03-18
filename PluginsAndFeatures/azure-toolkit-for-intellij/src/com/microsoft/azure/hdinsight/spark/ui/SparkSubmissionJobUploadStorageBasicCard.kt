@@ -76,6 +76,12 @@ abstract class SparkSubmissionJobUploadStorageBasicCard(val title: String)
         class PathInputFocusLostEvent(rootPathType: SparkSubmitStorageType)
             : StorageCheckEvent("$rootPathType root path focus lost")
 
+        class InputFocusLostEvent(component: JComponent)
+            : StorageCheckEvent("$component focus is lost")
+
+        class InputChangedEvent(component: JComponent)
+            : StorageCheckEvent("$component value is changed")
+
         class SelectedStorageTypeEvent(storageType: SparkSubmitStorageType)
             : StorageCheckEvent("Selected storage type: $storageType")
     }
@@ -113,7 +119,14 @@ abstract class SparkSubmissionJobUploadStorageBasicCard(val title: String)
                     .subscribe(
                             { groupedOb -> groupedOb
                                     .throttleWithTimeout(200, TimeUnit.MILLISECONDS)
-                                    .doOnNext { log().info("Receive checking message ${it.message}") }
+                                    .doOnNext {
+                                        log().info("Receive checking message ${it.message}")
+
+                                        when (it) {
+                                            is StorageCheckEvent.SelectedStorageTypeEvent -> onSelected()
+                                            else -> {}
+                                        }
+                                    }
                                     .observeOn(ideaSchedulers.dispatchUIThread())
                                     .map { model }
                                     .observeOn(ideaSchedulers.dispatchPooledThread())
@@ -131,6 +144,9 @@ abstract class SparkSubmissionJobUploadStorageBasicCard(val title: String)
                                     }
                             },
                             { err -> log().warn(getRootCauseMessage(err), getRootCauseStackTrace(err)) })
+        }
+
+        protected open fun onSelected() {
         }
     }
 

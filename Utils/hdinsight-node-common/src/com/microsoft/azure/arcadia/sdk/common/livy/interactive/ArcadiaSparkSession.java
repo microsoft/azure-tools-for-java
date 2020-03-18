@@ -24,21 +24,18 @@ package com.microsoft.azure.arcadia.sdk.common.livy.interactive;
 
 import com.microsoft.azure.arcadia.sdk.common.ArcadiaSparkHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.net.URI;
 
 public class ArcadiaSparkSession extends SparkSession {
-    @NotNull
-    private ArcadiaSparkHttpObservable http;
+    private final ArcadiaSparkHttpObservable http;
 
-    public ArcadiaSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId) {
+    public ArcadiaSparkSession(final String name, final URI baseUrl, final String tenantId) {
         super(name, baseUrl);
         this.http = new ArcadiaSparkHttpObservable(tenantId);
     }
 
     @Override
-    @NotNull
     public ArcadiaSparkHttpObservable getHttp() {
         return http;
     }

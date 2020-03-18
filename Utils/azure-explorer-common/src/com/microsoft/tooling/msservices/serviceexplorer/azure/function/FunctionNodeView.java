@@ -20,25 +20,13 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.console
+package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.intellij.openapi.actionSystem.ActionPromoter
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.DataContext
-import com.microsoft.azure.hdinsight.common.logger.ILogger
-import java.lang.reflect.Method
+import com.microsoft.azure.management.appservice.FunctionEnvelope;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView;
 
-// A bridge class to Scala plugin related Action Promoter
-open class SparkActionPromoterScalaDelegate(sparkScalaPromoterClassName: String) : ActionPromoter, ILogger {
-    private val delegate = SparkScalaPluginDelegate(sparkScalaPromoterClassName)
+import java.util.List;
 
-    private val promoteMethod: Method?
-        get() = delegate.getMethod("promote", List::class.java, DataContext::class.java)
-
-    override fun promote(actions: MutableList<AnAction>?, context: DataContext?): MutableList<AnAction>? {
-        return (promoteMethod?.invoke(delegate.sparkScalaObj, actions, context) as? MutableList<*>)
-                ?.filterIsInstance(AnAction::class.java)?.toMutableList()
-    }
+public interface FunctionNodeView extends WebAppBaseNodeView {
+    void renderSubModules(List<FunctionEnvelope> functionEnvelopes);
 }
-
-class SparkExecuteInConsoleActionPromoterDelegate : SparkActionPromoterScalaDelegate("com.microsoft.azure.hdinsight.spark.console.SparkExecuteInConsoleActionPromoter")

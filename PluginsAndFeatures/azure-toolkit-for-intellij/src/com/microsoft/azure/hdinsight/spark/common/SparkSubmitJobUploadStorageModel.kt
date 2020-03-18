@@ -48,17 +48,14 @@ class SparkSubmitJobUploadStorageModel: ILogger, SparkSubmissionJobUploadStorage
     @Attribute("adls_gen2_root_path", converter = AbfsUriConverter::class)
     override var gen2RootPath: AbfsUri? = null
 
+    @Attribute("adls_gen2_root_path_raw_text")
+    override var gen2RootPathRawText: String? = null
+
     @get:Transient @set:Transient
     override var storageKey: String? = null
 
     @get:Transient @set:Transient
     override var accessKey: String? = null
-
-    @get:Transient @set:Transient
-    override var containersModel: ComboBoxModel<Any> = DefaultComboBoxModel()
-
-    @get:Transient @set:Transient
-    override var subscriptionsModel: ComboBoxModel<Any> = DefaultComboBoxModel()
 
     @Attribute("upload_path")
     var uploadPath: String? = null

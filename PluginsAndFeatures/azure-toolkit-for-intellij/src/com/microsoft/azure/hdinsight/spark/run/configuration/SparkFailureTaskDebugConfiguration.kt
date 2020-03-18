@@ -26,6 +26,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configuration.AbstractRunConfiguration
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunConfigurationModule
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
@@ -40,7 +41,8 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager
 import org.jdom.Element
 
 class SparkFailureTaskDebugConfiguration(name: String,
-                                         val module: SparkFailureTaskDebugConfigurableModel,
+                                         val model: SparkFailureTaskDebugConfigurableModel,
+                                         val module: RunConfigurationModule,
                                          factory: ConfigurationFactory) :
         AbstractRunConfiguration(name, module, factory) {
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
@@ -51,11 +53,11 @@ class SparkFailureTaskDebugConfiguration(name: String,
         if (executor is DefaultRunExecutor) {
             val operation = TelemetryManager.createOperation(TelemetryConstants.SPARK_FAILURE_TASK_DEBUG, TelemetryConstants.RUN_LOCAL_SPARK_JOB)
             operation.start()
-            return SparkFailureTaskRunProfileState(name, module, operation)
+            return SparkFailureTaskRunProfileState(name, model, operation)
         } else if (executor is DefaultDebugExecutor) {
             val operation = TelemetryManager.createOperation(TelemetryConstants.SPARK_FAILURE_TASK_DEBUG, TelemetryConstants.DEBUG_LOCAL_SPARK_JOB)
             operation.start()
-            return SparkFailureTaskDebugProfileState(name, module, operation)
+            return SparkFailureTaskDebugProfileState(name, model, operation)
         }
 
         return null
@@ -63,12 +65,12 @@ class SparkFailureTaskDebugConfiguration(name: String,
 
     override fun readExternal(element: Element) {
         super.readExternal(element)
-        module.readExternal(element)
+        model.readExternal(element)
     }
 
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
-        module.writeExternal(element)
+        model.writeExternal(element)
     }
 
     // Validation

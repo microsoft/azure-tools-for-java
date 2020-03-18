@@ -59,6 +59,7 @@ import rx.subjects.BehaviorSubject
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.awt.event.ItemEvent
+import javax.swing.ComboBoxModel
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JPanel
@@ -82,26 +83,37 @@ open class SparkSubmissionJobUploadStoragePanel
     private val webHdfsCard = SparkSubmissionJobUploadStorageWebHdfsCard()
     private val storageTypeComboBox = ComboBox<SparkSubmitStorageType>(empty()).apply {
         name = "storageTypeComboBox"
-        // validate storage info after storage type is selected
+        // validate storage info after storage type is selected or combo box model is changed
         addItemListener { itemEvent ->
-            // change panel
-            val curLayout = storageCardsPanel.layout as? CardLayout ?: return@addItemListener
-
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
-                val selectedType = itemEvent.item as? SparkSubmitStorageType ?: return@addItemListener
+                onStorageTypeChanged(itemEvent.item as? SparkSubmitStorageType ?: return@addItemListener)
+            }
+        }
 
-                curLayout.show(storageCardsPanel, selectedType.description)
-
-                // Send storage check event to current selected card
-                viewModel.currentCardViewModel?.storageCheckSubject?.onNext(SelectedStorageTypeEvent(selectedType))
+        addPropertyChangeListener("model") {
+            val oldSelectedItem = (it.oldValue as? ComboBoxModel<*>)?.selectedItem
+            val newSelectedItem = (it.newValue as? ComboBoxModel<*>)?.selectedItem
+            if (oldSelectedItem != newSelectedItem) {
+                onStorageTypeChanged(newSelectedItem as? SparkSubmitStorageType ?: return@addPropertyChangeListener)
             }
         }
 
         renderer = object: SimpleListCellRenderer<SparkSubmitStorageType>() {
-            override fun customize(list: JList<out SparkSubmitStorageType>?, type: SparkSubmitStorageType?, index: Int, selected: Boolean, hasFocus: Boolean) {
+            override fun customize(list: JList<out SparkSubmitStorageType>, type: SparkSubmitStorageType?, index: Int, selected: Boolean, hasFocus: Boolean) {
                 text = type?.description ?: "<No storage type selected>"
             }
         }
+    }
+
+    private fun onStorageTypeChanged(selectedType: SparkSubmitStorageType) {
+        val curLayout = storageCardsPanel.layout as? CardLayout ?: return
+        curLayout.show(storageCardsPanel, selectedType.description)
+
+        // Send storage check event to current selected card
+        viewModel.currentCardViewModel?.storageCheckSubject?.onNext(SelectedStorageTypeEvent(selectedType))
+
+        // Recheck cluster for new selected type card
+        viewModel.clusterSelectedSubject.onNext(viewModel.clusterSelectedSubject.value)
     }
 
     private val storageCards = mapOf(
@@ -191,7 +203,9 @@ open class SparkSubmissionJobUploadStoragePanel
                 // 3.reload config with null storage type -> set to default
                 // 4.create config  -> set to default
                 deployStorageTypesModel = storageTypesModelToSet
-                deployStorageTypeSelection = clusterDetail.defaultStorageType
+                deployStorageTypeSelection = (currentStorageTypesModel.selectedItem as? SparkSubmitStorageType)
+                        ?.takeIf { currentSelected -> deployStorageTypesModel.getIndexOf(currentSelected) >= 0 }
+                        ?: clusterDetail.defaultStorageType
             }
 
             return storageTypesModelToSet.selectedItem as? SparkSubmitStorageType ?: clusterDetail.defaultStorageType

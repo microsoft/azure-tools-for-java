@@ -25,7 +25,6 @@ import com.intellij.execution.ExecutionException;
 import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.AdlUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.AzureAdAccountDetail;
@@ -33,7 +32,10 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.*;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
-import com.microsoft.azure.hdinsight.sdk.storage.*;
+import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.spark.common.*;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionContentPanel;
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail;
@@ -43,11 +45,9 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
-import rx.Observer;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.AbstractMap;
 import java.util.Optional;
 
 public class SparkBatchJobDeployFactory implements ILogger {
@@ -62,8 +62,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
     }
 
     public Deployable buildSparkBatchJobDeploy(@NotNull SparkSubmitModel submitModel,
-                                               @NotNull IClusterDetail clusterDetail,
-                                               @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
+                                               @NotNull IClusterDetail clusterDetail) throws ExecutionException {
 
         // get storage account and access token from submitModel
         IHDIStorageAccount storageAccount = null;
@@ -105,7 +104,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 }
 
                 storageAccount = new HDStorageAccount(clusterDetail, fullStorageBlobName, key, false, container);
-                jobDeploy = new LegacySDKDeploy(storageAccount, ctrlSubject);
+                jobDeploy = new LegacySDKDeploy(storageAccount);
                 break;
             case DEFAULT_STORAGE_ACCOUNT:
                 try {
@@ -151,7 +150,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                             }
                             jobDeploy = new AdlsDeploy(defaultStorageRootPath, http.getAccessToken());
                         } else {
-                            jobDeploy = new LegacySDKDeploy(storageAccount, ctrlSubject);
+                            jobDeploy = new LegacySDKDeploy(storageAccount);
                         }
                     }
                 } catch (Exception ex) {
@@ -160,7 +159,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 }
                 break;
             case SPARK_INTERACTIVE_SESSION:
-                jobDeploy = new LivySessionDeploy(clusterName, ctrlSubject);
+                jobDeploy = new LivySessionDeploy(clusterName);
                 break;
             case ADLS_GEN1:
                 String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();

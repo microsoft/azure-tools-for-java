@@ -209,9 +209,8 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             selectedIndex = 0
         }
 
-        @Suppress("MissingRecentApi") // Supported after 192.3099
         renderer = object: SimpleListCellRenderer<Artifact>() {
-            override fun customize(list: JList<out Artifact>?, artifact: Artifact?, index: Int, selected: Boolean, hasFocus: Boolean) {
+            override fun customize(list: JList<out Artifact>, artifact: Artifact?, index: Int, selected: Boolean, hasFocus: Boolean) {
                 text = artifact?.name
             }
         }

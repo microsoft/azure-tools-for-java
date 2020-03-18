@@ -18,14 +18,11 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
+package com.microsoft.intellij.wizards.functions.facet;
 
-package com.microsoft.azure.hdinsight.spark.run.configuration
+import com.intellij.facet.FacetConfiguration;
 
-import com.intellij.execution.configurations.RunConfigurationModule
-import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.spark.common.CosmosSparkConfigurableModel
-
-open class CosmosSparkConfigurationModule(project: Project) : RunConfigurationModule(project) {
-    open val model = CosmosSparkConfigurableModel(project)
+public interface FunctionsFacetConfiguration extends FacetConfiguration {
 }

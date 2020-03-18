@@ -160,7 +160,7 @@ public class AddNewEmulatorForm extends DialogWrapper {
                                     setEnable(true);
                                     showEmulatorSetup();
                                 }
-                            });
+                            }, MoreExecutors.directExecutor());
                         } else {
                             errorMessage = "Local emulator is not set up yet.";
                             isCarryOnNextStep = false;
