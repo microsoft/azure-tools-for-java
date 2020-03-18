@@ -20,13 +20,26 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.33.1</h3>
-    <h4>Fixed</h4>
+    <h3>3.34.0</h3>
+    <h4>Added</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4061">#4061</a> The error of Spark job remote
-            debugging</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4079">#4079</a> The regression of Spark
-            console can not start</li>
+        <li>Add Azure Function support in Azure Toolkits
+            <ul>
+                <li>Scaffold functions project</li>
+                <li>Create new functions class by trigger type</li>
+                <li>Local run/debug functions</li>
+                <li>Create/deploy Function apps on Azure</li>
+                <li>List/view existing Function apps on Azure</li>
+                <li>Stop/start/restart Function apps on Azure</li>
+                <li>Trigger azure functions</li>
+            </ul>
+        </li>
+        <li>Support project artifact dependencies in Spark interactive console</li>
+        <li>Add more debug log when creating Spark Livy interactive console</li>
+    </ul>
+    <h4>Changed</h4>
+    <ul>
+        <li>Enable Spark on Synapse feature by default</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
