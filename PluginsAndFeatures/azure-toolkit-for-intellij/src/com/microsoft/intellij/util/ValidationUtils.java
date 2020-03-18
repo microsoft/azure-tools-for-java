@@ -23,7 +23,6 @@
 
 package com.microsoft.intellij.util;
 
-import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
 import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
@@ -39,7 +38,7 @@ public class ValidationUtils {
     private static final String GROUP_ARTIFACT_ID_REGEX = "[0-9a-zA-Z]([\\.a-zA-Z0-9\\-_])*";
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
     private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
-    private static final String RESOURCE_GROUP_PATTERN = "[a-zA-Z0-9\\.\\_\\-\\(\\)]{1,90}";
+    private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
 
     public static boolean isValidJavaPackageName(String packageName) {
         return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
@@ -99,8 +98,8 @@ public class ValidationUtils {
     public static void checkAppServicePlanName(String appServicePlan){
         if (StringUtils.isEmpty(appServicePlan)) {
             throw new IllegalArgumentException("App Service Plan name is required");
-        } else if (!appServicePlan.matches(RESOURCE_GROUP_PATTERN)) {
-            throw new IllegalArgumentException(String.format("App Service Plan Name should match %s", RESOURCE_GROUP_PATTERN));
+        } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
+            throw new IllegalArgumentException(String.format("App Service Plan Name should match %s", APP_SERVICE_PLAN_NAME_PATTERN));
         }
     }
 }
