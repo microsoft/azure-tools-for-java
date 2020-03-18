@@ -55,7 +55,7 @@ public class ValidationUtils {
         return version != null && version.matches(VERSION_REGEX);
     }
 
-    public static void checkFunctionAppName(String subscriptionId, String functionAppName) {
+    public static void validateFunctionAppName(String subscriptionId, String functionAppName) {
         if (StringUtils.isEmpty(subscriptionId)) {
             throw new IllegalArgumentException("Subscription can not be null");
         }
@@ -75,7 +75,7 @@ public class ValidationUtils {
         }
     }
 
-    public static void checkResourceGroupName(String subscriptionId, String resourceGroup) {
+    public static void validateResourceGroupName(String subscriptionId, String resourceGroup) {
         if (StringUtils.isEmpty(subscriptionId)) {
             throw new IllegalArgumentException("Subscription can not be null");
         }
@@ -94,7 +94,7 @@ public class ValidationUtils {
         }
     }
 
-    public static void checkAppServicePlanName(String appServicePlan){
+    public static void validateAppServicePlanName(String appServicePlan){
         if (StringUtils.isEmpty(appServicePlan)) {
             throw new IllegalArgumentException("App Service Plan name is required");
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {

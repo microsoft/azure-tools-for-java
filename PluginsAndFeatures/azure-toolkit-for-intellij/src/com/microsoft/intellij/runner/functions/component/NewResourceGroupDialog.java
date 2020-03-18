@@ -67,7 +67,7 @@ public class NewResourceGroupDialog extends AzureDialogWrapper {
         List<ValidationInfo> res = new ArrayList<>();
         final String resourceGroupName = txtResourceGroup.getText();
         try {
-            ValidationUtils.checkResourceGroupName(subscriptionId, resourceGroupName);
+            ValidationUtils.validateResourceGroupName(subscriptionId, resourceGroupName);
         } catch (IllegalArgumentException iae) {
             res.add(new ValidationInfo(iae.getMessage(), txtResourceGroup));
         }

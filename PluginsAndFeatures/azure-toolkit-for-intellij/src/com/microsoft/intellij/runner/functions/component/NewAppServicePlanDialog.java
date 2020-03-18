@@ -109,7 +109,7 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
     protected List<ValidationInfo> doValidateAll() {
         List<ValidationInfo> res = new ArrayList<>();
         try {
-            ValidationUtils.checkAppServicePlanName(txtAppServicePlanName.getText());
+            ValidationUtils.validateAppServicePlanName(txtAppServicePlanName.getText());
         } catch (IllegalArgumentException iae) {
             res.add(new ValidationInfo(iae.getMessage(), txtAppServicePlanName));
         }
