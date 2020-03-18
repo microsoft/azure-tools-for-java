@@ -461,7 +461,6 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     public boolean isStop() {
         return getLastState() == SessionState.SHUTTING_DOWN ||
-                getLastState() == SessionState.NOT_STARTED ||
                 getLastState() == SessionState.DEAD ||
                 getLastState() == SessionState.KILLED ||
                 getLastState() == SessionState.ERROR ||
