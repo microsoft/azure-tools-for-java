@@ -27,6 +27,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -106,17 +107,28 @@ public class ResourceGroupPanel extends JPanel {
         cbResourceGroup.setPopupVisible(false);
         final NewResourceGroupDialog dialog = new NewResourceGroupDialog(subscriptionId);
         dialog.pack();
-        if (dialog.showAndGet()) {
+        if (dialog.showAndGet() && dialog.getResourceGroup() != null) {
             final ResourceGroupWrapper newResourceGroup = dialog.getResourceGroup();
-            if (newResourceGroup != null) {
+            final ResourceGroupWrapper targetResourceGroup = getResourceGroupWrapperWithName(newResourceGroup.resourceGroup);
+            // Use existing resource group wrapper if user create a new resource group with same name before
+            if (targetResourceGroup == null) {
                 cbResourceGroup.addItem(newResourceGroup);
-                cbResourceGroup.setSelectedItem(newResourceGroup);
+                selectedResourceGroup = newResourceGroup;
             } else {
-                cbResourceGroup.setSelectedItem(selectedResourceGroup);
+                selectedResourceGroup = targetResourceGroup;
             }
-        } else {
-            cbResourceGroup.setSelectedItem(selectedResourceGroup);
         }
+        cbResourceGroup.setSelectedItem(selectedResourceGroup);
+    }
+
+    private ResourceGroupWrapper getResourceGroupWrapperWithName(String name) {
+        for (int i = 0; i < cbResourceGroup.getItemCount(); i++) {
+            final Object selectedItem = cbResourceGroup.getItemAt(i);
+            if (selectedItem instanceof ResourceGroupWrapper &&  StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
+                return (ResourceGroupWrapper) cbResourceGroup.getItemAt(i);
+            }
+        }
+        return null;
     }
 
     private void onSelectResourceGroup() {

@@ -155,6 +155,7 @@ public class AppServicePlanPanel extends JPanel {
             final AppServicePlanWrapper newCreateAppServicePlan = dialog.getAppServicePlan();
             if (newCreateAppServicePlan != null) {
                 selectedAppServicePlan = newCreateAppServicePlan;
+                appServicePlanWrapperList.removeIf(appServicePlanWrapper -> StringUtils.equals(appServicePlanWrapper.name, newCreateAppServicePlan.name));
                 appServicePlanWrapperList.add(selectedAppServicePlan);
             }
         }

@@ -27,7 +27,6 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
 import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-
 import com.microsoft.rest.RestException;
 import org.apache.commons.lang.StringUtils;
 
