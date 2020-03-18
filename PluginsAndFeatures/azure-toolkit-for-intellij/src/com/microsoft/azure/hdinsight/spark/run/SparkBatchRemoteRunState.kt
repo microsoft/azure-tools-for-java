@@ -29,17 +29,13 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.ide.BrowserUtil
-import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
+import com.microsoft.azure.hdinsight.common.print
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
-import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
-import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
 import com.microsoft.azuretools.telemetry.TelemetryProperties
 import com.microsoft.azuretools.telemetrywrapper.Operation
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle
-import java.net.URI
 import java.util.*
 
 open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitModel,
@@ -64,7 +60,8 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
     private var diagnostics: String? = null
 
     override fun execute(executor: Executor?, programRunner: ProgramRunner<*>): ExecutionResult? {
-        if (remoteProcessCtrlLogHandler == null || executionResult == null || consoleView == null) {
+        val sparkConsoleView = consoleView
+        if (remoteProcessCtrlLogHandler == null || executionResult == null || sparkConsoleView == null) {
             throw ExecutionException("Spark Batch Job execution result is not ready")
         }
 
@@ -86,28 +83,7 @@ open class SparkBatchRemoteRunState(private val sparkSubmitModel: SparkSubmitMod
                         }
                     }, {})
             remoteProcessCtrlLogHandler!!.getCtrlSubject().subscribe(
-                    { messageWithType ->
-                        // Redirect the remote process control message to console view
-                        when (messageWithType.key) {
-                            MessageInfoType.Info ->
-                                consoleView!!.print("INFO: ${messageWithType.value}\n", ConsoleViewContentType.SYSTEM_OUTPUT)
-                            MessageInfoType.Warning, MessageInfoType.Log ->
-                                consoleView!!.print("LOG: ${messageWithType.value}\n", ConsoleViewContentType.SYSTEM_OUTPUT)
-                            MessageInfoType.Hyperlink ->
-                                BrowserUtil.browse(URI.create(messageWithType.value))
-                            MessageInfoType.HtmlPersistentMessage ->
-                                consoleView!!.print(messageWithType.value, ConsoleViewWithMessageBars.CONSOLE_VIEW_HTML_PERSISTENT_MESSAGE_TYPE)
-                            else ->
-                            {
-                                consoleView!!.print("ERROR: ${messageWithType.value}\n", ConsoleViewContentType.ERROR_OUTPUT)
-
-                                val classifiedEx = ClassifiedExceptionFactory
-                                        .createClassifiedException(YarnDiagnosticsException(messageWithType.value ?: ""))
-                                classifiedEx.logStackTrace()
-                                classifiedEx.handleByUser()
-                            }
-                        }
-                    },
+                    { messageWithType -> sparkConsoleView.print(messageWithType) },
                     { err ->
                         val classifiedEx = ClassifiedExceptionFactory.createClassifiedException(err)
                         classifiedEx.logStackTrace()

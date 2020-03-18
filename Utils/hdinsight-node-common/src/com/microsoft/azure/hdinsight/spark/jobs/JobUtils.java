@@ -598,6 +598,9 @@ public class JobUtils {
                     SparkSession::create,
                     SparkSession::close)
                     .map(sparkSession -> {
+                        sparkSession.getCtrlSubject()
+                                .subscribe(logSubject::onNext, logSubject::onError, logSubject::onCompleted);
+
                         ClusterFileBase64BufferedOutputStream clusterFileBase64Out = new ClusterFileBase64BufferedOutputStream(
                                 sparkSession, destUri);
                         Base64OutputStream base64Enc = new Base64OutputStream(clusterFileBase64Out, true);

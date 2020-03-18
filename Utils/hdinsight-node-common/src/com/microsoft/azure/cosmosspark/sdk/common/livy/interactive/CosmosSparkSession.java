@@ -22,25 +22,25 @@
 
 package com.microsoft.azure.cosmosspark.sdk.common.livy.interactive;
 
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.cosmosspark.sdk.common.CosmosSparkHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.SparkSession;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
 import java.net.URI;
 
 public class CosmosSparkSession extends SparkSession {
-    @NotNull
-    private CosmosSparkHttpObservable http;
+    private final CosmosSparkHttpObservable http;
 
-    public CosmosSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) {
+    public CosmosSparkSession(final String name,
+                              final URI baseUrl,
+                              final String tenantId,
+                              final AzureSparkServerlessAccount adlAccount) {
         super(name, baseUrl);
         this.http = new CosmosSparkHttpObservable(tenantId, adlAccount);
     }
 
     @Override
-    @NotNull
     public HttpObservable getHttp() {
         return this.http;
     }    
