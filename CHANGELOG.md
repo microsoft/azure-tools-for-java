@@ -51,7 +51,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ### Added
 - Add Azure Function support in Azure Toolkits
-    * Scaffolding functions project
+    * Scaffold functions project
     * Create new functions class by trigger type
     * Local run/debug functions
     * Create/deploy Function apps on Azure

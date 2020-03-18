@@ -25,7 +25,7 @@
     <ul>
         <li>Add Azure Function support in Azure Toolkits
             <ul>
-                <li>Scaffolding functions project</li>
+                <li>Scaffold functions project</li>
                 <li>Create new functions class by trigger type</li>
                 <li>Local run/debug functions</li>
                 <li>Create/deploy Function apps on Azure</li>
