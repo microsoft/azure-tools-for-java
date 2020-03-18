@@ -55,9 +55,10 @@ class SparkScalaLivyConsoleRunProfileState(
 
         console.attachToProcess(livySessionProcessHandler)
         session.ctrlSubject.subscribe({ typedMessage -> console.print(typedMessage) }, { err ->
-            console.print("Livy interactive session is stopped or not started due to the error ${err.message}\n",
-                          LOG_ERROR_OUTPUT)
-        })
+            livySessionProcessHandler.onProcessTerminated(err)
+
+            console.print("Livy interactive session is stopped to the error $err\n", LOG_ERROR_OUTPUT)
+        }, { livySessionProcessHandler.onProcessTerminated(null) })
 
         livySessionProcess
                 .start()
@@ -67,7 +68,11 @@ class SparkScalaLivyConsoleRunProfileState(
                         // Customize the Spark Livy interactive console
                         prompt = "\nSpark>"
                     }
-                }, { err -> session.ctrlSubject.onError(err) })
+                }, { err ->
+                    // Individually output to console view to avoid the session control subject being completed
+                    // when hitting the error
+                    console.print("Livy interactive session failed to start to the error $err\n", LOG_ERROR_OUTPUT)
+                })
 
         return DefaultExecutionResult(console, livySessionProcessHandler)
     }

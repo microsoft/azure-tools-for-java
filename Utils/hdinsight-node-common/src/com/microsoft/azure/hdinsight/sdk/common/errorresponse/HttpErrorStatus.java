@@ -70,11 +70,16 @@ public class HttpErrorStatus extends HttpException {
         sb.append("Status Code: " + getStatusCode() + "\n");
         if (getHeaders() != null) {
             String headersString = Arrays.stream(getHeaders())
-                    .map(header -> header.getName() + ": " + header.getValue())
+                    .map(header -> "\t" + header.getName() + ": " + header.getValue())
                     .collect(Collectors.joining("\n"));
             sb.append("Headers:\n" + headersString + "\n");
         }
         sb.append("Error message: " + getMessage());
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " with details --\n" + getErrorDetails();
     }
 }
