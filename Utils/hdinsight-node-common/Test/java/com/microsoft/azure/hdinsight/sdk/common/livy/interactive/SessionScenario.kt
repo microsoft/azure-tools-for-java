@@ -31,6 +31,7 @@ import cucumber.api.java.en.And
 import cucumber.api.java.en.Given
 import cucumber.api.java.en.Then
 import org.assertj.core.api.Assertions.assertThat
+import rx.subjects.PublishSubject
 import java.net.URI
 import kotlin.test.fail
 
