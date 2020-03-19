@@ -337,14 +337,14 @@
         <action id="Actions.SelectNoneSparkType"
                 class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
         </action>
-      <action id="Actions.SelectHDInsightSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
-      </action>
       <action id="Actions.SelectCosmosSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Spark on Cosmos" >
       </action>
       <action id="Actions.SelectCosmosServerlessSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
+      </action>
+      <action id="Actions.SelectHDInsightSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
       </action>
       <action id="Actions.SelectArisSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
