@@ -30,7 +30,9 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.functions.library.IFunctionContext;
 
 import java.io.IOException;
@@ -208,6 +210,19 @@ public class IntelliJFunctionContext implements IFunctionContext {
     }
 
     public Map<String, String> getTelemetryProperties(Map<String, String> properties) {
-        return new HashMap<>();
+        HashMap result = new HashMap();
+
+        try {
+            if (properties != null) {
+                result.putAll(properties);
+            }
+            result.put("runtime", this.getRuntime().getOs());
+            result.put("subscriptionId", this.getSubscription());
+            result.put("pricingTier", this.getPricingTier());
+            result.put("region", this.getRegion());
+        } catch (Exception var4) {
+        }
+
+        return result;
     }
 }

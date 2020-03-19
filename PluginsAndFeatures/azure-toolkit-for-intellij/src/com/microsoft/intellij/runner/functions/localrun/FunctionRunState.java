@@ -44,6 +44,9 @@ import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
@@ -103,6 +106,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     @Override
     protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Map<String, String> telemetryMap) throws Exception {
         // Prepare staging Folder
+        updateTelemetryMap(telemetryMap);
         final File stagingFolder = new File(functionRunConfiguration.getStagingFolder());
         prepareStagingFolder(stagingFolder, processHandler);
         // Run Function Host
@@ -202,6 +206,17 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         }
         return -1;
     }
+
+    @Override
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+        telemetryMap.putAll(functionRunConfiguration.getModel().getTelemetryProperties(telemetryMap));
+    }
+
+    @Override
+    protected Operation createOperation() {
+        return TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.RUN_FUNCTION_APP);
+    }
+
 
     @Override
     protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {

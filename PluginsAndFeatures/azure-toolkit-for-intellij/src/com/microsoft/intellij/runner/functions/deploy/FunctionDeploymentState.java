@@ -40,16 +40,13 @@ import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
-import com.microsoft.intellij.runner.functions.library.IPrompter;
 import com.microsoft.intellij.runner.functions.library.function.DeployFunctionHandler;
-import org.codehaus.plexus.util.StringOutputStream;
+import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -71,6 +68,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     @Override
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
+        updateTelemetryMap(telemetryMap);
         // Update run time information by function app
         final FunctionApp functionApp = AzureFunctionMvpModel.getInstance()
                 .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());
@@ -104,7 +102,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected Operation createOperation() {
-        return TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.DEPLOY_WEBAPP);
+        return TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.DEPLOY_FUNCTION_APP);
     }
 
     @Override
@@ -126,5 +124,6 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+        telemetryMap.putAll(functionDeployConfiguration.getModel().getTelemetryProperties(telemetryMap));
     }
 }
