@@ -126,26 +126,14 @@
       implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
     <completion.contributor language="JSON" order="first"
       implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
+    <postStartupActivity implementation="com.microsoft.intellij.AzurePlugin"/>
   </extensions>
 
-  <application-components>
-    <component>
-      <implementation-class>com.microsoft.azure.hdinsight.jobs.JobViewApplicationComponent</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.microsoft.intellij.AzureActionsComponent</implementation-class>
-    </component>
-    <component>
-      <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent</implementation-class>
-    </component>
-  </application-components>
-
-  <project-components>
-    <component>
-      <implementation-class>com.microsoft.intellij.AzurePlugin</implementation-class>
-      <loadForDefaultProject/>
-    </component>
-  </project-components>
+  <applicationListeners>
+    <listener class="com.microsoft.azure.hdinsight.jobs.JobViewApplicationListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    <listener class="com.microsoft.intellij.AzureActionsListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    <listener class="com.microsoft.azure.hdinsight.projects.HDInsightActionsListener" topic="com.intellij.ide.AppLifecycleListener"/>
+  </applicationListeners>
 
   <actions>
     <action id="Actions.LibraryConfigurationAction"

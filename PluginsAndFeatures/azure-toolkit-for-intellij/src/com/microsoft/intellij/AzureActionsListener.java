@@ -23,15 +23,15 @@
 package com.microsoft.intellij;
 
 import com.google.gson.Gson;
+import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
 import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
@@ -55,32 +55,32 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-
 import org.apache.http.ssl.TrustStrategy;
 import org.jetbrains.annotations.NotNull;
+import rx.internal.util.PlatformDependent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 
-import rx.internal.util.PlatformDependent;
-
 import static com.microsoft.azuretools.Constants.FILE_NAME_CORE_LIB_LOG;
 
-public class AzureActionsComponent implements ApplicationComponent, PluginComponent {
+public class AzureActionsListener implements AppLifecycleListener, PluginComponent {
     public static final String PLUGIN_ID = CommonConst.PLUGIN_ID;
-    private static final Logger LOG = Logger.getInstance(AzureActionsComponent.class);
+    private static final Logger LOG = Logger.getInstance(AzureActionsListener.class);
     private static final String AZURE_TOOLS_FOLDER = ".AzureToolsForIntelliJ";
     private static final String AZURE_TOOLS_FOLDER_DEPRECATED = "AzureToolsForIntelliJ";
     private static FileHandler logFileHandler = null;
 
     private PluginSettings settings;
 
-    public AzureActionsComponent() {
+    @Override
+    public void appFrameCreated(@NotNull List<String> commandLineArgs) {
         DefaultLoader.setPluginComponent(this);
         DefaultLoader.setUiHelper(new UIHelperImpl());
         DefaultLoader.setIdeHelper(new IDEHelperImpl());
@@ -95,14 +95,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
             PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"),
                     "An error occurred while attempting to load settings", e);
         }
-    }
 
-    @NotNull
-    public String getComponentName() {
-        return this.getClass().getName();
-    }
-
-    public void initComponent() {
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
             // enable spark serverless node subscribe actions
@@ -170,10 +163,6 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         }
     }
 
-
-    public void disposeComponent() {
-    }
-
     @Override
     public PluginSettings getSettings() {
         return settings;
@@ -188,7 +177,7 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new InputStreamReader(
-                    AzureActionsComponent.class.getResourceAsStream("/settings.json")));
+                    AzureActionsListener.class.getResourceAsStream("/settings.json")));
             StringBuilder sb = new StringBuilder();
             String line;
 
