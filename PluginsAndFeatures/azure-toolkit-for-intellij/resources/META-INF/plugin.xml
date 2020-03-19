@@ -350,7 +350,7 @@
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
       </action>
       <action id="Actions.SelectArcadiaSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Arcadia Cluster" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Synapse" >
       </action>
     </group>
 
