@@ -38,7 +38,7 @@
   <idea-version since-build="201.3803.71" until-build="201.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
-  <depends>org.intellij.scala</depends>
+  <depends optional="true" config-file="">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <depends>com.intellij.modules.java</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
