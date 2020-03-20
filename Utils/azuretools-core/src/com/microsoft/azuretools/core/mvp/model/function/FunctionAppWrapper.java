@@ -26,6 +26,7 @@ package com.microsoft.azuretools.core.mvp.model.function;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionDeploymentSlots;
 import com.microsoft.azure.management.appservice.NameValuePair;
+import com.microsoft.azure.management.appservice.SupportedTlsVersions;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -115,6 +116,11 @@ public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp
     @Override
     public FunctionApp.Update update() {
         return getFunctionApp().update();
+    }
+
+    @Override
+    public SupportedTlsVersions minTlsVersion() {
+        return getFunctionApp().minTlsVersion();
     }
 
     @Override
