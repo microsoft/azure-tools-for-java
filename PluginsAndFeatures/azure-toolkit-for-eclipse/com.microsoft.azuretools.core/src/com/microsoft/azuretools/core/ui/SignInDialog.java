@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -74,7 +74,7 @@ import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 
 public class SignInDialog extends AzureTitleAreaDialogWrapper {
-	private static ILog LOG = Activator.getDefault().getLog();
+    private static ILog LOG = Activator.getDefault().getLog();
     private Text textAuthenticationFilePath;
     private Button rbtnDevice;
     private Button rbtnAutomated;
@@ -83,7 +83,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private Button btnCreateAuthenticationFile;
     private Label lblDeviceInfo;
     private Label lblAutomatedInfo;
-    
+
     private AuthMethodDetails authMethodDetails;
     private String accountEmail;
     FileDialog fileDialog;
@@ -103,7 +103,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     }
 
     public static SignInDialog go(Shell parentShell, AuthMethodDetails authMethodDetails) {
-    	SignInDialog d = new SignInDialog(parentShell);
+        SignInDialog d = new SignInDialog(parentShell);
         d.authMethodDetails = authMethodDetails;
         d.create();
         if (d.open() == Window.OK) {
@@ -111,7 +111,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         }
         return null;
     }
-    
+
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
@@ -131,15 +131,15 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new FillLayout(SWT.HORIZONTAL));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
+
         Composite composite = new Composite(container, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
-        
+
         Group group = new Group(composite, SWT.NONE);
         group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         group.setText("Authentication Method");
         group.setLayout(new GridLayout(1, false));
-        
+
         rbtnDevice = new Button(group, SWT.RADIO);
         rbtnDevice.setSelection(true);
         rbtnDevice.addSelectionListener(new SelectionAdapter() {
@@ -159,13 +159,13 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         gdCompositeDevice.widthHint = 66;
         compositeDevice.setLayoutData(gdCompositeDevice);
         compositeDevice.setLayout(new GridLayout(1, false));
-        
+
         lblDeviceInfo = new Label(compositeDevice, SWT.WRAP);
         GridData gdLblDeviceInfo = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
         gdLblDeviceInfo.horizontalIndent = 11;
         lblDeviceInfo.setLayoutData(gdLblDeviceInfo);
         lblDeviceInfo.setText("You will need to open an external browser and sign in with a generated device code.");
-        
+
         rbtnAutomated = new Button(group, SWT.RADIO);
         rbtnAutomated.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -205,7 +205,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         GridData gd_textAuthenticationFilePath = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gd_textAuthenticationFilePath.horizontalIndent = 10;
         textAuthenticationFilePath.setLayoutData(gd_textAuthenticationFilePath);
-        
+
         btnBrowse = new Button(compositeAutomated, SWT.NONE);
         btnBrowse.setEnabled(false);
         btnBrowse.addSelectionListener(new SelectionAdapter() {
@@ -236,7 +236,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
         return area;
     }
-    
+
     private void enableAutomatedAuthControls(boolean enabled) {
         setErrorMessage(null);
         lblDeviceInfo.setEnabled(!enabled);
@@ -276,7 +276,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
         super.okPressed();
     }
-    
+
     private void doSelectCredFilepath() {
         setErrorMessage(null);
         String path = fileDialog.open();
@@ -287,7 +287,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private AuthMethodManager getAuthMethodManager() {
         return AuthMethodManager.getInstance();
     }
-    
+
     @Nullable
     private synchronized BaseADAuthManager doSignIn() {
         try {
@@ -298,14 +298,14 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
             }
             signInAsync(dcAuthManager);
             accountEmail = dcAuthManager.getAccountEmail();
-            
+
             return dcAuthManager;
         } catch (Exception ex) {
             System.out.println("doSignIn@SingInDialog: " + ex.getMessage());
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doSignIn@SingInDialog", ex));
         }
-        
+
         return null;
     }
 
@@ -336,7 +336,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         // AuthMethod.AD is deprecated.
         AuthMethod.DC.getAdAuthManager().signOut();
     }
-    
+
     private void doCreateServicePrincipal() {
         setErrorMessage(null);
         BaseADAuthManager dcAuthManager = null;
@@ -354,7 +354,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
             AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
-            
+
             IRunnableWithProgress op = new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -368,7 +368,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
                 }
             };
             new ProgressMonitorDialog(this.getShell()).run(true, false, op);
-            
+
             SrvPriSettingsDialog d = SrvPriSettingsDialog.go(this.getShell(), subscriptionManager.getSubscriptionDetails());
             List<SubscriptionDetail> subscriptionDetailsUpdated;
             String destinationFolder;
@@ -379,7 +379,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
                 System.out.println(">> Canceled by the user");
                 return;
             }
-            
+
             Map<String, List<String>> tidSidsMap = new HashMap<>();
             for (SubscriptionDetail sd : subscriptionDetailsUpdated) {
                 if (sd.isSelected()) {
@@ -402,16 +402,16 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
                 System.out.println(">> Canceled by the user");
                 return;
             }
-            
+
             String path = d1.getSelectedAuthFilePath();
             if (path == null) {
                 System.out.println(">> No file was created");
                 return;
             }
-            
+
             textAuthenticationFilePath.setText(path);
             fileDialog.setFilterPath(destinationFolder);
-            
+
         } catch (Exception ex) {
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doCreateServicePrincipal@SignInDialog", ex));

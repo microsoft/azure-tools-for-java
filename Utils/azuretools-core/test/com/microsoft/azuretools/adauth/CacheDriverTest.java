@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.adauth;
 
 import org.junit.Assert;
@@ -136,7 +135,7 @@ public class CacheDriverTest {
             Assert.fail();
         }
     }
- 
+
     private CacheDriver createDriver(String authority, String fixToken, long expireIn) {
         CacheDriver driver = new CacheDriver(authority, clientId) {
             @Override

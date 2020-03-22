@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azure.hdinsight.serverexplore.ui;
 
 import com.intellij.CommonBundle;
@@ -182,7 +181,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             CardLayout layout = (CardLayout) (authCardsPanel.getLayout());
             layout.show(authCardsPanel, ((AuthType) e.getItem()).getTypeName());
         });
-        
+
         // field validation check
         Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> validateBasicInputs()));
 

@@ -1,21 +1,23 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.microsoft.azuretools.azureexplorer.editors;
 
@@ -69,10 +71,10 @@ public class TableFileEditor extends EditorPart {
     public static final String PARTITION_KEY = "Partition key";
     public static final String ROW_KEY = "Row key";
     private static final String TIMESTAMP = "Timestamp";
-    
+
     private static final String EXECUTE = "Execute";
-	private static final String DELETE = "Delete";
-	private static final String REFRESH = "Refresh";
+    private static final String DELETE = "Delete";
+    private static final String REFRESH = "Refresh";
 
     private ClientStorageAccount storageAccount;
     private Table table;
@@ -87,7 +89,7 @@ public class TableFileEditor extends EditorPart {
     private List<TableEntity> tableEntities;
     private Map<String, List<String>> columnData;
     private List<String> data;
-    
+
     private FileEditorVirtualNode<EditorPart> fileEditorVirtualNode;
 
     @Override
@@ -119,25 +121,25 @@ public class TableFileEditor extends EditorPart {
     }
 
     private FileEditorVirtualNode<EditorPart> createVirtualNode(final String name){
-    	final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
-   	
-    	node.addAction(DELETE, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				deleteSelection();
-			}
-		});
-    	
-    	node.addAction(REFRESH, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				fillGrid();				
-			}
-		});
-    	    	
-    	return node;
+        final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
+
+        node.addAction(DELETE, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                deleteSelection();
+            }
+        });
+
+        node.addAction(REFRESH, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                fillGrid();
+            }
+        });
+
+        return node;
     }
-    
+
     @Override
     public void createPartControl(Composite composite) {
         composite.setLayout(new GridLayout());
@@ -198,7 +200,7 @@ public class TableFileEditor extends EditorPart {
         deleteButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	fileEditorVirtualNode.doAction(DELETE);
+                fileEditorVirtualNode.doAction(DELETE);
             }
         });
 

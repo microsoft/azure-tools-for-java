@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
 // When we access blob or queue data with client tool, client makes requests to Azure Storage under the covers.

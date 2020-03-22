@@ -1,21 +1,23 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.microsoft.azuretools.hdinsight;
 
@@ -57,7 +59,7 @@ import com.microsoft.azuretools.core.utils.Messages;
 
 public class SparkSubmissionToolWindowView extends ViewPart {
     private static final String yarnRunningUIUrlFormat = "%s/yarnui/hn/proxy/%s/";
-    
+
     private Button stopButton;
     private Button openSparkUIButton;
     private Browser outputPanel;
@@ -66,34 +68,34 @@ public class SparkSubmissionToolWindowView extends ViewPart {
 
     private PropertyChangeSupport changeSupport;
     private JobStatusManager jobStatusManager = new JobStatusManager();
-    
+
     private String connectionUrl;
     private int batchId;
-    
-	@Override
-	public void createPartControl(Composite parent) {
-		GridLayout layout = new GridLayout();
-		layout.numColumns = 2;
-		parent.setLayout(layout);
-		
-		Composite composite = new Composite(parent, SWT.NONE);
-		layout = new GridLayout();
-		composite.setLayout(layout);
-		GridData gridData = new GridData();
-		gridData.verticalAlignment = SWT.TOP;
-		composite.setLayoutData(gridData);
-		stopButton = new Button(composite, SWT.PUSH);
-		stopButton.setText("Stop");
+
+    @Override
+    public void createPartControl(Composite parent) {
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+        parent.setLayout(layout);
+
+        Composite composite = new Composite(parent, SWT.NONE);
+        layout = new GridLayout();
+        composite.setLayout(layout);
+        GridData gridData = new GridData();
+        gridData.verticalAlignment = SWT.TOP;
+        composite.setLayoutData(gridData);
+        stopButton = new Button(composite, SWT.PUSH);
+        stopButton.setText("Stop");
         stopButton.setToolTipText("Stop execution of current application");
         stopButton.setImage(Activator.getImageDescriptor(CommonConst.StopIconPath).createImage());
         stopButton.addSelectionListener(new SelectionAdapter() {
-        	@Override
-        	public void widgetSelected(SelectionEvent evt) {
-        		DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+            @Override
+            public void widgetSelected(SelectionEvent evt) {
+                DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
                     @Override
                     public void run() {
                         if (!StringHelper.isNullOrWhiteSpace(connectionUrl)) {
-                        	AppInsightsClient.create(Messages.SparkSubmissionStopButtionClickEvent, null);
+                            AppInsightsClient.create(Messages.SparkSubmissionStopButtionClickEvent, null);
                             EventUtil.logEvent(EventType.info, HDINSIGHT, Messages.SparkSubmissionStopButtionClickEvent, null);
                             try {
                                 HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(connectionUrl + "/livy/batches", batchId);
@@ -109,47 +111,47 @@ public class SparkSubmissionToolWindowView extends ViewPart {
                         }
                     }
                 });
-        	}
-		});
+            }
+        });
         stopButton.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-        	public void getName(AccessibleEvent e)  {
-        		super.getName(e);
-        		e.result = stopButton.getToolTipText();
-        	}
+            public void getName(AccessibleEvent e)  {
+                super.getName(e);
+                e.result = stopButton.getToolTipText();
+            }
         });
-        
-		openSparkUIButton = new Button(composite, SWT.PUSH);
-		openSparkUIButton.setText("Open Spark UI");
-		openSparkUIButton.setToolTipText("Open the corresponding Spark UI page");
-		openSparkUIButton.setImage(Activator.getImageDescriptor(CommonConst.OpenSparkUIIconPath).createImage());
-		openSparkUIButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				try {
-					if (jobStatusManager.isApplicationGenerated()) {
-						String sparkApplicationUrl = String.format(yarnRunningUIUrlFormat, connectionUrl, jobStatusManager.getApplicationId());
-						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(sparkApplicationUrl));
-					}
-				} catch (Exception browseException) {
-					DefaultLoader.getUIHelper().showError("Failed to browse spark application yarn url", "Spark Submission");
-				}
-			}
+
+        openSparkUIButton = new Button(composite, SWT.PUSH);
+        openSparkUIButton.setText("Open Spark UI");
+        openSparkUIButton.setToolTipText("Open the corresponding Spark UI page");
+        openSparkUIButton.setImage(Activator.getImageDescriptor(CommonConst.OpenSparkUIIconPath).createImage());
+        openSparkUIButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                try {
+                    if (jobStatusManager.isApplicationGenerated()) {
+                        String sparkApplicationUrl = String.format(yarnRunningUIUrlFormat, connectionUrl, jobStatusManager.getApplicationId());
+                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(sparkApplicationUrl));
+                    }
+                } catch (Exception browseException) {
+                    DefaultLoader.getUIHelper().showError("Failed to browse spark application yarn url", "Spark Submission");
+                }
+            }
         });
-		openSparkUIButton.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-        	public void getName(AccessibleEvent e)  {
-        		super.getName(e);
-        		e.result = openSparkUIButton.getToolTipText();
-        	}
+        openSparkUIButton.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            public void getName(AccessibleEvent e)  {
+                super.getName(e);
+                e.result = openSparkUIButton.getToolTipText();
+            }
         });
-		
-		gridData = new GridData();
+
+        gridData = new GridData();
         gridData.horizontalAlignment = SWT.FILL;
         gridData.verticalAlignment = SWT.FILL;
         gridData.grabExcessVerticalSpace = true;
         gridData.grabExcessHorizontalSpace = true;
         outputPanel = new Browser(parent, SWT.BORDER);
         outputPanel.setLayoutData(gridData);
-        
+
         PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
@@ -187,24 +189,24 @@ public class SparkSubmissionToolWindowView extends ViewPart {
 //        outputPanel.addPropertyChangeListener(propertyChangeListener);
         changeSupport = new PropertyChangeSupport(outputPanel);
         changeSupport.addPropertyChangeListener(propertyChangeListener);
-	}    
+    }
 
-	@Override
-	public void setFocus() {
-		// TODO Auto-generated method stub
+    @Override
+    public void setFocus() {
+        // TODO Auto-generated method stub
 
-	}
-	
-	public JobStatusManager getJobStatusManager() {
-	    return jobStatusManager;
-	}
-	
-	public synchronized void setSparkApplicationStopInfo(String connectUrl, int batchId) {
+    }
+
+    public JobStatusManager getJobStatusManager() {
+        return jobStatusManager;
+    }
+
+    public synchronized void setSparkApplicationStopInfo(String connectUrl, int batchId) {
         this.connectionUrl = connectUrl;
         this.batchId = batchId;
     }
-	
-	public synchronized void setHyperLinkWithText(String text, String hyperlinkUrl, String anchorText) {
+
+    public synchronized void setHyperLinkWithText(String text, String hyperlinkUrl, String anchorText) {
         cachedInfo.add(new HyperLinkElement(/*fontFace, DarkThemeManager.getInstance().getInfoColor(), DarkThemeManager.getInstance().getHyperLinkColor(), */text, hyperlinkUrl, anchorText));
         setToolWindowText(parserHtmlElementList(cachedInfo));
     }
@@ -237,7 +239,7 @@ public class SparkSubmissionToolWindowView extends ViewPart {
     public void setInfo(String info) {
         setInfo(info, false);
     }
-    
+
     private static final int MAX_CLEANABLE_SIZE = 400;
     private static final int DELETE_SIZE = 100;
     private int cleanableMessageCounter = 0;
@@ -256,42 +258,42 @@ public class SparkSubmissionToolWindowView extends ViewPart {
             }
         }
     }
-    
+
     public synchronized void clearAll() {
         cachedInfo.clear();
         cleanableMessageCounter = 0;
     }
 
-	private void setToolWindowText(final String toolWindowText) {
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				changeSupport.firePropertyChange("toolWindowText", SparkSubmissionToolWindowView.this.toolWindowText, toolWindowText);			
-			}
-		});
-		SparkSubmissionToolWindowView.this.toolWindowText = toolWindowText;
+    private void setToolWindowText(final String toolWindowText) {
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                changeSupport.firePropertyChange("toolWindowText", SparkSubmissionToolWindowView.this.toolWindowText, toolWindowText);
+            }
+        });
+        SparkSubmissionToolWindowView.this.toolWindowText = toolWindowText;
     }
 
-	public synchronized void setStopButtonState(final Boolean newState) {
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				Boolean oldState = stopButton.isEnabled();
-				changeSupport.firePropertyChange("isStopButtonEnable", oldState, newState);
-			}
-		});
-	}
+    public synchronized void setStopButtonState(final Boolean newState) {
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                Boolean oldState = stopButton.isEnabled();
+                changeSupport.firePropertyChange("isStopButtonEnable", oldState, newState);
+            }
+        });
+    }
 
-	public synchronized void setBrowserButtonState(final Boolean newState) {
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				Boolean oldState = openSparkUIButton.isEnabled();
-				changeSupport.firePropertyChange("isBrowserButtonEnable", oldState, newState);
-			}
-		});
-	}
-	
+    public synchronized void setBrowserButtonState(final Boolean newState) {
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                Boolean oldState = openSparkUIButton.isEnabled();
+                changeSupport.firePropertyChange("isBrowserButtonEnable", oldState, newState);
+            }
+        });
+    }
+
     private String parserHtmlElementList(List<IHtmlElement> htmlElements) {
         StringBuilder builder = new StringBuilder();
         for (IHtmlElement e : htmlElements) {
@@ -300,8 +302,8 @@ public class SparkSubmissionToolWindowView extends ViewPart {
 
         return builder.toString();
     }
-	
-	interface IHtmlElement {
+
+    interface IHtmlElement {
         String getHtmlString();
 
         void ChangeTheme();

@@ -1,25 +1,24 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
@@ -50,8 +49,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-    AuthMethodManager.class, 
-    AzureManager.class, 
+    AuthMethodManager.class,
+    AzureManager.class,
     Azure.class,
     AzureMvpModel.class,
     RedisCaches.class,
@@ -59,12 +58,12 @@ import static org.mockito.Mockito.*;
 })
 
 public class AzureRedisMvpModelTest {
-    
+
     private AzureRedisMvpModel azureRedisMvpModel;
 
     @Mock
     private AuthMethodManager authMethodManagerMock;
-    
+
     @Mock
     private Azure azureMock;
 
@@ -79,13 +78,13 @@ public class AzureRedisMvpModelTest {
 
     @Mock
     private SubscriptionManager subscriptionManagerMock;
-    
-    @Mock 
+
+    @Mock
     private RedisCaches redisCachesMock;
-    
+
     private static final String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
     private static final String MOCK_REDIS_ID = "test-id";
-    
+
     @Before
     public void setUp() throws IOException {
         PowerMockito.mockStatic(AuthMethodManager.class);
@@ -96,7 +95,7 @@ public class AzureRedisMvpModelTest {
 
         azureRedisMvpModel = AzureRedisMvpModel.getInstance();
     }
-    
+
     @After
     public void tearDown() {
         azureRedisMvpModel = null;
@@ -106,7 +105,7 @@ public class AzureRedisMvpModelTest {
         subscriptionMock = null;
         subscriptionManagerMock = null;
     }
-    
+
     @Test
     public void testGetRedisCaches() throws IOException {
         final int expectKeySetSize = 1;
@@ -121,42 +120,42 @@ public class AzureRedisMvpModelTest {
         when(subscriptionManagerMock.getSubscriptionIdToSubscriptionMap()).thenReturn(mockSidToSubscriptionMap);
         when(subscriptionMock.subscriptionId()).thenReturn(MOCK_SUBSCRIPTION);
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
-        
+
         HashMap<String, RedisCaches> redisCachesMap = azureRedisMvpModel.getRedisCaches();
-        
+
         assertNotNull(redisCachesMap);
         assertEquals(expectKeySetSize, redisCachesMap.keySet().size());
         assertNotNull(redisCachesMap.get(MOCK_SUBSCRIPTION));
     }
-    
+
     @Test
     public void testDeleteRedisCache() throws IOException {
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
-        
+
         azureRedisMvpModel.deleteRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(1)).deleteById(MOCK_REDIS_ID);
     }
-    
+
     @Test
     public void testDeleteRedisCacheWhenRedisCacheIsNull() throws IOException {
         when(azureMock.redisCaches()).thenReturn(null);
-        
+
         azureRedisMvpModel.deleteRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(0)).deleteById(MOCK_REDIS_ID);
     }
-    
+
     @Test
     public void testGetRedisCache() throws IOException {
         when(azureMock.redisCaches()).thenReturn(redisCachesMock);
-        
+
         azureRedisMvpModel.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(1)).getById(MOCK_REDIS_ID);
     }
-    
+
     @Test
     public void testGetRedisCacheWhenRedisCacheIsNull() throws IOException {
         when(azureMock.redisCaches()).thenReturn(null);
-        
+
         azureRedisMvpModel.getRedisCache(MOCK_SUBSCRIPTION, MOCK_REDIS_ID);
         verify(redisCachesMock, times(0)).getById(MOCK_REDIS_ID);
     }

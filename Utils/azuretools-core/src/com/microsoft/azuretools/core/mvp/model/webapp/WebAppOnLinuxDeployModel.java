@@ -18,9 +18,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
-
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 public class WebAppOnLinuxDeployModel {
@@ -149,19 +147,19 @@ public class WebAppOnLinuxDeployModel {
     public void setAppServicePlanName(String appServicePlanName) {
         this.appServicePlanName = appServicePlanName;
     }
-    
+
     public void setTargetPath(String targetPath) {
         this.targetPath = targetPath;
     }
-    
+
     public String getTargetPath() {
         return this.targetPath;
     }
-    
+
     public void setTargetName(String targetName) {
         this.targetName = targetName;
     }
-    
+
     public String getTargetName() {
         return this.targetName;
     }

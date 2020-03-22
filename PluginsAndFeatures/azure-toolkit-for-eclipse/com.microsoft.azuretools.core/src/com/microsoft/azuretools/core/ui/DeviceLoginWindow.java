@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -116,25 +116,25 @@ public class DeviceLoginWindow implements IDeviceLoginUI {
             area.setLayout(fillLayout);
             GridData gridData = new GridData(GridData.FILL_BOTH);
             area.setLayoutData(gridData);
-            
-            
+
+
             link = new Link(area,SWT.NONE);
             link.setText(createHtmlFormatMessage(area));
             link.addSelectionListener(new SelectionAdapter() {
-            	@Override
-            	public void widgetSelected(SelectionEvent e) {
-            		try {
-						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    try {
+                        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
               .openURL(new URL(deviceCode.getVerificationUrl()));
-					} catch (PartInitException | MalformedURLException ex) {
-						LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
-					}
-            	}
+                    } catch (PartInitException | MalformedURLException ex) {
+                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "DeviceLoginWindow", ex));
+                    }
+                }
             });
 
             Label label = new Label(area,SWT.NONE);
             label.setText("Waiting for signing in with the code, do not close the window.");
-            
+
             return area;
         }
 

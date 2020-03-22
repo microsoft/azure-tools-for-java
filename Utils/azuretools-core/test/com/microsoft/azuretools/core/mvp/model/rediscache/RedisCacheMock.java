@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.core.mvp.model.rediscache;
 
 import java.util.List;
@@ -191,15 +190,15 @@ public class RedisCacheMock implements RedisCache{
         return new RedisAccessKeysMock();
     }
 
-	@Override
-	public TlsVersion minimumTlsVersion() {
-		return null;
-	}
+    @Override
+    public TlsVersion minimumTlsVersion() {
+        return null;
+    }
 
-	@Override
-	public Map<String, RedisFirewallRule> firewallRules() {
-		return null;
-	}
+    @Override
+    public Map<String, RedisFirewallRule> firewallRules() {
+        return null;
+    }
 
     @Override
     public void forceReboot(RebootType arg0) {

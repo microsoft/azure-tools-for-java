@@ -1,21 +1,23 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.microsoft.azuretools.core.azureexplorer.helpers;
 
@@ -163,29 +165,29 @@ public class IDEHelperImpl implements IDEHelper {
         PreferenceUtil.savePreferences(name, value);
     }
 
-	@Override
-	public CancellableTaskHandle runInBackground(
-			ProjectDescriptor projectDescriptor, String name,
-			String indicatorText, CancellableTask cancellableTask)
-			throws AzureCmdException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public CancellableTaskHandle runInBackground(
+            ProjectDescriptor projectDescriptor, String name,
+            String indicatorText, CancellableTask cancellableTask)
+            throws AzureCmdException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public List<ArtifactDescriptor> getArtifacts(
-			ProjectDescriptor projectDescriptor) throws AzureCmdException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<ArtifactDescriptor> getArtifacts(
+            ProjectDescriptor projectDescriptor) throws AzureCmdException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public ListenableFuture<String> buildArtifact(
-			ProjectDescriptor projectDescriptor,
-			ArtifactDescriptor artifactDescriptor) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public ListenableFuture<String> buildArtifact(
+            ProjectDescriptor projectDescriptor,
+            ArtifactDescriptor artifactDescriptor) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     public Object getCurrentProject() {
         return DEFAULT_PROJECT;
@@ -193,53 +195,53 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void setApplicationProperty(@NotNull String name, @NotNull String value) {
-    	setProperty(name, value);
+        setProperty(name, value);
     }
 
     @Override
     public void unsetApplicationProperty(@NotNull String name) {
-    	unsetProperty(name);
+        unsetProperty(name);
     }
 
     @Override
     @Nullable
     public String getApplicationProperty(@NotNull String name) {
-    	return getProperty(name);
+        return getProperty(name);
     }
 
     @Override
     public void setApplicationProperties(@NotNull String name, @NotNull String[] value) {
-    	setProperties(name, value);
+        setProperties(name, value);
     }
 
     @Override
     public void unsetApplicatonProperties(@NotNull String name) {
-    	unsetProperty(name);
+        unsetProperty(name);
     }
 
     @Override
     @Nullable
     public String[] getApplicationProperties(@NotNull String name) {
-    	return getProperties(name);
+        return getProperties(name);
     }
 
     @Override
     public boolean isApplicationPropertySet(@NotNull String name) {
-    	return isPropertySet(name);
+        return isPropertySet(name);
     }
 
-	@Override
-	public String getProjectSettingsPath() {
-		return String.format("%s%s%s", PluginUtil.pluginFolder, File.separator, Messages.commonPluginID);
-	}
-	
-	@Override
-	public void openLinkInBrowser(@NotNull String url) {
-    	try {
+    @Override
+    public String getProjectSettingsPath() {
+        return String.format("%s%s%s", PluginUtil.pluginFolder, File.separator, Messages.commonPluginID);
+    }
+
+    @Override
+    public void openLinkInBrowser(@NotNull String url) {
+        try {
             PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url));
         } catch (Exception ex) {
-        	DefaultLoader.getUIHelper().showException("Unexpected exception: " + ex.getMessage(), ex, "Browse Web App", true, false);
+            DefaultLoader.getUIHelper().showException("Unexpected exception: " + ex.getMessage(), ex, "Browse Web App", true, false);
             DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
         }
-	}
+    }
 }

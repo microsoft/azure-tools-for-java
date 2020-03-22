@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.adauth;
 
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -75,7 +74,7 @@ public class AuthResult {
         this.resource = (resource != null ? resource : "");
         this.isMultipleResourceRefreshToken = !StringUtils.isNullOrEmpty(resource);
     }
-    
+
     public void setUserInfo(UserInfo info) {
         if (null == info) {
             return;
@@ -93,7 +92,7 @@ public class AuthResult {
     public void setRefreshToken(@NotNull String refreshToken) {
         this.refreshToken = refreshToken;
     }
-    
+
     public void setResource(String resource) {
         this.resource = resource;
     }
@@ -109,7 +108,7 @@ public class AuthResult {
     public String getRefreshToken() {
         return refreshToken;
     }
-    
+
     public String getResource() {
         return resource;
     }
@@ -129,11 +128,11 @@ public class AuthResult {
     public UserInfo getUserInfo() {
         return userInfo;
     }
-    
+
     public String getUserId() {
         return userId;
     }
-    
+
     public boolean isUserIdDisplayble() {
         return this.isDisplaybaleUserId;
     }

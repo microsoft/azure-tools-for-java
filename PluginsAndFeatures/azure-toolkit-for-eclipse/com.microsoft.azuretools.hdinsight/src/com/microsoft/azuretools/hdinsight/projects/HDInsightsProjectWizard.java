@@ -1,21 +1,42 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.microsoft.azuretools.hdinsight.projects;
 /**
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
  * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 //package com.microsoft.azuretools.hdinsight.projects;
@@ -55,102 +76,102 @@ package com.microsoft.azuretools.hdinsight.projects;
 //import com.microsoft.azuretools.hdinsight.Activator;
 //
 //public class HDInsightsProjectWizard extends NewElementWizard implements INewWizard, IExecutableExtension {
-//	private SparkLibraryWizardPage sparkLibraryWizardPage;
-//	private NewJavaProjectWizardPageTwo javaPageTwo;
-//	
-//	private String id;
-//	private IConfigurationElement fConfigElement;
-//	
-//	public HDInsightsProjectWizard() {
-//		
-//	}
+//    private SparkLibraryWizardPage sparkLibraryWizardPage;
+//    private NewJavaProjectWizardPageTwo javaPageTwo;
 //
-//	@Override
-//	public void init(IWorkbench arg0, IStructuredSelection arg1) {
-//		setWindowTitle("New HDInsights Project");
-//	}
+//    private String id;
+//    private IConfigurationElement fConfigElement;
+//
+//    public HDInsightsProjectWizard() {
+//
+//    }
+//
+//    @Override
+//    public void init(IWorkbench arg0, IStructuredSelection arg1) {
+//        setWindowTitle("New HDInsights Project");
+//    }
 //
 //    @Override
 //    public void addPages() {
-//    	sparkLibraryWizardPage = new SparkLibraryWizardPage("Library Settings");
-//    	javaPageTwo = new NewJavaProjectWizardPageTwo(sparkLibraryWizardPage);
-//    	
+//        sparkLibraryWizardPage = new SparkLibraryWizardPage("Library Settings");
+//        javaPageTwo = new NewJavaProjectWizardPageTwo(sparkLibraryWizardPage);
+//
 //        addPage(sparkLibraryWizardPage);
 //        addPage(javaPageTwo);
 //    }
-//	
-//	@Override
-//	public boolean performFinish() {
-//		boolean res= super.performFinish();
-//		if (res) {
-//			final IJavaElement newElement= getCreatedElement();
 //
-//			IWorkingSet[] workingSets= sparkLibraryWizardPage.getWorkingSets();
-//			if (workingSets.length > 0) {
-//				PlatformUI.getWorkbench().getWorkingSetManager().addToWorkingSets(newElement, workingSets);
-//			}
+//    @Override
+//    public boolean performFinish() {
+//        boolean res= super.performFinish();
+//        if (res) {
+//            final IJavaElement newElement= getCreatedElement();
 //
-//			BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
-////			selectAndReveal(javaPageTwo.getJavaProject().getProject());
+//            IWorkingSet[] workingSets= sparkLibraryWizardPage.getWorkingSets();
+//            if (workingSets.length > 0) {
+//                PlatformUI.getWorkbench().getWorkingSetManager().addToWorkingSets(newElement, workingSets);
+//            }
 //
-////			Display.getDefault().asyncExec(new Runnable() {
-////				@Override
-////				public void run() {
-////					IWorkbenchPart activePart= getActivePart();
-////					if (activePart instanceof IPackagesViewPart) {
-////						PackageExplorerPart view= PackageExplorerPart.openInActivePerspective();
-////						view.tryToReveal(newElement);
-////					}
-////				}
-////			});
+//            BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
+////            selectAndReveal(javaPageTwo.getJavaProject().getProject());
 //
-//			String projectName= sparkLibraryWizardPage.getProjectName();
-//			try {
-//			IProject project = getCreatedElement().getJavaProject().getProject(); //ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-//			IProjectDescription description = project.getDescription();
-//		    String[] natures = description.getNatureIds();
-//		    String[] newNatures = new String[natures.length + 1];
-//		    System.arraycopy(natures, 0, newNatures, 0, natures.length);
-//		    newNatures[natures.length] = HDInsightProjectNature.NATURE_ID;
-//		    description.setNatureIds(newNatures);
-//		    project.setDescription(description, null);
-//			} catch (Exception ex) {
-//				Display.getDefault().syncExec(new Runnable() {
-//	        		public void run() {
-//	        			MessageDialog.openError(null,"Error", "Error creating project");
-//	        		}
-//	        	});
-//	        	Activator.getDefault().log("Error cretaing project", ex);
-//			}
-//		}
-//		return res;
-//	}
+////            Display.getDefault().asyncExec(new Runnable() {
+////                @Override
+////                public void run() {
+////                    IWorkbenchPart activePart= getActivePart();
+////                    if (activePart instanceof IPackagesViewPart) {
+////                        PackageExplorerPart view= PackageExplorerPart.openInActivePerspective();
+////                        view.tryToReveal(newElement);
+////                    }
+////                }
+////            });
 //
-//	private IWorkbenchPart getActivePart() {
-//		IWorkbenchWindow activeWindow= getWorkbench().getActiveWorkbenchWindow();
-//		if (activeWindow != null) {
-//			IWorkbenchPage activePage= activeWindow.getActivePage();
-//			if (activePage != null) {
-//				return activePage.getActivePart();
-//			}
-//		}
-//		return null;
-//	}
-//	
-//	@Override
-//	public void setInitializationData(IConfigurationElement parameter, String arg1, Object arg2) throws CoreException {
-//		this.id = parameter.getAttribute("id");
-//		fConfigElement = parameter;
-//	}
+//            String projectName= sparkLibraryWizardPage.getProjectName();
+//            try {
+//            IProject project = getCreatedElement().getJavaProject().getProject(); //ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+//            IProjectDescription description = project.getDescription();
+//            String[] natures = description.getNatureIds();
+//            String[] newNatures = new String[natures.length + 1];
+//            System.arraycopy(natures, 0, newNatures, 0, natures.length);
+//            newNatures[natures.length] = HDInsightProjectNature.NATURE_ID;
+//            description.setNatureIds(newNatures);
+//            project.setDescription(description, null);
+//            } catch (Exception ex) {
+//                Display.getDefault().syncExec(new Runnable() {
+//                    public void run() {
+//                        MessageDialog.openError(null,"Error", "Error creating project");
+//                    }
+//                });
+//                Activator.getDefault().log("Error cretaing project", ex);
+//            }
+//        }
+//        return res;
+//    }
 //
-//	@Override
-//	protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
-//		javaPageTwo.performFinish(monitor);
-//		
-//	}
-//	
-//	@Override
-//	public IJavaElement getCreatedElement() {
-//		return javaPageTwo.getJavaProject();
-//	}
+//    private IWorkbenchPart getActivePart() {
+//        IWorkbenchWindow activeWindow= getWorkbench().getActiveWorkbenchWindow();
+//        if (activeWindow != null) {
+//            IWorkbenchPage activePage= activeWindow.getActivePage();
+//            if (activePage != null) {
+//                return activePage.getActivePart();
+//            }
+//        }
+//        return null;
+//    }
+//
+//    @Override
+//    public void setInitializationData(IConfigurationElement parameter, String arg1, Object arg2) throws CoreException {
+//        this.id = parameter.getAttribute("id");
+//        fConfigElement = parameter;
+//    }
+//
+//    @Override
+//    protected void finishPage(IProgressMonitor monitor) throws InterruptedException, CoreException {
+//        javaPageTwo.performFinish(monitor);
+//
+//    }
+//
+//    @Override
+//    public IJavaElement getCreatedElement() {
+//        return javaPageTwo.getJavaProject();
+//    }
 //}

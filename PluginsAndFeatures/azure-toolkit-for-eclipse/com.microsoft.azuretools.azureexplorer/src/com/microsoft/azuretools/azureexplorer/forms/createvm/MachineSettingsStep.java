@@ -1,21 +1,23 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.microsoft.azuretools.azureexplorer.forms.createvm;
 
@@ -49,7 +51,7 @@ import java.util.*;
 
 public class MachineSettingsStep extends WizardPage {
     private static String LOADING = "<Loading...>";
-	private Label vmNameLabel;
+    private Label vmNameLabel;
     private Text vmNameTextField;
     private Label vmSizeLabel;
     private Combo vmSizeComboBox;
@@ -112,7 +114,7 @@ public class MachineSettingsStep extends WizardPage {
 
         vmSizeLabel = new Label(composite, SWT.LEFT);
         vmSizeLabel.setText("Size:");
-        
+
         Composite sizeContainer = new Composite(composite, SWT.NONE);
         gridLayout = new GridLayout();
         gridLayout.numColumns = 2;
@@ -121,25 +123,25 @@ public class MachineSettingsStep extends WizardPage {
         gridData.horizontalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
         sizeContainer.setLayoutData(gridData);
-        
+
         vmSizeComboBox = new Combo(sizeContainer, SWT.READ_ONLY);
         gridData = new GridData(SWT.FILL, SWT.CENTER, true, true);
         vmSizeComboBox.setLayoutData(gridData);
-		
-		pricingLink = new Link(sizeContainer, SWT.NONE);
-		pricingLink.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-		    	try {
-		            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/"));
-		        } catch (Exception ex) {
-		            DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
-		        }
-			}
-		});
-		pricingLink.setText("<a>Pricing</a>");
-		gridData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
-		pricingLink.setLayoutData(gridData);
+
+        pricingLink = new Link(sizeContainer, SWT.NONE);
+        pricingLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/"));
+                } catch (Exception ex) {
+                    DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
+                }
+            }
+        });
+        pricingLink.setText("<a>Pricing</a>");
+        gridData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
+        pricingLink.setLayoutData(gridData);
 
         vmUserLabel = new Label(composite, SWT.LEFT);
         vmUserLabel.setText("User name:");
@@ -197,11 +199,11 @@ public class MachineSettingsStep extends WizardPage {
     }
 
     private GridData getGridData(int columns) {
-    	GridData gridData = new GridData(SWT.FILL, SWT.CENTER, true, true);
-    	gridData.horizontalSpan = columns;
-    	return gridData;
+        GridData gridData = new GridData(SWT.FILL, SWT.CENTER, true, true);
+        gridData.horizontalSpan = columns;
+        return gridData;
     }
-    
+
     private void certificateCheckBoxSelected(boolean selected) {
         certificateLabel.setEnabled(selected);
         certificateField.setEnabled(selected);
@@ -233,17 +235,17 @@ public class MachineSettingsStep extends WizardPage {
         certificateButton = new Button(panel, SWT.PUSH);
         certificateButton.setText("...");
         certificateButton.addSelectionListener(new SelectionAdapter() {
-        	@Override
-			public void widgetSelected(SelectionEvent arg0) {
-        		FileDialog dialog = new FileDialog(PluginUtil.getParentShell());
-        		String [] extensions = {"*.pub", "*.PUB"};
-        		dialog.setFilterExtensions(extensions);
-        		String certPath = dialog.open();
-        		if (certPath != null) {
-        			certificateField.setText(certPath);
-        		}
-			}
-		});
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                FileDialog dialog = new FileDialog(PluginUtil.getParentShell());
+                String [] extensions = {"*.pub", "*.PUB"};
+                dialog.setFilterExtensions(extensions);
+                String certPath = dialog.open();
+                if (certPath != null) {
+                    certificateField.setText(certPath);
+                }
+            }
+        });
     }
 
     @Override
@@ -254,7 +256,7 @@ public class MachineSettingsStep extends WizardPage {
         } else {
             isLinux = wizard.getVirtualMachineImage().osDiskImage().operatingSystem().equals(OperatingSystemTypes.LINUX);
         }
-    	
+
         if (isLinux) {
             certificateCheckBox.setEnabled(true);
             passwordCheckBox.setEnabled(true);
@@ -271,49 +273,49 @@ public class MachineSettingsStep extends WizardPage {
 
 //        imageDescription.setText(wizard.getHtmlFromVMImage(virtualMachineImage));
 
-		if (vmSizeComboBox.getItemCount() == 0) {
-			vmSizeComboBox.setItems(new String[] { LOADING });
-			DefaultLoader.getIdeHelper().runInBackground(null, "Loading VM sizes...", false, true, "", new Runnable() {
-				@Override
-				public void run() {
-					PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes = wizard.getAzure()
-							.virtualMachines().sizes().listByRegion(wizard.getRegion().name());
-					Collections.sort(sizes, new Comparator<VirtualMachineSize>() {
-						@Override
-						public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
-							if (t0.name().contains("Basic") && t1.name().contains("Basic")) {
-								return t0.name().compareTo(t1.name());
-							} else if (t0.name().contains("Basic")) {
-								return -1;
-							} else if (t1.name().contains("Basic")) {
-								return 1;
-							}
+        if (vmSizeComboBox.getItemCount() == 0) {
+            vmSizeComboBox.setItems(new String[] { LOADING });
+            DefaultLoader.getIdeHelper().runInBackground(null, "Loading VM sizes...", false, true, "", new Runnable() {
+                @Override
+                public void run() {
+                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes = wizard.getAzure()
+                            .virtualMachines().sizes().listByRegion(wizard.getRegion().name());
+                    Collections.sort(sizes, new Comparator<VirtualMachineSize>() {
+                        @Override
+                        public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
+                            if (t0.name().contains("Basic") && t1.name().contains("Basic")) {
+                                return t0.name().compareTo(t1.name());
+                            } else if (t0.name().contains("Basic")) {
+                                return -1;
+                            } else if (t1.name().contains("Basic")) {
+                                return 1;
+                            }
 
-							int coreCompare = Integer.valueOf(t0.numberOfCores()).compareTo(t1.numberOfCores());
+                            int coreCompare = Integer.valueOf(t0.numberOfCores()).compareTo(t1.numberOfCores());
 
-							if (coreCompare == 0) {
-								return Integer.valueOf(t0.memoryInMB()).compareTo(t1.memoryInMB());
-							} else {
-								return coreCompare;
-							}
-						}
-					});
-					DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
-						@Override
-						public void run() {
-							vmSizeComboBox.removeAll();
-							for (VirtualMachineSize size : sizes) {
-								vmSizeComboBox.add(size.name());
-								vmSizeComboBox.setData(size.name(), size);
-							}
-							if (sizes.size() > 0) {
-								vmSizeComboBox.select(0);
-							}
-//							selectDefaultSize();
-						}
-					});
-				}
-			});
+                            if (coreCompare == 0) {
+                                return Integer.valueOf(t0.memoryInMB()).compareTo(t1.memoryInMB());
+                            } else {
+                                return coreCompare;
+                            }
+                        }
+                    });
+                    DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            vmSizeComboBox.removeAll();
+                            for (VirtualMachineSize size : sizes) {
+                                vmSizeComboBox.add(size.name());
+                                vmSizeComboBox.setData(size.name(), size);
+                            }
+                            if (sizes.size() > 0) {
+                                vmSizeComboBox.select(0);
+                            }
+//                            selectDefaultSize();
+                        }
+                    });
+                }
+            });
         } else {
             selectDefaultSize();
         }

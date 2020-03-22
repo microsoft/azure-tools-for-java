@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -60,10 +60,10 @@ import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 
 public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
-	private static ILog LOG = Activator.getDefault().getLog();
-    
+    private static ILog LOG = Activator.getDefault().getLog();
+
     private Table table;
-    
+
     private SubscriptionManager subscriptionManager;
     private List<SubscriptionDetail> sdl;
 
@@ -77,7 +77,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         this.subscriptionManager = subscriptionManage;
     }
-    
+
     public static SubscriptionsDialog go(Shell parentShell, SubscriptionManager subscriptionManager) {
         SubscriptionsDialog d = new SubscriptionsDialog(parentShell, subscriptionManager);
         if (d.open() == Window.OK) {
@@ -98,18 +98,18 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
+
         table = new Table(container, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
         GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         gd_table.heightHint = 300;
         table.setLayoutData(gd_table);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-        
+
         TableColumn tblclmnNewColumn = new TableColumn(table, SWT.NONE);
         tblclmnNewColumn.setWidth(300);
         tblclmnNewColumn.setText("Subscription Name");
-        
+
         TableColumn tblclmnNewColumn_1 = new TableColumn(table, SWT.NONE);
         tblclmnNewColumn_1.setWidth(270);
         tblclmnNewColumn_1.setText("Subscription ID");
@@ -139,7 +139,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
               setSubscriptionDetails();
             }
           });
-    } 
+    }
 
     public void refreshSubscriptionsAsync() {
         try {
@@ -150,16 +150,16 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                     EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
                         subscriptionManager.getSubscriptionDetails();
                     }, (ex) -> {
-                    	ex.printStackTrace();
-                    	LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
+                        ex.printStackTrace();
+                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
                     });
                     monitor.done();
                 }
             });
         } catch (InvocationTargetException | InterruptedException ex) {
-        	ex.printStackTrace();
+            ex.printStackTrace();
             //LOGGER.log(LogService.LOG_ERROR, "run@refreshSubscriptionsAsync@SubscriptionDialog", e);
-        	 LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@refreshSubscriptionsAsync@SubscriptionDialog", ex));
+             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@refreshSubscriptionsAsync@SubscriptionDialog", ex));
         }
     }
 
@@ -172,8 +172,8 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 item.setChecked(sd.isSelected());
             }
         } catch (IOException ex) {
-        	ex.printStackTrace();
-        	LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "setSubscriptionDetails@SubscriptionDialog", ex));
+            ex.printStackTrace();
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "setSubscriptionDetails@SubscriptionDialog", ex));
         }
     }
 
@@ -186,7 +186,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
             setSubscriptionDetails();
             subscriptionManager.setSubscriptionDetails(sdl);
         } catch (IOException ex) {
-        	ex.printStackTrace();
+            ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "refreshSubscriptions@SubscriptionDialog", ex));
         }
     }
@@ -216,7 +216,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         if (chekedCount == 0) {
             this.setErrorMessage("Select at least one subscription");
             return;
-        }        
+        }
 
         for (int i = 0; i < tia.length; ++i) {
             this.sdl.get(i).setSelected(tia[i].getChecked());
@@ -225,7 +225,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         try {
             subscriptionManager.setSubscriptionDetails(sdl);
         } catch (Exception ex) {
-        	ex.printStackTrace();
+            ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@SubscriptionDialog", ex));
         }
 

@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 
 import com.google.common.collect.ImmutableSortedSet;
@@ -286,7 +285,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
 
     /**
      * Get clusters with "Ended" and "Finalizing" state filtered
-     * @return cluster set with "Ended" and "Ending" state filtered 
+     * @return cluster set with "Ended" and "Ending" state filtered
      */
     @NotNull
     @Override

@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.adauth;
 
 import java.util.Calendar;
@@ -45,7 +44,7 @@ public class UserInfo {
 
     /**
      * Get user id
-     * 
+     *
      * @return String value
      */
     public String getUniqueId() {
@@ -54,7 +53,7 @@ public class UserInfo {
 
     /**
      * Get given name
-     * 
+     *
      * @return String value
      */
     public String getGivenName() {
@@ -63,7 +62,7 @@ public class UserInfo {
 
     /**
      * Get family name
-     * 
+     *
      * @return String value
      */
     public String getFamilyName() {
@@ -72,7 +71,7 @@ public class UserInfo {
 
     /**
      * Get identity provider
-     * 
+     *
      * @return String value
      */
     public String getIdentityProvider() {
@@ -105,12 +104,12 @@ public class UserInfo {
         userInfo.passwordChangeUrl = adalUserInfo.getPasswordChangeUrl();
         return userInfo;
     }
-    
+
     static UserInfo createFromIdTokens(final IdToken tokens){
         if (null == tokens) {
             return null;
         }
-        
+
   //      String tenantId = tokens.tenantId;
         String uniqueId = null;
         String displayableId = null;
@@ -126,7 +125,7 @@ public class UserInfo {
         else if (!StringUtils.isNullOrWhiteSpace(tokens.email)) {
             displayableId = tokens.email;
         }
-        
+
         final UserInfo userInfo = new UserInfo();
         userInfo.uniqueId = uniqueId;
         userInfo.tenantId = tokens.tenantId;
@@ -146,7 +145,7 @@ public class UserInfo {
         if (!StringUtils.isNullOrEmpty(tokens.passwordChangeUrl)) {
             userInfo.passwordChangeUrl = tokens.passwordChangeUrl;
         }
-        
+
         return userInfo;
     }
 

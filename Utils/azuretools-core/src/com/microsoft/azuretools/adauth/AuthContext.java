@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.adauth;
 
 import com.microsoft.aad.adal4j.AuthenticationCallback;
@@ -73,11 +72,11 @@ public class AuthContext {
         authenticationAuthority = new AuthenticationAuthority(new URL(this.authority), this.validateAuthority);
         initDriver();
     }
-    
+
     public String getAuthority() {
         return authority;
     }
-    
+
     public String getClientId() {
         return clientId;
     }
@@ -208,7 +207,7 @@ public class AuthContext {
             throw new AuthException(code.getError(), code.getErrorDescription());
         }
     }
-    
+
     private AuthResult acquireTokenFromCache(@NotNull String resource, String userId) throws AuthException {
         AuthResult result =  driver.find(resource, userId);
         if (result == null) {
@@ -216,7 +215,7 @@ public class AuthContext {
         }
         return result;
     }
- 
+
     private AuthResult getTokenWithAuthCode(@NotNull final String code,
                                             @NotNull final String resource,
                                             final String redirectUrl) throws AuthException {
@@ -230,7 +229,7 @@ public class AuthContext {
         driver.createAddEntry(result, resource);
         return result;
     }
-    
+
     private void initDriver() {
         driver = new CacheDriver(this.authority, this.clientId) {
             protected AuthResult getTokenWithRefreshToken(@NotNull final String refreshToken,
@@ -279,14 +278,14 @@ public class AuthContext {
             throw new AuthException(AuthError.Unknown, AuthErrorMessage.Unknown);
         }
     }
-    
+
     private String canonicalizeUri(String authority) {
         if (!authority.endsWith("/")) {
             authority += "/";
         }
         return authority;
     }
- 
+
     private static AuthCode parseAuthorizeResponse(@NotNull String webAuthenticationResult,
                                                    UUID reqCorrelationId)
             throws URISyntaxException, UnsupportedEncodingException {

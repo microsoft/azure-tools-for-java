@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.core.mvp.model.rediscache;
 
 import com.microsoft.azure.management.Azure;
@@ -34,17 +33,17 @@ import java.util.HashMap;
 import java.util.List;
 
 public class AzureRedisMvpModel {
-    
+
     private AzureRedisMvpModel() {}
-    
+
     private static final class  AzureMvpModelHolder {
         private static final AzureRedisMvpModel INSTANCE = new AzureRedisMvpModel();
     }
-    
+
     public static AzureRedisMvpModel getInstance() {
         return AzureMvpModelHolder.INSTANCE;
     }
-    
+
     /**
      * Get all redis caches.
      * @return A map containing RedisCaches with subscription id as the key
@@ -62,7 +61,7 @@ public class AzureRedisMvpModel {
         }
         return redisCacheMaps;
     }
-    
+
     /**
      * Get a Redis Cache by Id.
      * @param sid Subscription Id
@@ -78,7 +77,7 @@ public class AzureRedisMvpModel {
         }
         return redisCaches.getById(id);
     }
-    
+
     /**
      * Delete a redis cache.
      * @param sid Subscription Id

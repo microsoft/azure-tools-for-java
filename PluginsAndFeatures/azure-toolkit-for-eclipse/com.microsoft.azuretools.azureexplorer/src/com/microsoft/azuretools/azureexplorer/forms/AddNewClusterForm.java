@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.microsoft.azuretools.azureexplorer.forms;
 
 import java.net.URL;
@@ -63,10 +84,10 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
         ctrlProvider.refreshContainers()
                 .subscribe();
     }
-    
+
     protected void customizeUI() {
     }
-    
+
     @Override
     protected Control createDialogArea(Composite parent) {
         setTitle("Link New HDInsight Cluster");
@@ -172,19 +193,19 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
         storageKeyField.setToolTipText("The storage key of the default storage account, which can be found from HDInsight cluster storage accounts of Azure portal.\n\n Press the F1 key or click the '?'(Help) button to get more details.");
 
         storageNameField.addFocusListener(new FocusAdapter() {
-        	@Override
-        	public void focusLost(FocusEvent e) {
+            @Override
+            public void focusLost(FocusEvent e) {
                 refreshContainers();
-        	}
+            }
         });
 
         storageKeyField.addFocusListener(new FocusAdapter() {
-        	@Override
-        	public void focusLost(FocusEvent e) {
+            @Override
+            public void focusLost(FocusEvent e) {
                 refreshContainers();
-        	}
+            }
         });
-        
+
         Label storageContainerLabel = new Label(clusterStorageGroup, SWT.LEFT);
         storageContainerLabel.setText("Storage Container:");
         gridData = new GridData();
@@ -195,7 +216,7 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
         gridData.horizontalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
         containersComboBox.setLayoutData(gridData);
-        
+
         container.addHelpListener(new HelpListener() {
             @Override public void helpRequested(HelpEvent e) {
                 try {
@@ -206,22 +227,22 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
                 }
             }
         });
-        
+
         customizeUI();
         return container;
     }
-    
+
     protected void afterOkActionPerformed() {
-		if (hdInsightModule != null) {
-			hdInsightModule.load(false);
-		}
+        if (hdInsightModule != null) {
+            hdInsightModule.load(false);
+        }
     }
 
     @Override
     protected void okPressed() {
         ctrlProvider.validateAndAdd()
                 .subscribe(toUpdate -> {
-                	afterOkActionPerformed();
+                    afterOkActionPerformed();
                     AppInsightsClient.create(Messages.HDInsightAddNewClusterAction, null);
 
                     super.okPressed();
@@ -242,7 +263,7 @@ public class AddNewClusterForm extends AzureTitleAreaDialogWrapper implements Se
     @Override
     public void setData(AddNewClusterModel data) {
         // Data -> Components
-		
+
         // Text fields
         clusterNameField.setText(data.getClusterName());
         clusterNameLabel.setText(data.getClusterNameLabelTitle());

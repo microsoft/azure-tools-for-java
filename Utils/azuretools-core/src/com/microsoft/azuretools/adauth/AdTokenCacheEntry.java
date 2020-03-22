@@ -19,7 +19,6 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.microsoft.azuretools.adauth;
 
 final class AdTokenCacheEntry {
@@ -33,7 +32,7 @@ final class AdTokenCacheEntry {
         this.authority = authority;
         this.clientId = clientId;
     }
-    
+
     AuthResult getAuthResult() {
         return authResult;
     }
@@ -41,7 +40,7 @@ final class AdTokenCacheEntry {
     String getAuthority() {
         return authority;
     }
-    
+
     String getClientId() {
         return clientId;
     }

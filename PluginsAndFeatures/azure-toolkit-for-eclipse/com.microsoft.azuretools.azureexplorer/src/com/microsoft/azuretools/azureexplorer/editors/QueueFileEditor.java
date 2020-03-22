@@ -1,21 +1,23 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.microsoft.azuretools.azureexplorer.editors;
 
@@ -65,11 +67,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
 public class QueueFileEditor extends EditorPart {
-	private static final String OPEN = "Open";
-	private static final String DEQUEUE = "Dequeue";
-	private static final String REFRESH = "Refresh";
-	private static final String ADD = "Add";
-	private static final String CLEAR_QUEUE = "Clear queue";
+    private static final String OPEN = "Open";
+    private static final String DEQUEUE = "Dequeue";
+    private static final String REFRESH = "Refresh";
+    private static final String ADD = "Add";
+    private static final String CLEAR_QUEUE = "Clear queue";
 
     private ClientStorageAccount storageAccount;
     private Queue queue;
@@ -80,7 +82,7 @@ public class QueueFileEditor extends EditorPart {
     private Table queueTable;
     private TableViewer tableViewer;
     private List<QueueMessage> queueMessages;
-    
+
     private FileEditorVirtualNode<EditorPart> fileEditorVirtualNode;
 
     @Override
@@ -98,7 +100,7 @@ public class QueueFileEditor extends EditorPart {
         storageAccount = ((StorageEditorInput) input).getStorageAccount();
         queue = (Queue) ((StorageEditorInput) input).getItem();
         setPartName(queue.getName() + " [Queue]");*/
-    	fileEditorVirtualNode = createVirtualNode("");
+        fileEditorVirtualNode = createVirtualNode("");
     }
 
     @Override
@@ -120,25 +122,25 @@ public class QueueFileEditor extends EditorPart {
     }
 
     private FileEditorVirtualNode<EditorPart> createVirtualNode(final String name){
-    	final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
-    	node.addAction(REFRESH, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				fillGrid();			
-			}
-		});
-    	
-    	node.addAction(DEQUEUE, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				dequeueFirstMessage();			
-			}
-		});
-    	
-    	node.addAction(ADD, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				QueueMessageForm queueMessageForm = new QueueMessageForm(PluginUtil.getParentShell(), storageAccount, queue);
+        final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
+        node.addAction(REFRESH, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                fillGrid();
+            }
+        });
+
+        node.addAction(DEQUEUE, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                dequeueFirstMessage();
+            }
+        });
+
+        node.addAction(ADD, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                QueueMessageForm queueMessageForm = new QueueMessageForm(PluginUtil.getParentShell(), storageAccount, queue);
                 queueMessageForm.setOnAddedMessage(new Runnable() {
                     @Override
                     public void run() {
@@ -146,14 +148,14 @@ public class QueueFileEditor extends EditorPart {
                     }
                 });
 
-                queueMessageForm.open();				
-			}
-		});
-    	
-    	node.addAction(CLEAR_QUEUE, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				boolean optionDialog = DefaultLoader.getUIHelper().showConfirmation(
+                queueMessageForm.open();
+            }
+        });
+
+        node.addAction(CLEAR_QUEUE, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                boolean optionDialog = DefaultLoader.getUIHelper().showConfirmation(
                         "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
                         "Service explorer",
                         new String[]{"Yes", "No"},
@@ -177,20 +179,20 @@ public class QueueFileEditor extends EditorPart {
                             }*/
                         }
                     });
-                }	
-			}
-		});
-    	
-    	node.addAction(OPEN, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				viewMessageText();				
-			}
-		});
-    	
-    	return node;
+                }
+            }
+        });
+
+        node.addAction(OPEN, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                viewMessageText();
+            }
+        });
+
+        return node;
     }
-    
+
     private void createToolbar(Composite parent) {
         GridLayout gridLayout = new GridLayout(1, false);
         GridData gridData = new GridData();
@@ -235,19 +237,19 @@ public class QueueFileEditor extends EditorPart {
         dequeueMessageButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	fileEditorVirtualNode.doAction(DEQUEUE);
+                fileEditorVirtualNode.doAction(DEQUEUE);
             }
         });
         addMessageButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	fileEditorVirtualNode.doAction(ADD);
+                fileEditorVirtualNode.doAction(ADD);
             }
         });
         clearQueueButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	fileEditorVirtualNode.doAction(CLEAR_QUEUE);
+                fileEditorVirtualNode.doAction(CLEAR_QUEUE);
             }
         });
     }

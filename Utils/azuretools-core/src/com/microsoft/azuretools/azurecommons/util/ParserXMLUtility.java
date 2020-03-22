@@ -1,23 +1,24 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
  *
  * MIT License
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
  *
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
-
 package com.microsoft.azuretools.azurecommons.util;
 
 import org.w3c.dom.Document;
@@ -45,19 +46,19 @@ import java.util.Map;
 
 public final class ParserXMLUtility {
 
-	private static final int BUFF_SIZE = 1024;
+    private static final int BUFF_SIZE = 1024;
     public static final String INVALID_ARG = "Invalid argument.";
 
-	/**
-	 * Parses XML file and returns XML document.
-	 *
-	 * @param fileName
-	 *            .
-	 * @return XML document or <B>null</B> if error occurred
-	 * @throws Exception
-	 */
-	public static Document parseXMLFile(final String fileName)
-			throws Exception {
+    /**
+     * Parses XML file and returns XML document.
+     *
+     * @param fileName
+     *            .
+     * @return XML document or <B>null</B> if error occurred
+     * @throws Exception
+     */
+    public static Document parseXMLFile(final String fileName)
+            throws Exception {
         DocumentBuilder docBuilder;
         Document doc = null;
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
@@ -69,16 +70,16 @@ public final class ParserXMLUtility {
         return doc;
     }
 
-	/**
-	 * Parses Input Stream and returns XML document.
-	 *
-	 * @param inputStream
-	 *            .
-	 * @return XML document or <B>null</B> if error occurred
-	 * @throws Exception
-	 */
-	protected static Document parseXMLResource(final InputStream inputStream)
-			throws Exception {
+    /**
+     * Parses Input Stream and returns XML document.
+     *
+     * @param inputStream
+     *            .
+     * @return XML document or <B>null</B> if error occurred
+     * @throws Exception
+     */
+    protected static Document parseXMLResource(final InputStream inputStream)
+            throws Exception {
         DocumentBuilder docBuilder;
         Document doc = null;
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
@@ -89,206 +90,206 @@ public final class ParserXMLUtility {
         return doc;
     }
 
-	/**
-	 * save XML file and saves XML document.
-	 *
-	 * @param fileName
-	 * @param doc
-	 * @return XML document or <B>null</B> if error occurred
-	 * @throws IOException
-	 * @throws Exception
-	 */
+    /**
+     * save XML file and saves XML document.
+     *
+     * @param fileName
+     * @param doc
+     * @return XML document or <B>null</B> if error occurred
+     * @throws IOException
+     * @throws Exception
+     */
 
-	public static boolean saveXMLFile(String fileName, Document doc)
-			throws Exception {
-		File xmlFile = null;
-		FileOutputStream fos = null;
-		Transformer transformer;
-		try {
-			xmlFile = new File(fileName);
-			fos = new FileOutputStream(xmlFile);
-			TransformerFactory transFactory = TransformerFactory.newInstance();
-			transformer = transFactory.newTransformer();
-			DOMSource source = new DOMSource(doc);
-			StreamResult destination = new StreamResult(fos);
-			// transform source into result will do save
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty(
-					"{http://xml.apache.org/xslt}indent-amount", "2");
-			transformer.transform(source, destination);
-		} finally {
-			if (fos != null) {
-				fos.close();
-			}
-		}
-		return true;
-	}
+    public static boolean saveXMLFile(String fileName, Document doc)
+            throws Exception {
+        File xmlFile = null;
+        FileOutputStream fos = null;
+        Transformer transformer;
+        try {
+            xmlFile = new File(fileName);
+            fos = new FileOutputStream(xmlFile);
+            TransformerFactory transFactory = TransformerFactory.newInstance();
+            transformer = transFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult destination = new StreamResult(fos);
+            // transform source into result will do save
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(
+                    "{http://xml.apache.org/xslt}indent-amount", "2");
+            transformer.transform(source, destination);
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+        return true;
+    }
 
-	public static void copyDir(File source, final File destination)
-			throws Exception {
+    public static void copyDir(File source, final File destination)
+            throws Exception {
 
-		InputStream instream = null;
-		if (source.isDirectory()) {
-			if (!destination.exists()) {
-				destination.mkdirs();
-			}
-			String[] kid = source.list();
-			for (int i = 0; i < kid.length; i++) {
-				copyDir(new File(source, kid[i]), new File(destination, kid[i]));
-			}
-		} else {
-			// InputStream instream = null;
-			OutputStream out = null;
-			try {
-				instream = new FileInputStream(source);
-				out = new FileOutputStream(destination);
-				byte[] buf = new byte[BUFF_SIZE];
-				int len = instream.read(buf);
+        InputStream instream = null;
+        if (source.isDirectory()) {
+            if (!destination.exists()) {
+                destination.mkdirs();
+            }
+            String[] kid = source.list();
+            for (int i = 0; i < kid.length; i++) {
+                copyDir(new File(source, kid[i]), new File(destination, kid[i]));
+            }
+        } else {
+            // InputStream instream = null;
+            OutputStream out = null;
+            try {
+                instream = new FileInputStream(source);
+                out = new FileOutputStream(destination);
+                byte[] buf = new byte[BUFF_SIZE];
+                int len = instream.read(buf);
 
-				while (len > 0) {
-					out.write(buf, 0, len);
-					len = instream.read(buf);
-				}
-			} finally {
-				if (instream != null) {
-					instream.close();
-				}
-				if (out != null) {
-					out.close();
-				}
-			}
-		}
-	}
+                while (len > 0) {
+                    out.write(buf, 0, len);
+                    len = instream.read(buf);
+                }
+            } finally {
+                if (instream != null) {
+                    instream.close();
+                }
+                if (out != null) {
+                    out.close();
+                }
+            }
+        }
+    }
 
-	public static void writeFile(InputStream inStream, OutputStream out)
-			throws IOException {
-		try {
-			byte[] buf = new byte[BUFF_SIZE];
-			int len = inStream.read(buf);
-			while (len > 0) {
-				out.write(buf, 0, len);
-				len = inStream.read(buf);
-			}
-		} finally {
-			if (inStream != null) {
-				inStream.close();
-			}
-			if (out != null) {
-				out.close();
-			}
-		}
+    public static void writeFile(InputStream inStream, OutputStream out)
+            throws IOException {
+        try {
+            byte[] buf = new byte[BUFF_SIZE];
+            int len = inStream.read(buf);
+            while (len > 0) {
+                out.write(buf, 0, len);
+                len = inStream.read(buf);
+            }
+        } finally {
+            if (inStream != null) {
+                inStream.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+        }
 
-	}
+    }
 
-	/** Generic API to delete elements from DOM */
-	public static void deleteElement(Document doc, String expr)
-			throws XPathExpressionException {
-		if (doc == null) {
-			throw new IllegalArgumentException(INVALID_ARG);
-		} else {
-			XPath xPath = XPathFactory.newInstance().newXPath();
-			Element element = (Element) xPath.evaluate(expr, doc,
-					XPathConstants.NODE);
+    /** Generic API to delete elements from DOM */
+    public static void deleteElement(Document doc, String expr)
+            throws XPathExpressionException {
+        if (doc == null) {
+            throw new IllegalArgumentException(INVALID_ARG);
+        } else {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            Element element = (Element) xPath.evaluate(expr, doc,
+                    XPathConstants.NODE);
 
-			if (element != null) {
-				Node parentNode = element.getParentNode();
-				parentNode.removeChild(element);
-			}
+            if (element != null) {
+                Node parentNode = element.getParentNode();
+                parentNode.removeChild(element);
+            }
 
-		}
-	}
+        }
+    }
 
-	/** This API evaluates XPath expression and return the result as a String. */
-	public static String getExpressionValue(Document doc, String expr)
-			throws XPathExpressionException {
-		if (doc == null || expr == null || expr.isEmpty())
-			throw new IllegalArgumentException(INVALID_ARG);
+    /** This API evaluates XPath expression and return the result as a String. */
+    public static String getExpressionValue(Document doc, String expr)
+            throws XPathExpressionException {
+        if (doc == null || expr == null || expr.isEmpty())
+            throw new IllegalArgumentException(INVALID_ARG);
 
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		return xPath.evaluate(expr, doc);
-	}
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        return xPath.evaluate(expr, doc);
+    }
 
-	/** This API evaluates XPath expression and sets the value. */
-	public static void setExpressionValue(Document doc, String expr,
-			String value) throws XPathExpressionException {
-		if (doc == null || expr == null || expr.isEmpty())
-			throw new IllegalArgumentException(INVALID_ARG);
+    /** This API evaluates XPath expression and sets the value. */
+    public static void setExpressionValue(Document doc, String expr,
+            String value) throws XPathExpressionException {
+        if (doc == null || expr == null || expr.isEmpty())
+            throw new IllegalArgumentException(INVALID_ARG);
 
-		XPath xPath = XPathFactory.newInstance().newXPath();
-		Node node = (Node) xPath.evaluate(expr, doc, XPathConstants.NODE);
-		node.setNodeValue(value);
-	}
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        Node node = (Node) xPath.evaluate(expr, doc, XPathConstants.NODE);
+        node.setNodeValue(value);
+    }
 
-	protected static boolean isEpPortEqualOrInRange(String oldPort,
-			String newPort) {
-		boolean isEqual = false;
-		try {
+    protected static boolean isEpPortEqualOrInRange(String oldPort,
+            String newPort) {
+        boolean isEqual = false;
+        try {
 
-			int oldMin, oldMax, newMin, newMax;
-			if (oldPort.contains("-")) {
-				String[] rang = oldPort.split("-");
-				oldMin = Integer.valueOf(rang[0]);
-				oldMax = Integer.valueOf(rang[1]);
-			} else {
-				oldMax = Integer.valueOf(oldPort);
-				oldMin = Integer.valueOf(oldPort);
-			}
+            int oldMin, oldMax, newMin, newMax;
+            if (oldPort.contains("-")) {
+                String[] rang = oldPort.split("-");
+                oldMin = Integer.valueOf(rang[0]);
+                oldMax = Integer.valueOf(rang[1]);
+            } else {
+                oldMax = Integer.valueOf(oldPort);
+                oldMin = Integer.valueOf(oldPort);
+            }
 
-			if (newPort.contains("-")) {
-				String[] rang = newPort.split("-");
-				newMin = Integer.valueOf(rang[0]);
-				newMax = Integer.valueOf(rang[1]);
-			} else {
-				newMax = Integer.valueOf(newPort);
-				newMin = Integer.valueOf(newPort);
-			}
+            if (newPort.contains("-")) {
+                String[] rang = newPort.split("-");
+                newMin = Integer.valueOf(rang[0]);
+                newMax = Integer.valueOf(rang[1]);
+            } else {
+                newMax = Integer.valueOf(newPort);
+                newMin = Integer.valueOf(newPort);
+            }
 
-			// check for newmin range is in between old range
-			if ((newMin == oldMin) || newMin == oldMax
-					|| (newMin > oldMin && newMin < oldMax)) {
-				isEqual = true;
-			} else if ((newMax == oldMin) || newMax == oldMax
-					|| (newMax > oldMin && newMax < oldMax)) {
-				// check for newmax range is in between old range
-				isEqual = true;
-			} else if ((oldMin > newMin && oldMin < newMax)) {
-				// check for oldnim should not be in new range i.e. check for
-				// overlapping
-				isEqual = true;
-			} else if (oldMax > newMin && oldMax < newMax) {
-				isEqual = true;
-			}
+            // check for newmin range is in between old range
+            if ((newMin == oldMin) || newMin == oldMax
+                    || (newMin > oldMin && newMin < oldMax)) {
+                isEqual = true;
+            } else if ((newMax == oldMin) || newMax == oldMax
+                    || (newMax > oldMin && newMax < oldMax)) {
+                // check for newmax range is in between old range
+                isEqual = true;
+            } else if ((oldMin > newMin && oldMin < newMax)) {
+                // check for oldnim should not be in new range i.e. check for
+                // overlapping
+                isEqual = true;
+            } else if (oldMax > newMin && oldMax < newMax) {
+                isEqual = true;
+            }
 
-		} catch (Exception e) {
-			isEqual = false;
-		}
-		return isEqual;
-	}
+        } catch (Exception e) {
+            isEqual = false;
+        }
+        return isEqual;
+    }
 
-	protected static boolean isValidRange(String range) {
-		boolean isValid = true;
-		try {
-			String[] ports = range.split("-");
-			int min = Integer.parseInt(ports[0]);
-			int max = Integer.parseInt(ports[1]);
-			if (min > max) {
-				isValid = false;
-			}
-		} catch (Exception e) {
-			isValid = false;
-		}
-		return isValid;
-	}
+    protected static boolean isValidRange(String range) {
+        boolean isValid = true;
+        try {
+            String[] ports = range.split("-");
+            int min = Integer.parseInt(ports[0]);
+            int max = Integer.parseInt(ports[1]);
+            if (min > max) {
+                isValid = false;
+            }
+        } catch (Exception e) {
+            isValid = false;
+        }
+        return isValid;
+    }
 
-	/** Generic API to update or create DOM elements */
-	public static Element updateOrCreateElement(Document doc, String expr,
-			String parentNodeExpr, String elementName, boolean firstChild,
-			Map<String, String> attributes)
-			throws Exception {
+    /** Generic API to update or create DOM elements */
+    public static Element updateOrCreateElement(Document doc, String expr,
+            String parentNodeExpr, String elementName, boolean firstChild,
+            Map<String, String> attributes)
+            throws Exception {
 
-		if (doc == null) {
-			throw new IllegalArgumentException(INVALID_ARG);
-		} else {
+        if (doc == null) {
+            throw new IllegalArgumentException(INVALID_ARG);
+        } else {
             XPath xPath = XPathFactory.newInstance().newXPath();
             Element element = null;
             if (expr != null)
@@ -319,17 +320,17 @@ public final class ParserXMLUtility {
             }
             return element;
         }
-	}
+    }
 
-	/** Generic API to update or create DOM elements */
-	public static Element createElement(Document doc, String expr,
-			Element parentElement, String elementName, boolean firstChild,
-			Map<String, String> attributes)
-			throws Exception {
+    /** Generic API to update or create DOM elements */
+    public static Element createElement(Document doc, String expr,
+            Element parentElement, String elementName, boolean firstChild,
+            Map<String, String> attributes)
+            throws Exception {
 
-		if (doc == null) {
-			throw new IllegalArgumentException(INVALID_ARG);
-		} else {
+        if (doc == null) {
+            throw new IllegalArgumentException(INVALID_ARG);
+        } else {
             XPath xPath = XPathFactory.newInstance().newXPath();
             Element element = null;
             if (expr != null)
@@ -358,19 +359,19 @@ public final class ParserXMLUtility {
             }
             return element;
         }
-	}
+    }
 
-	/**
-	 * API checks if a node is already present in the XML document
-	 * @param doc
-	 * @param nodeExpression
-	 * @return
-	 * @throws Exception
-	 */
-	public static boolean doesNodeExists(Document doc, String nodeExpression) throws Exception {
-		if (nodeExpression == null ) {
-			throw new IllegalArgumentException(INVALID_ARG);
-		} else {
+    /**
+     * API checks if a node is already present in the XML document
+     * @param doc
+     * @param nodeExpression
+     * @return
+     * @throws Exception
+     */
+    public static boolean doesNodeExists(Document doc, String nodeExpression) throws Exception {
+        if (nodeExpression == null ) {
+            throw new IllegalArgumentException(INVALID_ARG);
+        } else {
             XPath xPath = XPathFactory.newInstance().newXPath();
             Element element = (Element) xPath.evaluate(nodeExpression, doc, XPathConstants.NODE);
             if (element == null) {

@@ -1,21 +1,23 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package com.microsoft.azuretools.azureexplorer.editors;
 
@@ -102,13 +104,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import org.apache.commons.io.IOUtils;
 
 public class BlobExplorerFileEditor extends EditorPart implements TelemetryProperties {
-	private static final String COPY_URL = "Copy URL";
-	private static final String SAVE_AS = "Save As";
-	private static final String DELETE = "Delete";
-	private static final String SEARCH = "Search";
-	private static final String REFRESH = "Refresh";
-	private static final String UPLOAD_BLOB = "Upload Blob";
-	private static final String DELETE_SELECTED_BLOB = "Delete Selected Blob";
+    private static final String COPY_URL = "Copy URL";
+    private static final String SAVE_AS = "Save As";
+    private static final String DELETE = "Delete";
+    private static final String SEARCH = "Search";
+    private static final String REFRESH = "Refresh";
+    private static final String UPLOAD_BLOB = "Upload Blob";
+    private static final String DELETE_SELECTED_BLOB = "Delete Selected Blob";
 
     private Text queryTextField;
     private Button queryButton;
@@ -166,45 +168,45 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
         createTable(composite);
         createTablePopup(composite);
     }
-    
+
     private FileEditorVirtualNode<EditorPart> createVirtualNode(final String name){
-    	final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
-    	node.addAction(COPY_URL, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_COPYURL, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				copyURLSelectedFile();				
-			}
-		}));
-    	
-    	node.addAction(SAVE_AS, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_SAVEAS, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				saveAsSelectedFile();				
-			}
-		}));
-    	
-    	node.addAction(DELETE, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_DELETE, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				deleteSelectedFile();				
-			}
-		}));
-    	
-    	node.addAction(SEARCH, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_SEARCH, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				fillGrid();				
-			}
-		}));
-    	
-    	node.addAction(UPLOAD_BLOB, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_UPLOAD, new NodeActionListener() {
-			@Override
-			protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-				uploadFile();				
-			}
-		}));
-    	
-    	return node;
+        final FileEditorVirtualNode<EditorPart> node = new FileEditorVirtualNode<EditorPart>(this, name);
+        node.addAction(COPY_URL, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_COPYURL, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                copyURLSelectedFile();
+            }
+        }));
+
+        node.addAction(SAVE_AS, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_SAVEAS, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                saveAsSelectedFile();
+            }
+        }));
+
+        node.addAction(DELETE, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_DELETE, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                deleteSelectedFile();
+            }
+        }));
+
+        node.addAction(SEARCH, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_SEARCH, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                fillGrid();
+            }
+        }));
+
+        node.addAction(UPLOAD_BLOB, new WrappedTelemetryNodeActionListener(STORAGE, BLOB_UPLOAD, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                uploadFile();
+            }
+        }));
+
+        return node;
     }
 
     private void createTablePopup(Composite composite) {
@@ -216,9 +218,9 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
                     return;
                 }
                 if (tableViewer.getSelection() instanceof IStructuredSelection) {
-                	manager.add(fileEditorVirtualNode.createPopupAction(COPY_URL));
-                	manager.add(fileEditorVirtualNode.createPopupAction(SAVE_AS));
-                	manager.add(fileEditorVirtualNode.createPopupAction(DELETE));
+                    manager.add(fileEditorVirtualNode.createPopupAction(COPY_URL));
+                    manager.add(fileEditorVirtualNode.createPopupAction(SAVE_AS));
+                    manager.add(fileEditorVirtualNode.createPopupAction(DELETE));
                 }
             }
         });
@@ -247,10 +249,10 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
         RowLayout rowLayout = new RowLayout();
         rowLayout.type = SWT.HORIZONTAL;
         rowLayout.wrap = false;
-     
+
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(rowLayout);
-        
+
         queryButton = new Button(container, SWT.PUSH);
         queryButton.setImage(Activator.getImageDescriptor("icons/Start.png").createImage());
         queryButton.setToolTipText(SEARCH);
@@ -291,14 +293,14 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
         deleteButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	fileEditorVirtualNode.doAction(DELETE);
+                fileEditorVirtualNode.doAction(DELETE);
             }
         });
 
         saveAsButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	fileEditorVirtualNode.doAction(SAVE_AS);
+                fileEditorVirtualNode.doAction(SAVE_AS);
             }
         });
 
@@ -312,7 +314,7 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
         uploadButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-            	fileEditorVirtualNode.doAction(UPLOAD_BLOB);
+                fileEditorVirtualNode.doAction(UPLOAD_BLOB);
             }
         });
     }
@@ -403,7 +405,7 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
         });
 
         fillGrid();
-        
+
         return blobListTable;
     }
 
@@ -518,9 +520,9 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
                             DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                	if (blobItems.size() <= 1) {
-                                		queryTextField.setText("");
-                                	}
+                                    if (blobItems.size() <= 1) {
+                                        queryTextField.setText("");
+                                    }
                                     fillGrid();
                                 }
                             });
@@ -624,7 +626,7 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
                                 monitor.setTaskName("Error downloading Blob");
                                 monitor.subTask((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : connectionFault.getMessage());
                                 return Status.CANCEL_STATUS;
-                            } 
+                            }
                         } finally {
                             bufferedOutputStream.close();
                         }
@@ -847,11 +849,11 @@ public class BlobExplorerFileEditor extends EditorPart implements TelemetryPrope
         }
     }
 
-	@Override
-	public Map<String, String> toProperties() {
-		final Map<String, String> properties = new HashMap<>();
+    @Override
+    public Map<String, String> toProperties() {
+        final Map<String, String> properties = new HashMap<>();
         properties.put("Container", this.blobContainer.getName());
         properties.put("Storage", this.storageAccount);
         return properties;
-	}
+    }
 }
