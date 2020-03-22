@@ -21,6 +21,15 @@
   <change-notes>
     <![CDATA[
       <html>
+        <p>[3.26.0-2020.1]</p>
+        <ul>
+          <li>Compatibility with Rider 2020.1 EAP</li>
+        </ul>
+        <h4>Fixed bugs:</h4>
+        <ul>
+		  <li>Azure Functions - Filter out pre-releases from core tools downloads - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/256">#256</a></li>
+		  <li>Publishing Azure Web App fails if the target is running on a Linux App Service Plan - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/271">#271</a></li>
+        </ul>
         <p>[3.26.0-2019.3]</p>
         <ul>
           <li>Functions: Invoke timer trigger during debug session - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/246">#246</a></li>
