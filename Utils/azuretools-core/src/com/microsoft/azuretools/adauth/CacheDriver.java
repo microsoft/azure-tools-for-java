@@ -59,7 +59,7 @@ abstract class CacheDriver {
         }
         return null;
     }
-    
+
     AdTokenCacheEntry createAddEntry(@NotNull final AuthResult result, final String resource) {
         return createAddEntry(result, resource, null);
     }
@@ -89,19 +89,19 @@ abstract class CacheDriver {
             }
             throw new AuthException(NOAUTHRESULT);
         }
-      
+
         AuthResult authResult = entry.getAuthResult();
         if (StringUtils.isNullOrEmpty(authResult.getRefreshToken())) {
             AdTokenCache.getInstance().remove(entry);
             throw new AuthException(NOREFRESHTOKEN);
         }
-        
+
         String refreshToken = authResult.getRefreshToken();
-      
+
         long expireTimeStamp = authResult.getExpiresOnDate() != null ? authResult.getExpiresOnDate().getTime() : 0;
         long nowTimeStamp = (new Date()).getTime();
         long nowPlusBuffer = nowTimeStamp + EXPIREBUFFER;
-      
+
         if (result.isResourceSpecific && nowPlusBuffer > expireTimeStamp) {
             AdTokenCache.getInstance().remove(entry);
             return refreshExpireEntry(refreshToken, key.getResource(), authResult.getUserInfo());
@@ -138,23 +138,23 @@ abstract class CacheDriver {
         if (result.isMultipleResourceRefreshToken() && !StringUtils.isNullOrEmpty(result.getRefreshToken())) {
             String userId = result.getUserId();
             String refreshToken = result.getRefreshToken();
-            
+
             if (!StringUtils.isNullOrEmpty(userId)) {
                 List<AdTokenCacheEntry> mrrtEntries = getMrrtEntriesForUser(userId);
                 AdTokenCache.getInstance().removeMultiple(mrrtEntries);
-                
+
                 for (AdTokenCacheEntry entry : mrrtEntries) {
                     if (entry.getAuthResult() != null) {
                         entry.getAuthResult().setRefreshToken(refreshToken);
                     }
                 }
-                
+
                 AdTokenCache.getInstance().addMultiple(mrrtEntries);
             }
         }
     }
-    
-    
+
+
     private List<AdTokenCacheEntry> getMrrtEntriesForUser(@NotNull final String userId) {
         TokenCacheKey queryKey = new TokenCacheKey(null, this.clientId, userId, null);
         return AdTokenCache.getInstance().query(queryKey, true);
@@ -169,7 +169,7 @@ abstract class CacheDriver {
         List<AdTokenCacheEntry> entries = getPotentialEntries(key);
         List<AdTokenCacheEntry> resSpecificEntries = new ArrayList<AdTokenCacheEntry>();
         AdTokenCacheEntry mrrtToken = null;
-        
+
         for (AdTokenCacheEntry entry : entries) {
             if (entry.getAuthResult() != null) {
                 AuthResult result = entry.getAuthResult();
@@ -182,7 +182,7 @@ abstract class CacheDriver {
                 }
             }
         }
-        
+
         if (resSpecificEntries.isEmpty()) {
             return mrrtToken == null ? null : new SingleEntryResult(mrrtToken, false);
         } else if (resSpecificEntries.size() == 1) {

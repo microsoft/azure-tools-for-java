@@ -136,7 +136,7 @@ public class CacheDriverTest {
             Assert.fail();
         }
     }
- 
+
     private CacheDriver createDriver(String authority, String fixToken, long expireIn) {
         CacheDriver driver = new CacheDriver(authority, clientId) {
             @Override

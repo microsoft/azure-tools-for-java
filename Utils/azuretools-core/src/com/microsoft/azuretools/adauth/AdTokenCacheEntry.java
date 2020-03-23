@@ -33,7 +33,7 @@ final class AdTokenCacheEntry {
         this.authority = authority;
         this.clientId = clientId;
     }
-    
+
     AuthResult getAuthResult() {
         return authResult;
     }
@@ -41,7 +41,7 @@ final class AdTokenCacheEntry {
     String getAuthority() {
         return authority;
     }
-    
+
     String getClientId() {
         return clientId;
     }
