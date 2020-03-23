@@ -230,7 +230,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     @Override
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
         configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
-        configuration.setAppSettings(previousDeployConfiguration.getAppSettings());
+        configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.setDeploymentStagingDirectory(txtStagingFolder.getText());
         if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
             // Use previous configuration when function is not loaded
