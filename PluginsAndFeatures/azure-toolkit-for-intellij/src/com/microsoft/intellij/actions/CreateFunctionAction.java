@@ -18,8 +18,8 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
+
 package com.microsoft.intellij.actions;
 
 import com.intellij.ide.IdeView;
@@ -39,7 +39,13 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaDirectoryService;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.PsiNameHelper;
+import com.intellij.psi.PsiPackage;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.util.IncorrectOperationException;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
@@ -48,6 +54,12 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.forms.function.CreateFunctionForm;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.util.AzureFunctionsUtils;
@@ -59,8 +71,12 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_TRIGGER;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
 
 public class CreateFunctionAction extends CreateElementActionBase {
     private static final String DEFAULT_EVENT_HUB_CONNECTION_STRING = "Endpoint=sb://<your-envent-hub-namespace>.servicebus.windows.net/;" +
@@ -74,73 +90,83 @@ public class CreateFunctionAction extends CreateElementActionBase {
 
     @Override
     protected PsiElement[] invokeDialog(Project project, PsiDirectory psiDirectory) {
-        PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(psiDirectory);
-        // get existing package from current directory
-        String hintPackageName = pkg == null ? "" : pkg.getQualifiedName();
+        final Operation operation = TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.CREATE_FUNCTION_TRIGGER);
+        try{
+            operation.start();
+            PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(psiDirectory);
+            // get existing package from current directory
+            String hintPackageName = pkg == null ? "" : pkg.getQualifiedName();
 
-        CreateFunctionForm form = new CreateFunctionForm(project, hintPackageName);
-        List<PsiElement> psiElements = new ArrayList<>();
-        if (form.showAndGet()) {
-            final FunctionTemplate bindingTemplate;
-            try {
-                Map<String, String> parameters = form.getTemplateParameters();
-                final String connectionName = parameters.get("connection");
-                String triggerType = form.getTriggerType();
-                String packageName = parameters.get("packageName");
-                String className = parameters.get("className");
-                PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
-                String newName = packageName.replace('.', '/');
-                bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
-
-                if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
-                    if (StringUtils.isBlank(connectionName)) {
-                        throw new AzureExecutionException("Required property 'connection' is missing");
+            CreateFunctionForm form = new CreateFunctionForm(project, hintPackageName);
+            List<PsiElement> psiElements = new ArrayList<>();
+            if (form.showAndGet()) {
+                final FunctionTemplate bindingTemplate;
+                try {
+                    Map<String, String> parameters = form.getTemplateParameters();
+                    final String connectionName = parameters.get("connection");
+                    String triggerType = form.getTriggerType();
+                    String packageName = parameters.get("packageName");
+                    String className = parameters.get("className");
+                    PsiDirectory directory = ClassUtil.sourceRoot(psiDirectory);
+                    String newName = packageName.replace('.', '/');
+                    bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
+                    EventUtil.logEvent(EventType.info, FUNCTION, CREATE_FUNCTION_TRIGGER, new HashMap<String, String>() {{
+                        put("triggerType", triggerType);
+                    }});
+                    if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+                        if (StringUtils.isBlank(connectionName)) {
+                            throw new AzureExecutionException("Required property 'connection' is missing");
+                        }
+                        parameters.putIfAbsent("eventHubName", "myeventhub");
+                        parameters.putIfAbsent("consumerGroup", "$Default");
                     }
-                    parameters.putIfAbsent("eventHubName", "myeventhub");
-                    parameters.putIfAbsent("consumerGroup", "$Default");
-                }
 
-                final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
-                if (StringUtils.isNotEmpty(functionClassContent)) {
-                    Application application = ApplicationManager.getApplication();
-                    application.runWriteAction(() -> {
+                    final String functionClassContent = AzureFunctionsUtils.substituteParametersInTemplate(bindingTemplate, parameters);
+                    if (StringUtils.isNotEmpty(functionClassContent)) {
+                        Application application = ApplicationManager.getApplication();
+                        application.runWriteAction(() -> {
 
-                        CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(
-                                (Computable<CreateFileAction.MkDirs>) () ->
-                                        new CreateFileAction.MkDirs(newName + '/' + className, directory));
-                        PsiFileFactory factory = PsiFileFactory.getInstance(project);
-                        try {
-                            mkDirs.directory.checkCreateFile(className + ".java");
-                        } catch (IncorrectOperationException e) {
-                            PluginUtil.displayErrorDialog("Create Azure Function Class error", e.getMessage());
-                            return;
-                        }
-                        CommandProcessor.getInstance().executeCommand(project, () -> {
-                            PsiFile psiFile = factory.createFileFromText(className + ".java", JavaFileType.INSTANCE, functionClassContent);
-                            psiElements.add(mkDirs.directory.add(psiFile));
-                        }, null, null);
-
-                        if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+                            CreateFileAction.MkDirs mkDirs = ApplicationManager.getApplication().runWriteAction(
+                                    (Computable<CreateFileAction.MkDirs>) () ->
+                                            new CreateFileAction.MkDirs(newName + '/' + className, directory));
+                            PsiFileFactory factory = PsiFileFactory.getInstance(project);
                             try {
-                                String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
-                                        getEventHubNamespaceConnectionString(form.getEventHubNamespace());
-
-                                AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
-                                        parameters.get("connection"), connectionString);
-                            } catch (IOException e) {
-                                PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
+                                mkDirs.directory.checkCreateFile(className + ".java");
+                            } catch (IncorrectOperationException e) {
+                                PluginUtil.displayErrorDialog("Create Azure Function Class error", e.getMessage());
+                                return;
                             }
-                        }
-                    });
+                            CommandProcessor.getInstance().executeCommand(project, () -> {
+                                PsiFile psiFile = factory.createFileFromText(className + ".java", JavaFileType.INSTANCE, functionClassContent);
+                                psiElements.add(mkDirs.directory.add(psiFile));
+                            }, null, null);
+
+                            if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
+                                try {
+                                    String connectionString = form.getEventHubNamespace() == null ? DEFAULT_EVENT_HUB_CONNECTION_STRING :
+                                            getEventHubNamespaceConnectionString(form.getEventHubNamespace());
+
+                                    AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
+                                            parameters.get("connection"), connectionString);
+                                } catch (IOException e) {
+                                    PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
+                                    EventUtil.logError(operation, ErrorType.systemError, e, null, null);
+                                }
+                            }
+                        });
+                    }
+                } catch (AzureExecutionException e) {
+                    PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
+                    EventUtil.logError(operation, ErrorType.systemError, e, null, null);
                 }
-            } catch (AzureExecutionException e) {
-                PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
             }
+            if (!psiElements.isEmpty()) {
+                FileEditorManager.getInstance(project).openFile(psiElements.get(0).getContainingFile().getVirtualFile(), false);
+            }
+            return psiElements.toArray(new PsiElement[0]);
+        } finally {
+            operation.complete();
         }
-        if (!psiElements.isEmpty()) {
-            FileEditorManager.getInstance(project).openFile(psiElements.get(0).getContainingFile().getVirtualFile(), false);
-        }
-        return psiElements.toArray(new PsiElement[0]);
     }
 
     @NotNull

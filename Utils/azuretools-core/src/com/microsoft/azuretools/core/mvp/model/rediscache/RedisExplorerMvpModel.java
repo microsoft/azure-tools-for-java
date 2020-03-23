@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
+ *
  * All rights reserved.
- * 
+ *
  * MIT License
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -53,7 +53,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Get the number of databases the Redis Cache has.
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -95,7 +95,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Scan the keys with count defined in DEFAULT_KEY_COUNT
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -108,7 +108,7 @@ public class RedisExplorerMvpModel {
      *            pattern for Redis Scan Param
      * @return Scan Result returned from Jedis
      * @throws Exception
-     * 
+     *
      */
     public ScanResult<String> scanKeys(String sid, String id, int db, String cursor, String pattern) throws Exception {
         try (Jedis jedis = RedisConnectionPools.getInstance().getJedis(sid, id)) {
@@ -119,7 +119,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Get the type of the given key.
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -140,7 +140,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Get the value of a string type key.
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -161,7 +161,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Get the value of a list type key.
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -184,7 +184,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Get the value of a set type key.
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -207,7 +207,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Get the value of a zset type key.
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -230,7 +230,7 @@ public class RedisExplorerMvpModel {
 
     /**
      * Get the value of a hash type key.
-     * 
+     *
      * @param sid
      *            subscription id of Redis Cache
      * @param id
@@ -251,7 +251,7 @@ public class RedisExplorerMvpModel {
             return jedis.hscan(key, cursor, new ScanParams().count(DEFAULT_VAL_COUNT));
         }
     }
-    
+
     private boolean canConnect(Jedis jedis, int index) {
         try {
             jedis.select(index);

@@ -71,6 +71,8 @@ public class TelemetryConstants {
     public static final String ENABLE_FUNCTION = "enable-function";
     public static final String DISABLE_FUNCTION = "disable-function";
     public static final String RUN_FUNCTION_APP = "run-function-app";
+    public static final String CREATE_FUNCTION_TRIGGER = "create-function-trigger";
+    public static final String CREATE_FUNCTION_PROJECT = "create-function-project";
     public static final String CREATE_FUNCTION_APP = "create-function-app";
     public static final String DEPLOY_FUNCTION_APP = "deploy-function-app";
     public static final String DELETE_FUNCTION_APP = "delete-function-app";

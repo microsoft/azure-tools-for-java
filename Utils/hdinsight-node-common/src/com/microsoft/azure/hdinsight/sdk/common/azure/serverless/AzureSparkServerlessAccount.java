@@ -286,7 +286,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
 
     /**
      * Get clusters with "Ended" and "Finalizing" state filtered
-     * @return cluster set with "Ended" and "Ending" state filtered 
+     * @return cluster set with "Ended" and "Ending" state filtered
      */
     @NotNull
     @Override
