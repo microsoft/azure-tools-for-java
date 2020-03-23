@@ -27,7 +27,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
-import com.intellij.execution.*;
+import com.intellij.execution.DefaultExecutionResult;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionManager;
+import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.process.ProcessHandler;
@@ -36,9 +39,9 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.execution.ui.RunContentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
@@ -48,6 +51,7 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionAdvancedConfigPanel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -55,12 +59,12 @@ import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.concurrency.AsyncPromise;
-import org.jetbrains.concurrency.Promise;
 import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -69,7 +73,10 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.intellij.openapi.application.ModalityState.any;
+import static com.intellij.openapi.application.ModalityState.stateForComponent;
 import static com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission.getClusterSubmission;
+import static com.microsoft.intellij.rxjava.RxJavaExtKt.toIdeaPromise;
 
 public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implements SparkSubmissionRunner {
     public static final Key<String> DebugTargetKey = new Key<>("debug-target");
@@ -101,6 +108,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         return RUNNER_ID;
     }
 
+    @Nullable
     @Override
     public GenericDebuggerRunnerSettings createConfigurationData(ConfigurationInfoProvider settingsProvider) {
         return null;
@@ -119,12 +127,17 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         }
         return sparkJobUrl;
     }
+
     /**
-     * Running in Event dispatch thread
+     * Execute Spark remote debugging action, refer to {@link GenericDebuggerRunner#execute(ExecutionEnvironment)}
+     * implementations, some internal API leveraged.
+     *
+     * @param environment the execution environment
+     * @throws ExecutionException the exception in execution
      */
     @Override
-    public void execute(@NotNull ExecutionEnvironment environment) throws ExecutionException {
-        RunProfileState state = environment.getState();
+    public void execute(final ExecutionEnvironment environment) throws ExecutionException {
+        final RunProfileState state = environment.getState();
         if (state == null) {
             return;
         }
@@ -148,6 +161,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         }
 
         final Project project = submitModel.getProject();
+        final ExecutionManager executionManager = ExecutionManager.getInstance(project);
         final IdeaSchedulers schedulers = new IdeaSchedulers(project);
         final PublishSubject<SparkBatchJobSubmissionEvent> debugEventSubject = PublishSubject.create();
         final ISparkBatchDebugJob sparkDebugBatch = (ISparkBatchDebugJob) submissionState.getSparkBatch().clone();
@@ -299,13 +313,9 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                                 // Resolve job driver promise, handle the driver VM attaching separately
                                 jobDriverEnvReady.setResult(forkEnv);
                             } else {
-                                // Call supper class method to attach Java virtual machine
-                                // Previously super.execute(forkEnv, null, forkState) is calling method
-                                // from GenericProgrammerRunner.execute(). But there is a code change since EAP2020.1
-                                // where GenericDebuggerRunner is not extending from class GenericProgrammerRunner anymore.
-                                // Therefore, now we are calling super.doExecute(forkState, forkEnv) which is actually
-                                // GenericDebuggerRunner.doExecute(forkState, forkEnv)
-                                super.doExecute(forkState, forkEnv);
+                                // Start Executor debugging
+                                executionManager.startRunProfile(forkEnv, () ->
+                                        toIdeaPromise(attachAndDebug(forkEnv, forkState)));
                             }
                         } else if (debugEvent instanceof SparkBatchJobExecutorCreatedEvent) {
                             SparkBatchJobExecutorCreatedEvent executorCreatedEvent =
@@ -340,35 +350,23 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                     }
                 });
 
+        driverDebugHandler.getRemoteDebugProcess().start();
+
         // Driver side execute, leverage Intellij Async Promise, to wait for the Spark app deployed
-        ExecutionManager.getInstance(project).startRunProfile(new RunProfileStarter() {
-            @Override
-            public Promise<RunContentDescriptor> executeAsync(@NotNull ExecutionEnvironment env) throws ExecutionException {
-                driverDebugHandler.getRemoteDebugProcess().start();
+        executionManager.startRunProfile(environment, () -> jobDriverEnvReady.thenAsync(driverEnv ->
+                toIdeaPromise(attachAndDebug(driverEnv, state))));
+    }
 
-                RunProfileState state = env.getState();
-                return jobDriverEnvReady
-                        .then(forkEnv -> Observable.fromCallable(() -> doExecute(state, forkEnv))
-                                .subscribeOn(schedulers.dispatchUIThread(ModalityState.defaultModalityState()))
-                                .toBlocking()
-                                .singleOrDefault(null))
-                        .then(descriptor -> {
-                            // Borrow BaseProgramRunner.postProcess() codes since it's only package public accessible.
-                            if (descriptor != null) {
-                                descriptor.setExecutionId(env.getExecutionId());
-                                RunnerAndConfigurationSettings settings = env.getRunnerAndConfigurationSettings();
-                                if (settings != null) {
-                                    descriptor.setContentToolWindowId(RunContentManager.getInstance(env.getProject())
-                                            .getContentDescriptorToolWindowId(settings.getConfiguration()));
+    private Observable<RunContentDescriptor> attachAndDebug(final ExecutionEnvironment environment,
+                                                            final RunProfileState state) {
+        final Project project = environment.getProject();
+        final JFrame ideFrame = WindowManager.getInstance().getFrame(project);
+        final ModalityState ideModalityState = ideFrame != null ? stateForComponent(ideFrame) : any();
 
-                                    descriptor.setActivateToolWindowWhenAdded(settings.isActivateToolWindowBeforeRun());
-                                }
-                            }
-
-                            return descriptor;
-                        });
-            }
-        }, environment);
+        return Observable.fromCallable(() -> {
+            // Invoke GenericDebuggerRunner#doExecute to start real VM attach and debugging
+            return doExecute(state, environment);
+        }).subscribeOn(new IdeaSchedulers(project).dispatchUIThread(ideModalityState));
     }
 
     /*
