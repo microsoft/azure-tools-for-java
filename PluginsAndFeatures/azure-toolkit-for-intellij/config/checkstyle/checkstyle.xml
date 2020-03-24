@@ -45,11 +45,10 @@ page at https://checkstyle.org/config.html -->
         <property name="message" value="Line has trailing spaces."/>
     </module>
 
-    <!-- CRLF is not allowed
     <module name="RegexpMultiline">
         <property name="format" value="(?s:(\r\n|\r).*)"/>
         <property name="message" value="CRLF and CR line endings are prohibited, but this file uses them."/>
-    </module> -->
+    </module>
 
     <module name="RegexpSingleline">
         <!-- Checks that TODOs are named.  (Actually, just that they are followed
