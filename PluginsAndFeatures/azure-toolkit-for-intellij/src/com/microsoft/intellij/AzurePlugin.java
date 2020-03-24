@@ -156,8 +156,8 @@ public class AzurePlugin extends AbstractProjectComponent {
                 clearTempDirectory();
                 loadWebappsSettings();
             } catch (Exception e) {
-            /* This is not a user initiated task
-               So user should not get any exception prompt.*/
+                /* This is not a user initiated task
+                   So user should not get any exception prompt.*/
                 LOG.error(AzureBundle.message("expErlStrtUp"), e);
             }
         }
@@ -423,7 +423,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
-     private synchronized boolean isFirstInstallationByVersion() {
+    private synchronized boolean isFirstInstallationByVersion() {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion.booleanValue();
         }
