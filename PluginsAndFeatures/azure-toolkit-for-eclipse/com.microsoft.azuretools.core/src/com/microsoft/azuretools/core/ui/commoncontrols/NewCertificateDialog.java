@@ -1,22 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
+
 package com.microsoft.azuretools.core.ui.commoncontrols;
 
 import java.io.File;
@@ -65,8 +68,8 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
     private String jdkPath;
 
     public NewCertificateDialog(Shell parentShell,
-    		NewCertificateDialogData newCertificateDialogHolder,
-    		String jdkPath) {
+            NewCertificateDialogData newCertificateDialogHolder,
+            String jdkPath) {
         super(parentShell);
         this.newCertificateDialogHolder = newCertificateDialogHolder;
         this.jdkPath = jdkPath;
@@ -78,17 +81,17 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
         newShell.setLocation(200, 200);
         Image image;
         try {
-        	URL imgUrl = Activator.getDefault().
-        			getBundle().getEntry(Messages.newCertDlgImg);
-        	URL imgFileURL = FileLocator.toFileURL(imgUrl);
-        	URL path = FileLocator.resolve(imgFileURL);
-        	String imgpath = path.getFile();
-        	image = new Image(null, new FileInputStream(imgpath));
-        	setTitleImage(image);
+            URL imgUrl = Activator.getDefault().
+                    getBundle().getEntry(Messages.newCertDlgImg);
+            URL imgFileURL = FileLocator.toFileURL(imgUrl);
+            URL path = FileLocator.resolve(imgFileURL);
+            String imgpath = path.getFile();
+            image = new Image(null, new FileInputStream(imgpath));
+            setTitleImage(image);
         } catch (Exception e) {
-        	PluginUtil.displayErrorDialogAndLog(getShell(),
-        			com.microsoft.azuretools.core.utils.Messages.err,
-        			Messages.imgErr, e);
+            PluginUtil.displayErrorDialogAndLog(getShell(),
+                    com.microsoft.azuretools.core.utils.Messages.err,
+                    Messages.imgErr, e);
         }
     }
 
@@ -120,19 +123,19 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
 
         txtPwd = new Text(container, SWT.BORDER | SWT.PASSWORD);
         txtPwd.setLayoutData(gridData);
-       
+
         Label confirmPwdLbl = new Label(container, SWT.LEFT);
         confirmPwdLbl.setText(Messages.newCertDlgCnfPwdLbl);
         txtConfirmPwd = new Text(container, SWT.BORDER | SWT.PASSWORD);
         txtConfirmPwd.setLayoutData(gridData);
-        
-        // For common name 
+
+        // For common name
         Label cnNameLabel = new Label(container, SWT.LEFT);
         cnNameLabel.setText(Messages.newCertDlgCNNameLbl);
         txtCNName = new Text(container, SWT.BORDER);
         txtCNName.setLayoutData(gridData);
         txtCNName.setText(Utils.getDefaultCNName());
-        
+
 
         Group group =  new Group(container, SWT.SHADOW_ETCHED_IN);
         GridLayout groupGridLayout = new GridLayout();
@@ -197,15 +200,15 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
                         txtPFXFile.setText(stringBuffer.toString());
                     }
                 }
-                
+
                 // Set default value for cert text field
-                if ( (txtPFXFile.getText() != null  && 
-                		(txtCertFile.getText() == null || txtCertFile.getText().isEmpty()))) {
-                	if (txtPFXFile.getText().endsWith(".pfx")) {
-                		txtCertFile.setText(Utils.replaceLastSubString(txtPFXFile.getText(), ".pfx", ".cer"));
-                	} else if (txtPFXFile.getText().endsWith(".PFX")) {
-                		txtCertFile.setText(Utils.replaceLastSubString(txtPFXFile.getText(), ".PFX", ".CER"));
-                	}
+                if ( (txtPFXFile.getText() != null  &&
+                        (txtCertFile.getText() == null || txtCertFile.getText().isEmpty()))) {
+                    if (txtPFXFile.getText().endsWith(".pfx")) {
+                        txtCertFile.setText(Utils.replaceLastSubString(txtPFXFile.getText(), ".pfx", ".cer"));
+                    } else if (txtPFXFile.getText().endsWith(".PFX")) {
+                        txtCertFile.setText(Utils.replaceLastSubString(txtPFXFile.getText(), ".PFX", ".CER"));
+                    }
                 }
             }
 
@@ -258,15 +261,15 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
                         txtCertFile.setText(strBfr.toString());
                     }
                 }
-                
+
                 // Set default value for pfx text field
-                if ( (txtCertFile.getText() != null  && 
-                		(txtPFXFile.getText() == null || txtPFXFile.getText().isEmpty()))) {
-                	if (txtCertFile.getText().endsWith(".cer")) {
-                		txtPFXFile.setText(Utils.replaceLastSubString(txtCertFile.getText(), ".cer", ".pfx"));
-                	} else if (txtCertFile.getText().endsWith(".CER")) {
-                		txtPFXFile.setText(Utils.replaceLastSubString(txtCertFile.getText(), ".CER", ".PFX"));
-                	}
+                if ( (txtCertFile.getText() != null  &&
+                        (txtPFXFile.getText() == null || txtPFXFile.getText().isEmpty()))) {
+                    if (txtCertFile.getText().endsWith(".cer")) {
+                        txtPFXFile.setText(Utils.replaceLastSubString(txtCertFile.getText(), ".cer", ".pfx"));
+                    } else if (txtCertFile.getText().endsWith(".CER")) {
+                        txtPFXFile.setText(Utils.replaceLastSubString(txtCertFile.getText(), ".CER", ".PFX"));
+                    }
                 }
             }
 
@@ -289,8 +292,8 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
         dialog.setOverwrite(true);
         selProject = PluginUtil.getSelectedProject();
         if (selProject != null) {
-        	String path = selProject.getLocation().toPortableString();
-        	dialog.setFilterPath(path);
+            String path = selProject.getLocation().toPortableString();
+            dialog.setFilterPath(path);
         }
         dialog.setText(Messages.newCertDlgBrwFldr);
         dialog.setFilterExtensions(extensions);
@@ -300,14 +303,14 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
     @Override
     protected void okPressed() {
         if (txtPwd.getText() == null
-        		|| txtPwd.getText().isEmpty()) {
+                || txtPwd.getText().isEmpty()) {
             errorTitle = Messages.newCertDlgCrtErTtl;
             errorMessage = Messages.newCertDlgPwNul;
             PluginUtil.displayErrorDialog(this.getShell(),
                     errorTitle, errorMessage);
             return;
         } else if (txtConfirmPwd.getText() == null
-        		|| txtConfirmPwd.getText().isEmpty()) {
+                || txtConfirmPwd.getText().isEmpty()) {
             errorTitle = Messages.newCertDlgCrtErTtl;
             errorMessage = Messages.newCertDlgCfPwNul;
             PluginUtil.displayErrorDialog(this.getShell(),
@@ -315,12 +318,12 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
             return;
         } else if (!(txtPwd.getText() == null)
                 && !(txtPwd.getText().isEmpty())) {
-        	// check for password length
-        	if (txtPwd.getText().length() < 6) {
-        		PluginUtil.displayErrorDialog(getShell(),
-        				Messages.newCertDlgPwdWrng, Messages.newCertDlgPwLength);
+            // check for password length
+            if (txtPwd.getText().length() < 6) {
+                PluginUtil.displayErrorDialog(getShell(),
+                        Messages.newCertDlgPwdWrng, Messages.newCertDlgPwLength);
                 return;
-        	}
+            }
             Pattern pattern = Pattern.compile("^\\S+$");
             Matcher match = pattern.matcher(txtPwd.getText());
             if (!match.find()) {
@@ -333,12 +336,12 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
         }
         if (!(txtConfirmPwd.getText() == null)
                 && !(txtConfirmPwd.getText().isEmpty())) {
-        	// check for password length
-        	if (txtConfirmPwd.getText().length() < 6) {
-        		PluginUtil.displayErrorDialog(getShell(),
-        				Messages.newCertDlgPwdWrng, Messages.newCertDlgPwLength);
+            // check for password length
+            if (txtConfirmPwd.getText().length() < 6) {
+                PluginUtil.displayErrorDialog(getShell(),
+                        Messages.newCertDlgPwdWrng, Messages.newCertDlgPwLength);
                 return;
-        	}
+            }
             Pattern pattern = Pattern.compile("^\\S+$");
             Matcher match = pattern.matcher(txtConfirmPwd.getText());
             if (!match.find()) {
@@ -357,7 +360,7 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
             return;
         }
         if (txtCNName.getText() == null || txtCNName.getText().isEmpty()) {
-        	 errorTitle = Messages.newCertDlgCrtErTtl;
+             errorTitle = Messages.newCertDlgCrtErTtl;
              errorMessage = Messages.newCertDlgCNNull;
              PluginUtil.displayErrorDialog(this.getShell(),
                      errorTitle, errorMessage);
@@ -370,7 +373,7 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
                     errorTitle, errorMessage);
             return;
         } else if (txtPFXFile.getText() == null
-        		|| txtPFXFile.getText().isEmpty()) {
+                || txtPFXFile.getText().isEmpty()) {
             errorTitle = Messages.newCertDlgCrtErTtl;
             errorMessage = Messages.newCertDlgPFXNull;
             PluginUtil.displayErrorDialog(this.getShell(),
@@ -388,7 +391,7 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
             return;
         }
         if ((!(certFilePath.endsWith(".cer") || certFilePath.endsWith(".CER")))
-        		|| (!(pfxFilePath.endsWith(".pfx") || pfxFilePath.endsWith(".PFX")))) {
+                || (!(pfxFilePath.endsWith(".pfx") || pfxFilePath.endsWith(".PFX")))) {
             errorTitle = Messages.newCertDlgCrtErTtl;
             errorMessage = Messages.newCerDlgInvdFlExt;
             PluginUtil.displayErrorDialog(this.getShell(),
@@ -396,9 +399,9 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
             return;
         }
         String certFolder = certFilePath.substring(0,
-        		certFilePath.lastIndexOf(File.separator));
+                certFilePath.lastIndexOf(File.separator));
         String pfxFolder = pfxFilePath.substring(0,
-        		pfxFilePath.lastIndexOf(File.separator));
+                pfxFilePath.lastIndexOf(File.separator));
         File certFile = new File(certFolder);
         File pfxFile = new File(pfxFolder);
         if (!(certFile.exists() && pfxFile.exists())) {
@@ -410,25 +413,25 @@ public class NewCertificateDialog extends AzureTitleAreaDialogWrapper {
         }
         else {
             try {
-            	PluginUtil.showBusy(true, getShell());
+                PluginUtil.showBusy(true, getShell());
                 String alias = Messages.newCertDlgAlias;
                 // fix for #2663
                 if (jdkPath == null || jdkPath.isEmpty()) {
-                	jdkPath = WAEclipseHelperMethods.jdkDefaultDirectory(null);
+                    jdkPath = WAEclipseHelperMethods.jdkDefaultDirectory(null);
                 }
                 com.microsoft.azuretools.azurecommons.util.CerPfxUtil.createCertificate(txtCertFile.getText(),
                         txtPFXFile.getText(), alias , txtPwd.getText(), txtCNName.getText(), jdkPath);
-                
+
                 //At this point certificates are created , populate the values for caller
                 if(newCertificateDialogHolder != null ){
-                	newCertificateDialogHolder.setCerFilePath(txtCertFile.getText());
-                	newCertificateDialogHolder.setPfxFilePath(txtPFXFile.getText());
-                	newCertificateDialogHolder.setPassword(txtPFXFile.getText());     
-                	newCertificateDialogHolder.setCnName(txtCNName.getText());
+                    newCertificateDialogHolder.setCerFilePath(txtCertFile.getText());
+                    newCertificateDialogHolder.setPfxFilePath(txtPFXFile.getText());
+                    newCertificateDialogHolder.setPassword(txtPFXFile.getText());
+                    newCertificateDialogHolder.setCnName(txtCNName.getText());
                 }
                 PluginUtil.showBusy(false, getShell());
             } catch (Exception e) {
-            	PluginUtil.showBusy(false, getShell());
+                PluginUtil.showBusy(false, getShell());
                 Activator.getDefault().log(e.getMessage(), e);
                 errorTitle = Messages.newCertDlgCrtErTtl;
                 errorMessage = Messages.newCerDlgCrtCerEr;

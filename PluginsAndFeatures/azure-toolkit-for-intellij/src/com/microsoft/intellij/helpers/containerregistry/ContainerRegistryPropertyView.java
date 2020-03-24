@@ -23,7 +23,6 @@
 package com.microsoft.intellij.helpers.containerregistry;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.notification.Notification;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -352,7 +351,6 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     public void onReadProperty(String sid, String id) {
         containerPropertyPresenter.onGetRegistryProperty(sid, id);
     }
-
 
     @Override
     public void showProperty(ContainerRegistryProperty property) {

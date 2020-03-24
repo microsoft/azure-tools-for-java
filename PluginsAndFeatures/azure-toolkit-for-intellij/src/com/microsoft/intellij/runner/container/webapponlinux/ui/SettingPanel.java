@@ -692,7 +692,6 @@ public class SettingPanel extends AzureSettingPanel<WebAppOnLinuxDeployConfigura
         webAppOnLinuxDeployPresenter.onDetachView();
     }
 
-
     private void updateResourceGroupList(String sid) {
         webAppOnLinuxDeployPresenter.onLoadResourceGroup(sid);
     }

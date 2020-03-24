@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.33.1</version>
+  <version>3.34.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -20,13 +20,26 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.33.1</h3>
-    <h4>Fixed</h4>
+    <h3>3.34.0</h3>
+    <h4>Added</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4061">#4061</a> The error of Spark job remote
-            debugging</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4079">#4079</a> The regression of Spark
-            console can not start</li>
+        <li>Add Azure Function support in Azure Toolkits
+            <ul>
+                <li>Scaffold functions project</li>
+                <li>Create new functions class by trigger type</li>
+                <li>Local run/debug functions</li>
+                <li>Create/deploy Function apps on Azure</li>
+                <li>List/view existing Function apps on Azure</li>
+                <li>Stop/start/restart Function apps on Azure</li>
+                <li>Trigger azure functions</li>
+            </ul>
+        </li>
+        <li>Support project artifact dependencies in Spark interactive console</li>
+        <li>Add more debug log when creating Spark Livy interactive console</li>
+    </ul>
+    <h4>Changed</h4>
+    <ul>
+        <li>Enable Spark on Synapse feature by default</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
@@ -324,20 +337,20 @@
         <action id="Actions.SelectNoneSparkType"
                 class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
         </action>
-      <action id="Actions.SelectHDInsightSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
-      </action>
       <action id="Actions.SelectCosmosSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Spark on Cosmos" >
       </action>
       <action id="Actions.SelectCosmosServerlessSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
       </action>
+      <action id="Actions.SelectHDInsightSparkType"
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
+      </action>
       <action id="Actions.SelectArisSparkType"
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
       </action>
       <action id="Actions.SelectArcadiaSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Arcadia Cluster" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Synapse" >
       </action>
     </group>
 

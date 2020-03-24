@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.runner.functions.localrun;
@@ -222,6 +221,9 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         final File func = new File(getFuncPath());
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException("Please specify correct function cli path");
+        }
+        if (!FunctionUtils.isValidStagingFolderPath(getStagingFolder())) {
+            throw new ConfigurationException("Please specify correct staging folder path");
         }
     }
 

@@ -27,6 +27,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -37,8 +38,6 @@ import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.Window;
 import java.awt.event.ItemListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.List;
 
 import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEW_CREATED_RESOURCE;
@@ -106,23 +105,30 @@ public class ResourceGroupPanel extends JPanel {
     private void createResourceGroup() {
         cbResourceGroup.setSelectedItem(null);
         cbResourceGroup.setPopupVisible(false);
-        final NewResourceGroupDialog dialog = new NewResourceGroupDialog();
+        final NewResourceGroupDialog dialog = new NewResourceGroupDialog(subscriptionId);
         dialog.pack();
-        dialog.setLocationRelativeTo(this);
-        dialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent windowEvent) {
-                super.windowClosed(windowEvent);
-                final ResourceGroupWrapper newResourceGroup = dialog.getResourceGroup();
-                if (newResourceGroup != null) {
-                    cbResourceGroup.addItem(newResourceGroup);
-                    cbResourceGroup.setSelectedItem(newResourceGroup);
-                } else {
-                    cbResourceGroup.setSelectedItem(selectedResourceGroup);
-                }
+        if (dialog.showAndGet() && dialog.getResourceGroup() != null) {
+            final ResourceGroupWrapper newResourceGroup = dialog.getResourceGroup();
+            final ResourceGroupWrapper targetResourceGroup = getResourceGroupWrapperWithName(newResourceGroup.resourceGroup);
+            // Use existing resource group wrapper if user create a new resource group with same name before
+            if (targetResourceGroup == null) {
+                cbResourceGroup.addItem(newResourceGroup);
+                selectedResourceGroup = newResourceGroup;
+            } else {
+                selectedResourceGroup = targetResourceGroup;
             }
-        });
-        dialog.setVisible(true);
+        }
+        cbResourceGroup.setSelectedItem(selectedResourceGroup);
+    }
+
+    private ResourceGroupWrapper getResourceGroupWrapperWithName(String name) {
+        for (int i = 0; i < cbResourceGroup.getItemCount(); i++) {
+            final Object selectedItem = cbResourceGroup.getItemAt(i);
+            if (selectedItem instanceof ResourceGroupWrapper && StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
+                return (ResourceGroupWrapper) cbResourceGroup.getItemAt(i);
+            }
+        }
+        return null;
     }
 
     private void onSelectResourceGroup() {

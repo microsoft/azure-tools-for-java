@@ -177,9 +177,6 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         setTextFieldStyle();
     }
 
-
-
-
     protected abstract String getId();
 
     protected abstract WebAppBasePropertyViewPresenter createPresenter();

@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -23,21 +23,23 @@
 package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionKind;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.net.URI;
-import java.net.URL;
 
 public class SparkSession extends Session {
-    public SparkSession(@NotNull String name, @NotNull URI baseUrl) {
-        super(name, baseUrl);
+    public SparkSession(final String name,
+                        final URI baseUrl) {
+        this(name, baseUrl, null, null);
     }
 
-    public SparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String username, @NotNull String password) {
-        super(name, baseUrl, username, password);
+    public SparkSession(final String name,
+                        final URI baseUrl,
+                        final @Nullable String username,
+                        final @Nullable String password) {
+        super(name, baseUrl, new CreateParameters(SessionKind.SPARK).name(name), username, password);
     }
 
-    @NotNull
     @Override
     public SessionKind getKind() {
         return SessionKind.SPARK;

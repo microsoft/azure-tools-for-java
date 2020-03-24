@@ -56,7 +56,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration>{
+public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> {
     private static final String IMAGE_NAME_PREFIX = "localimage";
     private static final String DEFAULT_TAG_NAME = "latest";
 

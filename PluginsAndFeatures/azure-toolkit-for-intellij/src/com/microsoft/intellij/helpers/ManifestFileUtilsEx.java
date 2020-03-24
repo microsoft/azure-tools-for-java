@@ -56,10 +56,12 @@ import java.util.List;
 
 public class ManifestFileUtilsEx implements ILogger {
     private static class MainClassFilter implements ClassFilter {
-        final private String filePath;
+        private final String filePath;
+
         public MainClassFilter(@NotNull String filePath) {
             this.filePath = filePath;
         }
+
         public boolean isAccepted(final PsiClass aClass) {
             return ReadAction.compute(() ->
                     aClass.getContainingFile().getVirtualFile().getPath().startsWith(filePath) &&
@@ -69,7 +71,7 @@ public class ManifestFileUtilsEx implements ILogger {
         }
     }
 
-    private final static String LOCAL_ARTIFACT_MODULE_NAME = "SparkAppLocalArtifact";
+    private static final String LOCAL_ARTIFACT_MODULE_NAME = "SparkAppLocalArtifact";
     @NotNull
     private final Project myProject;
 
@@ -105,6 +107,7 @@ public class ManifestFileUtilsEx implements ILogger {
                 WriteAction.run(() -> addJarToModuleDependency(jarFile));
                 super.windowOpened(e);
             }
+
             @Override
             public void windowClosed(WindowEvent e) {
                 WriteAction.run(() -> removeModuleAndJar());

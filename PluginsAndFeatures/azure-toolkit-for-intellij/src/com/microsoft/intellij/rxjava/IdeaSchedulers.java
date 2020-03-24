@@ -52,7 +52,7 @@ import static rx.schedulers.Schedulers.computation;
 import static rx.schedulers.Schedulers.from;
 
 public class IdeaSchedulers implements IdeSchedulers, ILogger {
-    @Nullable final private Project project;
+    @Nullable private final Project project;
 
     public IdeaSchedulers() {
         this(null);
@@ -129,7 +129,8 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
         });
     }
 
-    private final static ConcurrentMap<Thread, ProgressIndicator> thread2Indicator = new ConcurrentHashMap<>(32);
+    private static final ConcurrentMap<Thread, ProgressIndicator> thread2Indicator = new ConcurrentHashMap<>(32);
+
     public static void updateCurrentBackgroundableTaskIndicator(Action1<ProgressIndicator> action) {
         final Thread currentThread = Thread.currentThread();
         final ProgressIndicator indicator = thread2Indicator.get(currentThread);

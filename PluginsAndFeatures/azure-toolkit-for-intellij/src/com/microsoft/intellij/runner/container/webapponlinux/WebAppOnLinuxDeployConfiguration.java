@@ -41,7 +41,6 @@ import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
 public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> {
@@ -84,7 +83,6 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         super(project, factory, name);
         deployModel = new WebAppOnLinuxDeployModel();
     }
-
 
     @Override
     public WebAppOnLinuxDeployModel getModel() {

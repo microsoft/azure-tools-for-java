@@ -1,23 +1,23 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.ijidea.ui;
@@ -54,9 +54,9 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTable statusTable;
     private JList filesList;
-    private List<String> authFilePathList =  new LinkedList<>();
+    private List<String> authFilePathList = new LinkedList<>();
     String destinationFolder;
-    private Map<String, List<String> > tidSidsMap;
+    private Map<String, List<String>> tidSidsMap;
 
     private String selectedAuthFilePath;
     private Project project;
@@ -73,7 +73,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
     DefaultListModel<String> filesListModel = new DefaultListModel<String>();
 
     public static SrvPriCreationStatusDialog go(AccessTokenAzureManager preAccessTokenAzureManager,
-                                                Map<String, List<String> > tidSidsMap,
+                                                Map<String, List<String>> tidSidsMap,
                                                 String destinationFolder,
                                                 Project project) {
         SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(preAccessTokenAzureManager, project);
@@ -151,9 +151,11 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
     private class ActionRunner extends Task.Modal implements IListener<Status> {
         ProgressIndicator progressIndicator = null;
+
         public ActionRunner(Project project) {
             super(project, "Create Service Principal Progress", true);
         }
+
         @Override
         public void run(@NotNull ProgressIndicator progressIndicator) {
             this.progressIndicator = progressIndicator;
@@ -171,7 +173,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
                     });
                     return;
                 }
-                List <String> sidList = tidSidsMap.get(tid);
+                List<String> sidList = tidSidsMap.get(tid);
                 if (!sidList.isEmpty()) {
                     try {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -245,7 +247,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
         int[] selectedIndexes = filesList.getSelectedIndices();
         if (selectedIndexes.length > 0) {
-            selectedAuthFilePath =  filesListModel.getElementAt(selectedIndexes[0]);
+            selectedAuthFilePath = filesListModel.getElementAt(selectedIndexes[0]);
         }
 
         super.doOKAction();

@@ -42,18 +42,20 @@ import com.microsoft.azure.cosmosspark.serverexplore.ui.CosmosSparkClusterUpdate
 import com.microsoft.azure.cosmosspark.serverexplore.ui.CosmosSparkProvisionDialog;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJobList;
 import com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction;
 import com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction;
 import com.microsoft.azure.hdinsight.spark.actions.SparkAppSubmitContext;
-import com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationFactory;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfigurationType;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationFactory;
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkConfigurationType;
-import com.microsoft.azure.hdinsight.spark.ui.livy.batch.*;
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableModel;
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobTableViewport;
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.LivyBatchJobViewer;
+import com.microsoft.azure.hdinsight.spark.ui.livy.batch.UniqueColumnNameTableSchema;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -66,7 +68,6 @@ import rx.Observable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType;
 import static com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.CLUSTER;
 import static com.microsoft.azure.hdinsight.spark.actions.SparkDataKeys.RUN_CONFIGURATION_SETTING;
 
@@ -279,7 +280,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                 })
                 // retry should be allowed when error happened
                 .retry()
-                .subscribe(jobList -> {},  ex -> log().warn(ExceptionUtils.getStackTrace(ex)));
+                .subscribe(jobList -> {}, ex -> log().warn(ExceptionUtils.getStackTrace(ex)));
     }
 
     @NotNull

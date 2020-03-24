@@ -81,6 +81,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private AppSettingsTable appSettingsTable;
 
     // presenter
+    private FunctionDeployConfiguration previousDeployConfiguration;
     private FunctionDeployConfiguration functionDeployConfiguration;
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
@@ -207,10 +208,11 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     protected void resetFromConfig(@NotNull FunctionDeployConfiguration configuration) {
+        previousDeployConfiguration = configuration;
+        functionDeployConfiguration.setFunctionId(configuration.getFunctionId());
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
-        functionDeployConfiguration.setFunctionId(configuration.getFunctionId());
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
             for (int i = 0; i < cbFunctionModule.getItemCount(); i++) {
@@ -221,19 +223,25 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 }
             }
         }
+
         presenter.loadFunctionApps(false, false);
     }
 
     @Override
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
-        if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
-            return;
-        }
-        configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
-        configuration.setTargetFunction(selectedFunctionApp.getResource());
-        configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
+        configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.setDeploymentStagingDirectory(txtStagingFolder.getText());
+        if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
+            // Use previous configuration when function is not loaded
+            configuration.setSubscription(previousDeployConfiguration.getSubscriptionId());
+            configuration.setFunctionId(previousDeployConfiguration.getFunctionId());
+            configuration.setAppName(previousDeployConfiguration.getName());
+            configuration.setResourceGroup(previousDeployConfiguration.getResourceGroup());
+        } else {
+            configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
+            configuration.setTargetFunction(selectedFunctionApp.getResource());
+        }
     }
 
     private void onFunctionSelected() {

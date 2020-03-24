@@ -22,76 +22,67 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import javax.swing.JButton;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.ValidationUtils;
+import org.jetbrains.annotations.Nullable;
+
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 
-public class NewResourceGroupDialog extends JDialog {
+public class NewResourceGroupDialog extends AzureDialogWrapper {
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
     private JTextField txtResourceGroup;
     private JLabel lblResourceGroup;
+    private JPanel pnlResourceGroup;
 
+    private String subscriptionId;
     private ResourceGroupPanel.ResourceGroupWrapper resourceGroupWrapper;
 
-    public NewResourceGroupDialog() {
-        setContentPane(contentPane);
+    public NewResourceGroupDialog(String subscriptionId) {
+        super(false);
         setModal(true);
-        setAlwaysOnTop(true);
         setTitle("Create Resource Group");
-        getRootPane().setDefaultButton(buttonOK);
+        this.subscriptionId = subscriptionId;
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
-
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
-
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        init();
     }
 
     public ResourceGroupPanel.ResourceGroupWrapper getResourceGroup() {
         return resourceGroupWrapper;
     }
 
-    private void onOK() {
-        // add your code here
-        resourceGroupWrapper = new ResourceGroupPanel.ResourceGroupWrapper(txtResourceGroup.getText());
-        dispose();
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return contentPane;
     }
 
-    private void onCancel() {
-        // add your code here if necessary
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        List<ValidationInfo> res = new ArrayList<>();
+        final String resourceGroupName = txtResourceGroup.getText();
+        try {
+            ValidationUtils.validateResourceGroupName(subscriptionId, resourceGroupName);
+        } catch (IllegalArgumentException iae) {
+            res.add(new ValidationInfo(iae.getMessage(), txtResourceGroup));
+        }
+        return res;
+    }
+
+    @Override
+    protected void doOKAction() {
+        resourceGroupWrapper = new ResourceGroupPanel.ResourceGroupWrapper(txtResourceGroup.getText());
+        super.doOKAction();
+    }
+
+    @Override
+    public void doCancelAction() {
         resourceGroupWrapper = null;
-        dispose();
+        super.doCancelAction();
     }
 }

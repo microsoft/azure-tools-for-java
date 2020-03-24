@@ -35,10 +35,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.utils.AppServiceUtils;
-import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
@@ -56,6 +53,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     public static final String NEED_SPECIFY_MODULE = "Please specify module";
     public static final String NEED_SPECIFY_TARGET_FUNCTION = "Please specify target function";
+    public static final String NEED_SPECIFY_VALID_STAGING_DIRECTORY_PATH = "Please specify valid staging directory path";
     private final FunctionDeployModel functionDeployModel;
     private Module module;
 
@@ -198,6 +196,9 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         }
         if (StringUtils.isEmpty(this.getFunctionId())) {
             throw new ConfigurationException(NEED_SPECIFY_TARGET_FUNCTION);
+        }
+        if (!FunctionUtils.isValidStagingFolderPath(getDeploymentStagingDirectory())) {
+            throw new ConfigurationException(NEED_SPECIFY_VALID_STAGING_DIRECTORY_PATH);
         }
     }
 

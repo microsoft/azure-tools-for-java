@@ -25,11 +25,16 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.google.common.net.HostAndPort
 import com.intellij.remote.RemoteProcess
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.Session
+import rx.Observable
 import java.io.InputStream
 import java.io.OutputStream
 
-class SparkLivySessionProcess(val session: Session) : RemoteProcess(), ILogger {
+class SparkLivySessionProcess(
+        private val rxSchedulers: IdeSchedulers,
+        val session: Session
+) : RemoteProcess(), ILogger {
     override fun isDisconnected(): Boolean = session.isStop
 
     override fun getLocalTunnel(remotePort: Int): HostAndPort? = null
@@ -42,7 +47,12 @@ class SparkLivySessionProcess(val session: Session) : RemoteProcess(), ILogger {
 
     override fun waitFor(): Int = 0
 
-    override fun destroy() = session.close()
+    override fun destroy() {
+        session.close()
+        outputStream.close()
+        errorStream.close()
+        inputStream.close()
+    }
 
     override fun getOutputStream(): OutputStream = stdInStream
 
@@ -54,4 +64,14 @@ class SparkLivySessionProcess(val session: Session) : RemoteProcess(), ILogger {
     }
 
     override fun getInputStream(): InputStream = stdOutStream
+
+    fun start(): Observable<Session> = session.deploy()
+            .subscribeOn(rxSchedulers.processBarVisibleAsync(
+                    "Deploy Livy interactive console artifacts dependencies..."))
+            .observeOn(rxSchedulers.processBarVisibleAsync(
+                    "Create Spark Livy interactive console session..."))
+            .flatMap { it.create() }
+            .flatMap { it.awaitReady(rxSchedulers.processBarVisibleAsync(
+                    "The Spark Livy interactive console session is starting..." )) }
+            .doOnError { destroy() }
 }

@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.docker.wizards.publish.forms;
 
 import com.intellij.icons.AllIcons;
@@ -168,7 +169,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
           }
           path = builder.toString();
           int idx = dockerArtifactComboboxWithBrowse.getComboBox().getItemCount() - 1;
-          for (;idx >= 0;idx --) {
+          for (; idx >= 0; idx--) {
             if (dockerArtifactComboboxWithBrowse.getComboBox().getItemAt(idx).equals(path)) {
               dockerArtifactComboboxWithBrowse.getComboBox().setSelectedIndex(idx);
               break;
@@ -354,7 +355,6 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
         }).disableUpDownActions()
         .addExtraActions(viewDockerHostsAction, refreshDockerHostsAction);
 
-
     dockerHostsPanel = tableToolbarDecorator.createPanel();
   }
 
@@ -373,7 +373,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
       DockerHost dockerHost = dockerManager.getDockerHostForURL(apiURL);
 
       if (dockerHost == null) {
-        throw  new RuntimeException(String.format("Unexpected error: can't locate the Docker host for %s!", apiURL));
+        throw new RuntimeException(String.format("Unexpected error: can't locate the Docker host for %s!", apiURL));
       }
 
       // TODO: Check if dockerHost.certVault and dockerHost.hostVM have valid values and if not warn
@@ -534,7 +534,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
    */
   private void refreshDockerHostsTable() {
     DefaultTableModel tableModel = (DefaultTableModel) dockerHostsTable.getModel();
-    String oldSelection =  dockerHostsTableSelection != null ? dockerHostsTableSelection.host.apiUrl : null;
+    String oldSelection = dockerHostsTableSelection != null ? dockerHostsTableSelection.host.apiUrl : null;
     if (dockerHostsTableSelection != null) {
       tableModel.setValueAt(false, dockerHostsTableSelection.row, 0);
       dockerHostsTableSelection = null;
@@ -588,7 +588,6 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
       PluginUtil.displayErrorDialog("Refresh Docker Hosts Error", msg);
     }
   }
-
 
   @Override
   public JComponent prepare(final WizardNavigationState state) {

@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.ExecutionException;
@@ -31,6 +32,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.AzureAdAccountDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.*;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.storage.ADLSGen2StorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
@@ -133,8 +135,11 @@ public class SparkBatchJobDeployFactory implements ILogger {
                         jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
                     } else if (storageAccount.getAccountType() == StorageAccountType.BLOB ||
                             storageAccount.getAccountType() == StorageAccountType.ADLS) {
-                        if (clusterDetail instanceof SynapseCosmosSparkPool) {
-                            AzureHttpObservable http = ((SynapseCosmosSparkPool) clusterDetail).getHttp();
+                        if (clusterDetail instanceof SynapseCosmosSparkPool || clusterDetail instanceof AzureSparkCosmosCluster) {
+                            AzureHttpObservable http =
+                                    clusterDetail instanceof SynapseCosmosSparkPool
+                                            ? ((SynapseCosmosSparkPool) clusterDetail).getHttp()
+                                            : ((AzureSparkCosmosCluster) clusterDetail).getHttp();
                             if (http == null) {
                                 String errorMsg = "Error preparing access token for ADLS Gen1 storage account";
                                 log().warn(String.format("%s. Cluster: %s. Storage account: %s.",

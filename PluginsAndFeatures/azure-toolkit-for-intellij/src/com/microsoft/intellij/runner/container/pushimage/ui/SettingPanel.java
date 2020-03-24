@@ -176,7 +176,6 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         containerSettingPanel.onListRegistries();
     }
 
-
     @Override
     public void disposeEditor() {
         containerSettingPanel.disposeEditor();
