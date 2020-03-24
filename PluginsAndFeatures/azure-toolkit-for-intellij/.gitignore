@@ -41,3 +41,6 @@ gen-external-apklibs/
 !.idea/vcs.xml
 !.idea/gradle.xml
 !resources/**
+
+# Jar dependencies generated in build
+resources/spark/spark-tools-*.jar
