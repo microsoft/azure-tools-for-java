@@ -26,7 +26,6 @@ import com.intellij.compiler.options.CompileStepBeforeRun;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaExecutionUtil;
-import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
@@ -62,7 +61,6 @@ import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import rx.Observable;
-import rx.subjects.PublishSubject;
 
 import java.io.File;
 import java.util.*;
@@ -94,14 +92,14 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
     private RunMode mode = RunMode.LOCAL;
 
     // The prop to store the action trigger source if it can be got, such as Run Context
-    final public static String ACTION_TRIGGER_PROP = "ActionTrigger";
+    public static final String ACTION_TRIGGER_PROP = "ActionTrigger";
 
     private @Nullable SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
 
     @NotNull
     private SparkBatchJobConfigurableModel jobModel;
     @NotNull
-    final private Properties actionProperties = new Properties();
+    private final Properties actionProperties = new Properties();
 
     public LivySparkBatchJobRunConfiguration(@NotNull Project project,
                                              @NotNull SparkBatchJobConfigurableModel jobModel,

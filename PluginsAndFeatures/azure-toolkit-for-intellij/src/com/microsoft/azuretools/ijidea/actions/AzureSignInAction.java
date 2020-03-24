@@ -77,7 +77,7 @@ public class AzureSignInAction extends AzureAnAction {
     }
 
     @Override
-    public  void update(AnActionEvent e) {
+    public void update(AnActionEvent e) {
         try {
             boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
             if (isSignIn) {

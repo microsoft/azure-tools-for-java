@@ -410,7 +410,7 @@ public class AzureNewDockerLoginStep extends AzureNewDockerWizardStep implements
       String vmPwd2 = new String(dockerHostSecondPwdField.getPassword());
       if ((dockerHostNoSshRadioButton.isSelected() || dockerHostFirstPwdField.getPassword().length > 0 ||
           dockerHostSecondPwdField.getPassword().length > 0) &&
-          (vmPwd1.isEmpty() || vmPwd2.isEmpty() || ! vmPwd1.equals(vmPwd2) ||
+          (vmPwd1.isEmpty() || vmPwd2.isEmpty() || !vmPwd1.equals(vmPwd2) ||
           !AzureDockerValidationUtils.validateDockerHostPassword(vmPwd1)))
       {
         ValidationInfo info = AzureDockerUIResources.validateComponent("Incorrect password", vmCredsPanel, dockerHostFirstPwdField, dockerHostFirstPwdLabel);

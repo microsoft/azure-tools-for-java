@@ -170,7 +170,6 @@ public class AzureActionsComponent implements ApplicationComponent, PluginCompon
         }
     }
 
-
     public void disposeComponent() {
     }
 

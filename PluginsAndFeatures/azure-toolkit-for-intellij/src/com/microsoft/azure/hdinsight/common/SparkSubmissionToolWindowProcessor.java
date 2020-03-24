@@ -138,7 +138,6 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
             }
         });
 
-
         openSparkUIButton = new JButton(
                 PluginUtil.getIcon(IconPathBuilder
                         .custom(CommonConst.OpenSparkUIIconName)
@@ -312,7 +311,8 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
 
     private void adjustCleanableMessage() {
         if (cleanableMessageCounter >= MAX_CLEANABLE_SIZE) {
-            int i = 0, deleteMessageCounter = 0;
+            int i = 0;
+            int deleteMessageCounter = 0;
             while (deleteMessageCounter < DELETE_SIZE && i < cachedInfo.size()) {
                 if (cachedInfo.get(i) instanceof CleanableTextElement) {
                     cachedInfo.remove(i);

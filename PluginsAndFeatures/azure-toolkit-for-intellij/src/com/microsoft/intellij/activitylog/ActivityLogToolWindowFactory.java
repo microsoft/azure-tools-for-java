@@ -188,7 +188,6 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
             return object.progress;
         }
 
-
         public TableCellRenderer getRenderer(DeploymentTableItem object) {
             return renderer;
         }

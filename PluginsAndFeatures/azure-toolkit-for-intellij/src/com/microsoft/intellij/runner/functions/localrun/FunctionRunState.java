@@ -216,7 +216,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.RUN_FUNCTION_APP);
     }
 
-
     @Override
     protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {
         if (process.isAlive()) {

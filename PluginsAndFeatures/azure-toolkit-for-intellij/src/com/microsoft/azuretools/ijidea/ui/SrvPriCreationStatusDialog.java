@@ -54,9 +54,9 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTable statusTable;
     private JList filesList;
-    private List<String> authFilePathList =  new LinkedList<>();
+    private List<String> authFilePathList = new LinkedList<>();
     String destinationFolder;
-    private Map<String, List<String> > tidSidsMap;
+    private Map<String, List<String>> tidSidsMap;
 
     private String selectedAuthFilePath;
     private Project project;
@@ -73,7 +73,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
     DefaultListModel<String> filesListModel = new DefaultListModel<String>();
 
     public static SrvPriCreationStatusDialog go(AccessTokenAzureManager preAccessTokenAzureManager,
-                                                Map<String, List<String> > tidSidsMap,
+                                                Map<String, List<String>> tidSidsMap,
                                                 String destinationFolder,
                                                 Project project) {
         SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(preAccessTokenAzureManager, project);
@@ -151,9 +151,11 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
     private class ActionRunner extends Task.Modal implements IListener<Status> {
         ProgressIndicator progressIndicator = null;
+
         public ActionRunner(Project project) {
             super(project, "Create Service Principal Progress", true);
         }
+
         @Override
         public void run(@NotNull ProgressIndicator progressIndicator) {
             this.progressIndicator = progressIndicator;
@@ -171,7 +173,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
                     });
                     return;
                 }
-                List <String> sidList = tidSidsMap.get(tid);
+                List<String> sidList = tidSidsMap.get(tid);
                 if (!sidList.isEmpty()) {
                     try {
                         ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -245,7 +247,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
         int[] selectedIndexes = filesList.getSelectedIndices();
         if (selectedIndexes.length > 0) {
-            selectedAuthFilePath =  filesListModel.getElementAt(selectedIndexes[0]);
+            selectedAuthFilePath = filesListModel.getElementAt(selectedIndexes[0]);
         }
 
         super.doOKAction();

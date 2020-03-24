@@ -181,7 +181,8 @@ public class JsonEnvPropertiesField extends TextFieldWithBrowseButton implements
         @Override
         protected ValidationInfo doValidate() {
             for (EnvironmentVariable variable : myUserTable.getEnvironmentVariables()) {
-                String name = variable.getName(), value = variable.getValue();
+                String name = variable.getName();
+                String value = variable.getValue();
                 if (StringUtil.isEmpty(name) && StringUtil.isEmpty(value)) continue;
 
                 if (!EnvironmentUtil.isValidName(name)) return new ValidationInfo("Illegal property name: " + name);

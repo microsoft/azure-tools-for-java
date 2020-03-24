@@ -204,7 +204,6 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         setOKActionEnabled(allFieldsCompleted);
     }
 
-
     @Nullable
     @Override
     protected ValidationInfo doValidate() {
@@ -220,8 +219,6 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-
-
 //        final String name = nameTextField.getText();
 //        final String region = regionComboBox.getSelectedItem().toString();
 //        final String replication = replicationComboBox.getSelectedItem().toString();

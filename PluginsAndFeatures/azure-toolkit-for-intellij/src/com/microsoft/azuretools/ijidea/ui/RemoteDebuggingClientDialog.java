@@ -78,11 +78,11 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
     private Project project;
     private WebApp webApp;
 
-    final static String ON = "On";
-    final static String OFF = "Off";
-    final static String P64BITS = "64-bits";
-    final static String P32BITS = "32-bits";
-    final static String titleAppServiceChangeOption = "App Service Change Option";
+    static final String ON = "On";
+    static final String OFF = "Off";
+    static final String P64BITS = "64-bits";
+    static final String P32BITS = "32-bits";
+    static final String titleAppServiceChangeOption = "App Service Change Option";
 
     public RemoteDebuggingClientDialog(@Nullable Project project, @NotNull WebApp webApp) {
         super(project, true, IdeModalityType.PROJECT);
@@ -137,7 +137,8 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
                 updatePlatformCurrent();
                 platform64bitLink.setClicked(true);
             }
-            private AbstractAction init(String name){
+
+            private AbstractAction init(String name) {
                 super.putValue(Action.NAME, name);
                 return this;
             }
@@ -153,6 +154,7 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
                         progressIndicator.setText("Enabling 32-bits...");
                         webApp.update().withPlatformArchitecture(PlatformArchitecture.X86).apply();
                     }
+
                     @Override
                     public void rollBack(ProgressIndicator progressIndicator) throws Exception {
                         progressIndicator.setText("Rolling back...");
@@ -162,7 +164,8 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
                 updatePlatformCurrent();
                 platform32bitLink.setClicked(true);
             }
-            private AbstractAction init(String name){
+
+            private AbstractAction init(String name) {
                 super.putValue(Action.NAME, name);
                 return this;
             }
@@ -188,7 +191,8 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
                 updateWebSocketsCurrent();
                 webSocketOnLink.setClicked(true);
             }
-            private AbstractAction init(String name){
+
+            private AbstractAction init(String name) {
                 super.putValue(Action.NAME, name);
                 return this;
             }
@@ -214,7 +218,8 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
                 updateWebSocketsCurrent();
                 webSocketOffLink.setClicked(true);
             }
-            private AbstractAction init(String name){
+
+            private AbstractAction init(String name) {
                 super.putValue(Action.NAME, name);
                 return this;
             }
@@ -329,6 +334,7 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
                         fis.close();
                 }
             }
+
             @Override
             public void rollBack(ProgressIndicator progressIndicator) throws Exception {
                 // do nothing

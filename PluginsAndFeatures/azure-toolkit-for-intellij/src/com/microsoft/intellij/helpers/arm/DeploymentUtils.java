@@ -24,7 +24,6 @@ package com.microsoft.intellij.helpers.arm;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorImpl;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 

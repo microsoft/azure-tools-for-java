@@ -24,6 +24,8 @@ package com.microsoft.intellij.ui;
 
 public interface AzureAbstractConfigurablePanel extends AzureAbstractPanel {
     boolean isModified();
+
     void reset();
+
     void init();
 }

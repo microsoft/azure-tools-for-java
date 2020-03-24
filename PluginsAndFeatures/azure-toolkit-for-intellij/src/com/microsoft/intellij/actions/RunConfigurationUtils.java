@@ -25,10 +25,8 @@ package com.microsoft.intellij.actions;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.microsoft.intellij.runner.functions.deploy.FunctionDeploymentConfigurationFactory;
 
 public class RunConfigurationUtils {
 

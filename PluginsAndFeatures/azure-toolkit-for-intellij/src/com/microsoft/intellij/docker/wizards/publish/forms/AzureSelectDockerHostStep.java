@@ -169,7 +169,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
           }
           path = builder.toString();
           int idx = dockerArtifactComboboxWithBrowse.getComboBox().getItemCount() - 1;
-          for (;idx >= 0;idx --) {
+          for (; idx >= 0; idx--) {
             if (dockerArtifactComboboxWithBrowse.getComboBox().getItemAt(idx).equals(path)) {
               dockerArtifactComboboxWithBrowse.getComboBox().setSelectedIndex(idx);
               break;
@@ -355,7 +355,6 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
         }).disableUpDownActions()
         .addExtraActions(viewDockerHostsAction, refreshDockerHostsAction);
 
-
     dockerHostsPanel = tableToolbarDecorator.createPanel();
   }
 
@@ -374,7 +373,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
       DockerHost dockerHost = dockerManager.getDockerHostForURL(apiURL);
 
       if (dockerHost == null) {
-        throw  new RuntimeException(String.format("Unexpected error: can't locate the Docker host for %s!", apiURL));
+        throw new RuntimeException(String.format("Unexpected error: can't locate the Docker host for %s!", apiURL));
       }
 
       // TODO: Check if dockerHost.certVault and dockerHost.hostVM have valid values and if not warn
@@ -535,7 +534,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
    */
   private void refreshDockerHostsTable() {
     DefaultTableModel tableModel = (DefaultTableModel) dockerHostsTable.getModel();
-    String oldSelection =  dockerHostsTableSelection != null ? dockerHostsTableSelection.host.apiUrl : null;
+    String oldSelection = dockerHostsTableSelection != null ? dockerHostsTableSelection.host.apiUrl : null;
     if (dockerHostsTableSelection != null) {
       tableModel.setValueAt(false, dockerHostsTableSelection.row, 0);
       dockerHostsTableSelection = null;
@@ -589,7 +588,6 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
       PluginUtil.displayErrorDialog("Refresh Docker Hosts Error", msg);
     }
   }
-
 
   @Override
   public JComponent prepare(final WizardNavigationState state) {

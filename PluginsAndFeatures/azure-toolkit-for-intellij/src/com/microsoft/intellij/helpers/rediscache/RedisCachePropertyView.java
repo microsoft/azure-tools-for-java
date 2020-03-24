@@ -31,8 +31,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 
 public class RedisCachePropertyView extends BaseEditor implements RedisPropertyMvpView {
 
@@ -117,7 +115,7 @@ public class RedisCachePropertyView extends BaseEditor implements RedisPropertyM
         txtRegionValue.setText(property.getRegionName());
         txtHostNameValue.setText(property.getHostName());
         txtSslPortValue.setText(String.valueOf(property.getSslPort()));
-        txtNonSslPortValue.setText(String .valueOf(property.isNonSslPort()));
+        txtNonSslPortValue.setText(String.valueOf(property.isNonSslPort()));
         txtVersionValue.setText(property.getVersion());
         btnPrimaryKey.setEnabled(true);
         btnSecondaryKey.setEnabled(true);

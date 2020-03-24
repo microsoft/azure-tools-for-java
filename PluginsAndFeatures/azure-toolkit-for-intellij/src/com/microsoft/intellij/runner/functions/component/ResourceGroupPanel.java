@@ -124,7 +124,7 @@ public class ResourceGroupPanel extends JPanel {
     private ResourceGroupWrapper getResourceGroupWrapperWithName(String name) {
         for (int i = 0; i < cbResourceGroup.getItemCount(); i++) {
             final Object selectedItem = cbResourceGroup.getItemAt(i);
-            if (selectedItem instanceof ResourceGroupWrapper &&  StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
+            if (selectedItem instanceof ResourceGroupWrapper && StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
                 return (ResourceGroupWrapper) cbResourceGroup.getItemAt(i);
             }
         }

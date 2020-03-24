@@ -205,7 +205,6 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
         consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
     }
 
-
     @Nullable
     @Override
     public JComponent getPreferredFocusedComponent() {
@@ -354,7 +353,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
     protected boolean isBasicAuthSelected() {
-        return  authComboBox.getSelectedItem() == AuthType.BasicAuth;
+        return authComboBox.getSelectedItem() == AuthType.BasicAuth;
     }
 
     protected void validateBasicInputs() {
@@ -441,7 +440,6 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected Action[] createLeftSideActions() {
         return new Action[0];
     }
-
 
     @Nullable
     @Override

@@ -144,7 +144,6 @@ public class CreateQueueForm extends AzureDialogWrapper {
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 
-
     public void setOnCreate(Runnable onCreate) {
         this.onCreate = onCreate;
     }

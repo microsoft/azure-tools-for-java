@@ -35,7 +35,6 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.Pair;
 import org.jdom.Element;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -60,11 +59,11 @@ public class SparkSubmitModel {
 
     @NotNull
     @Property(surroundWithTag = false)
-    final private SparkSubmitAdvancedConfigModel advancedConfigModel;
+    private final SparkSubmitAdvancedConfigModel advancedConfigModel;
 
     @NotNull
     @Property(surroundWithTag = false)
-    final private SparkSubmitJobUploadStorageModel jobUploadStorageModel;
+    private final SparkSubmitJobUploadStorageModel jobUploadStorageModel;
 
     @Transient
     private boolean isClusterSelectable = true;
@@ -192,6 +191,7 @@ public class SparkSubmitModel {
     public void setLocalArtifactPath(String localArtifactPath) {
         getSubmissionParameter().setLocalArtifactPath(localArtifactPath);
     }
+
     @Attribute("file_path")
     public String getFilePath() {
         return getSubmissionParameter().getFile();

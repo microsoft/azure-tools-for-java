@@ -54,7 +54,6 @@ public class RunOnDockerHostAction extends AzureAnAction {
         this.configType = AzureDockerSupportConfigurationType.getInstance();
     }
 
-
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());

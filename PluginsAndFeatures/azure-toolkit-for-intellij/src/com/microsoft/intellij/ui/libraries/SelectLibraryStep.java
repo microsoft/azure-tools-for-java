@@ -54,7 +54,6 @@ public class SelectLibraryStep extends AzureWizardStep<AddLibraryWizardModel> im
         return rootPanel;
     }
 
-
     @Override
     public WizardStep onNext(final AddLibraryWizardModel model) {
         if (doValidate() == null) {

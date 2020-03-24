@@ -187,9 +187,11 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
 
     class CreateRedisCallable implements Callable<Void> {
         private ProcessingStrategy processor;
+
         public CreateRedisCallable(ProcessingStrategy processor) {
             this.processor = processor;
         }
+
         public Void call() throws Exception {
             DefaultLoader.getIdeHelper().runInBackground(
                     null,
@@ -223,7 +225,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             ProcessingStrategy processor = RedisCacheUtil.doGetProcessor(azure, skus, redisCacheNameValue, selectedLocationValue, selectedResGrpValue, selectedPriceTierValue, noSSLPort, newResGrp);
             ExecutorService executor = Executors.newSingleThreadExecutor();
             ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
-            ListenableFuture<Void> futureTask =  executorService.submit(new CreateRedisCallable(processor));
+            ListenableFuture<Void> futureTask = executorService.submit(new CreateRedisCallable(processor));
             final ProcessingStrategy processorInner = processor;
             Futures.addCallback(futureTask, new FutureCallback<Void>() {
                 @Override
@@ -233,6 +235,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
                         operation.complete();
                     }
                 }
+
                 @Override
                 public void onFailure(Throwable throwable) {
                     JOptionPane.showMessageDialog(null, throwable.getMessage(), "Error occurred when creating Redis Cache: " + redisCacheNameValue, JOptionPane.ERROR_MESSAGE, null);
@@ -352,7 +355,6 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             }
         });
 
-
         cbLocations.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -361,7 +363,6 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         });
 
         lblPricing.addMouseListener(new LinkListener(PRICING_LINK));
-
 
         cbPricing.addActionListener(new ActionListener() {
             @Override

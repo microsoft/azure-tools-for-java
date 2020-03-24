@@ -37,9 +37,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import javax.swing.*;
 import java.awt.*;
 
-import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
-import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
-
 public class SparkBatchJobConfigurable implements SettableControl<SparkBatchJobConfigurableModel>, Disposable {
     private JTabbedPane executionTypeTabPane;
     private JPanel myWholePanel;

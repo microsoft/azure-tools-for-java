@@ -32,7 +32,7 @@ import com.microsoft.intellij.components.ServerExplorerToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AzureExplorerOpenAction  extends AzureAnAction {
+public class AzureExplorerOpenAction extends AzureAnAction {
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Project project = DataKeys.PROJECT.getData(event.getDataContext());

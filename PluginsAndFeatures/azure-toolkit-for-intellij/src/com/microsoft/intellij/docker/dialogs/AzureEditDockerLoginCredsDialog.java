@@ -240,6 +240,7 @@ public class AzureEditDockerLoginCredsDialog extends AzureDialogWrapper {
   private class AzureDockerUpdateRunner extends Task.Backgroundable {
     public AzureEditDockerLoginCredsDialog editDockerHostDialog;
     //ProgressIndicator progressIndicator;
+
     public AzureDockerUpdateRunner(Project project, AzureEditDockerLoginCredsDialog editDockerHostDialog) {
       super(project, "Updating Docker Host...", true);
       this.editDockerHostDialog = editDockerHostDialog;

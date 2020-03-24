@@ -59,7 +59,7 @@ public class HDInsightUtil {
         // Enable HDInsight new SDK for IntelliJ
         DefaultLoader.getIdeHelper().setApplicationProperty(
                 com.microsoft.azure.hdinsight.common.CommonConst.ENABLE_HDINSIGHT_NEW_SDK, "true");
-        HDInsightRootModuleImpl hdInsightRootModule =  new HDInsightRootModuleImpl(azureModule);
+        HDInsightRootModuleImpl hdInsightRootModule = new HDInsightRootModuleImpl(azureModule);
 
         azureModule.setHdInsightModule(hdInsightRootModule);
     }
@@ -114,7 +114,6 @@ public class HDInsightUtil {
         if(!PluginUtil.isContainsToolWindowKey(key)) {
             SparkSubmissionToolWindowProcessor sparkSubmissionToolWindowProcessor = new SparkSubmissionToolWindowProcessor(toolWindow);
             PluginUtil.registerToolWindowManager(key, sparkSubmissionToolWindowProcessor);
-
 
             // make sure tool window process initialize on swing dispatch
             if(ApplicationManager.getApplication().isDispatchThread()) {

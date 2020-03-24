@@ -52,7 +52,7 @@ public class ManageSubscriptionsAction extends NodeAction {
         return getIcon();
     }
 
-    public static String getIcon () {
+    public static String getIcon() {
         return DefaultLoader.getUIHelper().isDarkTheme() ? ICON_DARK : ICON_LIGHT;
     }
 

@@ -55,8 +55,6 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 

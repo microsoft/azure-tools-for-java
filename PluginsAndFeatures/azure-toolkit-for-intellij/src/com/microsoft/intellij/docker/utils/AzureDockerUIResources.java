@@ -60,7 +60,6 @@ public class AzureDockerUIResources {
   private static final Logger LOGGER = Logger.getInstance(AzureDockerUIResources.class);
   public static boolean CANCELED = false;
 
-
   public static void updateAzureResourcesWithProgressDialog(Project project) {
     ProgressManager.getInstance().run(new Task.Modal(project, "Loading Azure Resources", true) {
       @Override
@@ -263,7 +262,6 @@ public class AzureDockerUIResources {
         return;
       }
 
-
       AzureDockerHostsManager dockerManager = AzureDockerHostsManager.getAzureDockerHostsManagerEmpty(azureAuthManager);
 
       if (!dockerManager.isInitialized()) {
@@ -272,7 +270,6 @@ public class AzureDockerUIResources {
           return;
         }
       }
-
 
       DockerHost dockerHost = (dockerManager.getDockerPreferredSettings() != null) ? dockerManager.getDockerHostForURL(dockerManager.getDockerPreferredSettings().dockerApiName) : null;
       AzureDockerImageInstance dockerImageDescription = dockerManager.getDefaultDockerImageDescription(project.getName(), dockerHost);

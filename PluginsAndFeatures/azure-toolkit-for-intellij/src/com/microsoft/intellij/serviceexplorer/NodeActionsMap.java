@@ -54,11 +54,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.container.Containe
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.BlobModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 

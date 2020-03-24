@@ -36,7 +36,7 @@ public class ProgressTaskModal implements IProgressTaskImpl {
 
     private Project project;
 
-    public ProgressTaskModal (Project project) {
+    public ProgressTaskModal(Project project) {
         this.project = project;
     }
 

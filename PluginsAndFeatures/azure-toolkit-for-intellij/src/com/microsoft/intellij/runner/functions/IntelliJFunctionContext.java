@@ -29,9 +29,7 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.functions.library.IFunctionContext;
 
 import java.io.IOException;

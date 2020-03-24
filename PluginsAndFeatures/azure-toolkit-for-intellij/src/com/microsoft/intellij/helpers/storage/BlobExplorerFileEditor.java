@@ -194,7 +194,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                     String value = strValue.substring(0, strValue.length() - 1);
 
                     if (value.isEmpty()) {
-                        return 0l;
+                        return 0L;
                     }
 
                     double l = Double.parseDouble(value);

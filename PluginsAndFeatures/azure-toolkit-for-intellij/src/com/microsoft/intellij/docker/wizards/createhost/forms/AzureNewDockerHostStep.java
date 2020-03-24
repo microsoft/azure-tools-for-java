@@ -572,7 +572,6 @@ public class AzureNewDockerHostStep extends AzureNewDockerWizardStep implements 
     return doValidate(true);
   }
 
-
   private ValidationInfo validateDockerHostName(boolean shakeOnError) {
     // Docker virtual machine name
     String hostName = dockerHostNameTextField.getText();

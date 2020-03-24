@@ -32,5 +32,6 @@ import java.util.List;
 
 public interface WebAppDeployMvpViewSlim extends MvpView {
     void fillWebApps(@NotNull List<ResourceEx<WebApp>> webAppLists);
+
     void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots);
 }

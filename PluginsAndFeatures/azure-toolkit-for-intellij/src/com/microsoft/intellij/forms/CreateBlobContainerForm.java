@@ -29,8 +29,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
@@ -42,7 +40,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.lang.reflect.Field;
 import java.util.Calendar;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_BLOB_CONTAINER;
@@ -121,7 +118,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
                     String msg = "An error occurred while attempting to create blob container."
                         + "\n" + String.format(message("webappExpMsg"), e.getMessage());
                     PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }) ;
+                });
             }
         });
 

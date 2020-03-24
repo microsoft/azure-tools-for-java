@@ -53,6 +53,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
 
     private static String instID = "";
     private static boolean isOptIn = true;
+
     static {
         String dataFile = PluginHelper.getTemplateFile(AzureBundle.message("dataFileName"));
         instID = DataOperations.getProperty(dataFile, AzureBundle.message("instID"));
@@ -68,7 +69,6 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     public String getPluginRootPath() {
         return PluginUtil.getPluginRootDirectory();
     }
-
 
     @Override
     public String getInstallationId() {

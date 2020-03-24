@@ -52,7 +52,6 @@ public class ModifyExternalStorageAccountAction extends NodeActionListener {
             }
         }
 
-
         form.setOnFinish(new Runnable() {
             @Override
             public void run() {

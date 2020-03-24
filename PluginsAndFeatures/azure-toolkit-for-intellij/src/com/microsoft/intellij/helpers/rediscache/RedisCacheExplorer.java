@@ -37,13 +37,11 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Collections;
 
@@ -62,7 +60,6 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
     private static final String[] SET_TITLE = new String[]{" Member"};
     private static final String[] ZSET_TITLE = new String[]{" Score", " Member"};
     private static final String[] HASH_TITLE = new String[]{" Field", " Value"};
-
 
     private static final String TABLE_HEADER_FONT = "Segoe UI";
     private static final int TABLE_HEADER_FONT_SIZE = 16;

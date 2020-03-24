@@ -46,7 +46,6 @@ public class ARMParserDefinition extends JsonParserDefinition {
         return new MergingLexerAdapter(new JsonLexer(), TokenSet.ANY);
     }
 
-
     @Override
     public PsiFile createFile(FileViewProvider fileViewProvider) {
         return new JsonFileImpl(fileViewProvider, ARMLanguage.INSTANCE);

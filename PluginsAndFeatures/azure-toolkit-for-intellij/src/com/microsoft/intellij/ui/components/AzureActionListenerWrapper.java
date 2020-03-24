@@ -79,7 +79,7 @@ public abstract class AzureActionListenerWrapper implements ActionListener {
             if (source instanceof JComboBox) {
                 JComboBox cb = (JComboBox)source;
                 Object selectedItem = cb.getSelectedItem();
-                if (selectedItem !=  null) {
+                if (selectedItem != null) {
                     telemetryProperties.put(COMBOSELECTED, selectedItem.toString());
                 }
             }

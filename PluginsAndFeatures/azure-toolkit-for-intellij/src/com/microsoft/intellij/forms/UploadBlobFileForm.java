@@ -126,7 +126,6 @@ public class UploadBlobFileForm extends AzureDialogWrapper {
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 
-
     public String getFolder() {
         return folder;
     }

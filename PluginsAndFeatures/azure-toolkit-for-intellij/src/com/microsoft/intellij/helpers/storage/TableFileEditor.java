@@ -137,7 +137,6 @@ public class TableFileEditor implements FileEditor {
                         entitiesTable.clearSelection();
                     }
 
-
                     if (me.getClickCount() == 2) {
                         editEntity();
                     }

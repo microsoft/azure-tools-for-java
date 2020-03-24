@@ -26,18 +26,14 @@ import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
-import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.runner.functions.AzureFunctionsConstants;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.UIHelper;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;

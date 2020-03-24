@@ -68,6 +68,7 @@ public class MavenProjectGenerator {
         }
     }
 
+    @SuppressWarnings("checkstyle:FallThrough")
     private void createDirectories(String root) throws IOException {
         switch (this.templatesType) {
             case ScalaFailureTaskDebugSample:

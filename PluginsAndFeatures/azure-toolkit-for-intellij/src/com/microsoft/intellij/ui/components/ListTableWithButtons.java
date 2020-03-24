@@ -242,7 +242,6 @@ public abstract class ListTableWithButtons<T> extends Observable {
         return new AnActionButton[0];
     }
 
-
     @NotNull
     protected List<T> getSelection() {
         int[] selection = myTableView.getComponent().getSelectedRows();
@@ -270,7 +269,7 @@ public abstract class ListTableWithButtons<T> extends Observable {
 
     protected abstract boolean canDeleteElement(T selection);
 
-    protected static abstract class ElementsColumnInfoBase<T> extends ColumnInfo<T, String> {
+    protected abstract static class ElementsColumnInfoBase<T> extends ColumnInfo<T, String> {
         private DefaultTableCellRenderer myRenderer;
 
         protected ElementsColumnInfoBase(String name) {

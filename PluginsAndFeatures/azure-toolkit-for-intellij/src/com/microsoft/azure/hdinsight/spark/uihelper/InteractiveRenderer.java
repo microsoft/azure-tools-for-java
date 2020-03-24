@@ -35,7 +35,7 @@ public class InteractiveRenderer extends DefaultTableCellRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        Component component =  super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         InteractiveTableModel tableModel = (InteractiveTableModel)table.getModel();
         if (column == interactiveColumn && hasFocus && tableModel != null) {
             int lastRow = tableModel.getRowCount();

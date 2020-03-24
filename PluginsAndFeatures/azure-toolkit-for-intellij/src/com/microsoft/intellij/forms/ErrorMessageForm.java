@@ -108,7 +108,6 @@ public class ErrorMessageForm extends AzureDialogWrapper {
         jv.setViewPosition(new Point(0, 0));
     }
 
-
     @Nullable
     @Override
     protected JComponent createSouthPanel() {

@@ -26,7 +26,6 @@ import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.openapi.module.StdModuleTypes;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainer;
 
 import javax.swing.*;
 

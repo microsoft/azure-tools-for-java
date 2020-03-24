@@ -41,7 +41,6 @@ public class CreateVMWizard extends WizardDialog<VMWizardModel> {
         return new Dimension(500, 467);
     }
 
-
     @Override
     protected JComponent createSouthPanel() {
         JComponent southPanelComp = super.createSouthPanel();

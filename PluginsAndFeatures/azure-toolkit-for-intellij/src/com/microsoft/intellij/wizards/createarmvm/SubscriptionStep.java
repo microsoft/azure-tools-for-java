@@ -24,7 +24,6 @@ package com.microsoft.intellij.wizards.createarmvm;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.wizard.WizardNavigationState;
-import com.intellij.ui.wizard.WizardStep;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -107,7 +106,6 @@ public class SubscriptionStep extends AzureWizardStep<VMWizardModel> implements 
         } catch (Exception ex) {
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Subscriptions\n\n" + ex.getMessage(), ex);
         }
-
 
 //            if (manager.authenticated()) {
 //                String upn = manager.getUserInfo().getUniqueName();

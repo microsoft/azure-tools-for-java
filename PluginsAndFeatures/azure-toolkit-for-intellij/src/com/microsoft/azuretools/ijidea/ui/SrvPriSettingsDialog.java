@@ -61,6 +61,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         public boolean isCellEditable(int row, int col) {
             return (col == 0);
         }
+
         @Override
         public Class<?> getColumnClass(int columnIndex)
         {

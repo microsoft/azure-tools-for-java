@@ -23,7 +23,6 @@
 package com.microsoft.intellij.language.arm;
 
 import com.intellij.lang.Language;
-import org.jetbrains.annotations.NotNull;
 
 public class ARMLanguage extends Language {
 

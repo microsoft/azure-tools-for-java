@@ -144,7 +144,6 @@ public class DeploymentPropertyView extends BaseEditor implements DeploymentProp
             DefaultLoader.getUIHelper().openResourceTemplateView(deploymentNode, deploymentProperty.getTemplateJson());
         });
 
-
         DefaultMutableTreeNode nodeRoot = new DefaultMutableTreeNode("Template");
         TreeModel model = new DefaultTreeModel(nodeRoot);
         templateTree.setModel(model);

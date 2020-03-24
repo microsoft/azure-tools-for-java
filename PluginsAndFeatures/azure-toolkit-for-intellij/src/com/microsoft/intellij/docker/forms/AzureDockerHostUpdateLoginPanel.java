@@ -31,15 +31,13 @@ import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerCertVault;
 import com.microsoft.azure.docker.model.EditableDockerHost;
 import com.microsoft.azure.docker.ops.AzureDockerCertVaultOps;
+import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.intellij.docker.dialogs.AzureSelectKeyVault;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
-import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -59,7 +57,6 @@ public class AzureDockerHostUpdateLoginPanel {
   public JLabel dockerHostImportSSHBrowseLabel;
   public JLabel dockerHostSecondPwdLabel;
   private ButtonGroup authSelectionGroup;
-
 
   private Project project;
   private EditableDockerHost editableHost;
@@ -206,7 +203,6 @@ public class AzureDockerHostUpdateLoginPanel {
     PluginUtil.dialogShaker(info, dialogWrapperParent);
   }
 
-
   public ValidationInfo doValidate(boolean shakeOnError) {
     // User name
     String vmUsername = dockerHostUsernameTextField.getText();
@@ -227,7 +223,7 @@ public class AzureDockerHostUpdateLoginPanel {
     if (((dockerHostKeepSshRadioButton.isSelected() && editableHost.originalDockerHost.hasSSHLogIn) ||
         dockerHostFirstPwdField.getPassword().length > 0 ||
         dockerHostSecondPwdField.getPassword().length > 0) &&
-        (vmPwd1.isEmpty() || vmPwd2.isEmpty() || ! vmPwd1.equals(vmPwd2) ||
+        (vmPwd1.isEmpty() || vmPwd2.isEmpty() || !vmPwd1.equals(vmPwd2) ||
             (dockerHostSecondPwdField.isVisible() && !AzureDockerValidationUtils.validateDockerHostPassword(vmPwd1))))
     {
       ValidationInfo info = AzureDockerUIResources.validateComponent("Incorrect password", mainPanel, dockerHostFirstPwdField, dockerHostFirstPwdLabel);

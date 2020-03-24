@@ -117,13 +117,14 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         }
         return sparkJobUrl;
     }
+
     /**
      * Running in Event dispatch thread
      */
     @Override
     protected void execute(ExecutionEnvironment environment, Callback callback, RunProfileState state) throws ExecutionException {
         final Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
-        final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<> ();
+        final AsyncPromise<ExecutionEnvironment> jobDriverEnvReady = new AsyncPromise<>();
         final SparkBatchRemoteDebugState submissionState = (SparkBatchRemoteDebugState) state;
 
         final SparkSubmitModel submitModel = submissionState.getSubmitModel();

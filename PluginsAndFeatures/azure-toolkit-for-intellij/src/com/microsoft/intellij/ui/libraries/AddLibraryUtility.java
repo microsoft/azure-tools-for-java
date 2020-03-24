@@ -61,7 +61,7 @@ public class AddLibraryUtility {
             return nameWithVersion;
         }
 
-        nameWithVersion =  nameWithVersion.substring(0, nameWithVersion.length() - FILE_SUFFIX.length());
+        nameWithVersion = nameWithVersion.substring(0, nameWithVersion.length() - FILE_SUFFIX.length());
         int index = nameWithVersion.indexOf('.');
         if (index < 0) {
             return nameWithVersion;

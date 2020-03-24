@@ -43,13 +43,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 
-public abstract class AzureRunProfileState <T> implements RunProfileState {
+public abstract class AzureRunProfileState<T> implements RunProfileState {
     protected final Project project;
 
     public AzureRunProfileState(@NotNull Project project) {
         this.project = project;
     }
-
 
     @Nullable
     @Override
@@ -93,7 +92,7 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
         return null;
     }
 
-    protected void updateTelemetryMap(@NotNull  Map<String, String> telemetryMap){}
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap){}
 
     private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
         updateTelemetryMap(telemetryMap);
@@ -107,8 +106,11 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
     }
 
     protected abstract String getDeployTarget();
+
     protected abstract T executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception;
+
     protected abstract void onSuccess(T result, @NotNull RunProcessHandler processHandler);
+
     protected abstract void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler);
 }

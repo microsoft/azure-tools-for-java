@@ -79,7 +79,6 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
         return true;
         }
 
-
         AzureDockerHostsManager dockerManager = AzureDockerHostsManager.getAzureDockerHostsManagerEmpty(azureAuthManager);
 
         if (!dockerManager.isInitialized()) {
@@ -128,9 +127,8 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
         return TelemetryConstants.CREATE_DOCKER_HOST;
     }
 
-
-  @Override
-  public void update(AnActionEvent actionEvent) {
+    @Override
+    public void update(AnActionEvent actionEvent) {
     final Module module = actionEvent.getData(LangDataKeys.MODULE);
     actionEvent.getPresentation().setVisible(PlatformUtils.isIdeaUltimate());
     if (!PlatformUtils.isIdeaUltimate()) {

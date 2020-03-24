@@ -95,7 +95,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     }
 
     @Override
-    public  void update(AnActionEvent e) {
+    public void update(AnActionEvent e) {
         try {
             boolean isSignIn = AuthMethodManager.getInstance().isSignedIn();
             e.getPresentation().setEnabled(isSignIn);

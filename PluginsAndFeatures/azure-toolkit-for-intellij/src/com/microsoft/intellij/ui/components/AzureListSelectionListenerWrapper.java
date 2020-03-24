@@ -31,7 +31,7 @@ import javax.swing.event.ListSelectionListener;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract  class AzureListSelectionListenerWrapper implements ListSelectionListener {
+public abstract class AzureListSelectionListenerWrapper implements ListSelectionListener {
     private static final String COMPOSITE = "Composite";
     private static final String WIDGEETNAME = "WidgetName";
     private static final String WIDGETTYPE = "Type";
@@ -55,7 +55,7 @@ public abstract  class AzureListSelectionListenerWrapper implements ListSelectio
     }
 
     @Override
-    public final  void valueChanged(ListSelectionEvent e) {
+    public final void valueChanged(ListSelectionEvent e) {
         sendTelemetry(e);
         valueChangedFunc(e);
     }

@@ -32,6 +32,7 @@ import java.net.URI;
  */
 class WebUi implements IWebUi {
     LoginWindow loginWindow;
+
     @Override
     //public Future<String> authenticateAsync(URI requestUri, URI redirectUri) {
     public String authenticate(URI requestUri, URI redirectUri) {

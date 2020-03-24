@@ -37,7 +37,7 @@ import java.util.List;
 public abstract class AzureSettingsEditor<T extends AzureRunConfigurationBase> extends SettingsEditor<T> {
     private final Project project;
 
-    public AzureSettingsEditor (@NotNull Project project) {
+    public AzureSettingsEditor(@NotNull Project project) {
         this.project = project;
     }
 

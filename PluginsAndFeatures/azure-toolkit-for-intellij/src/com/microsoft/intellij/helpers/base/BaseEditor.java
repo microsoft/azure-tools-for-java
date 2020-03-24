@@ -36,7 +36,7 @@ import java.beans.PropertyChangeListener;
 public abstract class BaseEditor implements FileEditor {
 
     @Override
-    public void setState(@NotNull FileEditorState fileEditorState) {  }
+    public void setState(@NotNull FileEditorState fileEditorState) { }
 
     @Override
     public boolean isModified() {

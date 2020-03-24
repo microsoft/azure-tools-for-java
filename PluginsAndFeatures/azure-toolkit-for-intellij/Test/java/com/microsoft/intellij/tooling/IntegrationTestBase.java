@@ -56,8 +56,8 @@ public abstract class IntegrationTestBase {
     private static final String MOCK_HOST = "localhost";
     private static final String MOCK_PORT = String.format("3%03d", (int) (Math.random() * Math.random() * 1000));
     private static final String MOCK_URI = "http://" + MOCK_HOST + ":" + MOCK_PORT;
-    private final static String RECORD_FOLDER = "records/";
-    protected final static String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
+    private static final String RECORD_FOLDER = "records/";
+    protected static final String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
 
     public static Boolean IS_MOCKED = IsMocked();
     private static String azureAuthFile = getAuthFile();

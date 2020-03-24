@@ -52,7 +52,6 @@ public class WebDeployAction extends AzureAnAction {
 
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
 
-
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());

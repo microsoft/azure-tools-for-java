@@ -62,8 +62,8 @@ class LoginWindow extends AzureDialogWrapper {
 
     public LoginWindow(String requestUri, String redirectUri) {
         super(null, false, IdeModalityType.IDE);
-        this.redirectUri =  redirectUri;
-        this.requestUri =  requestUri;
+        this.redirectUri = redirectUri;
+        this.requestUri = requestUri;
         setModal(true);
         setTitle("Azure Login Dialog");
 

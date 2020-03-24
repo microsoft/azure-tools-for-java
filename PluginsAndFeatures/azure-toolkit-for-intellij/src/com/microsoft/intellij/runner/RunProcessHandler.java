@@ -36,6 +36,7 @@ import java.io.OutputStream;
 public class RunProcessHandler extends ProcessHandler implements IProgressIndicator {
 
     private static final String PROCESS_TERMINATED = "The process has been terminated";
+
     @Override
     protected void destroyProcessImpl() {
     }

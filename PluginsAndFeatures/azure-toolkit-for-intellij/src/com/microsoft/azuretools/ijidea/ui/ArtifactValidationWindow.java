@@ -23,7 +23,6 @@
 package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.Nullable;

@@ -28,7 +28,6 @@ import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterDestoryCt
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterDestoryModel;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
-import com.microsoft.azure.hdinsight.sdk.cluster.DestroyableCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.jetbrains.annotations.NotNull;

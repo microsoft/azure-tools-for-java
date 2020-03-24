@@ -287,7 +287,6 @@ public class UIHelperImpl implements UIHelper {
         });
     }
 
-
     @Override
     public void refreshBlobs(@NotNull final Object projectObject, @NotNull final String accountName, @NotNull final BlobContainer container) {
         ApplicationManager.getApplication().runReadAction(new Runnable() {
@@ -432,7 +431,6 @@ public class UIHelperImpl implements UIHelper {
             }
         }
     }
-
 
     @Override
     public void openInBrowser(String link) {

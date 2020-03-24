@@ -125,13 +125,13 @@ public class AddNewEmulatorForm extends DialogWrapper {
                     preEmulatorSetupCheck();
                     if(isCarryOnNextStep && !checkEmulatorSetup()) {
                         int dialogButton = JOptionPane.YES_NO_OPTION;
-                        int dialogResult = JOptionPane.showConfirmDialog (null, "We detect this emulator has not been configured yet. Would you like to set up emulator first (takes about 10 min)?","Warning",dialogButton);
+                        int dialogResult = JOptionPane.showConfirmDialog(null, "We detect this emulator has not been configured yet. Would you like to set up emulator first (takes about 10 min)?","Warning",dialogButton);
                         if(dialogResult == JOptionPane.YES_OPTION){
                             emulatorLogPanel.setVisible(true);
                             setEnable(false);
                             ExecutorService executor = Executors.newSingleThreadExecutor();
                             ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
-                            ListenableFuture<Boolean> futureTask =  executorService.submit(new Callable<Boolean>()
+                            ListenableFuture<Boolean> futureTask = executorService.submit(new Callable<Boolean>()
                             {
                                 @Override
                                 public Boolean call() throws Exception {
@@ -337,7 +337,7 @@ public class AddNewEmulatorForm extends DialogWrapper {
             return false;
         }
 
-        return  httpResponse.getCode() == 201 || httpResponse.getCode() == 200;
+        return httpResponse.getCode() == 201 || httpResponse.getCode() == 200;
     }
 
     private boolean checkSparkHistoryEndpoint() {
@@ -349,8 +349,7 @@ public class AddNewEmulatorForm extends DialogWrapper {
         } catch (Exception e) {
             return false;
         }
-
-        return  httpResponse.getCode() == 201 || httpResponse.getCode() == 200 || httpResponse.getCode() == 500;
+        return httpResponse.getCode() == 201 || httpResponse.getCode() == 200 || httpResponse.getCode() == 500;
     }
 
     private boolean checkAmbariEndpoint() {
@@ -363,7 +362,7 @@ public class AddNewEmulatorForm extends DialogWrapper {
             return false;
         }
 
-        return  httpResponse.getCode() == 201 || httpResponse.getCode() == 200;
+        return httpResponse.getCode() == 201 || httpResponse.getCode() == 200;
     }
 
     @NotNull

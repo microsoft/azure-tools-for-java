@@ -65,7 +65,6 @@ public class TableEntityForm extends AzureDialogWrapper {
     private String tableName;
     private List<TableEntity> tableEntityList;
 
-
     private static String[] INVALID_KEYWORDS = {
             "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
             "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit",
@@ -220,7 +219,6 @@ public class TableEntityForm extends AzureDialogWrapper {
 
             properties.put(name, property);
         }
-
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, tableEntity == null ? "Creating entity" : "Updating entity", false) {
             @Override
