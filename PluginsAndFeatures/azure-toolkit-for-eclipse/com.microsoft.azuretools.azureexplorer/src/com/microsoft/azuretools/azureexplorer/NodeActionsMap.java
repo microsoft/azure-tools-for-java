@@ -28,7 +28,6 @@ import java.util.Map;
 import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azuretools.azureexplorer.actions.AddNewClusterAction;
-import com.microsoft.azuretools.azureexplorer.actions.AddNewEmulatorAction;
 import com.microsoft.azuretools.azureexplorer.actions.AttachExternalStorageAccountAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateArmStorageAccountAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateArmVMAction;
