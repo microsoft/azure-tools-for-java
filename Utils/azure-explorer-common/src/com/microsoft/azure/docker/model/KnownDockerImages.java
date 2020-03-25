@@ -27,6 +27,8 @@ import static com.microsoft.azure.docker.model.KnownDockerImages.KnownDefaultDoc
 public enum KnownDockerImages {
   TOMCAT8("tomcat:8.0.20-jre8", TOMCAT8_DEFAULT_DOCKERFILE, "8080", false, null),
   TOMCAT8_DEBUG("tomcat:8.0.20-jre8 (with debugging)", TOMCAT8_DEBUG_DOCKERFILE, "8080", false, "5005"),
+  JBOSS_WILDFLY("JBoss WildFly", JBOSS_WILDFLY_DEFAULT_DOCKERFILE, "8080", false, null),
+  JBOSS_WILDFLY_DEBUG("JBoss WildFly (with debugging)", JBOSS_WILDFLY_DEBUG_DOCKERFILE, "8080", false, "8787"),
   OPENJDK_7("OpenJDK 7", OPENJDK_7_DEFAULT_DOCKERFILE, "80", true, null),
   OPENJDK_8("OpenJDK 8", OPENJDK_8_DEFAULT_DOCKERFILE, "80", true, null),
   OPENJDK_9("OpenJDK 9", OPENJDK_9_DEFAULT_DOCKERFILE, "80", true, null),
@@ -62,6 +64,14 @@ public enum KnownDockerImages {
   public boolean isCanRunJarFile() { return canRunJarFile;}
 
   public static class KnownDefaultDockerfiles {
+    public static final String JBOSS_WILDFLY_DEFAULT_DOCKERFILE =
+        "FROM jboss/wildfly\n" +
+            "ADD [$]DOCKER_ARTIFACT_FILENAME[$] /opt/jboss/wildfly/standalone/deployments/\n";
+    public static final String JBOSS_WILDFLY_DEBUG_DOCKERFILE =
+        "FROM jboss/wildfly\n" +
+            "ADD [$]DOCKER_ARTIFACT_FILENAME[$] /opt/jboss/wildfly/standalone/deployments/\n" +
+            "EXPOSE 8787\n" +
+            "CMD [\"/opt/jboss/wildfly/bin/standalone.sh\", \"--debug\", \"-b\", \"0.0.0.0\"]\n";
     public static final String TOMCAT8_DEFAULT_DOCKERFILE =
         "FROM tomcat:8.0.20-jre8\n" +
             "ADD [$]DOCKER_ARTIFACT_FILENAME[$] /usr/local/tomcat/webapps/\n";
