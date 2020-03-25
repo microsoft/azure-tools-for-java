@@ -24,6 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,7 @@ public class NodeAction {
                     public void onFailure(Throwable throwable) {
                         listener.afterActionPerformed(event);
                     }
-                });
+                }, MoreExecutors.directExecutor());
             }
         }
     }

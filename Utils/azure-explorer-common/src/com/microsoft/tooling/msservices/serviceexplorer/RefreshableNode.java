@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
@@ -159,7 +160,7 @@ public abstract class RefreshableNode extends Node {
                                         }
                                     });
                                 }
-                            });
+                            }, MoreExecutors.directExecutor());
                             node.refreshItems(future, forceRefresh);
                         }
                     }

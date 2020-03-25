@@ -22,12 +22,11 @@
 
 package com.microsoft.intellij.runner.functions.library;
 
-import com.microsoft.azure.auth.configuration.AuthConfiguration;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
 
+import java.io.IOException;
 import java.util.Map;
 
 public interface IAppServiceContext {
@@ -51,11 +50,9 @@ public interface IAppServiceContext {
 
     Map getAppSettings();
 
-    AuthConfiguration getAuth();
-
     String getDeploymentType();
 
-    Azure getAzureClient() throws AzureExecutionException;
+    Azure getAzureClient() throws IOException;
 
     IProject getProject();
 }
