@@ -214,7 +214,8 @@ public class Node implements MvpView, BasicTelemetryProperty {
     public NodeAction addAction(String name, NodeActionListener actionListener) {
         NodeAction nodeAction = getNodeActionByName(name);
         if (nodeAction == null) {
-            addAction(nodeAction = new NodeAction(this, name));
+            nodeAction = new NodeAction(this, name);
+            addAction(nodeAction);
         }
         nodeAction.addListener(actionListener);
         return nodeAction;
@@ -262,7 +263,8 @@ public class Node implements MvpView, BasicTelemetryProperty {
         }
     }
 
-    protected NodeActionListener createNodeActionListener(Class<? extends NodeActionListener> listenerClass) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    protected NodeActionListener createNodeActionListener(Class<? extends NodeActionListener> listenerClass)
+            throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         Constructor constructor = listenerClass.getDeclaredConstructor(getClass());
 
         // create an instance passing this object as a constructor argument
@@ -281,9 +283,9 @@ public class Node implements MvpView, BasicTelemetryProperty {
         if (actions != null) {
             try {
                 for (Class<? extends NodeActionListener> actionListener : actions) {
-                    Name name = actionListener.getAnnotation(Name.class);
-                    if (name != null) {
-                        addAction(name.value(), createNodeActionListener(actionListener));
+                    Name nameAnnotation = actionListener.getAnnotation(Name.class);
+                    if (nameAnnotation != null) {
+                        addAction(nameAnnotation.value(), createNodeActionListener(actionListener));
                     }
                 }
             } catch (InstantiationException e) {

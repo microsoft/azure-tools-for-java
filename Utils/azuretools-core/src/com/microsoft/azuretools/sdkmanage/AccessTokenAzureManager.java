@@ -22,9 +22,11 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.adauth.PromptBehavior;
@@ -129,6 +131,18 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     }
 
     @Override
+    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
+            String tid = subscriptionManager.getSubscriptionTenant(sid);
+            try {
+                return authSpringCloud(sid, tid);
+            } catch (IOException e) {
+                return SneakyThrowUtils.sneakyThrow(e);
+            }
+        });
+    }
+
+    @Override
     public List<Subscription> getSubscriptions() throws IOException {
         List<Subscription> sl = new LinkedList<Subscription>();
         // could be multi tenant - return all subscriptions for the current account
@@ -197,6 +211,13 @@ public class AccessTokenAzureManager extends AzureManagerBase {
                 .withInterceptor(new TelemetryInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
                 .authenticate(new RefreshableTokenCredentials(this, tid));
+    }
+
+    private AppPlatformManager authSpringCloud(String sid, String tid) throws IOException {
+        return AppPlatformManager.configure()
+                .withInterceptor(new TelemetryInterceptor())
+                .withUserAgent(CommonSettings.USER_AGENT)
+                .authenticate(new RefreshableTokenCredentials(this, tid), sid);
     }
 
     @Override

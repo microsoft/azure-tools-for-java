@@ -24,6 +24,7 @@ package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.authmanage.Environment;
@@ -48,6 +49,7 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String GLOBAL_SCM_SUFFIX = ".scm.azurewebsites.net";
 
     protected Map<String, Azure> sidToAzureMap = new HashMap<>();
+    protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new HashMap<>();
 
     @Override
     public String getPortalUrl() {

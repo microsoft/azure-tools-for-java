@@ -24,6 +24,7 @@ package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.adauth.PromptBehavior;
@@ -37,20 +38,35 @@ import java.util.List;
 
 public interface AzureManager {
     Azure getAzure(String sid) throws IOException;
+
+    AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException;
+
     List<Subscription> getSubscriptions() throws IOException;
+
     List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException;
+
     Settings getSettings();
+
     SubscriptionManager getSubscriptionManager();
+
     void drop() throws IOException;
-//    public List<Tenant> getTenants() throws Throwable;
+
     KeyVaultClient getKeyVaultClient(String tid) throws Exception;
+
     String getCurrentUserId() throws IOException;
+
     String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException;
+
     String getManagementURI() throws IOException;
+
     String getStorageEndpointSuffix();
+
     String getTenantIdBySubscription(String subscriptionId) throws IOException;
+
     String getScmSuffix();
+
     Environment getEnvironment();
+
     String getPortalUrl();
 
     default String getAccessToken(String tid) throws IOException {
