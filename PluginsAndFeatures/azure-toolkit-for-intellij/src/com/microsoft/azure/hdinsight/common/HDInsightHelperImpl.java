@@ -84,7 +84,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
         final Project project = (Project) projectObject;
         final VirtualFile openedFile = getOpenedItem(project);
 
-        // TODO clusterDetail may be null
+        // TODO: Fix the issue of clusterDetail may be null
         if (openedFile == null || isNeedReopen(openedFile, clusterDetail)) {
             openItem(project, clusterDetail, uuid, openedFile);
         } else {

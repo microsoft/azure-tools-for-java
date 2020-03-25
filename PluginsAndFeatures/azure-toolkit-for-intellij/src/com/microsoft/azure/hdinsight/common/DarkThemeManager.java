@@ -65,7 +65,7 @@ public class DarkThemeManager {
     }
 
     public Color getErrorMessageColor() {
-        // TODO fix the Color with JBColor
+        // TODO: fix the Color with JBColor
         if (UIUtil.isUnderDarcula()) {
             return new Color(255, 80, 80);
         }
