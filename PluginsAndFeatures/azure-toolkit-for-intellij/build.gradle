@@ -72,7 +72,6 @@ sourceSets {
 }
 
 repositories {
-    maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
     mavenLocal()
     mavenCentral()
 }

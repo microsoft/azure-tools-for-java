@@ -60,7 +60,7 @@
             <groupId>
               com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.29</version>
+            <version>8.30</version>
           </dependency>
         </dependencies>
         <configuration>

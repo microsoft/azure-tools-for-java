@@ -28,8 +28,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Executors;
 
 public class TaskExecutor {
@@ -37,7 +35,7 @@ public class TaskExecutor {
 
     public static <T> ListenableFuture<T> submit(@NotNull Task<T> task) {
         final ListenableFuture<T> listenableFuture = executors.submit(task);
-        Futures.addCallback(listenableFuture, task.callback);
+        Futures.addCallback(listenableFuture, task.callback, MoreExecutors.directExecutor());
         return listenableFuture;
     }
 }

@@ -50,7 +50,7 @@ import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
-import com.microsoft.azure.maven.common.utils.SneakyThrowUtils;
+import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.sun.tools.sjavac.Log;
 
 import org.apache.commons.collections.MapUtils;
