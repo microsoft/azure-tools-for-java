@@ -27,7 +27,8 @@ import com.intellij.util.ui.UIUtil;
 import java.awt.*;
 
 public class DarkThemeManager {
-    private DarkThemeManager(){}
+    private DarkThemeManager() {
+    }
 
     private static DarkThemeManager instance = null;
 
@@ -43,10 +44,10 @@ public class DarkThemeManager {
     private static final String Blue = "blue";
     private static final String LightBlue = "#5394EC";
 
-    public static DarkThemeManager getInstance(){
-        if(instance == null){
-            synchronized (DarkThemeManager.class){
-                if(instance == null){
+    public static DarkThemeManager getInstance() {
+        if (instance == null) {
+            synchronized (DarkThemeManager.class) {
+                if (instance == null) {
                     instance = new DarkThemeManager();
                 }
             }
@@ -55,8 +56,8 @@ public class DarkThemeManager {
         return instance;
     }
 
-    public String getWarningColor(){
-        if(UIUtil.isUnderDarcula()){
+    public String getWarningColor() {
+        if (UIUtil.isUnderDarcula()) {
             return LightOrange;
         }
 
@@ -64,6 +65,7 @@ public class DarkThemeManager {
     }
 
     public Color getErrorMessageColor() {
+        // TODO fix the Color with JBColor
         if (UIUtil.isUnderDarcula()) {
             return new Color(255, 80, 80);
         }
@@ -79,23 +81,23 @@ public class DarkThemeManager {
         return new Color(255, 165, 0);
     }
 
-    public String getErrorColor(){
-        if(UIUtil.isUnderDarcula()){
+    public String getErrorColor() {
+        if (UIUtil.isUnderDarcula()) {
             return Rose;
         }
 
         return ColorRed;
     }
 
-    public String getInfoColor(){
-        if(UIUtil.isUnderDarcula()){
+    public String getInfoColor() {
+        if (UIUtil.isUnderDarcula()) {
             return Gray;
         }
 
         return Black;
     }
 
-    public String getHyperLinkColor(){
+    public String getHyperLinkColor() {
         if (UIUtil.isUnderDarcula()) {
             return LightBlue;
         }

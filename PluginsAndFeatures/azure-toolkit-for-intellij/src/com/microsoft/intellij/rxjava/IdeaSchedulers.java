@@ -33,8 +33,8 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Scheduler;
@@ -52,21 +52,22 @@ import static rx.schedulers.Schedulers.computation;
 import static rx.schedulers.Schedulers.from;
 
 public class IdeaSchedulers implements IdeSchedulers, ILogger {
-    @Nullable private final Project project;
+    @Nullable
+    private final Project project;
 
     public IdeaSchedulers() {
         this(null);
     }
 
-    public IdeaSchedulers(@Nullable Project project) {
+    public IdeaSchedulers(@Nullable final Project project) {
         this.project = project;
     }
 
-    public Scheduler processBarVisibleAsync(@NotNull String title) {
+    public Scheduler processBarVisibleAsync(@NotNull final String title) {
         return from(command -> ApplicationManager.getApplication().invokeLater(() -> {
             final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
+                public void run(@NotNull final ProgressIndicator progressIndicator) {
                     command.run();
                 }
             };
@@ -77,11 +78,11 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
         }, ModalityState.any()));
     }
 
-    public Scheduler processBarVisibleSync( @NotNull String title) {
+    public Scheduler processBarVisibleSync(@NotNull final String title) {
         return from(command -> ApplicationManager.getApplication().invokeAndWait(() -> {
             final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
+                public void run(@NotNull final ProgressIndicator progressIndicator) {
                     command.run();
                 }
             };
@@ -96,8 +97,8 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
         return dispatchUIThread(ModalityState.any());
     }
 
-    public Scheduler dispatchUIThread(ModalityState state) {
-        Application application = ApplicationManager.getApplication();
+    public Scheduler dispatchUIThread(final ModalityState state) {
+        final Application application = ApplicationManager.getApplication();
 
         return from(command -> {
             try {
@@ -106,7 +107,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
                 } else {
                     application.invokeLater(command, state);
                 }
-            } catch (ProcessCanceledException ignored) {
+            } catch (final ProcessCanceledException ignored) {
                 // FIXME!!! Not support process canceling currently, just ignore it
             }
         });
@@ -114,7 +115,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
 
     @Override
     public Scheduler dispatchPooledThread() {
-        Application application = ApplicationManager.getApplication();
+        final Application application = ApplicationManager.getApplication();
 
         return from(command -> {
             try {
@@ -123,7 +124,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
                 } else {
                     application.executeOnPooledThread(command);
                 }
-            } catch (ProcessCanceledException ignored) {
+            } catch (final ProcessCanceledException ignored) {
                 // FIXME!!! Not support process canceling currently, just ignore it
             }
         });
@@ -131,13 +132,13 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
 
     private static final ConcurrentMap<Thread, ProgressIndicator> thread2Indicator = new ConcurrentHashMap<>(32);
 
-    public static void updateCurrentBackgroundableTaskIndicator(Action1<ProgressIndicator> action) {
+    public static void updateCurrentBackgroundableTaskIndicator(final Action1<? super ProgressIndicator> action) {
         final Thread currentThread = Thread.currentThread();
         final ProgressIndicator indicator = thread2Indicator.get(currentThread);
 
         if (indicator == null) {
             LoggerFactory.getLogger(IdeaSchedulers.class)
-                    .warn("No ProgressIndicator found for thread " + currentThread.getName());
+                         .warn("No ProgressIndicator found for thread " + currentThread.getName());
 
             return;
         }
@@ -153,10 +154,10 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
 
                 // Check if indicator's cancelled every 0.5s and interrupt the worker thread if it be.
                 Observable.interval(500, MILLISECONDS, computation())
-                        .takeUntil(i -> indicator.isCanceled())
-                        .filter(i -> indicator.isCanceled())
-                        .subscribe(data -> workerThread.interrupt(),
-                                   err -> log().warn("Can't interrupt thread {}", workerThread.getName(), err));
+                          .takeUntil(i -> indicator.isCanceled())
+                          .filter(i -> indicator.isCanceled())
+                          .subscribe(data -> workerThread.interrupt(),
+                                     err -> log().warn("Can't interrupt thread {}", workerThread.getName(), err));
 
                 thread2Indicator.putIfAbsent(workerThread, indicator);
 
