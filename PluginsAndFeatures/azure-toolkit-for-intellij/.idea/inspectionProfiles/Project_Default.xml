@@ -1988,7 +1988,9 @@
     <inspection_tool class="TypeParameterShadow" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UElementAsPsi" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="UNCHECKED_WARNING" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="UNUSED_IMPORT" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="UNUSED_IMPORT" enabled="true" level="WARNING" enabled_by_default="true">
+      <scope name="All Changed Files" level="ERROR" enabled="true" />
+    </inspection_tool>
     <inspection_tool class="UnaryPlus" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="UncheckedExceptionClass" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="UnclearBinaryExpression" enabled="true" level="INFORMATION" enabled_by_default="true" />
