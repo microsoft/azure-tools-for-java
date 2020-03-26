@@ -98,7 +98,6 @@ public class HDInsightHelperImpl implements HDInsightHelper {
         return detail != null && !detail.getName().equalsIgnoreCase(myClusterDetail.getName());
     }
 
-    @Nullable
     private static VirtualFile getOpenedItem(final Project project) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         for (final VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
