@@ -44,6 +44,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -102,7 +103,7 @@ public class CreateFunctionHandler {
 
     // region Create or update Azure Functions
 
-    private void createOrUpdateFunctionApp() throws AzureExecutionException {
+    private void createOrUpdateFunctionApp() throws IOException, AzureExecutionException {
         final FunctionApp app = getFunctionApp();
         if (app == null) {
             createFunctionApp();
@@ -111,7 +112,7 @@ public class CreateFunctionHandler {
         }
     }
 
-    private void createFunctionApp() throws AzureExecutionException {
+    private void createFunctionApp() throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_CREATE_START);
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
         final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
@@ -120,7 +121,7 @@ public class CreateFunctionHandler {
         Log.prompt(String.format(FUNCTION_APP_CREATED, ctx.getAppName()));
     }
 
-    private void updateFunctionApp(final FunctionApp app) throws AzureExecutionException {
+    private void updateFunctionApp(final FunctionApp app) throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_UPDATE);
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         app.inner().withTags(null);
@@ -154,7 +155,7 @@ public class CreateFunctionHandler {
 
     // endregion
 
-    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws AzureExecutionException {
+    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws IOException, AzureExecutionException {
         final FunctionRuntimeHandler.Builder<?> builder;
         final OperatingSystemEnum os = getOsEnum();
         switch (os) {

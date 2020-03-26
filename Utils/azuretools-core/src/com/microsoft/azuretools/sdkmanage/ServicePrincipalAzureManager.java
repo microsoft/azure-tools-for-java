@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import org.apache.commons.lang3.StringUtils;
 
 import com.microsoft.azure.AzureEnvironment;
@@ -122,6 +123,17 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         AzureRegisterProviderNamespaces.registerAzureNamespaces(azure);
         sidToAzureMap.put(sid, azure);
         return azure;
+    }
+
+    @Override
+    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
+            try {
+                return authSpringCloud(sid);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
@@ -245,4 +257,15 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
             env = Environment.GLOBAL;
         }
     }
+
+    private AppPlatformManager authSpringCloud(String sid) throws IOException {
+        if (credFile != null) {
+            throw new IOException("Cannot use Auth file for spring cloud authentication.");
+        }
+        return AppPlatformManager.configure()
+                .withInterceptor(new TelemetryInterceptor())
+                .withUserAgent(CommonSettings.USER_AGENT)
+                .authenticate(atc, sid);
+    }
+
 }

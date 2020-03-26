@@ -185,7 +185,7 @@
         <dependency>
             <groupId>eu.infomas</groupId>
             <artifactId>annotation-detector</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.5</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
@@ -194,6 +194,16 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure.appplatform.v2019_05_01_preview</groupId>
+            <artifactId>azure-mgmt-appplatform</artifactId>
+            <version>1.0.0-beta-2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-tools-common</artifactId>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

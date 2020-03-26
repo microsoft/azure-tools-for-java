@@ -23,7 +23,7 @@
 package com.microsoft.intellij.runner.functions.core;
 
 import com.microsoft.azure.common.logging.Log;
-import com.microsoft.azure.maven.common.utils.TextUtils;
+import com.microsoft.azure.common.utils.TextUtils;
 import com.microsoft.intellij.util.CommandUtils;
 
 import java.io.File;

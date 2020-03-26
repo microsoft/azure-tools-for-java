@@ -293,8 +293,6 @@ public class AzureDockerHostsManager {
     List<KnownDockerImages> dockerImagesList = new ArrayList<>();
     dockerImagesList.add(KnownDockerImages.TOMCAT8);
     dockerImagesList.add(KnownDockerImages.TOMCAT8_DEBUG);
-    dockerImagesList.add(KnownDockerImages.JBOSS_WILDFLY);
-    dockerImagesList.add(KnownDockerImages.JBOSS_WILDFLY_DEBUG);
     dockerImagesList.add(KnownDockerImages.OPENJDK_LATEST);
     dockerImagesList.add(KnownDockerImages.OPENJDK_LATEST_DEBUG);
     dockerImagesList.add(KnownDockerImages.OPENJDK_7);

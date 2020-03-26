@@ -24,6 +24,7 @@ package com.microsoft.azuretools.authmanage;
 
 
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -41,7 +42,7 @@ import java.util.logging.Logger;
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
 
 public class AuthMethodManager {
-    private final static Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
     private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. "
             + "Please check if you have already signed in.";
     private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure with Subscription ID: %s. "
@@ -74,6 +75,13 @@ public class AuthMethodManager {
             throw new IOException(String.format(CANNOT_GET_AZURE_BY_SID, sid));
         }
         return azure;
+    }
+
+    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+        if (getAzureManager() == null) {
+            throw new IOException(CANNOT_GET_AZURE_MANAGER);
+        }
+        return getAzureManager().getAzureSpringCloudClient(sid);
     }
 
     public void addSignInEventListener(Runnable l) {

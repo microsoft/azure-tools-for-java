@@ -632,7 +632,6 @@ public class WebAppUtils {
         return Arrays.asList(new RuntimeStack[]{
             RuntimeStack.TOMCAT_8_5_JRE8,
             RuntimeStack.TOMCAT_9_0_JRE8,
-            RuntimeStack.WILDFLY_14_JRE8,
             RuntimeStack.JAVA_8_JRE8,
             RuntimeStack.JAVA_11_JAVA11,
             RuntimeStack.TOMCAT_8_5_JAVA11,
