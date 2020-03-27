@@ -37,8 +37,8 @@ import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jsoup.helper.StringUtil;
 
 import java.util.Iterator;
 
@@ -82,7 +82,7 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
                 runConfiguration.initializeDefaults(module);
             }
         }
-        if (StringUtil.isBlank(configuration.getName())) {
+        if (StringUtils.isBlank(configuration.getName())) {
             configuration.setName("Run Functions - " + runConfiguration.getModule().getName());
         }
         return true;

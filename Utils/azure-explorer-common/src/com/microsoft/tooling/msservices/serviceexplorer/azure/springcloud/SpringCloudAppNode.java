@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
@@ -55,6 +56,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView, 
     private static final String ACTION_RESTART = "Restart";
     private static final String ACTION_OPEN_IN_BROWSER = "Open In Browser";
     private static final String ACTION_SHOW_PROPERTY = "Show Properties";
+    private static final String ACTION_OPEN_IN_PORTAL = "Open In Portal";
 
     private AppResourceInner app;
     private DeploymentResourceStatus status;
@@ -113,6 +115,13 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView, 
 
         addAction(ACTION_DELETE, new DeleteSpringCloudAppAction());
 
+        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP,
+                new NodeActionListener() {
+                    @Override
+                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                        openResourcesInPortal(getSubscriptionId(), getAppId());
+                    }
+                }));
         addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_BROWSER_SPRING_CLOUD_APP,
                 new NodeActionListener() {
                     @Override

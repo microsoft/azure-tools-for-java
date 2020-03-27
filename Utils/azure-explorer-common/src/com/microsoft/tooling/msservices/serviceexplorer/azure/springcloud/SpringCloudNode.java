@@ -26,6 +26,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.Deployment
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -33,7 +34,10 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,6 +46,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_IN_PORTAL_SPRING_CLOUD_APP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD;
 import static com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule.ICON_FILE;
 
 /**
@@ -52,6 +58,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     private static final String FAILED_TO_LOAD_APPS = "Failed to load apps in: %s";
     private static final String ERROR_LOAD_APP = "Azure Services Explorer - Error Loading Spring Cloud Apps";
     private static final String EMPTY_POSTFIX = " (Empty)";
+    private static final String ACTION_OPEN_IN_PORTAL = "Open In Portal";
 
     private final String subscriptionId;
     private String clusterId;
@@ -67,6 +74,18 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         springCloudNodePresenter = new SpringCloudNodePresenter<>();
         springCloudNodePresenter.onAttachView(this);
         loadActions();
+    }
+
+    @Override
+    protected void loadActions() {
+        super.loadActions();
+        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP,
+                new NodeActionListener() {
+                    @Override
+                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                        openResourcesInPortal(subscriptionId, clusterId);
+                    }
+                }));
     }
 
     @Override

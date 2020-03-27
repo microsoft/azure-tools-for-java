@@ -91,6 +91,7 @@ public class TelemetryConstants {
     public static final String RESTART_SPRING_CLOUD_APP = "restart-springcloud-app";
     public static final String SHOWPROP_SPRING_CLOUD_APP = "showprop-springcloud-app";
     public static final String OPEN_IN_BROWSER_SPRING_CLOUD_APP = "open-inbrowser-springcloud-app";
+    public static final String OPEN_IN_PORTAL_SPRING_CLOUD_APP = "open-inportal-springcloud-app";
 
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
     public static final String CREATE_DOCKER_HOST = "create-docker-host";
