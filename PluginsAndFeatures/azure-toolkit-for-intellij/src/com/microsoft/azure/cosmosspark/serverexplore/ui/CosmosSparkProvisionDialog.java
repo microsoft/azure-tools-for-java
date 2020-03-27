@@ -36,7 +36,6 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
-import com.microsoft.intellij.ui.components.JsonEnvPropertiesField;
 import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;
@@ -47,6 +46,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.intellij.ui.components.JsonEnvPropertiesField;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -147,7 +147,8 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
         this.storageRootPathLabel.setText(Optional.ofNullable(account.getStorageRootPath()).orElse(""));
 
         refreshButton.addActionListener(event -> ctrlProvider.updateAvailableAU().subscribe(
-                data -> {},
+                data -> {
+                },
                 err -> log().warn("Update available AU in provision cluster dialog get exceptions. Error: " + ExceptionUtils.getStackTrace(err))));
 
         allAURelatedFields.forEach(comp ->
@@ -156,7 +157,8 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
                     public void focusLost(FocusEvent e) {
                         if (isAllAURelatedFieldsLegal()) {
                             ctrlProvider.updateCalculatedAU().subscribe(
-                                    data -> {},
+                                    data -> {
+                                    },
                                     err -> log().warn("Update AU Required in provision cluster dialog get exceptions. Error: "
                                             + ExceptionUtils.getStackTrace(err)));
                         }
@@ -177,7 +179,8 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
             public void windowOpened(WindowEvent e) {
                 ctrlProvider.updateAvailableAUAndTotalAU()
                         .subscribe(
-                                data -> {},
+                                data -> {
+                                },
                                 err -> log().warn("Update available AU, total AU and calculated AU in provision cluster dialog get exceptions. Error: " + ExceptionUtils.getStackTrace(err)));
                 super.windowOpened(e);
             }

@@ -22,8 +22,6 @@
 
 package com.microsoft.azure.hdinsight.common;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
-
 import com.intellij.ide.ui.UISettings;
 import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.openapi.application.ApplicationManager;
@@ -58,6 +56,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+
 public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor {
 
     private static final String yarnRunningUIUrlFormat = "%s/yarnui/hn/proxy/%s/";
@@ -89,7 +89,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
             public void uiSettingsChanged(UISettings uiSettings) {
                 synchronized (this) {
                     for (IHtmlElement htmlElement : cachedInfo) {
-                        htmlElement.ChangeTheme();
+                        htmlElement.changeTheme();
                     }
 
                     setToolWindowText(parserHtmlElementList(cachedInfo));
@@ -119,7 +119,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
                         if (clusterDetail != null) {
                             AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
                             EventUtil.logEvent(EventType.info, HDINSIGHT,
-                                HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
+                                    HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
                             try {
                                 String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
                                 HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(livyUrl, batchId);
@@ -150,10 +150,10 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
             public void actionPerformed(ActionEvent e) {
                 if (Desktop.isDesktopSupported()) {
                     try {
-                        if(jobStatusManager.isApplicationGenerated()){
+                        if (jobStatusManager.isApplicationGenerated()) {
                             String connectionURL = clusterDetail.getConnectionUrl();
                             String sparkApplicationUrl = clusterDetail.isEmulator() ?
-                                    String.format(yarnRunningUIEmulatorUrlFormat, ((EmulatorClusterDetail)clusterDetail).getSparkHistoryEndpoint(), jobStatusManager.getApplicationId()):
+                                    String.format(yarnRunningUIEmulatorUrlFormat, ((EmulatorClusterDetail) clusterDetail).getSparkHistoryEndpoint(), jobStatusManager.getApplicationId()) :
                                     String.format(yarnRunningUIUrlFormat, connectionURL, jobStatusManager.getApplicationId());
                             Desktop.getDesktop().browse(new URI(sparkApplicationUrl));
                         }
@@ -199,13 +199,13 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
                     if (Desktop.isDesktopSupported()) {
                         try {
                             String protocol = e.getURL().getProtocol();
-                            if(protocol.equals("https") || protocol.equals("http")) {
+                            if (protocol.equals("https") || protocol.equals("http")) {
                                 Desktop.getDesktop().browse(e.getURL().toURI());
                             } else if (protocol.equals("file")) {
                                 String path = e.getURL().getFile();
                                 File localFile = new File(path);
                                 File parentFile = localFile.getParentFile();
-                                if(parentFile.exists() && parentFile.isDirectory()) {
+                                if (parentFile.exists() && parentFile.isDirectory()) {
                                     Desktop.getDesktop().open(parentFile);
                                 }
                             }
@@ -291,7 +291,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         TextElement element = isCleanable ? new CleanableTextElement(fontFace, DarkThemeManager.getInstance().getInfoColor(), info, MessageInfoType.Info) :
                 new TextElement(fontFace, DarkThemeManager.getInstance().getInfoColor(), info, MessageInfoType.Info);
 
-        if(isCleanable) {
+        if (isCleanable) {
             ++cleanableMessageCounter;
             adjustCleanableMessage();
         }
@@ -357,7 +357,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
     interface IHtmlElement {
         String getHtmlString();
 
-        void ChangeTheme();
+        void changeTheme();
     }
 
     class TextElement implements IHtmlElement {
@@ -379,7 +379,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         }
 
         @Override
-        public void ChangeTheme() {
+        public void changeTheme() {
             if (messageInfoType == MessageInfoType.Info) {
                 this.fontColor = DarkThemeManager.getInstance().getInfoColor();
             } else if (messageInfoType == MessageInfoType.Error) {
@@ -420,7 +420,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         }
 
         @Override
-        public void ChangeTheme() {
+        public void changeTheme() {
             this.hyperLinkColor = DarkThemeManager.getInstance().getHyperLinkColor();
         }
     }
