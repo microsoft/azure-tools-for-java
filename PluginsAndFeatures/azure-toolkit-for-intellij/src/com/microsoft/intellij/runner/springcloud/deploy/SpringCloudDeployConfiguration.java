@@ -41,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
     private static final String NEED_SPECIFY_MODULE = "Please specify module";
@@ -113,7 +114,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     }
 
     public RuntimeVersion getRuntimeVersion() {
-        return RuntimeVersion.fromString(springCloudModel.getRuntimeVersion());
+        final String runtimeString = springCloudModel.getRuntimeVersion();
+        return StringUtils.isEmpty(runtimeString) ? null : RuntimeVersion.fromString(runtimeString);
     }
 
     public Integer getCpu() {
@@ -173,7 +175,7 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     }
 
     public void saveRuntimeVersion(RuntimeVersion runtimeVersion) {
-        springCloudModel.setRuntimeVersion(runtimeVersion.toString());
+        springCloudModel.setRuntimeVersion(Objects.toString(runtimeVersion, null));
     }
 
     public void setCpu(Integer cpu) {

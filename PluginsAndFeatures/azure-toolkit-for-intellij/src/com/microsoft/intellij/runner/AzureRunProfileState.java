@@ -37,11 +37,12 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import java.util.HashMap;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AzureRunProfileState<T> implements RunProfileState {
     protected final Project project;
