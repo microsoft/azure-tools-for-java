@@ -62,7 +62,7 @@ public class SubFunctionNode extends Node {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                         try {
-                            DefaultLoader.getIdeHelper().runInBackground(getProject(), "Trigger functions",
+                            DefaultLoader.getIdeHelper().runInBackground(getProject(), "Triggering Function",
                                     false, false, null, () -> trigger());
                         } catch (Exception exception) {
                             DefaultLoader.getUIHelper().showError(SubFunctionNode.this, exception.getMessage());
