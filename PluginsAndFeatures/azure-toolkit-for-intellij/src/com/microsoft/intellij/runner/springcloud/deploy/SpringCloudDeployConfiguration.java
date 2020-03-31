@@ -79,7 +79,7 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
-        return new SpringCloudDeploymentState(getProject(), this.getModel());
+        return new SpringCloudDeploymentState(getProject(), this);
     }
 
     public String getArtifactPath() {

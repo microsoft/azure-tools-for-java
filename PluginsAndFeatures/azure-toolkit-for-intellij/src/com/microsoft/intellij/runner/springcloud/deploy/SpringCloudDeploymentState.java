@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Microsoft Corporation
- *
+ * <p/>
  * All rights reserved.
- *
+ * <p/>
  * MIT License
- *
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
+ * <p/>
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- *
+ * <p/>
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -24,9 +24,12 @@ package com.microsoft.intellij.runner.springcloud.deploy;
 
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.UserSourceInfo;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
+import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -34,22 +37,39 @@ import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
 import com.microsoft.intellij.util.SpringCloudUtils;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
+import java.util.function.Predicate;
 
 public class SpringCloudDeploymentState extends AzureRunProfileState<AppResourceInner> {
 
+    private static final int GET_URL_TIMEOUT = 60;
+    private static final int GET_STATUS_TIMEOUT = 180;
+    private static final List<DeploymentResourceStatus> DEPLOYMENT_PROCESSING_STATUS =
+            Arrays.asList(DeploymentResourceStatus.COMPILING,
+                          DeploymentResourceStatus.ALLOCATING,
+                          DeploymentResourceStatus.UPGRADING);
+
+    private final SpringCloudDeployConfiguration springCloudDeployConfiguration;
     private final SpringCloudModel springCloudModel;
 
     /**
      * Place to execute the Web App deployment task.
      */
-    public SpringCloudDeploymentState(Project project, SpringCloudModel springCloudModel) {
+    public SpringCloudDeploymentState(Project project, SpringCloudDeployConfiguration springCloudDeployConfiguration) {
         super(project);
-        this.springCloudModel = springCloudModel;
+        this.springCloudDeployConfiguration = springCloudDeployConfiguration;
+        this.springCloudModel = springCloudDeployConfiguration.getModel();
     }
 
     @Nullable
@@ -66,18 +86,31 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         processHandler.setText("Upload artifact succeed.");
         // get or create active deployment
         processHandler.setText("Creating/Updating deployment...");
-        final DeploymentResourceInner deploymentResourceInner = SpringCloudUtils.createOrUpdateDeployment(springCloudModel, userSourceInfo);
+        final DeploymentResourceInner deploymentResourceInner = SpringCloudUtils.createOrUpdateDeployment(
+                springCloudModel,
+                userSourceInfo);
         processHandler.setText("Create/Update deployment succeed.");
         // update spring cloud properties (enable public access)
         processHandler.setText("Activating deployment...");
-        AppResourceInner newApps = SpringCloudUtils.activeDeployment(appResourceInner, deploymentResourceInner, springCloudModel);
+        AppResourceInner newApps = SpringCloudUtils.activeDeployment(appResourceInner,
+                                                                     deploymentResourceInner,
+                                                                     springCloudModel);
         DefaultAzureResourceTracker.getInstance().handleDataChanges(newApps.id(), newApps, deploymentResourceInner);
+        AzureSpringCloudMvpModel.startApp(newApps.id(), newApps.properties().activeDeploymentName()).await();
+        // Waiting until instances start
+        getDeploymentStatus(newApps.id(), processHandler);
+        if (newApps.properties().publicProperty()) {
+            getUrl(newApps.id(), processHandler);
+        }
+        processHandler.setText("Deployment done.");
         return newApps;
     }
 
+
     @Override
     protected Operation createOperation() {
-        return TelemetryManager.createOperation(TelemetryConstants.SPRING_CLOUD, TelemetryConstants.CREATE_SPRING_CLOUD_APP);
+        return TelemetryManager.createOperation(TelemetryConstants.SPRING_CLOUD,
+                                                TelemetryConstants.CREATE_SPRING_CLOUD_APP);
     }
 
     @Override
@@ -88,6 +121,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     @Override
     protected void onFail(String errMsg, @NotNull RunProcessHandler processHandler) {
+        DefaultLoader.getUIHelper().showError(errMsg, "Deployed failed");
         processHandler.println(errMsg, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
     }
@@ -99,5 +133,70 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+    }
+
+    private void getUrl(String appId, RunProcessHandler processHandler) {
+        try {
+            String url = getResourceWithTimeout(() -> AzureSpringCloudMvpModel.getAppById(appId).properties().url(),
+                                                StringUtils::isNotEmpty, GET_URL_TIMEOUT, TimeUnit.SECONDS);
+            processHandler.setText("URL: " + url);
+        } catch (Exception e) {
+            processHandler.setText("Failed to get the public url, you may get the data in portal later.");
+        }
+    }
+
+    private void getDeploymentStatus(String appId, RunProcessHandler processHandler) {
+        try {
+            DeploymentResourceInner deploymentResourceInner =
+                    getResourceWithTimeout(() -> AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId),
+                                           this::isDeploymentDone, GET_STATUS_TIMEOUT, TimeUnit.SECONDS);
+            processHandler.setText(
+                    "Deployment done with status " + deploymentResourceInner.properties().status().toString());
+        } catch (Exception e) {
+            processHandler.setText("Failed to get the deployment status, you may get the status in portal later.");
+        }
+    }
+
+    @FunctionalInterface
+    private interface SupplierWithIOException<T> {
+        T get() throws IOException;
+    }
+
+    private <T> T getResourceWithTimeout(SupplierWithIOException<T> consumer, Predicate<T> predicate,
+                                         int timeout, TimeUnit timeUnit)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<T> future = executor.submit(() -> {
+            try {
+                T result = null;
+                do {
+                    result = consumer.get();
+                } while (!predicate.test(result));
+                return result;
+            } catch (IOException e) {
+                return null;
+            }
+
+        });
+        return future.get(timeout, timeUnit);
+    }
+
+    // todo: move this logic copied from maven plugin to tools-common
+    private boolean isDeploymentDone(DeploymentResourceInner deploymentResource) {
+        final DeploymentResourceStatus deploymentResourceStatus = deploymentResource.properties().status();
+        if (DEPLOYMENT_PROCESSING_STATUS.contains(deploymentResourceStatus)) {
+            return false;
+        }
+        final String finalDiscoverStatus = BooleanUtils.isTrue(deploymentResource.properties().active()) ?
+                                           "UP" : "OUT_OF_SERVICE";
+        final List<DeploymentInstance> instanceList = deploymentResource.properties().instances();
+        final boolean isInstanceDeployed = !instanceList.stream()
+                .anyMatch(instance -> StringUtils.equalsIgnoreCase(instance.status(), "waiting") ||
+                        StringUtils.equalsIgnoreCase(instance.status(), "pending"));
+        final boolean isInstanceDiscovered =
+                instanceList.stream()
+                            .allMatch(instance -> StringUtils.equalsIgnoreCase(
+                                    instance.discoveryStatus(), finalDiscoverStatus));
+        return isInstanceDeployed && isInstanceDiscovered;
     }
 }
