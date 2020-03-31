@@ -44,6 +44,8 @@ public class SubFunctionNode extends Node {
     private static final String SUB_FUNCTION_ICON_PATH = "azure-function-trigger-small.png";
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
+    private static final String DEFAULT_FUNCTION_KEY = "default";
+    private static final String MASTER_FUNCTION_KEY = "_master";
     private FunctionApp functionApp;
     private FunctionEnvelope functionEnvelope;
 
@@ -60,7 +62,8 @@ public class SubFunctionNode extends Node {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
                         try {
-                            trigger();
+                            DefaultLoader.getIdeHelper().runInBackground(getProject(), "Trigger functions",
+                                    false, false, null, () -> trigger());
                         } catch (Exception exception) {
                             DefaultLoader.getUIHelper().showError(SubFunctionNode.this, exception.getMessage());
                         }
@@ -70,7 +73,7 @@ public class SubFunctionNode extends Node {
     }
 
     private void trigger() {
-        Map binding = getHTTPTriggerBinding();
+        final Map binding = getHTTPTriggerBinding();
         if (binding == null) {
             DefaultLoader.getUIHelper().showInfo(this, "Only HTTP Trigger is supported for now");
             return;
@@ -86,7 +89,9 @@ public class SubFunctionNode extends Node {
     }
 
     private String getHttpTriggerUrlWithCode() {
-        final String key = functionApp.getMasterKey();
+        final Map<String, String> keyMap = functionApp.listFunctionKeys(this.name);
+        final String key = keyMap.containsKey(DEFAULT_FUNCTION_KEY) ?
+                keyMap.get(DEFAULT_FUNCTION_KEY) : keyMap.get(MASTER_FUNCTION_KEY);
         return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
     }
 
@@ -94,8 +99,10 @@ public class SubFunctionNode extends Node {
         try {
             final List bindings = (List) ((Map) functionEnvelope.config()).get("bindings");
             return (Map) bindings.stream()
-                    .filter(object -> object instanceof Map && StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("direction"), "in"))
-                    .filter(object -> StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("type"), "httpTrigger"))
+                    .filter(object -> object instanceof Map &&
+                            StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("direction"), "in"))
+                    .filter(object ->
+                            StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("type"), "httpTrigger"))
                     .findFirst().orElse(null);
         } catch (ClassCastException | NullPointerException e) {
             // In case function.json lacks some parameters
