@@ -35,7 +35,6 @@ import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
-import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
 import com.microsoft.intellij.util.SpringCloudUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
@@ -61,7 +60,6 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
                           DeploymentResourceStatus.UPGRADING);
 
     private final SpringCloudDeployConfiguration springCloudDeployConfiguration;
-    private final SpringCloudModel springCloudModel;
 
     /**
      * Place to execute the Web App deployment task.
@@ -69,7 +67,6 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     public SpringCloudDeploymentState(Project project, SpringCloudDeployConfiguration springCloudDeployConfiguration) {
         super(project);
         this.springCloudDeployConfiguration = springCloudDeployConfiguration;
-        this.springCloudModel = springCloudDeployConfiguration.getModel();
     }
 
     @Nullable
@@ -78,23 +75,23 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         // get or create spring cloud app
         processHandler.setText("Creating/Updating spring cloud app...");
-        final AppResourceInner appResourceInner = SpringCloudUtils.createOrUpdateSpringCloudApp(springCloudModel);
+        final AppResourceInner appResourceInner = SpringCloudUtils.createOrUpdateSpringCloudApp(springCloudDeployConfiguration);
         processHandler.setText("Create/Update spring cloud app succeed.");
         // upload artifact to correspond storage
         processHandler.setText("Uploading artifact to storage...");
-        final UserSourceInfo userSourceInfo = SpringCloudUtils.deployArtifact(springCloudModel);
+        final UserSourceInfo userSourceInfo = SpringCloudUtils.deployArtifact(springCloudDeployConfiguration);
         processHandler.setText("Upload artifact succeed.");
         // get or create active deployment
         processHandler.setText("Creating/Updating deployment...");
         final DeploymentResourceInner deploymentResourceInner = SpringCloudUtils.createOrUpdateDeployment(
-                springCloudModel,
+                springCloudDeployConfiguration,
                 userSourceInfo);
         processHandler.setText("Create/Update deployment succeed.");
         // update spring cloud properties (enable public access)
         processHandler.setText("Activating deployment...");
         AppResourceInner newApps = SpringCloudUtils.activeDeployment(appResourceInner,
                                                                      deploymentResourceInner,
-                                                                     springCloudModel);
+                                                                     springCloudDeployConfiguration);
         DefaultAzureResourceTracker.getInstance().handleDataChanges(newApps.id(), newApps, deploymentResourceInner);
         AzureSpringCloudMvpModel.startApp(newApps.id(), newApps.properties().activeDeploymentName()).await();
         // Waiting until instances start
@@ -120,9 +117,9 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     }
 
     @Override
-    protected void onFail(String errMsg, @NotNull RunProcessHandler processHandler) {
-        DefaultLoader.getUIHelper().showError(errMsg, "Deployed failed");
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
+    protected void onFail(Throwable throwable, @NotNull RunProcessHandler processHandler) {
+        DefaultLoader.getUIHelper().showException(throwable.getMessage(), throwable, "Deployed failed", false, true);
+        processHandler.println(throwable.getMessage(), ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
     }
 

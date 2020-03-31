@@ -34,6 +34,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVer
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
+import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -48,6 +49,11 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     public SpringCloudDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         springCloudModel = new SpringCloudModel();
+    }
+
+    protected SpringCloudDeployConfiguration(@NotNull SpringCloudDeployConfiguration source) {
+        super(source);
+        this.springCloudModel = JsonUtils.deepCopyWithJson(source.getModel());
     }
 
     @Override
@@ -79,7 +85,7 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
-        return new SpringCloudDeploymentState(getProject(), this);
+        return new SpringCloudDeploymentState(getProject(), new SpringCloudDeployConfiguration(this));
     }
 
     public String getArtifactPath() {
@@ -107,7 +113,7 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     }
 
     public RuntimeVersion getRuntimeVersion() {
-        return springCloudModel.getRuntimeVersion();
+        return RuntimeVersion.fromString(springCloudModel.getRuntimeVersion());
     }
 
     public Integer getCpu() {
@@ -166,8 +172,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         springCloudModel.setCreateNewApp(isNewApp);
     }
 
-    public void setRuntimeVersion(RuntimeVersion runtimeVersion) {
-        springCloudModel.setRuntimeVersion(runtimeVersion);
+    public void saveRuntimeVersion(RuntimeVersion runtimeVersion) {
+        springCloudModel.setRuntimeVersion(runtimeVersion.toString());
     }
 
     public void setCpu(Integer cpu) {

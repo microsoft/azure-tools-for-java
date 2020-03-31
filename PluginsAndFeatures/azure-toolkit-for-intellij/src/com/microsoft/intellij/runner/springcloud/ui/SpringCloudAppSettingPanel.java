@@ -412,9 +412,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         configuration.setMemoryInGB(getValueFromComboBox(this.cbMemory, Integer::parseInt, String.class));
         configuration.setInstanceCount(getValueFromComboBox(this.cbInstanceCount, Integer::parseInt, String.class));
         if (this.java8RadioButton.isSelected()) {
-            configuration.setRuntimeVersion(RuntimeVersion.JAVA_8);
+            configuration.saveRuntimeVersion(RuntimeVersion.JAVA_8);
         } else if (this.java11RadioButton.isSelected()) {
-            configuration.setRuntimeVersion(RuntimeVersion.JAVA_11);
+            configuration.saveRuntimeVersion(RuntimeVersion.JAVA_11);
         }
         if (StringUtils.isNotEmpty(this.textJvmOptions.getText())) {
             configuration.setJvmOptions(this.textJvmOptions.getText());

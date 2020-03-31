@@ -22,8 +22,6 @@
 
 package com.microsoft.intellij.runner.springcloud;
 
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
-
 import java.util.Map;
 
 public class SpringCloudModel {
@@ -37,7 +35,7 @@ public class SpringCloudModel {
     private String resourceGroup;
     private String clusterName;
     private String appName;
-    private RuntimeVersion runtimeVersion;
+    private String runtimeVersion;
     // deployment
     private Integer cpu;
     private Integer memoryInGB;
@@ -75,7 +73,7 @@ public class SpringCloudModel {
         return appName;
     }
 
-    public RuntimeVersion getRuntimeVersion() {
+    public String getRuntimeVersion() {
         return runtimeVersion;
     }
 
@@ -131,7 +129,7 @@ public class SpringCloudModel {
         this.appName = appName;
     }
 
-    public void setRuntimeVersion(RuntimeVersion runtimeVersion) {
+    public void setRuntimeVersion(String runtimeVersion) {
         this.runtimeVersion = runtimeVersion;
     }
 
