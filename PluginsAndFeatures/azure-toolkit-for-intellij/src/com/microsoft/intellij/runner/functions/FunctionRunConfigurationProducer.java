@@ -37,8 +37,8 @@ import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfiguration;
-import org.apache.commons.lang3.StringUtils;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
