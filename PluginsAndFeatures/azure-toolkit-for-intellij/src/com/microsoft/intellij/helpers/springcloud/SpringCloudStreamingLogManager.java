@@ -38,30 +38,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SpringCloudStreamingLogManager {
+
+    private Map<String, SpringCloudStreamingLogConsoleView> consoleViewMap = new HashMap<>();
+
     public static SpringCloudStreamingLogManager getInstance() {
         return SpringCloudStreamingLogManager.SingletonHolder.INSTANCE;
     }
 
-    public Map<String, SpringCloudStreamingLogConsoleView> consoleViewMap = new HashMap<>();
-
     public void showStreamingLog(Project project, String appId, String instanceName) {
         DefaultLoader.getIdeHelper().runInBackground(project, "Starting Streaming Log...", false, true, null, () -> {
             try {
-                SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
-                if (consoleView == null) {
-                    consoleView = new SpringCloudStreamingLogConsoleView(project, instanceName);
-                    consoleViewMap.put(instanceName, consoleView);
-                }
+                final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
+                        instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
                 if (!consoleView.isEnable()) {
                     final InputStream logInputStream = AzureSpringCloudMvpModel
                             .getLogStream(appId, instanceName, 0, 10, 0, true);
                     consoleView.startLog(logInputStream);
                 }
-                StreamingLogsToolWindowManager.getInstance()
-                                              .showStreamingLogConsole(project,
-                                                                       instanceName,
-                                                                       instanceName,
-                                                                       consoleView);
+                StreamingLogsToolWindowManager
+                        .getInstance()
+                        .showStreamingLogConsole(project, instanceName, instanceName, consoleView);
             } catch (Throwable e) {
                 ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(
                         "Failed to start streaming log",
@@ -74,20 +70,19 @@ public class SpringCloudStreamingLogManager {
         ProgressManager.getInstance().run(new Task.Backgroundable(null, "Closing Streaming Log...", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-                if (consoleViewMap.containsKey(instanceName) && consoleViewMap.get(instanceName).isEnable()) {
-                    final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
+                final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
+                if (consoleView != null && consoleView.isEnable()) {
                     consoleView.shutdown();
                 } else {
-                    ApplicationManager.getApplication().invokeLater(
-                        () -> PluginUtil.displayErrorDialog("Failed to close streaming log",
-                                                                "Log is not started."));
+                    ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(
+                            "Failed to close streaming log", "Log is not started."));
                 }
             }
         });
     }
 
-    public void removeConsoleView(String resourceId) {
-        consoleViewMap.remove(resourceId);
+    public void removeConsoleView(String instanceName) {
+        consoleViewMap.remove(instanceName);
     }
 
     private static final class SingletonHolder {

@@ -49,7 +49,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
 
     public SpringCloudStreamingLogConsoleView(@NotNull Project project, String resourceId) {
         super(project, true);
-        enable = new AtomicBoolean();
+        this.enable = new AtomicBoolean();
         this.resourceId = resourceId;
     }
 
@@ -64,21 +64,16 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
         this.print("Streaming Log Start.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
-            final BufferedReader br = new BufferedReader(new InputStreamReader(logInputStream, StandardCharsets.UTF_8));
-            while (true) {
-                try {
+            try (final BufferedReader br = new BufferedReader(new InputStreamReader(logInputStream,
+                                                                                    StandardCharsets.UTF_8));) {
+                while (enable.get()) {
                     final String log = br.readLine();
-                    if (enable.get()) {
-                        SpringCloudStreamingLogConsoleView.this.print(log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
-                    } else {
-                        break;
-                    }
+                    SpringCloudStreamingLogConsoleView.this.print(log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
                     Thread.sleep(50);
-                } catch (IOException e) {
-                    // swallow io exception
-                } catch (InterruptedException e) {
-                    break;
                 }
+            } catch (IOException | InterruptedException e) {
+                // swallow Exception
+                e.printStackTrace();
             }
         });
     }
@@ -97,7 +92,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
                 if (executorService != null) {
                     ThreadPoolUtils.stop(executorService, 100, TimeUnit.MICROSECONDS);
                 }
-                this.print("Streaming Log Stop.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+                this.print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
             });
         }
     }

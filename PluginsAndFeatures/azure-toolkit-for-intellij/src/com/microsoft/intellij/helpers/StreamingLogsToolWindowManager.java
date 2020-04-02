@@ -39,7 +39,7 @@ import java.util.Map;
 
 public class StreamingLogsToolWindowManager {
 
-    public static final String LOG_TOOL_WINDOW = "Azure Streaming Log";
+    private static final String LOG_TOOL_WINDOW = "Azure Streaming Log";
 
     private Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
     private BidiMap<String, String> resourceIdToNameMap = new DualHashBidiMap<>();
@@ -95,6 +95,7 @@ public class StreamingLogsToolWindowManager {
                 resourceIdToNameMap.removeValue(displayName);
             }
         });
+        toolWindowMap.put(project, toolWindow);
         return toolWindow;
     }
 
