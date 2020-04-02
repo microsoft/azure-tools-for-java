@@ -94,18 +94,19 @@
             canCloseContents="false"
             icon="/icons/AzureExplorer_16.png"/>
 
+    <toolWindow
+            anchor="bottom"
+            factoryClass="com.microsoft.intellij.helpers.StreamingLogsToolWindowFactory"
+            id="Azure Streaming Log"
+            canCloseContents="true"/>
+
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
+
     <toolWindow
             anchor="bottom"
             factoryClass="com.microsoft.azure.cosmosserverlessspark.spark.ui.CosmosServerlessSparkJobsToolWindowFactory"
             id="Cosmos Serverless Spark Jobs"
             canCloseContents="true"/>
-
-    <!--    <toolWindow-->
-    <!--            anchor="bottom"-->
-    <!--            factoryClass="com.microsoft.azure.webapp.ui.WebAppStreamingLogToolWindowFactory"-->
-    <!--            id="Azure Streaming Log"-->
-    <!--            canCloseContents="true"/>-->
 
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobRunExecutor" id="SparkJobRun" />
     <executor implementation="com.microsoft.azure.hdinsight.spark.run.SparkBatchJobDebugExecutor" id="SparkJobDebug" />
