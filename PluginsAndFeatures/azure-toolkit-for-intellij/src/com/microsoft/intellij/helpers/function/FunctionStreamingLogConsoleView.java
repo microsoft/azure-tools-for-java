@@ -73,7 +73,6 @@ public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
         return subscription != null && !subscription.isUnsubscribed();
     }
 
-
     private void printlnToConsole(String message, ConsoleViewContentType consoleViewContentType) {
         this.print(message + SEPARATOR, consoleViewContentType);
     }

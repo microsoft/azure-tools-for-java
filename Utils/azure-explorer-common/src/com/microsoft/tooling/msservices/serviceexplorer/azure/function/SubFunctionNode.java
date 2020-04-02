@@ -37,16 +37,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -127,7 +124,7 @@ public class SubFunctionNode extends Node {
         final HttpPost request = new HttpPost(targetUrl);
         request.setHeader("Authorization", "Bearer " + authToken);
         CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-        JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()),  JsonObject.class);
+        JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()), JsonObject.class);
         return jsonObject.get("masterKey").getAsString();
     }
 
