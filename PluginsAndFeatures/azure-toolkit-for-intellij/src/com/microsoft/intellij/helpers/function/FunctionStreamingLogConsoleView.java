@@ -59,8 +59,8 @@ public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
         if (!isEnable()) {
             printlnToConsole(START_LOG_STREAMING, SYSTEM_OUTPUT);
             subscription = logStreaming.subscribeOn(Schedulers.io())
-                    .doAfterTerminate(() -> printlnToConsole(STOP_LOG_STREAMING, NORMAL_OUTPUT))
-                    .subscribe((log) -> printlnToConsole(log, LOG_INFO_OUTPUT));
+                    .doAfterTerminate(() -> printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT))
+                    .subscribe((log) -> printlnToConsole(log, NORMAL_OUTPUT));
         }
     }
 
