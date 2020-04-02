@@ -71,9 +71,10 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
                     SpringCloudStreamingLogConsoleView.this.print(log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
                     Thread.sleep(50);
                 }
-            } catch (IOException | InterruptedException e) {
-                // swallow Exception
-                e.printStackTrace();
+            } catch (IOException e) {
+                this.print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+            } catch (InterruptedException e) {
+                // swallow interrupt exception
             }
         });
     }

@@ -32,7 +32,6 @@ import com.microsoft.intellij.forms.springcloud.SpringCloudAppStreamingLogDialog
 import com.microsoft.intellij.helpers.springcloud.SpringCloudStreamingLogManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
@@ -45,20 +44,13 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD
 @Name("Streaming Logs")
 public class SpringCloudStreamingLogsAction extends NodeActionListener {
 
-    private Node node;
     private Project project;
-    private String subscriptionId;
     private String appId;
-    private String appName;
-
 
     public SpringCloudStreamingLogsAction(SpringCloudAppNode springCloudAppNode) {
         super();
-        this.node = springCloudAppNode;
         this.project = (Project) springCloudAppNode.getProject();
-        this.subscriptionId = springCloudAppNode.getSubscriptionId();
         this.appId = springCloudAppNode.getId();
-        this.appName = springCloudAppNode.getName();
     }
 
     @Override
