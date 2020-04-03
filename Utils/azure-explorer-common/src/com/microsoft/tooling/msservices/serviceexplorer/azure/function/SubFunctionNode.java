@@ -88,6 +88,7 @@ public class SubFunctionNode extends Node {
         final Map triggerBinding = getTriggerBinding();
         if (triggerBinding == null || !triggerBinding.containsKey("type")) {
             DefaultLoader.getUIHelper().showError(this, String.format("Failed to get trigger of function %s", name));
+            return;
         }
         final String triggerType = (String) triggerBinding.get("type");
         switch (triggerType.toLowerCase()) {
