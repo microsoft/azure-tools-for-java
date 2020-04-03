@@ -37,16 +37,21 @@ import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfiguration;
+import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.helper.StringUtil;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 public class FunctionRunConfigurationProducer extends LazyRunConfigurationProducer<AzureRunConfigurationBase> {
     @NotNull
     @Override
     public ConfigurationFactory getConfigurationFactory() {
-        return AzureFunctionSupportConfigurationType.getInstance().getConfigurationFactories()[0];
+        return Arrays.stream(AzureFunctionSupportConfigurationType.getInstance().getConfigurationFactories())
+                    .filter(configurationFactory -> configurationFactory instanceof FunctionRunConfigurationFactory)
+                    .findFirst()
+                    .get();
     }
 
     @Override

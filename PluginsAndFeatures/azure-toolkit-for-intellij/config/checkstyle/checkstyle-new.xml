@@ -15,11 +15,10 @@ page at https://checkstyle.org/config.html -->
         <property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
     </module>
 
-      <module name="Header">
+    <module name="Header">
         <property name="headerFile" value="${config_loc}/java.header"/>
         <property name="fileExtensions" value="java"/>
     </module>
-
     <module name="FileTabCharacter">
         <!-- Checks that there are no tab characters in the file.
         -->
@@ -30,12 +29,21 @@ page at https://checkstyle.org/config.html -->
         <property name="lineSeparator" value="lf"/>
     </module>
 
+    <module name="RegexpSingleline">
+        <!-- Checks that FIXME is not used in comments.  TODO is preferred.
+        -->
+        <property name="format" value="((//.*)|(\*.*))FIXME"/>
+        <property name="message"
+                  value='TODO is preferred to FIXME.  e.g. "TODO(johndoe): Refactor when v2 is released."'/>
+    </module>
+
     <!-- No trailing spaces allowed -->
     <module name="RegexpSingleline">
         <property name="format" value="\s+$"/>
         <property name="message" value="Line has trailing spaces."/>
     </module>
 
+    <!-- CRLF is not allowed -->
     <module name="RegexpMultiline">
         <property name="format" value="(?s:(\r\n|\r).*)"/>
         <property name="message" value="CRLF and CR line endings are prohibited, but this file uses them."/>
@@ -48,6 +56,23 @@ page at https://checkstyle.org/config.html -->
         <property name="format" value="((//.*)|(\*.*))TODO [^(]"/>
         <property name="message"
                   value='All TODOs should be named.  e.g. "TODO (johndoe): Refactor when v2 is released."'/>
+    </module>
+
+    <module name="LineLengthCheck">
+        <property name="fileExtensions" value="java" />
+        <!-- Checks if a line is too long, default value of 120 is too short -->
+        <property name="max" value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}" default="120"/>
+        <property name="severity" value="error"/>
+
+        <!--
+            The default ignore pattern exempts the following elements:
+            - import statements
+            - long URLs inside comments
+        -->
+
+        <property name="ignorePattern"
+                    value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.ignorePattern}"
+                    default="^(package .*;\s*)|(import .*;\s*)|( *\* *\w+?://.*)$"/>
     </module>
 
     <!-- All Java AST specific tests live under TreeWalker module. -->
@@ -109,6 +134,17 @@ page at https://checkstyle.org/config.html -->
             <property name="severity" value="warning"/>
         </module>
 
+        <module name="MemberNameCheck">
+            <!-- Validates non-static members against the supplied expression. -->
+            <metadata name="altname" value="MemberName"/>
+            <property name="applyToPublic" value="true"/>
+            <property name="applyToProtected" value="true"/>
+            <property name="applyToPackage" value="true"/>
+            <property name="applyToPrivate" value="true"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <property name="severity" value="warning"/>
+        </module>
+
         <module name="MethodNameCheck">
             <!-- Validates identifiers for method names. -->
             <metadata name="altname" value="MethodName"/>
@@ -164,6 +200,17 @@ page at https://checkstyle.org/config.html -->
             <property name="severity" value="error"/>
         </module>
 
+        <module name="FallThrough">
+            <!-- Warn about falling through to the next case statement.  Similar to
+            javac -Xlint:fallthrough, but the check is suppressed if a single-line comment
+            on the last non-blank line preceding the fallen-into case contains 'fall through' (or
+            some other variants which we don't publicized to promote consistency).
+            -->
+            <property name="reliefPattern"
+                      value="fall through|Fall through|fallthru|Fallthru|falls through|Falls through|fallthrough|Fallthrough|No break|NO break|no break|continue on"/>
+            <property name="severity" value="error"/>
+        </module>
+
         <!--
 
         MODIFIERS CHECKS
@@ -184,6 +231,24 @@ page at https://checkstyle.org/config.html -->
 
         -->
         <module name="EmptyForIteratorPad"/>
+
+        <module name="WhitespaceAround">
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyMethods" value="true"/>
+            <property name="allowEmptyTypes" value="true"/>
+            <property name="allowEmptyLoops" value="true"/>
+            <message key="ws.notFollowed"
+                     value="WhitespaceAround: ''{0}'' is not followed by whitespace. Empty blocks may only be represented as '{}' when not part of a multi-block statement (4.1.3)"/>
+            <message key="ws.notPreceded"
+                     value="WhitespaceAround: ''{0}'' is not preceded with whitespace."/>
+        </module>
+
+        <module name="WhitespaceAfter">
+            <!-- Checks that commas, semicolons and typecasts are followed by
+                 whitespace.
+            -->
+            <property name="tokens" value="COMMA, SEMI, TYPECAST"/>
+        </module>
 
         <module name="NoWhitespaceAfter">
             <!-- Checks that there is no whitespace after various unary operators.
@@ -210,7 +275,6 @@ page at https://checkstyle.org/config.html -->
             -->
             <property name="severity" value="warning"/>
         </module>
-        <!-- <module name="AvoidStarImport"/> -->
         <module name="PackageName">
             <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
             <message key="name.invalidPattern"
@@ -220,10 +284,26 @@ page at https://checkstyle.org/config.html -->
             <message key="name.invalidPattern"
                      value="Type name ''{0}'' must match pattern ''{1}''."/>
         </module>
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
+            <message key="name.invalidPattern"
+                     value="Member name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="ParameterName">
+            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+            <message key="name.invalidPattern"
+                     value="Parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
         <module name="CatchParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <message key="name.invalidPattern"
                      value="Catch parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="LocalVariableName">
+            <property name="tokens" value="VARIABLE_DEF"/>
+            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+            <message key="name.invalidPattern"
+                     value="Local variable name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="ClassTypeParameterName">
             <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
@@ -239,6 +319,14 @@ page at https://checkstyle.org/config.html -->
             <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
             <message key="name.invalidPattern"
                      value="Interface type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="braceAdjustment" value="0"/>
+            <property name="caseIndent" value="4"/>
+            <property name="throwsIndent" value="4"/>
+            <property name="lineWrappingIndentation" value="4"/>
+            <property name="arrayInitIndent" value="4"/>
         </module>
         <module name="GenericWhitespace">
             <message key="ws.followed"
@@ -258,12 +346,18 @@ page at https://checkstyle.org/config.html -->
             <property name="allowMultipleEmptyLinesInsideClassMembers" value="false"/>
             <property name="tokens" value="VARIABLE_DEF, METHOD_DEF"/>
         </module>
+        <!-- Only apply this to local variables; Designers seem to prefer using same parameter names as class members. -->
+        <module name="HiddenField">
+            <property name="tokens" value="VARIABLE_DEF"/>
+        </module>
+        <!-- Developer should probably bring up this issue with designer if ever it occurs. -->
         <module name="EqualsHashCode">
             <property name="severity" value="info" />
         </module>
         <module name="StringLiteralEquality"/>
         <module name="SimplifyBooleanReturn"/>
         <module name="SimplifyBooleanExpression"/>
+        <module name="CommentsIndentation"/>
         <module name="AtclauseOrder">
             <property name="tagOrder" value="@param, @return, @throws, @deprecated"/>
             <property name="target" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
@@ -278,6 +372,7 @@ page at https://checkstyle.org/config.html -->
             <property name="tokens" value="VARIABLE_DEF"/>
             <property name="allowSamelineMultipleAnnotations" value="true"/>
         </module>
+        <module name="VariableDeclarationUsageDistance"/>
         <module name="TypecastParenPad"/>
         <!-- Added some coding problems as INFO.  Up to developer to react to them. -->
         <module name="CovariantEquals">
@@ -287,5 +382,7 @@ page at https://checkstyle.org/config.html -->
         <module name="NoLineWrap"/>
         <module name="OneStatementPerLine"/>
         <module name="MultipleVariableDeclarations"/>
+        <module name="ArrayTypeStyle"/>
+        <module name="MissingSwitchDefault"/>
     </module>
 </module>
