@@ -49,10 +49,10 @@
   <xi:include href="/META-INF/platformPlugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="201.*" until-build="201.*"/>
+  <idea-version since-build="193.*" until-build="201.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
-  <depends optional="true">org.intellij.scala</depends>
+  <depends optional="true" config-file="">org.intellij.scala</depends>
   <depends>com.intellij.modules.java</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
@@ -131,8 +131,8 @@
     <nodeActionsMap implementation="com.microsoft.intellij.serviceexplorer.NodeJavaActionsMap" />
     <serverExplorerToolWindowListener implementation="com.microsoft.intellij.serviceexplorer.ServerExplorerToolWindowJavaListener" />
     <dockerArtifactProvider implementation="com.microsoft.intellij.docker.DockerArtifactsFromJavaProjectModel" />
-    <facetType implementation="com.microsoft.intellij.wizards.functions.facet.FunctionsFacetType"/>
-    <moduleBuilder builderClass="com.microsoft.intellij.wizards.functions.module.FunctionsModuleBuilder"/>
+    <facetType implementation="com.microsoft.intellij.wizard.functions.facet.FunctionsFacetType"/>
+    <moduleBuilder builderClass="com.microsoft.intellij.wizard.functions.module.FunctionsModuleBuilder"/>
     <runConfigurationProducer implementation="com.microsoft.intellij.runner.functions.FunctionRunConfigurationProducer"/>
     <runLineMarkerContributor language="JAVA" id="functionRunLineMarkerProvider"
                               implementationClass="com.microsoft.intellij.runner.functions.FunctionRunLineMarkerProvider"/>

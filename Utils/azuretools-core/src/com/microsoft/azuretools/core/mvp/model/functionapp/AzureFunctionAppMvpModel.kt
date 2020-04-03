@@ -282,7 +282,11 @@ object AzureFunctionAppMvpModel {
         file.createNewFile()
         try {
             app.manager().inner().webApps()
-                    .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(), PublishingProfileFormat.FTP)
+                    .listPublishingProfileXmlWithSecrets(
+                            app.resourceGroupName(),
+                            app.name(),
+                            CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP)
+                    )
                     .use { inputStream ->
                         FileOutputStream(file).use { outputStream ->
                             IOUtils.copy(inputStream, outputStream)

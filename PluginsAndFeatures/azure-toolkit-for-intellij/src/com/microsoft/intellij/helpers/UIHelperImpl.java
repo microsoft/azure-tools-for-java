@@ -59,7 +59,6 @@ import com.microsoft.intellij.helpers.arm.ResourceTemplateView;
 import com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyView;
 import com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider;
-import com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider;
 import com.microsoft.intellij.helpers.functionapp.FunctionAppPropertyViewProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider;
 import com.microsoft.intellij.helpers.rediscache.RedisCachePropertyView;

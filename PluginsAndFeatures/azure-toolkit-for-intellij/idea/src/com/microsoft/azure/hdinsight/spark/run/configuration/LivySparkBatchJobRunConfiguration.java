@@ -25,7 +25,6 @@ import com.intellij.compiler.options.CompileStepBeforeRun;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaExecutionUtil;
-import com.intellij.execution.configuration.AbstractRunConfiguration;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
@@ -61,7 +60,6 @@ import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom.Element;
 import rx.Observable;
-import rx.subjects.PublishSubject;
 
 import java.io.File;
 import java.util.*;

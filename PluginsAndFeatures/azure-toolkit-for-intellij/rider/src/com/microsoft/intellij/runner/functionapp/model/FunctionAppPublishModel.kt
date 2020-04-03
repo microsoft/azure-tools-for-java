@@ -141,7 +141,7 @@ class FunctionAppPublishModel {
         storageAccountId = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_ID) ?: ""
         storageAccountName = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_NAME) ?: ""
 
-        val storageAccountTypeString = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE) ?: storageAccountType.name().name
+        val storageAccountTypeString = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE) ?: storageAccountType.name().toString()
         val skuName = SkuName.fromString(storageAccountTypeString)
         storageAccountType = StorageAccountSkuType.fromSkuName(skuName)
     }
@@ -168,6 +168,6 @@ class FunctionAppPublishModel {
         JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_IS_CREATE_STORAGE_ACCOUNT, if (isCreatingStorageAccount) "1" else "0")
         JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_ID, storageAccountId)
         JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_NAME, storageAccountName)
-        JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE, storageAccountType.name().name)
+        JDOMExternalizerUtil.writeField(element, AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE, storageAccountType.name().toString())
     }
 }

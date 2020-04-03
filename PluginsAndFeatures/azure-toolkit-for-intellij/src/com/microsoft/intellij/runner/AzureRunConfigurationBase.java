@@ -23,6 +23,7 @@
 
 package com.microsoft.intellij.runner;
 
+import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.configurations.*;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
@@ -36,9 +37,8 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase implements LocatableConfiguration {
+public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase<T> implements LocatableConfiguration {
     private boolean firstTimeCreated = true;
-    protected JavaRunConfigurationModule myModule;
 
     protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, @Nullable String name) {
         super(project, factory, name);
@@ -84,10 +84,6 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
     }
 
     @Override
-    public void checkConfiguration() throws RuntimeConfigurationException {
-    }
-
-    public JavaRunConfigurationModule getConfigurationModule() {
-        return myModule;
+    public void checkConfiguration() {
     }
 }

@@ -85,7 +85,7 @@ public class PluginUtil {
      * @return Project
      */
     public static Project getSelectedProject() {
-        final DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
+        DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
         if (dataContext == null) {
             dataContext = DataManager.getInstance().getDataContext();
         }
@@ -93,7 +93,7 @@ public class PluginUtil {
     }
 
     public static Module getSelectedModule() {
-        final DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
+        DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
         if (dataContext == null) {
             dataContext = DataManager.getInstance().getDataContext();
         }
@@ -175,8 +175,10 @@ public class PluginUtil {
     }
 
     public static IdeaPluginDescriptor getPluginDescriptor() {
-        final IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID));
-        if (pluginDescriptor == null) pluginDescriptor = PluginManager.getPlugin(PluginManager.getPluginByClassName(PluginUtil.class.getName()));
+        IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID));
+        if (pluginDescriptor == null) {
+            pluginDescriptor = PluginManager.getPlugin(PluginManager.getPluginByClassName(PluginUtil.class.getName()));
+        }
         return pluginDescriptor;
     }
 

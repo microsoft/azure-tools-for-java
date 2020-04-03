@@ -33,8 +33,6 @@ import com.intellij.util.xmlb.annotations.Transient
 import com.microsoft.azure.hdinsight.common.AbfsUri
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStoragePanel
-import javax.swing.ComboBoxModel
-import javax.swing.DefaultComboBoxModel
 
 @Tag("job_upload_storage")
 class SparkSubmitJobUploadStorageModel: ILogger, SparkSubmissionJobUploadStoragePanel.Model {

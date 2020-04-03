@@ -102,7 +102,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
 
     private val lblDatabaseEdition = JLabel("Edition")
     private val pnlDatabaseEdition = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[][min!]"))
-    private val cbDatabaseEdition = ComboBox<DatabaseEditions>()
+    private val cbDatabaseEdition = ComboBox<DatabaseEdition>()
     private val lblDatabasePricingLink = LinkLabel("Pricing", null, { _, link -> BrowserUtil.browse(link)}, AZURE_SQL_DATABASE_PRICING_URI)
 
     private val lblDatabaseComputeSize = JLabel("Compute size")
@@ -114,7 +114,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     private val presenter = CreateSqlDatabaseOnServerViewPresenter<CreateSqlDatabaseOnServerDialog>()
     private val activityNotifier = AzureDeploymentProgressNotification(project)
 
-    private var lastSelectedDatabaseEdition: DatabaseEditions = DatabaseEditions()
+    private var lastSelectedDatabaseEdition: DatabaseEdition = DatabaseEdition()
     private var cachedComputeSize = listOf<ServiceObjectiveName>()
 
     init {
@@ -141,15 +141,15 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
         cbResourceGroup.fillComboBox(listOf(resourceGroup))
     }
 
-    override fun fillDatabaseEditions(editions: List<DatabaseEditions>) {
+    override fun fillDatabaseEditions(editions: List<DatabaseEdition>) {
 
         val availableEditions = listOf(
-                DatabaseEditions.BASIC,
-                DatabaseEditions.STANDARD,
-                DatabaseEditions.PREMIUM,
-                DatabaseEditions.PREMIUM_RS,
-                DatabaseEditions.DATA_WAREHOUSE,
-                DatabaseEditions.STRETCH)
+                DatabaseEdition.BASIC,
+                DatabaseEdition.STANDARD,
+                DatabaseEdition.PREMIUM,
+                DatabaseEdition.PREMIUM_RS,
+                DatabaseEdition.DATA_WAREHOUSE,
+                DatabaseEdition.STRETCH)
 
         val filteredEditions =
                 editions.filter { availableEditions.contains(it) }.sortedWith(compareBy { it.toString() })
@@ -334,17 +334,17 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
             SqlDatabaseValidator.validateDatabaseName(pnlName.txtNameValue.text).toValidationInfo(pnlName.txtNameValue)
 
     private fun filterComputeSizeValues(objectives: List<ServiceObjectiveName>,
-                                        edition: DatabaseEditions): List<ServiceObjectiveName> {
+                                        edition: DatabaseEdition): List<ServiceObjectiveName> {
 
-        if (edition == DatabaseEditions.BASIC)
+        if (edition == DatabaseEdition.BASIC)
             return listOf(ServiceObjectiveName.BASIC)
 
         val regex = when (edition) {
-            DatabaseEditions.STANDARD -> Regex("^S(\\d+)")
-            DatabaseEditions.PREMIUM -> Regex("^P(\\d+)")
-            DatabaseEditions.PREMIUM_RS -> Regex("^PRS(\\d+)")
-            DatabaseEditions.DATA_WAREHOUSE -> Regex("^DW(\\d+)c?")
-            DatabaseEditions.STRETCH -> Regex("^DS(\\d+)")
+            DatabaseEdition.STANDARD -> Regex("^S(\\d+)")
+            DatabaseEdition.PREMIUM -> Regex("^P(\\d+)")
+            DatabaseEdition.PREMIUM_RS -> Regex("^PRS(\\d+)")
+            DatabaseEdition.DATA_WAREHOUSE -> Regex("^DW(\\d+)c?")
+            DatabaseEdition.STRETCH -> Regex("^DS(\\d+)")
             else -> return objectives
         }
 

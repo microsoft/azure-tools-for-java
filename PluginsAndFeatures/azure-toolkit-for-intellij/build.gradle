@@ -1,5 +1,3 @@
-import org.apache.tools.ant.filters.*
-
 buildscript {
     repositories {
         maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
@@ -13,39 +11,6 @@ plugins {
     id "de.undercouch.download" version "4.0.1"
 }
 
-import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
-import org.apache.tools.ant.filters.*
-
-processResources {
-    filesMatching('**/ApplicationInsights.xml') {
-        filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
-    }
-}
-
-group 'com.microsoft.azuretools'
-
-compileJava {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-}
-
-compileKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
-repositories {
-    maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
-    mavenLocal()
-    mavenCentral()
-}
-
-apply plugin: 'java'
-
 configurations {
     compile.exclude module:'slf4j-api'
     compile.exclude module:'log4j'
@@ -58,9 +23,8 @@ dependencies {
     compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     compile 'commons-io:commons-io:2.5'
-    // TODO: SD -- check if we need this.
-//    compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
-//    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     compile 'net.minidev:json-smart:2.3'
     compile 'com.microsoft.azure:azure-client-runtime:1.6.13', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.6.13', { force = true }
@@ -102,6 +66,7 @@ allprojects {
     repositories {
         maven { url new File(rootProject.projectDir, '../../.repository').toURI() } // to snap to the private maven repo on Jenkins if any
         mavenLocal()
+        mavenCentral()
         maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
         maven { url "https://cache-redirector.jetbrains.com/maven-central" }
     }
@@ -150,7 +115,6 @@ allprojects {
             "${project(":idea").extensions.getByName("intellij").ideaDependency.classes}/lib/javac2.jar"
         }
     }
-}
 
     sourceSets {
         main {
@@ -182,13 +146,4 @@ defaultTasks 'buildPlugin', 'test'
 task wrapper(type: Wrapper) {
     gradleVersion = '4.9'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
-}
-
-// TODO: SD -- check if we need this
-apply plugin: BundleBuildIDEAPlugin
-
-installIdea.dependsOn buildPlugin
-
-patchPluginXml {
-    sinceBuild = patchPluginXmlSinceBuild
 }

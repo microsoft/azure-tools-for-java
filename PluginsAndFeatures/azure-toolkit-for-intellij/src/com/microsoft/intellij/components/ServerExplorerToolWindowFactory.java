@@ -38,7 +38,6 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
-import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -55,21 +54,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import javax.swing.*;
+import javax.swing.tree.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -92,7 +81,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         AzureModule azureModule = new AzureModuleImpl(project);
 //        HDInsightUtil.setHDInsightRootModule(azureModule);
         azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
-        azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
+//        azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
         // initialize aris service module
 //        SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
 

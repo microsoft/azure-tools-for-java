@@ -1,3 +1,6 @@
+import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
+import org.apache.tools.ant.filters.ReplaceTokens
+
 dependencies {
     compile rootProject
 
@@ -19,16 +22,12 @@ dependencies {
 
 apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
+apply plugin: BundleBuildIDEAPlugin
 
-checkstyle {
-    toolVersion = '7.7'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
+processResources {
+    filesMatching('**/ApplicationInsights.xml') {
+        filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
+    }
 }
 
 intellij {
@@ -69,8 +68,6 @@ task cucumberPackJar(type: Jar) {
     }
 }
 
-buildSearchableOptions.onlyIf { false }
-
 task cucumber() {
     dependsOn compileTestJava, cucumberPackJar
     doLast {
@@ -86,4 +83,12 @@ task cucumber() {
     }
 }
 
+buildSearchableOptions.onlyIf { false }
+
 test.dependsOn cucumber
+
+installIdea.dependsOn buildPlugin
+
+patchPluginXml {
+    sinceBuild = patchPluginXmlSinceBuild
+}

@@ -55,7 +55,6 @@ import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.intellij.telemetry.TelemetryKeys;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
-import rx.Observer;
 import rx.subjects.PublishSubject;
 
 import java.util.AbstractMap.SimpleImmutableEntry;

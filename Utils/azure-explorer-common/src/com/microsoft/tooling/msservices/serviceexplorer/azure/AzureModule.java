@@ -172,9 +172,9 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(resourceManagementModule)) {
             addChildNode(resourceManagementModule);
         }
-        if(!isDirectChild(functionModule)){
-            addChildNode(functionModule);
-        }
+//        if(!isDirectChild(functionModule)){
+//            addChildNode(functionModule);
+//        }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
         }
@@ -185,9 +185,9 @@ public class AzureModule extends AzureRefreshableNode {
             addChildNode(sparkServerlessClusterRootModule);
         }
 
-        if (arcadiaModule != null && arcadiaModule.isFeatureEnabled() && !isDirectChild(arcadiaModule)) {
-            addChildNode(arcadiaModule);
-        }
+//        if (arcadiaModule != null && arcadiaModule.isFeatureEnabled() && !isDirectChild(arcadiaModule)) {
+//            addChildNode(arcadiaModule);
+//        }
 
         if (!isDirectChild(dockerHostModule)) {
             addChildNode(dockerHostModule);
