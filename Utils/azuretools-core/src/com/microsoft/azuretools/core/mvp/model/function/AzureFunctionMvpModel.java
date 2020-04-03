@@ -136,7 +136,6 @@ public class AzureFunctionMvpModel {
 
     public List<FunctionEnvelope> listFunctionEnvelopeInFunctionApp(String sid, String id) throws IOException {
         FunctionApp app = getFunctionById(sid, id);
-        app.getMasterKey()
         PagedList<FunctionEnvelope> functions = app.manager().functionApps().listFunctions(app.resourceGroupName(), app.name());
         functions.loadAll();
         return new ArrayList<>(functions);

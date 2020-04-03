@@ -85,16 +85,28 @@ public class SubFunctionNode extends Node {
     }
 
     private void trigger() {
-        final Map binding = getHTTPTriggerBinding();
-        if (binding == null) {
-            triggerNoneHttpTrigger();
-        } else {
-            triggerHttpTrigger(binding);
+        final Map triggerBinding = getTriggerBinding();
+        if (triggerBinding == null || !triggerBinding.containsKey("type")) {
+            DefaultLoader.getUIHelper().showError(this, String.format("Failed to get trigger of function %s", name));
         }
+        final String triggerType = (String) triggerBinding.get("type");
+        switch (triggerType.toLowerCase()) {
+            case "httptrigger":
+                triggerHttpTrigger(triggerBinding);
+                break;
+            case "timertrigger":
+                triggerTimerTrigger();
+                break;
+            default:
+                DefaultLoader.getUIHelper().showInfo(this, String.format("%s is not supported for now.",
+                        StringUtils.capitalize(triggerType)));
+                break;
+        }
+
     }
 
     // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
-    private void triggerNoneHttpTrigger() {
+    private void triggerTimerTrigger() {
         try {
             final String masterKey = getFunctionMasterKey();
             final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
@@ -146,14 +158,14 @@ public class SubFunctionNode extends Node {
         return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
     }
 
-    private Map getHTTPTriggerBinding() {
+    private Map getTriggerBinding() {
         try {
             final List bindings = (List) ((Map) functionEnvelope.config()).get("bindings");
             return (Map) bindings.stream()
                     .filter(object -> object instanceof Map &&
                             StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("direction"), "in"))
                     .filter(object ->
-                            StringUtils.equalsIgnoreCase((CharSequence) ((Map) object).get("type"), "httpTrigger"))
+                            StringUtils.containsIgnoreCase((CharSequence) ((Map) object).get("type"), "trigger"))
                     .findFirst().orElse(null);
         } catch (ClassCastException | NullPointerException e) {
             // In case function.json lacks some parameters
