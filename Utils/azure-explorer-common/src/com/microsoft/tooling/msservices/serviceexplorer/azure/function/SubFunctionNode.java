@@ -132,31 +132,39 @@ public class SubFunctionNode extends Node {
         final String tenant = azureManager.getTenantIdBySubscription(subscriptionId);
         final String authToken = azureManager.getAccessToken(tenant);
         final String targetUrl = String.format("https://management.azure.com/subscriptions/%s/resourceGroups/%s/" +
-                "providers/Microsoft.Web/sites/%s/host/default/listkeys?api-version=2019-08-01", subscriptionId, resourceGroup, functionApp.name());
+                "providers/Microsoft.Web/sites/%s/host/default/listkeys?api-version=2019-08-01",
+                subscriptionId, resourceGroup, functionApp.name());
 
         final HttpPost request = new HttpPost(targetUrl);
         request.setHeader("Authorization", "Bearer " + authToken);
         CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-        JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()), JsonObject.class);
+        JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()),
+                JsonObject.class);
         return jsonObject.get("masterKey").getAsString();
     }
 
     private void triggerHttpTrigger(Map binding) {
         final String authLevel = (String) binding.get("authLevel");
-        final String url = StringUtils.equalsIgnoreCase(authLevel, AuthorizationLevel.ANONYMOUS.toString()) ?
-                getHttpTriggerUrl() : getHttpTriggerUrlWithCode();
-        DefaultLoader.getUIHelper().openInBrowser(url);
+        try {
+            final String url = StringUtils.equalsIgnoreCase(authLevel, AuthorizationLevel.ANONYMOUS.toString()) ?
+                    getHttpTriggerUrl() : getHttpTriggerUrlWithCode();
+            DefaultLoader.getUIHelper().openInBrowser(url);
+        } catch (IOException e) {
+            DefaultLoader.getUIHelper().showError(this,
+                    String.format("Failed to get function key, %s", e.getMessage()));
+        }
     }
 
     private String getHttpTriggerUrl() {
         return String.format(HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
     }
 
-    private String getHttpTriggerUrlWithCode() {
+    private String getHttpTriggerUrlWithCode() throws IOException {
         final Map<String, String> keyMap = functionApp.listFunctionKeys(this.name);
-        final String key = keyMap.containsKey(DEFAULT_FUNCTION_KEY) ?
-                keyMap.get(DEFAULT_FUNCTION_KEY) : keyMap.values().iterator().next();
+        final String key = keyMap.values().stream().filter(StringUtils::isNotBlank)
+                .findFirst().orElse(getFunctionMasterKey());
         return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
+
     }
 
     private Map getTriggerBinding() {
