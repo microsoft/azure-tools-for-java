@@ -72,7 +72,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             } catch (InterruptedException e) {
                 // swallow interrupt exception while shutdown
                 if (!(e instanceof InterruptedException)) {
-                    this.print(String.format("Streaming Log is interrupt due to error : %s.\n", e.getMessage()),
+                    this.print(String.format("Streaming Log is interrupted due to error : %s.\n", e.getMessage()),
                                ConsoleViewContentType.SYSTEM_OUTPUT);
                 }
             } finally {

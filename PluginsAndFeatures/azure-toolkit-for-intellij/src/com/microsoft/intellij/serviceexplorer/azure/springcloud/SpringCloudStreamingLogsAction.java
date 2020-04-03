@@ -62,14 +62,15 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
                             AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId);
                     final List<DeploymentInstance> instances = deploymentResourceInner.properties().instances();
                     if (CollectionUtils.isEmpty(instances)) {
-                        DefaultLoader.getUIHelper().showError("No available instances","Failed to start log streaming");
+                        DefaultLoader.getUIHelper().showError("No available instances",
+                                                              "Failed to start log streaming");
                     } else {
                         showLogStreamingDialog(instances);
                     }
                 } catch (Exception e) {
                     DefaultLoader.getUIHelper()
                                  .showError("Failed to list spring cloud app instances: " + e.getMessage(),
-                                            "Failed to start log streaming", );
+                                            "Failed to start log streaming");
                 }
             });
         });
