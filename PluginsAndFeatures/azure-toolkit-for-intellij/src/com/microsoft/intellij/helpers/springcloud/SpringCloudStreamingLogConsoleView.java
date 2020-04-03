@@ -29,11 +29,10 @@ import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -64,17 +63,21 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
         this.print("Streaming Log Start.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
-            try (final BufferedReader br = new BufferedReader(new InputStreamReader(logInputStream,
-                                                                                    StandardCharsets.UTF_8));) {
-                while (enable.get()) {
-                    final String log = br.readLine();
+            try (final Scanner scanner = new Scanner(new InputStreamReader(logInputStream))) {
+                while (enable.get() && scanner.hasNext()) {
+                    final String log = scanner.nextLine();
                     SpringCloudStreamingLogConsoleView.this.print(log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
                     Thread.sleep(50);
                 }
-            } catch (IOException e) {
-                this.print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
             } catch (InterruptedException e) {
-                // swallow interrupt exception
+                // swallow interrupt exception while shutdown
+                if (!(e instanceof InterruptedException)) {
+                    this.print(String.format("Streaming Log is interrupt due to error : %s.\n", e.getMessage()),
+                               ConsoleViewContentType.SYSTEM_OUTPUT);
+                }
+            } finally {
+                print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+                enable.set(false);
             }
         });
     }
@@ -93,7 +96,6 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
                 if (executorService != null) {
                     ThreadPoolUtils.stop(executorService, 100, TimeUnit.MICROSECONDS);
                 }
-                this.print("Streaming Log stops.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
             });
         }
     }
