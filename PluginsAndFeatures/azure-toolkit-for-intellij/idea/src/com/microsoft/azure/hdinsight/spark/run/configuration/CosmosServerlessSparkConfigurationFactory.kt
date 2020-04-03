@@ -13,8 +13,9 @@ open class CosmosServerlessSparkConfigurationFactory (type: ConfigurationType) :
     }
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration = CosmosServerlessSparkConfiguration(
+            project,
             NAME,
-            CosmosServerlessSparkConfigurationModule(project),
+            CosmosServerlessSparkConfigurableModel(project),
             this
     )
 

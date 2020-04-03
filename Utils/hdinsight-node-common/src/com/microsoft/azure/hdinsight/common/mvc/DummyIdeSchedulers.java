@@ -39,6 +39,11 @@ public class DummyIdeSchedulers implements IdeSchedulers {
 
     @Override
     public Scheduler dispatchUIThread() {
+        return Schedulers.computation();
+    }
+
+    @Override
+    public Scheduler dispatchPooledThread() {
         return Schedulers.io();
     }
 }

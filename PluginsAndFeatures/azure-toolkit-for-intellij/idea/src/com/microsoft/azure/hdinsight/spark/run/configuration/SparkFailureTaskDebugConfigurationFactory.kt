@@ -25,6 +25,7 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunConfigurationModule
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.common.SparkFailureTaskDebugConfigurableModel
 
@@ -34,7 +35,12 @@ class SparkFailureTaskDebugConfigurationFactory(type: ConfigurationType) : Confi
     }
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return SparkFailureTaskDebugConfiguration(NAME, SparkFailureTaskDebugConfigurableModel(project), this)
+        return SparkFailureTaskDebugConfiguration(
+                NAME,
+                SparkFailureTaskDebugConfigurableModel(project),
+                RunConfigurationModule(project),
+                this
+        )
     }
 
     override fun getName(): String {

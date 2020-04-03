@@ -7,7 +7,7 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 cd "$SCRIPTPATH"
 
 # Utils
-VERSION="3.26.0"
+VERSION="3.35.0"
 MAVEN_QUIET=""
 
 # Eclipse
@@ -109,17 +109,21 @@ if $BUILD_INTELLIJ; then
   (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST)
   cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_LATEST.zip
 
+  # TODO: SD -- check if we need this (start)
   # Build intellij plugin for fallback version
   if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
       ./tools/IntellijVersionHelper $IJ_DISPLAY_VERSION_FALLBACK
   fi
   (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew clean buildPlugin -s -Papplicationinsights.key=${INTELLIJ_KEY} -Pintellij_version=IC-$IJ_VERSION_FALLBACK -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_FALLBACK)
   cp ./PluginsAndFeatures/azure-toolkit-for-intellij/build/distributions/azure-toolkit-for-intellij.zip ./$ARTIFACTS_DIR/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_FALLBACK.zip
+  # TODO: SD -- check if we need this (end)
 
   # Extract jars to sign
   rm -rf ${INTELLIJ_TOSIGN}/*
   unzip -p ./artifacts/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_LATEST.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_$IJ_DISPLAY_VERSION_LATEST.jar
+  # TODO: SD -- check if we need this (start)
   unzip -p ./artifacts/azure-toolkit-for-intellij-$IJ_DISPLAY_VERSION_FALLBACK.zip azure-toolkit-for-intellij/lib/azure-toolkit-for-intellij.jar > ${INTELLIJ_TOSIGN}/azure-toolkit-for-intellij_$IJ_DISPLAY_VERSION_FALLBACK.jar
+  # TODO: SD -- check if we need this (end)
 fi
 
 echo "ALL BUILD SUCCESSFUL"

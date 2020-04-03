@@ -22,12 +22,14 @@
 
 package com.microsoft.azuretools.authmanage.srvpri.rest;
 
+import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+
 /**
  * Created by vlashch on 8/29/16.
  */
 public class ArmRestHelper extends RestHelperBase {
 
-    public ArmRestHelper(String tenantId) {
-        setRequestFactory(new ArmRequestFactory(tenantId));
+    public ArmRestHelper(AccessTokenAzureManager preAccessTokenAzureManager, String tenantId) {
+        setRequestFactory(new ArmRequestFactory(preAccessTokenAzureManager, tenantId));
     }
 }

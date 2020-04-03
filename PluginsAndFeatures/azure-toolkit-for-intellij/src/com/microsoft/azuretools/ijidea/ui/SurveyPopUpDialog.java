@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectManagerImpl;
 import com.intellij.openapi.wm.impl.WindowManagerImpl;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.util.IconUtil;
+
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
@@ -52,7 +54,7 @@ public class SurveyPopUpDialog extends JDialog {
         super();
 
         this.customerSurveyHelper = customerSurveyHelper;
-        this.disposeTimer = new Timer(1000* DISPOSE_TIME, (e)->this.putOff());
+        this.disposeTimer = new Timer(1000 * DISPOSE_TIME, (e) -> this.putOff());
         this.themeListener = lafManager -> renderUiByTheme();
 
         this.setAlwaysOnTop(true);
@@ -66,14 +68,9 @@ public class SurveyPopUpDialog extends JDialog {
 
         giveFeedbackButton.addActionListener((e) -> takeSurvey());
         giveFeedbackButton.setFocusable(false);
-        giveFeedbackButton.setBorderPainted(false);
-        //There will be UI issue when paint boder with background in mac/linux
-        setButtonHoverListener(giveFeedbackButton);
 
         notNowButton.addActionListener((e) -> putOff());
         notNowButton.setFocusable(false);
-        notNowButton.setBorderPainted(false);
-        setButtonHoverListener(notNowButton);
 
         lblClose.addMouseListener(new MouseInputAdapter() {
             @Override
@@ -95,10 +92,16 @@ public class SurveyPopUpDialog extends JDialog {
         // Add listener to intellij theme change
         LafManager.getInstance().addLafManagerListener(this.themeListener);
         renderUiByTheme();
+        this.pack();
         this.disposeTimer.restart();
     }
 
-    private void renderUiByTheme(){
+    private void renderUiByTheme() {
+        // Use default ui setting for mac
+        boolean isMac = System.getProperty("os.name").toLowerCase().contains("mac");
+        if (isMac) {
+            return;
+        }
         if (UIUtils.isUnderIntelliJTheme()) {
             UIUtils.setPanelBackGroundColor(contentPane, Color.WHITE);
             ButtonUI buttonUI = new MetalButtonUI();
@@ -109,7 +112,6 @@ public class SurveyPopUpDialog extends JDialog {
             notNowButton.setForeground(new Color(255, 255, 255));
             notNowButton.setBackground(new Color(105, 105, 105));
             buttonOnHoverColor = Color.LIGHT_GRAY;
-
         } else {
             UIUtils.setPanelBackGroundColor(contentPane, null);
             ButtonUI buttonUI = new JButton().getUI();
@@ -121,9 +123,14 @@ public class SurveyPopUpDialog extends JDialog {
             notNowButton.setUI(buttonUI);
             buttonOnHoverColor = Color.WHITE;
         }
+        giveFeedbackButton.setBorderPainted(false);
+        setButtonHoverListener(giveFeedbackButton);
+
+        notNowButton.setBorderPainted(false);
+        setButtonHoverListener(notNowButton);
     }
 
-    private void setDisposeTimer(){
+    private void setDisposeTimer() {
         this.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -137,13 +144,13 @@ public class SurveyPopUpDialog extends JDialog {
         });
     }
 
-    private void setButtonHoverListener(JButton button){
+    private void setButtonHoverListener(JButton button) {
         button.addMouseListener(new MouseInputAdapter() {
             Color originForegroundColor;
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                originForegroundColor = ((JButton)e.getSource()).getForeground();
+                originForegroundColor = ((JButton) e.getSource()).getForeground();
                 super.mouseEntered(e);
                 button.setForeground(buttonOnHoverColor);
             }
@@ -160,6 +167,10 @@ public class SurveyPopUpDialog extends JDialog {
     private void setLocationRelativeToIDE(Project project) {
         project = project != null ? project : ProjectManagerImpl.getInstance().getOpenProjects()[0];
         JFrame ideFrame = WindowManagerImpl.getInstance().getFrame(project);
+        if (ideFrame == null) {
+            // In case user close project after start up
+            ideFrame = WindowManagerImpl.getInstance().findVisibleFrame();
+        }
         int locationX = ideFrame.getX() + ideFrame.getWidth() - this.getWidth();
         int locationY = ideFrame.getY() + ideFrame.getHeight() - this.getHeight();
         this.setLocation(locationX, locationY);
@@ -200,7 +211,7 @@ public class SurveyPopUpDialog extends JDialog {
         }
     }
 
-    private synchronized void close(){
+    private synchronized void close() {
         isDisposed = true;
         disposeTimer.stop();
         LafManager.getInstance().removeLafManagerListener(this.themeListener);
@@ -215,6 +226,9 @@ public class SurveyPopUpDialog extends JDialog {
         lblMessage = new JLabel(LABEL_PROMPT);
 
         lblAzureIcon = new JLabel();
-        lblAzureIcon.setIcon(PluginUtil.getIcon("/icons/azure_large.png", 50, 50));
+        Icon rawIcon = PluginUtil.getIcon("/icons/azure_large.png");
+        Icon scaledIcon = IconUtil.scale(rawIcon, lblAzureIcon, 50f / rawIcon.getIconWidth());
+
+        lblAzureIcon.setIcon(scaledIcon);
     }
 }

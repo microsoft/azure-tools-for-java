@@ -32,6 +32,7 @@ import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.execution.ui.ConfigurationModuleSelector.NO_MODULE_TEXT
 import com.intellij.execution.util.JavaParametersUtil
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
@@ -113,7 +114,7 @@ open class SparkBatchLocalRunState(val myProject: Project,
 
         val mainModule = model.classpathModule?.let {
             ModuleManager.getInstance(myProject).findModuleByName(it)
-        } ?: ModuleManager.getInstance(myProject).modules.first { it.name.equals(myProject.name, ignoreCase = true) }
+        } ?: SparkLocalRun.defaultModule(myProject)
 
         if (mainModule != null) {
             params.configureByModule(mainModule, JavaParameters.JDK_AND_CLASSES_AND_TESTS)
@@ -124,7 +125,8 @@ open class SparkBatchLocalRunState(val myProject: Project,
         params.workingDirectory = Paths.get(model.dataRootDirectory, "__default__", "user", "current").toString()
 
         if (hasJmockit) {
-            params.vmParametersList.addAll(getCommandLineVmParameters(executor, params, mainModule.name))
+            params.vmParametersList.addAll(
+                    getCommandLineVmParameters(executor, params, mainModule?.name ?: NO_MODULE_TEXT))
         }
 
         if (hasClassPath) {

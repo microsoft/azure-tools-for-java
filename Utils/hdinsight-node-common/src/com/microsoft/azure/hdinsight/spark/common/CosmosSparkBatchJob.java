@@ -30,7 +30,6 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
-import rx.Observer;
 
 import java.io.File;
 import java.net.URI;
@@ -40,9 +39,8 @@ import java.util.Objects;
 
 public class CosmosSparkBatchJob extends SparkBatchJob {
     public CosmosSparkBatchJob(@NotNull SparkSubmissionParameter submissionParameter,
-                               @NotNull SparkBatchAzureSubmission azureSubmission,
-                               @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        super(submissionParameter, azureSubmission, ctrlSubject);
+                               @NotNull SparkBatchAzureSubmission azureSubmission) {
+        super(submissionParameter, azureSubmission);
     }
 
     @NotNull
@@ -136,6 +134,11 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
         return Observable.just(Objects.requireNonNull(getConnectUri()).toString() + "/" + getBatchId() + "/log");
     }
 
+    @Override
+    public Observable<String> awaitPostDone() {
+        return Observable.empty();
+    }
+
     @NotNull
     private SparkBatchAzureSubmission getAzureSubmission() {
         return (SparkBatchAzureSubmission) getSubmission();
@@ -143,5 +146,13 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
 
     private void ctrlInfo(@NotNull String message) {
         getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Info, message));
+    }
+
+    @Override
+    public CosmosSparkBatchJob clone() {
+        return new CosmosSparkBatchJob(
+                this.getSubmissionParameter(),
+                this.getAzureSubmission()
+        );
     }
 }

@@ -2,6 +2,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
@@ -82,10 +83,17 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
     }
 
     /**
-     * Load web containers from model.
+     * Load war web containers from model.
      */
-    public void onLoadWebContainer() {
-        getMvpView().fillWebContainer(AzureWebAppMvpModel.getInstance().listWebContainers());
+    public void onLoadWarWebContainer() {
+        getMvpView().fillWebContainer(AzureWebAppMvpModel.listWebContainersForWarFile());
+    }
+
+    /**
+     * Load jar web containers from model.
+     */
+    public void onLoadJarWebContainer(JdkModel jdkModel) {
+        getMvpView().fillWebContainer(AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel));
     }
 
     /**

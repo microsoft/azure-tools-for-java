@@ -21,16 +21,24 @@
  */
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.common.appinsight.AppInsightsHttpRequestInstallIdMapRecord;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
+import com.microsoft.azure.hdinsight.sdk.common.AuthType;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.net.util.Base64;
+import org.apache.http.Header;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -42,15 +50,23 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class SparkBatchSubmission implements ILogger {
@@ -72,7 +88,23 @@ public class SparkBatchSubmission implements ILogger {
         return instance;
     }
 
+    public static SparkBatchSubmission getClusterSubmission(IClusterDetail clusterDetail) {
+        if (clusterDetail instanceof MfaEspCluster) {
+            String id = ((MfaEspCluster) clusterDetail).getTenantId();
+            return new SparkBatchEspMfaSubmission(id, clusterDetail.getName());
+        } else {
+            return SparkBatchSubmission.getInstance();
+        }
+    }
+
     private CredentialsProvider credentialsProvider =  new BasicCredentialsProvider();
+
+    private String authCode = null;
+
+    @Nullable
+    public String getAuthCode() {
+        return authCode;
+    }
 
     @NotNull
     public String getInstallationID() {
@@ -83,7 +115,8 @@ public class SparkBatchSubmission implements ILogger {
         return HDInsightLoader.getHDInsightHelper().getInstallationId();
     }
 
-    public CloseableHttpClient getHttpClient() throws IOException {
+    @Nullable
+    protected SSLConnectionSocketFactory getSSLSocketFactory() {
         TrustStrategy ts = ServiceManager.getServiceProvider(TrustStrategy.class);
         SSLConnectionSocketFactory sslSocketFactory = null;
 
@@ -102,12 +135,26 @@ public class SparkBatchSubmission implements ILogger {
             }
         }
 
-        return HttpClients.custom()
-                 .useSystemProperties()
-                 .setSSLSocketFactory(sslSocketFactory)
-                 .setDefaultCredentialsProvider(credentialsProvider)
-                 .build();
+        return sslSocketFactory;
     }
+
+    @NotNull
+    public CloseableHttpClient getHttpClient(boolean disableRedirect) throws IOException {
+        HttpClientBuilder clientBuilder = HttpClients.custom()
+                .useSystemProperties()
+                .setSSLSocketFactory(getSSLSocketFactory())
+                .setDefaultCredentialsProvider(credentialsProvider);
+
+        return disableRedirect
+                ? clientBuilder.disableRedirectHandling().build()
+                : clientBuilder.build();
+    }
+
+    @NotNull
+    public CloseableHttpClient getHttpClient() throws IOException {
+        return getHttpClient(false);
+    }
+
 
     /**
      * Set http request credential using username and password
@@ -116,22 +163,105 @@ public class SparkBatchSubmission implements ILogger {
      */
     public void setUsernamePasswordCredential(String username, String password) {
         credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
+        if (username != null && password != null) {
+            String auth = username + ":" + password;
+            authCode = "Basic " + new String(Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1)));
+        }
     }
 
     public CredentialsProvider getCredentialsProvider() {
         return credentialsProvider;
     }
 
-    public HttpResponse getHttpResponseViaGet(String connectUrl) throws IOException {
-        CloseableHttpClient httpclient = getHttpClient();
 
+    @Nullable
+    public String probeAuthRedirectUrl(String connectUrl) throws IOException {
+        HttpResponse resp = negotiateAuthMethodWithResp(connectUrl);
+        if (resp.getCode() == 302) {
+            String location = resp.findHeader("Location");
+
+            return isAzureADLoginUrl(location) ? location : null;
+        }
+
+        return null;
+    }
+
+    private boolean isAzureADLoginUrl(String url) {
+        if (url.split(",").length > 1) {
+            return false;
+        }
+
+        try {
+            String loginHost = URI.create(url).getHost();
+
+            if (StringUtils.isBlank(loginHost)) {
+                return false;
+            }
+
+            return Arrays.stream(CommonConst.AZURE_LOGIN_HOSTS)
+                    .anyMatch(it -> it.equalsIgnoreCase(loginHost));
+        } catch (IllegalArgumentException ignored) {
+            return false;
+        }
+    }
+
+
+    public AuthType probeAuthType(String connectUrl) throws IOException {
+        HttpResponse resp = negotiateAuthMethodWithResp(connectUrl);
+
+        if (resp.getCode() >= 200 && resp.getCode() < 300) {
+            return AuthType.NoAuth;
+        }
+
+        if (resp.getCode() == 302) {
+            if (Optional.ofNullable(resp.findHeader("Location"))
+                    .filter(this::isAzureADLoginUrl)
+                    .isPresent()) {
+                return AuthType.AADAuth;
+            }
+
+            return AuthType.NotSupported;
+        }
+
+        if (resp.getCode() == 401) {
+            if (Optional.ofNullable(resp.findHeader("www-authenticate"))
+                    .filter(authHeader -> StringUtils.startsWithIgnoreCase(authHeader, "Basic"))
+                    .isPresent()) {
+                return AuthType.BasicAuth;
+            }
+
+            return AuthType.NotSupported;
+        }
+
+        return AuthType.NotSupported;
+    }
+
+    public HttpResponse negotiateAuthMethodWithResp(String connectUrl) throws IOException{
+        List<Header> additionHeader = new ArrayList<>();
+        additionHeader.add(new BasicHeader("User-Agent", "Mozilla/5"));
+        return getHttpResponseViaGet(connectUrl, getHttpClient(true), additionHeader);
+    }
+
+    public HttpResponse getHttpResponseViaGet(String connectUrl, CloseableHttpClient httpclient, List<Header> additionHeaders) throws IOException {
         HttpGet httpGet = new HttpGet(connectUrl);
         httpGet.addHeader("Content-Type", "application/json");
         httpGet.addHeader("User-Agent", getUserAgentPerRequest(false));
         httpGet.addHeader("X-Requested-By", "ambari");
-        try(CloseableHttpResponse response = httpclient.execute(httpGet)) {
+
+        if (additionHeaders != null) {
+            for (Header replace : additionHeaders) {
+                httpGet.removeHeaders(replace.getName());
+                httpGet.addHeader(replace);
+            }
+        }
+
+        try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             return StreamUtil.getResultFromHttpResponse(response);
         }
+    }
+
+    public HttpResponse getHttpResponseViaGet(String connectUrl) throws IOException {
+        return getHttpResponseViaGet(connectUrl, getHttpClient(), null);
     }
 
     public HttpResponse getHttpResponseViaHead(String connectUrl) throws IOException {

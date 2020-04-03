@@ -24,6 +24,7 @@ package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;
+import org.joda.time.Instant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +37,10 @@ public class CommonUtil {
     public static final String ERROR_MSG = "message";
     public static final String ERROR_TYPE = "errorType";
     public static final String ERROR_CLASSNAME = "errorClassName";
+    public static final String ERROR_STACKTRACE = "errorStackTrace";
     public static final String DURATION = "duration";
     public static final String SERVICE_NAME = "serviceName";
+    public static final String TIMESTAMP = "timestamp";
     public static TelemetryClient client;
 
     public static Map<String, String> mergeProperties(Map<String, String> properties) {
@@ -52,6 +55,8 @@ public class CommonUtil {
     public synchronized static void sendTelemetry(EventType eventType, String serviceName, Map<String, String> properties,
         Map<String, Double> metrics) {
         Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+        // Tag UTC time as timestamp
+        mutableProps.put(TIMESTAMP, Instant.now().toString());
         if (client != null) {
             if (!StringUtils.isNullOrEmpty(serviceName)) {
                 mutableProps.put(SERVICE_NAME, serviceName);

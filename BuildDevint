@@ -35,7 +35,11 @@ BUILD_ECLIPSE=true
 BUILD_INTELLIJ=true
 INJECT_INTELLIJ_VERSION=false
 
-IJ_VERSION_LATEST=2019.3
+IJ_VERSION_MAJOR_BUILD=193.5233
+IJ_VERSION_MAJOR=2019.3
+IJ_VERSION_MINOR=
+IJ_VERSION_LATEST=$IJ_VERSION_MAJOR.$IJ_VERSION_MINOR \
+                  && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
 IJ_SCALA_VERSION_LATEST=2019.3.23
 
 IJ_VERSION_FALLBACK=2019.2
@@ -45,12 +49,12 @@ IJ_SCALA_VERSION_FALLBACK=2019.2.7
         case $option in
             h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter] [-e eclipse/intellij]"; exit ;;
             q) MAVEN_QUIET="-q" ;;
-            v) INTELLIJ_VERSION=true ;;
+            v) INJECT_INTELLIJ_VERSION=true ;;
             B) MAVEN_QUIET="--batch-mode" ;;
             C) BUILD_COUNTER="$OPTARG" ;;
             e)
               shopt -s nocasematch
-              case $OPTARG in 
+              case $OPTARG in
                 eclipse) BUILD_ECLIPSE=false ;;
                 intellij) BUILD_INTELLIJ=false ;;
               esac ;;
@@ -71,30 +75,35 @@ tc_close "Initializing build script"
 # Build Utils
 tc_open "Building Utils"
 {
-    mvn install -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository -Dcheckstyle.skip=$SKIP_CHECKSTYLE $MAVEN_QUIET
-    mvn install -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
+    mvn install -B -f $SCRIPTPATH/Utils/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository -Dcheckstyle.skip=$SKIP_CHECKSTYLE $MAVEN_QUIET
+    mvn install -B -f $SCRIPTPATH/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local=$SCRIPTPATH/.repository $MAVEN_QUIET
     df -h
 }
 tc_close "Building Utils"
 
-# Build eclipse plugin
+# Build Eclipse plugin
 if $BUILD_ECLIPSE; then
   tc_open "Building Eclipse plugin"
-  {    
-      mvn clean install -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
+  {
+      mvn clean install -B -f $SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
       rm -rf ./PluginsAndFeatures/azure-toolkit-for-eclipse/
       df -h
   }
   tc_close "Building Eclipse plugin"
 fi
 
-# Build intellij plugin
+# Build IntelliJ plugin
 if $BUILD_INTELLIJ; then
   tc_open "Building IDEA plugin"
-  {    
-      if [ $INJECT_INTELLIJ_VERSION == "true" ] ; then
-        ./tools/IntellijVersionHelper $IJ_VERSION_LATEST
-      fi
+  {
+      PATCH_PLUGIN_XML_ARGS="" \
+        && [ $INJECT_INTELLIJ_VERSION == "true" ] && \
+          PATCH_PLUGIN_XML_ARGS="-PpatchPluginXmlSinceBuild=$IJ_VERSION_MAJOR_BUILD"
+
+      GRADLE_TASKS="clean buildPlugin bundleBuildIdeaZip"
+      GRADLE_ARGS="-s -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST $PATCH_PLUGIN_XML_ARGS"
+
+      (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew $GRADLE_TASKS $GRADLE_ARGS)
 
       (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean --console=plain)
       (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea --console=plain)

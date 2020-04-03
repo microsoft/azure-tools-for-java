@@ -66,11 +66,22 @@ public final class SharedKeyCredential {
                 getStandardHeaderValue(httpHeaders, Constants.HeaderConstants.IF_NONE_MATCH),
                 getStandardHeaderValue(httpHeaders, Constants.HeaderConstants.IF_UNMODIFIED_SINCE),
                 getStandardHeaderValue(httpHeaders, Constants.HeaderConstants.RANGE),
-                getStandardHeaderValue(httpHeaders, Constants.HeaderConstants.CLIENT_REQUEST_ID_HEADER),
-                getStandardHeaderValue(httpHeaders, Constants.HeaderConstants.DATE),
-                getStandardHeaderValue(httpHeaders, Constants.HeaderConstants.STORAGE_VERSION_HEADER),
-                getCanonicalizedResource(request.getURI(), pairs)
-        );
+                getCanonicalizedHeader(httpHeaders),
+                getCanonicalizedResource(request.getURI(), pairs));
+    }
+
+    private String getCanonicalizedHeader(HeaderGroup headerGroup) {
+        List<Header> headers = Arrays.asList(headerGroup.getAllHeaders());
+        Collections.sort(headers, Comparator.comparing(Header::getName));
+        StringBuffer buffer = new StringBuffer();
+        for (Header header : headers) {
+            if (header.getName().startsWith("x-ms-")) {
+                buffer.append(String.format("%s:%s", header.getName(), header.getValue()));
+                buffer.append("\n");
+            }
+        }
+
+        return buffer.toString().substring(0, buffer.length() - 1);
     }
 
     private void appendCanonicalizedElement(final StringBuilder builder, final String element) {

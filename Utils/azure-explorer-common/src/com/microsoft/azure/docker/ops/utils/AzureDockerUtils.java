@@ -32,7 +32,9 @@ import com.microsoft.azure.management.network.Subnet;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.management.storage.StorageAccountSkuType;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -233,7 +235,7 @@ public class AzureDockerUtils {
     if (azureClient != null) {
       for (StorageAccount storageAccount : azureClient.storageAccounts().list()) {
         if (vmImageSizeType != null) {
-          if (storageAccount.sku().name().name().toLowerCase().equals(vmImageSizeType.toLowerCase())) {
+          if (storageAccount.skuType().name() != null && storageAccount.skuType().name().equals(SkuName.fromString(vmImageSizeType.toLowerCase()))) {
             result.add(storageAccount.name());
           }
         } else {
@@ -255,7 +257,7 @@ public class AzureDockerUtils {
         dockerStorageAccount.region = storageAccount.regionName();
         dockerStorageAccount.resourceGroup = storageAccount.resourceGroupName();
         dockerStorageAccount.sid = azureClient.subscriptionId();
-        dockerStorageAccount.skuType = storageAccount.sku().name().name();
+        dockerStorageAccount.skuType = storageAccount.skuType().name().toString();
         result.add(dockerStorageAccount);
       }
     }

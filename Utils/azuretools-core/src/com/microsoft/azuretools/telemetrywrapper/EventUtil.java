@@ -22,6 +22,8 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -49,7 +51,7 @@ public class EventUtil {
         logEvent(eventType, serviceName, operName, properties, null);
     }
 
-    public static void logError(String serviceName, String operName, ErrorType errorType, Exception e,
+    public static void logError(String serviceName, String operName, ErrorType errorType, Throwable e,
         Map<String, String> properties, Map<String, Double> metrics) {
         try {
             Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
@@ -59,6 +61,7 @@ public class EventUtil {
             mutableProps.put(CommonUtil.ERROR_MSG, e != null ? e.getMessage() : "");
             mutableProps.put(CommonUtil.ERROR_CLASSNAME, e != null ? e.getClass().getName() : "");
             mutableProps.put(CommonUtil.ERROR_TYPE, errorType.name());
+            mutableProps.put(CommonUtil.ERROR_STACKTRACE, ExceptionUtils.getStackTrace(e));
             sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), metrics);
         } catch (Exception ignore) {
         }

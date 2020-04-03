@@ -80,8 +80,10 @@ public class SparkLocalRunConfigurableModel implements CommonJavaRunConfiguratio
     }
 
     public SparkLocalRunConfigurableModel(@NotNull Project project) {
+        final String projectBasePath = project.getBasePath();
         this.project = project;
-        this.setWorkingDirectory(PathUtil.getLocalPath(project.getBaseDir().getPath()));
+        this.setWorkingDirectory(PathUtil.getLocalPath(
+                projectBasePath != null ? projectBasePath : Paths.get("").toAbsolutePath().toString()));
         this.setDataRootDirectory(Paths.get(this.getWorkingDirectory(), "data").toString());
 
         if (SystemUtils.IS_OS_WINDOWS) {

@@ -24,6 +24,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -40,9 +41,12 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManage
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,6 +55,7 @@ public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
     private static final String ICON_PATH = "AzureExplorer.svg";
     private static final String BASE_MODULE_NAME = "Azure";
+    private static final String MODULE_NAME_NO_SUBSCRIPTION = "(No subscription)";
 
     @Nullable
     private Object project;
@@ -64,6 +69,8 @@ public class AzureModule extends AzureRefreshableNode {
     private HDInsightRootModule hdInsightModule;
     @Nullable
     private HDInsightRootModule sparkServerlessClusterRootModule;
+    @Nullable
+    private HDInsightRootModule arcadiaModule;
     @NotNull
     private DockerHostModule dockerHostModule;
     @NotNull
@@ -74,6 +81,9 @@ public class AzureModule extends AzureRefreshableNode {
     private AzureAppServiceModule azureAppServiceModule;
     @NotNull
     private ResourceManagementModule resourceManagementModule;
+    @NotNull
+    private FunctionModule functionModule;
+
     /**
      * Constructor.
      *
@@ -91,6 +101,7 @@ public class AzureModule extends AzureRefreshableNode {
         azureDatabaseModule = new AzureDatabaseModule(this);
         azureAppServiceModule = new AzureAppServiceModule(this);
         resourceManagementModule = new ResourceManagementModule(this);
+        functionModule = new FunctionModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -119,9 +130,14 @@ public class AzureModule extends AzureRefreshableNode {
                         : selectedSubscriptions.get(0).getSubscriptionName());
             }
         } catch (Throwable e) {
-            String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
-                    .getMessage() + ")";
-            DefaultLoader.getUIHelper().logError(msg, e);
+            if (e instanceof AuthException &&
+                    StringUtils.equalsIgnoreCase(e.getMessage(), "No subscription found in the account")) {
+                return String.format("%s %s", BASE_MODULE_NAME, MODULE_NAME_NO_SUBSCRIPTION);
+            } else {
+                String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
+                        .getMessage() + ")";
+                DefaultLoader.getUIHelper().logError(msg, e);
+            }
         }
         return BASE_MODULE_NAME;
     }
@@ -132,6 +148,10 @@ public class AzureModule extends AzureRefreshableNode {
 
     public void setSparkServerlessModule(@NotNull HDInsightRootModule rootModule) {
         this.sparkServerlessClusterRootModule = rootModule;
+    }
+
+    public void setArcadiaModule(@NotNull HDInsightRootModule rootModule) {
+        this.arcadiaModule = rootModule;
     }
 
     @Override
@@ -152,6 +172,9 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(resourceManagementModule)) {
             addChildNode(resourceManagementModule);
         }
+        if(!isDirectChild(functionModule)){
+            addChildNode(functionModule);
+        }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
         }
@@ -160,6 +183,10 @@ public class AzureModule extends AzureRefreshableNode {
                 sparkServerlessClusterRootModule.isFeatureEnabled() &&
                 !isDirectChild(sparkServerlessClusterRootModule)) {
             addChildNode(sparkServerlessClusterRootModule);
+        }
+
+        if (arcadiaModule != null && arcadiaModule.isFeatureEnabled() && !isDirectChild(arcadiaModule)) {
+            addChildNode(arcadiaModule);
         }
 
         if (!isDirectChild(dockerHostModule)) {
@@ -184,11 +211,12 @@ public class AzureModule extends AzureRefreshableNode {
     @Override
     protected void refreshFromAzure() throws AzureCmdException {
         try {
-            if (AuthMethodManager.getInstance().isSignedIn()) {
+            if (AuthMethodManager.getInstance().isSignedIn() && hasSubscription()) {
                 vmArmServiceModule.load(true);
                 redisCacheModule.load(true);
                 storageModule.load(true);
                 resourceManagementModule.load(true);
+                functionModule.load(true);
 
                 if (hdInsightModule != null) {
                     hdInsightModule.load(true);
@@ -196,6 +224,10 @@ public class AzureModule extends AzureRefreshableNode {
 
                 if (sparkServerlessClusterRootModule != null) {
                     sparkServerlessClusterRootModule.load(true);
+                }
+
+                if (arcadiaModule != null && arcadiaModule.isFeatureEnabled()) {
+                    arcadiaModule.load(true);
                 }
 
                 dockerHostModule.load(true);
@@ -219,7 +251,7 @@ public class AzureModule extends AzureRefreshableNode {
         try {
             AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
             // not signed in
-            if (azureManager == null) {
+            if (azureManager == null || !hasSubscription()) {
                 return;
             }
             azureManager.getSubscriptionManager().addListener(isRefresh -> {
@@ -245,5 +277,9 @@ public class AzureModule extends AzureRefreshableNode {
             handleSubscriptionChange();
             addSubscriptionSelectionListener();
         }
+    }
+
+    private boolean hasSubscription() {
+        return !this.name.contains(MODULE_NAME_NO_SUBSCRIPTION);
     }
 }

@@ -14,7 +14,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.ijidea.ui.SurveyPopUpDialog;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.azuretools.telemetrywrapper.Operation;
+import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.actions.QualtricsSurveyAction;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.LocalDateTime;
@@ -26,7 +31,13 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static com.microsoft.azuretools.Constants.FILE_NAME_SURVEY_CONFIG;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SURVEY;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
 
 public enum CustomerSurveyHelper {
 
@@ -37,10 +48,14 @@ public enum CustomerSurveyHelper {
     private static final int PUT_OFF_DELAY_BY_DAY = 30;
     private static final int TAKE_SURVEY_DELAY_BY_DAY = 180;
 
-    private static final String PLUGIN_FOLDER_NAME = "AzureToolsForIntelliJ";
-    private static final String SURVEY_CONFIG_FILE = "SurveyConfig.json";
+    private static final String TELEMETRY_KEY_RESPONSE = "response";
+    private static final String TELEMETRY_VALUE_NEVER_SHOW = "neverShowAgain";
+    private static final String TELEMETRY_VALUE_PUT_OFF = "putOff";
+    private static final String TELEMETRY_VALUE_ACCEPT = "accept";
 
+    private boolean isShown = false;
     private SurveyConfig surveyConfig;
+    private Operation operation;
 
     CustomerSurveyHelper() {
         loadConfiguration();
@@ -53,6 +68,13 @@ public enum CustomerSurveyHelper {
                     .subscribe(next -> {
                         SurveyPopUpDialog dialog = new SurveyPopUpDialog(CustomerSurveyHelper.this, project);
                         dialog.setVisible(true);
+                        synchronized (CustomerSurveyHelper.class) {
+                            if (operation != null) {
+                                operation.complete();
+                            }
+                            operation = TelemetryManager.createOperation(SYSTEM, SURVEY);
+                            operation.start();
+                        }
                     });
         }
     }
@@ -64,19 +86,26 @@ public enum CustomerSurveyHelper {
         surveyConfig.lastSurveyDate = LocalDateTime.now();
         surveyConfig.nextSurveyDate = LocalDateTime.now().plusDays(TAKE_SURVEY_DELAY_BY_DAY);
         saveConfiguration();
+        sendTelemetry(TELEMETRY_VALUE_ACCEPT);
     }
 
     public void putOff() {
         surveyConfig.nextSurveyDate = LocalDateTime.now().plusDays(PUT_OFF_DELAY_BY_DAY);
         saveConfiguration();
+        sendTelemetry(TELEMETRY_VALUE_PUT_OFF);
     }
 
     public void neverShowAgain() {
         surveyConfig.isAcceptSurvey = false;
         saveConfiguration();
+        sendTelemetry(TELEMETRY_VALUE_NEVER_SHOW);
     }
 
-    private boolean isAbleToPopUpSurvey() {
+    private synchronized boolean isAbleToPopUpSurvey() {
+        if (isShown) {
+            return false;
+        }
+        isShown = true;
         return surveyConfig.isAcceptSurvey && LocalDateTime.now().isAfter(surveyConfig.nextSurveyDate);
     }
 
@@ -104,11 +133,17 @@ public enum CustomerSurveyHelper {
     }
 
     private File getConfigFile() {
-        File pluginFolder = new File(System.getProperty("user.home"), PLUGIN_FOLDER_NAME);
-        if (!pluginFolder.exists()) {
-            pluginFolder.mkdirs();
+        return new File(CommonSettings.getSettingsBaseDir(), FILE_NAME_SURVEY_CONFIG);
+    }
+
+    private synchronized void sendTelemetry(String response) {
+        if (operation == null) {
+            return;
         }
-        return new File(pluginFolder, SURVEY_CONFIG_FILE);
+        Map<String, String> properties = new HashMap<>();
+        properties.put(TELEMETRY_KEY_RESPONSE, response);
+        EventUtil.logEvent(EventType.info, operation, properties);
+        operation.complete();
     }
 
     static class SurveyConfig {

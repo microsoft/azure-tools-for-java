@@ -31,17 +31,27 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.*
 
 abstract class SparkLivySessionInputStream(val session: Session) : InputStream(), ILogger {
+    private var isClosed: Boolean = false
     private var nextStatementId = 0
     private var statementOutputQueue: ArrayDeque<Byte>? = null
 
     override fun read(): Int {
+        if (isClosed) {
+            return -1
+        }
+
         return statementOutputQueue?.pollFirst()?.toInt() ?: -1
     }
 
     override fun close() {
+        this.isClosed = true
     }
 
     override fun available(): Int {
+        if (this.isClosed || session.isStop) {
+            return 0;
+        }
+
         if (isOutputEmpty()) {
             fetchNextStatementOutput()
 
@@ -63,7 +73,7 @@ abstract class SparkLivySessionInputStream(val session: Session) : InputStream()
                     .map { stm ->
                         createStatementBytesQueue(stm.output)?.let {
                             log().debug("Statement $nextStatementId result $it")
-                            ArrayDeque(it.toByteArray(UTF_8).toList())
+                            ArrayDeque("$it\n".toByteArray(UTF_8).toList())
                         }
                     }
                     .toBlocking()

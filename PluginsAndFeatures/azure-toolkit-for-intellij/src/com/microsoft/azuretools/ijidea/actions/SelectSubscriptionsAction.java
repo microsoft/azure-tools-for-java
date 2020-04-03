@@ -116,7 +116,8 @@ public class SelectSubscriptionsAction extends AzureAnAction {
                     subscriptionManager.getSubscriptionDetails();
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    LOGGER.error("updateSubscriptionWithProgressDialog", ex);
+                    // Don't handle subscription exception there.
+                    // LOGGER.error("updateSubscriptionWithProgressDialog", ex);
                 }
             }
         });

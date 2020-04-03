@@ -23,12 +23,15 @@
 package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.execution.Executor
+import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azuretools.telemetrywrapper.Operation
 
-class SparkBatchRemoteDebugExecutorState(serverlessSparkSubmitModel: SparkSubmitModel, operation: Operation?)
-    : SparkBatchRemoteDebugState(serverlessSparkSubmitModel, operation) {
+class SparkBatchRemoteDebugExecutorState(serverlessSparkSubmitModel: SparkSubmitModel,
+                                         operation: Operation?,
+                                         batchDebugJob: ISparkBatchJob)
+    : SparkBatchRemoteDebugState(serverlessSparkSubmitModel, operation, batchDebugJob) {
 
-    override fun onSuccess(executor: Executor) {
+    override fun onComplete(executor: Executor) {
     }
 }

@@ -23,6 +23,7 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ public class SparkSubmitResponse {
     }
 
     public List<String> getLog() {
-        return log;
+        return log == null ? Collections.emptyList() : log;
     }
 
     public int getId(){

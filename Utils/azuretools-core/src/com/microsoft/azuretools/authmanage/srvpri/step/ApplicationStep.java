@@ -28,6 +28,8 @@ import com.microsoft.azuretools.authmanage.srvpri.entities.ApplicationRet;
 import com.microsoft.azuretools.authmanage.srvpri.entities.PasswordCredentials;
 import com.microsoft.azuretools.authmanage.srvpri.report.Reporter;
 import com.microsoft.azuretools.authmanage.srvpri.rest.GraphRestHelper;
+import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
@@ -45,6 +47,11 @@ import java.util.UUID;
 public class ApplicationStep implements IStep {
     private GraphRestHelper graphRestHelper;
     private Reporter<String> reporter;
+    private final AccessTokenAzureManager preAccessTokenAzureManager;
+
+    public ApplicationStep(AccessTokenAzureManager preAccessTokenAzureManager) {
+        this.preAccessTokenAzureManager = preAccessTokenAzureManager;
+    }
 
     @Override
     public void execute(Map<String, Object> params) throws IOException, InterruptedException {
@@ -57,7 +64,7 @@ public class ApplicationStep implements IStep {
         String password = params.get("password").toString();
         //UUID tenantId = (UUID) params.get("tenantId");
         String tenantId = CommonParams.getTenantId();
-        graphRestHelper = new GraphRestHelper(tenantId);
+        graphRestHelper = new GraphRestHelper(preAccessTokenAzureManager, tenantId);
 
         reporter = CommonParams.getReporter();
         reporter.report("displayName: " + displayName);

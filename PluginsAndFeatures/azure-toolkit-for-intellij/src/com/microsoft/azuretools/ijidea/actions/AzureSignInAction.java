@@ -27,9 +27,8 @@ import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.interact.AuthMethod;
+import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow;
 import com.microsoft.azuretools.ijidea.ui.SignInWindow;
@@ -127,9 +126,6 @@ public class AzureSignInAction extends AzureAnAction {
                     new ImageIcon("icons/azure.png"));
                 if (res == JOptionPane.OK_OPTION) {
                     EventUtil.executeWithLog(ACCOUNT, SIGNOUT, (operation) -> {
-                        AdAuthManager adAuthManager = AdAuthManager.getInstance();
-                        if (adAuthManager.isSignedIn())
-                            adAuthManager.signOut();
                         authMethodManager.signOut();
                     });
                 }

@@ -75,13 +75,13 @@ public class StorageAccountFolderNode extends RefreshableNode implements ILogger
                     clusterDetail.getConfigurationInfo();
 
                     Optional.ofNullable(clusterDetail.getStorageAccount())
-                            .map(defaultStorageAccount -> new StorageAccountNode(this, defaultStorageAccount, true))
+                            .map(defaultStorageAccount -> new StorageAccountNode(this, defaultStorageAccount, clusterDetail,true))
                             .ifPresent(this::addChildNode);
 
                     List<HDStorageAccount> additionalStorageAccount = clusterDetail.getAdditionalStorageAccounts();
                     if (additionalStorageAccount != null) {
                         for (HDStorageAccount account : additionalStorageAccount) {
-                            addChildNode(new StorageAccountNode(this, account, false));
+                            addChildNode(new StorageAccountNode(this, account, clusterDetail, false));
                         }
                     }
                 }

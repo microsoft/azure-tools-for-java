@@ -33,9 +33,9 @@ import com.intellij.ui.table.JBTable;
 import com.microsoft.azuretools.authmanage.srvpri.SrvPriManager;
 import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
-import com.microsoft.azuretools.utils.IProgressIndicator;
+import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import com.microsoft.azuretools.utils.IProgressIndicator;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +60,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
     private String selectedAuthFilePath;
     private Project project;
+    private final AccessTokenAzureManager preAccessTokenAzureManager;
 
     public String getSelectedAuthFilePath() {
         return selectedAuthFilePath;
@@ -71,8 +72,11 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
 
     DefaultListModel<String> filesListModel = new DefaultListModel<String>();
 
-    public static SrvPriCreationStatusDialog go(Map<String, List<String> > tidSidsMap, String destinationFolder, Project project) {
-        SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(project);
+    public static SrvPriCreationStatusDialog go(AccessTokenAzureManager preAccessTokenAzureManager,
+                                                Map<String, List<String> > tidSidsMap,
+                                                String destinationFolder,
+                                                Project project) {
+        SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(preAccessTokenAzureManager, project);
         d.tidSidsMap = tidSidsMap;
         d.destinationFolder = destinationFolder;
         d.show();
@@ -83,8 +87,9 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         return null;
     }
 
-    private SrvPriCreationStatusDialog(Project project) {
+    private SrvPriCreationStatusDialog(AccessTokenAzureManager preAccessTokenAzureManager, Project project) {
         super(project, true, IdeModalityType.PROJECT);
+        this.preAccessTokenAzureManager = preAccessTokenAzureManager;
         this.project = project;
         setModal(true);
         setTitle("Create Service Principal Status");
@@ -114,6 +119,7 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
         filesList.setLayoutOrientation(JList.VERTICAL);
         filesList.setVisibleRowCount(-1);
         filesList.setModel(filesListModel);
+        filesList.setFocusable(false);
 
         init();
     }
@@ -178,7 +184,8 @@ public class SrvPriCreationStatusDialog extends AzureDialogWrapper {
                         });
                         Date now = new Date();
                         String suffix = new SimpleDateFormat("yyyyMMdd-HHmmss").format(now);;
-                        final String authFilepath = SrvPriManager.createSp(tid, sidList, suffix, this, destinationFolder);
+                        final String authFilepath = SrvPriManager.createSp(
+                                preAccessTokenAzureManager, tid, sidList, suffix, this, destinationFolder);
 //                        final String authFilepath = suffix + new Date().toString();
 //                        int steps = 15;
 //                        for (int i = 0; i < steps; ++i) {

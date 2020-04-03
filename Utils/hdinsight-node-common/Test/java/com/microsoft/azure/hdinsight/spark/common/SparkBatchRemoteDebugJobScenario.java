@@ -56,6 +56,8 @@ public class SparkBatchRemoteDebugJobScenario {
         submissionMock = mock(SparkBatchSubmission.class);
         when(submissionMock.getBatchSparkJobStatus(anyString(), anyInt())).thenCallRealMethod();
         when(submissionMock.getHttpResponseViaGet(anyString())).thenCallRealMethod();
+        when(submissionMock.getHttpResponseViaGet(anyString(), any(), any())).thenCallRealMethod();
+        when(submissionMock.getHttpClient(anyBoolean())).thenCallRealMethod();
         when(submissionMock.getHttpClient()).thenCallRealMethod();
         when(submissionMock.createBatchSparkJob(anyString(), submissionParameterArgumentCaptor.capture())).thenCallRealMethod();
 

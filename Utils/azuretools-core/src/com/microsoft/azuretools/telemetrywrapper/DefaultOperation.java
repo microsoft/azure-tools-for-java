@@ -22,6 +22,8 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -81,11 +83,13 @@ public class DefaultOperation implements Operation {
             error.errorType = errorType == null ? ErrorType.systemError : errorType;
             error.errMsg = e == null ? "" : e.getMessage();
             error.className = e == null ? "" : e.getClass().getName();
+            error.stackTrace = ExceptionUtils.getStackTrace(e);
 
             mutableProps.put(ERROR_CODE, "1");
             mutableProps.put(ERROR_MSG, error.errMsg);
             mutableProps.put(ERROR_TYPE, error.errorType.name());
             mutableProps.put(ERROR_CLASSNAME, error.className);
+            mutableProps.put(ERROR_STACKTRACE, error.stackTrace);
             mutableProps.put(OPERATION_ID, operationId);
             mutableProps.put(OPERATION_NAME, operationName);
 
@@ -121,6 +125,8 @@ public class DefaultOperation implements Operation {
                 mergedProperty.put(ERROR_MSG, error.errMsg);
                 mergedProperty.put(ERROR_TYPE, error.errorType.name());
                 mergedProperty.put(ERROR_CLASSNAME, error.className);
+                mergedProperty.put(ERROR_STACKTRACE, error.stackTrace);
+
             }
             sendTelemetry(EventType.opEnd, serviceName, mergedProperty, metrics);
         } catch (Exception ignore) {
@@ -142,6 +148,7 @@ public class DefaultOperation implements Operation {
         ErrorType errorType;
         String errMsg;
         String className;
+        String stackTrace;
     }
 
 }

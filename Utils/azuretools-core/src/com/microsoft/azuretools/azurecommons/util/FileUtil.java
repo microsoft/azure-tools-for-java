@@ -28,15 +28,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class FileUtil {
-	
-	private static final int BUFF_SIZE = 1024;
-    
+
+    private static final int BUFF_SIZE = 1024;
+    private static final String USER_HOME = "user.home";
+
     /**
      * Method writes contents of file.
      * @param inStream
@@ -173,4 +176,12 @@ public class FileUtil {
         }
     }
 
+    public static boolean isNonEmptyFolder(String filePath){
+        File file = new File(filePath);
+        return file.exists() && file.isDirectory() && file.listFiles() != null && file.listFiles().length > 0;
+    }
+
+    public static Path getDirectoryWithinUserHome(String folder) {
+        return Paths.get(System.getProperty(USER_HOME), folder);
+    }
 }

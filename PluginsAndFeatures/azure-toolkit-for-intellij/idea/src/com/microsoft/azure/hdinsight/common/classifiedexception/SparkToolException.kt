@@ -26,6 +26,7 @@ import com.microsoft.azure.datalake.store.ADLException
 import com.microsoft.azure.hdinsight.sdk.common.livy.interactive.exceptions.SessionNotStartException
 import com.microsoft.azure.hdinsight.spark.common.SparkJobException
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
+import com.microsoft.azuretools.adauth.AuthException
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import com.microsoft.intellij.forms.ErrorMessageForm
 import org.apache.commons.lang.exception.ExceptionUtils
@@ -57,6 +58,7 @@ object SparkToolExceptionFactory : ClassifiedExceptionFactory() {
                 && exp !is SparkJobException
                 && exp !is FileNotFoundException
                 && exp !is ADLException
+                && exp !is AuthException
                 && stackTrace.contains(ToolPackageSuffix)) {
             SparkToolException(exp)
         } else null

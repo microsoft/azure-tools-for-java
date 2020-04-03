@@ -52,6 +52,7 @@ import com.microsoft.azuretools.authmanage.srvpri.report.IListener;
 import com.microsoft.azuretools.authmanage.srvpri.step.Status;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
+import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -65,15 +66,19 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
     
     private String destinationFolder;
     private Map<String, List<String> > tidSidsMap;
-    
+    private final AccessTokenAzureManager preAccessTokenAzureManager;
+
     private String selectedAuthFilePath;
     
     public String getSelectedAuthFilePath() {
         return selectedAuthFilePath;
     }
     
-    public static SrvPriCreationStatusDialog go(Shell parentShell, Map<String, List<String> > tidSidsMap, String destinationFolder) {
-    	SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(parentShell);
+    public static SrvPriCreationStatusDialog go(AccessTokenAzureManager preAccessTokenAzureManager,
+                                                Shell parentShell,
+                                                Map<String, List<String> > tidSidsMap,
+                                                String destinationFolder) {
+    	SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(preAccessTokenAzureManager, parentShell);
     	d.tidSidsMap = tidSidsMap;
     	d.destinationFolder = destinationFolder;
         d.create();
@@ -87,8 +92,9 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
      * Create the dialog.
      * @param parentShell
      */
-    private SrvPriCreationStatusDialog(Shell parentShell) {
+    private SrvPriCreationStatusDialog(AccessTokenAzureManager preAccessTokenAzureManager, Shell parentShell) {
         super(parentShell);
+        this.preAccessTokenAzureManager = preAccessTokenAzureManager;
         setHelpAvailable(false);
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
     }
@@ -223,7 +229,8 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
                                 });
                                 Date now = new Date();
                                 String suffix = new SimpleDateFormat("yyyyMMddHHmmss").format(now);;
-                                String authFilepath = SrvPriManager.createSp(tid, sidList, suffix, this, destinationFolder);
+                                String authFilepath = SrvPriManager.createSp(
+                                		preAccessTokenAzureManager, tid, sidList, suffix, this, destinationFolder);
                                 if (authFilepath != null) {
                                     Display.getDefault().asyncExec(new Runnable() {
                                         @Override

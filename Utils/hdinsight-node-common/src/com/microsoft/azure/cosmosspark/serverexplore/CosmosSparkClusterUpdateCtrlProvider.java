@@ -5,7 +5,9 @@ import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.SparkAzureDataLakePoolServiceException;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
@@ -65,6 +67,11 @@ public class CosmosSparkClusterUpdateCtrlProvider implements ILogger {
                 .flatMap(toUpdate ->
                         cluster.update(toUpdate.getWorkerNumberOfContainers())
                                 .map(cluster -> toUpdate)
+                                .doOnNext(model -> {
+                                    // Send telemetry when update cluster succeeded
+                                    AzureSparkCosmosClusterManager.getInstance().sendInfoTelemetry(
+                                            TelemetryConstants.UPDATE_A_CLUSTER, cluster.getGuid());
+                                })
                                 .onErrorReturn(err -> {
                                     log().warn("Error update a cluster. " + ExceptionUtils.getStackTrace(err));
                                     if (err instanceof SparkAzureDataLakePoolServiceException) {
@@ -73,6 +80,9 @@ public class CosmosSparkClusterUpdateCtrlProvider implements ILogger {
                                         log().info("x-ms-request-id: " + requestId);
                                     }
                                     log().info("Cluster guid: " + cluster.getGuid());
+                                    // Send telemetry when update cluster failed
+                                    AzureSparkCosmosClusterManager.getInstance().sendErrorTelemetry(
+                                            TelemetryConstants.UPDATE_A_CLUSTER, err, cluster.getGuid());
                                     return toUpdate
                                             .setClusterGuid(cluster.getGuid())
                                             .setErrorMessage(err.getMessage());

@@ -45,7 +45,7 @@ public class BypassCertificateVerificationWarningForm extends DialogWrapper {
     }
 
     protected void createUIComponents() {
-        warningIconLabel = new JLabel(UIUtil.getBalloonWarningIcon());
+        warningIconLabel = new JLabel(UIUtil.getWarningIcon());
     }
 
     @Nullable

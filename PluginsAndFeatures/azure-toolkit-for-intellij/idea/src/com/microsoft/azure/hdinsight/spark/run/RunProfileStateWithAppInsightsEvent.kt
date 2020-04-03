@@ -26,6 +26,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.microsoft.azuretools.telemetry.AppInsightsClient
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventType
 import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import com.microsoft.azuretools.telemetrywrapper.Operation
 
@@ -38,6 +39,7 @@ abstract class RunProfileStateWithAppInsightsEvent(val uuid: String,
             "ActionUuid" to uuid).plus(addedEventProps ?: emptyMap())
     }
 
+    // FIXME: This is legacy telemetry API, please use createErrorEventWithComplete or createInfoEventWithComplete instead
     fun createAppInsightEvent(executor: Executor, addedEventProps: Map<String, String>?): RunProfileState {
         val postEventProps = getPostEventProperties(executor, addedEventProps)
 
@@ -47,7 +49,12 @@ abstract class RunProfileStateWithAppInsightsEvent(val uuid: String,
     }
 
     fun createErrorEventWithComplete(executor: Executor?, exp: Throwable, errorType: ErrorType, addedEventProps: Map<String, String>?) {
-        val postEventProps = executor?.let { getPostEventProperties(it, addedEventProps) }
+        val postEventProps = executor?.let { getPostEventProperties(it, addedEventProps) } ?: emptyMap()
         EventUtil.logErrorWithComplete(operation, errorType, exp, postEventProps, null)
+    }
+
+    fun createInfoEventWithComplete(executor: Executor?, addedEventProps: Map<String, String>?) {
+        val postEventProps = executor?.let { getPostEventProperties(it, addedEventProps) } ?: emptyMap()
+        EventUtil.logEventWithComplete(EventType.info, operation, postEventProps, null)
     }
 }

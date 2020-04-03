@@ -22,6 +22,10 @@
  */
 package com.microsoft.azure.hdinsight.common;
 
+import com.microsoft.azuretools.authmanage.CommonSettings;
+
+import java.net.URI;
+
 public class CommonConst {
     public static final String ProductIconName = "Product";
     public static final String ProductIConPath = "/icons/Product.png";
@@ -58,6 +62,7 @@ public class CommonConst {
 
     public static final String ENABLE_HDINSIGHT_NEW_SDK = "Enable.HDInsight.New.SDK";
     public static final String HDINSIGHT_ADDITIONAL_CLUSTERS = "com.microsoft.azure.hdinsight.AdditionalClusters";
+    public static final String HDINSIGHT_ADDITIONAL_MFA_CLUSTERS = "com.microsoft.azure.hdinsight.AdditionalMfaClusters";
     public static final String HDINSIGHT_LIVY_LINK_CLUSTERS = "com.microsoft.azure.hdinsight.LivyLinkClusters";
     public static final String SQL_BIG_DATA_LIVY_LINK_CLUSTERS = "com.microsoft.azure.sqlbigdata.SqlBigDataLivyLinkClusters";
     public static final String EMULATOR_CLUSTERS = "com.microsoft.azure.hdinsight.EmulatorClusters";
@@ -68,7 +73,15 @@ public class CommonConst {
     public static final String AZURE_SERVERLESS_SPARK_ACCOUNT_ICON_PATH = "AzureServerlessSparkAccount.png";
 
     public static final String SQL_BIG_DATA_CLUSTER_MODULE_ICON_PATH = "SqlBigDataClusterRoot_16x.png";
+    public static final String ARCADIA_WORKSPACE_MODULE_ICON_PATH = "ArcadiaRoot_16x.png";
+    public static final String ARCADIA_WORKSPACE_NODE_ICON_PATH = "Workspace_13x.png";
+    public static final String ARCADIA_OPEN_UI_NAME = "OpenArcadiaUI";
     public static final String DISABLE_SSL_CERTIFICATE_VALIDATION = "false";
 
     public static final String CosmosServerlessToolWindowIconName= "SparkSubmissionToolWindow";
+
+    public static final String[] AZURE_LOGIN_HOSTS = new String[] {
+            "login.windows.net",
+            URI.create(CommonSettings.getAdEnvironment().activeDirectoryEndpoint()).getHost()
+    };
 }

@@ -22,21 +22,15 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
-import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import rx.Observable;
-import rx.Observer;
 
 import java.io.IOException;
 import java.net.UnknownServiceException;
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -46,18 +40,16 @@ import java.util.stream.Stream;
 public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBatchDebugJob, ILogger {
      SparkBatchRemoteDebugJob(
             SparkSubmissionParameter submissionParameter,
-            SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        super(submissionParameter, sparkBatchSubmission, ctrlSubject);
+            SparkBatchSubmission sparkBatchSubmission) {
+        super(submissionParameter, sparkBatchSubmission);
     }
 
     public SparkBatchRemoteDebugJob(
             @Nullable IClusterDetail cluster,
             SparkSubmissionParameter submissionParameter,
             SparkBatchSubmission sparkBatchSubmission,
-            @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject,
             @Nullable Deployable jobDeploy) {
-        super(cluster, submissionParameter, sparkBatchSubmission, ctrlSubject, jobDeploy);
+        super(cluster, submissionParameter, sparkBatchSubmission, jobDeploy);
     }
 
 
@@ -70,7 +62,7 @@ public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBat
      */
     public int getYarnContainerJDBListenPort(String containerLogUrl) throws UnknownServiceException {
         int port = this.parseJvmDebuggingPort(JobUtils.getInformationFromYarnLogDom(
-                this.getSubmission().getCredentialsProvider(),
+                this.getSubmission().getAuthCode(),
                 containerLogUrl,
                 "stdout",
                 -4096,
@@ -202,5 +194,15 @@ public class SparkBatchRemoteDebugJob extends SparkBatchJob implements ISparkBat
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    public SparkBatchRemoteDebugJob clone() {
+        return new SparkBatchRemoteDebugJob(
+                this.getCluster(),
+                this.getSubmissionParameter(),
+                this.getSubmission(),
+                this.getJobDeploy()
+        );
     }
 }

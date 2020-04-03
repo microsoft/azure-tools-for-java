@@ -23,6 +23,15 @@ public class ADLSGen2StorageAccount extends HDStorageAccount implements ILogger 
         this.setPrimaryKey(key);
     }
 
+    public ADLSGen2StorageAccount(IClusterDetail clusterDetail, String fullStorageBlobName, boolean isDefault, String defaultFileSystem) {
+        super(clusterDetail, fullStorageBlobName, null, isDefault, defaultFileSystem);
+        this.scheme = DefaultScheme;
+    }
+
+    public String getStorageRootPath() {
+        return String.format("%s://%s@%s", this.getscheme(), this.getDefaultContainer(), this.getFullStorageBlobName());
+    }
+
     @Override
     public StorageAccountType getAccountType() {
         return StorageAccountType.ADLSGen2;

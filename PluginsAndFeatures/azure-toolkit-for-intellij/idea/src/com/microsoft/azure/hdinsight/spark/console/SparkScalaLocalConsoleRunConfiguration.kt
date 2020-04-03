@@ -22,17 +22,22 @@
 
 package com.microsoft.azure.hdinsight.spark.console
 
+import com.intellij.execution.CantRunException
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaCommandLineState
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.jarRepository.JarRepositoryManager
 import com.intellij.jarRepository.RemoteRepositoriesConfiguration
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.util.DispatchThreadProgressWindow
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.JavaSdkType
+import com.intellij.openapi.projectRoots.JdkUtil
+import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.impl.libraries.LibraryEx
 import com.intellij.openapi.roots.libraries.Library
@@ -63,9 +68,27 @@ class SparkScalaLocalConsoleRunConfiguration(
 
     lateinit var batchRunConfiguration: LivySparkBatchJobRunConfiguration
 
-    override fun `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$MainClass`(): String = "org.apache.spark.deploy.SparkSubmit"
+    val mainClass: String = "org.apache.spark.deploy.SparkSubmit"
 
-    override fun `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$createParams`(): JavaParameters {
+    private fun createScalaParams(): JavaParameters {
+        val module = configurationModule.module ?: throw ExecutionException("Module is not specified")
+
+        val rootManager = ModuleRootManager.getInstance(module)
+        val sdk = rootManager.sdk
+        if (sdk == null || sdk.sdkType !is JavaSdkType) {
+            throw CantRunException.noJdkForModule(module)
+        }
+
+        return JavaParameters().apply {
+            vmParametersList.addParametersString("-Djline.terminal=NONE")
+            setUseDynamicClasspath(JdkUtil.useDynamicClasspath(project))
+            workingDirectory = workingDirectory
+            mainClass = mainClass
+            configureByModule(module, JavaParameters.JDK_AND_CLASSES_AND_TESTS)
+        }
+    }
+
+    fun createJavaParams(): JavaParameters {
         var isMockFs = false
         if (Messages.YES == Messages.showYesNoDialog(
                         project,
@@ -77,7 +100,7 @@ class SparkScalaLocalConsoleRunConfiguration(
 
         val localRunParams = SparkBatchLocalRunState(project, batchRunConfiguration.model.localRunConfigurableModel, null)
                 .createParams(executor = null, hasJmockit = isMockFs, hasMainClass = false, hasClassPath = false)
-        val params = super.`org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$createParams`()
+        val params = createScalaParams()
         params.classPath.clear()
         val replLibraryCoord = findReplCoord() ?: throw ExecutionException("""
                 The library org.apache.spark:spark-core is not in project dependencies.
@@ -93,27 +116,20 @@ class SparkScalaLocalConsoleRunConfiguration(
         // Workaround for Spark 2.3 jline issue, refer to:
         // - https://github.com/Microsoft/azure-tools-for-java/issues/2285
         // - https://issues.apache.org/jira/browse/SPARK-13710
-        val jlineLibraryCoord = "jline:jline:2.12.1"
+        val jlineLibraryCoord = "jline:jline:2.14.5"
         if (getLibraryByCoord(jlineLibraryCoord) == null) {
             promptAndFix(jlineLibraryCoord)
         }
         params.classPath.addAll(getDependencyClassPaths(jlineLibraryCoord))
 
         params.classPath.addAll(localRunParams.classPath.pathList)
-        params.mainClass = `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$MainClass`()
+        params.mainClass = mainClass
 
         params.vmParametersList.addAll(localRunParams.vmParametersList.parameters)
 
         if (isMockFs) {
             params.vmParametersList.add("-javaagent:${getJarPathForClass(SparkLocalConsoleMockFsAgent::class.java)}")
         }
-
-        // FIXME!!! To support local mock filesystem
-        // params.mainClass = localRunParams.mainClass
-        //
-        // localRunParams.programParametersList.parameters.takeWhile { it.trim().startsWith("--master") }
-        //         .forEach { params.programParametersList.add(it) }
-        // params.programParametersList.add(mainClass())
 
         params.workingDirectory = Paths.get(batchRunConfiguration.model.localRunConfigurableModel.dataRootDirectory, "__default__", "user", "current").toString()
         params.programParametersList.add("--class", "org.apache.spark.repl.Main")
@@ -217,14 +233,18 @@ class SparkScalaLocalConsoleRunConfiguration(
     override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState? {
         val state = object : JavaCommandLineState(env) {
             override fun createJavaParameters() : JavaParameters {
-                val params = `org$jetbrains$plugins$scala$console$configuration$ScalaConsoleRunConfiguration$$createParams`()
+                val params = createJavaParams()
 
                 params.programParametersList.addParametersString(consoleArgs())
                 return params
             }
         }
 
-        state.consoleBuilder = SparkScalaConsoleBuilder(project)
+        batchRunConfiguration.configurationModule.setModuleToAnyFirstIfNotSpecified()
+
+        state.consoleBuilder = SparkScalaConsoleBuilder(project, batchRunConfiguration.modules.firstOrNull()
+                ?: throw ExecutionException(RuntimeConfigurationError(
+                        "The default module needs to be set in the local run tab of Run Configuration")))
 
         return state
     }

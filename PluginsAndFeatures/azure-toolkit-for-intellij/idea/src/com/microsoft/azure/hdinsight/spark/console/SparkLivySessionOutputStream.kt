@@ -41,13 +41,17 @@ class SparkLivySessionOutputStream(val session: Session) : ByteArrayOutputStream
 
         session.runCodes(codes)
                 .doOnEach { reset() }
+                .toBlocking()
                 .subscribe(
                         { result ->
                             log().debug("Livy running results: ${ObjectMapper().writeValueAsString(result)}")
                         },
                         { err -> when (err.cause) {
                             is StatementExecutionError -> log().debug(err.message)
-                            else -> throw SparkConsoleExceptions.LivySessionExecuteError("Got $codes execution error:", err)
+                            else -> throw SparkConsoleExceptions.LivySessionExecuteError(
+                                    "Got the code `${codes.split(
+                                            "\n").first()}` execution error:",
+                                    err.cause ?: err)
                         }}
                 )
     }

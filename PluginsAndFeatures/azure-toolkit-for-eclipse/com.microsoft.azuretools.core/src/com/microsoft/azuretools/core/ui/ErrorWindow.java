@@ -22,6 +22,8 @@ public class ErrorWindow extends AzureTitleAreaDialogWrapper {
         w.create();
         w.setTitle(title);
         w.setErrorDescription(errorDescription);
+        // Skip title text field while tab
+        w.dialogArea.getParent().getParent().setTabList(new Control[] { w.dialogArea.getParent() });
         w.open();
     }
 
@@ -54,6 +56,7 @@ public class ErrorWindow extends AzureTitleAreaDialogWrapper {
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         text = new Text(container, SWT.BORDER | SWT.WRAP | SWT.MULTI);
+        text.setEditable(false);
 
         return area;
     }

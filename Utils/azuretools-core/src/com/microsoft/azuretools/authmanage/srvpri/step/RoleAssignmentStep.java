@@ -29,6 +29,7 @@ import com.microsoft.azuretools.authmanage.srvpri.entities.RoleDefinitionRet;
 import com.microsoft.azuretools.authmanage.srvpri.exceptions.AzureException;
 import com.microsoft.azuretools.authmanage.srvpri.report.Reporter;
 import com.microsoft.azuretools.authmanage.srvpri.rest.ArmRestHelper;
+import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.azuretools.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -45,12 +46,17 @@ public class RoleAssignmentStep implements IStep {
     private ArmRestHelper armRestHelper;
     private Reporter<String> reporter;
     private List<Pair<String, String>> roleAssignmentNames = new LinkedList<>();
+    private final AccessTokenAzureManager preAccessTokenAzureManager;
+
+    public RoleAssignmentStep(AccessTokenAzureManager preAccessTokenAzureManager) {
+        this.preAccessTokenAzureManager = preAccessTokenAzureManager;
+    }
 
     @Override
     public void execute(Map<String, Object> params) throws IOException, InterruptedException {
         String roleDefinitionName = "Contributor";
         String tenantId = CommonParams.getTenantId();
-        armRestHelper = new ArmRestHelper(tenantId);
+        armRestHelper = new ArmRestHelper(preAccessTokenAzureManager, tenantId);
         UUID spObjectId = (UUID)params.get("spObjectId");
 
         reporter = CommonParams.getReporter();

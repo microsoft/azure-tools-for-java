@@ -61,11 +61,11 @@ public class HDInsightProjectTemplate implements ProjectTemplate {
         switch (this.templateType) {
             case Java:
             case Scala:
-                return "Azure Spark blank module project.";
+                return "Apache Spark blank module project.";
             case ScalaClusterSample:
-                return "Azure Spark samples written in Scala.";
+                return "Apache Spark samples written in Scala.";
             case ScalaFailureTaskDebugSample:
-                return "Azure Spark samples with Failure Task Debugging feature enabled, written in Scala";
+                return "Apache Spark samples with Failure Task Debugging feature enabled, written in Scala";
             default:
                 return "HDInsight Tools";
         }

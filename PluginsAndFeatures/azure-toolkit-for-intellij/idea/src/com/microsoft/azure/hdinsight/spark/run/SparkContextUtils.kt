@@ -110,6 +110,7 @@ fun PsiElement.findScalaObjectMainClass(): PsiClass? {
             return null
         }
 
+        @Suppress("UNCHECKED_CAST")
         return ((option as Option<Tuple2<PsiClass, PsiElement>>).takeIf { it.isDefined })?.get()?._1()
                 ?.takeUnless { TestFrameworks.getInstance().isTestClass(it) }
     } catch (ex: Exception) {

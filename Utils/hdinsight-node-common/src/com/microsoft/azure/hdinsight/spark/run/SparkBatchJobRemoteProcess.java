@@ -31,16 +31,20 @@ import com.microsoft.azure.hdinsight.spark.common.SparkJobUploadArtifactExceptio
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.log4j.Level;
 import rx.Observable;
 import rx.Subscription;
 import rx.subjects.PublishSubject;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 
 public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     @NotNull
@@ -130,15 +134,23 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
 
     @Override
     public void destroy() {
-        getSparkJob().killBatchJob().subscribe(
-                job -> log().trace("Killed Spark batch job " + job.getBatchId()),
-                err -> log().warn("Got error when killing Spark batch job", err),
-                () -> {}
-        );
-
-        this.isDestroyed = true;
-
-        this.disconnect();
+        if (!isDestroyed()) {
+            getSparkJob().killBatchJob()
+                    .doOnEach(notification -> {
+                        if (notification.isOnError()) {
+                            getCtrlSubject().onError(notification.getThrowable());
+                        } else if (notification.isOnNext()) {
+                            getEventSubject().onNext(new SparkBatchJobKilledEvent());
+                        }
+                        this.isDestroyed = true;
+                        this.disconnect();
+                    })
+                    .subscribe(
+                            job -> log().info("Killed Spark batch job " + job.getBatchId()),
+                            err -> log().warn("Got error when killing Spark batch job", err),
+                            () -> {}
+                    );
+        }
     }
 
     @NotNull
@@ -169,6 +181,10 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                         ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
+                    // Receive the remaining Livy submission log if there be for errors
+                    startJobSubmissionLogReceiver(getSparkJob())
+                            .subscribe();
+
                     ctrlSubject.onError(err);
                     destroy();
                 }, () -> {
@@ -189,12 +205,14 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     }
 
     public void disconnect() {
-        this.isDisconnected = true;
+        if (!isDisconnected()) {
+            this.isDisconnected = true;
 
-        this.ctrlSubject.onCompleted();
-        this.eventSubject.onCompleted();
+            this.ctrlSubject.onCompleted();
+            this.eventSubject.onCompleted();
 
-        this.getJobSubscription().ifPresent(Subscription::unsubscribe);
+            this.getJobSubscription().ifPresent(Subscription::unsubscribe);
+        }
     }
 
     protected void ctrlInfo(String message) {
@@ -210,8 +228,49 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
         return eventSubject;
     }
 
+    private final List<Level> log4jAllLevels = Arrays.asList(
+            Level.FATAL,
+            Level.ERROR,
+            Level.WARN,
+            Level.INFO,
+            Level.DEBUG,
+            Level.TRACE);
+
+    private final Pattern log4jLevelRegex = Pattern.compile(
+            "\\b(?<level>"
+                    + log4jAllLevels.stream().map(Level::toString).collect(Collectors.joining("|")) + ")\\b");
+
+    private SimpleImmutableEntry<MessageInfoType, String> mapTypedMessageByLog4jLevels(
+            final SimpleImmutableEntry<MessageInfoType, String> previous,
+            final SimpleImmutableEntry<MessageInfoType, String> current) {
+        if (current.getKey() == Log) {
+            final String msg = current.getValue();
+            final Matcher matcher = log4jLevelRegex.matcher(msg);
+
+            if (matcher.find()) {
+                Level level = Level.toLevel(matcher.group("level"));
+                if (level.isGreaterOrEqual(Level.ERROR)) {
+                    return new SimpleImmutableEntry<>(Error, msg);
+                }
+
+                if (level == Level.WARN) {
+                    return new SimpleImmutableEntry<>(Warning, msg);
+                }
+
+                // Keep the current level
+                return current;
+            }
+
+            // No level keyword found, use the previous's level
+            return new SimpleImmutableEntry<>(previous.getKey(), msg);
+        }
+
+        return current;
+    }
+
     protected Observable<ISparkBatchJob> startJobSubmissionLogReceiver(ISparkBatchJob job) {
         return job.getSubmissionLog()
+                .scan(this::mapTypedMessageByLog4jLevels)
                 .doOnNext(ctrlSubject::onNext)
                 // "ctrlSubject::onNext" lead to uncaught exception
                 // while "ctrlError" only print error message in console view
@@ -224,8 +283,9 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> prepareArtifact() {
         return getSparkJob()
                 .deploy(artifactPath)
+                .doOnNext(job -> getEventSubject().onNext(new SparkBatchJobArtifactUploadedEvent()))
                 .onErrorResumeNext(err -> {
-                    Throwable rootCause = err.getCause() != null ? err.getCause() : err;
+                    Throwable rootCause = err instanceof RuntimeException && err.getCause() != null ? err.getCause() : err;
                     return Observable.error(new SparkJobUploadArtifactException("Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
                 })
                 .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
@@ -234,9 +294,9 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> submitJob(ISparkBatchJob sparkJob) {
         return sparkJob
                 .submit()
+                .doOnNext(job -> eventSubject.onNext(new SparkBatchJobSubmittedEvent(job)))
                 .subscribeOn(schedulers.processBarVisibleAsync("Submit the Spark batch job"))
-                .flatMap(this::startJobSubmissionLogReceiver)   // To receive the Livy submission log
-                .doOnNext(job -> eventSubject.onNext(new SparkBatchJobSubmittedEvent(job)));
+                .flatMap(this::startJobSubmissionLogReceiver);   // To receive the Livy submission log
     }
 
     @NotNull
@@ -259,11 +319,18 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     Observable<SimpleImmutableEntry<String, String>> awaitForJobDone(ISparkBatchJob runningJob) {
         return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
-                .flatMap(jobStateDiagnosticsPair -> runningJob
-                        .awaitPostDone()
-                        .subscribeOn(schedulers.processBarVisibleAsync(
-                                "Waiting for " + getTitle() + " log aggregation is done"))
-                        .map(any -> jobStateDiagnosticsPair));
+                .doOnNext(jobStateDiagnosticsPair ->
+                        getEventSubject().onNext(
+                                new SparkBatchJobFinishedEvent(
+                                        getSparkJob().isSuccess(jobStateDiagnosticsPair.getKey()),
+                                        jobStateDiagnosticsPair.getKey(),
+                                        jobStateDiagnosticsPair.getValue())))
+                .delay(jobStateDiagnosticsPair ->
+                        runningJob
+                                .awaitPostDone()
+                                .subscribeOn(schedulers.processBarVisibleAsync(
+                                        "Waiting for " + getTitle() + " log aggregation is done"))
+                );
     }
 
     @NotNull
