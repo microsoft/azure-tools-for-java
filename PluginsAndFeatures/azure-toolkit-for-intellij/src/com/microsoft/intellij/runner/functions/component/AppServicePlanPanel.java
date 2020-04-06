@@ -36,10 +36,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.Window;
 import java.awt.event.ItemListener;
@@ -137,6 +134,10 @@ public class AppServicePlanPanel extends JPanel {
         cbAppServicePlan.addItemListener(actionListener);
     }
 
+    public JComponent getComboComponent() {
+        return cbAppServicePlan;
+    }
+
     private void onSelectAppServicePlan() {
         final Object selectedObject = cbAppServicePlan.getSelectedItem();
         if (selectedObject instanceof AppServicePlanWrapper) {
@@ -144,6 +145,9 @@ public class AppServicePlanPanel extends JPanel {
             showAppServicePlan(selectedAppServicePlan);
         } else if (CREATE_APP_SERVICE_PLAN.equals(selectedObject)) {
             ApplicationManager.getApplication().invokeLater(this::createAppServicePlan);
+        } else {
+            selectedAppServicePlan = null;
+            showAppServicePlan(null);
         }
     }
 

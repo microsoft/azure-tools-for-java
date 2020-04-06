@@ -24,11 +24,11 @@ package com.microsoft.intellij.runner.functions.deploy.ui.creation;
 
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -45,64 +45,37 @@ import com.microsoft.intellij.runner.functions.component.SubscriptionPanel;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
 import com.microsoft.intellij.runner.functions.library.function.CreateFunctionHandler;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import javax.swing.*;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_APP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
 
-public class FunctionCreationDialog extends JDialog {
+public class FunctionCreationDialog extends AzureDialogWrapper {
 
     private static final String DIALOG_TITLE = "Create Function App";
-    private static final String WARNING_MESSAGE = "<html><font size=\"3\" color=\"red\">%s</font></html>";
     private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
 
     private JPanel contentPanel;
     private JButton buttonOK;
-    private JButton buttonCancel;
     private JPanel pnlCreate;
     private JTextField txtWebAppName;
     private JRadioButton rdoLinuxOS;
     private JRadioButton rdoWindowsOS;
     private JLabel lblOS;
-    private JPanel lblPanelRoot;
     private JPanel pnlAppSettings;
     private ResourceGroupPanel resourceGroupPanel;
     private SubscriptionPanel subscriptionPanel;
     private AppServicePlanPanel appServicePlanPanel;
-    private JTextPane paneMessage;
     private AppSettingsTable appSettingsTable;
 
     private IntelliJFunctionContext functionConfiguration;
@@ -110,17 +83,14 @@ public class FunctionCreationDialog extends JDialog {
     private Project project;
 
     public FunctionCreationDialog(Project project) {
+        super(project, true);
         this.project = project;
 
         setModal(true);
         setTitle(DIALOG_TITLE);
-        setContentPane(contentPanel);
         getRootPane().setDefaultButton(buttonOK);
 
         this.functionConfiguration = new IntelliJFunctionContext(project);
-
-        buttonOK.addActionListener(e -> onOK());
-        buttonCancel.addActionListener(e -> onCancel());
 
         rdoLinuxOS.addActionListener(e -> selectOS());
         rdoWindowsOS.addActionListener(e -> selectOS());
@@ -129,22 +99,6 @@ public class FunctionCreationDialog extends JDialog {
         osButtonGroup.add(rdoLinuxOS);
         osButtonGroup.add(rdoWindowsOS);
 
-
-        rootPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        addUpdateListener(contentPanel, e -> updateConfiguration());
         init();
 
         subscriptionPanel.addItemListener(e -> {
@@ -156,6 +110,12 @@ public class FunctionCreationDialog extends JDialog {
         });
     }
 
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return contentPanel;
+    }
+
     public FunctionApp getCreatedWebApp() {
         return this.result;
     }
@@ -164,41 +124,14 @@ public class FunctionCreationDialog extends JDialog {
         return rdoWindowsOS.isSelected() ? OperatingSystem.WINDOWS : OperatingSystem.LINUX;
     }
 
-    private void addUpdateListener(Container parent, ActionListener actionListener) {
-        for (final Component component : parent.getComponents()) {
-            if (component instanceof AbstractButton) {
-                ((AbstractButton) component).addActionListener(actionListener);
-            } else if (component instanceof JComboBox) {
-                ((JComboBox) component).addActionListener(actionListener);
-            } else if (component instanceof JTextField) {
-                ((JTextField) component).getDocument().addDocumentListener(new DocumentListener() {
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        updateConfiguration();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        updateConfiguration();
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                        updateConfiguration();
-                    }
-                });
-            } else if (component instanceof Container) {
-                addUpdateListener((Container) component, actionListener);
-            }
-        }
-    }
-
     private void selectOS() {
         appServicePlanPanel.setOSType(getSelectedOperationSystemEnum());
         pack();
     }
 
-    private void init() {
+    @Override
+    public void init() {
+        super.init();
         final String projectName = project.getName();
         final DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
         final String date = df.format(new Date());
@@ -234,9 +167,6 @@ public class FunctionCreationDialog extends JDialog {
         functionConfiguration.setRuntime(runtimeConfiguration);
 
         functionConfiguration.setAppSettings(getFixedAppSettings());
-        // Clear validation prompt
-        paneMessage.setForeground(UIManager.getColor("Panel.foreground"));
-        paneMessage.setText("");
     }
 
     private Map<String, String> getFixedAppSettings() {
@@ -249,39 +179,39 @@ public class FunctionCreationDialog extends JDialog {
         return appSettings;
     }
 
-    private boolean validateConfiguration() {
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
         updateConfiguration();
-        try {
-            paneMessage.setText("Validating...");
-            doValidate(functionConfiguration);
-            paneMessage.setText("");
-            return true;
-        } catch (ConfigurationException e) {
-            paneMessage.setForeground(Color.RED);
-            paneMessage.setText(e.getMessage());
-            return false;
-        }
-    }
-
-    private void doValidate(IntelliJFunctionContext functionConfiguration) throws ConfigurationException {
+        List<ValidationInfo> res = new ArrayList<>();
+        // Validate azure status
         if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException("Please sign in with your Azure account.");
+            res.add(new ValidationInfo("Please sign in with your Azure account.", subscriptionPanel.getComboComponent()));
         }
         try {
-            ValidationUtils.validateFunctionAppName(functionConfiguration.getSubscription(), functionConfiguration.getAppName());
+            ValidationUtils.validateFunctionAppName(functionConfiguration.getSubscription(),
+                                                    functionConfiguration.getAppName());
         } catch (IllegalArgumentException iae) {
-            throw new ConfigurationException(iae.getMessage());
+            res.add(new ValidationInfo(iae.getMessage(), subscriptionPanel.getComboComponent()));
         }
+        if (StringUtils.isEmpty(functionConfiguration.getSubscription())) {
+            res.add(new ValidationInfo("Please select subscription", subscriptionPanel.getComboComponent()));
+        }
+        if (StringUtils.isEmpty(functionConfiguration.getResourceGroup())) {
+            res.add(new ValidationInfo("Please select resource group", resourceGroupPanel.getComboComponent()));
+        }
+        if (StringUtils.isEmpty(functionConfiguration.getAppServicePlanName())) {
+            res.add(new ValidationInfo("Please select app service plan", appServicePlanPanel.getComboComponent()));
+        }
+        return res;
     }
 
-    private void onCancel() {
-        dispose();
+    @Override
+    protected void doOKAction() {
+        createFunctionApp();
     }
 
     private void createFunctionApp() {
-        if (!validateConfiguration()) {
-            return;
-        }
+        updateConfiguration();
         ProgressManager.getInstance().run(new Task.Modal(null, "Creating New Function App...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
@@ -300,7 +230,7 @@ public class FunctionCreationDialog extends JDialog {
                                     null));
                         }
                     });
-                    dispose();
+                    FunctionCreationDialog.super.doOKAction();
                 }, (ex) -> {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         PluginUtil.displayErrorDialog("Create Function App Failed", "Create Function Failed : " + ex.getMessage());
@@ -331,8 +261,8 @@ public class FunctionCreationDialog extends JDialog {
         pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
         appSettingsTable.loadLocalSetting();
 
-        appServicePlanPanel = new AppServicePlanPanel(this);
-        resourceGroupPanel = new ResourceGroupPanel(this);
-        subscriptionPanel = new SubscriptionPanel(this);
+        appServicePlanPanel = new AppServicePlanPanel();
+        resourceGroupPanel = new ResourceGroupPanel();
+        subscriptionPanel = new SubscriptionPanel();
     }
 }

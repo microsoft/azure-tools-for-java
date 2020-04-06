@@ -257,26 +257,18 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     }
 
     private void createNewFunctionApp() {
-        // todo: add create function dialog
         cbxFunctionApp.setPopupVisible(false);
         final FunctionCreationDialog dialog = new FunctionCreationDialog(this.project);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this.getMainPanel());
-        dialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                super.windowClosed(e);
-                final FunctionApp functionApp = dialog.getCreatedWebApp();
-                if (functionApp != null) {
-                    functionDeployConfiguration.setFunctionId(functionApp.id());
-                    // We need to reload the app settings as new created function will generate some required properties as well
-                    presenter.loadFunctionApps(true, true);
-                } else {
-                    presenter.loadFunctionApps(false, false);
-                }
+        if (dialog.showAndGet()) {
+            final FunctionApp functionApp = dialog.getCreatedWebApp();
+            if (functionApp != null) {
+                functionDeployConfiguration.setFunctionId(functionApp.id());
+                // We need to reload the app settings as new created function will generate some required properties as well
+                presenter.loadFunctionApps(true, true);
+            } else {
+                presenter.loadFunctionApps(false, false);
             }
-        });
-        dialog.show();
+        }
     }
 
     private void createUIComponents() {

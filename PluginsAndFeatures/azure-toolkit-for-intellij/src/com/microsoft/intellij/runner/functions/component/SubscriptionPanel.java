@@ -28,10 +28,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
@@ -75,6 +72,10 @@ public class SubscriptionPanel extends JPanel {
         Observable.fromCallable(() -> AzureMvpModel.getInstance().getSelectedSubscriptions())
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(this::fillSubscription);
+    }
+
+    public JComponent getComboComponent() {
+        return cbSubscription;
     }
 
     private void beforeLoadSubscription() {

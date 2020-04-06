@@ -31,10 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.Window;
 import java.awt.event.ItemListener;
@@ -100,6 +97,10 @@ public class ResourceGroupPanel extends JPanel {
 
     public void addItemListener(ItemListener actionListener) {
         cbResourceGroup.addItemListener(actionListener);
+    }
+
+    public JComponent getComboComponent() {
+        return cbResourceGroup;
     }
 
     private void createResourceGroup() {
