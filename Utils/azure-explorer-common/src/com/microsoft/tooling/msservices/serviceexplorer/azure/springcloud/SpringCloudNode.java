@@ -31,13 +31,7 @@ import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -53,7 +47,8 @@ import static com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud
 /**
  * SpringCloudNode
  */
-public class SpringCloudNode extends RefreshableNode implements TelemetryProperties, SpringCloudNodeView {
+public class SpringCloudNode extends RefreshableNode implements TelemetryProperties, SpringCloudNodeView,
+                                                                IDataRefreshableComponent<AppResourceInner, DeploymentResourceInner> {
     private static final Logger LOGGER = Logger.getLogger(SpringCloudNode.class.getName());
     private static final String FAILED_TO_LOAD_APPS = "Failed to load apps in: %s";
     private static final String ERROR_LOAD_APP = "Azure Services Explorer - Error Loading Spring Cloud Apps";
@@ -64,6 +59,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     private String clusterId;
     private String clusterName;
     private SpringCloudNodePresenter springCloudNodePresenter;
+    private boolean springCloudAppListed = false;
 
     public SpringCloudNode(AzureRefreshableNode parent, String subscriptionId, ServiceResourceInner serviceInner) {
         super(serviceInner.id(), serviceInner.name(), parent, ICON_FILE, true);
@@ -74,6 +70,21 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
         springCloudNodePresenter = new SpringCloudNodePresenter<>();
         springCloudNodePresenter.onAttachView(this);
         loadActions();
+        DefaultAzureResourceTracker.getInstance().registerNode(this.clusterId, this);
+    }
+
+    @Override
+    public void notifyDataRefresh(final AppResourceInner app, final DeploymentResourceInner deploymentResourceInner) {
+        if (!springCloudAppListed || app == null) {
+            return;
+        }
+        for (Node child : childNodes) {
+            if (((SpringCloudAppNode) child).getAppId().equals(app.id())) {
+                // we have this node
+                return;
+            }
+        }
+        addChildNode(new SpringCloudAppNode(app, deploymentResourceInner, this));
     }
 
     @Override
@@ -139,6 +150,7 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
             DefaultAzureResourceTracker.getInstance().handleDataChanges(app.id(), app, deploymentResourceInner);
             addChildNode(new SpringCloudAppNode(app, deploymentResourceInner, this));
         }
+        this.springCloudAppListed = true;
     }
 
     public String getClusterId() {
@@ -158,5 +170,4 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     public Object getProjectObject() {
         return this.getProject();
     }
-
 }

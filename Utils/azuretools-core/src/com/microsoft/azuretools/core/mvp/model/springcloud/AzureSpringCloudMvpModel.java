@@ -58,10 +58,10 @@ import rx.Completable;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import static com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper.getAppName;
-import static com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper.getClusterName;
-import static com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper.getResourceGroup;
-import static com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper.getSubscriptionId;
+import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getAppName;
+import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getClusterName;
+import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getResourceGroup;
+import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 
 
 public class AzureSpringCloudMvpModel {

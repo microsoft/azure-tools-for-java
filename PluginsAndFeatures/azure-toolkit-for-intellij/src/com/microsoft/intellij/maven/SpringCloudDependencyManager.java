@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.springcloud.dependency.action;
+package com.microsoft.intellij.maven;
 
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.intellij.util.PomXmlUpdater;
@@ -54,6 +54,18 @@ public class SpringCloudDependencyManager {
         nsContext.put("ns", POM_NAMESPACE);
         DocumentFactory.getInstance().setXPathNamespaceURIs(nsContext);
         doc = DocumentHelper.parseText(effectivePomXml);
+    }
+
+    public String getPluginConfiguration(String groupId, String artifactId, String configurationName) {
+        for (Node node : doc.selectNodes("//ns:project/ns:build/ns:plugins/ns:plugin")) {
+            String myGroupId = ((Element) node).elementTextTrim("groupId");
+            String myArtifactId = ((Element) node).elementTextTrim("artifactId");
+            if (StringUtils.equals(groupId, myGroupId) && StringUtils.equals(artifactId, myArtifactId)) {
+                Element configurationNode = ((Element) node).element("configuration");
+                return configurationNode == null ? null : configurationNode.elementTextTrim(configurationName);
+            }
+        }
+        return null;
     }
 
     public Map<String, DependencyArtifact> getDependencyVersions() {

@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.springcloud.dependency.action;
+package com.microsoft.intellij.maven;
 
 public class DependencyArtifact {
     private String groupId;

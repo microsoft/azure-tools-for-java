@@ -34,20 +34,27 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVer
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
+import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
-    private static final String NEED_SPECIFY_MODULE = "Please specify module";
+    private static final String NEED_SPECIFY_PROJECT = "Please select a maven project";
     private final SpringCloudModel springCloudModel;
 
     public SpringCloudDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         springCloudModel = new SpringCloudModel();
+    }
+
+    protected SpringCloudDeployConfiguration(@NotNull SpringCloudDeployConfiguration source) {
+        super(source);
+        this.springCloudModel = JsonUtils.deepCopyWithJson(source.getModel());
     }
 
     @Override
@@ -62,7 +69,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
 
     @Override
     public String getTargetPath() {
-        return springCloudModel.getArtifactPath();
+        // we need the jar built by <spring-boot-maven-plugin>, not the default output jar
+        return null;
     }
 
     @Override
@@ -79,23 +87,15 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     @Nullable
     @Override
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) {
-        return new SpringCloudDeploymentState(getProject(), this.getModel());
-    }
-
-    public String getArtifactPath() {
-        return springCloudModel.getArtifactPath();
+        return new SpringCloudDeploymentState(getProject(), new SpringCloudDeployConfiguration(this));
     }
 
     public boolean isPublic() {
         return springCloudModel.isPublic();
     }
 
-    public String getResourceGroup() {
-        return springCloudModel.getResourceGroup();
-    }
-
-    public String getClusterName() {
-        return springCloudModel.getClusterName();
+    public String getClusterId() {
+        return springCloudModel.getClusterId();
     }
 
     public boolean isCreateNewApp() {
@@ -107,7 +107,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     }
 
     public RuntimeVersion getRuntimeVersion() {
-        return springCloudModel.getRuntimeVersion();
+        final String runtimeString = springCloudModel.getRuntimeVersion();
+        return StringUtils.isEmpty(runtimeString) ? null : RuntimeVersion.fromString(runtimeString);
     }
 
     public Integer getCpu() {
@@ -126,8 +127,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         return springCloudModel.getJvmOptions();
     }
 
-    public String getModuleName() {
-        return springCloudModel.getModuleName();
+    public String getProjectName() {
+        return springCloudModel.getProjectName();
     }
 
     public boolean isEnablePersistentStorage() {
@@ -138,10 +139,6 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         return springCloudModel.getEnvironment();
     }
 
-    public void setArtifactPath(String artifactPath) {
-        springCloudModel.setArtifactPath(artifactPath);
-    }
-
     public void setPublic(boolean isPublic) {
         springCloudModel.setPublic(isPublic);
     }
@@ -150,12 +147,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         springCloudModel.setSubscriptionId(subscriptionId);
     }
 
-    public void setResourceGroup(String resourceGroup) {
-        springCloudModel.setResourceGroup(resourceGroup);
-    }
-
-    public void setClusterName(String clusterName) {
-        springCloudModel.setClusterName(clusterName);
+    public void setClusterId(String clusterId) {
+        springCloudModel.setClusterId(clusterId);
     }
 
     public void setAppName(String appName) {
@@ -166,8 +159,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         springCloudModel.setCreateNewApp(isNewApp);
     }
 
-    public void setRuntimeVersion(RuntimeVersion runtimeVersion) {
-        springCloudModel.setRuntimeVersion(runtimeVersion);
+    public void saveRuntimeVersion(RuntimeVersion runtimeVersion) {
+        springCloudModel.setRuntimeVersion(Objects.toString(runtimeVersion, null));
     }
 
     public void setCpu(Integer cpu) {
@@ -194,8 +187,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         springCloudModel.setEnvironment(environment);
     }
 
-    public void setModuleName(String moduleName) {
-        springCloudModel.setModuleName(moduleName);
+    public void setProjectName(String moduleName) {
+        springCloudModel.setProjectName(moduleName);
     }
 
     @Override
@@ -203,8 +196,8 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         if (!AuthMethodManager.getInstance().isSignedIn()) {
             throw new ConfigurationException(CommonConst.NEED_SIGN_IN);
         }
-        if (StringUtils.isEmpty(getModuleName())) {
-            throw new ConfigurationException(NEED_SPECIFY_MODULE);
+        if (StringUtils.isEmpty(getProjectName())) {
+            throw new ConfigurationException(NEED_SPECIFY_PROJECT);
         }
     }
 }

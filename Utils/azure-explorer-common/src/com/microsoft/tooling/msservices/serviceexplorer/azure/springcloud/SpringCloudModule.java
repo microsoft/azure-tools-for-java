@@ -24,8 +24,9 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper;
+import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import java.util.List;
@@ -51,10 +52,17 @@ public class SpringCloudModule extends AzureRefreshableNode implements SpringClo
     public void renderChildren(final List<ServiceResourceInner> springCloudServices) {
         for (final ServiceResourceInner resourceEx : springCloudServices) {
             final SpringCloudNode node = new SpringCloudNode(this,
-                                                             IdHelper.getSubscriptionId(resourceEx.id()),
+                                                             SpringCloudIdHelper.getSubscriptionId(resourceEx.id()),
                                                              resourceEx);
             addChildNode(node);
         }
+    }
+
+    @Override
+    public void removeNode(String sid, String id, Node node) {
+        SpringCloudNode springNode = (SpringCloudNode) node;
+        DefaultAzureResourceTracker.getInstance().registerNode(springNode.getClusterId(), springNode);
+        removeDirectChildNode(node);
     }
 
 }

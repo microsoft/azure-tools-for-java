@@ -29,8 +29,9 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementa
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ResourceUploadDefinitionInner;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.intellij.runner.springcloud.SpringCloudConstants;
-import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
+import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -42,20 +43,24 @@ import static com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringClo
 public class SpringCloudUtils {
     public static AppResourceInner activeDeployment(AppResourceInner appResourceInner,
                                                     DeploymentResourceInner deploymentResourceInner,
-                                                    SpringCloudModel springCloudModel) throws IOException {
-        final AppPlatformManager appPlatformManager = getAppPlatformManager(springCloudModel.getSubscriptionId());
+                                                    SpringCloudDeployConfiguration configuration) throws IOException {
+        final AppPlatformManager appPlatformManager = getAppPlatformManager(configuration.getSubscriptionId());
         final AppResourceProperties appResourceProperties = appResourceInner.properties()
                 .withActiveDeploymentName(deploymentResourceInner.name())
-                .withPublicProperty(springCloudModel.isPublic());
-        return appPlatformManager.apps().inner().update(springCloudModel.getResourceGroup(),
-                springCloudModel.getClusterName(), springCloudModel.getAppName(), appResourceProperties);
+                .withPublicProperty(configuration.isPublic());
+        return appPlatformManager.apps().inner().update(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                                        SpringCloudIdHelper.getClusterName(configuration.getClusterId()),
+                                                        configuration.getAppName(), appResourceProperties);
     }
 
-    public static DeploymentResourceInner createOrUpdateDeployment(SpringCloudModel springCloudModel,
+    public static DeploymentResourceInner createOrUpdateDeployment(SpringCloudDeployConfiguration configuration,
                                                                    UserSourceInfo userSourceInfo) throws IOException {
-        final AppPlatformManager appPlatformManager = getAppPlatformManager(springCloudModel.getSubscriptionId());
-        final AppResourceInner appResourceInner = appPlatformManager.apps().inner().get(springCloudModel.getResourceGroup(),
-                springCloudModel.getClusterName(), springCloudModel.getAppName());
+        final AppPlatformManager appPlatformManager = getAppPlatformManager(configuration.getSubscriptionId());
+        final AppResourceInner appResourceInner =
+                appPlatformManager.apps().inner()
+                                  .get(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                       SpringCloudIdHelper.getClusterName(configuration.getClusterId()),
+                                       configuration.getAppName());
         // get or create default deployment
         // Get existing deployment properties or new one
         final String targetDeployment;
@@ -67,35 +72,41 @@ public class SpringCloudUtils {
         } else {
             // Get existing deployment properties
             targetDeployment = appResourceInner.properties().activeDeploymentName();
-            deploymentResourceProperties = appPlatformManager.deployments().inner().get(springCloudModel.getResourceGroup(),
-                    springCloudModel.getClusterName(), springCloudModel.getAppName(), targetDeployment).properties();
+            deploymentResourceProperties = appPlatformManager.deployments().inner().get(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                                                                        SpringCloudIdHelper.getClusterName(configuration.getClusterId()),
+                                                                                        configuration.getAppName(), targetDeployment).properties();
         }
-        deploymentResourceProperties = updateDeploymentProperties(deploymentResourceProperties, springCloudModel).withSource(userSourceInfo);
+        deploymentResourceProperties = updateDeploymentProperties(deploymentResourceProperties, configuration).withSource(userSourceInfo);
 
-        return appPlatformManager.deployments().inner().createOrUpdate(springCloudModel.getResourceGroup(), springCloudModel.getClusterName(),
-                springCloudModel.getAppName(), targetDeployment, deploymentResourceProperties);
+        return appPlatformManager.deployments().inner().createOrUpdate(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                                                       SpringCloudIdHelper.getClusterName(configuration.getClusterId()),
+                configuration.getAppName(), targetDeployment, deploymentResourceProperties);
     }
 
-    public static AppResourceInner createOrUpdateSpringCloudApp(SpringCloudModel springCloudModel) throws IOException {
-        final AppPlatformManager appPlatformManager = getAppPlatformManager(springCloudModel.getSubscriptionId());
-        final AppResourceInner appResourceInner = appPlatformManager.apps().inner().get(springCloudModel.getResourceGroup(),
-                springCloudModel.getClusterName(), springCloudModel.getAppName());
+    public static AppResourceInner createOrUpdateSpringCloudApp(SpringCloudDeployConfiguration configuration) throws IOException {
+        final AppPlatformManager appPlatformManager = getAppPlatformManager(configuration.getSubscriptionId());
+        final AppResourceInner appResourceInner = appPlatformManager.apps().inner().get(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                                                                        SpringCloudIdHelper.getClusterName(configuration.getClusterId()),
+                                                                                        configuration.getAppName());
         final AppResourceProperties appResourceProperties = updateAppResourceProperties(appResourceInner == null ?
-                new AppResourceProperties() : appResourceInner.properties(), springCloudModel);
+                new AppResourceProperties() : appResourceInner.properties(), configuration);
         // Service didn't support update app with PUT (createOrUpdate)
-        return appResourceInner == null ? appPlatformManager.apps().inner().createOrUpdate(springCloudModel.getResourceGroup(),
-                springCloudModel.getClusterName(), springCloudModel.getAppName(), appResourceProperties) :
-                appPlatformManager.apps().inner().update(springCloudModel.getResourceGroup(), springCloudModel.getClusterName(),
-                        springCloudModel.getAppName(), appResourceProperties);
+        return appResourceInner == null ? appPlatformManager.apps().inner().createOrUpdate(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                                                                           SpringCloudIdHelper.getClusterName(configuration.getClusterId()),
+                                                                                           configuration.getAppName(), appResourceProperties) :
+                appPlatformManager.apps().inner().update(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                                         SpringCloudIdHelper.getClusterName(configuration.getClusterId()),
+                        configuration.getAppName(), appResourceProperties);
     }
 
-    public static UserSourceInfo deployArtifact(SpringCloudModel springCloudModel)
+    public static UserSourceInfo deployArtifact(SpringCloudDeployConfiguration configuration, String artifactPath)
             throws IOException, URISyntaxException, StorageException {
         // Upload artifact to correspond url
-        final AppPlatformManager appPlatformManager = getAppPlatformManager(springCloudModel.getSubscriptionId());
+        final AppPlatformManager appPlatformManager = getAppPlatformManager(configuration.getSubscriptionId());
         final ResourceUploadDefinitionInner resourceUploadDefinition = appPlatformManager.apps().inner()
-                .getResourceUploadUrl(springCloudModel.getResourceGroup(), springCloudModel.getClusterName(), springCloudModel.getAppName());
-        uploadFileToStorage(new File(springCloudModel.getArtifactPath()), resourceUploadDefinition.uploadUrl());
+                .getResourceUploadUrl(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
+                                      SpringCloudIdHelper.getClusterName(configuration.getClusterId()), configuration.getAppName());
+        uploadFileToStorage(new File(artifactPath), resourceUploadDefinition.uploadUrl());
         final UserSourceInfo userSourceInfo = new UserSourceInfo();
         // There are some issues with server side resourceUpload logic
         // Use uploadUrl instead of relativePath
@@ -104,28 +115,28 @@ public class SpringCloudUtils {
     }
 
     private static DeploymentResourceProperties updateDeploymentProperties(DeploymentResourceProperties deploymentProperties,
-                                                                           SpringCloudModel springCloudModel) {
+                                                                           SpringCloudDeployConfiguration configuration) {
         DeploymentSettings deploymentSettings = deploymentProperties.deploymentSettings() == null ?
                 new DeploymentSettings() : deploymentProperties.deploymentSettings();
-        deploymentSettings = deploymentSettings.withJvmOptions(springCloudModel.getJvmOptions())
-                .withEnvironmentVariables(springCloudModel.getEnvironment())
-                .withCpu(springCloudModel.getCpu())
-                .withInstanceCount(springCloudModel.getInstanceCount())
-                .withMemoryInGB(springCloudModel.getMemoryInGB())
-                .withRuntimeVersion(springCloudModel.getRuntimeVersion());
+        deploymentSettings = deploymentSettings.withJvmOptions(configuration.getJvmOptions())
+                .withEnvironmentVariables(configuration.getEnvironment())
+                .withCpu(configuration.getCpu())
+                .withInstanceCount(configuration.getInstanceCount())
+                .withMemoryInGB(configuration.getMemoryInGB())
+                .withRuntimeVersion(configuration.getRuntimeVersion());
         return deploymentProperties.withDeploymentSettings(deploymentSettings);
     }
 
     private static AppResourceProperties updateAppResourceProperties(AppResourceProperties appResourceProperties,
-                                                                     SpringCloudModel springCloudModel) {
+                                                                     SpringCloudDeployConfiguration configuration) {
         // Enable persistent disk with default parameters
         appResourceProperties = appResourceProperties == null ? new AppResourceProperties() : appResourceProperties;
-        if (appResourceProperties.persistentDisk() == null && springCloudModel.isEnablePersistentStorage()) {
+        if (appResourceProperties.persistentDisk() == null && configuration.isEnablePersistentStorage()) {
             appResourceProperties = appResourceProperties.withPersistentDisk(getDefaultPersistentDisk());
         }
         // As we can't set public policy to an app without active deployment
         if (StringUtils.isNotEmpty(appResourceProperties.activeDeploymentName())) {
-            appResourceProperties = appResourceProperties.withPublicProperty(springCloudModel.isPublic());
+            appResourceProperties = appResourceProperties.withPublicProperty(configuration.isPublic());
         }
         return appResourceProperties;
     }

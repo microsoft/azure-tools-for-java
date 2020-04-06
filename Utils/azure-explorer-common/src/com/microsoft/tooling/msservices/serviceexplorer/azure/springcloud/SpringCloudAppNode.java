@@ -26,7 +26,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.Deployment
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper;
+import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
@@ -68,8 +68,8 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView, 
     public SpringCloudAppNode(AppResourceInner app, DeploymentResourceInner deploy, SpringCloudNode parent) {
         super(app.id(), app.name(), parent, getIconForStatus(deploy == null ? DeploymentResourceStatus.UNKNOWN : deploy.properties().status()));
         this.app = app;
-        this.clusterName = IdHelper.getClusterName(app.id());
-        this.subscriptionId = IdHelper.getSubscriptionId(app.id());
+        this.clusterName = SpringCloudIdHelper.getClusterName(app.id());
+        this.subscriptionId = SpringCloudIdHelper.getSubscriptionId(app.id());
         springCloudAppNodePresenter = new SpringCloudAppNodePresenter();
         springCloudAppNodePresenter.onAttachView(this);
         fillData(app, deploy);
@@ -208,7 +208,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView, 
 
     private void fillData(AppResourceInner newApp, DeploymentResourceInner deploy) {
         if (newApp == null) {
-            getParent().removeNode(IdHelper.getSubscriptionId(getAppId()), getAppId(), SpringCloudAppNode.this);
+            getParent().removeNode(SpringCloudIdHelper.getSubscriptionId(getAppId()), getAppId(), SpringCloudAppNode.this);
             DefaultAzureResourceTracker.getInstance().unregisterNode(getAppId(), this);
             return;
         }
@@ -222,7 +222,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView, 
 
     private class DeleteSpringCloudAppAction extends AzureNodeActionPromptListener {
         DeleteSpringCloudAppAction() {
-            super(SpringCloudAppNode.this, String.format(DELETE_APP_PROMPT_MESSAGE, IdHelper.getAppName(SpringCloudAppNode.this.id)),
+            super(SpringCloudAppNode.this, String.format(DELETE_APP_PROMPT_MESSAGE, SpringCloudIdHelper.getAppName(SpringCloudAppNode.this.id)),
                   DELETE_APP_PROGRESS_MESSAGE);
         }
 

@@ -88,7 +88,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper.getSubscriptionId;
+import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
 
 public class UIHelperImpl implements UIHelper {
     public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");

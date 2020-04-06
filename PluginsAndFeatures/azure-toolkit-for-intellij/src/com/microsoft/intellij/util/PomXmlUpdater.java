@@ -23,7 +23,7 @@
 package com.microsoft.intellij.util;
 
 import com.microsoft.azure.common.utils.IndentUtil;
-import com.microsoft.azure.springcloud.dependency.action.DependencyArtifact;
+import com.microsoft.intellij.maven.DependencyArtifact;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;

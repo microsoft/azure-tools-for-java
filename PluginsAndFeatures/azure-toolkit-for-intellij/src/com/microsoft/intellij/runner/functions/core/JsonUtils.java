@@ -27,12 +27,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Writer;
+import java.io.*;
 import java.util.Map;
 
 public class JsonUtils {
@@ -40,6 +35,10 @@ public class JsonUtils {
 
     public static Gson getGson() {
         return GSON;
+    }
+
+    public static <T> T deepCopyWithJson(T source) {
+        return (T) GSON.fromJson(GSON.toJson(source), source.getClass());
     }
 
     public static void writeJsonToFile(File targetFile, JsonObject jsonObject) throws IOException {

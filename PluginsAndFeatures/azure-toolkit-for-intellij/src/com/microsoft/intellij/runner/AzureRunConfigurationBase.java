@@ -43,6 +43,10 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
         super(project, factory, name);
     }
 
+    protected AzureRunConfigurationBase(@NotNull AzureRunConfigurationBase source) {
+        super(source.getProject(), source.getFactory(), source.getName());
+    }
+
     public abstract T getModel();
 
     public abstract String getTargetName();

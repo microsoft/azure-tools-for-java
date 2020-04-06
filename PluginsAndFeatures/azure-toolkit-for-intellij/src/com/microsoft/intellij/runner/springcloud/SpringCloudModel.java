@@ -22,22 +22,18 @@
 
 package com.microsoft.intellij.runner.springcloud;
 
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
-
 import java.util.Map;
 
 public class SpringCloudModel {
     private boolean isCreateNewApp;
 
-    private String moduleName;
-    private String artifactPath;
+    private String projectName;
     // app
     private boolean isPublic;
     private String subscriptionId;
-    private String resourceGroup;
-    private String clusterName;
+    private String clusterId;
     private String appName;
-    private RuntimeVersion runtimeVersion;
+    private String runtimeVersion;
     // deployment
     private Integer cpu;
     private Integer memoryInGB;
@@ -51,10 +47,6 @@ public class SpringCloudModel {
         return isCreateNewApp;
     }
 
-    public String getArtifactPath() {
-        return artifactPath;
-    }
-
     public boolean isPublic() {
         return isPublic;
     }
@@ -63,19 +55,11 @@ public class SpringCloudModel {
         return subscriptionId;
     }
 
-    public String getResourceGroup() {
-        return resourceGroup;
-    }
-
-    public String getClusterName() {
-        return clusterName;
-    }
-
     public String getAppName() {
         return appName;
     }
 
-    public RuntimeVersion getRuntimeVersion() {
+    public String getRuntimeVersion() {
         return runtimeVersion;
     }
 
@@ -95,8 +79,12 @@ public class SpringCloudModel {
         return jvmOptions;
     }
 
-    public String getModuleName() {
-        return moduleName;
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public String getClusterId() {
+        return clusterId;
     }
 
     public boolean isEnablePersistentStorage() {
@@ -107,10 +95,6 @@ public class SpringCloudModel {
         return environment;
     }
 
-    public void setArtifactPath(String artifactPath) {
-        this.artifactPath = artifactPath;
-    }
-
     public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
@@ -119,19 +103,11 @@ public class SpringCloudModel {
         this.subscriptionId = subscriptionId;
     }
 
-    public void setResourceGroup(String resourceGroup) {
-        this.resourceGroup = resourceGroup;
-    }
-
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
-
     public void setAppName(String appName) {
         this.appName = appName;
     }
 
-    public void setRuntimeVersion(RuntimeVersion runtimeVersion) {
+    public void setRuntimeVersion(String runtimeVersion) {
         this.runtimeVersion = runtimeVersion;
     }
 
@@ -155,8 +131,8 @@ public class SpringCloudModel {
         this.enablePersistentStorage = enablePersistentStorage;
     }
 
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 
     public void setEnvironment(Map<String, String> environment) {
@@ -165,5 +141,9 @@ public class SpringCloudModel {
 
     public void setCreateNewApp(boolean createNewApp) {
         isCreateNewApp = createNewApp;
+    }
+
+    public void setClusterId(final String clusterId) {
+        this.clusterId = clusterId;
     }
 }

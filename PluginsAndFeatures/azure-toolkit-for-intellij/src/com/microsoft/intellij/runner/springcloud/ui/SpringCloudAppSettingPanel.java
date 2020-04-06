@@ -32,7 +32,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVer
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper;
+import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.intellij.common.AzureResourceWrapper;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureSettingPanel;
@@ -168,7 +168,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         publicButtonGroup.add(radioNonPublic);
 
         init();
-        initCluster(configuration.getClusterName());
+        initCluster(SpringCloudIdHelper.getClusterName(configuration.getClusterId()));
         initApp(configuration.getAppName(), configuration.isCreateNewApp());
     }
 
@@ -287,7 +287,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
                 cbClusters.addItem(cluster);
             }
             first = false;
-            if (Comparing.equal(cluster.name(), configuration.getClusterName())) {
+            if (Comparing.equal(cluster.id(), configuration.getClusterId())) {
                 cbClusters.setSelectedItem(cluster);
             }
         }
@@ -380,6 +380,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
             txtEnvironmentVariables.setEnvironmentVariables(configuration.getEnvironment());
         }
+        setupMavenProjectCombo(mavenProjects, this.configuration.getProjectName());
     }
 
     private static String intToString(Integer i, int defaultValue) {
@@ -393,14 +394,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     protected void apply(@NotNull SpringCloudDeployConfiguration configuration) {
         configuration.setSubscriptionId(getValueFromComboBox(this.cbSubscription, Subscription::subscriptionId, Subscription.class));
 
-        if (cbClusters.getSelectedItem() instanceof String) {
-            configuration.setClusterName((String) cbClusters.getSelectedItem());
-        } else {
-            configuration.setClusterName(getValueFromComboBox(this.cbClusters, ServiceResourceInner::name, ServiceResourceInner.class));
-            ServiceResourceInner cls = (ServiceResourceInner) this.cbClusters.getSelectedItem();
-            if (cls != null) {
-                configuration.setResourceGroup(IdHelper.getResourceGroup(cls.id()));
-            }
+        if (cbClusters.getSelectedItem() instanceof ServiceResourceInner) {
+            configuration.setClusterId(getValueFromComboBox(this.cbClusters, ProxyResource::id,
+                                                ServiceResourceInner.class));
         }
 
         AzureResourceWrapper ar = getValueFromComboBox(this.cbSpringApps, t -> t, AzureResourceWrapper.class);
@@ -415,9 +411,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         configuration.setMemoryInGB(getValueFromComboBox(this.cbMemory, Integer::parseInt, String.class));
         configuration.setInstanceCount(getValueFromComboBox(this.cbInstanceCount, Integer::parseInt, String.class));
         if (this.java8RadioButton.isSelected()) {
-            configuration.setRuntimeVersion(RuntimeVersion.JAVA_8);
+            configuration.saveRuntimeVersion(RuntimeVersion.JAVA_8);
         } else if (this.java11RadioButton.isSelected()) {
-            configuration.setRuntimeVersion(RuntimeVersion.JAVA_11);
+            configuration.saveRuntimeVersion(RuntimeVersion.JAVA_11);
         }
         if (StringUtils.isNotEmpty(this.textJvmOptions.getText())) {
             configuration.setJvmOptions(this.textJvmOptions.getText());
@@ -429,6 +425,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         configuration.setModuleName(getTargetName());
         configuration.setArtifactPath(getArtifactPath());
         configuration.setEnvironment(txtEnvironmentVariables.getEnvironmentVariables());
+        configuration.setProjectName(getProjectName());
     }
 
     private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetName) {
@@ -436,7 +433,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         if (null != mvnprjs) {
             for (MavenProject prj : mvnprjs) {
                 cbMavenProject.addItem(prj);
-                if (MavenRunTaskUtil.getTargetName(prj).equals(targetName)) {
+                if (StringUtils.equals(prj.getName(), targetName)) {
                     cbMavenProject.setSelectedItem(prj);
                 }
             }
@@ -445,22 +442,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         getLblMavenProject().setVisible(true);
     }
 
-    protected String getTargetName() {
-        String targetName = "";
+    private String getProjectName() {
         MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
-        if (mavenProject != null) {
-            targetName = MavenRunTaskUtil.getTargetName(mavenProject);
-        }
-        return targetName;
-    }
-
-    protected String getArtifactPath() {
-        String targetName = "";
-        MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
-        if (mavenProject != null) {
-            targetName = MavenRunTaskUtil.getTargetPath(mavenProject);
-        }
-        return targetName;
+        return mavenProject != null ? mavenProject.getName() : "";
     }
 
     private static <T, Q> T getValueFromComboBox(JComboBox comboBox, Function<Q, T> selectFunc, @NotNull Class<Q> clz) {

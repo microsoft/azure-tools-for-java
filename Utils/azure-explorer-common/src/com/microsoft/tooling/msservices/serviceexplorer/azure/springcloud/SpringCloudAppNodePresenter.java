@@ -27,7 +27,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.Deployment
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
-import com.microsoft.azuretools.core.mvp.model.springcloud.IdHelper;
+import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
@@ -94,7 +94,8 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
         try {
             future.get(180, TimeUnit.SECONDS);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, String.format("Failed to get the spring cloud app status for app: %s.", IdHelper.getAppName(appId)), e);
+            LOGGER.log(Level.SEVERE, String.format("Failed to get the spring cloud app status for app: %s.", SpringCloudIdHelper
+                    .getAppName(appId)), e);
         }
     }
 
@@ -103,7 +104,7 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
             try {
                 awaitAndMonitoringStatus(appId, originalStatus);
             } catch (IOException | InterruptedException e) {
-                LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_APP, IdHelper.getAppName(appId)), e);
+                LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_APP, SpringCloudIdHelper.getAppName(appId)), e);
             }
         });
     }

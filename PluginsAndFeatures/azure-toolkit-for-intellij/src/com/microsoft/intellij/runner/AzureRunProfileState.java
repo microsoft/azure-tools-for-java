@@ -37,11 +37,12 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import java.util.HashMap;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AzureRunProfileState<T> implements RunProfileState {
     protected final Project project;
@@ -82,7 +83,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                         telemetryMap, null);
                     operation.complete();
                 }
-                this.onFail(err.getMessage(), processHandler);
+                this.onFail(err, processHandler);
                 this.sendTelemetry(telemetryMap, false, err.getMessage());
             });
         return new DefaultExecutionResult(consoleView, processHandler);
@@ -90,6 +91,14 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
     protected Operation createOperation() {
         return null;
+    }
+
+    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
+        onFail(error.getMessage(), processHandler);
+    }
+
+    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
+
     }
 
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap){}
@@ -111,6 +120,4 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
             , @NotNull Map<String, String> telemetryMap) throws Exception;
 
     protected abstract void onSuccess(T result, @NotNull RunProcessHandler processHandler);
-
-    protected abstract void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler);
 }
