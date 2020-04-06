@@ -40,6 +40,7 @@ import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfigu
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingMvpView;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingPresenter;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -47,7 +48,10 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDeployConfiguration> implements SpringCloudDeploySettingMvpView {
@@ -62,9 +66,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private JComboBox cbMemory;
     private JTextField textJvmOptions;
     private JComboBox cbInstanceCount;
-    private JPanel pnlJavaRadio;
     private JRadioButton java11RadioButton;
-    private JPanel pnlPersistentRadio;
     private JRadioButton radioEnablePersistent;
     private JRadioButton radioDisablePersistent;
     private JLabel lblCpu;
@@ -74,9 +76,10 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private JLabel lblPersistent;
     private JComboBox cbSubscription;
     private JComboBox cbClusters;
-    private JPanel pnPublicRadio;
     private JRadioButton radioPublic;
     private JRadioButton radioNonPublic;
+    private JLabel lblEnvVar;
+    private EnvironmentVariablesTextFieldWithBrowseButton txtEnvironmentVariables;
     private JComboBox cbArtifact;
     private JLabel lblArtifact;
 
@@ -374,9 +377,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         this.radioNonPublic.setSelected(!isPublic);
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
         setupMavenProjectCombo(mavenProjects, this.configuration.getModuleName());
-        // if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
-        //     this.envTable.setEnvs(configuration.getEnvironment());
-        // }
+        if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
+            txtEnvironmentVariables.setEnvironmentVariables(configuration.getEnvironment());
+        }
     }
 
     private static String intToString(Integer i, int defaultValue) {
@@ -425,7 +428,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         configuration.setPublic(radioPublic.isSelected());
         configuration.setModuleName(getTargetName());
         configuration.setArtifactPath(getArtifactPath());
-        // configuration.setEnvironment(this.envTable.getEnvs());
+        configuration.setEnvironment(txtEnvironmentVariables.getEnvironmentVariables());
     }
 
     private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetName) {
