@@ -50,8 +50,8 @@ public class StreamingLogsToolWindowManager {
 
     public void showStreamingLogConsole(Project project, String resourceId, String resourceName,
                                         ConsoleView consoleView) {
-        final ToolWindow toolWindow = getToolWindow(project);
         ApplicationManager.getApplication().invokeLater(() -> {
+            final ToolWindow toolWindow = getToolWindow(project);
             toolWindow.show(null);
             final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
             final String consoleName = getConsoleViewName(resourceId, resourceName);

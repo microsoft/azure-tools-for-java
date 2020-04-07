@@ -29,6 +29,8 @@ import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
 import com.microsoft.intellij.serviceexplorer.azure.arm.*;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.*;
+import com.microsoft.intellij.serviceexplorer.azure.function.StartFunctionStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.function.StopFunctionStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
@@ -46,6 +48,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.De
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
@@ -111,5 +114,7 @@ public class NodeActionsMap {
         node2Actions.put(SpringCloudAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(SpringCloudStreamingLogsAction.class).build());
 
+        node2Actions.put(FunctionNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartFunctionStreamingLogsAction.class).add(StopFunctionStreamingLogsAction.class).build());
     }
 }
