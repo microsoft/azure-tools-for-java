@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.helpers.springcloud;
 
-import com.google.common.collect.Maps;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
@@ -39,7 +38,6 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.intellij.helpers.base.BaseEditor;
-import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
@@ -79,15 +77,15 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private static final String ENABLE_PUBLIC_URL_KEY = "enablePublicUrl";
     private static final String ENABLE_PERSISTENT_STORAGE_KEY = "enablePersistentStorage";
     private static final String ENV_TABLE_KEY = "envTable";
-    public static final String CPU = "cpu";
-    public static final String MEMORY_IN_GB_KEY = "memoryInGB";
-    public static final String JVM_OPTIONS_KEY = "jvmOptions";
-    public static final String JAVA_VERSION_KEY = "javaVersion";
-    public static final String ENABLE_TEXT = "Enable";
-    public static final String DISABLE_TEXT = "Disable";
-    public static final String EMPTY_TEXT = "Empty";
-    public static final String DELETING_ACTION = "Deleting";
-    public static final String SAVING_ACTION = "Saving";
+    private static final String CPU = "cpu";
+    private static final String MEMORY_IN_GB_KEY = "memoryInGB";
+    private static final String JVM_OPTIONS_KEY = "jvmOptions";
+    private static final String JAVA_VERSION_KEY = "javaVersion";
+    private static final String ENABLE_TEXT = "Enable";
+    private static final String DISABLE_TEXT = "Disable";
+    private static final String EMPTY_TEXT = "Empty";
+    private static final String DELETING_ACTION = "Deleting";
+    private static final String SAVING_ACTION = "Saving";
 
     private JButton triggerPublicButton;
     private JComboBox javaVersionCombo;
