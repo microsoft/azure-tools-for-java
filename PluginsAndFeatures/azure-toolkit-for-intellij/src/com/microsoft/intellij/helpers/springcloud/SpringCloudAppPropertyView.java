@@ -143,7 +143,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         instanceTable.getEmptyText().setText("Loading instances status");
         instanceTable.setPreferredSize(new Dimension(-1, 200));
         this.saveButton.addActionListener(e -> {
-            wrapperOperations(TelemetryConstants.SAVE_SPRING_CLOUD_APP, project, (changes) -> {
+            wrapperOperations(TelemetryConstants.SAVE_SPRING_CLOUD_APP, "saving", project, (changes) -> {
                 if (changes.isEmpty()) {
                     PluginUtil.showInfoNotificationProject(project, "No actions performed", "You have no changes to apply.");
                     return;
@@ -154,13 +154,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         });
 
         this.refreshButton.addActionListener(e -> {
-            wrapperOperations(TelemetryConstants.REFRESH_SPRING_CLOUD_APP, project, (changes) -> {
+            wrapperOperations(TelemetryConstants.REFRESH_SPRING_CLOUD_APP, "refreshing", project, (changes) -> {
                 // DO nothing
             });
         });
 
         this.deleteButton.addActionListener(e -> {
-            wrapperOperations(TelemetryConstants.DELETE_SPRING_CLOUD_APP, project, (changes) -> {
+            wrapperOperations(TelemetryConstants.DELETE_SPRING_CLOUD_APP, "deleting", project, (changes) -> {
                 try {
                     AzureSpringCloudMvpModel.deleteApp(appId).await();
                     monitorStatus(appId, deploymentResourceInner);
@@ -172,7 +172,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
         });
         this.startButton.addActionListener(e -> {
-            wrapperOperations(TelemetryConstants.START_SPRING_CLOUD_APP, project, (changes) -> {
+            wrapperOperations(TelemetryConstants.START_SPRING_CLOUD_APP, "starting", project, (changes) -> {
                 try {
                     AzureSpringCloudMvpModel.startApp(appId, appResourceInner.properties().activeDeploymentName()).await();
                     monitorStatus(appId, deploymentResourceInner);
@@ -183,7 +183,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         });
 
         this.stopButton.addActionListener(e -> {
-            wrapperOperations(TelemetryConstants.STOP_SPRING_CLOUD_APP, project, (changes) -> {
+            wrapperOperations(TelemetryConstants.STOP_SPRING_CLOUD_APP, "stopping", project, (changes) -> {
                 try {
                     AzureSpringCloudMvpModel.stopApp(appId, appResourceInner.properties().activeDeploymentName()).await();
                     monitorStatus(appId, deploymentResourceInner);
@@ -193,7 +193,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             });
         });
         this.restartButton.addActionListener(e -> {
-            wrapperOperations(TelemetryConstants.RESTART_SPRING_CLOUD_APP, project, (changes) -> {
+            wrapperOperations(TelemetryConstants.RESTART_SPRING_CLOUD_APP, "restarting", project, (changes) -> {
                 try {
                     AzureSpringCloudMvpModel.restartApp(appId, appResourceInner.properties().activeDeploymentName()).await();
                     monitorStatus(appId, deploymentResourceInner);
@@ -274,10 +274,12 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
     }
 
-    private void wrapperOperations(String actionName, Project project, Consumer<Map<String, Object>> action) {
+    private void wrapperOperations(String operation, String actionName, Project project,
+                                   Consumer<Map<String, Object>> action) {
         if (this.viewModel == null) {
             return;
         }
+        // TODO: record operation in telemetry
         Map<String, Object> changes;
         try {
             changes = getModifiedDataMap();
