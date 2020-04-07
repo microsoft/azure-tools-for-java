@@ -46,7 +46,7 @@ public class EnvironmentVariableTable extends EnvVariablesTable {
     public void setEnv(Map<String, String> environmentVariables) {
         final List<EnvironmentVariable> environmentVariableList =
                 environmentVariables.keySet().stream()
-                                    .map(key -> new EnvironmentVariable(key, environmentVariables.get(key), true))
+                                    .map(key -> new EnvironmentVariable(key, environmentVariables.get(key), false))
                                     .collect(Collectors.toList());
         setValues(environmentVariableList);
     }
