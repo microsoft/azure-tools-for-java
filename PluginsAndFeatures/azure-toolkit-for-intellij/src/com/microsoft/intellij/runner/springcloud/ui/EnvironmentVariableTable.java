@@ -39,7 +39,7 @@ public class EnvironmentVariableTable extends EnvVariablesTable {
         TableView<EnvironmentVariable> tableView = getTableView();
         tableView.setPreferredScrollableViewportSize(
                 new Dimension(tableView.getPreferredScrollableViewportSize().width,
-                        tableView.getRowHeight() * JBTable.PREFERRED_SCROLLABLE_VIEWPORT_HEIGHT_IN_ROWS));
+                              tableView.getRowHeight() * JBTable.PREFERRED_SCROLLABLE_VIEWPORT_HEIGHT_IN_ROWS));
         setPasteActionEnabled(true);
     }
 
@@ -47,7 +47,7 @@ public class EnvironmentVariableTable extends EnvVariablesTable {
         final List<EnvironmentVariable> environmentVariableList =
                 environmentVariables.keySet().stream()
                                     .map(key -> new EnvironmentVariable(key, environmentVariables.get(key), true))
-                        .collect(Collectors.toList());
+                                    .collect(Collectors.toList());
         setValues(environmentVariableList);
     }
 
