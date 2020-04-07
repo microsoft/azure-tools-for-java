@@ -42,6 +42,8 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -89,6 +91,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
+import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
+
 
 public class UIHelperImpl implements UIHelper {
     public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
@@ -97,6 +101,9 @@ public class UIHelperImpl implements UIHelper {
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
     public static final Key<String> WEBAPP_ID = new Key<>("webAppId");
     public static final Key<String> APP_ID = new Key<>("appId");
+    public static final Key<AppResourceInner> SPRING_CLOUD_APP = new Key<>("springCloudApp");
+    public static final Key<DeploymentResourceInner> SPRING_CLOUD_DEPLOYMENT = new Key<>("springCloudAppDeployment");
+
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key =
             ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
@@ -445,7 +452,13 @@ public class UIHelperImpl implements UIHelper {
         final String id = node.getAppId();
         final String subscription = getSubscriptionId(id);
         final String appName = node.getAppName();
-        // TODO
+        LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
+        if (itemVirtualFile == null) {
+            itemVirtualFile = createVirtualFile(appName, SPRING_CLOUD_APP_PROPERTY_TYPE,
+                    DeploymentNode.ICON_PATH, subscription, id);
+        }
+        itemVirtualFile.putUserData(APP_ID, id);
+        fileEditorManager.openFile(itemVirtualFile, true, true);
     }
 
     @Override
@@ -610,7 +623,11 @@ public class UIHelperImpl implements UIHelper {
     }
 
     public void closeSpringCloudAppPropertyView(@NotNull Object projectObject, String appId) {
-       // TODO
+        final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
+        LightVirtualFile file = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, appId);
+        if (file != null) {
+            ApplicationManager.getApplication().invokeLater(() -> fileEditorManager.closeFile(file));
+        }
     }
 
     @NotNull
