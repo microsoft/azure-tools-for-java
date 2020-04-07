@@ -340,6 +340,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             default:
                 break;
         }
+        if (!changed) {
+            try {
+                changed = !getModifiedDataMap().isEmpty();
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                PluginUtil.showErrorNotificationProject(project, "Cannot get property through reflection", e.getMessage());
+            }
+        }
         saveButton.setEnabled(changed);
     }
 
