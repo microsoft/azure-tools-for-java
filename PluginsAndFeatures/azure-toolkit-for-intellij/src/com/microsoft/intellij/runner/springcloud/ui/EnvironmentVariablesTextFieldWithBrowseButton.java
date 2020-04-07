@@ -133,7 +133,7 @@ public class EnvironmentVariablesTextFieldWithBrowseButton extends TextFieldWith
         protected EnvironmentVariablesEditDialog(Map<String, String> environmentVariables) {
             super(EnvironmentVariablesTextFieldWithBrowseButton.this, true);
             environmentVariableTable = new EnvironmentVariableTable();
-            environmentVariableTable.setEnvironmentVariablesMap(environmentVariables);
+            environmentVariableTable.setEnv(environmentVariables);
 
             JLabel label = new JLabel("Environment variables:");
             label.setLabelFor(environmentVariableTable.getTableView().getComponent());
@@ -180,7 +180,7 @@ public class EnvironmentVariablesTextFieldWithBrowseButton extends TextFieldWith
         @Override
         protected void doOKAction() {
             environmentVariableTable.stopEditing();
-            environmentVariables = environmentVariableTable.getEnvironmentVariablesMap();
+            environmentVariables = environmentVariableTable.getEnv();
             super.doOKAction();
         }
 

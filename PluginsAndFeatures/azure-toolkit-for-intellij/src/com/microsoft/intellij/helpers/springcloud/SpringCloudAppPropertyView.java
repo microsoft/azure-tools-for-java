@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.helpers.springcloud;
 
+import com.google.common.collect.Maps;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
@@ -45,6 +46,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTrac
 import com.microsoft.tooling.msservices.serviceexplorer.IDataRefreshableComponent;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNodePresenter;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +78,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private static final String ENABLE_PUBLIC_URL_KEY = "enablePublicUrl";
     private static final String ENABLE_PERSISTENT_STORAGE_KEY = "enablePersistentStorage";
+    private static final String ENV_TABLE_KEY = "envTable";
     public static final String CPU = "cpu";
     public static final String MEMORY_IN_GB_KEY = "memoryInGB";
     public static final String JVM_OPTIONS_KEY = "jvmOptions";
@@ -114,7 +117,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private EnvironmentVariablesTextFieldWithBrowseButton envTable;
     private HideableDecorator instancePanelDecorator;
 
-    private SpringAppViewModel model;
+    private SpringAppViewModel viewModel;
     private Project project;
     private AppResourceInner appResourceInner;
     private DeploymentResourceInner deploymentResourceInner;
@@ -156,15 +159,6 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             });
         });
 
-        this.triggerPublicButton.addActionListener(e -> {
-            this.triggerPublicUrl();
-            syncSaveStatus(ENABLE_PUBLIC_URL_KEY);
-        });
-        this.triggerPersistentButton.addActionListener(e -> {
-            this.triggerPersistentStorage();
-            saveButton.setEnabled(true);
-            syncSaveStatus(ENABLE_PERSISTENT_STORAGE_KEY);
-        });
         this.deleteButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.DELETE_SPRING_CLOUD_APP, project, (changes) -> {
                 try {
@@ -172,7 +166,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     monitorStatus(appId, deploymentResourceInner);
                 } catch (IOException | InterruptedException ex) {
                     PluginUtil.showErrorNotificationProject(project,
-                                                            String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
+                        String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
                 }
             });
 
@@ -213,17 +207,33 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         jvmOpsTextField.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent documentEvent) {
-                syncSaveStatus(JVM_OPTIONS_KEY);
+                syncSaveStatus();
             }
         });
         cpuCombo.addActionListener(e -> {
-            syncSaveStatus(CPU);
+            syncSaveStatus();
         });
         memCombo.addActionListener(e -> {
-            syncSaveStatus(MEMORY_IN_GB_KEY);
+            syncSaveStatus();
         });
         javaVersionCombo.addActionListener(e -> {
-            syncSaveStatus(JAVA_VERSION_KEY);
+            syncSaveStatus();
+        });
+
+        this.triggerPublicButton.addActionListener(e -> {
+            this.triggerPublicUrl();
+            syncSaveStatus();
+        });
+        this.triggerPersistentButton.addActionListener(e -> {
+            this.triggerPersistentStorage();
+            syncSaveStatus();
+        });
+
+        this.envTable.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent documentEvent) {
+                syncSaveStatus();
+            }
         });
         instancePanelDecorator = new HideableDecorator(instanceDetailHolder, "Instances", true);
         instancePanelDecorator.setContentComponent(instanceDetailPanel);
@@ -245,12 +255,12 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     @NotNull
     @Override
     public String getName() {
-        return this.model == null ? "Untitled" : this.model.getAppName();
+        return this.viewModel == null ? "Untitled" : this.viewModel.getAppName();
     }
 
     @Override
     public void notifyDataRefresh(AppResourceInner appInner, DeploymentResourceInner deploymentResourceInner) {
-        this.prepareViewModel(appInner, deploymentResourceInner, this.model == null ? null : this.model.getTestUrl());
+        this.prepareViewModel(appInner, deploymentResourceInner, this.viewModel == null ? null : this.viewModel.getTestUrl());
     }
 
     @Override
@@ -260,10 +270,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private static void monitorStatus(String appId, DeploymentResourceInner deploymentResourceInner) throws IOException, InterruptedException {
         SpringCloudAppNodePresenter.awaitAndMonitoringStatus(appId,
-                                                             deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
+            deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
     }
 
     private void wrapperOperations(String actionName, Project project, Consumer<Map<String, Object>> action) {
+        if (this.viewModel == null) {
+            return;
+        }
         Map<String, Object> changes;
         try {
             changes = getModifiedDataMap();
@@ -278,11 +291,11 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             promptMessage = changes.isEmpty() ? "" : String.format(OPERATE_APP_PROMPT_MESSAGE, actionName, this.appName);
         }
         if (promptMessage.isEmpty() || actionName.startsWith("save") || DefaultLoader.getUIHelper()
-                                                                                     .showConfirmation(this.mainPanel,
-                                                                                                       promptMessage,
-                                                                                                       "Azure Explorer",
-                                                                                                       new String[]{"Yes", "No"},
-                                                                                                       null)) {
+             .showConfirmation(this.mainPanel,
+                               promptMessage,
+                               "Azure Explorer",
+                               new String[]{"Yes", "No"},
+                               null)) {
             disableAllInput();
             DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
                                                          true, String.format("%s...", actionName), () -> {
@@ -319,35 +332,16 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.envTable.setEditable(true);
     }
 
-    private void syncSaveStatus(String propertyName) {
-        boolean changed = false;
-        switch (propertyName) {
-            case JVM_OPTIONS_KEY:
-                changed = !StringUtils.equals(jvmOpsTextField.getText(), model.getJvmOptions());
-                break;
-            case CPU:
-                changed = Integer.parseInt(Objects.toString(this.cpuCombo.getSelectedItem(), null)) != model.getCpu();
-                break;
-            case MEMORY_IN_GB_KEY:
-                changed = Integer.parseInt(Objects.toString(this.memCombo.getSelectedItem(), null)) != model.getMemoryInGB();
-                break;
-            case ENABLE_PUBLIC_URL_KEY:
-                changed = (model.isEnablePublicUrl() == StringUtils.equalsIgnoreCase(this.triggerPublicButton.getText(), ENABLE_TEXT));
-                break;
-            case ENABLE_PERSISTENT_STORAGE_KEY:
-                changed = model.isEnablePersistentStorage() == StringUtils.equalsIgnoreCase(this.triggerPersistentButton.getText(), ENABLE_TEXT);
-                break;
-            default:
-                break;
+    private void syncSaveStatus() {
+        if (this.viewModel == null) {
+            // we are pending to fill data
+            return;
         }
-        if (!changed) {
-            try {
-                changed = !getModifiedDataMap().isEmpty();
-            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                PluginUtil.showErrorNotificationProject(project, "Cannot get property through reflection", e.getMessage());
-            }
+        try {
+            saveButton.setEnabled(MapUtils.isNotEmpty(getModifiedDataMap()));
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            PluginUtil.showErrorNotificationProject(project, "Cannot get property through reflection", e.getMessage());
         }
-        saveButton.setEnabled(changed);
     }
 
     private void triggerPersistentStorage() {
@@ -356,8 +350,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         boolean enablePersist = StringUtils.equalsIgnoreCase(text, ENABLE_TEXT);
         if (enablePersist) {
             Font font = publicUrlHyperLink.getFont();
-            if (model.isEnablePersistentStorage()) {
-                renderPersistent();
+            if (viewModel.isEnablePersistentStorage()) {
+                renderPersistent(this.viewModel);
             } else {
                 this.persistentLabel.setText("Persistent storage is not available before you save the settings.");
                 persistentLabel.setFont(new Font(font.getName(), Font.ITALIC, font.getSize()));
@@ -372,11 +366,12 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private void triggerPublicUrl() {
         final String text = this.triggerPublicButton.getText();
         boolean updatePublicTrue = StringUtils.equalsIgnoreCase(text, ENABLE_TEXT);
-        setPublic(updatePublicTrue, StringUtils.isNotEmpty(this.model.getPublicUrl()) ?
-                                    this.model.getPublicUrl() : "URL is not available before you save the settings.");
+        setPublic(updatePublicTrue, StringUtils.isNotEmpty(this.viewModel.getPublicUrl()) ?
+                                    this.viewModel.getPublicUrl() : "URL is not available before you save the settings.");
     }
 
     private void refreshData() {
+        viewModel = null;
         Observable.fromCallable(() -> {
             AppResourceInner app = AzureSpringCloudMvpModel.getAppById(appId);
             if (app == null) {
@@ -391,26 +386,30 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     }
 
     private Map<String, Object> getModifiedDataMap() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        if (model == null) {
+        if (viewModel == null) {
             return null;
         }
         Map<String, Object> map = new HashMap<>();
-        compareModel(model, JVM_OPTIONS_KEY, this.jvmOpsTextField, map);
-        compareModelComboBinding(model, CPU, this.cpuCombo, map);
-        compareModelComboBinding(model, MEMORY_IN_GB_KEY, this.memCombo, map);
-        compareModelTextComboBinding(model, JAVA_VERSION_KEY, this.javaVersionCombo, map);
-
-        // is public
+        compareModel(viewModel, JVM_OPTIONS_KEY, this.jvmOpsTextField, map);
+        compareModelComboBinding(viewModel, CPU, this.cpuCombo, map);
+        compareModelComboBinding(viewModel, MEMORY_IN_GB_KEY, this.memCombo, map);
+        compareModelTextComboBinding(viewModel, JAVA_VERSION_KEY, this.javaVersionCombo, map);
 
         final String text = this.triggerPublicButton.getText();
         boolean currentEnableFlag = !StringUtils.equalsIgnoreCase(text, ENABLE_TEXT);
-        if (model.isEnablePublicUrl() != currentEnableFlag) {
+        if (viewModel.isEnablePublicUrl() != currentEnableFlag) {
             map.put(ENABLE_PUBLIC_URL_KEY, currentEnableFlag);
         }
 
         boolean currentEnablePersist = !StringUtils.equalsIgnoreCase(this.triggerPersistentButton.getText(), ENABLE_TEXT);
-        if (model.isEnablePersistentStorage() != currentEnablePersist) {
+        if (viewModel.isEnablePersistentStorage() != currentEnablePersist) {
             map.put(ENABLE_PERSISTENT_STORAGE_KEY, currentEnablePersist);
+        }
+
+        Map<String, String> oldEnvironment = viewModel.getEnvironment();
+        Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
+        if (!Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
+            map.put(ENV_TABLE_KEY, newEnvironment);
         }
         return map;
     }
@@ -434,6 +433,11 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             if (map.containsKey(JAVA_VERSION_KEY)) {
                 deploymentSettings.withRuntimeVersion(RuntimeVersion.fromString((String) map.get(JAVA_VERSION_KEY)));
             }
+
+            if (map.containsKey(ENV_TABLE_KEY)) {
+                deploymentSettings.withEnvironmentVariables((Map<String, String>) map.get(ENV_TABLE_KEY));
+            }
+
             AppResourceProperties appUpdate = null;
             if (map.containsKey(ENABLE_PUBLIC_URL_KEY)) {
                 if (appUpdate == null) {
@@ -515,7 +519,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         }
     }
 
-    private void renderPersistent() {
+    private void renderPersistent(SpringAppViewModel model) {
         Font font = persistentLabel.getFont();
         persistentLabel.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
         this.persistentLabel.setText(String.format("%s (%dG of %dG used)",
@@ -549,33 +553,33 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             }
             this.appResourceInner = app;
             this.deploymentResourceInner = deploy;
-            this.model = new SpringAppViewModel();
-            this.model.setTestUrl(testUrl);
+            SpringAppViewModel targetViewModel = new SpringAppViewModel();
+            targetViewModel.setTestUrl(testUrl);
 
             // persistent storage
             if (app.properties().persistentDisk() != null && app.properties().persistentDisk().sizeInGB().intValue() > 0) {
-                this.model.setEnablePersistentStorage(true);
-                this.model.setUsedStorageInGB(app.properties().persistentDisk().usedInGB());
-                this.model.setTotalStorageInGB(app.properties().persistentDisk().sizeInGB());
-                this.model.setPersistentMountPath(app.properties().persistentDisk().mountPath());
+                targetViewModel.setEnablePersistentStorage(true);
+                targetViewModel.setUsedStorageInGB(app.properties().persistentDisk().usedInGB());
+                targetViewModel.setTotalStorageInGB(app.properties().persistentDisk().sizeInGB());
+                targetViewModel.setPersistentMountPath(app.properties().persistentDisk().mountPath());
             } else {
-                this.model.setEnablePersistentStorage(false);
+                targetViewModel.setEnablePersistentStorage(false);
             }
 
             Subscription subs = AzureMvpModel.getInstance().getSubscriptionById(SpringCloudIdHelper.getSubscriptionId(this.appId));
-            this.model.setSubscriptionName(subs == null ? null : subs.displayName());
-            this.model.setResourceGroup(SpringCloudIdHelper.getResourceGroup(this.appId));
+            targetViewModel.setSubscriptionName(subs == null ? null : subs.displayName());
+            targetViewModel.setResourceGroup(SpringCloudIdHelper.getResourceGroup(this.appId));
             if (deploy != null) {
                 DeploymentSettings settings = deploy.properties().deploymentSettings();
-                this.model.setJavaVersion(settings.runtimeVersion().toString());
-                this.model.setJvmOptions(settings.jvmOptions());
-                this.model.setCpu(settings.cpu());
-                this.model.setMemoryInGB(settings.memoryInGB());
+                targetViewModel.setJavaVersion(settings.runtimeVersion().toString());
+                targetViewModel.setJvmOptions(settings.jvmOptions());
+                targetViewModel.setCpu(settings.cpu());
+                targetViewModel.setMemoryInGB(settings.memoryInGB());
                 if (deploy.properties().instances() != null) {
-                    this.model.setDownInstanceCount((int) deploy.properties().instances().stream().filter(
+                    targetViewModel.setDownInstanceCount((int) deploy.properties().instances().stream().filter(
                         t -> StringUtils.equalsIgnoreCase(t.discoveryStatus(), "DOWN")).count());
-                    this.model.setUpInstanceCount(deploy.properties().instances().size() - this.model.getDownInstanceCount());
-                    this.model.setInstance(deploymentResourceInner.properties().instances().stream().map(t -> {
+                    targetViewModel.setUpInstanceCount(deploy.properties().instances().size() - targetViewModel.getDownInstanceCount());
+                    targetViewModel.setInstance(deploymentResourceInner.properties().instances().stream().map(t -> {
                         SpringAppInstanceViewModel instanceViewModel = new SpringAppInstanceViewModel();
                         instanceViewModel.setName(t.name());
                         instanceViewModel.setStatus(t.status());
@@ -583,34 +587,35 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                         return instanceViewModel;
                     }).collect(Collectors.toList()));
                 } else {
-                    this.model.setUpInstanceCount(0);
-                    this.model.setDownInstanceCount(0);
+                    targetViewModel.setUpInstanceCount(0);
+                    targetViewModel.setDownInstanceCount(0);
                 }
                 // env variable
-                this.model.setEnvironment(settings.environmentVariables());
+                targetViewModel.setEnvironment(settings.environmentVariables() == null ? new HashMap<>() :
+                                               settings.environmentVariables());
             } else {
-                this.model.setUpInstanceCount(0);
-                this.model.setDownInstanceCount(0);
+                targetViewModel.setUpInstanceCount(0);
+                targetViewModel.setDownInstanceCount(0);
             }
             // public url
-            this.model.setEnablePublicUrl(app.properties().publicProperty());
-            if (this.model.isEnablePublicUrl()) {
-                this.model.setPublicUrl(app.properties().url());
+            targetViewModel.setEnablePublicUrl(app.properties().publicProperty());
+            if (targetViewModel.isEnablePublicUrl()) {
+                targetViewModel.setPublicUrl(app.properties().url());
             }
 
-            this.model.setClusterName(SpringCloudIdHelper.getClusterName(this.appId));
-            this.model.setAppName(app.name());
+            targetViewModel.setClusterName(SpringCloudIdHelper.getClusterName(this.appId));
+            targetViewModel.setAppName(app.name());
 
             // button enable
             DeploymentResourceStatus status = deploy == null ? DeploymentResourceStatus.UNKNOWN : deploy.properties().status();
             boolean stopped = DeploymentResourceStatus.STOPPED.equals(status);
             boolean unknown = DeploymentResourceStatus.UNKNOWN.equals(status);
-            this.model.setCanStop(!stopped && !unknown);
-            this.model.setCanStart(stopped);
-            this.model.setCanReStart(!stopped && !unknown);
+            targetViewModel.setCanStop(!stopped && !unknown);
+            targetViewModel.setCanStart(stopped);
+            targetViewModel.setCanReStart(!stopped && !unknown);
             // status
-            this.model.setStatus(status.toString());
-            this.setData(model);
+            targetViewModel.setStatus(status.toString());
+            this.setData(targetViewModel);
         } catch (AzureExecutionException e) {
             ApplicationManager.getApplication().invokeLater(() -> {
                 PluginUtil.showErrorNotificationProject(project, "Cannot binding data to Spring Cloud property view.", e.getMessage());
@@ -618,42 +623,43 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         }
     }
 
-    private void setData(SpringAppViewModel model) throws AzureExecutionException {
-        if (model == null) {
+    private void setData(SpringAppViewModel newModel) throws AzureExecutionException {
+        if (newModel == null) {
             DefaultLoader.getUIHelper().closeSpringCloudAppPropertyView(project, appId);
             PluginUtil.showInfoNotificationProject(project,
                                                    String.format("The editor for app %s is closed.", this.appName), "The app " + this.appName + " is deleted.");
             return;
         }
         try {
-            this.subsLabel.setText(model.getSubscriptionName());
-            this.resourceGroupLabel.setText(model.getResourceGroup());
-            this.clusterLabel.setText(model.getClusterName());
-            this.appNameLabel.setText(model.getAppName());
-            handleTextDataBinding(model, JVM_OPTIONS_KEY, this.jvmOpsTextField);
-            setPublic(model.isEnablePublicUrl(), model.getPublicUrl());
-            handleNumberComboBinding(model, CPU, this.cpuCombo);
-            handleNumberComboBinding(model, MEMORY_IN_GB_KEY, this.memCombo);
-            handleTextComboBinding(model, JAVA_VERSION_KEY, this.javaVersionCombo);
-            this.testUrlLink.setHyperlinkText(model.getTestUrl());
-            this.testUrlLink.setHyperlinkTarget(model.getTestUrl());
-            this.triggerPersistentButton.setText(model.isEnablePersistentStorage() ? DISABLE_TEXT : ENABLE_TEXT);
-            if (model.isEnablePersistentStorage()) {
-                renderPersistent();
+            this.viewModel = null;
+            this.subsLabel.setText(newModel.getSubscriptionName());
+            this.resourceGroupLabel.setText(newModel.getResourceGroup());
+            this.clusterLabel.setText(newModel.getClusterName());
+            this.appNameLabel.setText(newModel.getAppName());
+            handleTextDataBinding(newModel, JVM_OPTIONS_KEY, this.jvmOpsTextField);
+            setPublic(newModel.isEnablePublicUrl(), newModel.getPublicUrl());
+            handleNumberComboBinding(newModel, CPU, this.cpuCombo);
+            handleNumberComboBinding(newModel, MEMORY_IN_GB_KEY, this.memCombo);
+            handleTextComboBinding(newModel, JAVA_VERSION_KEY, this.javaVersionCombo);
+            this.testUrlLink.setHyperlinkText(newModel.getTestUrl());
+            this.testUrlLink.setHyperlinkTarget(newModel.getTestUrl());
+            this.triggerPersistentButton.setText(newModel.isEnablePersistentStorage() ? DISABLE_TEXT : ENABLE_TEXT);
+            if (newModel.isEnablePersistentStorage()) {
+                renderPersistent(newModel);
             } else {
                 this.persistentLabel.setText(NOT_AVAILABLE);
             }
-            String statusLineText = model.getStatus();
-            if (model.getUpInstanceCount().intValue() + model.getDownInstanceCount().intValue() > 0) {
+            String statusLineText = newModel.getStatus();
+            if (newModel.getUpInstanceCount().intValue() + newModel.getDownInstanceCount().intValue() > 0) {
                 statusLineText = String.format("%s - Discovery Status(UP %d, DOWN %d)",
-                                               model.getStatus(),
-                                               model.getUpInstanceCount(), model.getDownInstanceCount());
+                                               newModel.getStatus(),
+                                               newModel.getUpInstanceCount(), newModel.getDownInstanceCount());
             }
             Border statusLine = BorderFactory.createTitledBorder(statusLineText);
             this.statusPanel.setBorder(statusLine);
-            this.startButton.setEnabled(model.isCanStart());
-            this.stopButton.setEnabled(model.isCanStop());
-            this.restartButton.setEnabled(model.isCanReStart());
+            this.startButton.setEnabled(newModel.isCanStart());
+            this.stopButton.setEnabled(newModel.isCanStop());
+            this.restartButton.setEnabled(newModel.isCanReStart());
 
             this.refreshButton.setEnabled(true);
             this.deleteButton.setEnabled(true);
@@ -662,15 +668,16 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
             instanceTable.getEmptyText().setText(EMPTY_TEXT);
 
-            if (model.getInstance() != null) {
-                for (final SpringAppInstanceViewModel deploymentInstance : model.getInstance()) {
+            if (newModel.getInstance() != null) {
+                for (final SpringAppInstanceViewModel deploymentInstance : newModel.getInstance()) {
                     instancesTableModel.addRow(new String[]{
                             deploymentInstance.getName(), deploymentInstance.getStatus(), deploymentInstance.getDiscoveryStatus()});
                 }
             }
             instanceTable.setModel(instancesTableModel);
             instanceTable.updateUI();
-            envTable.setEnvironmentVariables(model.getEnvironment() == null ? new HashMap<>() : new HashMap<>(model.getEnvironment()));
+            envTable.setEnvironmentVariables(newModel.getEnvironment() == null ? new HashMap<>() : new HashMap<>(newModel.getEnvironment()));
+            this.viewModel = newModel;
             restoreAllInput();
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new AzureExecutionException("Cannot get property through reflection", e);

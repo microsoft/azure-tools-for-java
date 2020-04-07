@@ -43,18 +43,18 @@ public class EnvironmentVariableTable extends EnvVariablesTable {
         setPasteActionEnabled(true);
     }
 
-    public void setEnvironmentVariablesMap(Map<String, String> environmentVariablesMap) {
-        final List<EnvironmentVariable> environmentVariables =
-                environmentVariablesMap.keySet().stream()
-                        .map(key -> new EnvironmentVariable(key, environmentVariablesMap.get(key), true))
+    public void setEnv(Map<String, String> environmentVariables) {
+        final List<EnvironmentVariable> environmentVariableList =
+                environmentVariables.keySet().stream()
+                                    .map(key -> new EnvironmentVariable(key, environmentVariables.get(key), true))
                         .collect(Collectors.toList());
-        setValues(environmentVariables);
+        setValues(environmentVariableList);
     }
 
-    public Map<String, String> getEnvironmentVariablesMap() {
+    public Map<String, String> getEnv() {
         Map<String, String> result = new LinkedHashMap<>();
         for (EnvironmentVariable variable : this.getEnvironmentVariables()) {
-            if (StringUtil.isEmpty(variable.getName()) && StringUtil.isEmpty(variable.getValue())) {
+            if (StringUtil.isEmpty(variable.getName())) {
                 continue;
             }
             result.put(variable.getName(), variable.getValue());
