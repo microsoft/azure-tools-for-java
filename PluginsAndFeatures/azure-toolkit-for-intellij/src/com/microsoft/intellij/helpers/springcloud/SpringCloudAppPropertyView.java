@@ -243,6 +243,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         IntStream.range(1, 9).forEach(memCombo::addItem);
 
         Arrays.asList("Java_8", "Java_11").forEach(javaVersionCombo::addItem);
+        this.envTable.getTextField().setEditable(false);
         disableAllInput();
     }
 
