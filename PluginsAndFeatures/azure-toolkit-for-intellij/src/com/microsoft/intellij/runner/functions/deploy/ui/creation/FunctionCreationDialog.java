@@ -147,7 +147,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         createFunctionApp();
     }
 
-    private void updateConfiguration() {
+    private void applyToConfiguration() {
         functionConfiguration.setAppName(txtWebAppName.getText());
         functionConfiguration.setSubscription(subscriptionPanel.getSubscriptionId());
         // resource group
@@ -181,7 +181,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
 
     @Override
     protected List<ValidationInfo> doValidateAll() {
-        updateConfiguration();
+        applyToConfiguration();
         List<ValidationInfo> res = new ArrayList<>();
         // Validate azure status
         if (!AuthMethodManager.getInstance().isSignedIn()) {
@@ -211,7 +211,6 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     }
 
     private void createFunctionApp() {
-        updateConfiguration();
         ProgressManager.getInstance().run(new Task.Modal(null, "Creating New Function App...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
