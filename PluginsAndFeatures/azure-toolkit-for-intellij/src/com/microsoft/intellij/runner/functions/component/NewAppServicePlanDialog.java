@@ -47,7 +47,7 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
     public static final String CONSUMPTION = "Consumption";
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
     private static final String DEFAULT_LOCATION = "eastus";
-    private static final String RECOMMEND_SUFFIX = " (Recommend)";
+    private static final String RECOMMEND_SUFFIX = " (Recommended)";
 
     private JPanel contentPane;
     private JPanel pnlNewAppServicePlan;
