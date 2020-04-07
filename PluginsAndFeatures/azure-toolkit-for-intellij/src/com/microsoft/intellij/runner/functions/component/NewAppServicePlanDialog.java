@@ -25,21 +25,20 @@ package com.microsoft.intellij.runner.functions.component;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.SkuName;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +46,8 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
 
     public static final String CONSUMPTION = "Consumption";
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
+    private static final String DEFAULT_LOCATION = "eastus";
+    private static final String RECOMMEND_SUFFIX = " (Recommended)";
 
     private JPanel contentPane;
     private JPanel pnlNewAppServicePlan;
@@ -82,7 +83,8 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof PricingTier) {
                     final PricingTier pricingTier = (PricingTier) object;
-                    setText(pricingTier == CONSUMPTION_PRICING_TIER ? CONSUMPTION : pricingTier.toString());
+                    final String text = pricingTier == CONSUMPTION_PRICING_TIER ? CONSUMPTION : pricingTier.toString();
+                    setText(isRecommendPricingTier(pricingTier) ? text + RECOMMEND_SUFFIX : text);
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
@@ -118,8 +120,10 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-        appServicePlan = new AppServicePlanPanel.AppServicePlanWrapper(txtAppServicePlanName.getText(),
-                (Location) cbLocation.getSelectedItem(), (PricingTier) cbPricing.getSelectedItem());
+        appServicePlan = new AppServicePlanPanel.AppServicePlanWrapper(
+                txtAppServicePlanName.getText(),
+                (Location) cbLocation.getSelectedItem(),
+                (PricingTier) cbPricing.getSelectedItem());
         super.doOKAction();
     }
 
@@ -132,10 +136,20 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
     private void onLoadLocation(String sid) {
         cbLocation.removeAllItems();
         Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(locations -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    locations.stream().forEach(location -> cbLocation.addItem(location));
-                }));
+                  .subscribeOn(Schedulers.newThread())
+                  .subscribe(locations -> DefaultLoader.getIdeHelper().invokeLater(() -> fillLocation(locations)));
+    }
+
+    private void fillLocation(List<Location> locationList) {
+        if (CollectionUtils.isEmpty(locationList)) {
+            return;
+        }
+        locationList.stream().forEach(location -> cbLocation.addItem(location));
+        final Location defaultLocation =
+                locationList.stream()
+                            .filter(location -> StringUtils.equalsAnyIgnoreCase(location.name(), DEFAULT_LOCATION))
+                            .findFirst().orElse(locationList.get(0));
+        cbLocation.setSelectedItem(defaultLocation);
     }
 
     /**
@@ -151,5 +165,11 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
         } catch (IllegalAccessException e) {
             DefaultLoader.getUIHelper().logError("Failed to load pricing tier", e);
         }
+    }
+
+    // We will mark function only pricing tier as recommend
+    private static boolean isRecommendPricingTier(PricingTier pricingTier) {
+        final String tier = pricingTier.toSkuDescription().tier();
+        return pricingTier == CONSUMPTION_PRICING_TIER || StringUtils.equals(SkuName.ELASTIC_PREMIUM.toString(), tier);
     }
 }
