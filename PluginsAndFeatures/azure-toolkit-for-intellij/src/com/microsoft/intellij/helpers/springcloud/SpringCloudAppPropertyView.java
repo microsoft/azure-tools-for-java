@@ -286,9 +286,9 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             disableAllInput();
             DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
                                                          true, String.format("%s...", actionName), () -> {
-                        action.accept(changes);
-                        refreshData();
-                    });
+                    action.accept(changes);
+                    refreshData();
+                });
 
         }
     }
@@ -378,19 +378,16 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private void refreshData() {
         Observable.fromCallable(() -> {
-                                    AppResourceInner app = AzureSpringCloudMvpModel.getAppById(appId);
-                                    if (app == null) {
-                                        return Triple.of(app, (DeploymentResourceInner) null, (String) null);
-                                    }
-                                    DeploymentResourceInner deploy = StringUtils.isNotEmpty(app.properties().activeDeploymentName())
-                                                                     ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
-                                    String testUrl = AzureSpringCloudMvpModel.getTestEndpoint(appId);
-                                    return Triple.of(app, deploy, testUrl);
-                                }
-                               ).subscribeOn(Schedulers.io()).subscribe(tuple -> {
-                                                                            ApplicationManager.getApplication().invokeLater(() -> this.prepareViewModel(tuple.getLeft(), tuple.getMiddle(), tuple.getRight()));
-                                                                        }
-                                                                       );
+            AppResourceInner app = AzureSpringCloudMvpModel.getAppById(appId);
+            if (app == null) {
+                return Triple.of(app, (DeploymentResourceInner) null, (String) null);
+            }
+            DeploymentResourceInner deploy = StringUtils.isNotEmpty(app.properties().activeDeploymentName())
+                                             ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
+            String testUrl = AzureSpringCloudMvpModel.getTestEndpoint(appId);
+            return Triple.of(app, deploy, testUrl);
+        }).subscribeOn(Schedulers.io()).subscribe(tuple -> ApplicationManager.getApplication().invokeLater(
+            () -> this.prepareViewModel(tuple.getLeft(), tuple.getMiddle(), tuple.getRight())));
     }
 
     private Map<String, Object> getModifiedDataMap() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -462,12 +459,12 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
             ApplicationManager.getApplication().invokeLater(() ->
-                                                                    PluginUtil.displayInfoDialog("Update successfully", "Update app configuration successfully"));
+                PluginUtil.displayInfoDialog("Update successfully", "Update app configuration successfully"));
             refreshData();
 
         } catch (Exception e) {
             ApplicationManager.getApplication().invokeLater(() ->
-                                                                    PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
+                 PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
         }
     }
 
@@ -576,7 +573,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                 this.model.setMemoryInGB(settings.memoryInGB());
                 if (deploy.properties().instances() != null) {
                     this.model.setDownInstanceCount((int) deploy.properties().instances().stream().filter(
-                            t -> StringUtils.equalsIgnoreCase(t.discoveryStatus(), "DOWN")).count());
+                        t -> StringUtils.equalsIgnoreCase(t.discoveryStatus(), "DOWN")).count());
                     this.model.setUpInstanceCount(deploy.properties().instances().size() - this.model.getDownInstanceCount());
                     this.model.setInstance(deploymentResourceInner.properties().instances().stream().map(t -> {
                         SpringAppInstanceViewModel instanceViewModel = new SpringAppInstanceViewModel();
@@ -649,7 +646,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             String statusLineText = model.getStatus();
             if (model.getUpInstanceCount().intValue() + model.getDownInstanceCount().intValue() > 0) {
                 statusLineText = String.format("%s - Discovery Status(UP %d, DOWN %d)",
-                                               model.getStatus(), model.getUpInstanceCount(), model.getDownInstanceCount());
+                                               model.getStatus(),
+                                               model.getUpInstanceCount(), model.getDownInstanceCount());
             }
             Border statusLine = BorderFactory.createTitledBorder(statusLineText);
             this.statusPanel.setBorder(statusLine);
