@@ -116,18 +116,20 @@ public class AppServicePlanPanel extends JPanel {
     }
 
     public void loadAppServicePlan(String subscriptionId, OperatingSystem operatingSystem) {
-        this.subscriptionId = subscriptionId;
-        this.operatingSystem = operatingSystem;
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
+        if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
+            this.subscriptionId = subscriptionId;
+            this.operatingSystem = operatingSystem;
+            if (subscription != null && !subscription.isUnsubscribed()) {
+                subscription.unsubscribe();
+            }
+            beforeLoadAppServicePlan();
+            subscription = Observable.fromCallable(() -> {
+                return AzureFunctionMvpModel.getInstance()
+                                            .listAppServicePlanBySubscriptionId(subscriptionId).stream()
+                                            .sorted((first, second) -> StringUtils.compare(first.name(), second.name()))
+                                            .collect(Collectors.toList());
+            }).subscribeOn(Schedulers.newThread()).subscribe(this::fillAppServicePlan);
         }
-        beforeLoadAppServicePlan();
-        subscription = Observable.fromCallable(() -> {
-            return AzureFunctionMvpModel.getInstance()
-                    .listAppServicePlanBySubscriptionId(subscriptionId).stream()
-                    .sorted((first, second) -> StringUtils.compare(first.name(), second.name()))
-                    .collect(Collectors.toList());
-        }).subscribeOn(Schedulers.newThread()).subscribe(this::fillAppServicePlan);
     }
 
     public void addItemListener(ItemListener actionListener) {

@@ -88,11 +88,13 @@ public class ResourceGroupPanel extends JPanel {
     }
 
     public void loadResourceGroup(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-        beforeLoadSubscription();
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(this::fillResourceGroup);
+        if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
+            this.subscriptionId = subscriptionId;
+            beforeLoadSubscription();
+            Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId))
+                      .subscribeOn(Schedulers.newThread())
+                      .subscribe(this::fillResourceGroup);
+        }
     }
 
     public void addItemListener(ItemListener actionListener) {
