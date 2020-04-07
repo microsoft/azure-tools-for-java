@@ -54,7 +54,7 @@ public class EnvironmentVariableTable extends EnvVariablesTable {
     public Map<String, String> getEnv() {
         Map<String, String> result = new LinkedHashMap<>();
         for (EnvironmentVariable variable : this.getEnvironmentVariables()) {
-            if (StringUtil.isEmpty(variable.getName()) && StringUtil.isEmpty(variable.getValue())) {
+            if (StringUtil.isEmpty(variable.getName())) {
                 continue;
             }
             result.put(variable.getName(), variable.getValue());

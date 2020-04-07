@@ -488,7 +488,6 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
         pnlEnvironmentTable = new JPanel();
         pnlEnvironmentTable.setLayout(new GridLayoutManager(1, 1));
         environmentVariableTable = new EnvironmentVariableTable();
