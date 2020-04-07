@@ -27,6 +27,8 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.microsoft.azure.ProxyResource;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
@@ -39,7 +41,6 @@ import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfiguration;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingMvpView;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingPresenter;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -79,9 +80,10 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private JRadioButton radioPublic;
     private JRadioButton radioNonPublic;
     private JLabel lblEnvVar;
-    private EnvironmentVariablesTextFieldWithBrowseButton txtEnvironmentVariables;
+    private JPanel pnlEnvironmentTable;
     private JComboBox cbArtifact;
     private JLabel lblArtifact;
+    private EnvironmentVariableTable environmentVariableTable;
 
     private SpringCloudDeploySettingPresenter presenter = null;
 
@@ -376,9 +378,8 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         this.radioPublic.setSelected(isPublic);
         this.radioNonPublic.setSelected(!isPublic);
         List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-        setupMavenProjectCombo(mavenProjects, this.configuration.getModuleName());
         if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
-            txtEnvironmentVariables.setEnvironmentVariables(configuration.getEnvironment());
+            environmentVariableTable.setEnv(configuration.getEnvironment());
         }
         setupMavenProjectCombo(mavenProjects, this.configuration.getProjectName());
     }
@@ -422,9 +423,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         }
         configuration.setEnablePersistentStorage(this.radioEnablePersistent.isSelected());
         configuration.setPublic(radioPublic.isSelected());
-        configuration.setModuleName(getTargetName());
-        configuration.setArtifactPath(getArtifactPath());
-        configuration.setEnvironment(txtEnvironmentVariables.getEnvironmentVariables());
+        configuration.setEnvironment(environmentVariableTable.getEnv());
         configuration.setProjectName(getProjectName());
     }
 
@@ -486,5 +485,15 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     @Override
     protected JLabel getLblMavenProject() {
         return lblMavenProject;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        pnlEnvironmentTable = new JPanel();
+        pnlEnvironmentTable.setLayout(new GridLayoutManager(1, 1));
+        environmentVariableTable = new EnvironmentVariableTable();
+        pnlEnvironmentTable.add(environmentVariableTable.getComponent(),
+                                new GridConstraints(0, 0, 1, 1, 0, GridConstraints.FILL_BOTH, 7, 7, null, null, null));
+        pnlEnvironmentTable.setFocusable(false);
     }
 }
