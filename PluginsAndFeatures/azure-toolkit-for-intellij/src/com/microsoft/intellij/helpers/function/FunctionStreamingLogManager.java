@@ -26,7 +26,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
@@ -47,7 +46,6 @@ public enum FunctionStreamingLogManager {
     public static final String STREAMING_LOG_NOT_STARTED = "Streaming log is not started.";
 
     private Map<String, FunctionStreamingLogConsoleView> consoleViewMap = new HashMap<>();
-    private Map<Project, ToolWindow> toolWindowMap = new HashMap<>();
 
     public void showStreamingLog(Project project, String subscriptionId, String appName, String appId) {
         DefaultLoader.getIdeHelper().runInBackground(project, "Starting Streaming Log...", false, true, null, () -> {

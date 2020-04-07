@@ -81,6 +81,8 @@ public class TelemetryConstants {
     public static final String STOP_FUNCTION_APP = "stop-function-app";
     public static final String RESTART_FUNCTION_APP = "restart-function-app";
     public static final String SHOWPROP_FUNCTION_APP = "showprop-function-app";
+    public static final String START_STREAMING_LOG_FUNCTION_APP = "start-streaming-log-function-app";
+    public static final String STOP_STREAMING_LOG_FUNCTION_APP = "stop-streaming-log-function-app";
     public static final String OPEN_INBROWSER_FUNCTION_APP = "open-inbrowser-function-app";
 
     public static final String CREATE_SPRING_CLOUD_APP = "create-springcloud-app";

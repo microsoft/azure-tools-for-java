@@ -23,22 +23,20 @@ package com.microsoft.intellij.serviceexplorer.azure.function;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.function.FunctionStreamingLogManager;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_STREAMING_LOG_FUNCTION_APP;
 
 @Name("Start Streaming Logs")
 public class StartFunctionStreamingLogsAction extends NodeActionListener {
 
-    private final Node node;
     private String name;
     private String functionId;
     private String subscriptionId;
@@ -46,7 +44,6 @@ public class StartFunctionStreamingLogsAction extends NodeActionListener {
 
     public StartFunctionStreamingLogsAction(FunctionNode functionNode) {
         super();
-        this.node = functionNode;
         this.subscriptionId = functionNode.getSubscriptionId();
         this.project = (Project) functionNode.getProject();
         this.functionId = functionNode.getFunctionAppId();
@@ -54,13 +51,13 @@ public class StartFunctionStreamingLogsAction extends NodeActionListener {
     }
 
     @Override
-    protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        EventUtil.executeWithLog(WEBAPP, "StartStreamingLog",
+    protected void actionPerformed(NodeActionEvent nodeActionEvent) {
+        EventUtil.executeWithLog(FUNCTION, START_STREAMING_LOG_FUNCTION_APP,
             (operation) -> {
                 FunctionStreamingLogManager.INSTANCE.showStreamingLog(project, subscriptionId, name, functionId);
             },
             (exception) -> {
-                UIUtils.showNotification((Project) node.getProject(), exception.getMessage(), MessageType.ERROR);
+                UIUtils.showNotification(project, exception.getMessage(), MessageType.ERROR);
             });
     }
 }
