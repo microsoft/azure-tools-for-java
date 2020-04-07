@@ -53,11 +53,9 @@ public class StartFunctionStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         EventUtil.executeWithLog(FUNCTION, START_STREAMING_LOG_FUNCTION_APP,
-            (operation) -> {
+            operation -> {
                 FunctionStreamingLogManager.INSTANCE.showStreamingLog(project, subscriptionId, name, functionId);
             },
-            (exception) -> {
-                UIUtils.showNotification(project, exception.getMessage(), MessageType.ERROR);
-            });
+            exception -> UIUtils.showNotification(project, exception.getMessage(), MessageType.ERROR));
     }
 }

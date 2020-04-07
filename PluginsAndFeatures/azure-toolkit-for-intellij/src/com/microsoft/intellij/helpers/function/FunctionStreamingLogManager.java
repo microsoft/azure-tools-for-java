@@ -21,10 +21,6 @@
  */
 package com.microsoft.intellij.helpers.function;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
@@ -32,7 +28,6 @@ import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.intellij.helpers.StreamingLogsToolWindowManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 
 import java.io.IOException;
@@ -43,7 +38,7 @@ import java.util.Map;
 public enum FunctionStreamingLogManager {
     INSTANCE;
 
-    public static final String STREAMING_LOG_NOT_STARTED = "Streaming log is not started.";
+    private static final String STREAMING_LOG_NOT_STARTED = "Streaming log is not started.";
 
     private Map<String, FunctionStreamingLogConsoleView> consoleViewMap = new HashMap<>();
 
@@ -52,7 +47,7 @@ public enum FunctionStreamingLogManager {
             try {
                 if (isLinuxFunction(subscriptionId, appId)) {
                     // Todo: Open portal Application Insight pages for function logging
-                    ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayInfoDialog(
+                    DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayInfoDialog(
                             "Not supported",
                             "Log streaming for Linux Function App is not supported in current version."));
                     return;
@@ -70,26 +65,23 @@ public enum FunctionStreamingLogManager {
                 }
                 consoleViewMap.put(appId, consoleView);
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
-                        project, appId, String.format("%s-%s", appName, appName), consoleView);
+                        project, appId, appName, consoleView);
             } catch (Throwable e) {
-                ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(
+                DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                         "Failed to start streaming log",
                         e.getMessage()));
             }
         });
     }
 
-    public void closeStreamingLog(Project project, String subscriptionId, String appName, String appId) {
-        ProgressManager.getInstance().run(new Task.Backgroundable(null, "Closing Streaming Log...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isEnable()) {
-                    final FunctionStreamingLogConsoleView consoleView = consoleViewMap.get(appId);
-                    consoleView.closeStreamingLog();
-                } else {
-                    ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(
-                            "Failed to close streaming log", STREAMING_LOG_NOT_STARTED));
-                }
+    public void closeStreamingLog(Project project, String appId) {
+        DefaultLoader.getIdeHelper().runInBackground(project, "Closing Streaming Log...", false, true, null, () -> {
+            if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isEnable()) {
+                final FunctionStreamingLogConsoleView consoleView = consoleViewMap.get(appId);
+                consoleView.closeStreamingLog();
+            } else {
+                DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
+                        "Failed to close streaming log", STREAMING_LOG_NOT_STARTED));
             }
         });
     }

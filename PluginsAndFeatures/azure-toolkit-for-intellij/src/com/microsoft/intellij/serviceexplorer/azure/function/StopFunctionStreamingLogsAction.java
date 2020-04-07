@@ -23,7 +23,6 @@ package com.microsoft.intellij.serviceexplorer.azure.function;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.function.FunctionStreamingLogManager;
 import com.microsoft.intellij.ui.util.UIUtils;
@@ -38,27 +37,21 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_STREAMI
 @Name("Stop Streaming Logs")
 public class StopFunctionStreamingLogsAction extends NodeActionListener {
 
-    private String name;
     private String functionId;
-    private String subscriptionId;
     private Project project;
 
     public StopFunctionStreamingLogsAction(FunctionNode functionNode) {
         super();
-        this.subscriptionId = functionNode.getSubscriptionId();
         this.project = (Project) functionNode.getProject();
         this.functionId = functionNode.getFunctionAppId();
-        this.name = functionNode.getFunctionAppName();
     }
 
     @Override
-    protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
+    protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         EventUtil.executeWithLog(FUNCTION, STOP_STREAMING_LOG_FUNCTION_APP,
-            (operation) -> {
-                FunctionStreamingLogManager.INSTANCE.closeStreamingLog(project, subscriptionId, name, functionId);
+            operation -> {
+                FunctionStreamingLogManager.INSTANCE.closeStreamingLog(project, functionId);
             },
-            (exception) -> {
-                UIUtils.showNotification(project, exception.getMessage(), MessageType.ERROR);
-            });
+            exception -> UIUtils.showNotification(project, exception.getMessage(), MessageType.ERROR));
     }
 }
