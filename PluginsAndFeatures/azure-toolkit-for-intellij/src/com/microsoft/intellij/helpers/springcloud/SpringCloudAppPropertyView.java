@@ -171,7 +171,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     monitorStatus(appId, deploymentResourceInner);
                 } catch (IOException | InterruptedException ex) {
                     PluginUtil.showErrorNotificationProject(project,
-                                                            String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
+                            String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
                 }
             });
 
@@ -280,7 +280,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private static void monitorStatus(String appId, DeploymentResourceInner deploymentResourceInner) throws IOException, InterruptedException {
         SpringCloudAppNodePresenter.awaitAndMonitoringStatus(appId,
-                                                             deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
+                deploymentResourceInner == null ? null : deploymentResourceInner.properties().status());
     }
 
     private void wrapperOperations(String operation, String actionName, Project project,
@@ -302,15 +302,14 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         } else {
             promptMessage = changes.isEmpty() ? "" : String.format(OPERATE_APP_PROMPT_MESSAGE, actionName, this.appName);
         }
-        if (promptMessage.isEmpty() || StringUtils.equals(actionName, SAVING_ACTION) || DefaultLoader.getUIHelper()
-                                                                                                     .showConfirmation(this.mainPanel,
-                                                                                                                       promptMessage,
-                                                                                                                       "Azure Explorer",
-                                                                                                                       new String[]{"Yes", "No"},
-                                                                                                                       null)) {
+        if (promptMessage.isEmpty() || StringUtils.equals(actionName, SAVING_ACTION)
+            || DefaultLoader.getUIHelper().showConfirmation(this.mainPanel,
+                promptMessage,
+                "Azure Explorer",
+                new String[]{"Yes", "No"},
+                null)) {
             freezeUI();
-            DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
-                 true, String.format("%s app '%s'", actionName, this.appName),
+            DefaultLoader.getIdeHelper().runInBackground(null, actionName, false, true, String.format("%s app '%s'", actionName, this.appName),
                 () -> {
                     action.accept(changes);
                     refreshData();
