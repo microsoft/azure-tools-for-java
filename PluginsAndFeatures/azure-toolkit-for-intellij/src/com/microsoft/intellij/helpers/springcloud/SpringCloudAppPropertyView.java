@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.helpers.springcloud;
 
+import com.google.common.collect.Maps;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
@@ -38,6 +39,7 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
@@ -65,12 +67,15 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefreshableComponent<AppResourceInner, DeploymentResourceInner> {
+public class SpringCloudAppPropertyView extends BaseEditor
+        implements IDataRefreshableComponent<AppResourceInner, DeploymentResourceInner> {
     private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: '%s'.\n" +
             "Are you sure you want to continue?";
-    private static final String DELETE_APP_DIRTY_PROMPT_MESSAGE = "This operation will discard your changes and delete the Spring Cloud App: '%s'.\n" +
-            "Are you sure you want to continue?";
-    private static final String OPERATE_APP_PROMPT_MESSAGE = "This operation will discard your changes.\nAre you sure you want to continue?";
+    private static final String DELETE_APP_DIRTY_PROMPT_MESSAGE =
+            "This operation will discard your changes and delete the Spring Cloud App: '%s'.\n" +
+                    "Are you sure you want to continue?";
+    private static final String OPERATE_APP_PROMPT_MESSAGE =
+            "This operation will discard your changes.\nAre you sure you want to continue?";
     private static final String NOT_AVAILABLE = " - ";
 
     private static final String ENABLE_PUBLIC_URL_KEY = "enablePublicUrl";
@@ -85,6 +90,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private static final String EMPTY_TEXT = "Empty";
     private static final String DELETING_ACTION = "Deleting";
     private static final String SAVING_ACTION = "Saving";
+    private static final Border NULL_BORDER = new LineBorder(Color.BLACK);
 
     private JButton triggerPublicButton;
     private JComboBox javaVersionCombo;
@@ -113,7 +119,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private JLabel clusterLabel;
     private JLabel appNameLabel;
     private JLabel persistentLabel;
-    // private EnvironmentVariablesTextFieldWithBrowseButton envTable;
+    private EnvironmentVariablesTextFieldWithBrowseButton envTable;
     private HideableDecorator instancePanelDecorator;
 
     private SpringAppViewModel viewModel;
@@ -229,14 +235,14 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             syncSaveStatus();
         });
 
-        // this.envTable.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
-        //    @Override
-        //    protected void textChanged(@NotNull DocumentEvent documentEvent) {
-        //        syncSaveStatus();
-        //    }
-        // });
-        // this.envTable.getTextField().setEditable(false);
-        instancePanelDecorator = new HideableDecorator(instanceDetailHolder, "Instances", true);
+        this.envTable.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent documentEvent) {
+                syncSaveStatus();
+            }
+        });
+        this.envTable.getTextField().setEditable(false);
+        instancePanelDecorator = new HideableDecorator(instanceDetailHolder, "Instances", false);
         instancePanelDecorator.setContentComponent(instanceDetailPanel);
         instancePanelDecorator.setOn(true);
 
@@ -248,6 +254,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         disableAllInput();
         this.cpuCombo.setEditable(false);
         this.memCombo.setEditable(false);
+        this.javaVersionCombo.setEditable(false);
     }
 
     @NotNull
@@ -326,7 +333,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.restartButton.setEnabled(false);
         this.deleteButton.setEnabled(false);
         this.refreshButton.setEnabled(false);
-        // this.envTable.setEditable(false);
+        this.envTable.setEditable(false);
     }
 
     private void restoreAllInput() {
@@ -336,7 +343,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.memCombo.setEnabled(true);
         this.javaVersionCombo.setEnabled(true);
         this.jvmOpsTextField.setEnabled(true);
-        // this.envTable.setEditable(true);
+        this.envTable.setEditable(true);
     }
 
     private void syncSaveStatus() {
@@ -351,7 +358,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             updateBorder(this.memCombo, map.containsKey(MEMORY_IN_GB_KEY));
             updateBorder(this.jvmOpsTextField, map.containsKey(JVM_OPTIONS_KEY));
             updateBorder(this.javaVersionCombo, map.containsKey(JAVA_VERSION_KEY));
-            // updateBorder(this.envTable, map.containsKey(ENV_TABLE_KEY));
+            updateBorder(this.envTable.getChildComponent(), map.containsKey(ENV_TABLE_KEY));
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             PluginUtil.showErrorNotificationProject(project, "Cannot get property through reflection", e.getMessage());
         }
@@ -366,14 +373,18 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     }
 
     private void removeHighLight(final JComponent component) {
-        Border border = borderMap.remove(component);
-        if (border != null) {
+        final Border border = borderMap.remove(component);
+        if (border == null) {
+            return;
+        } else if (border == NULL_BORDER) {
+            component.setBorder(null);
+        } else {
             component.setBorder(border);
         }
     }
 
     private void addHighLight(final JComponent component) {
-        borderMap.putIfAbsent(component, component.getBorder());
+        borderMap.putIfAbsent(component, component.getBorder() == null ? NULL_BORDER : component.getBorder());
         component.setBorder(new LineBorder(Color.MAGENTA, 1));
     }
 
@@ -414,7 +425,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             String testUrl = AzureSpringCloudMvpModel.getTestEndpoint(appId);
             return Triple.of(app, deploy, testUrl);
         }).subscribeOn(Schedulers.io()).subscribe(tuple -> ApplicationManager.getApplication().invokeLater(
-            () -> this.prepareViewModel(tuple.getLeft(), tuple.getMiddle(), tuple.getRight())));
+                () -> this.prepareViewModel(tuple.getLeft(), tuple.getMiddle(), tuple.getRight())));
     }
 
     private Map<String, Object> getModifiedDataMap() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -438,11 +449,11 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             map.put(ENABLE_PERSISTENT_STORAGE_KEY, currentEnablePersist);
         }
 
-        // Map<String, String> oldEnvironment = viewModel.getEnvironment();
-        // Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
-        // if (!Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
-        //     map.put(ENV_TABLE_KEY, newEnvironment);
-        // }
+        Map<String, String> oldEnvironment = viewModel.getEnvironment();
+        Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
+        if (!Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
+            map.put(ENV_TABLE_KEY, newEnvironment);
+        }
         return map;
     }
 
@@ -555,7 +566,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private void renderPersistent(SpringAppViewModel model) {
         Font font = persistentLabel.getFont();
         persistentLabel.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
-        this.persistentLabel.setText(String.format("%s (%dG of %dG used)",
+         this.persistentLabel.setText(String.format("%s (%dG of %dG used)",
                                                    model.getPersistentMountPath(), model.getUsedStorageInGB(), model.getTotalStorageInGB()));
     }
 
@@ -610,7 +621,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                 targetViewModel.setMemoryInGB(settings.memoryInGB());
                 if (deploy.properties().instances() != null) {
                     targetViewModel.setDownInstanceCount((int) deploy.properties().instances().stream().filter(
-                        t -> StringUtils.equalsIgnoreCase(t.discoveryStatus(), "DOWN")).count());
+                            t -> StringUtils.equalsIgnoreCase(t.discoveryStatus(), "DOWN")).count());
                     targetViewModel.setUpInstanceCount(deploy.properties().instances().size() - targetViewModel.getDownInstanceCount());
                     targetViewModel.setInstance(deploymentResourceInner.properties().instances().stream().map(t -> {
                         SpringAppInstanceViewModel instanceViewModel = new SpringAppInstanceViewModel();
@@ -704,12 +715,12 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             if (newModel.getInstance() != null) {
                 for (final SpringAppInstanceViewModel deploymentInstance : newModel.getInstance()) {
                     instancesTableModel.addRow(new String[]{
-                            deploymentInstance.getName(), deploymentInstance.getStatus(), deploymentInstance.getDiscoveryStatus()});
+                        deploymentInstance.getName(), deploymentInstance.getStatus(), deploymentInstance.getDiscoveryStatus()});
                 }
             }
             instanceTable.setModel(instancesTableModel);
             instanceTable.updateUI();
-            // envTable.setEnvironmentVariables(newModel.getEnvironment() == null ? new HashMap<>() : new HashMap<>(newModel.getEnvironment()));
+            envTable.setEnvironmentVariables(newModel.getEnvironment() == null ? new HashMap<>() : new HashMap<>(newModel.getEnvironment()));
             this.viewModel = newModel;
             restoreAllInput();
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
