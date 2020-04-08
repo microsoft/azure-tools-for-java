@@ -60,7 +60,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -123,7 +122,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private String appId;
     private String appName;
     private DefaultTableModel instancesTableModel;
-    private Map<Object, Border> borderMap = new ConcurrentHashMap<>();
+    private final Map<Object, Border> borderMap = new HashMap<>();
 
     public SpringCloudAppPropertyView(Project project, String appId) {
         this.project = project;
@@ -366,14 +365,18 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     }
 
     private void removeHighLight(final JComponent component) {
-        Border border = borderMap.remove(component);
-        if (border != null) {
-            component.setBorder(border);
+        synchronized (borderMap) {
+            Border border = borderMap.remove(component);
+            if (border != null) {
+                component.setBorder(border);
+            }
         }
     }
 
     private void addHighLight(final JComponent component) {
-        borderMap.putIfAbsent(component, component.getBorder());
+        synchronized (borderMap) {
+            borderMap.putIfAbsent(component, component.getBorder());
+        }
         component.setBorder(new LineBorder(Color.MAGENTA, 1));
     }
 
