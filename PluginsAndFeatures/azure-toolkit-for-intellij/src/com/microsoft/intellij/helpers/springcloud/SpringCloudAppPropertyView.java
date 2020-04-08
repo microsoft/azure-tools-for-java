@@ -122,7 +122,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private String appId;
     private String appName;
     private DefaultTableModel instancesTableModel;
-    private final Map<Object, Border> borderMap = new HashMap<>();
+    private final Map<JComponent, Border> borderMap = new HashMap<>();
 
     public SpringCloudAppPropertyView(Project project, String appId) {
         this.project = project;
@@ -244,7 +244,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
         Arrays.asList("Java_8", "Java_11").forEach(javaVersionCombo::addItem);
 
-        disableAllInput();
+        freezeUI();
         this.cpuCombo.setEditable(false);
         this.memCombo.setEditable(false);
     }
@@ -301,7 +301,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                                "Azure Explorer",
                                new String[]{"Yes", "No"},
                                null)) {
-            disableAllInput();
+            freezeUI();
             DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
                                                          true, String.format("%s app '%s'", actionName, this.appName),
                 () -> {
@@ -312,7 +312,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         }
     }
 
-    private void disableAllInput() {
+    private void freezeUI() {
         this.triggerPersistentButton.setEnabled(false);
         this.triggerPublicButton.setEnabled(false);
         this.javaVersionCombo.setEnabled(false);
@@ -326,9 +326,17 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.deleteButton.setEnabled(false);
         this.refreshButton.setEnabled(false);
         // this.envTable.setEditable(false);
+
+        // clear highlight mark
+        synchronized (borderMap) {
+            for (Map.Entry<JComponent, Border> entry : borderMap.entrySet()) {
+                entry.getKey().setBorder(entry.getValue());
+            }
+            borderMap.clear();
+        }
     }
 
-    private void restoreAllInput() {
+    private void restoreUI() {
         this.triggerPersistentButton.setEnabled(true);
         this.triggerPublicButton.setEnabled(true);
         this.cpuCombo.setEnabled(true);
@@ -366,8 +374,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private void removeHighLight(final JComponent component) {
         synchronized (borderMap) {
-            Border border = borderMap.remove(component);
-            if (border != null) {
+            if (borderMap.containsKey(component)) {
+                Border border = borderMap.remove(component);
                 component.setBorder(border);
             }
         }
@@ -375,9 +383,11 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private void addHighLight(final JComponent component) {
         synchronized (borderMap) {
-            borderMap.putIfAbsent(component, component.getBorder());
+            if (!borderMap.containsKey(component)) {
+                borderMap.put(component, component.getBorder());
+                component.setBorder(new LineBorder(Color.MAGENTA, 1));
+            }
         }
-        component.setBorder(new LineBorder(Color.MAGENTA, 1));
     }
 
     private void triggerPersistentStorage() {
@@ -714,7 +724,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             instanceTable.updateUI();
             // envTable.setEnvironmentVariables(newModel.getEnvironment() == null ? new HashMap<>() : new HashMap<>(newModel.getEnvironment()));
             this.viewModel = newModel;
-            restoreAllInput();
+            restoreUI();
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new AzureExecutionException("Cannot get property through reflection", e);
         } catch (Exception ex) {
