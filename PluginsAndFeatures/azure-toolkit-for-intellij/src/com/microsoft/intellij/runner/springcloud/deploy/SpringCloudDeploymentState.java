@@ -99,27 +99,27 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
                                                             finalJarName));
         }
         // get or create spring cloud app
-        processHandler.setText("Creating/Updating spring cloud app...");
+        setText(processHandler, "Creating/Updating spring cloud app...");
         final AppResourceInner appResourceInner = SpringCloudUtils.createOrUpdateSpringCloudApp(springCloudDeployConfiguration);
         DefaultAzureResourceTracker.getInstance().handleDataChanges(appResourceInner.id(), appResourceInner, null);
         DefaultAzureResourceTracker.getInstance().handleDataChanges(springCloudDeployConfiguration.getClusterId(), appResourceInner
                 , null);
-        processHandler.setText("Create/Update spring cloud app succeed.");
+        setText(processHandler, "Create/Update spring cloud app succeed.");
         // upload artifact to correspond storage
-        processHandler.setText("Uploading artifact to storage...");
+        setText(processHandler, "Uploading artifact to storage...");
         final UserSourceInfo userSourceInfo = SpringCloudUtils.deployArtifact(springCloudDeployConfiguration, finalJarName);
-        processHandler.setText("Upload artifact succeed.");
+        setText(processHandler, "Upload artifact succeed.");
         // get or create active deployment
-        processHandler.setText("Creating/Updating deployment...");
+        setText(processHandler, "Creating/Updating deployment...");
         final DeploymentResourceInner deploymentResourceInner = SpringCloudUtils.createOrUpdateDeployment(
                 springCloudDeployConfiguration,
                 userSourceInfo);
-        processHandler.setText("Create/Update deployment succeed.");
+        setText(processHandler, "Create/Update deployment succeed.");
         DefaultAzureResourceTracker.getInstance().handleDataChanges(appResourceInner.id(), appResourceInner, deploymentResourceInner);
         DefaultAzureResourceTracker.getInstance().handleDataChanges(springCloudDeployConfiguration.getClusterId(), appResourceInner
                 , deploymentResourceInner);
         // update spring cloud properties (enable public access)
-        processHandler.setText("Activating deployment...");
+        setText(processHandler, "Activating deployment...");
         AppResourceInner newApps = SpringCloudUtils.activeDeployment(appResourceInner,
                                                                      deploymentResourceInner,
                                                                      springCloudDeployConfiguration);
@@ -135,7 +135,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         if (newApps.properties().publicProperty()) {
             getUrl(newApps.id(), processHandler);
         }
-        processHandler.setText("Deployment done.");
+        setText(processHandler, "Deployment done.");
         return newApps;
     }
 
@@ -147,7 +147,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     @Override
     protected void onSuccess(AppResourceInner result, @NotNull RunProcessHandler processHandler) {
-        processHandler.setText("Deploy succeed");
+        setText(processHandler, "Deploy succeed");
         processHandler.notifyComplete();
     }
 
@@ -171,9 +171,9 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         try {
             String url = getResourceWithTimeout(() -> AzureSpringCloudMvpModel.getAppById(appId).properties().url(),
                                                 StringUtils::isNotEmpty, GET_URL_TIMEOUT, TimeUnit.SECONDS);
-            processHandler.setText("URL: " + url);
+            setText(processHandler, "URL: " + url);
         } catch (Exception e) {
-            processHandler.setText("Failed to get the public url, you may get the data in portal later.");
+            setText(processHandler, "Failed to get the public url, you may get the data in portal later.");
         }
     }
 
@@ -182,11 +182,11 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             DeploymentResourceInner deploymentResourceInner =
                     getResourceWithTimeout(() -> AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId),
                                            this::isDeploymentDone, GET_STATUS_TIMEOUT, TimeUnit.SECONDS);
-            processHandler.setText(
+            setText(processHandler, 
                     "Deployment done with status " + deploymentResourceInner.properties().status().toString());
             return deploymentResourceInner;
         } catch (Exception e) {
-            processHandler.setText("Failed to get the deployment status, you may get the status in portal later.");
+            setText(processHandler, "Failed to get the deployment status, you may get the status in portal later.");
             return null;
         }
     }
