@@ -137,7 +137,7 @@
   <xi:include href="/META-INF/platformPlugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="193.*" until-build="201.*"/>
+  <idea-version since-build="201" until-build="201.*"/>
 
   <depends>com.intellij.modules.rider</depends>
   <depends>com.intellij.database</depends>

@@ -65,7 +65,7 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunction
                         it.kind == RunnableProjectKind.LaunchSettings && LaunchSettingsJsonService.getLaunchSettingsFileForProject(it)?.exists() == true
                     }) {
                 val defaultSettings = runManager.createConfiguration("Default", factory)
-                runManager.addConfiguration(defaultSettings, false)
+                runManager.addConfiguration(defaultSettings)
                 resolvedPromise(listOf(defaultSettings))
             } else {
                 null
