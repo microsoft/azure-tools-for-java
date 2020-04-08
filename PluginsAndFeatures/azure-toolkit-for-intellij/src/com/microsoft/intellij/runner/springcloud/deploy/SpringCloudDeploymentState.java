@@ -182,7 +182,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             DeploymentResourceInner deploymentResourceInner =
                     getResourceWithTimeout(() -> AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId),
                                            this::isDeploymentDone, GET_STATUS_TIMEOUT, TimeUnit.SECONDS);
-            setText(processHandler, 
+            setText(processHandler,
                     "Deployment done with status " + deploymentResourceInner.properties().status().toString());
             return deploymentResourceInner;
         } catch (Exception e) {
