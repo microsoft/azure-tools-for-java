@@ -30,20 +30,24 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
+import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_STORAGE_IN_PORTAL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
-public class StorageNode extends Node implements TelemetryProperties {
+public class StorageNode extends RefreshableNode implements TelemetryProperties {
     private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount.svg";
 
     private final StorageAccount storageAccount;
@@ -135,6 +139,15 @@ public class StorageNode extends Node implements TelemetryProperties {
         @Override
         protected String getOperationName(NodeActionEvent event) {
             return DELETE_STORAGE_ACCOUNT;
+        }
+    }
+
+    @Override
+    protected void refreshItems() throws AzureCmdException {
+        List<BlobContainer> containerList = StorageClientSDKManager.getManager()
+                .getBlobContainers(StorageClientSDKManager.getConnectionString(storageAccount));
+        for (BlobContainer blobContainer : containerList) {
+            addChildNode(new ContainerNode(this, storageAccount, blobContainer));
         }
     }
 
