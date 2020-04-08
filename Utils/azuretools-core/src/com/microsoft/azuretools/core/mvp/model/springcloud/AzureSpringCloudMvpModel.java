@@ -27,6 +27,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.AppResourc
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResource;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceProperties;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceResource;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.TestKeys;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
@@ -37,9 +38,11 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.file.CloudFile;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpException;
+import rx.Completable;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,10 +56,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import rx.Completable;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getAppName;
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getClusterName;
@@ -233,6 +232,13 @@ public class AzureSpringCloudMvpModel {
         }
         throw new HttpException(
                 String.format("Failed to get log stream due to http error, unexpectedly status code: " + connection.getResponseCode()));
+    }
+
+    public static ServiceResource getClusterById(String subscriptionId, String clusterId) throws IOException {
+        final String clusterName = SpringCloudIdHelper.getClusterName(clusterId);
+        final String resourceGroup = SpringCloudIdHelper.getResourceGroup(clusterId);
+        final AppPlatformManager manager = getSpringManager(subscriptionId);
+        return manager.services().getByResourceGroupAsync(resourceGroup, clusterName).toBlocking().firstOrDefault(null);
     }
 
     private static AppPlatformManager getSpringManager(String sid) throws IOException {
