@@ -30,12 +30,14 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.forms.springcloud.SpringCloudAppStreamingLogDialog;
 import com.microsoft.intellij.helpers.springcloud.SpringCloudStreamingLogManager;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
@@ -43,6 +45,14 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD
 
 @Name("Streaming Logs")
 public class SpringCloudStreamingLogsAction extends NodeActionListener {
+
+    private static final String FAILED_TO_START_LOG_STREAMING = "Failed to start log streaming";
+
+    private static final String NO_ACTIVE_DEPLOYMENT = "No active deployment in current app.";
+    private static final String NO_AVAILABLE_INSTANCES = "No available instances in current app.";
+    private static final String FAILED_TO_LIST_INSTANCES = "Failed to list spring cloud app instances.";
+    private static final String FAILED_TO_LIST_INSTANCES_WITH_MESSAGE =
+            "Failed to list spring cloud app instances: %s";
 
     private Project project;
     private String appId;
@@ -60,17 +70,23 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
                 try {
                     final DeploymentResourceInner deploymentResourceInner =
                             AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId);
+                    if (deploymentResourceInner == null) {
+                        DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayWarningDialog(
+                                FAILED_TO_START_LOG_STREAMING, NO_ACTIVE_DEPLOYMENT));
+                        return;
+                    }
                     final List<DeploymentInstance> instances = deploymentResourceInner.properties().instances();
                     if (CollectionUtils.isEmpty(instances)) {
-                        DefaultLoader.getUIHelper().showError("No available instances",
-                                                              "Failed to start log streaming");
+                        DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayWarningDialog(
+                                FAILED_TO_START_LOG_STREAMING, NO_AVAILABLE_INSTANCES));
+                        return;
                     } else {
                         showLogStreamingDialog(instances);
                     }
                 } catch (Exception e) {
-                    DefaultLoader.getUIHelper()
-                                 .showError("Failed to list spring cloud app instances: " + e.getMessage(),
-                                            "Failed to start log streaming");
+                    final String errorMessage = StringUtils.isEmpty(e.getMessage()) ? FAILED_TO_LIST_INSTANCES :
+                                                String.format(FAILED_TO_LIST_INSTANCES_WITH_MESSAGE, e.getMessage());
+                    DefaultLoader.getUIHelper().showError(errorMessage, FAILED_TO_START_LOG_STREAMING);
                 }
             });
         });
