@@ -154,7 +154,11 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     @Override
     protected void onFail(Throwable throwable, @NotNull RunProcessHandler processHandler) {
         DefaultLoader.getUIHelper().showException(throwable.getMessage(), throwable, "Deployed failed", false, true);
-        processHandler.println(throwable.getMessage(), ProcessOutputTypes.STDERR);
+        try {
+            processHandler.println(throwable.getMessage(), ProcessOutputTypes.STDERR);
+        } catch (Exception ex) {
+            // should not propagate error infinitely
+        }
         processHandler.notifyComplete();
     }
 
