@@ -44,17 +44,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
     private static final String NEED_SPECIFY_PROJECT = "Please select a maven project";
     private static final String NEED_SPECIFY_SUBSCRIPTION = "Please select your subscription.";
-    private static final String NEED_SPECIFY_CLUSTER = "Please select target cluster.";
-    private static final String NEED_SPECIFY_APP_NAME = "Please select target app.";
+    private static final String NEED_SPECIFY_CLUSTER = "Please select a target cluster.";
+    private static final String NEED_SPECIFY_APP_NAME = "Please select a target app.";
     private static final String SERVICE_IS_NOT_READY = "Service is not ready for deploy, current status is ";
     private static final String TARGET_CLUSTER_DOES_NOT_EXISTS = "Target cluster does not exists.";
-    private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster is not available in current subscription";
+    private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
+
+    private final Map<String, ServiceResource> serviceResourceMap = new HashMap<>();
+
     private final SpringCloudModel springCloudModel;
 
     public SpringCloudDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -215,25 +219,27 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         if (StringUtils.isEmpty(getClusterId())) {
             throw new ConfigurationException(NEED_SPECIFY_CLUSTER);
         }
-        try {
-            final ServiceResource serviceResource =
-                    AzureSpringCloudMvpModel.getClusterById(getSubscriptionId(), getClusterId());
-            if (serviceResource == null) {
-                throw new ConfigurationException(TARGET_CLUSTER_DOES_NOT_EXISTS);
+        final ServiceResource serviceResource = serviceResourceMap.computeIfAbsent(getClusterId(), id -> {
+            try {
+                return AzureSpringCloudMvpModel.getClusterById(getSubscriptionId(), getClusterId());
+            } catch (IOException e) {
+                return null;
             }
-            // SDK will return null inner service object if cluster exists in other subscription
-            if (serviceResource.inner() == null){
-                throw new ConfigurationException(TARGET_CLUSTER_IS_NOT_AVAILABLE);
-            }
-            final ProvisioningState provisioningState = serviceResource.properties().provisioningState();
-            if (provisioningState != ProvisioningState.SUCCEEDED) {
-                throw new ConfigurationException(SERVICE_IS_NOT_READY + provisioningState.toString());
-            }
-        } catch (IOException e) {
-            // swallow exception while getting service status
+        });
+        if (serviceResource == null) {
+            throw new ConfigurationException(TARGET_CLUSTER_DOES_NOT_EXISTS);
+        }
+        // SDK will return null inner service object if cluster exists in other subscription
+        if (serviceResource.inner() == null) {
+            throw new ConfigurationException(TARGET_CLUSTER_IS_NOT_AVAILABLE);
+        }
+        final ProvisioningState provisioningState = serviceResource.properties().provisioningState();
+        if (provisioningState != ProvisioningState.SUCCEEDED) {
+            throw new ConfigurationException(SERVICE_IS_NOT_READY + provisioningState.toString());
         }
         if (StringUtils.isEmpty(getAppName())) {
             throw new ConfigurationException(NEED_SPECIFY_APP_NAME);
         }
     }
+
 }
