@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.helpers.springcloud;
 
+import com.google.common.collect.Maps;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
@@ -38,6 +39,7 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.intellij.helpers.base.BaseEditor;
+import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
@@ -59,7 +61,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -112,7 +117,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private JLabel clusterLabel;
     private JLabel appNameLabel;
     private JLabel persistentLabel;
-    // private EnvironmentVariablesTextFieldWithBrowseButton envTable;
+    private EnvironmentVariablesTextFieldWithBrowseButton envTable;
     private HideableDecorator instancePanelDecorator;
 
     private SpringAppViewModel viewModel;
@@ -228,13 +233,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             syncSaveStatus();
         });
 
-        // this.envTable.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
-        //    @Override
-        //    protected void textChanged(@NotNull DocumentEvent documentEvent) {
-        //        syncSaveStatus();
-        //    }
-        // });
-        // this.envTable.getTextField().setEditable(false);
+        this.envTable.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent documentEvent) {
+                syncSaveStatus();
+            }
+        });
+        this.envTable.getTextField().setEditable(false);
         instancePanelDecorator = new HideableDecorator(instanceDetailHolder, "Instances", true);
         instancePanelDecorator.setContentComponent(instanceDetailPanel);
         instancePanelDecorator.setOn(true);
@@ -326,7 +331,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.restartButton.setEnabled(false);
         this.deleteButton.setEnabled(false);
         this.refreshButton.setEnabled(false);
-        // this.envTable.setEditable(false);
+        this.envTable.setEditable(false);
 
         // clear highlight mark
         synchronized (borderMap) {
@@ -344,7 +349,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.memCombo.setEnabled(true);
         this.javaVersionCombo.setEnabled(true);
         this.jvmOpsTextField.setEnabled(true);
-        // this.envTable.setEditable(true);
+        this.envTable.setEditable(true);
     }
 
     private void syncSaveStatus() {
@@ -359,7 +364,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             updateBorder(this.memCombo, map.containsKey(MEMORY_IN_GB_KEY));
             updateBorder(this.jvmOpsTextField, map.containsKey(JVM_OPTIONS_KEY));
             updateBorder(this.javaVersionCombo, map.containsKey(JAVA_VERSION_KEY));
-            // updateBorder(this.envTable, map.containsKey(ENV_TABLE_KEY));
+            updateBorder(this.envTable.getTextField(), map.containsKey(ENV_TABLE_KEY));
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             PluginUtil.showErrorNotificationProject(project, "Cannot get property through reflection", e.getMessage());
         }
@@ -452,11 +457,11 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             map.put(ENABLE_PERSISTENT_STORAGE_KEY, currentEnablePersist);
         }
 
-        // Map<String, String> oldEnvironment = viewModel.getEnvironment();
-        // Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
-        // if (!Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
-        //     map.put(ENV_TABLE_KEY, newEnvironment);
-        // }
+         Map<String, String> oldEnvironment = viewModel.getEnvironment();
+         Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
+         if (!Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
+             map.put(ENV_TABLE_KEY, newEnvironment);
+         }
         return map;
     }
 
@@ -723,7 +728,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             }
             instanceTable.setModel(instancesTableModel);
             instanceTable.updateUI();
-            // envTable.setEnvironmentVariables(newModel.getEnvironment() == null ? new HashMap<>() : new HashMap<>(newModel.getEnvironment()));
+            envTable.setEnvironmentVariables(
+                    newModel.getEnvironment() == null ? new HashMap<>() : new HashMap<>(newModel.getEnvironment()));
             this.viewModel = newModel;
             restoreUI();
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
