@@ -56,7 +56,7 @@ public enum FunctionStreamingLogManager {
                 if (consoleView == null) {
                     consoleView = new FunctionStreamingLogConsoleView(project, appId);
                 }
-                if (!consoleView.isEnable()) {
+                if (!consoleView.isActive()) {
                     FunctionApp functionApp = AzureFunctionMvpModel.getInstance()
                                                                    .getFunctionById(subscriptionId, appId);
                     // Todo: Check Whether file logging is enabled and prompt user to enable it
@@ -76,7 +76,7 @@ public enum FunctionStreamingLogManager {
 
     public void closeStreamingLog(Project project, String appId) {
         DefaultLoader.getIdeHelper().runInBackground(project, "Closing Streaming Log...", false, true, null, () -> {
-            if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isEnable()) {
+            if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 final FunctionStreamingLogConsoleView consoleView = consoleViewMap.get(appId);
                 consoleView.closeStreamingLog();
             } else {

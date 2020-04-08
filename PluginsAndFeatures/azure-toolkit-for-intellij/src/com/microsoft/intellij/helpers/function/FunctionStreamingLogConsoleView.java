@@ -47,7 +47,7 @@ public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
     }
 
     public void startStreamingLog(Observable<String> logStreaming) {
-        if (!isEnable()) {
+        if (!isActive()) {
             printlnToConsole(START_LOG_STREAMING, SYSTEM_OUTPUT);
             subscription = logStreaming.subscribeOn(Schedulers.io())
                     .doAfterTerminate(() -> printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT))
@@ -56,13 +56,13 @@ public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
     }
 
     public void closeStreamingLog() {
-        if (isEnable()) {
+        if (isActive()) {
             subscription.unsubscribe();
             printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT);
         }
     }
 
-    public boolean isEnable() {
+    public boolean isActive() {
         return subscription != null && !subscription.isUnsubscribed();
     }
 
