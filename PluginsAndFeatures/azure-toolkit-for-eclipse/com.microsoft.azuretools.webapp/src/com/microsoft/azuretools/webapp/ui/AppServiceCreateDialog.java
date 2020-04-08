@@ -33,7 +33,6 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -57,7 +56,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.azuretools.utils.WebAppUtils.WebContainerMod;
 import com.microsoft.azuretools.webapp.Activator;
 import com.microsoft.azuretools.webapp.util.CommonUtils;
-import java.io.InputStream;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -74,6 +73,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -90,6 +90,9 @@ import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -115,13 +118,12 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+
 import rx.Observable;
 import rx.exceptions.Exceptions;
 import rx.schedulers.Schedulers;
 
 public class AppServiceCreateDialog extends AppServiceBaseDialog {
-
-    private static final String WEB_CONFIG_PACKAGE_PATH = "/webapp/web.config";
 
     // validation error string constants
     private static final String SELECT_WEB_CONTAINER = "Select a valid web container.";
@@ -609,6 +611,17 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         cbJavaVersion = new Combo(compositeRuntime, SWT.READ_ONLY);
         cbJavaVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         cbJavaVersion.setEnabled(false);
+        cbJavaVersion.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetDefaultSelected(SelectionEvent arg0) {
+                fillWebContainers();
+            }
+
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                fillWebContainers();
+            }
+        });
         dec_cbJavaVersion = decorateContorolAndRegister(cbJavaVersion);
 
         lblWebContainer = new Label(compositeRuntime, SWT.NONE);
@@ -643,6 +656,19 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         tblAppSettings.setHeaderVisible(true);
         tblAppSettings.setLinesVisible(true);
         tblAppSettings.addListener(SWT.MouseDoubleClick, event -> onTblAppSettingMouseDoubleClick(event));
+        tblAppSettings.addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                // Edit items when user press enter
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    TableItem[] selection = tblAppSettings.getSelection();
+                    if (selection.length > 0) {
+                        editingTableItem(selection[0], 0);
+                        e.doit = false;
+                    }
+                }
+            }
+        });
 
         appSettingsEditor = new TableEditor(tblAppSettings);
         appSettingsEditor.horizontalAlignment = SWT.LEFT;
@@ -727,6 +753,17 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                             e.doit = false;
                             readTblAppSettings();
                             updateTableActionBtnStatus(true);
+                            break;
+                        case SWT.TRAVERSE_TAB_NEXT:
+                            if (column < tblAppSettings.getColumnCount()) {
+                                editingTableItem(item, column + 1);
+                            }
+                            break;
+                        case SWT.TRAVERSE_TAB_PREVIOUS:
+                            if (column > 0) {
+                                editingTableItem(item, column - 1);
+                            }
+                            break;
                         default:
                     }
                     break;
@@ -805,10 +842,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             lblJavaVersion.setEnabled(!enabled);
             lblWebContainer.setEnabled(!enabled);
             comboWebContainer.setEnabled(!enabled);
-            if (packaging.equals(WebAppUtils.TYPE_JAR)) {
-                lblWebContainer.setEnabled(false);
-                comboWebContainer.setEnabled(false);
-            }
         }
         fillAppServicePlans();
     }
@@ -848,24 +881,21 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         } catch (Exception e) {
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "fillWebContainers@AppServiceCreateDialog", e));
         }
-        if (packaging.equals(WebAppUtils.TYPE_JAR)) {
-            lblWebContainer.setVisible(false);
-            comboWebContainer.setVisible(false);
-        } else {
-            comboWebContainer.removeAll();
-            binderWebConteiners = new ArrayList<>();
-            WebContainerMod[] webContainers = WebContainerMod.values();
-            for (int i = 0; i < webContainers.length; i++) {
-                WebContainerMod webContainerMod = webContainers[i];
-                comboWebContainer.add(webContainerMod.toString());
-                binderWebConteiners.add(webContainerMod);
-                if (webContainerMod == DEFAULT_WEB_CONTAINER) {
-                    comboWebContainer.select(i);
-                }
+        final boolean isJarPacking = packaging.equals(WebAppUtils.TYPE_JAR);
+        final JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
+        final List<WebContainerMod> webContainers = isJarPacking ? AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel) : AzureWebAppMvpModel.listWebContainersForWarFile();
+        comboWebContainer.removeAll();
+        binderWebConteiners = new ArrayList<>();
+        for (int i = 0; i < webContainers.size(); i++) {
+            WebContainerMod webContainerMod = webContainers.get(i);
+            comboWebContainer.add(webContainerMod.toString());
+            binderWebConteiners.add(webContainerMod);
+            if (i == 0 || webContainerMod == DEFAULT_WEB_CONTAINER) {
+                comboWebContainer.select(i);
             }
-            String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
-            CommonUtils.selectComboIndex(comboWebContainer, webContainer);
         }
+        String webContainer = CommonUtils.getPreference(CommonUtils.RUNTIME_WEBCONTAINER);
+        CommonUtils.selectComboIndex(comboWebContainer, webContainer);
     }
 
     protected static <T> List<T> createListFromClassFields(Class<?> c) throws IllegalAccessException {
@@ -1181,15 +1211,6 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
                         if (!appSettings.isEmpty()) {
                             webApp.update().withAppSettings(appSettings).apply();
                         }
-                        if (webApp != null && packaging.equals(WebAppUtils.TYPE_JAR) && chooseWin) {
-                            webApp.stop();
-                            try (InputStream webConfigInput = WebAppUtils.class
-                                .getResourceAsStream(WEB_CONFIG_PACKAGE_PATH)) {
-                                WebAppUtils.uploadWebConfig(webApp, webConfigInput,
-                                    new UpdateProgressIndicator(monitor));
-                            }
-                            webApp.start();
-                        }
                         monitor.setTaskName(UPDATING_AZURE_LOCAL_CACHE);
                         AzureModelController.updateResourceGroupMaps(new UpdateProgressIndicator(monitor));
                         initAspCache();
@@ -1336,15 +1357,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
             index = cbJavaVersion.getSelectionIndex();
             model.setJdkVersion(index < 0 ? null : javaVersions.get(index).getJavaVersion());
 
-            // Windows does not provider java se parameter, and the api here needs a parameter, so here just use
-            // TOMCAT_8.5_NEWEST.
-            // The App services itself start a jar file based on the web.config
-            if (packaging.equals(WebAppUtils.TYPE_JAR)) {
-                model.setWebContainer(WebContainer.TOMCAT_8_5_NEWEST.toString());
-            } else {
-                index = comboWebContainer.getSelectionIndex();
-                model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
-            }
+            index = comboWebContainer.getSelectionIndex();
+            model.setWebContainer(index < 0 ? null : binderWebConteiners.get(index).toWebContainer().toString());
         } else {
             String linuxRuntime = comboLinuxRuntime.getItem(comboLinuxRuntime.getSelectionIndex());
             String[] part = linuxRuntime.split(" ");

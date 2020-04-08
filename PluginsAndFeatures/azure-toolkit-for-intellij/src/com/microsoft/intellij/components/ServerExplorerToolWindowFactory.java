@@ -30,6 +30,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
@@ -52,21 +54,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import javax.swing.*;
+import javax.swing.tree.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -89,6 +81,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         AzureModule azureModule = new AzureModuleImpl(project);
 //        HDInsightUtil.setHDInsightRootModule(azureModule);
         azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
+//        azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
         // initialize aris service module
 //        SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
 
@@ -156,7 +149,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         azureModule.setTreePath(tree.getPathForRow(0));
 
         // setup toolbar icons
-        addToolbarItems(toolWindow, azureModule);
+        addToolbarItems(toolWindow, project, azureModule);
     }
 
     private SortableTreeNode initRoot(Project project, List<RefreshableNode> nodes) {
@@ -380,7 +373,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         }
     }
 
-    private void addToolbarItems(ToolWindow toolWindow, final AzureModule azureModule) {
+    private void addToolbarItems(ToolWindow toolWindow, final Project project, final AzureModule azureModule) {
         if (toolWindow instanceof ToolWindowEx) {
             ToolWindowEx toolWindowEx = (ToolWindowEx) toolWindow;
             try {
@@ -408,6 +401,15 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 };
                 AuthMethodManager.getInstance().addSignInEventListener(forceRefreshTitleActions);
                 AuthMethodManager.getInstance().addSignOutEventListener(forceRefreshTitleActions);
+                // Remove the sign in/out listener when project close
+                ProjectManager.getInstance().addProjectManagerListener(project, new ProjectManagerListener() {
+                    @Override
+                    public void projectClosing(@NotNull Project project) {
+                        AuthMethodManager.getInstance().removeSignInEventListener(forceRefreshTitleActions);
+                        AuthMethodManager.getInstance().removeSignOutEventListener(forceRefreshTitleActions);
+                    }
+                });
+
                 forceRefreshTitleActions.run();
             } catch (Exception e) {
                 AzurePlugin.log(e.getMessage(), e);

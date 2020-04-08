@@ -24,7 +24,7 @@ package com.microsoft.intellij.ui.forms.sqldatabase
 
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.sql.DatabaseEditions
+import com.microsoft.azure.management.sql.DatabaseEdition
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView
 
@@ -34,7 +34,7 @@ interface CreateSqlDatabaseOnServerMvpView : MvpView {
 
     fun fillResourceGroups(resourceGroups: List<ResourceGroup>)
 
-    fun fillDatabaseEditions(editions: List<DatabaseEditions>)
+    fun fillDatabaseEditions(editions: List<DatabaseEdition>)
 
     fun fillDatabaseComputeSize(objectives: List<ServiceObjectiveName>)
 }

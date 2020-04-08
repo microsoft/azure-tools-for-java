@@ -28,12 +28,7 @@ import com.intellij.openapi.module.Module
 import org.jetbrains.plugins.scala.console.ScalaConsoleInfo
 import org.jetbrains.plugins.scala.console.ScalaLanguageConsole
 
-class SparkScalaLivyConsole(module: Module, title: String) : ScalaLanguageConsole(module), SparkConsole {
-
-    init {
-        this.title = title
-    }
-
+class SparkScalaLivyConsole(module: Module) : ScalaLanguageConsole(module), SparkConsole {
     override fun indexCodes(codes: String) {
         super.textSent(codes)
     }

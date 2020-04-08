@@ -136,7 +136,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                         final List<RunnerAndConfigurationSettings> batchConfigSettings = runManager
                                 .getConfigurationSettingsList(CosmosSparkConfigurationType.INSTANCE);
 
-                        final String runConfigName = "[Spark on Cosmos] " + cluster.getClusterNameWithAccountName();
+                        final String runConfigName = "[Spark on Cosmos] " + cluster.getClusterIdForConfiguration();
                         final RunnerAndConfigurationSettings runConfigurationSetting = batchConfigSettings.stream()
                                 .filter(settings -> settings.getConfiguration().getName().startsWith(runConfigName))
                                 .findFirst()

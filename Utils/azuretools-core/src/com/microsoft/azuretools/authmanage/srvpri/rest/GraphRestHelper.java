@@ -22,9 +22,11 @@
 
 package com.microsoft.azuretools.authmanage.srvpri.rest;
 
+import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+
 public class GraphRestHelper extends RestHelperBase {
 
-    public GraphRestHelper(String tenantId) {
-        setRequestFactory(new GraphRequestFactory(tenantId));
+    public GraphRestHelper(AccessTokenAzureManager preAccessTokenAzureManager, String tenantId) {
+        setRequestFactory(new GraphRequestFactory(preAccessTokenAzureManager, tenantId));
     }
 }

@@ -23,109 +23,50 @@ package com.microsoft.azure.hdinsight.serverexplore.hdinsightnode;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount;
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
 import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.BlobContainerPermissions;
-import com.microsoft.azure.storage.blob.BlobContainerProperties;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-public class StorageAccountNode extends RefreshableNode implements TelemetryProperties, ILogger {
+public class StorageAccountNode extends Node implements TelemetryProperties, ILogger {
     private static final String STORAGE_ACCOUNT_MODULE_ID = StorageAccountNode.class.getName();
     private static final String ICON_PATH = CommonConst.StorageAccountIConPath;
     private static final String ADLS_ICON_PATH = CommonConst.ADLS_STORAGE_ACCOUNT_ICON_PATH;
     private static final String DEFAULT_STORAGE_FLAG = "(default)";
+    private static final String REST_SEGMENT_STORAGE_ACCOUNT = "/storageaccounts";
 
     private IHDIStorageAccount storageAccount;
+    @NotNull
+    private IClusterDetail clusterDetail;
 
-    public StorageAccountNode(Node parent, @NotNull IHDIStorageAccount storageAccount, boolean isDefaultStorageAccount) {
+    public StorageAccountNode(Node parent, @NotNull IHDIStorageAccount storageAccount, @NotNull IClusterDetail clusterDetail, boolean isDefaultStorageAccount) {
        super(STORAGE_ACCOUNT_MODULE_ID, isDefaultStorageAccount ? storageAccount.getName() + DEFAULT_STORAGE_FLAG : storageAccount.getName(), parent, getIconPath(storageAccount));
         this.storageAccount = storageAccount;
+        this.clusterDetail = clusterDetail;
+        loadAdditionalActions();
     }
 
-    private Stream<BlobContainer> getBlobContainers(String connectionString) throws AzureCmdException {
-        CloudStorageAccount cloudStorageAccount;
-        try {
-            cloudStorageAccount = CloudStorageAccount.parse(connectionString);
-        } catch (URISyntaxException | InvalidKeyException e) {
-            throw new AzureCmdException(e.getMessage());
-        }
-
-        Iterable<CloudBlobContainer> containers = cloudStorageAccount.createCloudBlobClient().listContainers();
-        return StreamSupport.stream(containers.spliterator(), false).map((container) -> {
-            BlobContainerPermissions permissions = null ;
-            String access = null;
-            try {
-                permissions = container.downloadPermissions();
-            } catch (StorageException e) {
-                // ignore the exception
-                // We need not to know the permission since the HDInsight cluster itself do have 'write' access to storage
-            }
-            if (permissions != null) {
-                access = permissions.getPublicAccess().toString();
-            }
-            String name = container.getName();
-            String eTag = null;
-
-            String uri = container.getUri().toString();
-            Calendar lastModified = new GregorianCalendar();
-            BlobContainerProperties properties = container.getProperties();
-
-            if (properties != null) {
-                eTag = properties.getEtag();
-                lastModified.setTime(properties.getLastModified());
-            }
-            return new BlobContainer(name, uri, eTag, lastModified, access);
-        });
-    }
-
-    @Override
-    protected void refreshItems() {
-        try {
-            if (storageAccount.getAccountType() == StorageAccountType.BLOB) {
-                HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
-                String defaultContainer = blobStorageAccount.getDefaultContainer();
-                final String connectionString = ((HDStorageAccount) storageAccount).getConnectionString();
-                getBlobContainers(connectionString).forEach(blobContainer -> {
-                    addChildNode(new BlobContainerNode(this, blobStorageAccount, blobContainer, !StringHelper.isNullOrWhiteSpace(defaultContainer) && defaultContainer.equals(blobContainer.getName())));
-                });
-            } else {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Can't refresh the storage account since unsupported storage account type: " + storageAccount.getAccountType() + "\n");
-                sb.append("Account name: " + storageAccount.getName() + "\n");
-                sb.append("Subscription ID: " + storageAccount.getSubscriptionId() + "\n");
-                sb.append("Default storage schema: " + storageAccount.getDefaultStorageSchema() + "\n");
-                sb.append("Default container or root path: " + storageAccount.getDefaultContainerOrRootPath() + "\n");
-                log().warn(sb.toString());
-            }
-        } catch (Exception ex) {
-            String exceptionMsg = ex.getCause() == null ? "" : ex.getCause().getMessage();
-            String errorHint =  String.format("Failed to load storage account %s. ", storageAccount.getName());
-            log().warn(errorHint + ExceptionUtils.getStackTrace(ex));
-
-            DefaultLoader.getUIHelper().showError(errorHint + exceptionMsg, "HDInsight Explorer");
+    protected void loadAdditionalActions() {
+        if (clusterDetail instanceof ClusterDetail) {
+            addAction("Open Storage in Azure Management Portal", new NodeActionListener() {
+                @Override
+                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                    String subscriptionId = clusterDetail.getSubscription().getSubscriptionId();
+                    String storageRelativePath = ((ClusterDetail) clusterDetail).getId() + REST_SEGMENT_STORAGE_ACCOUNT;
+                    openResourcesInPortal(subscriptionId, storageRelativePath);
+                }
+            });
         }
     }
 

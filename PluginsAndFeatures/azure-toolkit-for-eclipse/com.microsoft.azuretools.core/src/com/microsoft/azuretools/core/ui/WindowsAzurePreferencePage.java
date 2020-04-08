@@ -157,8 +157,8 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
                     }
 
                     String instID = DataOperations.getProperty(dataFile, Messages.instID);
-                    if (instID == null || instID.isEmpty() || !GetHashMac.IsValidHashMacFormat(instID)) {
-                        DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.GetHashMac());
+                    if (instID == null || instID.isEmpty() || !GetHashMac.isValidHashMac(instID)) {
+                        DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.getHashMac());
                         AppInsightsClient.createByType(AppInsightsClient.EventType.Plugin, "", AppInsightsConstants.Install, null, true);
                         EventUtil.logEvent(EventType.info, SYSTEM, PLUGIN_INSTALL, null, null);
                     }
@@ -211,7 +211,7 @@ public class WindowsAzurePreferencePage extends PreferencePage implements IWorkb
         Document doc = ParserXMLUtility.parseXMLFile(dataFile);
         DataOperations.updatePropertyValue(doc, Messages.version,
                 Activator.getDefault().getBundle().getVersion().toString());
-        DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.GetHashMac());
+        DataOperations.updatePropertyValue(doc, Messages.instID, GetHashMac.getHashMac());
         DataOperations.updatePropertyValue(doc, Messages.prefVal, String.valueOf(btnPreference.getSelection()));
         ParserXMLUtility.saveXMLFile(dataFile, doc);
     }

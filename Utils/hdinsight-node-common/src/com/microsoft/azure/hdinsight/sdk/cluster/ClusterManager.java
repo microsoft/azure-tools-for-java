@@ -21,9 +21,12 @@
  */
 package com.microsoft.azure.hdinsight.sdk.cluster;
 
+import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightNewAPI.ClusterOperationNewAPIImpl;
+import com.microsoft.azure.hdinsight.sdk.common.AuthType;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -31,9 +34,11 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ClusterManager implements ILogger {
@@ -96,11 +101,13 @@ public class ClusterManager implements ILogger {
                                 .flatMap(clusterRawInfo -> {
                                     ClusterOperationNewAPIImpl probeClusterNewApiOperation = new ClusterOperationNewAPIImpl(subscriptionDetail);
                                     if (isHDInsightNewSDKEnabled()) {
-                                        return isProbeNewApiSucceed(probeClusterNewApiOperation, clusterRawInfo.getId())
+                                        return isProbeNewApiSucceed(probeClusterNewApiOperation, clusterRawInfo)
                                                 // Run the time-consuming probe job concurrently in IO thread
                                                 .subscribeOn(Schedulers.io())
                                                 .map(isProbeSucceed -> isProbeSucceed
-                                                        ? new ClusterDetail(subscriptionDetail, clusterRawInfo, probeClusterNewApiOperation)
+                                                        ? (isMfaEspCluster(clusterRawInfo)
+                                                            ? new MfaClusterDetail(subscriptionDetail, clusterRawInfo, probeClusterNewApiOperation)
+                                                            : new ClusterDetail(subscriptionDetail, clusterRawInfo, probeClusterNewApiOperation))
                                                         : new ClusterDetail(subscriptionDetail, clusterRawInfo, new ClusterOperationImpl()));
                                     } else {
                                         return Observable.just(new ClusterDetail(subscriptionDetail, clusterRawInfo, new ClusterOperationImpl()));
@@ -124,7 +131,28 @@ public class ClusterManager implements ILogger {
 
     private Observable<Boolean> isProbeNewApiSucceed(
             @NotNull ClusterOperationNewAPIImpl clusterOperation,
-            @NotNull String clusterId) {
-        return clusterOperation.isProbeGetConfigurationSucceed(clusterId);
+            @NotNull ClusterRawInfo clusterRawInfo) {
+        return clusterOperation.isProbeGetConfigurationSucceed(clusterRawInfo);
+    }
+
+    public boolean isMfaEspCluster(ClusterRawInfo rawInfo) {
+        // A way is to check `idbrokernode` type role in `computerProfile`
+        Optional<List<Role>> rolesOption = Optional.ofNullable(rawInfo.getProperties())
+                .map(ClusterProperties::getComputeProfile)
+                .map(ComputeProfile::getRoles);
+
+        if (rolesOption.isPresent()) {
+            return rolesOption.get().stream().anyMatch(role -> role.getName().equalsIgnoreCase("idbrokernode"));
+        }
+
+        // Fallback way is to challenge the authentication type
+        try {
+            return SparkBatchSubmission.getInstance().probeAuthType(
+                    ClusterManagerEx.getInstance().getClusterConnectionString(rawInfo.getName())) == AuthType.AADAuth;
+        } catch (IOException ex) {
+            log().warn("Can't probe HDInsight cluster authentication type: " + rawInfo.getId(), ex);
+
+            return false;
+        }
     }
 }

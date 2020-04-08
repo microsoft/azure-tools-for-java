@@ -24,15 +24,21 @@ package com.microsoft.azure.hdinsight.spark.run.configuration
 
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 
-class ArisSparkConfiguration(name: String, val module: ArisSparkConfigurationModule, factory: ArisSparkConfigurationFactory) : LivySparkBatchJobRunConfiguration(module.model, factory, module, name) {
+class ArisSparkConfiguration(
+        project: Project,
+        name: String,
+        val model: ArisSparkConfigurableModel,
+        factory: ArisSparkConfigurationFactory
+) : LivySparkBatchJobRunConfiguration(project, model, factory, name) {
     override fun getSparkApplicationType(): SparkApplicationType {
         return SparkApplicationType.ArisSpark
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        return LivySparkRunConfigurationSettingsEditor(ArisSparkConfigurable(module.project))
+        return LivySparkRunConfigurationSettingsEditor(ArisSparkConfigurable(project))
     }
 
     override fun getSuggestedNamePrefix(): String {

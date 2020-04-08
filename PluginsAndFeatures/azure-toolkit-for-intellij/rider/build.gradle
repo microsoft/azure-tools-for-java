@@ -1,5 +1,3 @@
-import org.jetbrains.intellij.tasks.PrepareSandboxTask
-
 dependencies {
     compile rootProject
     compile 'org.java-websocket:Java-WebSocket:1.3.9'
@@ -9,11 +7,13 @@ dependencies {
 }
 
 if (!ext.has("BuildNumber"))
-    ext.BuildNumber = "3.26.0.9999-2020.1"
+    ext.BuildNumber = "3.35.0.9999-2020.1"
 
 version "$BuildNumber"
 logger.lifecycle("version=$version")
 println "##teamcity[buildNumber '$version']"
+
+def extensionsFrom = 'resources/dotnet'
 
 intellij {
     pluginName = 'azure-toolkit-for-rider'
@@ -22,8 +22,12 @@ intellij {
     plugins 'terminal', 'restClient', dep_plugins_rider
 }
 
-def extensionsFrom = 'resources/dotnet'
-
-tasks.withType(PrepareSandboxTask) {
+tasks.withType(prepareSandbox.class) {
     from(extensionsFrom, { into "$intellij.pluginName/dotnet" })
+}
+
+buildSearchableOptions.onlyIf { false }
+
+patchPluginXml {
+    sinceBuild = patchPluginXmlSinceBuild
 }

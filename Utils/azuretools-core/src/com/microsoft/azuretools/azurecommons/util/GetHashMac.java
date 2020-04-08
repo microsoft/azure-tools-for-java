@@ -32,6 +32,7 @@ import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -40,32 +41,30 @@ import java.util.regex.Pattern;
 
 public class GetHashMac {
 
-    public static final String MAC_REGEX = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
-    public static final Pattern MAC_PATTERN = Pattern.compile(MAC_REGEX);
+    private static final String MAC_REGEX = "([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}";
+    private static final Pattern MAC_PATTERN = Pattern.compile(MAC_REGEX);
+    private static final String[] UNIX_COMMAND = {"/sbin/ifconfig -a || /sbin/ip link"};
+    private static final String[] WINDOWS_COMMAND = {"getmac"};
+    private static final String[] INVALID_MAC_ADDRESS = {"00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff", "ac:de:48:00:11:22"};
 
-    public static boolean IsValidHashMacFormat(String hashMac) {
-        if (hashMac == null || hashMac.isEmpty()) {
-            return false;
-        }
+    // Hashed mac address for iBridge device
+    private static final String INVALID_HASHED_MAC_ADDRESS = "6c9d2bc8f91b89624add29c0abeae7fb42bf539fa1cdb2e3e57cd668fa9bcead";
 
-        Pattern hashmac_pattern = Pattern.compile("[0-9a-f]{64}");
-        Matcher matcher = hashmac_pattern.matcher(hashMac);
-        return matcher.matches();
+    public static boolean isValidHashMac(String hashMac) {
+        return isValidHashMacFormat(hashMac) && !isInstallationIdDepreciated(hashMac);
     }
 
-    public static String GetHashMac() {
+    public static String getHashMac() {
         String ret = null;
-        String mac_raw = getRawMac();
-        mac_raw = isValidMac(mac_raw) ? mac_raw : getRawMacWithoutIfconfig();
+        String mac_raw = getRawMacByCommand();
+        mac_raw = isValidRawMac(mac_raw) ? mac_raw : getRawMacWithNetworkInterface();
 
-        if (isValidMac(mac_raw)) {
-            String mac_regex_zero = "([0]{2}[:-]){5}[0]{2}";
-            Pattern pattern_zero = Pattern.compile(mac_regex_zero);
+        if (isValidRawMac(mac_raw)) {
             Matcher matcher = MAC_PATTERN.matcher(mac_raw);
             String mac = "";
             while (matcher.find()) {
                 mac = matcher.group(0);
-                if (!pattern_zero.matcher(mac).matches()) {
+                if (isValidMac(mac)) {
                     break;
                 }
             }
@@ -76,35 +75,47 @@ public class GetHashMac {
     }
 
     private static boolean isValidMac(String mac) {
-        return StringUtils.isNotEmpty(mac) && MAC_PATTERN.matcher(mac).find();
+        if (StringUtils.isEmpty(mac)) {
+            return false;
+        }
+        final String fixedMac = mac.replaceAll("-", ":");
+        final boolean isMacAddress = StringUtils.isNotEmpty(fixedMac) && MAC_PATTERN.matcher(fixedMac).find();
+        final boolean isValidMacAddress = !Arrays.stream(INVALID_MAC_ADDRESS)
+                .anyMatch(invalidateMacAddress -> StringUtils.equalsIgnoreCase(fixedMac, invalidateMacAddress));
+        return isMacAddress && isValidMacAddress;
     }
 
-    private static String getRawMac() {
-        String ret = null;
+    private static boolean isValidRawMac(String raw) {
+        return StringUtils.isNotEmpty(raw) && MAC_PATTERN.matcher(raw).find();
+    }
+
+    private static String getRawMacByCommand() {
+        final StringBuilder ret = new StringBuilder();
         try {
-            String os = System.getProperty("os.name").toLowerCase();
-            String[] command = {"ifconfig", "-a"};
-            if (os != null && !os.isEmpty() && os.startsWith("win")) {
-                command = new String[]{"getmac"};
-            }
-            ProcessBuilder probuilder = new ProcessBuilder(command);
-            Process process = probuilder.start();
+            final String os = System.getProperty("os.name").toLowerCase();
+            final String[] command = StringUtils.startsWithIgnoreCase(os, "win") ?
+                    WINDOWS_COMMAND : UNIX_COMMAND;
+            final ProcessBuilder probuilder = new ProcessBuilder(command);
+            final Process process = probuilder.start();
             try (final InputStream inputStream = process.getInputStream();
                  final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                  final BufferedReader br = new BufferedReader(inputStreamReader)) {
                 String tmp;
                 while ((tmp = br.readLine()) != null) {
-                    ret += tmp;
+                    ret.append(tmp);
                 }
             }
-        } catch (IOException ex) {
+            if (process.waitFor() != 0) {
+                throw new IOException(String.format("Command %s execute fail.", String.join(" ", command)));
+            }
+        } catch (IOException | InterruptedException ex) {
             return null;
         }
 
-        return ret;
+        return ret.toString();
     }
 
-    private static String getRawMacWithoutIfconfig() {
+    private static String getRawMacWithNetworkInterface() {
         List<String> macSet = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -127,8 +138,23 @@ public class GetHashMac {
         return String.join(" ", macSet);
     }
 
+    private static boolean isValidHashMacFormat(String hashMac) {
+        if (StringUtils.isEmpty(hashMac)) {
+            return false;
+        }
+
+        Pattern hashmac_pattern = Pattern.compile("[0-9a-f]{64}");
+        Matcher matcher = hashmac_pattern.matcher(hashMac);
+        return matcher.matches();
+    }
+
+    private static boolean isInstallationIdDepreciated(String hashMac)
+    {
+        return Utils.isMac() && StringUtils.equalsIgnoreCase(INVALID_HASHED_MAC_ADDRESS, hashMac);
+    }
+
     public static String hash(String mac) {
-        if (mac == null || mac.isEmpty()) {
+        if (StringUtils.isEmpty(mac)) {
             return null;
         }
 

@@ -58,7 +58,8 @@ public class AzureDataLakeHttpObservable extends AzureHttpObservable {
                                 new SparkAzureDataLakePoolServiceException(
                                         status.getStatusCode(),
                                         err.getMessage(),
-                                        getRequestIdFromHeaders(status.getHeaders())));
+                                        getRequestIdFromHeaders(status.getHeaders()),
+                                        httpRequest.getURI()));
                     } else {
                         return Observable.error(err);
                     }

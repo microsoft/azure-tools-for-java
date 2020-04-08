@@ -35,6 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
@@ -52,31 +53,36 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
     static {
         node2Actions.put(VMArmModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateVMAction.class).build());
+
         node2Actions.put(QueueModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateQueueAction.class).build());
+
         node2Actions.put(TableModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateTableAction.class).build());
         node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
+
         node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateStorageAccountAction.class, AttachExternalStorageAccountAction.class).build());
         node2Actions.put(ClientBlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
+        node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateBlobContainer.class).build());
 
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateRedisCacheAction.class).build());
-        node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateBlobContainer.class).build());
 
         // todo: what is ConfirmDialogAction?
         //noinspection unchecked
         node2Actions.put(ExternalStorageNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
+
         //noinspection unchecked
         node2Actions.put(DockerHostNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(ViewDockerHostAction.class, DeleteDockerHostAction.class).build());
+
         //noinspection unchecked
         node2Actions.put(DockerHostModule.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
@@ -102,13 +108,6 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
         node2Actions.put(ResourceManagementNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(CreateDeploymentAction.class).build());
-
-//        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
-//
-//        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
-
     }
 
     @Override

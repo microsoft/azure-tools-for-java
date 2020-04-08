@@ -79,6 +79,10 @@ class SparkBatchJobDebugProcessHandler(project: Project,
         return remoteDebugProcess.ctrlSubject
     }
 
+    override fun getEventSubject(): PublishSubject<SparkBatchJobSubmissionEvent> {
+        return remoteDebugProcess.eventSubject
+    }
+
     override fun startNotify() {
         addProcessListener(object : ProcessAdapter() {
             override fun startNotified(event: ProcessEvent) {

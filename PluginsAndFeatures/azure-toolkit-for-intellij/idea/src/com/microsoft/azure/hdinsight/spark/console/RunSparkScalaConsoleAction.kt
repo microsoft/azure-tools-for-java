@@ -35,8 +35,10 @@ import com.intellij.openapi.actionSystem.ex.ActionManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.microsoft.azure.hdinsight.common.logger.ILogger
+import com.microsoft.azure.hdinsight.spark.run.SparkLocalRun
 import com.microsoft.azure.hdinsight.spark.run.action.RunConfigurationActionUtils
 import com.microsoft.azure.hdinsight.spark.run.action.SelectSparkApplicationTypeAction
+import com.microsoft.azure.hdinsight.spark.run.action.SparkApplicationType
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction
@@ -55,8 +57,11 @@ abstract class RunSparkScalaConsoleAction
 
     abstract val selectedMenuActionId: String
 
-    override fun getServiceName(event: AnActionEvent?): String {
-        return SelectSparkApplicationTypeAction.getSelectedSparkApplicationType().value
+    override fun getServiceName(event: AnActionEvent): String {
+        val project = CommonDataKeys.PROJECT.getData(event.dataContext) ?: return SparkApplicationType.None.value
+        val selectedConfigSettings = RunManagerEx.getInstanceEx(project).selectedConfiguration
+        return (selectedConfigSettings?.configuration as? LivySparkBatchJobRunConfiguration)?.sparkApplicationType?.value
+                ?: SelectSparkApplicationTypeAction.getSelectedSparkApplicationType().value
     }
 
     override fun onActionPerformed(event: AnActionEvent, operation: Operation?): Boolean {
@@ -105,6 +110,11 @@ abstract class RunSparkScalaConsoleAction
             // Newly created config should let the user to edit
             setting.isEditBeforeRun = true
             handler.apply(setting.configuration)
+
+            (setting.configuration as? LivySparkBatchJobRunConfiguration)?.run {
+                this.setModule(SparkLocalRun.defaultModule(project))
+            }
+
             runFromSetting(setting, runManagerEx, operation)
 
             // Skip edit the next time
@@ -150,6 +160,7 @@ abstract class RunSparkScalaConsoleAction
 
     override fun getMyConfigurationType(): LivySparkBatchJobRunConfigurationType? =
         LivySparkBatchJobRunConfigurationType.getInstance()
+
 
     override fun checkFile(psiFile: PsiFile?): Boolean = psiFile is ScalaFile
 }

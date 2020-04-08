@@ -26,7 +26,8 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInDCProp;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInSPProp;
 
-import com.microsoft.azuretools.authmanage.DCAuthManager;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.BaseADAuthManager;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -64,9 +65,10 @@ import org.eclipse.swt.widgets.Text;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.interact.AuthMethod;
+import com.microsoft.azuretools.authmanage.AuthMethod;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.Activator;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
@@ -143,7 +145,10 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         rbtnDevice.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                enableAutomatedAuthControls(false);
+                if(rbtnDevice.getSelection()) {
+                    rbtnDevice.setFocus();
+                    enableAutomatedAuthControls(false);
+                }
             }
         });
         rbtnDevice.setText("Device Login");
@@ -165,7 +170,12 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         rbtnAutomated.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                enableAutomatedAuthControls(true);
+                if (rbtnAutomated.getSelection()) {
+                    // Set the radio button to be focused or the default one will be selected when refresh
+                    // For issue https://github.com/microsoft/azure-tools-for-java/issues/3543
+                    rbtnAutomated.setFocus();
+                    enableAutomatedAuthControls(true);
+                }
             }
         });
         rbtnAutomated.setText("Service Principal");
@@ -274,29 +284,39 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         textAuthenticationFilePath.setText(path);
     }
 
-    private void doSignIn() {
+    private AuthMethodManager getAuthMethodManager() {
+        return AuthMethodManager.getInstance();
+    }
+    
+    @Nullable
+    private synchronized BaseADAuthManager doSignIn() {
         try {
-            final DCAuthManager dcAuthManager = DCAuthManager.getInstance();
+            final BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
+
             if (dcAuthManager.isSignedIn()) {
                 doSignOut();
             }
             signInAsync(dcAuthManager);
             accountEmail = dcAuthManager.getAccountEmail();
+            
+            return dcAuthManager;
         } catch (Exception ex) {
             System.out.println("doSignIn@SingInDialog: " + ex.getMessage());
             ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "doSignIn@SingInDialog", ex));
         }
+        
+        return null;
     }
 
-    private void signInAsync(final DCAuthManager dcAuthManager) throws InvocationTargetException, InterruptedException {
+    private void signInAsync(final BaseADAuthManager dcAuthManager) throws InvocationTargetException, InterruptedException {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         IRunnableWithProgress op = (monitor) -> {
             operation.start();
             monitor.beginTask("Signing In...", IProgressMonitor.UNKNOWN);
             try {
                 EventUtil.logEvent(EventType.info, operation, signInDCProp, null);
-                dcAuthManager.deviceLogin(null);
+                dcAuthManager.signIn(null);
             } catch (AuthCanceledException ex) {
                 EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
                 System.out.println(ex.getMessage());
@@ -313,27 +333,26 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
     private void doSignOut() {
         accountEmail = null;
-        DCAuthManager.getInstance().signOut();
+        // AuthMethod.AD is deprecated.
+        AuthMethod.DC.getAdAuthManager().signOut();
     }
     
     private void doCreateServicePrincipal() {
         setErrorMessage(null);
-        DCAuthManager dcAuthManager = null;
+        BaseADAuthManager dcAuthManager = null;
         try {
-            dcAuthManager = DCAuthManager.getInstance();
-            if (dcAuthManager.isSignedIn()) {
-                dcAuthManager.signOut();
+            if (getAuthMethodManager().isSignedIn()) {
+                getAuthMethodManager().signOut();
             }
 
-            signInAsync(dcAuthManager);
-
-            if (!dcAuthManager.isSignedIn()) {
+            dcAuthManager = doSignIn();
+            if (dcAuthManager == null || !dcAuthManager.isSignedIn()) {
                 // canceled by the user
                 System.out.println(">> Canceled by the user");
                 return;
             }
 
-            AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager();
+            AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
             
             IRunnableWithProgress op = new IRunnableWithProgress() {
@@ -377,7 +396,8 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
                 }
             }
 
-            SrvPriCreationStatusDialog  d1 = SrvPriCreationStatusDialog.go(this.getShell(), tidSidsMap, destinationFolder);
+            SrvPriCreationStatusDialog  d1 = SrvPriCreationStatusDialog
+                    .go(accessTokenAzureManager, this.getShell(), tidSidsMap, destinationFolder);
             if (d1 == null) {
                 System.out.println(">> Canceled by the user");
                 return;

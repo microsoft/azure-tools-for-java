@@ -24,6 +24,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import org.apache.commons.lang3.StringUtils;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -240,5 +241,17 @@ public class Utils {
         } catch (Exception ignore) {
             return jsonString;
         }
+    }
+
+    public static String getOS() {
+        return System.getProperty("os.name");
+    }
+
+    public static boolean isMac() {
+        return StringUtils.containsIgnoreCase(getOS(), "mac");
+    }
+
+    public static boolean isWindows() {
+        return StringUtils.containsIgnoreCase(getOS(), "windows");
     }
 }

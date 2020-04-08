@@ -23,12 +23,14 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.microsoft.aad.adal4j.AuthenticationCallback;
+import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.adauth.AuthContext;
 import com.microsoft.azuretools.adauth.AuthResult;
-import com.microsoft.azuretools.adauth.IWebUi;
 import com.microsoft.azuretools.adauth.JsonHelper;
+import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -36,11 +38,17 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
+
 import java.io.IOException;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+
 public abstract class BaseADAuthManager {
+    protected static final String AUTHORIZATION_REQUIRED_MESSAGE =
+            "Authorization is required, please sign out and sign in again";
+
     protected AzureEnvironment env;
     protected AdAuthDetails adAuthDetails;
     protected static final String COMMON_TID = "common";// Common Tenant ID
@@ -53,7 +61,7 @@ public abstract class BaseADAuthManager {
     @Nullable
     final protected SecureStore secureStore;
 
-    public BaseADAuthManager() {
+    protected BaseADAuthManager() {
         adAuthDetails = new AdAuthDetails();
         env = CommonSettings.getAdEnvironment();
         if (env == null) {
@@ -74,6 +82,16 @@ public abstract class BaseADAuthManager {
         return commonTenantId;
     }
 
+    /**
+     * Get access token.
+     * @param tid String, tenant id.
+     * @param resource String, resource url.
+     * @param promptBehavior PromptBehavior, prompt enum.
+     * @return String access token.
+     * @throws IOException thrown when fail to get access token.
+     */
+    abstract public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException;
+
     // logout
     protected void cleanCache() {
         AuthContext.cleanTokenCache();
@@ -83,6 +101,8 @@ public abstract class BaseADAuthManager {
         setCommonTenantId(COMMON_TID);
         saveToSecureStore(null);
     }
+
+    abstract public AuthResult signIn(final @Nullable AuthenticationCallback<AuthenticationResult> callback) throws IOException;
 
     /**
      * Sign out azure account.
@@ -94,11 +114,15 @@ public abstract class BaseADAuthManager {
     }
 
     public boolean isSignedIn() {
-        return adAuthDetails.getAccountEmail() != null;
+        return isNoneBlank(adAuthDetails.getAccountEmail());
     }
 
     public String getAccountEmail() {
         return adAuthDetails.getAccountEmail();
+    }
+
+    public void applyAuthMethodDetails(final AuthMethodDetails authMethodDetails) {
+        this.adAuthDetails.setAccountEmail(authMethodDetails.getAccountEmail());
     }
 
     protected void saveToSecureStore(@Nullable AuthResult authResult) {

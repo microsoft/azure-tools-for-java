@@ -51,7 +51,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
         defaultHeaders.addHeader(new BasicHeader("x-ms-client-request-id", UUID.randomUUID().toString()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-date", Utility.getGMTTime()));
         defaultHeaders.addHeader(new BasicHeader("x-ms-version", ApiVersion));
-        defaultHeaders.addHeader(new BasicHeader("authorization", ""));
+        defaultHeaders.addHeader(new BasicHeader("Authorization", ""));
         defaultHeaders.addHeader(new BasicHeader("Content-Type", "application/json"));
 
         setDefaultHeaderGroup(defaultHeaders);
@@ -65,7 +65,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
 
     public SharedKeyHttpObservable setAuthorization(@NotNull HttpRequestBase req, List<NameValuePair> pairs) {
         String key = cred.generateSharedKey(req, getDefaultHeaderGroup(), pairs);
-        getDefaultHeaderGroup().updateHeader(new BasicHeader("authorization", key));
+        getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", key));
         return this;
     }
 

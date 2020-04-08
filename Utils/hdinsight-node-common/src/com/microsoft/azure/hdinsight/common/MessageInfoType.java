@@ -22,10 +22,12 @@
 package com.microsoft.azure.hdinsight.common;
 
 public enum MessageInfoType {
+    Debug,
     Error,
     Info,
     Log,
     Warning,
     Hyperlink,
-    HyperlinkWithText
+    HyperlinkWithText,
+    HtmlPersistentMessage
 }

@@ -39,11 +39,11 @@ class SparkFailureTaskDebugSettingsEditor(project: Project) : SettingsEditor<Spa
 
     override fun resetEditorFrom(data: SparkFailureTaskDebugConfiguration) {
         // Reset the panel from the RunConfiguration
-        configurable.setData(data.module.settings)
+        configurable.setData(data.model.settings)
     }
 
     override fun applyEditorTo(data: SparkFailureTaskDebugConfiguration) {
         // Apply the panel's setting to RunConfiguration
-        configurable.getData(data.module.settings)
+        configurable.getData(data.model.settings)
     }
 }

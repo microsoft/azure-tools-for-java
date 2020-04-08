@@ -21,7 +21,6 @@
 
 package com.microsoft.azure.hdinsight.spark.mock;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import mockit.Invocation;

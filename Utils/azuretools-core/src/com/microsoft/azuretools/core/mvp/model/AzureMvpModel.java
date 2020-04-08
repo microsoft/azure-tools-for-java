@@ -26,7 +26,6 @@ package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
@@ -38,23 +37,24 @@ import com.microsoft.azure.management.storage.StorageAccountSkuType;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
+import org.apache.commons.lang3.StringUtils;
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import rx.Observable;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 
 public class AzureMvpModel {
 
@@ -115,6 +115,7 @@ public class AzureMvpModel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Collections.sort(ret, getComparator(Subscription::displayName));
         return ret;
     }
 
@@ -137,6 +138,8 @@ public class AzureMvpModel {
             resourceGroups.addAll(srgMap.get(sd).stream().map(
                 resourceGroup -> new ResourceEx<>(resourceGroup, sd.getSubscriptionId())).collect(Collectors.toList()));
         }
+        Collections.sort(resourceGroups, getComparator((ResourceEx<ResourceGroup> resourceGroupResourceEx) ->
+                resourceGroupResourceEx.getResource().name()));
         return resourceGroups;
     }
 
@@ -166,6 +169,7 @@ public class AzureMvpModel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Collections.sort(ret, getComparator(ResourceGroup::name));
         return ret;
     }
 
@@ -200,12 +204,15 @@ public class AzureMvpModel {
                 }
                 subscriber.onCompleted();
             }).subscribeOn(Schedulers.io()), subs.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
+        Collections.sort(deployments, getComparator(Deployment::name));
         return deployments;
     }
 
     public List<Deployment> listDeploymentsBySid(String sid) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        return azure.deployments().list();
+        List<Deployment> deployments = azure.deployments().list();
+        Collections.sort(deployments, getComparator(Deployment::name));
+        return deployments;
     }
 
     /**
@@ -218,6 +225,8 @@ public class AzureMvpModel {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         res.addAll(azure.deployments().listByResourceGroup(rgName).stream().
             map(deployment -> new ResourceEx<>(deployment, sid)).collect(Collectors.toList()));
+        Collections.sort(res,
+                getComparator((ResourceEx<Deployment> deploymentResourceEx) -> deploymentResourceEx.getResource().name()));
         return res;
     }
 
@@ -290,6 +299,7 @@ public class AzureMvpModel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Collections.sort(locations, getComparator(Location::name));
         return locations;
     }
 
@@ -307,18 +317,20 @@ public class AzureMvpModel {
                 ret.add(pt);
             }
         }
+        Collections.sort(ret, getComparator(PricingTier::toString));
         return correctPricingTiers(ret);
     }
 
-    // workaround for SDK not updated the PREMIUM pricing tiers to latest ones
-    // https://github.com/Azure/azure-libraries-for-java/issues/660
+    private static <T> Comparator<T> getComparator(Function<T, String> toStringMethod) {
+        return (first, second) ->
+                StringUtils.compareIgnoreCase(toStringMethod.apply(first), toStringMethod.apply(second));
+    }
+
+    // Remove Premium pricing tier which has performance issues with java app services
     private List<PricingTier> correctPricingTiers(final List<PricingTier> pricingTiers) {
         pricingTiers.remove(PricingTier.PREMIUM_P1);
         pricingTiers.remove(PricingTier.PREMIUM_P2);
         pricingTiers.remove(PricingTier.PREMIUM_P3);
-        pricingTiers.add(new PricingTier("Premium", "P1V2"));
-        pricingTiers.add(new PricingTier("Premium", "P2V2"));
-        pricingTiers.add(new PricingTier("Premium", "P3V2"));
         return pricingTiers;
     }
 

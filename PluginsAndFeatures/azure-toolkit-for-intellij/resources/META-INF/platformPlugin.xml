@@ -37,7 +37,6 @@
                   serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
                       serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
-    <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
 
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
@@ -108,5 +107,4 @@
     </group>
 
   </actions>
-  <helpset file="azure-toolkit-for-intellij-help.jar" path="/helpset.hs"/>
 </idea-plugin>

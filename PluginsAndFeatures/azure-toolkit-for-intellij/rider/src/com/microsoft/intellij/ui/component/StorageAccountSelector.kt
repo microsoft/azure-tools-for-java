@@ -125,7 +125,7 @@ class StorageAccountSelector(private val lifetime: Lifetime) :
     }
 
     private fun initStorageAccountTypeComboBox() {
-        cbStorageAccountType.setDefaultRenderer(EMPTY_STORAGE_ACCOUNT_TYPE_MESSAGE) { it.name().name }
+        cbStorageAccountType.setDefaultRenderer(EMPTY_STORAGE_ACCOUNT_TYPE_MESSAGE) { it.name().toString() }
     }
 
     private fun initStorageAccountButtonsGroup() {

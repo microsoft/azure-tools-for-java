@@ -22,6 +22,7 @@
 package com.microsoft.azure.hdinsight.common.classifiedexception
 
 import com.microsoft.azure.datalake.store.ADLException
+import com.microsoft.azuretools.adauth.AuthException
 import com.microsoft.azuretools.telemetrywrapper.ErrorType
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -37,7 +38,7 @@ object SparkServiceExceptionFactory : ClassifiedExceptionFactory() {
         return if (exp is UnknownHostException) {
             val hintMsg = "\nPlease make sure that the cluster exists"
             SparkServiceException(UnknownHostException("${exp.message}$hintMsg"))
-        } else if ((exp is IOException && exp !is FileNotFoundException && exp !is ADLException)
+        } else if ((exp is IOException && exp !is FileNotFoundException && exp !is ADLException && exp !is AuthException)
                 || (exp is ADLException && exp.httpResponseCode != 403))
             SparkServiceException(exp) else null
     }

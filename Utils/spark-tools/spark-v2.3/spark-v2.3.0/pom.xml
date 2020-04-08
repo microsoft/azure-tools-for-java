@@ -84,7 +84,7 @@
                         <JAVA_HOME>${java.home}</JAVA_HOME>
                     </environmentVariables>
                     <systemProperties>
-                        <log4j.configuration>file:src/test/resources/log4j.properties</log4j.configuration>
+                        <log4j.configuration>file:../src/test/resources/log4j.properties</log4j.configuration>
                         <derby.system.durability>test</derby.system.durability>
                         <java.awt.headless>true</java.awt.headless>
                         <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_2.11</artifactId>
-            <version>2.6.7.1</version>
+            <version>2.9.9</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

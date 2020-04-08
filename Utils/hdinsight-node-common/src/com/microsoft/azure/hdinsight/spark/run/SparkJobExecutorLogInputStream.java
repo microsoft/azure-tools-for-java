@@ -23,15 +23,26 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
-import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Optional;
 
 
 class SparkJobExecutorLogInputStream extends SparkJobLogInputStream {
+    private final String logUrl;
+
     public SparkJobExecutorLogInputStream(@NotNull String logType, @NotNull String logUrl) {
         super(logType);
 
-        setLogUrl(logUrl);
+        this.logUrl = logUrl;
+    }
+
+    @Override
+    protected synchronized Optional<SimpleImmutableEntry<String, Long>> fetchLog(long logOffset, int fetchSize) {
+        return getAttachedJob()
+                .map(job -> job.getContainerLog(getLogUrl(), getLogType(), logOffset, fetchSize)
+                        .toBlocking().singleOrDefault(null));
     }
 
     @Override
@@ -39,5 +50,9 @@ class SparkJobExecutorLogInputStream extends SparkJobLogInputStream {
         setSparkBatchJob(sparkJob);
 
         return sparkJob;
+    }
+
+    public String getLogUrl() {
+        return logUrl;
     }
 }

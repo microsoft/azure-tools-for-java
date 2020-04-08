@@ -24,13 +24,12 @@ package com.microsoft.azure.hdinsight.projects;
 
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.ComboBox;
+import org.jetbrains.plugins.scala.project.Versions;
+
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class SbtVersionOptionsPanel extends JPanel implements ILogger {
     private ComboBox sbtVersionComboBox;
@@ -54,41 +53,11 @@ public class SbtVersionOptionsPanel extends JPanel implements ILogger {
     public void updateSbtVersions() {
         final String[][] versions = new String[1][1];
         ProgressManager.getInstance().runProcess(() -> {
-            versions[0] = getVersions();
+            versions[0] = Versions.SBT$.MODULE$.apply().versions();
         }, null);
 
         for (String version : versions[0]) {
             this.sbtVersionComboBox.addItem(version);
-        }
-    }
-
-    public String[] getVersions() {
-        // TODO:replace with the following code after IDEA 2019.2
-        // Versions.SbtKind$.MODULE$.apply().versions();
-        String[] defaultVersions = new String[]{"0.13.18", "1.2.8"};
-        try {
-            // use api for IDEA 2019.2
-            Constructor sbtKindConstructor = Class.forName("org.jetbrains.plugins.scala.project.Versions$SbtKind$").getConstructor();
-            Method apply = Class.forName("org.jetbrains.plugins.scala.project.Versions$Kind").getMethod("apply");
-            Object module = apply.invoke(sbtKindConstructor.newInstance());
-            Method versions = Class.forName("org.jetbrains.plugins.scala.project.Versions").getMethod("versions");
-            return (String[]) versions.invoke(module);
-        } catch (ClassNotFoundException | NoSuchMethodException ignored) {
-            // use old api for IDEA 2019.1
-            try {
-                log().warn("Encounter exception when getting sbt versions using 2019.2 api", ignored);
-                Constructor versionsConstructor = Class.forName("org.jetbrains.plugins.scala.project.Versions$").getDeclaredConstructor();
-                versionsConstructor.setAccessible(true);
-                Object versions = versionsConstructor.newInstance();
-                Method loadVersions = Class.forName("org.jetbrains.plugins.scala.project.Versions$").getMethod("loadSbtVersions");
-                return (String[]) loadVersions.invoke(versions);
-            } catch (Exception ignore) {
-                log().warn("Encounter exception when getting sbt versions using 2019.1 api", ignored);
-                return defaultVersions;
-            }
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException ignored) {
-            log().warn("Encounter exception when getting sbt versions using 2019.2 api", ignored);
-            return defaultVersions;
         }
     }
 }

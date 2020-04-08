@@ -21,8 +21,10 @@
  */
 package com.microsoft.azure.hdinsight.sdk.rest.spark;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.azure.hdinsight.sdk.rest.IConvertible;
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Attempt implements IConvertible {
     private String startTime;
 
@@ -43,6 +45,12 @@ public class Attempt implements IConvertible {
     private String completed;
 
     private String attemptId;
+
+    private String appSparkVersion;
+
+    public String getAppSparkVersion(){
+        return appSparkVersion;
+    }
 
     public String getStartTime ()
     {

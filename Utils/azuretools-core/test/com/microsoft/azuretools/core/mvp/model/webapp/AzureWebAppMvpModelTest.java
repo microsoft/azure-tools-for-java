@@ -396,9 +396,19 @@ public class AzureWebAppMvpModelTest {
 
     @Test
     public void testListWebContainers() {
-        // TODO: will contain all the container types from WebContainer?
-        List<WebAppUtils.WebContainerMod> containers = azureWebAppMvpModel.listWebContainers();
-        assertEquals(6, containers.size());
+        List<WebAppUtils.WebContainerMod> warContainers = AzureWebAppMvpModel.listWebContainersForWarFile();
+        assertEquals(6, warContainers.size());
+
+        List<WebAppUtils.WebContainerMod> jarContainers = AzureWebAppMvpModel.listWebContainersForJarFile(JdkModel.JAVA_8_NEWEST);
+        assertEquals(1, jarContainers.size());
+        assertEquals(jarContainers.get(0), WebAppUtils.WebContainerMod.Java_SE_8);
+
+        jarContainers = AzureWebAppMvpModel.listWebContainersForJarFile(JdkModel.JAVA_ZULU_11_0_2);
+        assertEquals(1, jarContainers.size());
+        assertEquals(jarContainers.get(0), WebAppUtils.WebContainerMod.Java_SE_11);
+
+        jarContainers = AzureWebAppMvpModel.listWebContainersForJarFile(JdkModel.JAVA_7_NEWEST);
+        assertEquals(0, jarContainers.size());
     }
 
     @Test

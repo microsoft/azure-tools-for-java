@@ -54,6 +54,7 @@ class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess)
     }
 
     override fun destroyProcessImpl() {
+        sessionEventsSubject.onCompleted()
         process.destroy()
         notifyProcessTerminated(0)
     }
@@ -61,6 +62,10 @@ class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess)
     fun execute(codes: String) {
         process.outputStream.write("$codes\n".toByteArray(UTF_8))
         process.outputStream.flush()
+    }
+
+    fun onProcessTerminated(error: Throwable?) {
+        super.notifyProcessTerminated(if (error == null) 0 else -1)
     }
 
     override fun startNotify() {

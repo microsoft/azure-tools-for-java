@@ -29,4 +29,11 @@ public class Constants {
     public static String clientId = "61d65f5a-6e3b-468b-af73-a033f5098c5c";
     public static String redirectUri = "https://msopentech.com/";
     public static int connection_read_timeout_ms = 10000;
+
+    public static final String FILE_NAME_AAD_PROVIDER = "AadProvider.json";
+    public static final String FILE_NAME_AUTH_METHOD_DETAILS = "AuthMethodDetails.json";
+    public static final String FILE_NAME_CORE_LIB_LOG = "corelibs.log";
+    public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_AT ="subscriptionsDetails-at.json";
+    public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_SP = "subscriptionsDetails-sp.json";
+    public static final String FILE_NAME_SURVEY_CONFIG = "SurveyConfig.json";
 }

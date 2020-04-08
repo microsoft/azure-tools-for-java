@@ -25,15 +25,16 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST
 import com.microsoft.intellij.forms.dsl.panel
 import javax.swing.JLabel
+import javax.swing.JPanel
 
-class SparkSubmissionJobUploadWebHdfsSignOutCard : SparkSubmissionJobUploadStorageBasicCard() {
-    override val title: String = "Sign Out"
+class SparkSubmissionJobUploadWebHdfsSignOutCard: JPanel() {
+    val title: String = "Sign Out"
 
     companion object {
-        val defaultAuthUser = "No Available Account"
+        const val defaultAuthUser = "No Available Account"
     }
 
-    val authUserHintLabel = JLabel("Present Account")
+    private val authUserHintLabel = JLabel("Present Account")
     val authUserNameLabel = JLabel().apply {
         text = defaultAuthUser
     }

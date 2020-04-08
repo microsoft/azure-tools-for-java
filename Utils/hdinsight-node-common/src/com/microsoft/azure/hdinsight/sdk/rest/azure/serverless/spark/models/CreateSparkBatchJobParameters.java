@@ -25,8 +25,11 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmissionParameter;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -151,6 +154,48 @@ public class CreateSparkBatchJobParameters extends SparkSubmissionParameter {
     public CreateSparkBatchJobParameters withAdlAccountName(String adlAccountName) {
         this.adlAccountName = adlAccountName;
         return this;
+    }
+
+    public CreateSparkBatchJobParameters() {
+    }
+
+    public CreateSparkBatchJobParameters(String clusterName,
+                                         boolean isLocalArtifact,
+                                         String artifactName,
+                                         String localArtifactPath,
+                                         String filePath,
+                                         String className,
+                                         List<String> referencedFiles,
+                                         List<String> referencedJars,
+                                         List<String> args,
+                                         Map<String, Object> jobConfig,
+                                         String adlAccountName,
+                                         String sparkEventsDirectoryPath,
+                                         Map<String, String> extendedProperties) {
+        super(clusterName, isLocalArtifact, artifactName, localArtifactPath, filePath, className, referencedFiles,
+                referencedJars, args, jobConfig);
+        this.adlAccountName = adlAccountName;
+        this.sparkEventsDirectoryPath = sparkEventsDirectoryPath;
+        this.extendedProperties = extendedProperties;
+    }
+
+    public static CreateSparkBatchJobParameters copyOf(CreateSparkBatchJobParameters parameter) {
+        CreateSparkBatchJobParameters copiedParameter = new CreateSparkBatchJobParameters(
+                parameter.getClusterName(),
+                parameter.isLocalArtifact(),
+                parameter.getArtifactName(),
+                parameter.getLocalArtifactPath(),
+                parameter.getFile(),
+                parameter.getMainClassName(),
+                ImmutableList.copyOf(parameter.getReferencedFiles()),
+                ImmutableList.copyOf(parameter.getReferencedJars()),
+                ImmutableList.copyOf(parameter.getArgs()),
+                ImmutableMap.copyOf(parameter.getJobConfig()),
+                parameter.adlAccountName(),
+                parameter.sparkEventsDirectoryPath(),
+                ImmutableMap.copyOf(parameter.extendedProperties()));
+        copiedParameter.setName(parameter.getName());
+        return copiedParameter;
     }
 
     /**

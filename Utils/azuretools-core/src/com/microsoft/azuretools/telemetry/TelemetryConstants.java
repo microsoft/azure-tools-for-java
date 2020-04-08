@@ -29,6 +29,7 @@ public class TelemetryConstants {
 
     // production name
     public static final String WEBAPP = "webapp";
+    public static final String FUNCTION = "function";
     public static final String ACR = "acr";
     public static final String ARM = "arm";
     public static final String DOCKER = "docker";
@@ -43,10 +44,12 @@ public class TelemetryConstants {
     public static final String SPARK_ON_COSMOS = "sparkOnCosmos";
     public static final String SPARK_ON_COSMOS_SERVERLESS = "sparkOnCosmosServerless";
     public static final String SPARK_ON_SQL_SERVER = "sparkOnSqlServer";
+    public static final String SPARK_ON_ARCADIA = "sparkOnArcadia";
     public static final String SPARK_FAILURE_TASK_DEBUG = "sparkFailureTaskDebug";
     public static final String VFS = "virtualFileSystem";
 
     // operation value
+    public static final String SURVEY = "survey";
     public static final String FEEDBACK = "feedback";
     public static final String AZURECODE_SAMPLES = "azure-code-samples";
     public static final String LIB_CONFIGURATION = "libraries-configuration";
@@ -64,6 +67,20 @@ public class TelemetryConstants {
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
+    public static final String TRIGGER_FUNCTION = "trigger-function";
+    public static final String ENABLE_FUNCTION = "enable-function";
+    public static final String DISABLE_FUNCTION = "disable-function";
+    public static final String RUN_FUNCTION_APP = "run-function-app";
+    public static final String CREATE_FUNCTION_TRIGGER = "create-function-trigger";
+    public static final String CREATE_FUNCTION_PROJECT = "create-function-project";
+    public static final String CREATE_FUNCTION_APP = "create-function-app";
+    public static final String DEPLOY_FUNCTION_APP = "deploy-function-app";
+    public static final String DELETE_FUNCTION_APP = "delete-function-app";
+    public static final String START_FUNCTION_APP = "start-function-app";
+    public static final String STOP_FUNCTION_APP = "stop-function-app";
+    public static final String RESTART_FUNCTION_APP = "restart-function-app";
+    public static final String SHOWPROP_FUNCTION_APP = "showprop-function-app";
+    public static final String OPEN_INBROWSER_FUNCTION_APP = "open-inbrowser-function-app";
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
     public static final String CREATE_DOCKER_HOST = "create-docker-host";
     public static final String DEPLOY_DOCKER_HOST = "deploy-docker-host";
@@ -101,6 +118,7 @@ public class TelemetryConstants {
     public static final String START_VM = "start-vm";
     public static final String RESTART_VM = "restart-vm";
     public static final String CREATE_STORAGE_ACCOUNT = "create-storage-account";
+    public static final String OPEN_STORAGE_IN_PORTAL = "open-storage-in-portal";
     public static final String DELETE_STORAGE_ACCOUNT = "delete-storage-account";
     public static final String DETACH_STORAGE_ACCOUNT = "detach-storage-account";
     public static final String DELETE_STORAGE_TABLE = "delete-storage-table";
@@ -149,6 +167,9 @@ public class TelemetryConstants {
     public static final String CREATE_NEW_RUN_CONFIG = "create-new-run-config";
     public static final String RUN_SPARK_LIVY_INTERACTIVE_CONSOLE = "run-spark-livy-interactive-console";
     public static final String RUN_SPARK_LOCAL_CONSOLE = "run-spark-local-console";
+    public static final String PROVISION_A_CLUSTER = "provision-a-cluster";
+    public static final String DELETE_A_CLUSTER = "delete-a-cluster";
+    public static final String UPDATE_A_CLUSTER = "update-a-cluster";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";

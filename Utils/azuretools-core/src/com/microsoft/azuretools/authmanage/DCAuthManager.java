@@ -26,16 +26,20 @@ package com.microsoft.azuretools.authmanage;
 import com.microsoft.aad.adal4j.AuthenticationCallback;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.azuretools.adauth.AuthContext;
+import com.microsoft.azuretools.adauth.AuthError;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.adauth.AuthResult;
+import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.models.AdAuthDetails;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import java.io.IOException;
 
-public class DCAuthManager extends BaseADAuthManager {
+import static org.apache.commons.lang3.StringUtils.equalsAnyIgnoreCase;
+
+class DCAuthManager extends BaseADAuthManager {
     private static class LazyLoader {
         static final DCAuthManager INSTANCE = new DCAuthManager();
     }
@@ -82,7 +86,24 @@ public class DCAuthManager extends BaseADAuthManager {
         return false;
     }
 
-    public AuthResult deviceLogin(final AuthenticationCallback<AuthenticationResult> callback) throws IOException {
+    @Override
+    public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
+        AuthContext ac = createContext(tid, null);
+        try {
+            AuthResult result = ac.acquireToken(resource, false, adAuthDetails.getAccountEmail(), null);
+
+            return result.getAccessToken();
+        } catch (AuthException err) {
+            if (equalsAnyIgnoreCase(err.getError(), AuthError.InvalidGrant, AuthError.InteractionRequired)) {
+                throw new IOException(AUTHORIZATION_REQUIRED_MESSAGE, err);
+            }
+
+            throw err;
+        }
+    }
+
+    @Override
+    public AuthResult signIn(final AuthenticationCallback<AuthenticationResult> callback) throws IOException {
         cleanCache();
         final AuthContext ac = createContext(getCommonTenantId(), null);
         final AuthResult result = ac.acquireToken(env.managementEndpoint(), true, null, callback);

@@ -59,7 +59,7 @@ public class StreamUtil {
                 .orElse(new StringEntity(""));
         try (InputStream inputStream = entity.getContent()) {
             String response_content = getResultFromInputStream(inputStream);
-            return new HttpResponse(code, response_content, new HashMap<String, List<String>>(), reason);
+            return new HttpResponse(code, response_content, response.getAllHeaders(), reason);
         }
     }
 

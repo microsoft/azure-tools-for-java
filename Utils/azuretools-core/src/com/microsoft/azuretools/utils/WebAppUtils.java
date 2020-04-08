@@ -71,7 +71,6 @@ public class WebAppUtils {
 
     private static final String TEMP_FILE_PREFIX = "azuretoolkit";
     private static final String TEMP_FOLDER_PREFIX = "azuretoolkitstagingfolder";
-    private static final String WEB_CONFIG_RESOURCE = "/webapp/web.config";
     private static final String FTP_ROOT_PATH = "/site/wwwroot/";
     private static final String FTP_WEB_APPS_PATH = FTP_ROOT_PATH + "webapps/";
     private static final String WEB_CONFIG_FILENAME = "web.config";
@@ -88,8 +87,6 @@ public class WebAppUtils {
     public static final String STOP_DEPLOYMENT_SLOT = "Stopping deployment slot...";
     public static final String DEPLOY_SUCCESS_WEB_APP = "Deploy succeed, restarting web app...";
     public static final String DEPLOY_SUCCESS_DEPLOYMENT_SLOT = "Deploy succeed, restarting deployment slot...";
-    public static final String PREPARING_WEB_CONFIG = "Preparing web.config (check more details at: " +
-            "https://aka.ms/spring-boot)...";
     public static final String RETRY_MESSAGE = "Exception occurred while deploying to app service:" +
             " %s, retrying immediately (%d/%d)";
     public static final String RETRY_FAIL_MESSAGE = "Failed to deploy after %d times of retry.";
@@ -361,11 +358,6 @@ public class WebAppUtils {
             // copying artifacts to staging folder and rename it to app.jar
             progressIndicator.setText(COPYING_RESOURCES);
             FileUtils.copyFile(artifact, new File(tempFolder, JAVASE_ARTIFACT_NAME));
-            // prepare the web.config for windows java se app service
-            if (isWebConfigRequired(deployTarget)) {
-                progressIndicator.setText(PREPARING_WEB_CONFIG);
-                prepareWebConfig(tempFolder);
-            }
             // package the artifacts
             final File result = Files.createTempFile(TEMP_FILE_PREFIX, ".zip").toFile();
             FileUtil.zipFiles(tempFolder.listFiles(), result);
@@ -373,18 +365,6 @@ public class WebAppUtils {
         } catch (Exception e) {
             throw new IOException(e);
         }
-    }
-
-    private static File prepareWebConfig(File targetFolder) throws IOException {
-        try (InputStream inputStream = WebAppUtils.class.getResourceAsStream(WEB_CONFIG_RESOURCE)) {
-            final File tempWebConfigFile = new File(targetFolder, WEB_CONFIG_FILENAME);
-            Files.copy(inputStream, tempWebConfigFile.toPath());
-            return tempWebConfigFile;
-        }
-    }
-
-    private static boolean isWebConfigRequired(WebAppBase webAppBase) {
-        return webAppBase.operatingSystem().equals(OperatingSystem.WINDOWS);
     }
 
     public static boolean deployWebAppToWebContainer(WebAppBase deployTarget
@@ -423,7 +403,9 @@ public class WebAppUtils {
         Newest_Tomcat_80("Newest Tomcat 8.0", "tomcat 8.0"),
         Newest_Tomcat_70("Newest Tomcat 7.0", "tomcat 7.0"),
         Newest_Jetty_93("Newest Jetty 9.3", "jetty 9.3"),
-        Newest_Jetty_91("Newest Jetty 9.1", "jetty 9.1");
+        Newest_Jetty_91("Newest Jetty 9.1", "jetty 9.1"),
+        Java_SE_8("Java SE 8", "java 8"),
+        Java_SE_11("Java SE 11", "java 11");
 
         private String displayName;
         private String value;

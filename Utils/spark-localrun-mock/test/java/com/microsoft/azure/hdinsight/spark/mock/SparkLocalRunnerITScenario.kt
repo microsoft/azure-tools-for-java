@@ -24,7 +24,6 @@
 package com.microsoft.azure.hdinsight.spark.mock
 
 import com.microsoft.azure.hdinsight.spark.common.SparkLocalJvmProcess
-import com.microsoft.azure.hdinsight.spark.mock.jobapp.CatCmd
 import cucumber.api.java.en.And
 import cucumber.api.java.en.Given
 import cucumber.api.java.en.Then
@@ -44,7 +43,7 @@ class SparkLocalRunnerITScenario {
     @Given("^locally run job '(.*)' with args")
     fun localRunJob(mainClass: String, jobArgs: List<String>) {
         val args = arrayOf("--master local[1]", mainClass) + jobArgs
-        sparkLocalJob = jvmProcess.createProcess("", SparkLocalRunner::class.java, args)
+        sparkLocalJob = jvmProcess.createProcess("",  SparkLocalRunner::class.java, args)
     }
 
     private fun runToGetStdoutLines(job: ProcessBuilder): List<String> {
@@ -97,7 +96,7 @@ class SparkLocalRunnerITScenario {
 
         // Start another job to read the file
 
-        val args = arrayOf("--master local[1]", CatCmd::class.java.canonicalName, fileUri)
+        val args = arrayOf("--master local[1]", "com.microsoft.azure.hdinsight.spark.mock.jobapp.CatCmd", fileUri)
 
         val catJob = jvmProcess.createProcess("", SparkLocalRunner::class.java, args)
 

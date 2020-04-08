@@ -24,15 +24,14 @@ package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.filters.TextConsoleBuilderImpl
 import com.intellij.execution.ui.ConsoleView
-import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.scala.console.ScalaConsoleInfo
-import org.jetbrains.plugins.scala.console.ScalaLanguageConsoleView
 
 data class SparkContextValueInfo(val name: String, val master: String, val appId: String)
 data class SparkSessionValueInfo(val name: String)
 
-class SparkScalaConsoleBuilder(project: Project) : TextConsoleBuilderImpl(project) {
+class SparkScalaConsoleBuilder(project: Project, private val module: Module) : TextConsoleBuilderImpl(project) {
     public override fun getProject(): Project {
         return super.getProject()
     }
@@ -56,10 +55,7 @@ class SparkScalaConsoleBuilder(project: Project) : TextConsoleBuilderImpl(projec
     fun getSparkSessionDeclareStatement(sparkVal: String) = "val $sparkVal: org.apache.spark.sql.SparkSession\n"
 
     override fun getConsole(): ConsoleView {
-        val moduleManager = ModuleManager.getInstance(project)
-        val module = moduleManager.modules.first { it.name.equals(project.name, ignoreCase = true) }
-
-        val consoleView = SparkScalaLivyConsole(module, ScalaLanguageConsoleView.ScalaConsole())
+        val consoleView = SparkScalaLivyConsole(module)
 
         ScalaConsoleInfo.setIsConsole(consoleView.file, true)
         consoleView.prompt = null

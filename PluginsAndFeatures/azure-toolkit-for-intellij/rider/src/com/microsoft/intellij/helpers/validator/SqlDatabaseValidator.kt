@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.helpers.validator
 
-import com.microsoft.azure.management.sql.DatabaseEditions
+import com.microsoft.azure.management.sql.DatabaseEdition
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
@@ -79,7 +79,7 @@ object SqlDatabaseValidator : AzureResourceValidator() {
         return status
     }
 
-    fun checkEditionIsSet(edition: DatabaseEditions?) =
+    fun checkEditionIsSet(edition: DatabaseEdition?) =
             checkValueIsSet(edition, SQL_DATABASE_EDITION_NOT_DEFINED)
 
     fun checkComputeSizeIsSet(objective: ServiceObjectiveName?) =

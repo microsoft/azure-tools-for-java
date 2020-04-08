@@ -1,0 +1,9 @@
+<application>
+  <component name="HDInsightSettings">
+    <option name="properties">
+      <map>
+        <entry key="Enable.HDInsight.New.SDK" value="true" />
+      </map>
+    </option>
+  </component>
+</application>

@@ -35,7 +35,7 @@ import javax.swing.ListSelectionModel.SINGLE_SELECTION
 import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 
-abstract class LivyBatchJobTableViewport : IdeaSettableControlView<LivyBatchJobTableViewport.Model>{
+abstract class LivyBatchJobTableViewport : IdeaSettableControlView<LivyBatchJobTableViewport.Model> {
     data class Model(
             var tableModel: LivyBatchJobTableModel = LivyBatchJobTableModel(),
             var firstJobPage: JobPage? = null

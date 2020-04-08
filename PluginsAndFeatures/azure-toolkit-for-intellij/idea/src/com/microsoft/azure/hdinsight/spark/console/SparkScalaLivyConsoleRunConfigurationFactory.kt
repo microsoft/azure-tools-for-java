@@ -24,8 +24,11 @@ package com.microsoft.azure.hdinsight.spark.console
 
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
+import com.microsoft.azure.cosmosspark.spark.console.CosmosSparkScalaLivyConsoleRunConfiguration
+import com.microsoft.azure.hdinsight.spark.run.configuration.ArcadiaSparkConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
+import com.microsoft.azure.projectarcadia.spark.console.ArcadiaSparkScalaLivyConsoleRunConfiguration
 import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLivyConsoleConfigurationType)
@@ -37,6 +40,12 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
             // Create a Spark Scala Livy run configuration based on Spark Batch run configuration
             when (template) {
+                is ArcadiaSparkConfiguration ->
+                    ArcadiaSparkScalaLivyConsoleRunConfiguration(
+                            template.project,
+                            this,
+                            template,
+                            "${template.name} >> Synapse Spark Livy Interactive Session Console(Scala)")
                 is CosmosSparkRunConfiguration ->
                     CosmosSparkScalaLivyConsoleRunConfiguration(
                             template.project,

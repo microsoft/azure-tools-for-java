@@ -64,15 +64,16 @@ public class HDInsightRootModuleImpl extends HDInsightRootModule {
     @Override
     protected void refreshItems() throws AzureCmdException {
         synchronized (this) {
-            clusterDetailList = ClusterManagerEx.getInstance().getClusterDetails().stream()
+            ClusterManagerEx.getInstance().getCachedClusters().stream()
                     .filter(ClusterManagerEx.getInstance().getHDInsightClusterFilterPredicate())
-                    .collect(Collectors.toList());
+                    .forEach(cluster -> addChildNode(new ClusterNode(this, cluster)));
+        }
+    }
 
-            if (clusterDetailList != null) {
-                for (IClusterDetail clusterDetail : clusterDetailList) {
-                    addChildNode(new ClusterNode(this, clusterDetail));
-                }
-            }
+    @Override
+    protected void refreshFromAzure() throws Exception {
+        synchronized (this) {
+            ClusterManagerEx.getInstance().getClusterDetails();
         }
     }
 

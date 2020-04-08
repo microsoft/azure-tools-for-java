@@ -25,11 +25,12 @@ package com.microsoft.intellij.helpers.arm;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
 import com.intellij.openapi.fileEditor.FileEditorProvider;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-public class ResourceTemplateViewProvider implements FileEditorProvider {
+public class ResourceTemplateViewProvider implements FileEditorProvider, DumbAware {
 
     public static final String TYPE = "RESOURCE_TEMPLATE_VIEW";
 

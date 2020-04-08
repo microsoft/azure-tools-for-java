@@ -24,7 +24,7 @@ package com.microsoft.intellij.feedback
 
 class ReportableSurvey(shortMessage: String) : Reportable(shortMessage) {
     private val questions = listOf(
-                "#### 1. Are you satisfied with the Azure Spark development functionalities & experiences offered in Azure Toolkit for IntelliJ? Please rate us from 1 (poor) to 10 (excellent).",
+                "#### 1. Are you satisfied with the Apache Spark development functionalities & experiences offered in Azure Toolkit for IntelliJ? Please rate us from 1 (poor) to 10 (excellent).",
                 "#### 2. What did you like or dislike about Azure Toolkit for IntelliJ?",
                 "#### 3. What enhancements would you like Azure Toolkit for IntelliJ to implement?"
     )

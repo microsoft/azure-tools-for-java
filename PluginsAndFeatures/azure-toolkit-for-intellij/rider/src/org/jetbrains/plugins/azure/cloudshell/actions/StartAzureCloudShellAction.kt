@@ -41,17 +41,16 @@ import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.openapi.wm.ToolWindowManager
 import com.microsoft.aad.adal4j.AuthenticationException
 import com.microsoft.azure.AzureEnvironment
-import com.microsoft.azuretools.authmanage.AdAuthManager
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
+import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionParameters
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionTerminalParameters
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
-import org.jetbrains.plugins.azure.cloudshell.rest.getRetrofitClient
 import org.jetbrains.plugins.azure.cloudshell.terminal.AzureCloudTerminalFactory
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 import org.jetbrains.plugins.terminal.TerminalView
@@ -129,9 +128,7 @@ class StartAzureCloudShellAction : AnAction() {
     private fun startAzureCloudShell(project: Project, azureManager: AzureManager, subscriptionDetail: SubscriptionDetail) {
         try {
             logger.debug("Start Azure Cloud Shell for subscription ${subscriptionDetail.subscriptionId}; tenant ${subscriptionDetail.tenantId}")
-
-            val authManager = AdAuthManager.getInstance()
-            val tokenCredentials = RefreshableTokenCredentials(authManager, subscriptionDetail.tenantId)
+            val tokenCredentials = RefreshableTokenCredentials(azureManager, subscriptionDetail.tenantId)
 
             provisionAzureCloudShell(project, azureManager, tokenCredentials, subscriptionDetail)
         } catch (e: AuthenticationException) {
@@ -202,7 +199,7 @@ class StartAzureCloudShellAction : AnAction() {
                 val shellUrl = "$provisionUrl/terminals"
 
                 // Fetch graph and key vault tokens
-                val credentials = RefreshableTokenCredentials(AdAuthManager.getInstance(), subscriptionDetail.tenantId)
+                val credentials = RefreshableTokenCredentials(azureManager, subscriptionDetail.tenantId)
                 val graphToken = credentials.getToken(azureManager.environment.azureEnvironment.graphEndpoint())
                 val vaultToken = credentials.getToken("https://" + azureManager.environment.azureEnvironment.keyVaultDnsSuffix().trimStart('.') + "/")
 

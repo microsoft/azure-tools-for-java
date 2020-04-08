@@ -1,0 +1,27 @@
+package $(packageName);
+
+import com.microsoft.azure.functions.annotation.*;
+import com.microsoft.azure.functions.*;
+
+/**
+ * Azure Functions with Service Topic Trigger.
+ */
+public class $(className) {
+    /**
+     * This function will be invoked when a new message is received at the Service Bus Topic.
+     */
+    @FunctionName("ServiceBusTopicTrigger-Java")
+    public void run(
+        @ServiceBusTopicTrigger(
+            name = "message",
+            topicName = "mysbtopic",
+            subscriptionName = "mysubscription",
+            connection = "MyStorageConnectionAppSetting"
+        )
+        String message,
+        final ExecutionContext context
+    ) {
+        context.getLogger().info("Java Service Bus Topic trigger function executed.");
+        context.getLogger().info(message);
+    }
+}

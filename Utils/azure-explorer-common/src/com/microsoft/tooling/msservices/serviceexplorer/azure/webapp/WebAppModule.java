@@ -22,9 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import java.io.IOException;
-
-import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -37,6 +34,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
+
 import java.util.HashMap;
 import java.util.List;
 

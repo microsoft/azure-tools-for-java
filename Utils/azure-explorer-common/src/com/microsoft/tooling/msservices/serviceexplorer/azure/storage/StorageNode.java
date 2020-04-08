@@ -36,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_STORAGE_IN_PORTAL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
 public class StorageNode extends RefreshableNode implements TelemetryProperties {
@@ -66,6 +68,33 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
         properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
         return properties;
+    }
+
+    public class OpenInPortalAction extends AzureNodeActionListener {
+
+        public OpenInPortalAction() {
+            super(StorageNode.this, "View storage in portal");
+        }
+
+        @Override
+        protected void azureNodeAction(NodeActionEvent e) throws AzureCmdException {
+            openResourcesInPortal(subscriptionId, storageAccount.id());
+        }
+
+        @Override
+        protected void onSubscriptionsChanged(NodeActionEvent e) throws AzureCmdException {
+
+        }
+
+        @Override
+        protected String getServiceName(NodeActionEvent event) {
+            return STORAGE;
+        }
+
+        @Override
+        protected String getOperationName(NodeActionEvent event) {
+            return OPEN_STORAGE_IN_PORTAL;
+        }
     }
 
     public class DeleteStorageAccountAction extends AzureNodeActionPromptListener {
@@ -124,6 +153,7 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
+        addAction("Open in Portal", new OpenInPortalAction());
         addAction("Delete", new DeleteStorageAccountAction());
         return super.initActions();
     }

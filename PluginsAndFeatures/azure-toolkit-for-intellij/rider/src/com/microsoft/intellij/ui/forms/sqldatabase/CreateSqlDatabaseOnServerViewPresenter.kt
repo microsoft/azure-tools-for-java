@@ -26,7 +26,7 @@ import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.Signal
 import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.sql.DatabaseEditions
+import com.microsoft.azure.management.sql.DatabaseEdition
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.intellij.helpers.base.AzureMvpPresenter
@@ -57,7 +57,7 @@ class CreateSqlDatabaseOnServerViewPresenter<V : CreateSqlDatabaseOnServerMvpVie
     }
 
     fun onLoadDatabaseEditions() =
-            mvpView.fillDatabaseEditions(DatabaseEditions.values().toList())
+            mvpView.fillDatabaseEditions(DatabaseEdition.values().toList())
 
     fun onLoadComputeSize() =
             mvpView.fillDatabaseComputeSize(ServiceObjectiveName.values().toList())

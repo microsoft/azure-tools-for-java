@@ -22,6 +22,8 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.keyvault.KeyVaultClient;
@@ -29,10 +31,14 @@ import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azuretools.adauth.PromptBehavior;
+import com.microsoft.azuretools.authmanage.AzureManagerFactory;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
+import com.microsoft.azuretools.authmanage.interact.INotification;
+import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
@@ -40,11 +46,35 @@ import com.microsoft.rest.credentials.ServiceClientCredentials;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.microsoft.azuretools.Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_SP;
+
 public class ServicePrincipalAzureManager extends AzureManagerBase {
+    public static class ServicePrincipalAzureManagerFactory implements AzureManagerFactory {
+        @Override
+        public AzureManager factory(final AuthMethodDetails authMethodDetails) {
+            final String credFilePath = authMethodDetails.getCredFilePath();
+            if (StringUtils.isBlank(credFilePath)) {
+                throw new IllegalArgumentException("This credential file path is blank");
+            }
+
+            final Path filePath = Paths.get(credFilePath);
+            if (!Files.exists(filePath)) {
+                final INotification nw = CommonSettings.getUiFactory().getNotificationWindow();
+                nw.deliver("Credential File Error", "File doesn't exist: " + filePath.toString());
+                throw new IllegalArgumentException("This credential file doesn't exist: " + filePath.toString());
+            }
+
+            return new ServicePrincipalAzureManager(new File(credFilePath));
+        }
+    }
+
     private final static Logger LOGGER = Logger.getLogger(ServicePrincipalAzureManager.class.getName());
     private static Settings settings;
     private final SubscriptionManager subscriptionManager;
@@ -54,7 +84,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
 
     static {
         settings = new Settings();
-        settings.setSubscriptionsDetailsFileName("subscriptionsDetails-sp.json");
+        settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_SP);
     }
 
     public static void cleanPersist() throws IOException {
@@ -161,7 +191,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public String getAccessToken(String tid) throws IOException {
+    public String getAccessToken(String tid, String ignored1, PromptBehavior ignored2) throws IOException {
         String uri = getManagementURI();
         return atc.getToken(uri);
     }

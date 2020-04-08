@@ -23,7 +23,7 @@
 package com.microsoft.azuretools.authmanage.srvpri.rest;
 
 import com.microsoft.azuretools.adauth.PromptBehavior;
-import com.microsoft.azuretools.authmanage.AdAuthManager;
+import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -56,10 +56,13 @@ abstract class RequestFactoryBase implements IRequestFactory {
         if (urlPrefix == null) throw new NullPointerException("this.urlPrefix is null");
         return urlPrefix;
     }
+
+    abstract AccessTokenAzureManager getPreAccessTokenAzureManager();
+
     public String getAccessToken() throws IOException {
         if (tenantId == null) throw new IllegalArgumentException("tenantId is null");
         if (resource == null) throw new IllegalArgumentException("resource is null");
 
-        return AdAuthManager.getInstance().getAccessToken(tenantId, resource, promptBehavior);
+        return getPreAccessTokenAzureManager().getAccessToken(tenantId, resource, promptBehavior);
     }
 }
