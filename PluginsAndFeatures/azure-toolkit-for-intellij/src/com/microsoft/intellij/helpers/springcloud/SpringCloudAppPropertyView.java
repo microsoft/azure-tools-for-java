@@ -467,7 +467,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
             ApplicationManager.getApplication().invokeLater(() ->
-                PluginUtil.displayInfoDialog("Update successfully", "Update app configuration successfully"));
+                PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration successfully"));
             refreshData();
 
         } catch (Exception e) {

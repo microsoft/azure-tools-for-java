@@ -303,7 +303,6 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
     @Override
     public void fillApps(@NotNull List<AppResourceInner> apps) {
-        // cbSpringApps.removeAllItems();
         AzureResourceWrapper currentSel = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
         cbSpringApps.removeAllItems();
         cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
@@ -328,16 +327,13 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
             cbSpringApps.addItem(currentSel);
             cbSpringApps.setSelectedItem(currentSel);
         } else {
-            AzureResourceWrapper select2 = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
-            if (select2 != null && select2.isFixedOption()) {
-                // avoid select createApp by default
-                if (apps.isEmpty()) {
-                    AzureResourceWrapper emptyOption = new AzureResourceWrapper("<Empty>", true);
-                    cbSpringApps.addItem(emptyOption);
-                    cbSpringApps.setSelectedItem(emptyOption);
-                } else {
-                    cbSpringApps.setSelectedItem(firstItem);
-                }
+            // avoid select createApp by default
+            if (apps.isEmpty()) {
+                AzureResourceWrapper emptyOption = new AzureResourceWrapper("<Empty>", true);
+                cbSpringApps.addItem(emptyOption);
+                cbSpringApps.setSelectedItem(emptyOption);
+            } else {
+                cbSpringApps.setSelectedItem(firstItem);
             }
         }
         cbSpringApps.setEnabled(true);
