@@ -566,7 +566,7 @@ public class SpringCloudAppPropertyView extends BaseEditor
     private void renderPersistent(SpringAppViewModel model) {
         Font font = persistentLabel.getFont();
         persistentLabel.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
-         this.persistentLabel.setText(String.format("%s (%dG of %dG used)",
+        this.persistentLabel.setText(String.format("%s (%dG of %dG used)",
                                                    model.getPersistentMountPath(), model.getUsedStorageInGB(), model.getTotalStorageInGB()));
     }
 
