@@ -247,6 +247,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         freezeUI();
         this.cpuCombo.setEditable(false);
         this.memCombo.setEditable(false);
+        this.javaVersionCombo.setEditable(false);
     }
 
     @NotNull
