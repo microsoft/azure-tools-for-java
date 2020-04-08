@@ -53,15 +53,14 @@ import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -124,6 +123,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private String appId;
     private String appName;
     private DefaultTableModel instancesTableModel;
+    private Map<Object, Border> borderMap = new ConcurrentHashMap<>();
 
     public SpringCloudAppPropertyView(Project project, String appId) {
         this.project = project;
@@ -246,6 +246,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         Arrays.asList("Java_8", "Java_11").forEach(javaVersionCombo::addItem);
 
         disableAllInput();
+        this.cpuCombo.setEditable(false);
+        this.memCombo.setEditable(false);
     }
 
     @NotNull
@@ -343,10 +345,36 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             return;
         }
         try {
-            saveButton.setEnabled(MapUtils.isNotEmpty(getModifiedDataMap()));
+            Map<String, Object> map = getModifiedDataMap();
+            saveButton.setEnabled(MapUtils.isNotEmpty(map));
+            updateBorder(this.cpuCombo, map.containsKey(CPU));
+            updateBorder(this.memCombo, map.containsKey(MEMORY_IN_GB_KEY));
+            updateBorder(this.jvmOpsTextField, map.containsKey(JVM_OPTIONS_KEY));
+            updateBorder(this.javaVersionCombo, map.containsKey(JAVA_VERSION_KEY));
+            // updateBorder(this.envTable, map.containsKey(ENV_TABLE_KEY));
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             PluginUtil.showErrorNotificationProject(project, "Cannot get property through reflection", e.getMessage());
         }
+    }
+
+    private void updateBorder(final JComponent component, boolean highlight) {
+        if (highlight) {
+            addHighLight(component);
+        } else {
+            removeHighLight(component);
+        }
+    }
+
+    private void removeHighLight(final JComponent component) {
+        Border border = borderMap.remove(component);
+        if (border != null) {
+            component.setBorder(border);
+        }
+    }
+
+    private void addHighLight(final JComponent component) {
+        borderMap.putIfAbsent(component, component.getBorder());
+        component.setBorder(new LineBorder(Color.MAGENTA, 1));
     }
 
     private void triggerPersistentStorage() {
