@@ -230,7 +230,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             this.triggerPublicUrl();
             syncSaveStatus();
         });
-//        this.triggerPublicButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-assign.png"));
+        // this.triggerPublicButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-assign.png"));
         this.triggerPersistentButton.addActionListener(e -> {
             this.triggerPersistentStorage();
             syncSaveStatus();
