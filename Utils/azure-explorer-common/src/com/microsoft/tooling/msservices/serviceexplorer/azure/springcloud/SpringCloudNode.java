@@ -85,6 +85,8 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
             }
         }
         addChildNode(new SpringCloudAppNode(app, deploymentResourceInner, this));
+        // remove the empty postfix
+        this.setName(this.clusterName);
     }
 
     @Override
