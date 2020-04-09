@@ -219,6 +219,9 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         if (StringUtils.isEmpty(getClusterId())) {
             throw new ConfigurationException(NEED_SPECIFY_CLUSTER);
         }
+        if (StringUtils.isEmpty(getAppName())) {
+            throw new ConfigurationException(NEED_SPECIFY_APP_NAME);
+        }
         final ServiceResource serviceResource = serviceResourceMap.computeIfAbsent(getClusterId(), id -> {
             try {
                 return AzureSpringCloudMvpModel.getClusterById(getSubscriptionId(), getClusterId());
@@ -236,9 +239,6 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         final ProvisioningState provisioningState = serviceResource.properties().provisioningState();
         if (provisioningState != ProvisioningState.SUCCEEDED) {
             throw new ConfigurationException(SERVICE_IS_NOT_READY + provisioningState.toString());
-        }
-        if (StringUtils.isEmpty(getAppName())) {
-            throw new ConfigurationException(NEED_SPECIFY_APP_NAME);
         }
     }
 
