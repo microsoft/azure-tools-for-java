@@ -27,11 +27,10 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import java.util.*;
 
 public class DefaultAzureResourceTracker {
-    private static DefaultAzureResourceTracker instance = new DefaultAzureResourceTracker();
     private Map<String, List<IDataRefreshableComponent>> idToNodes = new HashMap<>();
 
     public static DefaultAzureResourceTracker getInstance() {
-        return instance;
+        return SingletonHolder.INSTANCE;
     }
 
     public void registerNode(String id, IDataRefreshableComponent node) {
@@ -72,6 +71,13 @@ public class DefaultAzureResourceTracker {
                 });
 
             }
+        }
+    }
+
+    private static final class SingletonHolder {
+        private static final DefaultAzureResourceTracker INSTANCE = new DefaultAzureResourceTracker();
+
+        private SingletonHolder() {
         }
     }
 }

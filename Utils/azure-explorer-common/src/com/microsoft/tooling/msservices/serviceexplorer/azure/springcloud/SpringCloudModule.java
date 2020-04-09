@@ -34,7 +34,7 @@ import java.util.List;
 public class SpringCloudModule extends AzureRefreshableNode implements SpringCloudModuleView {
     protected static final String ICON_FILE = "azure-springcloud-small.png";
     private static final String SPRING_SERVICE_MODULE_ID = SpringCloudModule.class.getName();
-    private static final String BASE_MODULE_NAME = "Spring Cloud";
+    private static final String BASE_MODULE_NAME = "Spring Cloud(Preview)";
     private final SpringCloudModulePresenter<SpringCloudModule> springCloudModulePresenter;
 
     public SpringCloudModule(final Node parent) {

@@ -473,7 +473,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
         Map<String, String> oldEnvironment = viewModel.getEnvironment();
         Map<String, String> newEnvironment = this.envTable.getEnvironmentVariables();
-        if (!Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
+        // Maps.difference cannot handling null
+        if ((oldEnvironment == null && MapUtils.isNotEmpty(newEnvironment)) || !Maps.difference(oldEnvironment, newEnvironment).areEqual()) {
             map.put(ENV_TABLE_KEY, newEnvironment);
         }
         return map;
@@ -622,7 +623,6 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
 
     private void prepareViewModel(AppResourceInner app, DeploymentResourceInner deploy, String testUrl) {
         try {
-
             if (app == null) {
                 updateModel(null);
                 return;
