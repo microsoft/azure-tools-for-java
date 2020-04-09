@@ -48,6 +48,7 @@ import com.microsoft.intellij.runner.functions.library.function.CreateFunctionHa
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.ValidationUtils;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -229,7 +230,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
                                     null));
                         }
                     });
-                    FunctionCreationDialog.super.doOKAction();
+                    DefaultLoader.getIdeHelper().invokeLater(() -> FunctionCreationDialog.super.doOKAction());
                 }, (ex) -> {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         PluginUtil.displayErrorDialog("Create Function App Failed", "Create Function Failed : " + ex.getMessage());
