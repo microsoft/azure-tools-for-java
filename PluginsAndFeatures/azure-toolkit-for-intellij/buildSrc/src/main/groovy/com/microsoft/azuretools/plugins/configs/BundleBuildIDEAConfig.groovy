@@ -27,7 +27,7 @@ import org.gradle.api.Project
 class BundleBuildIDEAConfig implements JdkUrlConfigurable {
     // Downloading resources
     String jdkUrl
-    String jbrUrl = "https://bintray.com/jetbrains/intellij-jbr/download_file?file_path=jbr_jfx_jcef-11_0_6-windows-x64-b765.25.tar.gz"
+    String jbrUrl = "https://jetbrains.bintray.com/intellij-jbr/jbr_jfx_jcef-11_0_6-windows-x64-b765.25.tar.gz"
     String scalaSdkUrl = "https://downloads.lightbend.com/scala/2.11.12/scala-2.11.12.zip"
     String winutilsUrl = "https://github.com/steveloughran/winutils/archive/tag_2017-08=29-hadoop-2.8.1-native.zip"
 
