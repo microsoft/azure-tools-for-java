@@ -57,7 +57,7 @@ public class EnvironmentVariablesTextFieldWithBrowseButton extends TextFieldWith
     public EnvironmentVariablesTextFieldWithBrowseButton() {
         super();
         addActionListener(e -> {
-            if (this.isEnabled()) {
+            if (this.isEditable()) {
                 final EnvironmentVariablesEditDialog variablesDialog = new EnvironmentVariablesEditDialog(
                         getEnvironmentVariables());
                 if (variablesDialog.showAndGet()) {
@@ -74,6 +74,8 @@ public class EnvironmentVariablesTextFieldWithBrowseButton extends TextFieldWith
             @Override
             protected void textChanged(@NotNull DocumentEvent e) {
                 if (!StringUtil.equals(stringifyEnvs(environmentVariables), getText())) {
+                    EnvironmentVariablesTextFieldWithBrowseButton.this.environmentVariables =
+                            EnvVariablesTable.parseEnvsFromText(getText());
                     fireStateChanged();
                 }
             }
