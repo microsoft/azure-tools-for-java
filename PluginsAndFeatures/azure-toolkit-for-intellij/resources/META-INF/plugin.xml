@@ -44,6 +44,7 @@
             </ul>
         </li>
         <li>Support trigger function with timer trigger</li>
+        <li>Support log streaming for Windows functions</li>
     </ul>
     <h4>Fixed</h4>
     <ul>

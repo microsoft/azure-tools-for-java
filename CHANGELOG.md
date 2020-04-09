@@ -65,6 +65,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
     * Getting test endpoint
     * Instance status(shown in app properties view)
 - Support trigger function with timer trigger
+- Support log streaming for Windows functions
 
 ### Fixed
 - [#4157](https://github.com/microsoft/azure-tools-for-java/issues/4157) Can't trigger function/admin http function when click 'Trigger Function' button
