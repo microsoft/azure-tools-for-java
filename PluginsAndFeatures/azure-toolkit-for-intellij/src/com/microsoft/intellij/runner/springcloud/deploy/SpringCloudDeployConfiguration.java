@@ -30,8 +30,11 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ProvisioningState;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceResource;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
@@ -40,11 +43,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
     private static final String NEED_SPECIFY_PROJECT = "Please select a maven project";
+    private static final String NEED_SPECIFY_SUBSCRIPTION = "Please select your subscription.";
+    private static final String NEED_SPECIFY_CLUSTER = "Please select a target cluster.";
+    private static final String NEED_SPECIFY_APP_NAME = "Please select a target app.";
+    private static final String SERVICE_IS_NOT_READY = "Service is not ready for deploy, current status is ";
+    private static final String TARGET_CLUSTER_DOES_NOT_EXISTS = "Target cluster does not exists.";
+    private static final String TARGET_CLUSTER_IS_NOT_AVAILABLE = "Target cluster cannot be found in current subscription";
+
+    private final Map<String, ServiceResource> serviceResourceMap = new HashMap<>();
+
     private final SpringCloudModel springCloudModel;
 
     public SpringCloudDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -199,5 +213,33 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         if (StringUtils.isEmpty(getProjectName())) {
             throw new ConfigurationException(NEED_SPECIFY_PROJECT);
         }
+        if (StringUtils.isEmpty(getSubscriptionId())) {
+            throw new ConfigurationException(NEED_SPECIFY_SUBSCRIPTION);
+        }
+        if (StringUtils.isEmpty(getClusterId())) {
+            throw new ConfigurationException(NEED_SPECIFY_CLUSTER);
+        }
+        if (StringUtils.isEmpty(getAppName())) {
+            throw new ConfigurationException(NEED_SPECIFY_APP_NAME);
+        }
+        final ServiceResource serviceResource = serviceResourceMap.computeIfAbsent(getClusterId(), id -> {
+            try {
+                return AzureSpringCloudMvpModel.getClusterById(getSubscriptionId(), getClusterId());
+            } catch (IOException e) {
+                return null;
+            }
+        });
+        if (serviceResource == null) {
+            throw new ConfigurationException(TARGET_CLUSTER_DOES_NOT_EXISTS);
+        }
+        // SDK will return null inner service object if cluster exists in other subscription
+        if (serviceResource.inner() == null) {
+            throw new ConfigurationException(TARGET_CLUSTER_IS_NOT_AVAILABLE);
+        }
+        final ProvisioningState provisioningState = serviceResource.properties().provisioningState();
+        if (provisioningState != ProvisioningState.SUCCEEDED) {
+            throw new ConfigurationException(SERVICE_IS_NOT_READY + provisioningState.toString());
+        }
     }
+
 }
