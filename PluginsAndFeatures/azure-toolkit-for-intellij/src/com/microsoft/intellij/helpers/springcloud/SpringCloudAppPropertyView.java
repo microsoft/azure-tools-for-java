@@ -71,6 +71,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefreshableComponent<AppResourceInner, DeploymentResourceInner> {
+    private static final LineBorder HIGH_LIGHT_BORDER = new LineBorder(Color.decode("0x8a2da5"), 1);
     private static final String DELETE_APP_PROMPT_MESSAGE = "This operation will delete the Spring Cloud App: '%s'.\n" +
             "Are you sure you want to continue?";
     private static final String DELETE_APP_DIRTY_PROMPT_MESSAGE = "This operation will discard your changes and delete the Spring Cloud App: '%s'.\n" +
@@ -406,7 +407,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         synchronized (borderMap) {
             if (!borderMap.containsKey(component)) {
                 borderMap.put(component, component.getBorder());
-                component.setBorder(new LineBorder(Color.decode("0x8a2da5"), 1));
+                component.setBorder(HIGH_LIGHT_BORDER);
             }
         }
     }
