@@ -134,7 +134,6 @@
               <forms defaultalign-horz="false"/>
             </constraints>
             <properties>
-              <icon value="actions/restart.png"/>
               <text value="Restart"/>
             </properties>
           </component>

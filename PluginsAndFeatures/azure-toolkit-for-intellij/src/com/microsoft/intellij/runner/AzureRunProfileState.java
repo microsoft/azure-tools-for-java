@@ -101,6 +101,12 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
 
     }
 
+    protected void setText(RunProcessHandler runProcessHandler, String text) {
+        if (runProcessHandler.isProcessRunning()) {
+            runProcessHandler.setText(text);
+        }
+    }
+
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap){}
 
     private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {

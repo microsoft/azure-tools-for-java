@@ -38,6 +38,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
@@ -207,6 +208,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                 }
             });
         });
+        this.restartButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-restart.png"));
         refreshData();
 
         jvmOpsTextField.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -229,6 +231,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             this.triggerPublicUrl();
             syncSaveStatus();
         });
+        // this.triggerPublicButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-assign.png"));
         this.triggerPersistentButton.addActionListener(e -> {
             this.triggerPersistentStorage();
             syncSaveStatus();
