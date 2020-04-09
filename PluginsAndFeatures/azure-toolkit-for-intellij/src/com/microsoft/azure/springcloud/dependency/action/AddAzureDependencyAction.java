@@ -41,6 +41,7 @@ import com.intellij.openapi.vfs.newvfs.RefreshQueue;
 import com.intellij.psi.PsiFile;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.maven.DependencyArtifact;
 import com.microsoft.intellij.maven.SpringCloudDependencyManager;
@@ -150,6 +151,16 @@ public class AddAzureDependencyAction extends AzureAnAction {
         } else {
             presentation.setEnabledAndVisible(isMaven && ModuleTypeId.JAVA_MODULE.equals(module.getModuleTypeName()));
         }
+    }
+
+    @Override
+    protected String getServiceName(AnActionEvent event) {
+        return TelemetryConstants.SPRING_CLOUD;
+    }
+
+    @Override
+    protected String getOperationName(AnActionEvent event) {
+        return TelemetryConstants.ADD_DEPENDENCY_SPRING_CLOUD_APP;
     }
 
     protected static boolean isEditingMavenPomXml(Module module, AnActionEvent event) {

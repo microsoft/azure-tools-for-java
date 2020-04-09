@@ -42,6 +42,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.List;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SPRING_CLOUD;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP;
 
 @Name("Streaming Logs")
 public class SpringCloudStreamingLogsAction extends NodeActionListener {
@@ -65,7 +66,7 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        EventUtil.executeWithLog(SPRING_CLOUD, "StreamingLog", operation -> {
+        EventUtil.executeWithLog(SPRING_CLOUD, START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
             DefaultLoader.getIdeHelper().runInBackground(project, "Start Streaming Logs", false, true, null, () -> {
                 try {
                     final DeploymentResourceInner deploymentResourceInner =

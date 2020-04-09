@@ -38,6 +38,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
@@ -314,7 +315,9 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
                                                          true, String.format("%s app '%s'", actionName, this.appName),
                 () -> {
-                    action.accept(changes);
+                    EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
+                        action.accept(changes);
+                    });
                     refreshData();
                 });
 
