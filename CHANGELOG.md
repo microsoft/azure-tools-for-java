@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.35.0](#3350)
   - [3.34.0](#3340)
   - [3.33.1](#3331)
   - [3.33.0](#3330)
@@ -46,6 +47,31 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.35.0
+
+### Added
+- Add Azure Spring Cloud support in Azure Toolkits
+  - Manage Azure Spring Cloud project dependencies
+  - Manage Azure Spring Cloud apps in Azure Explorer
+    * Create/Delete/Start/Stop/Restart
+    * Assign/un-assign public endpoint
+    * Update environment variables
+    * Update JVM options
+    * View app properties
+  - Deploying apps from current project
+  - Monitoring and troubleshooting apps
+    * Getting public url
+    * Getting test endpoint
+    * Instance status(shown in app properties view)
+- Support trigger function with timer trigger
+
+### Fixed
+- [#4157](https://github.com/microsoft/azure-tools-for-java/issues/4157) Can't trigger function/admin http function when click 'Trigger Function' button
+- [#4160](https://github.com/microsoft/azure-tools-for-java/issues/4160) Nothing shown in function run mark
+- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fixed NPE caused Spark job submission failure in 201EAP
+- [#4213](https://github.com/microsoft/azure-tools-for-java/issues/4213) Unhandled error when creating function app
+- [#4215](https://github.com/microsoft/azure-tools-for-java/issues/4215) App settings not loaded when openning the deploy wizard
 
 ## 3.34.0
 
