@@ -419,7 +419,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             if (viewModel.isEnablePersistentStorage()) {
                 renderPersistent(this.viewModel);
             } else {
-                this.persistentLabel.setText("Persistent storage will be displayed here after you save the settings.");
+                this.persistentLabel.setText("Persistent storage will be updated after you save the settings.");
             }
         } else {
             this.persistentLabel.setText(DISABLED_TEXT);
@@ -431,7 +431,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private void triggerPublicUrl() {
         final String text = this.triggerPublicButton.getText();
         boolean updatePublicTrue = StringUtils.equalsIgnoreCase(text, ENABLE_TEXT);
-        setPublicUrl(updatePublicTrue, this.viewModel.getPublicUrl(), "URL will be displayed here after you save the"
+        setPublicUrl(updatePublicTrue, this.viewModel.getPublicUrl(), "URL will be updated after you save the"
                 + " settings.");
     }
 
