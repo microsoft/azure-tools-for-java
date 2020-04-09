@@ -37,6 +37,15 @@ import org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBef
 class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
     : DotNetConfigurationFactoryBase<AzureFunctionsHostConfiguration>(type) {
 
+    companion object {
+        private const val FACTORY_ID = "AzureFunctionsHostFactory"
+        private const val FACTORY_NAME = "Azure functions host factory"
+    }
+
+    override fun getId(): String = FACTORY_ID
+
+    override fun getName(): String = FACTORY_NAME
+
     override fun configureBeforeRunTaskDefaults(providerID: Key<out BeforeRunTask<BeforeRunTask<*>>>?,
                                                 task: BeforeRunTask<out BeforeRunTask<*>>?) {
         if (providerID == BuildFunctionsProjectBeforeRunTaskProvider.providerId && task is BuildProjectBeforeRunTask) {

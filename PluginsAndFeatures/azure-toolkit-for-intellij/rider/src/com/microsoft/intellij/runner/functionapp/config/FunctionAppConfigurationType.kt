@@ -24,7 +24,6 @@ package com.microsoft.intellij.runner.functionapp.config
 
 import com.intellij.execution.configurations.ConfigurationType
 import com.microsoft.icons.CommonIcons
-import org.jetbrains.annotations.Nls
 import javax.swing.Icon
 
 class FunctionAppConfigurationType : ConfigurationType {
@@ -35,18 +34,13 @@ class FunctionAppConfigurationType : ConfigurationType {
         private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish Function App configuration"
     }
 
-    override fun getId(): String {
-        return RUN_CONFIG_TYPE_ID
-    }
+    override fun getId(): String = RUN_CONFIG_TYPE_ID
 
-    @Nls
     override fun getDisplayName() = RUN_CONFIG_TYPE_NAME
 
-    @Nls
     override fun getConfigurationTypeDescription() = RUN_CONFIG_TYPE_DESCRIPTION
 
     override fun getIcon(): Icon = CommonIcons.AzureFunctions.FunctionAppConfigurationType
 
-    override fun getConfigurationFactories() =
-            arrayOf(FunctionAppConfigurationFactory(this))
+    override fun getConfigurationFactories() = arrayOf(FunctionAppConfigurationFactory(this))
 }

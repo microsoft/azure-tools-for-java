@@ -30,8 +30,11 @@ import com.intellij.openapi.project.Project
 class FunctionAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
 
     companion object {
+        private const val FACTORY_ID = "AzureFunctionAppFactory"
         private const val FACTORY_NAME = "Azure Function App"
     }
+
+    override fun getId(): String = FACTORY_ID
 
     override fun getName() = FACTORY_NAME
 

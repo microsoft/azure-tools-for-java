@@ -40,11 +40,13 @@ class AzureFunctionsConfigurationProducer
     : LazyRunConfigurationProducer<AzureFunctionsHostConfiguration>() {
 
     override fun getConfigurationFactory(): ConfigurationFactory =
-            AzureFunctionsHostConfigurationFactory(AzureFunctionsHostConfigurationType())
+            AzureFunctionsHostConfigurationType.instance.configurationFactories.first()
 
-    override fun setupConfigurationFromContext(configuration: AzureFunctionsHostConfiguration,
-                                               context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
-
+    override fun setupConfigurationFromContext(
+            configuration: AzureFunctionsHostConfiguration,
+            context: ConfigurationContext,
+            sourceElement: Ref<PsiElement>
+    ): Boolean {
         val selectedProject = context.getSelectedProject()
         val selectedElement = context.location?.psiElement
         if (selectedProject == null && selectedElement == null) return false
@@ -87,8 +89,10 @@ class AzureFunctionsConfigurationProducer
 
     override fun isPreferredConfiguration(self: ConfigurationFromContext?, other: ConfigurationFromContext?) = true
 
-    override fun isConfigurationFromContext(configurationConfiguration: AzureFunctionsHostConfiguration,
-                                            context: ConfigurationContext): Boolean {
+    override fun isConfigurationFromContext(
+            configurationConfiguration: AzureFunctionsHostConfiguration,
+            context: ConfigurationContext
+    ): Boolean {
         val item = context.getSelectedProject() ?: return false
         return FileUtil.toSystemIndependentName(item.getFile()?.path ?: "") ==
                 configurationConfiguration.parameters.projectFilePath

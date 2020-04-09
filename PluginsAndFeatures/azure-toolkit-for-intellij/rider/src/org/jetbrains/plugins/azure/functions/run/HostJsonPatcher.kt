@@ -26,7 +26,6 @@ import com.google.gson.*
 import com.jetbrains.rider.util.idea.getLogger
 import java.io.File
 
-
 object HostJsonPatcher {
     private val logger = getLogger<HostJsonPatcher>()
     private val functionsPropertyName = "functions"

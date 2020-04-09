@@ -25,6 +25,8 @@ package org.jetbrains.plugins.azure.functions.run
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationTypeBase
+import com.intellij.execution.configurations.ConfigurationTypeUtil
+import com.intellij.execution.configurations.runConfigurationType
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.model.RunnableProject
@@ -38,11 +40,17 @@ import com.microsoft.icons.CommonIcons
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
 
-class AzureFunctionsHostConfigurationType : ConfigurationTypeBase("AzureFunctionsHost", "Azure Functions host",
-        "Azure Functions host", CommonIcons.AzureFunctions.FunctionAppRunConfiguration), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
+class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
+        id = "AzureFunctionsHost",
+        displayName = "Azure Functions host",
+        description = "Azure Function Applications runner",
+        icon = CommonIcons.AzureFunctions.FunctionAppRunConfiguration
+), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
 
     companion object {
-        fun isTypeApplicable(kind: RunnableProjectKind) =
+        val instance get() = runConfigurationType<AzureFunctionsHostConfigurationType>()
+
+        fun isTypeApplicable(kind: RunnableProjectKind): Boolean =
                 kind == RunnableProjectKind.AzureFunctions
     }
 

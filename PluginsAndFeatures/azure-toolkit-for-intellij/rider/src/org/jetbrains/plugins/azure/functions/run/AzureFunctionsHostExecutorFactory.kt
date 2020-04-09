@@ -32,9 +32,7 @@ import com.jetbrains.rider.util.idea.getLogger
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 
-class AzureFunctionsHostExecutorFactory(
-        private val parameters: AzureFunctionsHostConfigurationParameters
-) : IExecutorFactory {
+class AzureFunctionsHostExecutorFactory(private val parameters: AzureFunctionsHostConfigurationParameters) : IExecutorFactory {
 
     private val logger = getLogger<AzureFunctionsHostExecutorFactory>()
 
