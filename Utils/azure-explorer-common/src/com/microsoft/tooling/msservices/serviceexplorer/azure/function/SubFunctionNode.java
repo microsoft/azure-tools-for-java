@@ -57,8 +57,6 @@ public class SubFunctionNode extends Node {
     private static final String HTTP_TRIGGER_URL = "https://%s/api/%s";
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
     private static final String NONE_HTTP_TRIGGER_URL = "https://%s/admin/functions/%s";
-    private static final String DEFAULT_FUNCTION_KEY = "default";
-    private static final String MASTER_FUNCTION_KEY = "_master";
 
     private String cachedMasterKey;
     private FunctionApp functionApp;
@@ -75,7 +73,7 @@ public class SubFunctionNode extends Node {
         addAction("Trigger Function",
                 new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
                     @Override
-                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                    protected void actionPerformed(NodeActionEvent e) {
                         try {
                             DefaultLoader.getIdeHelper().runInBackground(getProject(), "Triggering Function",
                                     false, false, null, () -> trigger());
