@@ -42,6 +42,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
+import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -58,6 +59,8 @@ public class SubFunctionNode extends Node {
     private static final String NONE_HTTP_TRIGGER_URL = "https://%s/admin/functions/%s";
     private static final String DEFAULT_FUNCTION_KEY = "default";
     private static final String MASTER_FUNCTION_KEY = "_master";
+
+    private String cachedMasterKey;
     private FunctionApp functionApp;
     private FunctionEnvelope functionEnvelope;
 
@@ -98,6 +101,9 @@ public class SubFunctionNode extends Node {
             case "timertrigger":
                 triggerTimerTrigger();
                 break;
+            case "eventhubtrigger":
+                triggerEventHubTrigger();
+                break;
             default:
                 DefaultLoader.getUIHelper().showInfo(this, String.format("%s is not supported for now.",
                         StringUtils.capitalize(triggerType)));
@@ -109,12 +115,7 @@ public class SubFunctionNode extends Node {
     // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
     private void triggerTimerTrigger() {
         try {
-            final String masterKey = getFunctionMasterKey();
-            final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
-            final HttpPost request = new HttpPost(targetUrl);
-            request.setHeader("x-functions-key", masterKey);
-            request.setHeader("Content-Type", "application/json");
-            // Add empty json body, could set some values according to function.json in later pr
+            final HttpPost request = getFunctionTriggerRequest();
             final StringEntity entity = new StringEntity("{}");
             request.setEntity(entity);
             HttpClients.createDefault().execute(request);
@@ -124,23 +125,48 @@ public class SubFunctionNode extends Node {
         }
     }
 
-    // work around for API getMasterKey failed
-    private String getFunctionMasterKey() throws IOException {
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        final String subscriptionId = getSegment(functionApp.id(), "subscriptions");
-        final String resourceGroup = getSegment(functionApp.id(), "resourceGroups");
-        final String tenant = azureManager.getTenantIdBySubscription(subscriptionId);
-        final String authToken = azureManager.getAccessToken(tenant);
-        final String targetUrl = String.format("https://management.azure.com/subscriptions/%s/resourceGroups/%s/" +
-                "providers/Microsoft.Web/sites/%s/host/default/listkeys?api-version=2019-08-01",
-                subscriptionId, resourceGroup, functionApp.name());
+    private void triggerEventHubTrigger() {
+        try {
+            final HttpPost request = getFunctionTriggerRequest();
+            final String value = JOptionPane.showInputDialog(tree.getParent(), "Please input test value: ");
+            final StringEntity entity = new StringEntity(String.format("{\"input\":\"'%s'\"}", value));
+            request.setEntity(entity);
+            HttpClients.createDefault().execute(request);
+        } catch (IOException e) {
+            DefaultLoader.getUIHelper().showError(this,
+                    String.format("Failed to trigger function %s, %s", this.name, e.getMessage()));
+        }
+    }
 
+    private HttpPost getFunctionTriggerRequest() throws IOException {
+        final String masterKey = getFunctionMasterKey();
+        final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
         final HttpPost request = new HttpPost(targetUrl);
-        request.setHeader("Authorization", "Bearer " + authToken);
-        CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-        JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()),
-                JsonObject.class);
-        return jsonObject.get("masterKey").getAsString();
+        request.setHeader("x-functions-key", masterKey);
+        request.setHeader("Content-Type", "application/json");
+        return request;
+    }
+
+    // work around for API getMasterKey failed
+    private synchronized String getFunctionMasterKey() throws IOException {
+        if (StringUtils.isEmpty(cachedMasterKey)) {
+            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            final String subscriptionId = getSegment(functionApp.id(), "subscriptions");
+            final String resourceGroup = getSegment(functionApp.id(), "resourceGroups");
+            final String tenant = azureManager.getTenantIdBySubscription(subscriptionId);
+            final String authToken = azureManager.getAccessToken(tenant);
+            final String targetUrl = String.format("https://management.azure.com/subscriptions/%s/resourceGroups/%s/" +
+                            "providers/Microsoft.Web/sites/%s/host/default/listkeys?api-version=2019-08-01",
+                    subscriptionId, resourceGroup, functionApp.name());
+
+            final HttpPost request = new HttpPost(targetUrl);
+            request.setHeader("Authorization", "Bearer " + authToken);
+            CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+            JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()),
+                    JsonObject.class);
+            cachedMasterKey = jsonObject.get("masterKey").getAsString();
+        }
+        return cachedMasterKey;
     }
 
     private void triggerHttpTrigger(Map binding) {
