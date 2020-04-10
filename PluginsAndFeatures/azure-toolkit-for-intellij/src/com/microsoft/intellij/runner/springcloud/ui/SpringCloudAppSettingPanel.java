@@ -398,11 +398,10 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         }
 
         AzureResourceWrapper ar = getValueFromComboBox(this.cbSpringApps, t -> t, AzureResourceWrapper.class);
-        if (ar != null) {
+        if (ar != null && !ar.isFixedOption()) {
             configuration.setAppName(ar.getName());
             configuration.setCreateNewApp(ar.isNewCreate());
         }
-        configuration.setAppName(getValueFromComboBox(this.cbSpringApps, AzureResourceWrapper::getName, AzureResourceWrapper.class));
 
         configuration.setCpu(getValueFromComboBox(this.cbCPU, Integer::parseInt, String.class));
 
@@ -439,7 +438,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     }
 
     private String getProjectName() {
-        MavenProject mavenProject = (MavenProject) (getCbMavenProject().getSelectedItem());
+        MavenProject mavenProject = (MavenProject) (cbMavenProject.getSelectedItem());
         return mavenProject != null ? mavenProject.getName() : "";
     }
 
@@ -463,25 +462,25 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     @NotNull
     @Override
     protected JComboBox<Artifact> getCbArtifact() {
-        return cbArtifact;
+        return new JComboBox<>();
     }
 
     @NotNull
     @Override
     protected JLabel getLblArtifact() {
-        return lblArtifact;
+        return new JLabel();
     }
 
     @NotNull
     @Override
     protected JComboBox<MavenProject> getCbMavenProject() {
-        return cbMavenProject;
+        return new JComboBox<>();
     }
 
     @NotNull
     @Override
     protected JLabel getLblMavenProject() {
-        return lblMavenProject;
+        return new JLabel();
     }
 
     private void createUIComponents() {
