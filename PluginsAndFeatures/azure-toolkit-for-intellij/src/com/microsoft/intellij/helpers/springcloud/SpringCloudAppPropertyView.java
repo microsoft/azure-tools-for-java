@@ -122,6 +122,13 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private JLabel appNameLabel;
     private JLabel persistentLabel;
     private EnvironmentVariablesTextFieldWithBrowseButton envTable;
+    private JPanel pnlOptions;
+    private JPanel pnlDetails;
+    private JPanel pnlInstances;
+    private JSeparator split;
+    private JLabel lblInstances;
+    private JLabel lblPersistentStorage;
+    private JLabel lblEnv;
     private HideableDecorator instancePanelDecorator;
 
     private SpringAppViewModel viewModel;
@@ -246,7 +253,9 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             }
         });
         this.envTable.getTextField().setEditable(false);
-        instancePanelDecorator = new HideableDecorator(instanceDetailHolder, "Instances", true);
+        this.lblEnv.setLabelFor(envTable.getTextField());
+
+        instancePanelDecorator = new HideableDecorator(instanceDetailHolder, "Instances", false);
         instancePanelDecorator.setContentComponent(instanceDetailPanel);
         instancePanelDecorator.setOn(true);
 
@@ -259,6 +268,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.cpuCombo.setEditable(false);
         this.memCombo.setEditable(false);
         this.javaVersionCombo.setEditable(false);
+
+        initUI();
     }
 
     @NotNull
@@ -323,6 +334,15 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                 });
 
         }
+    }
+
+    private void initUI() {
+        // Todo: find better way to align UI labels
+        ApplicationManager.getApplication().invokeLater(() -> {
+            Dimension di = lblInstances.getPreferredSize();
+            di.setSize(lblPersistentStorage.getWidth(), di.getHeight());
+            lblInstances.setPreferredSize(di);
+        });
     }
 
     private void freezeUI() {
