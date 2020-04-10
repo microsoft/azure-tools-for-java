@@ -57,14 +57,14 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                 "Microsoft.Azure.WebJobs")
 
         private val triggerMap = mapOf(
-            Pair("BlobTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.0")),
-            Pair("QueueTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.0")),
-            Pair("CosmosDBTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.CosmosDB", "3.0.1")),
-            Pair("OrchestrationTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.DurableTask", "1.6.2")),
-            Pair("EventGridTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventGrid", "2.0.0")),
-            Pair("EventHubTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "3.0.0")),
-            Pair("IoTHubTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "3.0.0")),
-            Pair("ServiceBusTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.ServiceBus", "3.0.0"))
+            Pair("BlobTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4")),
+            Pair("QueueTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.Storage", "3.0.4")),
+            Pair("CosmosDBTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.CosmosDB", "3.0.5")),
+            Pair("OrchestrationTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.DurableTask", "2.1.1")),
+            Pair("EventGridTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventGrid", "2.1.0")),
+            Pair("EventHubTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1")),
+            Pair("IoTHubTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.EventHubs", "4.1.1")),
+            Pair("ServiceBusTrigger", PackageDependency("Microsoft.Azure.WebJobs.Extensions.ServiceBus", "4.1.0"))
         )
     }
 
