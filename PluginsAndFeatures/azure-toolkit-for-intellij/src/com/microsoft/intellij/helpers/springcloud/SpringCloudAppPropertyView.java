@@ -106,7 +106,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
     private JLabel lblAppName;
     private JLabel lblPublic;
     private JPanel instanceDetailHolder;
-    private JPanel instanceDetailPanel;
+    private JScrollPane pnlScroll;
     private JPanel statusPanel;
     private JButton triggerPersistentButton;
     private JComboBox memCombo;
@@ -256,7 +256,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
         this.lblEnv.setLabelFor(envTable.getTextField());
 
         instancePanelDecorator = new HideableDecorator(instanceDetailHolder, "Instances", false);
-        instancePanelDecorator.setContentComponent(instanceDetailPanel);
+        instancePanelDecorator.setContentComponent(pnlScroll);
         instancePanelDecorator.setOn(true);
 
         IntStream.range(1, 5).forEach(cpuCombo::addItem);
