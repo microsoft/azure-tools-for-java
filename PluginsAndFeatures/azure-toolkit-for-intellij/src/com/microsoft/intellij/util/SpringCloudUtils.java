@@ -45,7 +45,9 @@ public class SpringCloudUtils {
                                                     DeploymentResourceInner deploymentResourceInner,
                                                     SpringCloudDeployConfiguration configuration) throws IOException {
         final AppPlatformManager appPlatformManager = getAppPlatformManager(configuration.getSubscriptionId());
-        final AppResourceProperties appResourceProperties = appResourceInner.properties()
+        AppResourceProperties appResourceProperties = updateAppResourceProperties(appResourceInner.properties(),
+                                                                                  configuration);
+        appResourceProperties = appResourceProperties
                 .withActiveDeploymentName(deploymentResourceInner.name())
                 .withPublicProperty(configuration.isPublic());
         return appPlatformManager.apps().inner().update(SpringCloudIdHelper.getResourceGroup(configuration.getClusterId()),
@@ -131,8 +133,13 @@ public class SpringCloudUtils {
                                                                      SpringCloudDeployConfiguration configuration) {
         // Enable persistent disk with default parameters
         appResourceProperties = appResourceProperties == null ? new AppResourceProperties() : appResourceProperties;
-        if (appResourceProperties.persistentDisk() == null && configuration.isEnablePersistentStorage()) {
+        final PersistentDisk previousPersistentDisk = appResourceProperties.persistentDisk();
+        final int storageSize = (previousPersistentDisk == null || previousPersistentDisk.sizeInGB() == null) ? 0 :
+                previousPersistentDisk.sizeInGB();
+        if (configuration.isEnablePersistentStorage() && storageSize <= 0) {
             appResourceProperties = appResourceProperties.withPersistentDisk(getDefaultPersistentDisk());
+        } else if (!configuration.isEnablePersistentStorage() && storageSize > 0) {
+            appResourceProperties = appResourceProperties.withPersistentDisk(getEmptyPersistentDisk());
         }
         // As we can't set public policy to an app without active deployment
         if (StringUtils.isNotEmpty(appResourceProperties.activeDeploymentName())) {
@@ -145,6 +152,13 @@ public class SpringCloudUtils {
         final PersistentDisk persistentDisk = new PersistentDisk();
         persistentDisk.withMountPath(SpringCloudConstants.DEFAULT_PERSISTENT_DISK_MOUNT_PATH)
                 .withSizeInGB(SpringCloudConstants.DEFAULT_PERSISTENT_DISK_SIZE);
+        return persistentDisk;
+    }
+
+    private static PersistentDisk getEmptyPersistentDisk() {
+        final PersistentDisk persistentDisk = new PersistentDisk();
+        persistentDisk.withMountPath(null)
+                      .withSizeInGB(0);
         return persistentDisk;
     }
 
