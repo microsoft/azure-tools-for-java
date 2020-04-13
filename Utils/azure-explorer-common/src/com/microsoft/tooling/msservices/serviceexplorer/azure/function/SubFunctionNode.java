@@ -22,29 +22,22 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 import javax.swing.JOptionPane;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
@@ -58,14 +51,15 @@ public class SubFunctionNode extends Node {
     private static final String HTTP_TRIGGER_URL_WITH_CODE = "https://%s/api/%s?code=%s";
     private static final String NONE_HTTP_TRIGGER_URL = "https://%s/admin/functions/%s";
 
-    private String cachedMasterKey;
     private FunctionApp functionApp;
     private FunctionEnvelope functionEnvelope;
+    private FunctionNode functionNode;
 
     public SubFunctionNode(FunctionEnvelope functionEnvelope, FunctionNode parent) {
         super(functionEnvelope.inner().id(), getFunctionTriggerName(functionEnvelope), parent, SUB_FUNCTION_ICON_PATH);
         this.functionEnvelope = functionEnvelope;
         this.functionApp = parent.getFunctionApp();
+        this.functionNode = parent;
     }
 
     @Override
@@ -136,59 +130,57 @@ public class SubFunctionNode extends Node {
         }
     }
 
-    private HttpPost getFunctionTriggerRequest() throws IOException {
-        final String masterKey = getFunctionMasterKey();
-        final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
-        final HttpPost request = new HttpPost(targetUrl);
-        request.setHeader("x-functions-key", masterKey);
-        request.setHeader("Content-Type", "application/json");
-        return request;
-    }
-
-    // work around for API getMasterKey failed
-    private synchronized String getFunctionMasterKey() throws IOException {
-        if (StringUtils.isEmpty(cachedMasterKey)) {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            final String subscriptionId = getSegment(functionApp.id(), "subscriptions");
-            final String resourceGroup = getSegment(functionApp.id(), "resourceGroups");
-            final String tenant = azureManager.getTenantIdBySubscription(subscriptionId);
-            final String authToken = azureManager.getAccessToken(tenant);
-            final String targetUrl = String.format("https://management.azure.com/subscriptions/%s/resourceGroups/%s/" +
-                            "providers/Microsoft.Web/sites/%s/host/default/listkeys?api-version=2019-08-01",
-                    subscriptionId, resourceGroup, functionApp.name());
-
-            final HttpPost request = new HttpPost(targetUrl);
-            request.setHeader("Authorization", "Bearer " + authToken);
-            CloseableHttpResponse response = HttpClients.createDefault().execute(request);
-            JsonObject jsonObject = new Gson().fromJson(new InputStreamReader(response.getEntity().getContent()),
-                    JsonObject.class);
-            cachedMasterKey = jsonObject.get("masterKey").getAsString();
-        }
-        return cachedMasterKey;
-    }
-
     private void triggerHttpTrigger(Map binding) {
-        final String authLevel = (String) binding.get("authLevel");
         try {
-            final String url = StringUtils.equalsIgnoreCase(authLevel, AuthorizationLevel.ANONYMOUS.toString()) ?
-                    getHttpTriggerUrl() : getHttpTriggerUrlWithCode();
-            DefaultLoader.getUIHelper().openInBrowser(url);
+            final AuthorizationLevel authLevel = AuthorizationLevel.valueOf((String) binding.get("authLevel"));
+            String targetUrl;
+            switch (authLevel) {
+                case ANONYMOUS:
+                    targetUrl = getAnonymousHttpTriggerUrl();
+                    break;
+                case FUNCTION:
+                    targetUrl = getFunctionHttpTriggerUrl();
+                    break;
+                case ADMIN:
+                    targetUrl = getAdminHttpTriggerUrl();
+                    break;
+                default:
+                    throw new IOException(String.format("Unsupported authorization level %s", authLevel));
+            }
+            DefaultLoader.getUIHelper().openInBrowser(targetUrl);
         } catch (IOException e) {
             DefaultLoader.getUIHelper().showError(this,
                     String.format("Failed to get function key, %s", e.getMessage()));
         }
     }
 
-    private String getHttpTriggerUrl() {
+    private String getAnonymousHttpTriggerUrl() {
         return String.format(HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
     }
 
-    private String getHttpTriggerUrlWithCode() throws IOException {
+    private String getFunctionHttpTriggerUrl() throws IOException {
+        // Linux function app doesn't support list function keys, use master key as workaround.
+        if (functionApp.operatingSystem() == OperatingSystem.LINUX) {
+            return getAdminHttpTriggerUrl();
+        }
         final Map<String, String> keyMap = functionApp.listFunctionKeys(this.name);
         final String key = keyMap.values().stream().filter(StringUtils::isNotBlank)
-                .findFirst().orElse(getFunctionMasterKey());
+                .findFirst().orElse(functionNode.getFunctionMasterKey());
         return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
+    }
 
+    private String getAdminHttpTriggerUrl() throws IOException {
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name,
+                functionNode.getFunctionMasterKey());
+    }
+
+    private HttpPost getFunctionTriggerRequest() throws IOException {
+        final String masterKey = functionNode.getFunctionMasterKey();
+        final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
+        final HttpPost request = new HttpPost(targetUrl);
+        request.setHeader("x-functions-key", masterKey);
+        request.setHeader("Content-Type", "application/json");
+        return request;
     }
 
     private Map getTriggerBinding() {
@@ -213,18 +205,5 @@ public class SubFunctionNode extends Node {
         final String fullName = functionEnvelope.inner().name();
         final String[] splitNames = fullName.split("/");
         return splitNames.length > 1 ? splitNames[1] : fullName;
-    }
-
-    // Todo: Extract this methods to common Utils
-    private static String getSegment(String id, String segment) {
-        if (StringUtils.isEmpty(id)) {
-            return null;
-        }
-        final String[] attributes = id.split("/");
-        int pos = ArrayUtils.indexOf(attributes, segment);
-        if (pos >= 0) {
-            return attributes[pos + 1];
-        }
-        return null;
     }
 }
