@@ -179,6 +179,9 @@
       <implementation-class>com.microsoft.intellij.AzureActionsComponent</implementation-class>
     </component>
     <component>
+      <implementation-class>com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistration</implementation-class>
+    </component>
+    <component>
       <implementation-class>com.microsoft.azure.hdinsight.projects.HDInsightActionsComponent</implementation-class>
     </component>
   </application-components>

@@ -22,35 +22,32 @@
 
 package com.microsoft.azure.hdinsight.common
 
-import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.ide.BrowserUtil
-import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
-import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource
 import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
-import java.net.URI
 
-fun ConsoleView.print(typedMessage: SparkBatchJobLogLine) {
-    // Redirect the remote process control message to console view
-    val consoleViewLogLine = ConsoleViewLogLine(typedMessage)
-    when (typedMessage.messageInfoType) {
-        MessageInfoType.Debug,
-        MessageInfoType.Info,
-        MessageInfoType.Warning,
-        MessageInfoType.HtmlPersistentMessage,
-        MessageInfoType.Log ->
-            this.print(consoleViewLogLine.formatText, consoleViewLogLine.contentType)
-        MessageInfoType.Hyperlink ->
-            BrowserUtil.browse(URI.create(typedMessage.rawLog))
-        else -> {
-            this.print(consoleViewLogLine.formatText, consoleViewLogLine.contentType)
+class ConsoleViewLogLine {
+    val formatText: String
+    val contentType: ConsoleViewContentType
+    companion object {
+        @JvmStatic val messageInfoTypeToConsoleViewContentType = mapOf(
+                MessageInfoType.Debug to ConsoleViewContentType.LOG_DEBUG_OUTPUT,
+                MessageInfoType.Info to ConsoleViewContentType.LOG_INFO_OUTPUT,
+                MessageInfoType.Warning to ConsoleViewContentType.LOG_WARNING_OUTPUT,
+                MessageInfoType.Log to ConsoleViewContentType.SYSTEM_OUTPUT,
+                MessageInfoType.HtmlPersistentMessage to
+                        ConsoleViewWithMessageBars.CONSOLE_VIEW_HTML_PERSISTENT_MESSAGE_TYPE
+        )
+    }
 
-            val classifiedEx = ClassifiedExceptionFactory
-                    .createClassifiedException(YarnDiagnosticsException(typedMessage.rawLog))
-            classifiedEx.logStackTrace()
-            classifiedEx.handleByUser()
-        }
+    constructor(sparkBatchJobLogLine: SparkBatchJobLogLine) {
+        this.formatText =
+                if (sparkBatchJobLogLine.messageInfoType == MessageInfoType.HtmlPersistentMessage) {
+                    sparkBatchJobLogLine.rawLog
+                } else {
+                    "${sparkBatchJobLogLine.logSource}: ${sparkBatchJobLogLine.rawLog}".trimEnd('\n') + "\n"
+                }
+        this.contentType = messageInfoTypeToConsoleViewContentType.getOrDefault(
+                sparkBatchJobLogLine.messageInfoType, ConsoleViewContentType.ERROR_OUTPUT)
     }
 }

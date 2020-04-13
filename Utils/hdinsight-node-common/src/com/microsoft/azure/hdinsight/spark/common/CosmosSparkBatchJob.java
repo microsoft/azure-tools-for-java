@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
@@ -107,8 +106,7 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
                                         cluster.getSparkMasterUiUri().toString() + "?adlaAccountName=" + cluster.getAccount().getName())))
                 .map(stateJobUriPair -> {
                     if (stateJobUriPair.getRight() != null) {
-                        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Hyperlink,
-                                                                           stateJobUriPair.getRight()));
+                        ctrlHyperLink(stateJobUriPair.getRight());
                     }
 
                     return stateJobUriPair.getKey();
@@ -142,10 +140,6 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
     @NotNull
     private SparkBatchAzureSubmission getAzureSubmission() {
         return (SparkBatchAzureSubmission) getSubmission();
-    }
-
-    private void ctrlInfo(@NotNull String message) {
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Info, message));
     }
 
     @Override

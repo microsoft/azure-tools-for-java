@@ -23,9 +23,9 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.jcraft.jsch.JSchException;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 import rx.subjects.PublishSubject;
@@ -45,7 +45,7 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
                                            @NotNull String artifactPath,
                                            @NotNull String title,
                                            @NotNull SparkBatchRemoteDebugJobSshAuth authData,
-                                           @NotNull PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+                                           @NotNull PublishSubject<SparkBatchJobLogLine> ctrlSubject) {
         super(schedulers, sparkDebugJob, artifactPath, title, ctrlSubject);
         this.debugSession = debugSession;
         this.authData = authData;

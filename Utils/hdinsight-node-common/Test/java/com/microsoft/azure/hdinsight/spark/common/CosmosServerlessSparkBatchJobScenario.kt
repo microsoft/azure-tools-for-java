@@ -25,11 +25,11 @@ package com.microsoft.azure.hdinsight.spark.common
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine
 import cucumber.api.java.After
 import cucumber.api.java.Before
 import cucumber.api.java.en.Given
@@ -42,12 +42,11 @@ import rx.Observable
 import rx.subjects.PublishSubject
 import java.net.URI
 import java.nio.charset.StandardCharsets
-import java.util.*
 import kotlin.test.assertEquals
 
 class CosmosServerlessSparkBatchJobScenario {
     private val httpServerMock = MockHttpService()
-    private val ctrlSubject = PublishSubject.create<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>()
+    private val ctrlSubject = PublishSubject.create<SparkBatchJobLogLine>()
     private val ctrlSubscription = ctrlSubject.subscribe()
     private val jobUuid = "46c07889-3590-48f8-b2bc-7f52622b5a0b"
     private var serverlessJobMock = mock(CosmosServerlessSparkBatchJob::class.java, CALLS_REAL_METHODS)
@@ -139,13 +138,13 @@ class CosmosServerlessSparkBatchJobScenario {
     @Then("^the return log line should be '(.+)'$")
     fun verifyReturnLog(logLine: String) {
         caught = null
-        var logEntry: AbstractMap.SimpleImmutableEntry<MessageInfoType, String>? = null
+        var logEntry: SparkBatchJobLogLine? = null
         try {
             logEntry = serverlessJobMock.submissionLog.toBlocking().last()
         } catch (ex: Exception) {
             caught = ex
         } finally {
-            assertEquals(logEntry?.value, logLine)
+            assertEquals(logEntry?.rawLog, logLine)
         }
     }
 }

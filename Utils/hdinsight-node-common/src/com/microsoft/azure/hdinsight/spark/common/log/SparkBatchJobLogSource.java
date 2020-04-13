@@ -20,28 +20,25 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.common;
+package com.microsoft.azure.hdinsight.spark.common.log;
 
-import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
-import rx.Observable;
-import rx.Observer;
+public enum SparkBatchJobLogSource {
+    Tool("tool"),
+    Livy("livy"),
+    SparkDriverStdErr("driver.stderr");
 
-import java.io.File;
+    private final String value;
 
-// for cluster with blob/adls gen1 account to deploy using default storage account type
-// will be replaced by AdlsDeploy/ADLSGen1HDFSDeploy
-public class LegacySDKDeploy implements Deployable, ILogger {
-    private IHDIStorageAccount storageAccount;
+    SparkBatchJobLogSource(String value) {
+        this.value = value;
+    }
 
-    public LegacySDKDeploy(IHDIStorageAccount storageAccount) {
-        this.storageAccount = storageAccount;
+    public String getValue() {
+        return value;
     }
 
     @Override
-    public Observable<String> deploy(File src, Observer<SparkBatchJobLogLine> logSubject) {
-        return JobUtils.deployArtifact(src.getAbsolutePath(), storageAccount, logSubject);
+    public String toString() {
+        return this.value;
     }
 }

@@ -23,11 +23,11 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.AbfsUri;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.UriUtil;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -38,7 +38,6 @@ import rx.exceptions.Exceptions;
 
 import java.io.File;
 import java.net.URI;
-import java.util.AbstractMap;
 
 public class ADLSGen2Deploy implements Deployable, ILogger {
     @NotNull
@@ -58,8 +57,7 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
     }
 
     @Override
-    public Observable<String> deploy(File src,
-                                     Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+    public Observable<String> deploy(File src, Observer<SparkBatchJobLogLine> logSubject) {
         // four steps to upload via adls gen2 rest api
         // 1.put request to create new dir
         // 2.put request to create new file(artifact) which is empty

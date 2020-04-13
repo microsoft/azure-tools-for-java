@@ -20,28 +20,32 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.spark.common;
+package com.microsoft.azure.hdinsight.spark.common.log;
 
-import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
-import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
-import rx.Observable;
-import rx.Observer;
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 
-import java.io.File;
+public class SparkBatchJobLogLine {
+    private final SparkBatchJobLogSource logSource;
+    private final MessageInfoType messageInfoType;
+    private final String rawLog;
 
-// for cluster with blob/adls gen1 account to deploy using default storage account type
-// will be replaced by AdlsDeploy/ADLSGen1HDFSDeploy
-public class LegacySDKDeploy implements Deployable, ILogger {
-    private IHDIStorageAccount storageAccount;
-
-    public LegacySDKDeploy(IHDIStorageAccount storageAccount) {
-        this.storageAccount = storageAccount;
+    public SparkBatchJobLogLine(final SparkBatchJobLogSource logSource,
+                                final MessageInfoType messageInfoType,
+                                final String rawLog) {
+        this.logSource = logSource;
+        this.messageInfoType = messageInfoType;
+        this.rawLog = rawLog;
     }
 
-    @Override
-    public Observable<String> deploy(File src, Observer<SparkBatchJobLogLine> logSubject) {
-        return JobUtils.deployArtifact(src.getAbsolutePath(), storageAccount, logSubject);
+    public MessageInfoType getMessageInfoType() {
+        return messageInfoType;
+    }
+
+    public SparkBatchJobLogSource getLogSource() {
+        return logSource;
+    }
+
+    public String getRawLog() {
+        return rawLog;
     }
 }

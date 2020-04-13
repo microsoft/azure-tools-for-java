@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
@@ -37,6 +36,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionKind;
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionState;
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.api.PostSessions;
 import com.microsoft.azure.hdinsight.spark.common.Deployable;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.StringUtils;
@@ -53,14 +53,15 @@ import java.io.Closeable;
 import java.io.File;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Debug;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -316,7 +317,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     private final CreateParameters createParameters;
 
-    final private PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
+    final private PublishSubject<SparkBatchJobLogLine> ctrlSubject;
 
     /*
      * Constructor
@@ -435,7 +436,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return lastLogs;
     }
 
-    public PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
+    public PublishSubject<SparkBatchJobLogLine> getCtrlSubject() {
         return ctrlSubject;
     }
 
@@ -502,10 +503,11 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         }
 
         return Observable.from(getArtifactsToDeploy())
-                .doOnNext(artifactPath -> ctrlSubject.onNext(new SimpleImmutableEntry<>(
-                        Info, "Start uploading artifact " + artifactPath)))
+                .doOnNext(artifactPath -> ctrlSubject.onNext(
+                        new SparkBatchJobLogLine(Tool, Info, "Start uploading artifact " + artifactPath)))
                 .flatMap(artifactPath -> deployDelegate.deploy(new File(artifactPath), ctrlSubject))
-                .doOnNext(uri -> ctrlSubject.onNext(new SimpleImmutableEntry<>(Info, "Uploaded to " + uri)) )
+                .doOnNext(uri -> ctrlSubject.onNext(
+                        new SparkBatchJobLogLine(Tool, Info, "Uploaded to " + uri)))
                 .toList()
                 .map(uploadedUris -> {
                     this.createParameters.uploadedArtifactsUris.addAll(uploadedUris);
@@ -542,8 +544,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         final String json = postBody.convertToJson()
                 .orElseThrow(() -> new IllegalArgumentException("Bad session arguments to post."));
 
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(Debug,
-                "Create Livy Session by sending request to " + uri + " with body " + json));
+        getCtrlSubject().onNext(new SparkBatchJobLogLine(Tool, Debug,
+                                                         "Create Livy Session by sending request to " + uri + " with body " + json));
 
         final StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
         entity.setContentType("application/json");

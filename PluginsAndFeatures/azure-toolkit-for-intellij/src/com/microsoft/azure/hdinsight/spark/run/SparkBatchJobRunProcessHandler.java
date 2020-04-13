@@ -22,19 +22,25 @@
 
 package com.microsoft.azure.hdinsight.spark.run;
 
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.remote.ColoredRemoteProcessHandler;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.intellij.execution.process.*;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Key;
+import com.intellij.util.io.BaseOutputReader;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.subjects.PublishSubject;
 
 import java.nio.charset.Charset;
-import java.util.AbstractMap;
+import java.util.concurrent.Future;
 
-public class SparkBatchJobRunProcessHandler extends ColoredRemoteProcessHandler<SparkBatchJobProcessAdapter>
-                                            implements SparkBatchJobProcessCtrlLogOut {
+import static com.intellij.execution.process.ProcessOutputTypes.STDOUT;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.SparkDriverStdErr;
+
+public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatchJobProcessAdapter>
+        implements SparkBatchJobProcessCtrlLogOut, AnsiEscapeDecoder.ColoredTextAcceptor {
+    private final AnsiEscapeDecoder myAnsiEscapeDecoder = new AnsiEscapeDecoder();
+
     public SparkBatchJobRunProcessHandler(@NotNull SparkBatchJobRemoteProcess process, String commandLine, @Nullable Charset charset) {
         super(new SparkBatchJobProcessAdapter(process), commandLine, charset);
 
@@ -59,9 +65,64 @@ public class SparkBatchJobRunProcessHandler extends ColoredRemoteProcessHandler<
         );
     }
 
+    @Override
+    public void startNotify() {
+        notifyTextAvailable(myCommandLine + '\n', ProcessOutputTypes.SYSTEM);
+
+        addProcessListener(new ProcessAdapter() {
+            @Override
+            public void startNotified(@NotNull final ProcessEvent event) {
+                try {
+                    final BaseOutputReader stdoutReader =
+                            new SparkSimpleLogStreamReader(SparkBatchJobRunProcessHandler.this,
+                                                                myProcess.getInputStream(),
+                                                                STDOUT);
+                    final BaseOutputReader stderrReader =
+                            new SparkDriverLogStreamReader(SparkBatchJobRunProcessHandler.this,
+                                                           myProcess.getErrorStream(),
+                                                           SparkDriverStdErr);
+
+                    myWaitFor.setTerminationCallback(exitCode -> {
+                        try {
+                            try {
+                                stderrReader.waitFor();
+                                stdoutReader.waitFor();
+                            }
+                            catch (final InterruptedException ignore) { }
+                        }
+                        finally {
+                            onOSProcessTerminated(exitCode);
+                        }
+                    });
+                }
+                finally {
+                    removeProcessListener(this);
+                }
+            }
+        });
+
+        super.startNotify();
+    }
+
+    @Override
+    public final void notifyTextAvailable(@NotNull String text, @NotNull Key outputType) {
+        myAnsiEscapeDecoder.escapeText(text, outputType, this);
+    }
+
+    @Override
+    public void coloredTextAvailable(@NotNull final String text, @NotNull final Key attributes) {
+        super.notifyTextAvailable(text, attributes);
+    }
+
     @NotNull
     @Override
-    public PublishSubject<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
+    public Future<?> executeTask(@NotNull final Runnable task) {
+        return ApplicationManager.getApplication().executeOnPooledThread(task);
+    }
+
+    @NotNull
+    @Override
+    public PublishSubject<SparkBatchJobLogLine> getCtrlSubject() {
         return getProcess().getSparkJobProcess().getCtrlSubject();
     }
 

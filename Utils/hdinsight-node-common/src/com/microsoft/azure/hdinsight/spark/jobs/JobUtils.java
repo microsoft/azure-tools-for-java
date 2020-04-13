@@ -35,7 +35,6 @@ import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
@@ -54,6 +53,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchEspMfaSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -110,6 +110,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -464,7 +465,7 @@ public class JobUtils {
                                            @NotNull IHDIStorageAccount storageAccount,
                                            @NotNull String containerName,
                                            @NotNull String uploadFolderPath,
-                                           @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject,
+                                           @NotNull Observer<SparkBatchJobLogLine> logSubject,
                                            @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
         if(storageAccount.getAccountType() == StorageAccountType.BLOB) {
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
@@ -478,8 +479,8 @@ public class JobUtils {
                     String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
                     String uploadedPath = String.format("wasbs://%s@%s/%s", containerName, blobStorageAccount.getFullStorageBlobName(), path);
 
-                    logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                            String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",
+                    logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
+                                                               String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",
                                           file.getPath(), uploadedPath)));
 
                     StorageClientSDKManager.getManager().uploadBlobFileContent(
@@ -491,20 +492,20 @@ public class JobUtils {
                             1024 * 1024,
                             file.length());
 
-                    logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                            String.format("Submit file to azure blob '%s' successfully.", uploadedPath)));
+                    logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
+                                                               String.format("Submit file to azure blob '%s' successfully.", uploadedPath)));
 
                     return uploadedPath;
                 }
             }
         } else if(storageAccount.getAccountType() == StorageAccountType.ADLS) {
             String uploadPath = String.format("adl://%s.azuredatalakestore.net%s%s", storageAccount.getName(), storageAccount.getDefaultContainerOrRootPath(), "SparkSubmission");
-            logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                              String.format("Begin uploading file %s to Azure Datalake store %s ...", file.getPath(), uploadPath)));
+            logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
+                                                       String.format("Begin uploading file %s to Azure Datalake store %s ...", file.getPath(), uploadPath)));
 
             String uploadedPath = StreamUtil.uploadArtifactToADLS(file, storageAccount, uploadFolderPath);
-            logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                    String.format("Submit file to Azure Datalake store '%s' successfully.", uploadedPath)));
+            logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
+                                                       String.format("Submit file to Azure Datalake store '%s' successfully.", uploadedPath)));
             return uploadedPath;
         } else {
             throw new UnsupportedOperationException("unknown storage account type");
@@ -568,8 +569,9 @@ public class JobUtils {
 
     public static String uploadFileToEmulator(@NotNull IClusterDetail selectedClusterDetail,
                                               @NotNull String buildJarPath,
-                                              @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws Exception {
-        logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Get target jar from %s.", buildJarPath)));
+                                              @NotNull Observer<SparkBatchJobLogLine> logSubject) throws Exception {
+        logSubject.onNext(new SparkBatchJobLogLine(Tool, Info, String.format("Get target jar from %s.",
+                                                                             buildJarPath)));
         String uniqueFolderId = UUID.randomUUID().toString();
         String folderPath = String.format("../opt/livy/SparkSubmission/%s", uniqueFolderId);
         return String.format("/opt/livy/SparkSubmission/%s/%s",
@@ -578,8 +580,9 @@ public class JobUtils {
 
     public static String uploadFileToHDFS(@NotNull IClusterDetail selectedClusterDetail,
                                           @NotNull String buildJarPath,
-                                          @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws HDIException {
-        logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Get target jar from %s.", buildJarPath)));
+                                          @NotNull Observer<SparkBatchJobLogLine> logSubject) throws HDIException {
+        logSubject.onNext(new SparkBatchJobLogLine(Tool, Info, String.format("Get target jar from %s.",
+                                                                             buildJarPath)));
 
         File srcJarFile = new File(buildJarPath);
         URI destUri = URI.create(String.format("/SparkSubmission/%s/%s", getFormatPathByDate(), srcJarFile.getName()));
@@ -592,7 +595,7 @@ public class JobUtils {
                 URI.create(((LivyCluster) selectedClusterDetail).getLivyConnectionUrl()) :
                 URI.create(selectedClusterDetail.getConnectionUrl());
 
-        logSubject.onNext(new SimpleImmutableEntry<>(Info, "Create Spark helper interactive session..."));
+        logSubject.onNext(new SparkBatchJobLogLine(Tool, Info, "Create Spark helper interactive session..."));
 
         try {
             return Observable.using(() -> new SparkSession(sessionName, livyUri, username, password),
@@ -610,7 +613,8 @@ public class JobUtils {
                         try {
                             inFile = new BufferedInputStream(new FileInputStream(srcJarFile));
 
-                            logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Uploading %s...", srcJarFile)));
+                            logSubject.onNext(new SparkBatchJobLogLine(Tool, Info, String.format("Uploading %s...",
+                                                                                                 srcJarFile)));
                             IOUtils.copy(inFile, base64Enc);
 
                             inFile.close();
@@ -621,7 +625,8 @@ public class JobUtils {
                             throw propagate(new HDIException(String.format("Failed to upload file %s.", destUri), ioEx));
                         }
 
-                        logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Uploaded to %s.", destUri)));
+                        logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
+                                                                   String.format("Uploaded to %s.", destUri)));
 
                         return destUri.toString();
                     })
@@ -635,7 +640,7 @@ public class JobUtils {
 
     public static String uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail,
                                     @NotNull final String buildJarPath,
-                                    @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws Exception {
+                                    @NotNull Observer<SparkBatchJobLogLine> logSubject) throws Exception {
 
         return selectedClusterDetail.isEmulator() ?
                 JobUtils.uploadFileToEmulator(selectedClusterDetail, buildJarPath, logSubject) :
@@ -678,7 +683,7 @@ public class JobUtils {
 
     public static Observable<String> deployArtifact(@NotNull String artifactLocalPath,
                                                     @NotNull final IHDIStorageAccount storageAccount,
-                                                    @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+                                                    @NotNull Observer<SparkBatchJobLogLine> logSubject) {
         return Observable.fromCallable(() -> JobUtils.uploadFileToAzure(
                 new File(artifactLocalPath),
                 storageAccount,
@@ -690,7 +695,7 @@ public class JobUtils {
 
     public static Single<SimpleImmutableEntry<IClusterDetail, String>> deployArtifact(@NotNull String artifactLocalPath,
                                                         @NotNull String clusterName,
-                                                        @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+                                                        @NotNull Observer<SparkBatchJobLogLine> logSubject) {
         return Single.create(ob -> {
             try {
                 IClusterDetail clusterDetail = ClusterManagerEx.getInstance()

@@ -24,11 +24,11 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.azure.datalake.store.ADLStoreClient;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SchedulerState;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +47,10 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Log;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Livy;
 
 public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
@@ -331,7 +334,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
 
     @NotNull
     @Override
-    public Observable<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
+    public Observable<SparkBatchJobLogLine> getSubmissionLog() {
         ImmutableSet<String> ignoredEmptyLines = ImmutableSet.of("stdout:", "stderr:", "yarn diagnostics:");
         final int GET_LIVY_URL_REPEAT_DELAY_MILLISECONDS = 3000;
         final int MAX_LOG_LINES_PER_REQUEST = 128;
@@ -357,7 +360,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                         String jobState = getJobState(job);
                         String schedulerState = getJobSchedulerState(job);
                         String message = String.format("Job scheduler state: %s. Job running state: %s.", schedulerState, jobState);
-                        return Observable.just(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Info, message));
+                        return Observable.just(new SparkBatchJobLogLine(Tool, Info, message));
                     } else {
                         return Observable.just(job)
                                 .doOnNext(batchResp -> {
@@ -403,10 +406,11 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                                     if (jobRunningState != null && !jobRunningState.equalsIgnoreCase(SparkBatchJobState.STARTING.toString())
                                                             || jobSchedulerState != null && jobSchedulerState.equalsIgnoreCase(SchedulerState.ENDED.toString())) {
                                                         String message = String.format("Job scheduler state: %s. Job running state: %s.", jobSchedulerState, jobRunningState);
-                                                        return Observable.just(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Info, message));
+                                                        return Observable.just(
+                                                                new SparkBatchJobLogLine(Tool, Info, message));
                                                     } else {
                                                         return Observable.from(logAndStatesTriple.getLeft())
-                                                                .map(line -> new AbstractMap.SimpleImmutableEntry<>(Log, line));
+                                                                .map(line -> new SparkBatchJobLogLine(Livy, Log, line));
                                                     }
                                                 })
                                 );
@@ -417,14 +421,6 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @Override
     public Observable<AbstractMap.SimpleImmutableEntry<String, Long>> getDriverLog(String type, long logOffset, int size) {
         return Observable.empty();
-    }
-
-    private void ctrlInfo(@NotNull String message) {
-        getCtrlSubject().onNext(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Info, message));
-    }
-
-    private void ctrlHyperLink(@NotNull String url) {
-        getCtrlSubject().onNext(new AbstractMap.SimpleImmutableEntry<>(MessageInfoType.Hyperlink, url));
     }
 
     @Override

@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import rx.Observable;
@@ -31,6 +31,9 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.AbstractMap.SimpleImmutableEntry;
+
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.HtmlPersistentMessage;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
 
 public class ArcadiaSparkBatchJob extends SparkBatchJob {
     private final @NotNull Deployable deployDelegate;
@@ -74,7 +77,7 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
 
     @NotNull
     @Override
-    public Observable<SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
+    public Observable<SparkBatchJobLogLine> getSubmissionLog() {
         // No batches/{id}/log API support yet
         URL jobHistoryWebUrl = getJobHistoryWebUrl();
         String trackingJobMsg = "Track the batch job by opening ";
@@ -82,7 +85,7 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
             trackingJobMsg += "<a href=\"" + jobHistoryWebUrl + "\">Spark Job History Server</a> and ";
         }
         trackingJobMsg += "<a href=\"" + getJobDetailsWebUrl() + "\">Spark Job Details UI</a> in Browser";
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.HtmlPersistentMessage, trackingJobMsg));
+        ctrlLog(Tool, HtmlPersistentMessage, trackingJobMsg);
 
         return Observable.empty();
     }
@@ -113,10 +116,6 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @NotNull
     private URL getJobDetailsWebUrl() {
         return getArcadiaSubmission().getJobDetailsWebUrl(getBatchId());
-    }
-
-    private void ctrlInfo(@NotNull String message) {
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Info, message));
     }
 
     @Override
