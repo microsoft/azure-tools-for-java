@@ -24,8 +24,6 @@ package com.microsoft.intellij.helpers;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -48,8 +46,6 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 
-import java.awt.*;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -260,42 +256,6 @@ public class IDEHelperImpl implements IDEHelper {
                                                   @NotNull ArtifactDescriptor artifactDescriptor) {
 
         return Futures.immediateFuture(null);
-
-        // TODO: SD -- check this change from upstream (start)
-//        try {
-//            Project project = findOpenProject(projectDescriptor);
-//
-//            final Artifact artifact = findProjectArtifact(project, artifactDescriptor);
-//
-//            final SettableFuture<String> future = SettableFuture.create();
-//
-//            Futures.addCallback(buildArtifact(project, artifact, false), new FutureCallback<Boolean>() {
-//                @Override
-//                public void onSuccess(@Nullable Boolean succeded) {
-//                    if (succeded != null && succeded) {
-//                        future.set(artifact.getOutputFilePath());
-//                    } else {
-//                        future.setException(new AzureCmdException("An error occurred while building the artifact"));
-//                    }
-//                }
-//
-//                @Override
-//                public void onFailure(Throwable throwable) {
-//                    if (throwable instanceof ExecutionException) {
-//                        future.setException(new AzureCmdException("An error occurred while building the artifact",
-//                                throwable.getCause()));
-//                    } else {
-//                        future.setException(new AzureCmdException("An error occurred while building the artifact",
-//                                throwable));
-//                    }
-//                }
-//            }, MoreExecutors.directExecutor());
-//
-//            return future;
-//        } catch (AzureCmdException e) {
-//            return Futures.immediateFailedFuture(e);
-//        }
-        // TODO: SD -- check this change from upstream (end)
     }
 
     @Override

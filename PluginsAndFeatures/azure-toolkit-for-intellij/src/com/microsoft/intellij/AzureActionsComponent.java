@@ -115,9 +115,9 @@ public abstract class AzureActionsComponent implements ApplicationComponent, Plu
     }
 
     public void initComponent() {
-        // TODO: This should all become a Service instead of a component
-        // similar to https://github.com/krasa/StringManipulation/issues/92
-        ApplicationManager.getApplication().invokeLater(() -> {
+        // TODO: ApplicationComponent should be fixed in the next release -
+        //  https://github.com/microsoft/azure-tools-for-java/commit/c21a66a4074eb70021b04f33eefcd49065211fd6
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
             try {
                 if (!AzurePlugin.IS_ANDROID_STUDIO) {
                     ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
