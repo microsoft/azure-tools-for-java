@@ -134,11 +134,11 @@ public class SpringCloudUtils {
         // Enable persistent disk with default parameters
         appResourceProperties = appResourceProperties == null ? new AppResourceProperties() : appResourceProperties;
         final PersistentDisk previousPersistentDisk = appResourceProperties.persistentDisk();
-        final int storageSize = (previousPersistentDisk == null || previousPersistentDisk.sizeInGB() == null) ? 0 :
+        final int preStorageSize = (previousPersistentDisk == null || previousPersistentDisk.sizeInGB() == null) ? 0 :
                 previousPersistentDisk.sizeInGB();
-        if (configuration.isEnablePersistentStorage() && storageSize <= 0) {
+        if (configuration.isEnablePersistentStorage() && preStorageSize <= 0) {
             appResourceProperties = appResourceProperties.withPersistentDisk(getDefaultPersistentDisk());
-        } else if (!configuration.isEnablePersistentStorage() && storageSize > 0) {
+        } else if (!configuration.isEnablePersistentStorage() && preStorageSize > 0) {
             appResourceProperties = appResourceProperties.withPersistentDisk(getEmptyPersistentDisk());
         }
         // As we can't set public policy to an app without active deployment
