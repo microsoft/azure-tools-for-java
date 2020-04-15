@@ -23,7 +23,6 @@
 package com.microsoft.intellij.helpers.springcloud;
 
 import com.google.common.collect.Maps;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
