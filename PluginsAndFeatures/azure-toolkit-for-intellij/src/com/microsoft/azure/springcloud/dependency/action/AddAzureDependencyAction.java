@@ -94,6 +94,9 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     return;
                 }
                 final String springBootVer = getMavenLibraryVersion(mavenProject, SPRING_BOOT_GROUP_ID, "spring-boot-autoconfigure");
+                if (StringUtils.isEmpty(springBootVer)) {
+                    throw new AzureExecutionException(String.format("Module %s is not a spring-boot application.", module.getName()));
+                }
                 progressIndicator.setText("Get latest versions ...");
                 SpringCloudDependencyManager manager = new SpringCloudDependencyManager(evaluateEffectivePom);
                 Map<String, DependencyArtifact> versionMaps = manager.getDependencyVersions();
