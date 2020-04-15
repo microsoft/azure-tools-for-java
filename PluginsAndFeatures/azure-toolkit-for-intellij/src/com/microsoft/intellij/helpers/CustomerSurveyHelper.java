@@ -47,7 +47,6 @@ import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.LocalDateTime;
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import java.io.File;
 import java.io.FileOutputStream;
