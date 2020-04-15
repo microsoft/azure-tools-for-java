@@ -56,6 +56,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
+import org.jetbrains.idea.maven.utils.MavenProcessCanceledException;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,9 +89,8 @@ public class AddAzureDependencyAction extends AzureAnAction {
             progressIndicator.setText("Syncing maven project " + project.getName());
             projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject)).get();
             try {
-                // wait 15 minutes for evaluating effective pom;
                 progressIndicator.setText("Check existing dependencies");
-                final String evaluateEffectivePom = MavenUtils.evaluateEffectivePom(project, mavenProject, 15 * 60);
+                final String evaluateEffectivePom = MavenUtils.evaluateEffectivePom(project, mavenProject);
                 ProgressManager.checkCanceled();
                 if (StringUtils.isEmpty(evaluateEffectivePom)) {
                     PluginUtil.showErrorNotificationProject(project, "Error", "Failed to evaluate effective pom.");
@@ -147,7 +147,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     }
                     projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject));
                 });
-            } catch (DocumentException | IOException | AzureExecutionException e) {
+            } catch (DocumentException | IOException | AzureExecutionException | MavenProcessCanceledException e) {
                 PluginUtil.showErrorNotification("Error",
                                                  "Failed to update Azure Spring Cloud dependencies due to error: "
                                                          + e.getMessage());

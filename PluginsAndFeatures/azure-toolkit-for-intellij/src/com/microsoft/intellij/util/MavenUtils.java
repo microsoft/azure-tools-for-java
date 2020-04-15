@@ -29,11 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenExplicitProfiles;
-import org.jetbrains.idea.maven.project.MavenEmbeddersManager;
-import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
-import org.jetbrains.idea.maven.project.MavenProjectsProcessor;
+import org.jetbrains.idea.maven.project.*;
 import org.jetbrains.idea.maven.server.MavenEmbedderWrapper;
+import org.jetbrains.idea.maven.utils.MavenProcessCanceledException;
 
 import java.nio.file.Paths;
 import java.util.concurrent.*;
@@ -41,10 +39,9 @@ import java.util.concurrent.*;
 public class MavenUtils {
     private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
 
-    public static String getSpringBootFinalJarPath(@NotNull Project ideaProject, @NotNull MavenProject mavenProject,
-                                                   int timeoutSeconds)
-            throws AzureExecutionException, DocumentException {
-        String xml = evaluateEffectivePom(ideaProject, mavenProject, timeoutSeconds);
+    public static String getSpringBootFinalJarPath(@NotNull Project ideaProject, @NotNull MavenProject mavenProject)
+            throws AzureExecutionException, DocumentException, MavenProcessCanceledException {
+        String xml = evaluateEffectivePom(ideaProject, mavenProject);
         if (StringUtils.isEmpty(xml)) {
             throw new AzureExecutionException("Failed to evaluate effective pom for project: " + ideaProject.getName());
         }
@@ -62,35 +59,14 @@ public class MavenUtils {
     }
 
     public static String evaluateEffectivePom(@NotNull Project ideaProject,
-                                              @NotNull MavenProject mavenProject,
-                                              int timeoutSeconds) throws AzureExecutionException {
+                                              @NotNull MavenProject mavenProject) throws MavenProcessCanceledException {
         final MavenProjectsManager projectsManager = MavenProjectsManager.getInstance(ideaProject);
 
         MavenEmbeddersManager embeddersManager = projectsManager.getEmbeddersManager();
         MavenExplicitProfiles profiles = mavenProject.getActivatedProfilesIds();
-        MavenProjectsProcessor myFoldersResolvingProcessor =
-                new MavenProjectsProcessor(ideaProject, "Generating Maven sources...", true, embeddersManager);
         MavenEmbedderWrapper embedder = embeddersManager.getEmbedder(mavenProject,
                                                                      MavenEmbeddersManager.FOR_DEPENDENCIES_RESOLVE);
-        CompletableFuture<String> completableFuture = new CompletableFuture<>();
-        myFoldersResolvingProcessor.scheduleTask((thisProject, mavenEmbeddersManager, mavenConsole,
-                                                  mavenProgressIndicator) -> {
-            embedder.customizeForResolve(mavenConsole, mavenProgressIndicator);
-            embedder.clearCachesFor(mavenProject.getMavenId());
-            try {
-                final String evaluateEffectivePom =
-                        embedder.evaluateEffectivePom(mavenProject.getFile(),
-                                                      profiles.getEnabledProfiles(), profiles.getDisabledProfiles());
-                completableFuture.complete(evaluateEffectivePom);
-            } catch (Exception ex) {
-                completableFuture.completeExceptionally(ex);
-            }
-        });
-        try {
-            return completableFuture.get(Math.max(1, timeoutSeconds), TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            myFoldersResolvingProcessor.stop();
-            throw new AzureExecutionException("Failed to evaluate effective pom for project: " + ideaProject.getName());
-        }
+        embedder.clearCachesFor(mavenProject.getMavenId());
+        return embedder.evaluateEffectivePom(mavenProject.getFile(), profiles.getEnabledProfiles(), profiles.getDisabledProfiles());
     }
 }
