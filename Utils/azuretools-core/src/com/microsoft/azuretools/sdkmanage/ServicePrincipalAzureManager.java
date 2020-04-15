@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -76,7 +77,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         }
     }
 
-    private final static Logger LOGGER = Logger.getLogger(ServicePrincipalAzureManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ServicePrincipalAzureManager.class.getName());
     private static Settings settings;
     private final SubscriptionManager subscriptionManager;
     private final File credFile;
@@ -131,7 +132,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
             try {
                 return authSpringCloud(sid);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                return SneakyThrowUtils.sneakyThrow(e);
             }
         });
     }
@@ -148,12 +149,8 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         for (Tenant t : getTenants()) {
             //String tid = t.tenantId();
             for (Subscription s : getSubscriptions()) {
-                stl.add(new Pair<Subscription, Tenant>(s, t));
+                stl.add(new Pair<>(s, t));
             }
-//            try {
-//            } catch (IOException e) {
-//                System.out.println(e.getMessage());
-//            }
         }
         return stl;
     }
@@ -260,7 +257,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
 
     private AppPlatformManager authSpringCloud(String sid) throws IOException {
         if (credFile != null) {
-            throw new IOException("Cannot use Auth file for spring cloud authentication.");
+            initATCIfNeeded();
         }
         return AppPlatformManager.configure()
                 .withInterceptor(new TelemetryInterceptor())

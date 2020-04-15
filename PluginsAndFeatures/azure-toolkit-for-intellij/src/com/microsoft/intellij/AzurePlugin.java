@@ -58,6 +58,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.PlatformUtils;
@@ -155,6 +156,8 @@ public class AzurePlugin extends AbstractProjectComponent {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings();
+            } catch (ProcessCanceledException e) {
+                throw e;
             } catch (Exception e) {
                 /* This is not a user initiated task
                    So user should not get any exception prompt.*/
@@ -357,7 +360,8 @@ public class AzurePlugin extends AbstractProjectComponent {
             for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
                 if (azureLibrary.getLocation() != null) {
                     if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
-                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator +
+                                CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
                             new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
                             copyResourceFile(entryName, pluginFolder + File.separator + entryName);
                         }
