@@ -87,8 +87,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
         DefaultLoader.getIdeHelper().runInBackground(project, "Deleting Docker Host", false, true, "Update Azure Spring Cloud dependencies", () -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText("Syncing maven project " + project.getName());
-            AsyncPromise<Void> promise = projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject));
-            promise.get();
+            projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject)).get();
             try {
                 // wait 15 minutes for evaluating effective pom;
                 progressIndicator.setText("Check existing dependencies");
