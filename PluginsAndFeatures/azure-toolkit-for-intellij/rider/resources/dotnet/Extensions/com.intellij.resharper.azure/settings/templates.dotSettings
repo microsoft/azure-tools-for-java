@@ -731,10 +731,12 @@ public static async Task&lt;IActionResult&gt; RunAsync([HttpTrigger(Authorizatio
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Scope/=D2B8A841E72DF843A812220E5BC95BEB/Type/@EntryValue">InAzureFunctionsCSharpProject</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F1E2B81457D1AE4A9977557216C67FD6/Text/@EntryValue">$HEADER$using System;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
@@ -745,7 +747,7 @@ namespace $NAMESPACE$
     {
         [FunctionName("$CLASS$")]
         public static async Task&lt;List&lt;string&gt;&gt; RunOrchestrator(
-            [OrchestrationTrigger] DurableOrchestrationContext context)
+            [OrchestrationTrigger]IDurableOrchestrationContext context)
         {
             var outputs = new List&lt;string&gt;();
 
@@ -768,7 +770,7 @@ namespace $NAMESPACE$
         [FunctionName("$CLASS$_HttpStart")]
         public static async Task&lt;HttpResponseMessage&gt; HttpStart(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]HttpRequestMessage req,
-            [OrchestrationClient]DurableOrchestrationClient starter,
+            [OrchestrationClient]IDurableOrchestrationClient starter,
             ILogger log)
         {
             // Function input comes from the request content.
