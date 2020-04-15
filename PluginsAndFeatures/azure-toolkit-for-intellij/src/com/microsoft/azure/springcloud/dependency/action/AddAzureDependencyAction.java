@@ -120,14 +120,12 @@ public class AddAzureDependencyAction extends AzureAnAction {
                 File pomFile = new File(mavenProject.getFile().getCanonicalPath());
                 ProgressManager.checkCanceled();
                 Map<String, DependencyArtifact> managementVersions = manager.getDependencyManagementVersions();
-                for (DependencyArtifact change : versionChanges) {
-                    if (managementVersions.containsKey(change.getKey())) {
-                        String managementVersion = managementVersions.get(change.getKey()).getCurrentVersion();
-                        if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)) {
-                            change.setCompatibleVersion("");
-                        }
+                versionChanges.stream().filter(change -> managementVersions.containsKey(change.getKey())).forEach(change -> {
+                    String managementVersion = managementVersions.get(change.getKey()).getCurrentVersion();
+                    if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)) {
+                        change.setCompatibleVersion("");
                     }
-                }
+                });
                 manager.update(pomFile, versionChanges);
 
                 final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pomFile);
