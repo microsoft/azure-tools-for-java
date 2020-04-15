@@ -23,6 +23,7 @@
 package com.microsoft.intellij.helpers.springcloud;
 
 import com.google.common.collect.Maps;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
@@ -166,12 +167,14 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             });
 
         });
+        this.saveButton.setIcon(UIHelperImpl.loadIcon("storagesaveas.png"));
 
         this.refreshButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.REFRESH_SPRING_CLOUD_APP, "Refreshing", project, (changes) -> {
                 // DO nothing
             });
         });
+        this.refreshButton.setIcon(UIHelperImpl.loadIcon("refresh.png"));
 
         this.deleteButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.DELETE_SPRING_CLOUD_APP, DELETING_ACTION, project, (changes) -> {
@@ -183,8 +186,9 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                             String.format("Cannot delete app '%s' due to error.", this.appName), ex.getMessage());
                 }
             });
-
         });
+        this.deleteButton.setIcon(UIHelperImpl.loadIcon("Delete.png"));
+
         this.startButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.START_SPRING_CLOUD_APP, "Starting", project, (changes) -> {
                 try {
@@ -195,6 +199,7 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                 }
             });
         });
+        this.startButton.setIcon(UIHelperImpl.loadIcon("Start.png"));
 
         this.stopButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.STOP_SPRING_CLOUD_APP, "Stopping", project, (changes) -> {
@@ -206,6 +211,8 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                 }
             });
         });
+        this.stopButton.setIcon(UIHelperImpl.loadIcon("Stop.png"));
+
         this.restartButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.RESTART_SPRING_CLOUD_APP, "Restarting", project, (changes) -> {
                 try {
