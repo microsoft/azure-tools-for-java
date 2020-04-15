@@ -48,10 +48,12 @@ import com.microsoft.intellij.maven.SpringCloudDependencyManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.MavenUtils;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -59,6 +61,7 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -80,13 +83,15 @@ public class AddAzureDependencyAction extends AzureAnAction {
                                                                   project.getName()));
             return true;
         }
-        projectsManager.scheduleImportAndResolve(true);
-        projectsManager.waitForResolvingCompletion();
-        ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
+
+        DefaultLoader.getIdeHelper().runInBackground(project, "Deleting Docker Host", false, true, "Update Azure Spring Cloud dependencies", () -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
-            progressIndicator.setText("Check existing dependencies");
+            progressIndicator.setText("Syncing maven project " + project.getName());
+            AsyncPromise<Void> promise = projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject));
+            promise.get();
             try {
                 // wait 15 minutes for evaluating effective pom;
+                progressIndicator.setText("Check existing dependencies");
                 final String evaluateEffectivePom = MavenUtils.evaluateEffectivePom(project, mavenProject, 15 * 60);
                 ProgressManager.checkCanceled();
                 if (StringUtils.isEmpty(evaluateEffectivePom)) {
@@ -142,13 +147,14 @@ public class AddAzureDependencyAction extends AzureAnAction {
                                                                "Azure Spring Cloud dependencies are added to your project successfully.",
                                                                summaryVersionChanges(versionChanges));
                     }
+                    projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject));
                 });
             } catch (DocumentException | IOException | AzureExecutionException e) {
                 PluginUtil.showErrorNotification("Error",
                                                  "Failed to update Azure Spring Cloud dependencies due to error: "
                                                          + e.getMessage());
             }
-        }, "Update Azure Spring Cloud dependencies", true, project);
+        });
 
         return false;
     }
