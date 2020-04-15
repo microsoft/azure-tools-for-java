@@ -52,6 +52,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
@@ -62,10 +63,10 @@ import java.util.List;
 import java.util.Map;
 
 public class AddAzureDependencyAction extends AzureAnAction {
-    private static final String GROUP_ID = "com.microsoft.azure";
-    private static final String ARTIFACT_ID = "spring-cloud-starter-azure-spring-cloud-client";
     public static final String SPRING_CLOUD_GROUP_ID = "org.springframework.cloud";
     public static final String SPRING_BOOT_GROUP_ID = "org.springframework.boot";
+    private static final String GROUP_ID = "com.microsoft.azure";
+    private static final String ARTIFACT_ID = "spring-cloud-starter-azure-spring-cloud-client";
 
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
@@ -75,48 +76,55 @@ public class AddAzureDependencyAction extends AzureAnAction {
         final MavenProject mavenProject = projectsManager.findProject(module);
         if (mavenProject == null) {
             PluginUtil.showErrorNotificationProject(project, "Error",
-                                             String.format("Project '%s' is not a maven project.", project.getName()));
+                                                    String.format("Project '%s' is not a maven project.",
+                                                                  project.getName()));
             return true;
         }
+        projectsManager.scheduleImportAndResolve(true);
+        projectsManager.waitForResolvingCompletion();
         ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText("Check existing dependencies");
             try {
                 // wait 15 minutes for evaluating effective pom;
                 final String evaluateEffectivePom = MavenUtils.evaluateEffectivePom(project, mavenProject, 15 * 60);
+                ProgressManager.checkCanceled();
                 if (StringUtils.isEmpty(evaluateEffectivePom)) {
                     PluginUtil.showErrorNotificationProject(project, "Error", "Failed to evaluate effective pom.");
                     return;
                 }
-                SpringCloudDependencyManager manager = new SpringCloudDependencyManager(evaluateEffectivePom);
-
-                Map<String, DependencyArtifact> versionMaps = manager.getDependencyVersions();
-                ProgressManager.checkCanceled();
-                DependencyArtifact springBootArtifact = versionMaps.get(SPRING_BOOT_GROUP_ID + ":spring-boot-autoconfigure");
-                if (springBootArtifact == null || StringUtils.isEmpty(springBootArtifact.getCurrentVersion())) {
-                    throw new AzureExecutionException(String.format("Module %s is not a spring-boot application.", module.getName()));
-                }
-                final String springBootVer = springBootArtifact.getCurrentVersion();
-                ProgressManager.checkCanceled();
-
+                final String springBootVer = getMavenLibraryVersion(mavenProject, SPRING_BOOT_GROUP_ID, "spring-boot-autoconfigure");
                 progressIndicator.setText("Get latest versions ...");
+                SpringCloudDependencyManager manager = new SpringCloudDependencyManager(evaluateEffectivePom);
+                Map<String, DependencyArtifact> versionMaps = manager.getDependencyVersions();
                 List<DependencyArtifact> dep = new ArrayList<>();
                 dep.add(getDependencyArtifact(GROUP_ID, ARTIFACT_ID, versionMaps));
                 dep.add(getDependencyArtifact(SPRING_BOOT_GROUP_ID, "spring-boot-starter-actuator", versionMaps));
                 dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-config-client", versionMaps));
-                dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-netflix-eureka-client", versionMaps));
+                dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID,
+                                              "spring-cloud-starter-netflix-eureka-client",
+                                              versionMaps));
                 dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-zipkin", versionMaps));
                 dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-sleuth", versionMaps));
                 ProgressManager.checkCanceled();
                 List<DependencyArtifact> versionChanges = manager.getCompatibleVersions(dep, springBootVer);
                 if (versionChanges.isEmpty()) {
                     PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
-                            "No updates are needed.");
+                                                           "No updates are needed.");
                     return;
                 }
-                ProgressManager.checkCanceled();
                 progressIndicator.setText("Applying versions ...");
                 File pomFile = new File(mavenProject.getFile().getCanonicalPath());
+                ProgressManager.checkCanceled();
+                Map<String, DependencyArtifact> managementVersions = manager.getDependencyManagementVersions();
+                for (DependencyArtifact change : versionChanges) {
+                    if (managementVersions.containsKey(change.getKey())) {
+                        String managementVersion = managementVersions.get(change.getKey()).getCurrentVersion();
+                        if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)) {
+                            change.setCompatibleVersion("");
+                        }
+                    }
+                }
                 manager.update(pomFile, versionChanges);
 
                 final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pomFile);
@@ -126,16 +134,18 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     FileEditorManager.getInstance(project).openFile(vf, true, true);
                     if (versionChanges.stream().anyMatch(t -> StringUtils.isNotEmpty(t.getCurrentVersion()))) {
                         PluginUtil.showInfoNotificationProject(project,
-                                "Azure Spring Cloud dependencies are updated successfully.",
-                                summaryVersionChanges(versionChanges));
+                                                               "Azure Spring Cloud dependencies are updated successfully.",
+                                                               summaryVersionChanges(versionChanges));
                     } else {
-                        PluginUtil.showInfoNotificationProject(project, "Azure Spring Cloud dependencies are added to your project successfully.",
-                                summaryVersionChanges(versionChanges));
+                        PluginUtil.showInfoNotificationProject(project,
+                                                               "Azure Spring Cloud dependencies are added to your project successfully.",
+                                                               summaryVersionChanges(versionChanges));
                     }
                 });
             } catch (DocumentException | IOException | AzureExecutionException e) {
                 PluginUtil.showErrorNotification("Error",
-                        "Failed to update Azure Spring Cloud dependencies due to error: " + e.getMessage());
+                                                 "Failed to update Azure Spring Cloud dependencies due to error: "
+                                                         + e.getMessage());
             }
         }, "Update Azure Spring Cloud dependencies", true, project);
 
@@ -176,7 +186,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
         final MavenProjectsManager manager = MavenProjectsManager.getInstance(module.getProject());
         final MavenProject mavenProject = manager.findProject(module);
 
-        return editor.getEditorKind() == EditorKind.MAIN_EDITOR && psiFile != null &&
+        return editor.getEditorKind() == EditorKind.MAIN_EDITOR && psiFile != null && mavenProject != null &&
                 psiFile.getVirtualFile().equals(mavenProject.getFile());
     }
 
@@ -185,13 +195,26 @@ public class AddAzureDependencyAction extends AzureAnAction {
         for (DependencyArtifact change : changes) {
             boolean isUpdate = StringUtils.isNotEmpty(change.getCurrentVersion());
             builder.append(String.format("%s dependency: Group: %s, Artifact: %s, Version: %s%s \n",
-                    isUpdate ? "Update" : "Add ", change.getGroupId(), change.getArtifactId(),
-                    isUpdate ? (change.getCurrentVersion() + " -> ") : "", change.getCompilableVersion()));
+                                         isUpdate ? "Update" : "Add ",
+                                         change.getGroupId(),
+                                         change.getArtifactId(),
+                                         isUpdate ? (change.getCurrentVersion() + " -> ") : "",
+                                         change.getCompatibleVersion()));
         }
         return builder.toString();
     }
 
     private static DependencyArtifact getDependencyArtifact(String groupId, String artifactId, Map<String, DependencyArtifact> versionMap) {
         return versionMap.computeIfAbsent(groupId + ":" + artifactId, key -> new DependencyArtifact(groupId, artifactId));
+    }
+
+    private static String getMavenLibraryVersion(MavenProject project, String groupId, String artifactId) {
+        MavenArtifact lib = project.getDependencies().stream().filter(dep -> !StringUtils.equals(dep.getScope(), "test")
+                && isMatch(dep, groupId, artifactId)).findFirst().orElse(null);
+        return lib != null ? lib.getVersion() : null;
+    }
+
+    private static boolean isMatch(MavenArtifact lib, String groupId, String artifactId) {
+        return StringUtils.equals(lib.getArtifactId(), artifactId) && StringUtils.equals(lib.getGroupId(), groupId);
     }
 }

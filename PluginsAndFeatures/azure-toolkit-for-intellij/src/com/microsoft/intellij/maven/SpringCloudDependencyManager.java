@@ -70,8 +70,13 @@ public class SpringCloudDependencyManager {
 
     public Map<String, DependencyArtifact> getDependencyVersions() {
         Map<String, DependencyArtifact> res = new HashMap<>();
-        collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencyManagement/ns:dependencies/ns:dependency"), res);
         collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencies/ns:dependency"), res);
+        return res;
+    }
+
+    public Map<String, DependencyArtifact> getDependencyManagementVersions() {
+        Map<String, DependencyArtifact> res = new HashMap<>();
+        collectDependencyVersionsFromNodes(doc.selectNodes("//ns:project/ns:dependencyManagement/ns:dependencies/ns:dependency"), res);
         return res;
     }
 
@@ -96,7 +101,7 @@ public class SpringCloudDependencyManager {
                 throw new AzureExecutionException(String.format("Cannot get compatible version for %s:%s with Spring Boot with version %s",
                         dependency.getGroupId(), dependency.getArtifactId(), springBootVer));
             }
-            dependency.setCompilableVersion(targetVer);
+            dependency.setCompatibleVersion(targetVer);
             if (!StringUtils.equals(dependency.getCurrentVersion(), targetVer)) {
                 res.add(dependency);
             }
@@ -113,7 +118,7 @@ public class SpringCloudDependencyManager {
             String groupId = ((Element) node).elementTextTrim("groupId");
             String artifactId = ((Element) node).elementTextTrim("artifactId");
             DependencyArtifact artifact = new DependencyArtifact(groupId, artifactId, ((Element) node).elementTextTrim("version"));
-            versionMap.put(groupId + ":" + artifactId, artifact);
+            versionMap.put(artifact.getKey(), artifact);
         }
     }
 
