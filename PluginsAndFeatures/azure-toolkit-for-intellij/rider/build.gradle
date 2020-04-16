@@ -27,3 +27,7 @@ tasks.withType(prepareSandbox.class) {
 }
 
 buildSearchableOptions.onlyIf { false }
+
+patchPluginXml {
+    sinceBuild = patchPluginXmlSinceBuild
+}
