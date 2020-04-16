@@ -163,9 +163,12 @@
     <runConfigurationProducer implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsConfigurationProducer"/>
     <runLineMarkerContributor language="C#" implementationClass="org.jetbrains.plugins.azure.functions.run.AzureFunctionsRunMarkerContributor"/>
 
-    <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsNotification" />
+    <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsDetector" />
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsMissingNupkgInstaller" />
+    <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsNotification" order="last" />
+
     <projectTemplateProvider implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplatesProvider" order="first"/>
+
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV1TemplateCustomizer" />
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV2TemplateCustomizer" />
 

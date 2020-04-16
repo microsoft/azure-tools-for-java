@@ -36,8 +36,6 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
-import com.microsoft.azuretools.utils.AzureUIRefreshCore
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.AzureRunProfileState
@@ -133,7 +131,7 @@ class FunctionAppRunState(project: Project,
 
         val isOpenBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
-                AzureRiderSettings.openInBrowserDefaultValue)
+                AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
 
         if (isOpenBrowser) {
             openAppInBrowser(app, processHandler)

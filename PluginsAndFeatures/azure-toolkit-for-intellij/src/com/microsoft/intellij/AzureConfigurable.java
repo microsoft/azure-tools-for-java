@@ -156,6 +156,7 @@ public class AzureConfigurable extends SearchableConfigurable.Parent.Abstract im
         @NotNull
         @Override
         public String getId() {
+            // TODO: FIX_LOCALIZATION: This need to be fixed to use a separate IDs to avoid localization issues.
             return AZURE_CONFIGURABLE_PREFIX + getDisplayName();
         }
 

@@ -47,19 +47,20 @@ class AzureAppServicesConfigurationPanel : AzureRiderAbstractConfigurablePanel {
         }
     }
 
-    override val panel = pnlRoot
-    override val displayName = DISPLAY_NAME
+    override val panel: JPanel = pnlRoot
+
+    override val displayName: String = DISPLAY_NAME
 
     override fun doOKAction() =
             properties.setValue(
                     AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
                     checkBoxOpenInBrowser.isSelected,
-                    AzureRiderSettings.openInBrowserDefaultValue)
+                    AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
 
     private fun initOpenInBrowserCheckBox() {
         val currentValue = properties.getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
-                AzureRiderSettings.openInBrowserDefaultValue)
+                AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
 
         checkBoxOpenInBrowser.isSelected = currentValue
     }

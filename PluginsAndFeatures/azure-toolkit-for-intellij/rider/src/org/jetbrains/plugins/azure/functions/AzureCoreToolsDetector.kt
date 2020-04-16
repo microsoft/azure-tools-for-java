@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,43 +20,43 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.ui.component.appservice
+package org.jetbrains.plugins.azure.functions
 
 import com.intellij.ide.util.PropertiesComponent
-import com.microsoft.intellij.ui.component.AzureComponent
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.info
 import com.microsoft.intellij.configuration.AzureRiderSettings
-import net.miginfocom.swing.MigLayout
-import javax.swing.JCheckBox
-import javax.swing.JPanel
+import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
+import java.io.File
 
-class AppAfterPublishSettingPanel :
-        JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1")),
-        AzureComponent {
+/**
+ * Check and detect Azure Function Core Tool path.
+ */
+class AzureCoreToolsDetector : StartupActivity {
 
-    val isOpenInBrowser: Boolean
-        get() = checkBoxOpenInBrowserAfterPublish.isSelected
-
-    val checkBoxOpenInBrowserAfterPublish = JCheckBox("Open in browser after publish")
-
-    init {
-        initAppPublishCheckBox()
-
-        add(checkBoxOpenInBrowserAfterPublish)
+    companion object {
+        private val logger = getLogger<AzureCoreToolsDetector>()
     }
 
-    private fun initAppPublishCheckBox() {
+    override fun runActivity(project: Project) {
         val properties = PropertiesComponent.getInstance()
 
-        checkBoxOpenInBrowserAfterPublish.addActionListener {
-            properties.setValue(
-                    AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
-                    isOpenInBrowser,
-                    AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
+        val existingCoreToolPath = properties.getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, "")
+        if (existingCoreToolPath.isNotEmpty() && File(existingCoreToolPath).exists()) {
+            logger.info { "Azure Function Core Tool is setup: '$existingCoreToolPath'" }
+            return
         }
 
-        checkBoxOpenInBrowserAfterPublish.isSelected =
-                properties.getBoolean(
-                        AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
-                        AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
+        logger.info { "Detecting Azure Function Core Tool..." }
+        val functionCoreToolPath = FunctionsCoreToolsInfoProvider.detectFunctionCoreToolsPath()
+
+        if (functionCoreToolPath == null) {
+            logger.info { "Unable to detect Azure Core Tool path" }
+            return
+        }
+
+        properties.setValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, functionCoreToolPath)
     }
 }

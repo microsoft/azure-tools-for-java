@@ -33,6 +33,7 @@ import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.panels.OpaquePanel
+import com.intellij.ui.layout.panel
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -57,28 +58,33 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         private const val UNKNOWN = "<unknown>"
 
         private const val PATH_TO_CORE_TOOLS_DESCRIPTION = "Path to Azure Functions Core Tools"
-        private const val INSTALL_LATEST = "Download latest version..."
+        private const val DOWNLOAD_LATEST = "Download latest version..."
         private const val ALLOW_PRERELEASE = "Allow versions marked as pre-release"
+
+        private const val CORE_TOOLS_CHECK_UPDATE = "Check updates for Azure Function Core tools on startup"
+        private const val CORE_TOOLS_CHECK_UPDATE_COMMENT = "Updates are installed in a separate plugin directory under IDE configuration folder and do not affect tool user's installations."
 
         private const val CARD_BUTTON = "button"
         private const val CARD_PROGRESS = "progress"
     }
 
-    private val properties = PropertiesComponent.getInstance()
+    private val properties: PropertiesComponent = PropertiesComponent.getInstance()
 
-    private val coreToolsPathField = TextFieldWithBrowseButton().apply {
-        addBrowseFolderListener(
-                "",
-                PATH_TO_CORE_TOOLS_DESCRIPTION,
-                null,
-                FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
-        )
-    }
+    private val coreToolsPathField: TextFieldWithBrowseButton =
+            TextFieldWithBrowseButton().apply {
+                addBrowseFolderListener(
+                        "",
+                        PATH_TO_CORE_TOOLS_DESCRIPTION,
+                        null,
+                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                        TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
+                )
+            }
 
     private val currentVersionLabel = JLabel(UNKNOWN)
     private val latestVersionLabel = JLabel(UNKNOWN)
     private val allowPrereleaseToggle = JBCheckBox(ALLOW_PRERELEASE)
+    private val checkCoreToolsUpdateToggle = JBCheckBox(CORE_TOOLS_CHECK_UPDATE)
 
     private val releaseInfoLink = HyperlinkLabel().apply {
         setIcon(AllIcons.General.Information)
@@ -86,7 +92,7 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         setHyperlinkTarget("https://github.com/Azure/azure-functions-core-tools/releases")
     }
 
-    private val installButton = LinkLabel<Any>(INSTALL_LATEST, null) { _, _ -> installLatestCoreTools() }
+    private val installButton = LinkLabel<Any>(DOWNLOAD_LATEST, null) { _, _ -> installLatestCoreTools() }
             .apply {
                 isEnabled = false
             }
@@ -110,6 +116,9 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         allowPrereleaseToggle.addItemListener {
             updateVersionLabels()
         }
+
+        checkCoreToolsUpdateToggle.isSelected =
+                properties.getBoolean(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES, true)
 
         updateVersionLabels()
     }
@@ -140,7 +149,7 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
     private fun updateVersionLabels() {
         ApplicationManager.getApplication().executeOnPooledThread {
             val local = FunctionsCoreToolsManager.determineVersion(coreToolsPathField.text)
-            val remote = FunctionsCoreToolsManager.determineLatestRemote(allowPrereleaseToggle.isSelected)
+            val remote = FunctionsCoreToolsManager.determineLatestRemote(allowPrerelease = allowPrereleaseToggle.isSelected)
 
             UIUtil.invokeAndWaitIfNeeded(Runnable {
                 currentVersionLabel.text = local?.version ?: UNKNOWN
@@ -151,18 +160,27 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         }
     }
 
-    override val panel = FormBuilder
-            .createFormBuilder()
-            .addLabeledComponent(PATH_TO_CORE_TOOLS, coreToolsPathField)
-            .addLabeledComponent(CURRENT_VERSION, currentVersionLabel)
-            .addLabeledComponent(LATEST_VERSION, latestVersionLabel, DEFAULT_TOP_INSET)
-            .addComponentToRightColumn(releaseInfoLink, DEFAULT_TOP_INSET)
-            .addComponentToRightColumn(allowPrereleaseToggle, DEFAULT_TOP_INSET)
-            .addComponentToRightColumn(installActionPanel)
-            .addComponentFillVertically(JPanel(), 0)
-            .panel
+    override val panel: JPanel =
+            panel {
+                row {
+                    val coreToolsPanel = FormBuilder
+                            .createFormBuilder()
+                            .addLabeledComponent(PATH_TO_CORE_TOOLS, coreToolsPathField)
+                            .addLabeledComponent(CURRENT_VERSION, currentVersionLabel)
+                            .addLabeledComponent(LATEST_VERSION, latestVersionLabel, DEFAULT_TOP_INSET)
+                            .addComponentToRightColumn(releaseInfoLink, DEFAULT_TOP_INSET)
+                            .addComponentToRightColumn(allowPrereleaseToggle, DEFAULT_TOP_INSET)
+                            .addComponentToRightColumn(installActionPanel)
+                            .panel
+                    component(coreToolsPanel)
+                }
+                row {
+                    component(checkCoreToolsUpdateToggle)
+                            .comment(CORE_TOOLS_CHECK_UPDATE_COMMENT)
+                }
+            }
 
-    override val displayName = DISPLAY_NAME
+    override val displayName: String = DISPLAY_NAME
 
     override fun doOKAction() {
         if (coreToolsPathField.text != "" && File(coreToolsPathField.text).exists()) {
@@ -174,5 +192,9 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         properties.setValue(
                 AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE,
                 allowPrereleaseToggle.isSelected)
+
+        properties.setValue(
+                AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES,
+                checkCoreToolsUpdateToggle.isSelected)
     }
 }

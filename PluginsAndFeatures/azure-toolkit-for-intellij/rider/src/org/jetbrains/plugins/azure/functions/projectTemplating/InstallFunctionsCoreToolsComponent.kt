@@ -48,6 +48,7 @@ class InstallFunctionsCoreToolsComponent(private val validationError: IProperty<
                     "growx, gapbottom ${JBUI.scale(1)}")
             add(ComponentFactories.hyperlinkLabel("Configure Azure Functions Core Tools...") {
                 val project = ProjectManager.getInstance().defaultProject
+                // TODO: FIX_LOCALIZATION: Using displayName parameter here for Settings ID need to be fixed to use ID to avoid localization issues.
                 ShowSettingsUtilImpl.showSettingsDialog(project, AZURE_CONFIGURABLE_PREFIX + AzureFunctionsConfigurationPanel.DISPLAY_NAME, "")
                 validationError.set(null)
             })

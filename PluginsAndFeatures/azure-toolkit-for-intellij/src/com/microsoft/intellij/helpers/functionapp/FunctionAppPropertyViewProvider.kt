@@ -25,8 +25,10 @@ package com.microsoft.intellij.helpers.functionapp
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.microsoft.azure.auth.exception.AzureLoginFailureException
 import com.microsoft.intellij.helpers.UIHelperImpl
 import com.microsoft.intellij.helpers.base.AppBasePropertyViewProvider
+import java.lang.IllegalStateException
 
 class FunctionAppPropertyViewProvider : AppBasePropertyViewProvider() {
 
@@ -37,8 +39,12 @@ class FunctionAppPropertyViewProvider : AppBasePropertyViewProvider() {
     override fun getType() = TYPE
 
     override fun createEditor(project: Project, virtualFile: VirtualFile): FileEditor {
-        val subscriptionId = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID) ?: throw Exception("TODO:")
-        val appId = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID) ?: throw Exception("TODO:")
+        val subscriptionId = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID)
+                ?: throw IllegalStateException("Unable to get SubscriptionID from User Data.")
+
+        val appId = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID)
+                ?: throw IllegalStateException("Unable to get ResourceID from User Data.")
+
         return FunctionAppPropertyView.create(project, subscriptionId, appId)
     }
 }

@@ -26,8 +26,10 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.util.SystemInfo
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.info
 import com.jetbrains.rd.util.warn
 import com.microsoft.intellij.configuration.AzureRiderSettings
+import com.microsoft.intellij.runner.functions.core.FunctionCliResolver
 import java.io.File
 
 data class FunctionsCoreToolsInfo(val coreToolsPath: String, var coreToolsExecutable: String)
@@ -61,5 +63,46 @@ object FunctionsCoreToolsInfoProvider {
         }
 
         return FunctionsCoreToolsInfo(funcCoreToolsPath, coreToolsExecutablePath.path)
+    }
+
+    fun detectFunctionCoreToolsPath(): String? {
+
+        fun detectPluginDownloads(): File? {
+            val pluginCoreToolsPath = FunctionsCoreToolsManager.determineLatestLocalCoreToolsPath() ?: return null
+            val downloadFile = File(pluginCoreToolsPath)
+
+            val toolNameWithExtension = FunctionsCoreToolsManager.getCoreToolsExecutableName()
+            val toolFile = downloadFile.resolve(toolNameWithExtension)
+
+            if (!toolFile.exists())
+                return null
+
+            return toolFile
+        }
+
+        fun detectManualDownloads(): File? {
+            val coreToolsPath = FunctionCliResolver.resolveFunc() ?: return null
+
+            val coreToolFile = File(coreToolsPath)
+            if (!coreToolFile.exists())
+                return null
+
+            return coreToolFile
+        }
+
+        // Plugin tool downloads has higher priority then manual downloads.
+        val pluginCoreToolsExecutable = detectPluginDownloads()
+        if (pluginCoreToolsExecutable != null) {
+            logger.info { "Found an existing download from the plugin for function core tool: '${pluginCoreToolsExecutable.canonicalPath}'" }
+            return pluginCoreToolsExecutable.parentFile.canonicalPath
+        }
+
+        val manualCoreToolsExecutable = detectManualDownloads()
+        if (manualCoreToolsExecutable != null) {
+            logger.info { "Found an existing manual setup for function core tool: '${manualCoreToolsExecutable.canonicalPath}'" }
+            return manualCoreToolsExecutable.parentFile.canonicalPath
+        }
+
+        return null
     }
 }

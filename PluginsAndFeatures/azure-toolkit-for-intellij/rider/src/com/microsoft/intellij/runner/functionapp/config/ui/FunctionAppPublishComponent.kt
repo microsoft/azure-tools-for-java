@@ -120,7 +120,7 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         // Settings
         val isOpenInBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
-                AzureRiderSettings.openInBrowserDefaultValue)
+                AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
 
         if (isOpenInBrowser)
             pnlFunctionAppPublishSettings.checkBoxOpenInBrowserAfterPublish.doClick()

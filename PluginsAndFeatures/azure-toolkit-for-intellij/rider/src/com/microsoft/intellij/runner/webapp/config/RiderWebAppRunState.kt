@@ -35,8 +35,6 @@ import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
-import com.microsoft.azuretools.utils.AzureUIRefreshCore
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.AzureRunProfileState
@@ -55,7 +53,6 @@ import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUti
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil.webAppStart
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
 
 class RiderWebAppRunState(project: Project,
                           private val myModel: DotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
@@ -150,7 +147,7 @@ class RiderWebAppRunState(project: Project,
 
         val isOpenBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
-                AzureRiderSettings.openInBrowserDefaultValue)
+                AzureRiderSettings.OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE)
 
         if (isOpenBrowser) {
             openAppInBrowser(webApp, processHandler)

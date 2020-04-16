@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.functionapp.model
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.util.JDOMExternalizerUtil
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
@@ -110,9 +111,11 @@ class FunctionAppPublishModel {
     fun readExternal(project: Project, element: Element) {
 
         val projectPath = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_PROJECT) ?: ""
-        project.solution.publishableProjectsModel.publishableProjects.advise(project.createLifetime()) {
-            if (it.newValueOpt?.projectFilePath == projectPath)
-                publishableProject = it.newValueOpt
+        application.invokeLater {
+            project.solution.publishableProjectsModel.publishableProjects.advise(project.createLifetime()) {
+                if (it.newValueOpt?.projectFilePath == projectPath)
+                    publishableProject = it.newValueOpt
+            }
         }
 
         val subscriptionId = JDOMExternalizerUtil.readField(element, AZURE_FUNCTION_APP_SUBSCRIPTION_ID) ?: ""

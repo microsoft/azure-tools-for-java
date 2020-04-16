@@ -45,38 +45,38 @@ import java.io.IOException
 import java.net.UnknownHostException
 
 object FunctionsCoreToolsManager {
-    private const val DOWNLOADTASK_TITLE = "Downloading latest Azure Functions Core Tools..."
-    private const val CORETOOLS_DIR = "azure-functions-coretools"
+    private const val DOWNLOAD_TASK_TITLE = "Downloading latest Azure Functions Core Tools..."
+    private const val CORE_TOOLS_DIR = "azure-functions-coretools"
     private const val API_URL_RELEASES = "repos/Azure/azure-functions-core-tools/releases?per_page=100"
 
-    private val downloadPath = PathManager.getConfigPath() + File.separator + FunctionsCoreToolsManager.CORETOOLS_DIR
+    private val downloadPath: String = PathManager.getConfigPath() + File.separator + CORE_TOOLS_DIR
 
     private val logger = getLogger<FunctionsCoreToolsManager>()
 
-    fun downloadLatestRelease(allowPrerelease: Boolean, indicator: ProgressIndicator, completed: (String) -> Unit) {
-        object : Task.Backgroundable(null, DOWNLOADTASK_TITLE, true) {
-            override fun run(pi: ProgressIndicator) {
+    fun downloadLatestRelease(allowPrerelease: Boolean, indicator: ProgressIndicator, onComplete: (String) -> Unit) {
+        object : Task.Backgroundable(null, DOWNLOAD_TASK_TITLE, true) {
+            override fun run(indicator: ProgressIndicator) {
                 ApplicationManager.getApplication().executeOnPooledThread {
-                    downloadLatestReleaseInternal(allowPrerelease, pi, completed)
+                    downloadLatestReleaseInternal(allowPrerelease, indicator, onComplete)
                 }
             }
         }.run(indicator)
     }
 
-    fun downloadLatestRelease(allowPrerelease: Boolean, project: Project, completed: (String) -> Unit): Task {
-        return object : Task.Backgroundable(project, DOWNLOADTASK_TITLE, true) {
+    fun downloadLatestRelease(project: Project, allowPrerelease: Boolean, onComplete: (String) -> Unit): Task {
+        return object : Task.Backgroundable(project, DOWNLOAD_TASK_TITLE, true) {
             override fun run(pi: ProgressIndicator) {
-                downloadLatestReleaseInternal(allowPrerelease, pi, completed)
+                downloadLatestReleaseInternal(allowPrerelease, pi, onComplete)
             }
         }
     }
 
-    private fun downloadLatestReleaseInternal(allowPrerelease: Boolean, pi: ProgressIndicator, completed: (String) -> Unit) {
-        if (!pi.isRunning) pi.start()
+    private fun downloadLatestReleaseInternal(allowPrerelease: Boolean, indicator: ProgressIndicator, onComplete: (String) -> Unit) {
+        if (!indicator.isRunning) indicator.start()
 
         // Grab latest URL
-        pi.text = "Determining download URL..."
-        pi.isIndeterminate = true
+        indicator.text = "Determining download URL..."
+        indicator.isIndeterminate = true
 
         val latestLocal = determineVersion(determineLatestLocalCoreToolsPath())
         val latestRemote = determineLatestRemote(allowPrerelease)
@@ -84,11 +84,11 @@ object FunctionsCoreToolsManager {
             logger.error { "Could not determine latest remote version." }
         }
         if (latestRemote == null || latestLocal?.compareTo(latestRemote) == 0) {
-            pi.text = "Finished."
-            if (pi.isRunning) pi.stop()
+            indicator.text = "Finished."
+            if (indicator.isRunning) indicator.stop()
 
             if (latestLocal != null) {
-                completed(latestLocal.fullPath)
+                onComplete(latestLocal.fullPath)
             }
 
             return
@@ -100,21 +100,21 @@ object FunctionsCoreToolsManager {
                 "download", true, true)
 
         // Download
-        pi.text = "Preparing to download..."
-        pi.isIndeterminate = false
+        indicator.text = "Preparing to download..."
+        indicator.isIndeterminate = false
         HttpRequests.request(latestRemote.downloadUrl)
                 .productNameAsUserAgent()
                 .connect {
-                    pi.text = "Downloading..."
-                    it.saveToFile(tempFile, pi)
+                    indicator.text = "Downloading..."
+                    it.saveToFile(tempFile, indicator)
                 }
 
-        pi.checkCanceled()
+        indicator.checkCanceled()
 
         // Extract
-        pi.startNonCancelableSection()
-        pi.text = "Preparing to extract..."
-        pi.isIndeterminate = true
+        indicator.startNonCancelableSection()
+        indicator.text = "Preparing to extract..."
+        indicator.isIndeterminate = true
         val latestDirectory = File(downloadPath).resolve(latestRemote.version)
         try {
             if (latestDirectory.exists()) latestDirectory.deleteRecursively()
@@ -122,16 +122,16 @@ object FunctionsCoreToolsManager {
             logger.error("Error while removing latest directory $latestDirectory.path", e)
         }
 
-        pi.text = "Extracting..."
-        pi.isIndeterminate = true
+        indicator.text = "Extracting..."
+        indicator.isIndeterminate = true
         try {
             ZipUtil.extract(tempFile, latestDirectory, null)
         } catch (e: Exception) {
             logger.error("Error while extracting $tempFile.path to $latestDirectory.path", e)
         }
 
-        pi.text = "Cleaning up older versions..."
-        pi.isIndeterminate = true
+        indicator.text = "Cleaning up older versions..."
+        indicator.isIndeterminate = true
         if (latestLocal != null) {
             val latestLocalDirectory = File(latestLocal.fullPath)
             try {
@@ -141,51 +141,54 @@ object FunctionsCoreToolsManager {
             }
         }
 
-        pi.text = "Cleaning up temporary files..."
-        pi.isIndeterminate = true
+        indicator.text = "Cleaning up temporary files..."
+        indicator.isIndeterminate = true
         try {
             if (tempFile.exists()) tempFile.delete()
         } catch (e: Exception) {
             logger.error("Error while removing temporary file $tempFile.path", e)
         }
 
-        pi.finishNonCancelableSection()
-        pi.text = "Finished."
-        if (pi.isRunning) pi.stop()
+        indicator.finishNonCancelableSection()
+        indicator.text = "Finished."
+        if (indicator.isRunning) indicator.stop()
 
-        completed(latestDirectory.path)
+        onComplete(latestDirectory.path)
+    }
+
+    fun getCoreToolsExecutableName(): String {
+        return if (SystemInfo.isWindows) { "func.exe" }
+        else { "func" }
     }
 
     fun determineVersion(coreToolsPath: String?): AzureFunctionsCoreToolsLocalAsset? {
-        if (coreToolsPath == null) return null
+        coreToolsPath ?: return null
 
-        val coreToolsExecutablePath = if (SystemInfo.isWindows) {
-            File(coreToolsPath).resolve("func.exe")
-        } else {
-            File(coreToolsPath).resolve("func")
-        }
+        val coreToolsExecutableDir = File(coreToolsPath)
+        val coreToolsExecutable = coreToolsExecutableDir.resolve(getCoreToolsExecutableName())
+        if (!coreToolsExecutable.exists())
+            return null
+
 
         try {
-            if (coreToolsExecutablePath.exists()) {
-                if (!coreToolsExecutablePath.canExecute()) {
-                    logger.warn { "Updating executable flag for $coreToolsPath..." }
-                    try {
-                        coreToolsExecutablePath.setExecutable(true)
-                    } catch (s: SecurityException) {
-                        logger.error("Failed setting executable flag for $coreToolsPath", s)
-                    }
+            if (!coreToolsExecutable.canExecute()) {
+                logger.warn { "Updating executable flag for $coreToolsPath..." }
+                try {
+                    coreToolsExecutable.setExecutable(true)
+                } catch (s: SecurityException) {
+                    logger.error("Failed setting executable flag for $coreToolsPath", s)
                 }
+            }
 
-                val commandLine = GeneralCommandLine()
-                        .withExePath(coreToolsExecutablePath.path)
-                        .withParameters("--version")
+            val commandLine = GeneralCommandLine()
+                    .withExePath(coreToolsExecutable.path)
+                    .withParameters("--version")
 
-                val processHandler = CapturingProcessHandler(commandLine)
-                val output = processHandler.runProcess(15000, true)
-                val version = output.stdoutLines.firstOrNull()?.trim('\r', '\n')
-                if (!version.isNullOrEmpty()) {
-                    return AzureFunctionsCoreToolsLocalAsset(version, coreToolsPath)
-                }
+            val processHandler = CapturingProcessHandler(commandLine)
+            val output = processHandler.runProcess(15000, true)
+            val version = output.stdoutLines.firstOrNull()?.trim('\r', '\n')
+            if (!version.isNullOrEmpty()) {
+                return AzureFunctionsCoreToolsLocalAsset(version, coreToolsPath)
             }
         } catch (e: Exception) {
             logger.error("Error while determining version of tools in $coreToolsPath", e)
@@ -194,11 +197,11 @@ object FunctionsCoreToolsManager {
         return null
     }
 
-    private fun determineLatestLocalCoreToolsPath(): String? {
-        val downloadDirectory = File(downloadPath)
+    fun determineLatestLocalCoreToolsPath(toolsDownloadPath: String = downloadPath): String? {
+        val downloadDirectory = File(toolsDownloadPath)
         if (downloadDirectory.exists()) {
-            val latestDirectory = downloadDirectory
-                    .listFiles { f: File? -> f != null && f.isDirectory }
+            val versionDirs = downloadDirectory.listFiles { file -> file != null && file.isDirectory } ?: return null
+            val latestDirectory = versionDirs
                     .sortedWith(Comparator<File> { o1, o2 -> StringUtil.compareVersionNumbers(o1?.name, o2?.name) })
                     .lastOrNull()
 

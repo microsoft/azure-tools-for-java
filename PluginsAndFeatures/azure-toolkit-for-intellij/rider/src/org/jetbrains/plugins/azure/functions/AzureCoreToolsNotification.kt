@@ -36,60 +36,100 @@ import com.jetbrains.rider.projectView.solution
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
-import javax.swing.event.HyperlinkEvent
 
+// TODO: FIX_VERSION: Replace with [SolutionLoadNotification] when async notifications are merged into 202
 class AzureCoreToolsNotification : StartupActivity {
     companion object {
-        private val notificationGroup = NotificationGroup("AzureFunctions", NotificationDisplayType.BALLOON, true, null, null)
+        private val notificationGroup = NotificationGroup(
+                displayId = "AzureFunctions",
+                displayType = NotificationDisplayType.BALLOON,
+                isLogByDefault = true,
+                toolWindowId = null,
+                icon = null
+        )
     }
 
     override fun runActivity(project: Project) {
+        val properties = PropertiesComponent.getInstance()
+        if (!properties.getBoolean(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES, true))
+            return
+
         project.solution.runnableProjectsModel.projects.adviseOnce(project.createLifetime()) { runnableProjects ->
             if (runnableProjects.none { it.kind == RunnableProjectKind.AzureFunctions }) return@adviseOnce
 
             ApplicationManager.getApplication().executeOnPooledThread {
                 val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.retrieve()
-                val allowPrerelease = PropertiesComponent.getInstance().getBoolean(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE)
+                val allowPrerelease = properties.getBoolean(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE)
 
                 val local = FunctionsCoreToolsManager.determineVersion(funcCoreToolsInfo?.coreToolsPath)
                 val remote = FunctionsCoreToolsManager.determineLatestRemote(allowPrerelease)
 
-                if (local == null || remote != null && local < remote) {
-                    val title = if (local == null) {
-                        "Install Azure Functions Core Tools"
-                    } else {
-                        "Update Azure Functions Core Tools"
-                    }
+                if (local == null || (remote != null && local < remote)) {
 
-                    val description = if (local == null) {
-                        "<a href='install'>Install the Azure Functions Core Tools</a> to develop, run and debug Azure Functions locally."
-                    } else {
-                        "A newer version of the Azure Functions Core Tools is available. <a href='install'>Update now</a>"
-                    }
-
-                    val notification = notificationGroup.createNotification(
-                            title, null, description,
-                            NotificationType.INFORMATION,
-                            object : NotificationListener.Adapter() {
-                                override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
-                                    if (!project.isDisposed) {
-                                        when (e.description) {
-                                            "install" -> {
-                                                ProgressManager.getInstance().run(
-                                                        FunctionsCoreToolsManager.downloadLatestRelease(allowPrerelease, project) {
-                                                            PropertiesComponent.getInstance().setValue(
-                                                                    AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, it)
-                                                            notification.expire()
-                                                        })
-                                            }
-                                        }
-                                    }
-                                }
-                            })
+                    val notification =
+                            if (local == null) createInstallNotification(project, allowPrerelease)
+                            else createUpdateNotification(project, allowPrerelease)
 
                     Notifications.Bus.notify(notification, project)
                 }
             }
         }
+    }
+
+    private fun createInstallNotification(project: Project, allowPreRelease: Boolean): Notification {
+        val title = "Install Azure Functions Core Tools"
+        val description = "Install the Azure Functions Core Tools to develop, run and debug Azure Functions locally."
+        val notification = notificationGroup.createNotification(
+                title = title,
+                subtitle = null,
+                content = description,
+                type = NotificationType.INFORMATION
+        )
+
+        notification.appendDownloadCoreToolsAction(project = project, actionName = "Install", allowPreRelease = allowPreRelease)
+
+        return notification
+    }
+
+    private fun createUpdateNotification(project: Project, allowPreRelease: Boolean): Notification {
+        val title = "Update Azure Functions Core Tools"
+        val description = "A newer version of the Azure Functions Core Tools is available."
+
+        val notification = notificationGroup.createNotification(
+                title = title,
+                subtitle = null,
+                content = description,
+                type = NotificationType.INFORMATION
+        )
+
+        notification.appendDownloadCoreToolsAction(project = project, actionName = "Update", allowPreRelease = allowPreRelease)
+        notification.appendDisableUpdatesCheckAction(project = project)
+
+        return notification
+    }
+
+    private fun Notification.appendDownloadCoreToolsAction(project: Project, actionName: String, allowPreRelease: Boolean) {
+        addAction(NotificationAction.createSimple(actionName) {
+            downloadCoreTools(project, allowPreRelease)
+            expire()
+        })
+    }
+
+    private fun Notification.appendDisableUpdatesCheckAction(project: Project) {
+        addAction(NotificationAction.createSimple("Disable updates") {
+            disableNotification(project)
+            expire()
+        })
+    }
+
+    private fun downloadCoreTools(project: Project, allowPreRelease: Boolean) {
+        ProgressManager.getInstance().run(
+                FunctionsCoreToolsManager.downloadLatestRelease(project, allowPreRelease) { path ->
+                    PropertiesComponent.getInstance().setValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, path)
+                })
+    }
+
+    private fun disableNotification(project: Project) {
+        PropertiesComponent.getInstance(project).setValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES, false)
     }
 }

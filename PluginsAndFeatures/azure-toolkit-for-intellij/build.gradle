@@ -124,11 +124,13 @@ allprojects {
         }
         test {
             java {
-                srcDir 'Test/java'
+                srcDir 'test/java'
             }
-            kotlin.srcDirs 'Test/java'
+            kotlin {
+                srcDirs 'test/kotlin'
+            }
             resources {
-                srcDir 'Test/resources'
+                srcDir 'test/resources'
             }
         }
     }

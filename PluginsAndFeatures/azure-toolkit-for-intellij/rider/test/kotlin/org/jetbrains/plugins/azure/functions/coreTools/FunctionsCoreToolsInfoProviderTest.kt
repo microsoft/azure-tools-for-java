@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,15 +20,34 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.functions.coreTools
 
-object AzureRiderSettings {
-    // Web Apps
-    const val PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME = "AzureOpenWebAppInBrowser"
-    const val OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE = false
+import org.testng.annotations.Test
 
-    // Functions
-    const val PROPERTY_FUNCTIONS_CORETOOLS_PATH = "AzureFunctionsCoreToolsPath"
-    const val PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE = "AzureFunctionsCoreToolsAllowPrerelease"
-    const val PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES = "AzureFunctionCoreToolsCheckUpdates"
+class FunctionsCoreToolsInfoProviderTest {
+
+    @Test(enabled = false)
+    fun testDetectFunctionCoreToolsPath_NotInstalled() {
+        // TODO: Add tests
+    }
+
+    @Test(enabled = false)
+    fun testDetectFunctionCoreToolsPath_UserInstallation_NeedUpdate() {
+        // TODO: Add tests
+    }
+
+    @Test(enabled = false)
+    fun testDetectFunctionCoreToolsPath_UserInstallation_Latest() {
+        // TODO: Add tests
+    }
+
+    @Test(enabled = false)
+    fun testDetectFunctionCoreToolsPath_PluginInstallation_NeedUpdate() {
+        // TODO: Add tests
+    }
+
+    @Test(enabled = false)
+    fun testDetectFunctionCoreToolsPath_PluginInstallation_Latest() {
+        // TODO: Add tests
+    }
 }
