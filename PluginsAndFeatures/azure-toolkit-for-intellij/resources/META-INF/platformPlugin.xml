@@ -6,8 +6,15 @@
     <html>
       <h4>Changes:</h4>
       <ul>
-          <li>Functions: Invoke timer trigger during debug session - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/246">#246</a></li>
-		  <li>Azure Functions - Filter out pre-releases from core tools downloads - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/256">#256</a></li>
+        <li>Azure Explorer: Performance improvements in loading list of Function Apps - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/276">#276</a></li>
+        <li>Update OrchestrationTrigger Function template</li>
+        <li>Bump Azure Utils version</li>
+        <li>Bump missing NuGet packages version</li>
+      </ul>
+      <h4>Fixed bugs:</h4>
+      <ul>
+        <li>Remove duplicated run configuration for running Azure Functions - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/285">#285</a></li>
+        <li>Fix thread assertion failure on Plugin startup - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/287">#287</a></li>
       </ul>
     </html>
     ]]>
