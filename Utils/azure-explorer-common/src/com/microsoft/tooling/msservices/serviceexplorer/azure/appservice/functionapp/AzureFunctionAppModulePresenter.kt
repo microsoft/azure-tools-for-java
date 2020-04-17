@@ -22,7 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
 
@@ -31,15 +30,14 @@ class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
     fun onModuleRefresh() {
         mvpView ?: return
 
-        val subscriptionManager = AuthMethodManager.getInstance().azureManager.subscriptionManager
-        val subscriptionId = subscriptionManager.subscriptionDetails.firstOrNull()?.subscriptionId ?: return
-        val azureFunctionsList = AzureFunctionAppMvpModel.getAzureFunctionAppsInnerBySubscriptionId(subscriptionId)
+        val azureFunctionsList = AzureFunctionAppMvpModel.listAllFunctionApps(true)
 
         for (functionApp in azureFunctionsList) {
-            val appId   = functionApp.id()
-            val appName = functionApp.name()
-            val state   = functionApp.state()
-            val hostName= functionApp.defaultHostName()
+            val subscriptionId    = functionApp.subscriptionId
+            val appId             = functionApp.resource.id()
+            val appName           = functionApp.resource.name()
+            val state             = functionApp.resource.state()
+            val hostName          = functionApp.resource.defaultHostName()
 
             mvpView.addChildNode(FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName))
         }

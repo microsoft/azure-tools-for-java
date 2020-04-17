@@ -32,24 +32,22 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.appserviceplan.AzureAppServicePlanMvpModel
-import com.microsoft.azuretools.core.mvp.model.function.FunctionAppWrapper
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.Function
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.FunctionImpl
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.FunctionAppService
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import org.apache.commons.io.IOUtils
-import org.jetbrains.annotations.TestOnly
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Logger
 
 object AzureFunctionAppMvpModel {
 
-    private val logger = LoggerFactory.getLogger(AzureFunctionAppMvpModel::class.java)
+    private val logger = Logger.getLogger(AzureFunctionAppMvpModel::class.java.name)
 
     private val subscriptionIdToFunctionAppsMap = ConcurrentHashMap<String, List<FunctionApp>>()
     private val appToConnectionStringsMap = ConcurrentHashMap<FunctionApp, List<ConnectionString>>()
@@ -85,51 +83,41 @@ object AzureFunctionAppMvpModel {
             subscriptionIdToFunctionAppsMap[subscriptionId] = functionApps
             return functionApps
         } catch (e: IOException) {
-            logger.error("Error getting Azure Function Apps by Subscription Id: $e")
+            logger.warning("Error getting Azure Function Apps by Subscription Id: $e")
         }
 
         return listOf()
     }
 
     fun getAzureFunctionAppsBySubscriptionId(subscriptionId: String) =
-            getFunctionAppsClient(subscriptionId).list() ?: emptyList<FunctionApp>()
-
-    /**
-     * This call uses other Azure API that quickly return a list of lightweight Azure Function Apps.
-     *
-     * Note: Please use this with caution since object does not cache part of data.
-     *       Be ready requests for this data will take time comparing with [getAzureFunctionAppsBySubscriptionId] method.
-     */
-    fun getAzureFunctionAppsInnerBySubscriptionId(subscriptionId: String) =
-            getFunctionAppsClient(subscriptionId).inner().list()
-                    .map { inner -> FunctionAppWrapper(subscriptionId, inner) }
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps()
+                    .list() ?: emptyList<FunctionApp>()
 
     fun getAzureFunctionAppsByResourceGroup(subscriptionId: String, resourceGroupName: String) =
-            getFunctionAppsClient(subscriptionId).listByResourceGroup(resourceGroupName)
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps()
+                    .listByResourceGroup(resourceGroupName)
 
     fun getFunctionAppById(subscriptionId: String, appId: String) =
-            getFunctionAppsClient(subscriptionId).getById(appId)
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps().getById(appId)
 
     fun startFunctionApp(subscriptionId: String, functionAppId: String) =
-            getFunctionAppsClient(subscriptionId).getById(functionAppId).start()
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+                    .appServices().functionApps().getById(functionAppId).start()
 
     fun restartFunctionApp(subscriptionId: String, functionAppId: String) =
-            getFunctionAppsClient(subscriptionId).getById(functionAppId).restart()
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+                    .appServices().functionApps().getById(functionAppId).restart()
 
     fun stopFunctionApp(subscriptionId: String, functionAppId: String) =
-            getFunctionAppsClient(subscriptionId).getById(functionAppId).stop()
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+                    .appServices().functionApps().getById(functionAppId).stop()
 
     fun deleteFunctionApp(subscriptionId: String, functionAppId: String) {
         try {
-            getFunctionAppsClient(subscriptionId).deleteById(functionAppId)
-            if (subscriptionIdToFunctionAppsMap.contains(subscriptionId)) {
-                val filteredFunctionApps = subscriptionIdToFunctionAppsMap.getValue(subscriptionId)
-                        .filter { app -> app.id() != functionAppId }
-
-                subscriptionIdToFunctionAppsMap[subscriptionId] = filteredFunctionApps
-            }
+            val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
+            azure.appServices().functionApps().deleteById(functionAppId)
         } catch (t: Throwable) {
-            logger.error("Error deleting Azure Function App: $t")
+            logger.warning("Error deleting Azure Function App: $t")
             throw t
         }
     }
@@ -213,17 +201,13 @@ object AzureFunctionAppMvpModel {
         return connectionStrings
     }
 
-    /**
-     * Check whether connection string with name exists for a specified Azure Function app with provided ID.
-     */
     fun checkConnectionStringNameExists(subscriptionId: String, appId: String, connectionStringName: String, force: Boolean = false): Boolean {
-        if (!force) {
-            val existingFunctionApps = subscriptionIdToFunctionAppsMap[subscriptionId] ?: return false
-            val app = existingFunctionApps.find { it.id() == appId } ?: return false
+        if (!force && subscriptionIdToFunctionAppsMap.containsKey(subscriptionId)) {
+            val app = subscriptionIdToFunctionAppsMap[subscriptionId]!!.find { it.id() == appId } ?: return false
             return checkConnectionStringNameExists(app, connectionStringName, force)
         }
 
-        val app = getFunctionAppById(subscriptionId, appId)
+        val app = AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, appId)
         return checkConnectionStringNameExists(app, connectionStringName, force)
     }
 
@@ -241,7 +225,6 @@ object AzureFunctionAppMvpModel {
         listAllFunctionApps(true)
     }
 
-    @TestOnly
     fun clearSubscriptionIdToFunctionMap() {
         subscriptionIdToFunctionAppsMap.clear()
     }
@@ -331,7 +314,7 @@ object AzureFunctionAppMvpModel {
     }
 
     private fun createFunctionAppDefinition(subscriptionId: String, name: String) =
-            getFunctionAppsClient(subscriptionId).define(name)
+            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps().define(name)
 
     private fun withStorageAccount(definition: FunctionApp.DefinitionStages.WithCreate,
                                    isCreateNew: Boolean,
@@ -353,7 +336,4 @@ object AzureFunctionAppMvpModel {
     private fun clearTags(app: WebAppBase) {
         app.inner().withTags(null)
     }
-
-    private fun getFunctionAppsClient(subscriptionId: String) =
-            AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps()
 }
