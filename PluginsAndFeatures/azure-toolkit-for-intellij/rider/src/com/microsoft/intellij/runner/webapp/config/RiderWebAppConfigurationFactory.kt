@@ -30,7 +30,9 @@ import com.intellij.openapi.project.Project
 class RiderWebAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
 
     companion object {
-        private const val FACTORY_ID = "AzureWebAppFactory"
+        // Note: this FACTORY_ID can not be changed, as it may break existing run configurations out here.
+        private const val FACTORY_ID = "Azure Web App"
+
         private const val FACTORY_NAME = "Azure Web App"
     }
 

@@ -38,8 +38,10 @@ class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
     : DotNetConfigurationFactoryBase<AzureFunctionsHostConfiguration>(type) {
 
     companion object {
-        private const val FACTORY_ID = "AzureFunctionsHostFactory"
-        private const val FACTORY_NAME = "Azure functions host factory"
+        // Note: this FACTORY_ID can not be changed, as it may break existing run configurations out here.
+        private const val FACTORY_ID = "Azure Functions host"
+
+        private const val FACTORY_NAME = "Azure Functions host factory"
     }
 
     override fun getId(): String = FACTORY_ID

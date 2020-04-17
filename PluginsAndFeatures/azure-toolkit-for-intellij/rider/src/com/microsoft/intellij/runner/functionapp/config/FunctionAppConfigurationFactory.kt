@@ -30,7 +30,9 @@ import com.intellij.openapi.project.Project
 class FunctionAppConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
 
     companion object {
-        private const val FACTORY_ID = "AzureFunctionAppFactory"
+        // Note: this FACTORY_ID can not be changed, as it may break existing run configurations out here.
+        private const val FACTORY_ID = "Azure Function App"
+
         private const val FACTORY_NAME = "Azure Function App"
     }
 
