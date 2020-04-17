@@ -6,13 +6,13 @@
     <html>
       <h4>Changes:</h4>
       <ul>
-        <li>Azure Explorer: Performance improvements in loading list of Function Apps - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/276">#276</a></li>
         <li>Update OrchestrationTrigger Function template</li>
         <li>Bump Azure Utils version</li>
         <li>Bump missing NuGet packages version</li>
       </ul>
       <h4>Fixed bugs:</h4>
       <ul>
+		<li>Existing Azure-related Run Configurations broken after upgrading to new plugin version - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/291">#291</a></li>
         <li>Remove duplicated run configuration for running Azure Functions - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/285">#285</a></li>
         <li>Fix thread assertion failure on Plugin startup - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/287">#287</a></li>
       </ul>
