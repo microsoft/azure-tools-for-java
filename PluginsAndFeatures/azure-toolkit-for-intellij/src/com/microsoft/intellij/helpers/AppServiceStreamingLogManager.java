@@ -34,6 +34,9 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel.isApplicationLogEnabled;
+import static com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel.isHttpLogEnabled;
+
 
 public enum AppServiceStreamingLogManager {
     INSTANCE;
@@ -95,7 +98,7 @@ public enum AppServiceStreamingLogManager {
                         NOT_SUPPORTED, LINUX_LOG_STREAMING_IS_NOT_SUPPORTED));
                 return null;
             }
-            if (isApplicationLogEnabled(function) || enableApplicationLog(function, function.name())) {
+            if (isApplicationLogEnabled(function) || enableApplicationLog(function)) {
                 return function.streamAllLogsAsync();
             } else {
                 return null;
@@ -144,50 +147,23 @@ public enum AppServiceStreamingLogManager {
     }
 
     private boolean enableHttpLog(WebAppBase.Update webApp, String name) {
-        final boolean result = DefaultLoader.getUIHelper().showConfirmation(
+        final boolean enableLogStreaming = DefaultLoader.getUIHelper().showConfirmation(
                 String.format(ENABLE_FILE_LOGGING_PROMPT, name), ENABLE_LOGGING, YES_NO, null);
-        if (result) {
-            webApp.withContainerLoggingEnabled().apply();
-            return true;
-        } else {
+        if (!enableLogStreaming) {
             return false;
         }
+        AzureWebAppMvpModel.enableHttpLog(webApp);
+        return true;
     }
 
-    private boolean isHttpLogEnabled(WebAppBase webAppBase) {
-        final WebAppDiagnosticLogs config = webAppBase.diagnosticLogsConfig();
-        return config != null && config.inner() != null && config.inner().httpLogs() != null &&
-                config.inner().httpLogs().fileSystem() != null && config.inner().httpLogs().fileSystem().enabled();
-    }
-
-    private boolean isApplicationLogEnabled(WebAppBase webAppBase) {
-        final WebAppDiagnosticLogs config = webAppBase.diagnosticLogsConfig();
-        if (config == null || config.inner() == null || config.inner().applicationLogs() == null) {
+    private boolean enableApplicationLog(FunctionApp functionApp) {
+        final boolean enableLogStreaming = DefaultLoader.getUIHelper().showConfirmation(
+                String.format(ENABLE_FILE_LOGGING_PROMPT, functionApp.name()), ENABLE_LOGGING, YES_NO, null);
+        if (!enableLogStreaming) {
             return false;
         }
-        final ApplicationLogsConfig applicationLogsConfig = config.inner().applicationLogs();
-        return (applicationLogsConfig.fileSystem() != null
-                && applicationLogsConfig.fileSystem().level() != LogLevel.OFF) ||
-                (applicationLogsConfig.azureBlobStorage() != null
-                        && applicationLogsConfig.azureBlobStorage().level() != LogLevel.OFF) ||
-                (applicationLogsConfig.azureTableStorage() != null
-                        && applicationLogsConfig.azureTableStorage().level() != LogLevel.OFF);
-    }
-
-    private boolean enableApplicationLog(FunctionApp functionApp, String name) {
-        final boolean result = DefaultLoader.getUIHelper().showConfirmation(
-                String.format(ENABLE_FILE_LOGGING_PROMPT, name), ENABLE_LOGGING, YES_NO, null);
-        if (result) {
-            functionApp.update().updateDiagnosticLogsConfiguration()
-                       .withApplicationLogging()
-                       .withLogLevel(LogLevel.INFORMATION)
-                       .withApplicationLogsStoredOnFileSystem()
-                       .parent()
-                       .apply();
-            return true;
-        } else {
-            return false;
-        }
+        AzureFunctionMvpModel.enableApplicationLog(functionApp);
+        return true;
     }
 
     interface LogStreamingFunction {

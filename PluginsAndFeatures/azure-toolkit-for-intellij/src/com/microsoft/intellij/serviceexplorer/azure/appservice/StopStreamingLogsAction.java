@@ -70,11 +70,10 @@ public class StopStreamingLogsAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
-        EventUtil.executeWithLog(
-                service, operation,
-                (op) -> {
-                    AppServiceStreamingLogManager.INSTANCE.closeStreamingLog(project, resourceId);
-                },
-                (err) -> UIUtils.showNotification(project, err.getMessage(), MessageType.ERROR));
+        EventUtil.executeWithLog(service, operation,
+            (op) -> {
+                AppServiceStreamingLogManager.INSTANCE.closeStreamingLog(project, resourceId);
+            },
+            (err) -> UIUtils.showNotification(project, err.getMessage(), MessageType.ERROR));
     }
 }

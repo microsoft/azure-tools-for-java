@@ -32,6 +32,7 @@ import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -128,13 +129,13 @@ public class AzureWebAppMvpModel {
         }
     }
 
-     /**
-     * API to create Web App on Windows .
-     *
-     * @param model parameters
-     * @return instance of created WebApp
-     * @throws Exception exception
-     */
+    /**
+    * API to create Web App on Windows .
+    *
+    * @param model parameters
+    * @return instance of created WebApp
+    * @throws Exception exception
+    */
     public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
@@ -470,7 +471,6 @@ public class AzureWebAppMvpModel {
         return appServicePlans;
     }
 
-
     /**
      * List app service plan by subscription id.
      */
@@ -679,6 +679,17 @@ public class AzureWebAppMvpModel {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // Refers https://github.com/microsoft/vscode-azureappservice/blob/v0.16.5/src/explorer/SiteTreeItem.ts#L133
+    public static boolean isHttpLogEnabled(WebAppBase webAppBase) {
+        final WebAppDiagnosticLogs config = webAppBase.diagnosticLogsConfig();
+        return config != null && config.inner() != null && config.inner().httpLogs() != null &&
+                config.inner().httpLogs().fileSystem() != null && config.inner().httpLogs().fileSystem().enabled();
+    }
+
+    public static void enableHttpLog(WebAppBase.Update webApp) {
+        webApp.withContainerLoggingEnabled().apply();
     }
 
     public void clearWebAppsCache() {
