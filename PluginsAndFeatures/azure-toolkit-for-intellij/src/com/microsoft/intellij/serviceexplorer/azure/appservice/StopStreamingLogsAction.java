@@ -20,51 +20,61 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer.azure.webapp;
+package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.intellij.helpers.webapp.WebAppStreamingLogConsoleViewProvider;
+import com.microsoft.intellij.helpers.AppServiceStreamingLogManager;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 @Name("Stop Streaming Logs")
 public class StopStreamingLogsAction extends NodeActionListener {
 
-    private final Node node;
-    private String webAppId;
-    private String deploymentSlotName;
+    private Project project;
+    private String resourceId;
+    private String service;
+    private String operation;
 
     public StopStreamingLogsAction(WebAppNode webAppNode) {
         super();
-        this.node = webAppNode;
-        this.webAppId = webAppNode.getWebAppId();
+        this.project = (Project) webAppNode.getProject();
+        this.resourceId = webAppNode.getId();
+        this.service = WEBAPP;
+        this.operation = STOP_STREAMING_LOG_WEBAPP;
     }
 
     public StopStreamingLogsAction(DeploymentSlotNode deploymentSlotNode) {
         super();
-        this.node = deploymentSlotNode;
-        this.webAppId = deploymentSlotNode.getWebAppId();
-        this.deploymentSlotName = deploymentSlotNode.getName();
+        this.project = (Project) deploymentSlotNode.getProject();
+        this.resourceId = deploymentSlotNode.getId();
+        this.service = WEBAPP;
+        this.operation = STOP_STREAMING_LOG_WEBAPP_SLOT;
+    }
+
+    public StopStreamingLogsAction(FunctionNode functionNode) {
+        super();
+        this.project = (Project) functionNode.getProject();
+        this.resourceId = functionNode.getId();
+        this.service = FUNCTION;
+        this.operation = STOP_STREAMING_LOG_FUNCTION_APP;
     }
 
     @Override
-    protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        EventUtil.executeWithLog(WEBAPP, "StopStreamingLog",
-                (operation) -> {
-                    WebAppStreamingLogConsoleViewProvider.INSTANCE.stopStreamingLogs(webAppId, deploymentSlotName);
+    protected void actionPerformed(NodeActionEvent nodeActionEvent) {
+        EventUtil.executeWithLog(
+                service, operation,
+                (op) -> {
+                    AppServiceStreamingLogManager.INSTANCE.closeStreamingLog(project, resourceId);
                 },
-                (exception)->{
-                    UIUtils.showNotification((Project) node.getProject(),exception.getMessage(), MessageType.ERROR);
-                });
+                (err) -> UIUtils.showNotification(project, err.getMessage(), MessageType.ERROR));
     }
 }

@@ -68,6 +68,8 @@ public class TelemetryConstants {
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
+    public static final String START_STREAMING_LOG_WEBAPP = "start-streaming-log-webapp";
+    public static final String STOP_STREAMING_LOG_WEBAPP = "stop-streaming-log-webapp";
     public static final String TRIGGER_FUNCTION = "trigger-function";
     public static final String ENABLE_FUNCTION = "enable-function";
     public static final String DISABLE_FUNCTION = "disable-function";
@@ -123,6 +125,8 @@ public class TelemetryConstants {
     public static final String SWAP_WEBAPP_SLOT = "swap-webapp-slot";
     public static final String SHOW_WEBAPP_SLOT_PROP = "show-webapp-slot-prop";
     public static final String OPERN_WEBAPP_SLOT_BROWSER = "open-webappslot-inbrowser";
+    public static final String START_STREAMING_LOG_WEBAPP_SLOT = "start-streaming-log-webapp-slot";
+    public static final String STOP_STREAMING_LOG_WEBAPP_SLOT = "stop-streaming-log-webapp-slot";
     public static final String OPEN_CREATEWEBAPP_DIALOG = "open-create-webapp-dialog";
     public static final String REFRESH_METADATA = "refresh";
     public static final String SIGNIN = "signin";

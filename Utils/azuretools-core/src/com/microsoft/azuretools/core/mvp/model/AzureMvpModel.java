@@ -37,6 +37,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -62,6 +63,18 @@ public class AzureMvpModel {
 
     public static AzureMvpModel getInstance() {
         return SingletonHolder.INSTANCE;
+    }
+
+    public static String getSegment(String id, String segment) {
+        if (StringUtils.isEmpty(id)) {
+            return null;
+        }
+        final String[] attributes = id.split("/");
+        int pos = ArrayUtils.indexOf(attributes, segment);
+        if (pos >= 0) {
+            return attributes[pos + 1];
+        }
+        return null;
     }
 
     /**
