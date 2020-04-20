@@ -37,7 +37,6 @@ import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
 import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
-import com.microsoft.azure.cosmosspark.common.Validatable;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkADLAccountNode;
@@ -306,10 +305,10 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     }
 
     private boolean isAllFieldsLegal() {
-        return Stream.concat(allTextFields.stream(), allAURelatedFields.stream()).allMatch(Validatable::isLegal);
+        return Stream.concat(allTextFields.stream(), allAURelatedFields.stream()).allMatch(comp -> comp.isLegal());
     }
 
     private boolean isAllAURelatedFieldsLegal() {
-        return allAURelatedFields.stream().allMatch(IntegerWithErrorHintedField::isLegal);
+        return allAURelatedFields.stream().allMatch(comp -> comp.isLegal());
     }
 }

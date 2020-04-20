@@ -22,35 +22,22 @@
 
 package com.microsoft.azuretools.core.mvp.model.springcloud;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
 public class SpringCloudIdHelper {
     public static String getSubscriptionId(String serviceId) {
-        return getSegment(serviceId, "subscriptions");
+        return AzureMvpModel.getSegment(serviceId, "subscriptions");
     }
 
     public static String getResourceGroup(String serviceId) {
-        return getSegment(serviceId, "resourceGroups");
+        return AzureMvpModel.getSegment(serviceId, "resourceGroups");
     }
 
     public static String getClusterName(String serviceId) {
-        return getSegment(serviceId, "Spring");
+        return AzureMvpModel.getSegment(serviceId, "Spring");
     }
 
     public static String getAppName(String serviceId) {
-        return getSegment(serviceId, "apps");
-    }
-
-    private static String getSegment(String id, String segment) {
-        if (StringUtils.isEmpty(id)) {
-            return null;
-        }
-        final String[] attributes = id.split("/");
-        int pos = ArrayUtils.indexOf(attributes, segment);
-        if (pos >= 0) {
-            return attributes[pos + 1];
-        }
-        return null;
+        return AzureMvpModel.getSegment(serviceId, "apps");
     }
 }

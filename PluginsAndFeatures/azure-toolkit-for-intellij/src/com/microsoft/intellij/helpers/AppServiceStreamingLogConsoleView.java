@@ -19,7 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.intellij.helpers.function;
+package com.microsoft.intellij.helpers;
 
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -32,17 +32,19 @@ import rx.schedulers.Schedulers;
 import static com.intellij.execution.ui.ConsoleViewContentType.NORMAL_OUTPUT;
 import static com.intellij.execution.ui.ConsoleViewContentType.SYSTEM_OUTPUT;
 
-public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
+public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
 
     private static final String SEPARATOR = System.getProperty("line.separator");
     private static final String START_LOG_STREAMING = "Connecting to log stream...";
     private static final String STOP_LOG_STREAMING = "Disconnected from log-streaming service.";
 
-    private Subscription subscription;
+    private boolean isDisposed;
     private String resourceId;
+    private Subscription subscription;
 
-    public FunctionStreamingLogConsoleView(@NotNull Project project, String resourceId) {
+    public AppServiceStreamingLogConsoleView(@NotNull Project project, String resourceId) {
         super(project, true);
+        this.isDisposed = false;
         this.resourceId = resourceId;
     }
 
@@ -50,8 +52,8 @@ public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
         if (!isActive()) {
             printlnToConsole(START_LOG_STREAMING, SYSTEM_OUTPUT);
             subscription = logStreaming.subscribeOn(Schedulers.io())
-                    .doAfterTerminate(() -> printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT))
-                    .subscribe((log) -> printlnToConsole(log, NORMAL_OUTPUT));
+                                       .doAfterTerminate(() -> printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT))
+                                       .subscribe((log) -> printlnToConsole(log, NORMAL_OUTPUT));
         }
     }
 
@@ -66,6 +68,10 @@ public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
         return subscription != null && !subscription.isUnsubscribed();
     }
 
+    public boolean isDisposed() {
+        return this.isDisposed;
+    }
+
     private void printlnToConsole(String message, ConsoleViewContentType consoleViewContentType) {
         this.print(message + SEPARATOR, consoleViewContentType);
     }
@@ -73,7 +79,7 @@ public class FunctionStreamingLogConsoleView extends ConsoleViewImpl {
     @Override
     public void dispose() {
         super.dispose();
+        this.isDisposed = true;
         closeStreamingLog();
-        FunctionStreamingLogManager.INSTANCE.removeConsoleView(resourceId);
     }
 }

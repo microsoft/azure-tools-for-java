@@ -23,10 +23,7 @@
 package com.microsoft.azuretools.core.mvp.model;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -37,6 +34,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -62,6 +60,18 @@ public class AzureMvpModel {
 
     public static AzureMvpModel getInstance() {
         return SingletonHolder.INSTANCE;
+    }
+
+    public static String getSegment(String id, String segment) {
+        if (StringUtils.isEmpty(id)) {
+            return null;
+        }
+        final String[] attributes = id.split("/");
+        int pos = ArrayUtils.indexOf(attributes, segment);
+        if (pos >= 0) {
+            return attributes[pos + 1];
+        }
+        return null;
     }
 
     /**
@@ -224,61 +234,6 @@ public class AzureMvpModel {
         Collections.sort(res,
                 getComparator((ResourceEx<Deployment> deploymentResourceEx) -> deploymentResourceEx.getResource().name()));
         return res;
-    }
-
-    /**
-     * Get Log Streaming by Subscription and AppServiceId
-     *
-     * @param sid subscription
-     * @param appServiceId appServiceId
-     * @return
-     * @throws IOException
-     */
-    public Observable<String> getAppServiceStreamingLogs(String sid, String appServiceId) throws IOException{
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        WebApp webApp = azure.webApps().getById(appServiceId);
-        if (isServerLogEnabled(webApp.diagnosticLogsConfig())) {
-            return webApp.streamAllLogsAsync();
-        } else {
-            throw new IOException(APPLICATION_LOG_NOT_ENABLED);
-        }
-    }
-
-    public void enableAppServiceContainerLogging(String sid, String appServiceId) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        WebApp webApp = azure.webApps().getById(appServiceId);
-        webApp.update().withContainerLoggingEnabled().apply();
-    }
-
-    /**
-     * Get Log Streaming of AppService Deployment Slots
-     *
-     * @param sid subscription
-     * @param appServiceId appServiceId
-     * @return
-     * @throws IOException
-     */
-    public Observable<String> getAppServiceSlotStreamingLogs(String sid, String appServiceId, String slotName) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        WebApp webApp = azure.webApps().getById(appServiceId);
-
-        DeploymentSlot deploymentSlot = webApp.deploymentSlots().getByName(slotName);
-        if (isServerLogEnabled(deploymentSlot.diagnosticLogsConfig())) {
-            return deploymentSlot.streamHttpLogsAsync();
-        } else {
-            throw new IOException(APPLICATION_LOG_NOT_ENABLED);
-        }
-    }
-
-    public void enableDeploymentSlotLogging(String sid, String appServiceId, String slotName) throws IOException {
-        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        WebApp webApp = azure.webApps().getById(appServiceId);
-        DeploymentSlot deploymentSlot = webApp.deploymentSlots().getByName(slotName);
-        deploymentSlot.update().withContainerLoggingEnabled().apply();
-    }
-
-    private boolean isServerLogEnabled(WebAppDiagnosticLogs webAppDiagnosticLogs){
-        return webAppDiagnosticLogs.inner().httpLogs().fileSystem().enabled();
     }
 
     /**

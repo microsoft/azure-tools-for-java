@@ -26,11 +26,11 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.arm.*;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
 import com.microsoft.intellij.serviceexplorer.azure.docker.*;
-import com.microsoft.intellij.serviceexplorer.azure.function.StartFunctionStreamingLogsAction;
-import com.microsoft.intellij.serviceexplorer.azure.function.StopFunctionStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
@@ -56,6 +56,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModul
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import java.util.*;
 
@@ -115,6 +117,12 @@ public class NodeActionsMap {
                 .add(SpringCloudStreamingLogsAction.class).build());
 
         node2Actions.put(FunctionNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(StartFunctionStreamingLogsAction.class).add(StopFunctionStreamingLogsAction.class).build());
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 }
