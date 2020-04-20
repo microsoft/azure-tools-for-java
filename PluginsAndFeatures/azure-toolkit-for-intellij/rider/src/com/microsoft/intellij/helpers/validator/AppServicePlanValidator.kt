@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,20 +24,17 @@ package com.microsoft.intellij.helpers.validator
 
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azuretools.utils.AzureModel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 object AppServicePlanValidator : AzureResourceValidator() {
 
-    private const val APP_SERVICE_PLAN_NOT_DEFINED = "App Service Plan not provided."
-    private const val APP_SERVICE_PLAN_NAME_NOT_DEFINED = "App Service Plan name not provided."
-    private const val APP_SERVICE_PLAN_ID_NOT_DEFINED = "App Service Plan ID is not defined."
-    private const val APP_SERVICE_PLAN_NAME_INVALID = "App Service Plan name cannot contain characters: %s."
-    private const val APP_SERVICE_PLAN_ALREADY_EXISTS = "App Service Plan with name '%s' already exists."
-
-    private val appServicePlanNameRegex = "[^\\p{L}0-9-]".toRegex()
     private const val APP_SERVICE_PLAN_NAME_MIN_LENGTH = 1
     private const val APP_SERVICE_PLAN_NAME_MAX_LENGTH = 40
-    private const val APP_SERVICE_PLAN_NAME_LENGTH_ERROR =
-            "App Service Plan name should be from $APP_SERVICE_PLAN_NAME_MIN_LENGTH to $APP_SERVICE_PLAN_NAME_MAX_LENGTH characters."
+
+    private val appServicePlanNameRegex = "[^\\p{L}0-9-]".toRegex()
+
+    private val nameLengthErrorMessage =
+            message("run_config.publish.validation.service_plan.name_length_error", APP_SERVICE_PLAN_NAME_MIN_LENGTH, APP_SERVICE_PLAN_NAME_MAX_LENGTH)
 
     fun validateAppServicePlanName(name: String): ValidationResult {
 
@@ -54,26 +51,32 @@ object AppServicePlanValidator : AzureResourceValidator() {
     }
 
     fun checkAppServicePlanIsSet(plan: AppServicePlan?) =
-            checkValueIsSet(plan, APP_SERVICE_PLAN_NOT_DEFINED)
+            checkValueIsSet(plan, message("run_config.publish.validation.service_plan.not_defined"))
 
     fun checkAppServicePlanIdIsSet(planId: String?) =
-            checkValueIsSet(planId, APP_SERVICE_PLAN_ID_NOT_DEFINED)
+            checkValueIsSet(planId, message("run_config.publish.validation.service_plan.id_not_defined"))
 
     fun checkAppServicePlanNameIsSet(name: String) =
-            checkValueIsSet(name, APP_SERVICE_PLAN_NAME_NOT_DEFINED)
+            checkValueIsSet(name, message("run_config.publish.validation.service_plan.name_not_defined"))
 
     fun checkAppServicePlanNameMinLength(name: String) =
-            checkNameMinLength(name, APP_SERVICE_PLAN_NAME_MIN_LENGTH, APP_SERVICE_PLAN_NAME_LENGTH_ERROR)
+            checkNameMinLength(
+                    name = name,
+                    minLength = APP_SERVICE_PLAN_NAME_MIN_LENGTH,
+                    errorMessage = nameLengthErrorMessage)
 
     fun checkAppServicePlanNameMaxLength(name: String) =
-            checkNameMaxLength(name, APP_SERVICE_PLAN_NAME_MAX_LENGTH, APP_SERVICE_PLAN_NAME_LENGTH_ERROR)
+            checkNameMaxLength(
+                    name = name,
+                    maxLength = APP_SERVICE_PLAN_NAME_MAX_LENGTH,
+                    errorMessage = nameLengthErrorMessage)
 
     fun checkInvalidCharacters(name: String) =
-            validateResourceNameRegex(name, appServicePlanNameRegex, APP_SERVICE_PLAN_NAME_INVALID)
+            validateResourceNameRegex(name, appServicePlanNameRegex, "${message("run_config.publish.validation.service_plan.name_invalid")} %s.")
 
     fun checkAppServicePlanNameExists(name: String): ValidationResult {
         val status = ValidationResult()
-        if (isAppServicePlanExist(name)) return status.setInvalid(String.format(APP_SERVICE_PLAN_ALREADY_EXISTS, name))
+        if (isAppServicePlanExist(name)) return status.setInvalid(message("run_config.publish.validation.service_plan.already_exists", name))
         return status
     }
 

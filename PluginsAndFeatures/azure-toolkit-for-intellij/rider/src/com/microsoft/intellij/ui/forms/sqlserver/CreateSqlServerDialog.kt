@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -51,13 +51,13 @@ import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.initValidationWithResult
 import com.microsoft.intellij.ui.extension.setComponentsEnabled
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import org.jetbrains.plugins.azure.deploy.NotificationConstant
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.LocationValidator
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import com.microsoft.intellij.ui.components.AzureDialogWrapper
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.Dimension
 import java.util.*
 import javax.swing.*
@@ -70,19 +70,9 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
         AzureComponent {
 
     companion object {
-        private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
-        private const val DIALOG_TITLE = "Create SQL Server"
-        private const val DIALOG_OK_BUTTON_TEXT = "Create"
         private const val DIALOG_MIN_WIDTH = 300
-
-        private const val TITLE_RESOURCE_GROUP = "Resource Group"
-        private const val TITLE_SQL_SERVER_SETTINGS = "Server Settings"
-
-        private const val SQL_SERVER_CREATING_MESSAGE = "Creating '%s' SQL Server..."
-        private const val SQL_SERVER_CREATE_SUCCESSFUL = "SQL Server is created, id: '%s'"
-        private const val AZURE_SQL_SERVER_HELP_URL = "https://azure.microsoft.com/en-us/services/sql-database/"
-
         private const val SQL_SERVER_CREATE_TIMEOUT_MS = 120_000L
+        private const val AZURE_SQL_SERVER_HELP_URL = "https://azure.microsoft.com/en-us/services/sql-database/"
     }
 
     private val mainPanel = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1"))
@@ -92,13 +82,13 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     private val pnlResourceGroup = AzureResourceGroupSelector(lifetimeDef.createNested())
 
     private val pnlSqlServerSettings = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]"))
-    private val lblLocation = JLabel("Location")
+    private val lblLocation = JLabel(message("dialog.create_sql_server.location.label"))
     private val cbLocation = ComboBox<Location>()
-    private val lblAdminLogin = JLabel("Admin Login")
+    private val lblAdminLogin = JLabel(message("dialog.create_sql_server.admin_login.label"))
     private val txtAdminLoginValue = JTextField()
-    private val lblAdminPassword = JLabel("Admin Password")
+    private val lblAdminPassword = JLabel(message("dialog.create_sql_server.admin_password.label"))
     private val passAdminPassword = JPasswordField()
-    private val lblAdminPasswordConfirm = JLabel("Confirm Password")
+    private val lblAdminPasswordConfirm = JLabel(message("dialog.create_sql_server.confirm_password.label"))
     private val passAdminPasswordConfirm = JPasswordField()
 
     private var cachedResourceGroups = emptyList<ResourceGroup>()
@@ -107,8 +97,8 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     private val activityNotifier = AzureDeploymentProgressNotification(project)
 
     init {
-        title = DIALOG_TITLE
-        setOKButtonText(DIALOG_OK_BUTTON_TEXT)
+        title = message("dialog.create_sql_server.title")
+        setOKButtonText(message("dialog.create_sql_server.ok_button.labe"))
 
         updateAzureModelInBackground(project)
         initSubscriptionComboBox()
@@ -172,7 +162,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     override fun doOKAction() {
         val sqlServerName = pnlName.txtNameValue.text
         val subscriptionId = pnlSubscription.lastSelectedSubscriptionId
-        val progressMessage = String.format(SQL_SERVER_CREATING_MESSAGE, sqlServerName)
+        val progressMessage = message("dialog.create_sql_server.creating", sqlServerName)
 
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, progressMessage, true) {
 
@@ -194,7 +184,12 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                 super.onSuccess()
 
                 activityNotifier.notifyProgress(
-                        NotificationConstant.SQL_SERVER_CREATE, Date(), null, 100, String.format(SQL_SERVER_CREATE_SUCCESSFUL, sqlServerName))
+                        message("tool_window.azure_activity_log.publish.sql_server.create"),
+                        Date(),
+                        null,
+                        100,
+                        message("dialog.create_sql_server.create_success", sqlServerName)
+                )
 
                 SpinWait.spinUntil(lifetimeDef, SQL_SERVER_CREATE_TIMEOUT_MS) {
                     AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, sqlServerName, true) != null
@@ -258,11 +253,11 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     private fun initMainPanel() {
 
         pnlResourceGroup.apply {
-            border = IdeaTitledBorder(TITLE_RESOURCE_GROUP, 0, JBUI.emptyInsets())
+            border = IdeaTitledBorder(message("dialog.create_sql_server.resource_group.header"), 0, JBUI.emptyInsets())
         }
 
         pnlSqlServerSettings.apply {
-            border = IdeaTitledBorder(TITLE_SQL_SERVER_SETTINGS, 0, JBUI.emptyInsets())
+            border = IdeaTitledBorder(message("dialog.create_sql_server.server_settings.header"), 0, JBUI.emptyInsets())
 
             add(lblLocation, "gapbefore 3")
             add(cbLocation, "growx")
@@ -302,7 +297,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     }
 
     private fun initLocationComboBox() {
-        cbLocation.setDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+        cbLocation.setDefaultRenderer(message("dialog.create_sql_server.location.empty_message")) { it.displayName() }
     }
 
     private fun updateAzureModelInBackground(project: Project) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -28,9 +28,10 @@ import com.microsoft.intellij.ui.component.AzureResourceNameComponent
 import com.microsoft.intellij.ui.extension.initValidationWithResult
 import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class DatabaseNameComponent(private val lifetime: Lifetime) :
-        AzureResourceNameComponent("Database Name"),
+        AzureResourceNameComponent(message("run_config.publish.form.sql_db.name.label")),
         AzureComponent {
 
     init {

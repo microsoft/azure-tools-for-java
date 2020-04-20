@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -38,6 +38,7 @@ import com.microsoft.intellij.helpers.validator.LocationValidator
 import com.microsoft.intellij.helpers.validator.PricingTierValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.event.ActionListener
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -49,21 +50,17 @@ class HostingPlanSelector(private val lifetime: Lifetime) :
         AzureComponent {
 
     companion object {
-        private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
-        private const val EMPTY_APP_SERVICE_PLAN_MESSAGE = "No existing Azure Service Plans"
-        private const val EMPTY_PRICING_TIER_MESSAGE = "No existing Azure Pricing Tiers"
-
         private val indentionSize = JBUI.scale(17)
     }
 
-    val rdoUseExisting = JRadioButton("Use Existing", true)
+    val rdoUseExisting = JRadioButton(message("run_config.publish.form.hosting_plan.use_existing"), true)
     val cbHostingPlan = ComboBox<AppServicePlan>()
 
-    val rdoCreateNew = JRadioButton("Create New")
+    val rdoCreateNew = JRadioButton(message("run_config.publish.form.hosting_plan.create_new"))
     val txtName = JTextField("")
-    private val lblLocation = JLabel("Location")
+    private val lblLocation = JLabel(message("run_config.publish.form.hosting_plan.location.label"))
     val cbLocation = ComboBox<Location>()
-    private val lblPricingTier = JLabel("Size")
+    private val lblPricingTier = JLabel(message("run_config.publish.form.hosting_plan.pricing_tier.label"))
     val cbPricingTier = ComboBox<PricingTier>()
 
     var cachedAppServicePlan: List<AppServicePlan> = emptyList()
@@ -144,17 +141,17 @@ class HostingPlanSelector(private val lifetime: Lifetime) :
             lastSelectedAppServicePlan = cbHostingPlan.getSelectedValue()
         }
 
-        cbHostingPlan.setDefaultRenderer(EMPTY_APP_SERVICE_PLAN_MESSAGE) {
+        cbHostingPlan.setDefaultRenderer(message("run_config.publish.form.hosting_plan.empty_message")) {
             "${it.name()} (${it.regionName()}, ${it.pricingTier().toSkuDescription().size()})"
         }
     }
 
     private fun initLocationComboBox() {
-        cbLocation.setDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+        cbLocation.setDefaultRenderer(message("run_config.publish.form.hosting_plan.location.empty_message")) { it.displayName() }
     }
 
     private fun initPricingTierComboBox() {
-        cbPricingTier.setDefaultRenderer(EMPTY_PRICING_TIER_MESSAGE) {
+        cbPricingTier.setDefaultRenderer(message("run_config.publish.form.hosting_plan.pricing_tier.empty_message")) {
             val skuDescription = it.toSkuDescription()
             "${skuDescription.name()} ${if (skuDescription.name() == "Consumption") "" else "(${skuDescription.tier()})"}"
                     .trim()

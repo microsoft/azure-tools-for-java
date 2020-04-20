@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,20 +27,20 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.SearchableConfigurable
 import com.microsoft.intellij.configuration.ui.AzureAppServicesConfigurationPanel
 import com.microsoft.intellij.configuration.ui.AzureFunctionsConfigurationPanel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class AzureRiderConfigurable :
         SearchableConfigurable.Parent.Abstract(), OptionsContainingConfigurable {
 
     companion object {
         private const val AZURE_CONFIGURATION_ID = "com.intellij"
-        private const val AZURE_CONFIGURATION_NAME = "Azure"
     }
 
     private var myPanels = listOf<Configurable>()
 
     override fun getId() = AZURE_CONFIGURATION_ID
 
-    override fun getDisplayName() = AZURE_CONFIGURATION_NAME
+    override fun getDisplayName() = message("common.azure")
 
     override fun buildConfigurables(): Array<Configurable> {
         val panels = listOf<Configurable>(

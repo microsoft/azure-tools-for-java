@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -40,29 +40,27 @@ import com.microsoft.intellij.ui.component.appservice.OperatingSystemSelector
 import com.microsoft.intellij.ui.extension.fillComboBox
 import com.microsoft.intellij.ui.extension.setComponentsEnabled
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 
 class WebAppCreateNewComponent(lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1, hidemode 3")),
         AzureComponent {
 
-    companion object {
-        private const val HEADER_RESOURCE_GROUP = "Resource Group"
-        private const val HEADER_APP_SERVICE_PLAN = "App Service Plan"
-        private const val HEADER_OPERATING_SYSTEM = "Operating System"
-    }
-
     val pnlAppName = AppNameComponent(lifetime.createNested())
     val pnlSubscription = AzureSubscriptionsSelector()
 
     val pnlResourceGroup = AzureResourceGroupSelector(lifetime.createNested())
-    private val pnlResourceGroupHolder = HideableTitledPanel(HEADER_RESOURCE_GROUP, pnlResourceGroup, true)
+    private val pnlResourceGroupHolder = HideableTitledPanel(
+            message("run_config.publish.form.resource_group.header"), pnlResourceGroup, true)
 
     val pnlOperatingSystem = OperatingSystemSelector()
-    private val pnlOperatingSystemHolder = HideableTitledPanel(HEADER_OPERATING_SYSTEM, pnlOperatingSystem, true)
+    private val pnlOperatingSystemHolder = HideableTitledPanel(
+            message("run_config.publish.form.operating_system.header"), pnlOperatingSystem, true)
 
     val pnlAppServicePlan = AppServicePlanSelector(lifetime.createNested())
-    private val pnlAppServicePlanHolder = HideableTitledPanel(HEADER_APP_SERVICE_PLAN, pnlAppServicePlan, true)
+    private val pnlAppServicePlanHolder = HideableTitledPanel(
+            message("run_config.publish.form.service_plan.header"), pnlAppServicePlan, true)
 
     init {
         initButtonGroupsState()

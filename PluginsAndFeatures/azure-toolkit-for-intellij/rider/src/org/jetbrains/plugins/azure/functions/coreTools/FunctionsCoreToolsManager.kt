@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,6 +27,7 @@ import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
@@ -39,13 +40,13 @@ import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.string.printToString
 import com.jetbrains.rd.util.warn
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.GitHubReleasesService
 import java.io.File
 import java.io.IOException
 import java.net.UnknownHostException
 
 object FunctionsCoreToolsManager {
-    private const val DOWNLOAD_TASK_TITLE = "Downloading latest Azure Functions Core Tools..."
     private const val CORE_TOOLS_DIR = "azure-functions-coretools"
     private const val API_URL_RELEASES = "repos/Azure/azure-functions-core-tools/releases?per_page=100"
 
@@ -54,7 +55,7 @@ object FunctionsCoreToolsManager {
     private val logger = getLogger<FunctionsCoreToolsManager>()
 
     fun downloadLatestRelease(allowPrerelease: Boolean, indicator: ProgressIndicator, onComplete: (String) -> Unit) {
-        object : Task.Backgroundable(null, DOWNLOAD_TASK_TITLE, true) {
+        object : Task.Backgroundable(null, message("progress.function_app.core_tools.downloading_latest"), true) {
             override fun run(indicator: ProgressIndicator) {
                 ApplicationManager.getApplication().executeOnPooledThread {
                     downloadLatestReleaseInternal(allowPrerelease, indicator, onComplete)
@@ -64,7 +65,7 @@ object FunctionsCoreToolsManager {
     }
 
     fun downloadLatestRelease(project: Project, allowPrerelease: Boolean, onComplete: (String) -> Unit): Task {
-        return object : Task.Backgroundable(project, DOWNLOAD_TASK_TITLE, true) {
+        return object : Task.Backgroundable(project, message("progress.function_app.core_tools.downloading_latest"), true) {
             override fun run(pi: ProgressIndicator) {
                 downloadLatestReleaseInternal(allowPrerelease, pi, onComplete)
             }
@@ -75,7 +76,7 @@ object FunctionsCoreToolsManager {
         if (!indicator.isRunning) indicator.start()
 
         // Grab latest URL
-        indicator.text = "Determining download URL..."
+        indicator.text = message("progress.function_app.core_tools.determining_download_url")
         indicator.isIndeterminate = true
 
         val latestLocal = determineVersion(determineLatestLocalCoreToolsPath())
@@ -84,7 +85,7 @@ object FunctionsCoreToolsManager {
             logger.error { "Could not determine latest remote version." }
         }
         if (latestRemote == null || latestLocal?.compareTo(latestRemote) == 0) {
-            indicator.text = "Finished."
+            indicator.text = message("progress.common.finished")
             if (indicator.isRunning) indicator.stop()
 
             if (latestLocal != null) {
@@ -100,58 +101,61 @@ object FunctionsCoreToolsManager {
                 "download", true, true)
 
         // Download
-        indicator.text = "Preparing to download..."
+        indicator.text = message("progress.function_app.core_tools.preparing_to_download")
         indicator.isIndeterminate = false
         HttpRequests.request(latestRemote.downloadUrl)
                 .productNameAsUserAgent()
                 .connect {
-                    indicator.text = "Downloading..."
+                    indicator.text = message("progress.function_app.core_tools.downloading")
                     it.saveToFile(tempFile, indicator)
                 }
 
         indicator.checkCanceled()
 
         // Extract
-        indicator.startNonCancelableSection()
-        indicator.text = "Preparing to extract..."
-        indicator.isIndeterminate = true
         val latestDirectory = File(downloadPath).resolve(latestRemote.version)
-        try {
-            if (latestDirectory.exists()) latestDirectory.deleteRecursively()
-        } catch (e: Exception) {
-            logger.error("Error while removing latest directory $latestDirectory.path", e)
-        }
 
-        indicator.text = "Extracting..."
-        indicator.isIndeterminate = true
-        try {
-            ZipUtil.extract(tempFile, latestDirectory, null)
-        } catch (e: Exception) {
-            logger.error("Error while extracting $tempFile.path to $latestDirectory.path", e)
-        }
-
-        indicator.text = "Cleaning up older versions..."
-        indicator.isIndeterminate = true
-        if (latestLocal != null) {
-            val latestLocalDirectory = File(latestLocal.fullPath)
+        ProgressManager.getInstance().executeNonCancelableSection {
+            indicator.text = message("progress.function_app.core_tools.preparing_to_extract")
+            indicator.isIndeterminate = true
             try {
-                if (latestLocalDirectory.exists()) latestLocalDirectory.deleteRecursively()
+                if (latestDirectory.exists()) latestDirectory.deleteRecursively()
             } catch (e: Exception) {
-                logger.error("Error while removing older version directory $latestLocalDirectory.path", e)
+                logger.error("Error while removing latest directory $latestDirectory.path", e)
             }
+
+            indicator.text = message("progress.function_app.core_tools.extracting")
+            indicator.isIndeterminate = true
+            try {
+                ZipUtil.extract(tempFile, latestDirectory, null)
+            } catch (e: Exception) {
+                logger.error("Error while extracting $tempFile.path to $latestDirectory.path", e)
+            }
+
+            indicator.text = message("progress.function_app.core_tools.cleaning_up_older_versions")
+            indicator.isIndeterminate = true
+            if (latestLocal != null) {
+                val latestLocalDirectory = File(latestLocal.fullPath)
+                try {
+                    if (latestLocalDirectory.exists()) latestLocalDirectory.deleteRecursively()
+                } catch (e: Exception) {
+                    logger.error("Error while removing older version directory $latestLocalDirectory.path", e)
+                }
+            }
+
+            indicator.text = message("progress.function_app.core_tools.cleaning_up_temporary_files")
+            indicator.isIndeterminate = true
+            try {
+                if (tempFile.exists()) tempFile.delete()
+            } catch (e: Exception) {
+                logger.error("Error while removing temporary file $tempFile.path", e)
+            }
+
+            indicator.text = message("progress.common.finished")
         }
 
-        indicator.text = "Cleaning up temporary files..."
-        indicator.isIndeterminate = true
-        try {
-            if (tempFile.exists()) tempFile.delete()
-        } catch (e: Exception) {
-            logger.error("Error while removing temporary file $tempFile.path", e)
-        }
-
-        indicator.finishNonCancelableSection()
-        indicator.text = "Finished."
-        if (indicator.isRunning) indicator.stop()
+        if (indicator.isRunning)
+            indicator.stop()
 
         onComplete(latestDirectory.path)
     }

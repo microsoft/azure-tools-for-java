@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,17 +24,18 @@ package com.microsoft.intellij.helpers.validator
 
 import com.microsoft.azure.management.resources.Location
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 object LocationValidator : AzureResourceValidator() {
 
-    private const val LOCATION_NOT_DEFINED = "Location not provided."
+    private val locationNotDefined = message("run_config.publish.validation.location.not_defined")
 
     fun checkLocationIsSet(location: String?) =
-            checkValueIsSet(location, LOCATION_NOT_DEFINED)
+            checkValueIsSet(location, locationNotDefined)
 
     fun checkLocationIsSet(location: Location?) =
-            checkValueIsSet(location, LOCATION_NOT_DEFINED)
+            checkValueIsSet(location, locationNotDefined)
 
     fun checkLocationIsSet(location: Region?) =
-            checkValueIsSet(location, LOCATION_NOT_DEFINED)
+            checkValueIsSet(location, locationNotDefined)
 }

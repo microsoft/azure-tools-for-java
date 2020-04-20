@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -36,6 +36,7 @@ import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.*
 
 class SqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
@@ -43,31 +44,29 @@ class SqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
         AzureComponent {
 
     companion object {
-        private const val EMPTY_SQL_SERVER_MESSAGE = "No existing SQL Servers"
-        private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
         private val indentionSize = JBUI.scale(17)
     }
 
-    val rdoExistingSqlServer = JRadioButton("Use Existing", true)
+    val rdoExistingSqlServer = JRadioButton(message("run_config.publish.form.sql_server.use_existing"), true)
     val cbSqlServer = ComboBox<SqlServer>()
-    private val lblExistingLocationName = JLabel("Location")
-    private val lblLocationValue = JLabel("N/A")
-    private val lblExistingAdminLoginName = JLabel("Admin Login")
-    val lblAdminLoginValue = JLabel("N/A")
-    private val lblExistingAdminPasswordName = JLabel("Admin Password")
+    private val lblExistingLocationName = JLabel(message("run_config.publish.form.sql_server.location.label"))
+    private val lblLocationValue = JLabel(message("common.na_capitalized"))
+    private val lblExistingAdminLoginName = JLabel(message("run_config.publish.form.sql_server.admin_login.label"))
+    val lblAdminLoginValue = JLabel(message("common.na_capitalized"))
+    private val lblExistingAdminPasswordName = JLabel(message("run_config.publish.form.sql_server.admin_password.label"))
     val passExistingAdminPasswordValue = JBPasswordField()
 
-    val rdoCreateSqlServer = JRadioButton("Create New")
+    val rdoCreateSqlServer = JRadioButton(message("run_config.publish.form.sql_server.create_new"))
     private val pnlSqlServerName = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[][min!]"))
     val txtSqlServerName = JTextField("")
     private val lblSqlServerNameSuffix = JLabel(".database.windows.net")
-    private val lblCreateLocationName = JLabel("Location")
+    private val lblCreateLocationName = JLabel(message("run_config.publish.form.sql_server.location.label"))
     private val cbLocation = ComboBox<Location>()
-    private val lblCreateAdminLoginName = JLabel("Admin Login")
+    private val lblCreateAdminLoginName = JLabel(message("run_config.publish.form.sql_server.admin_login.label"))
     val txtAdminLogin = JTextField("")
-    private val lblCreateAdminPasswordName = JLabel("Admin Password")
+    private val lblCreateAdminPasswordName = JLabel(message("run_config.publish.form.sql_server.admin_password.label"))
     val passNewAdminPasswordValue = JBPasswordField()
-    private val lblCreateAdminPasswordConfirmName = JLabel("Confirm Password")
+    private val lblCreateAdminPasswordConfirmName = JLabel(message("run_config.publish.form.sql_server.confirm_password.label"))
     val passNewAdminPasswordConfirmValue = JBPasswordField()
 
     var lastSelectedSqlServer: SqlServer? = null
@@ -187,7 +186,7 @@ class SqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
     }
 
     private fun initSqlServerComboBox() {
-        cbSqlServer.setDefaultRenderer(EMPTY_SQL_SERVER_MESSAGE) { it.name() }
+        cbSqlServer.setDefaultRenderer(message("run_config.publish.form.sql_server.empty_message")) { it.name() }
 
         cbSqlServer.addActionListener {
             val sqlServer = cbSqlServer.getSelectedValue() ?: return@addActionListener
@@ -202,7 +201,7 @@ class SqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
     }
 
     private fun initLocationComboBox() {
-        cbLocation.setDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+        cbLocation.setDefaultRenderer(message("run_config.publish.form.sql_server.location.empty_message")) { it.displayName() }
 
         cbLocation.addActionListener {
             lastSelectedLocation = cbLocation.getSelectedValue() ?: return@addActionListener

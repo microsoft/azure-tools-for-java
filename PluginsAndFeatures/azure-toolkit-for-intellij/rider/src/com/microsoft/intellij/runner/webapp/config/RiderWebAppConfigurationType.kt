@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,24 +24,20 @@ package com.microsoft.intellij.runner.webapp.config
 
 import com.intellij.execution.configurations.ConfigurationType
 import com.microsoft.icons.CommonIcons
-import org.jetbrains.annotations.Nls
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.Icon
 
 class RiderWebAppConfigurationType : ConfigurationType {
 
     companion object {
         private const val RUN_CONFIG_TYPE_ID = "AzureDotNetWebAppPublish"
-        private const val RUN_CONFIG_TYPE_NAME = "Azure - Publish Web App"
-        private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish Web App configuration"
     }
 
     override fun getId() = RUN_CONFIG_TYPE_ID
 
-    @Nls
-    override fun getDisplayName() = RUN_CONFIG_TYPE_NAME
+    override fun getDisplayName() = message("run_config.publish.web_app.type_name")
 
-    @Nls
-    override fun getConfigurationTypeDescription() = RUN_CONFIG_TYPE_DESCRIPTION
+    override fun getConfigurationTypeDescription() = message("run_config.publish.web_app.type_description")
 
     override fun getIcon(): Icon = CommonIcons.PublishAzure
 

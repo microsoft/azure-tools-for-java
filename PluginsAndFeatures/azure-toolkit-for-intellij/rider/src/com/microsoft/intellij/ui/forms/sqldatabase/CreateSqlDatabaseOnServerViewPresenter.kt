@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -30,28 +30,27 @@ import com.microsoft.azure.management.sql.DatabaseEdition
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.intellij.helpers.base.AzureMvpPresenter
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class CreateSqlDatabaseOnServerViewPresenter<V : CreateSqlDatabaseOnServerMvpView> : AzureMvpPresenter<V>() {
-
-    companion object {
-        private const val TASK_SUBSCRIPTION = "Collect Azure subscriptions"
-        private const val TASK_RESOURCE_GROUP = "Collect Azure resource groups"
-
-        private const val CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions."
-        private const val CANNOT_LIST_RESOURCE_GROUP = "Failed to list resource groups."
-    }
 
     private val subscriptionSignal = Signal<List<Subscription>>()
     private val resourceGroupSignal = Signal<List<ResourceGroup>>()
 
     fun onLoadSubscription(lifetime: Lifetime) {
-        subscribe(lifetime, subscriptionSignal, TASK_SUBSCRIPTION, CANNOT_LIST_SUBSCRIPTION,
+        subscribe(lifetime,
+                subscriptionSignal,
+                message("progress.publish.subscription.collect"),
+                message("run_config.publish.subscription.collect_error"),
                 { AzureMvpModel.getInstance().selectedSubscriptions },
                 { mvpView.fillSubscriptions(it) })
     }
 
     fun onLoadResourceGroups(lifetime: Lifetime, subscriptionId: String) {
-        subscribe(lifetime, resourceGroupSignal, TASK_RESOURCE_GROUP, CANNOT_LIST_RESOURCE_GROUP,
+        subscribe(lifetime,
+                resourceGroupSignal,
+                message("progress.publish.resource_group.collect"),
+                message("run_config.publish.resource_group.collect_error"),
                 { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) },
                 { mvpView.fillResourceGroups(it) })
     }

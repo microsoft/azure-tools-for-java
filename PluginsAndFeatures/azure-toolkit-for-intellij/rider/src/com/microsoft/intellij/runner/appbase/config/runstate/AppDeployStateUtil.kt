@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -41,10 +41,10 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
 import org.jetbrains.concurrency.AsyncPromise
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.io.File
 import java.io.FileFilter
 import java.io.FileNotFoundException
@@ -62,7 +62,7 @@ object AppDeployStateUtil {
     private const val APP_START_TIMEOUT_MS = 20000L
     private const val APP_STOP_TIMEOUT_MS = 10000L
     private const val APP_LAUNCH_TIMEOUT_MS = 10000L
-    private const val APP_IS_NOT_STARTED = "Web app is not started. State: '%s'"
+
     private const val APP_STATE_RUNNING = "Running"
 
     private val activityNotifier = AzureDeploymentProgressNotification(null)
@@ -110,7 +110,7 @@ object AppDeployStateUtil {
         val isStarted = SpinWait.spinUntil(APP_LAUNCH_TIMEOUT_MS) { app.state() == APP_STATE_RUNNING }
 
         if (!isStarted && !processHandler.isProcessTerminated && !processHandler.isProcessTerminating)
-            processHandler.setText(String.format(APP_IS_NOT_STARTED, app.state()))
+            processHandler.setText(message("process_event.publish.web_apps.app_not_started", app.state()))
 
         BrowserUtil.browse(getAppUrl(app))
     }
@@ -125,9 +125,7 @@ object AppDeployStateUtil {
      *
      * @return [File] to project content to be published
      */
-    fun collectProjectArtifacts(project: Project,
-                                        publishableProject: PublishableProjectModel): File {
-
+    fun collectProjectArtifacts(project: Project, publishableProject: PublishableProjectModel): File {
         // Get out parameters
         val publishService = MsBuildPublishingService.getInstance(project)
         val (targetProperties, outPath) = publishService.getPublishToTempDirParameterAndPath()
@@ -152,9 +150,9 @@ object AppDeployStateUtil {
 
         val buildResult = event.get(COLLECT_ARTIFACTS_TIMEOUT_MS, TimeUnit.MILLISECONDS)
         if (buildResult != BuildResultKind.Successful && buildResult != BuildResultKind.HasWarnings) {
-            val message = UiConstants.PROJECT_ARTIFACTS_COLLECTING_FAILED
-            logger.error(message)
-            throw RuntimeException(message)
+            val errorMessage = message("process_event.publish.project.artifacts.collecting_failed")
+            logger.error(errorMessage)
+            throw RuntimeException(errorMessage)
         }
 
         return outPath.toFile().canonicalFile
@@ -193,21 +191,23 @@ object AppDeployStateUtil {
                             processHandler: RunProcessHandler,
                             deleteOriginal: Boolean = true): File {
 
-        if (!fromFile.exists()) throw FileNotFoundException("Original file '${fromFile.path}' not found")
+        if (!fromFile.exists())
+            throw FileNotFoundException("Original file '${fromFile.path}' not found")
 
         try {
             val toZip = FileUtil.createTempFile(fromFile.nameWithoutExtension, ".zip", true)
             packToZip(fromFile, toZip)
-            processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_SUCCESSFUL, toZip.path))
+            processHandler.setText(message("process_event.publish.zip_deploy.file_create_success", toZip.path))
 
             if (deleteOriginal)
                 FileUtil.delete(fromFile)
 
             return toZip
         } catch (t: Throwable) {
-            logger.error(t)
-            processHandler.setText("${UiConstants.ZIP_FILE_NOT_CREATED}: $t")
-            throw RuntimeException(t)
+            val errorMessage = "${message("process_event.publish.zip_deploy.file_not_created")}: $t"
+            logger.error(errorMessage)
+            processHandler.setText(errorMessage)
+            throw RuntimeException(message("process_event.publish.zip_deploy.file_not_created"), t)
         }
     }
 

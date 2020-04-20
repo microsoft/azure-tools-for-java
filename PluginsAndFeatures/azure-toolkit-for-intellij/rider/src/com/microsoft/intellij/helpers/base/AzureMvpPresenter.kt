@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -38,7 +38,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader
 open class AzureMvpPresenter<V : MvpView> : MvpPresenter<V>() {
 
     companion object {
-        private val LOG = getLogger(this)
+        private val logger = getLogger(this)
     }
 
     fun <T>subscribe(lifetime: Lifetime,
@@ -61,7 +61,7 @@ open class AzureMvpPresenter<V : MvpView> : MvpPresenter<V>() {
             }
 
             override fun onThrowable(e: Throwable) {
-                LOG.error(e)
+                logger.error(e)
                 errorHandler(errorMessage, e as Exception)
                 super.onThrowable(e)
             }

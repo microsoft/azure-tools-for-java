@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,10 +27,9 @@ import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import org.jetbrains.plugins.azure.deploy.NotificationConstant
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.database.model.DatabasePublishModel
-import com.microsoft.intellij.helpers.UiConstants
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.util.*
 
 object DatabaseDeployUtil {
@@ -43,7 +42,7 @@ object DatabaseDeployUtil {
             return createDatabase(sqlServer, model, processHandler)
         }
 
-        processHandler.setText(String.format(UiConstants.SQL_DATABASE_GET_EXISTING, model.databaseId))
+        processHandler.setText(message("process_event.publish.sql_db.get_existing", model.databaseId))
         val sqlServerId = model.databaseId.split("/").dropLast(2).joinToString("/")
         val sqlServer = AzureSqlServerMvpModel.getSqlServerById(model.subscription?.subscriptionId() ?: "", sqlServerId)
 
@@ -56,17 +55,19 @@ object DatabaseDeployUtil {
                                model: DatabasePublishModel,
                                processHandler: RunProcessHandler): SqlDatabase {
 
-        processHandler.setText(String.format(UiConstants.SQL_DATABASE_CREATE, model.databaseName))
+        processHandler.setText(message("process_event.publish.sql_db.creating", model.databaseName))
 
-        if (model.databaseName.isEmpty()) throw RuntimeException(UiConstants.SQL_DATABASE_NAME_NOT_DEFINED)
+        if (model.databaseName.isEmpty())
+            throw RuntimeException(message("process_event.publish.sql_db.name_not_defined"))
+
         val database = AzureSqlDatabaseMvpModel.createSqlDatabase(
                 databaseName = model.databaseName,
                 sqlServer = sqlServer,
                 collation = model.collation)
 
-        val message = String.format(UiConstants.SQL_DATABASE_CREATE_SUCCESSFUL, database.id())
-        processHandler.setText(message)
-        activityNotifier.notifyProgress(NotificationConstant.SQL_DATABASE_CREATE, Date(), null, 100, message)
+        val eventMessage = message("process_event.publish.sql_db.create_success", database.id())
+        processHandler.setText(eventMessage)
+        activityNotifier.notifyProgress(message("tool_window.azure_activity_log.publish.sql_db.create"), Date(), null, 100, eventMessage)
 
         return database
     }
@@ -74,15 +75,16 @@ object DatabaseDeployUtil {
     private fun getOrCreateSqlServerFromConfiguration(model: DatabasePublishModel,
                                                       processHandler: RunProcessHandler): SqlServer {
 
-        val subscriptionId = model.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
+        val subscriptionId = model.subscription?.subscriptionId()
+                ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
         if (model.isCreatingSqlServer) {
-            processHandler.setText(String.format(UiConstants.SQL_SERVER_CREATE, model.sqlServerName))
+            processHandler.setText(message("process_event.publish.sql_server.creating", model.sqlServerName))
 
-            if (model.sqlServerName.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_NAME_NOT_DEFINED)
-            if (model.resourceGroupName.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_RESOURCE_GROUP_NAME_NOT_DEFINED)
-            if (model.sqlServerAdminLogin.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-            if (model.sqlServerAdminPassword.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+            if (model.sqlServerName.isEmpty()) throw RuntimeException(message("process_event.publish.sql_server.name_not_defined"))
+            if (model.resourceGroupName.isEmpty()) throw RuntimeException(message("process_event.publish.sql_server.resource_group_not_defined"))
+            if (model.sqlServerAdminLogin.isEmpty()) throw RuntimeException(message("process_event.publish.sql_server.admin_login_not_defined"))
+            if (model.sqlServerAdminPassword.isEmpty()) throw RuntimeException(message("process_event.publish.sql_server.admin_password_not_defined"))
 
             val sqlServer = AzureSqlServerMvpModel.createSqlServer(
                     subscriptionId,
@@ -93,16 +95,18 @@ object DatabaseDeployUtil {
                     model.sqlServerAdminLogin,
                     model.sqlServerAdminPassword)
 
-            val message = String.format(UiConstants.SQL_SERVER_CREATE_SUCCESSFUL, sqlServer.id())
-            processHandler.setText(message)
-            activityNotifier.notifyProgress(NotificationConstant.SQL_SERVER_CREATE, Date(), null, 100, message)
+            val eventMessage = message("process_event.publish.sql_server.create_success", sqlServer.id())
+            processHandler.setText(eventMessage)
+            activityNotifier.notifyProgress(message("tool_window.azure_activity_log.publish.sql_server.create"), Date(), null, 100, eventMessage)
 
             return sqlServer
         }
 
-        processHandler.setText(String.format(UiConstants.SQL_SERVER_GET_EXISTING, model.sqlServerId))
+        processHandler.setText(message("process_event.publish.sql_server.get_existing", model.sqlServerId))
 
-        if (model.sqlServerId.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ID_NOT_DEFINED)
+        if (model.sqlServerId.isEmpty())
+            throw RuntimeException(message("process_event.publish.sql_server.id_not_defined"))
+
         return AzureSqlServerMvpModel.getSqlServerById(subscriptionId, model.sqlServerId)
     }
 }

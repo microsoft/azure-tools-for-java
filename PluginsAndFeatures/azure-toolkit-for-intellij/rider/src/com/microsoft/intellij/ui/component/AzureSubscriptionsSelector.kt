@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -32,17 +32,15 @@ import com.microsoft.intellij.ui.extension.fillComboBox
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.helpers.validator.SubscriptionValidator
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 
 class AzureSubscriptionsSelector :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
-    companion object {
-        private const val EMPTY_SUBSCRIPTION_MESSAGE = "No existing Azure Subscriptions"
-    }
-
-    private val lblSubscription = Label("Subscription", UIUtil.ComponentStyle.REGULAR, UIUtil.FontColor.NORMAL, false)
+    private val lblSubscription = Label(
+            message("run_config.publish.form.subscription.label"), UIUtil.ComponentStyle.REGULAR, UIUtil.FontColor.NORMAL, false)
     val cbSubscription = ComboBox<Subscription>()
 
     var lastSelectedSubscriptionId = ""
@@ -72,7 +70,7 @@ class AzureSubscriptionsSelector :
     }
 
     private fun initSubscriptionComboBox() {
-        cbSubscription.setDefaultRenderer(EMPTY_SUBSCRIPTION_MESSAGE) { it.displayName() }
+        cbSubscription.setDefaultRenderer(message("run_config.publish.form.subscription.empty_message")) { it.displayName() }
 
         cbSubscription.addActionListener {
             val subscription = cbSubscription.getSelectedValue() ?: return@addActionListener

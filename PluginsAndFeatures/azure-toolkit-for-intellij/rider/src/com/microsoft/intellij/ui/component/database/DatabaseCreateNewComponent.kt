@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -35,6 +35,7 @@ import com.microsoft.intellij.ui.extension.setComponentsEnabled
 import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 
 /**
@@ -47,18 +48,15 @@ class DatabaseCreateNewComponent(private val lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1, hidemode 3")),
         AzureComponent {
 
-    companion object {
-        private const val HEADER_RESOURCE_GROUP = "Resource Group"
-        private const val HEADER_SQL_SERVER = "SQL Server"
-    }
-
     val pnlNewDatabaseName = DatabaseNameComponent(lifetime.createNested())
 
     val pnlResourceGroup = AzureResourceGroupSelector(lifetime.createNested())
-    private val pnlResourceGroupHolder = HideableTitledPanel(HEADER_RESOURCE_GROUP, pnlResourceGroup, true)
+    private val pnlResourceGroupHolder =
+            HideableTitledPanel(message("run_config.publish.form.resource_group.header"), pnlResourceGroup, true)
 
     val pnlSqlServer = SqlServerSelector(lifetime.createNested())
-    private val pnlSqlServerHolder = HideableTitledPanel(HEADER_SQL_SERVER, pnlSqlServer, true)
+    private val pnlSqlServerHolder =
+            HideableTitledPanel(message("run_config.publish.form.sql_server.header"), pnlSqlServer, true)
 
     val pnlCollation = DatabaseCollationComponent()
 

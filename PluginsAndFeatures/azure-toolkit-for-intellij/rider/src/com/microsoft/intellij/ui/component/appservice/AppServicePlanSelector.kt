@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -40,6 +40,7 @@ import com.microsoft.intellij.helpers.validator.LocationValidator
 import com.microsoft.intellij.helpers.validator.PricingTierValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.event.ActionListener
 import javax.swing.*
 
@@ -49,29 +50,24 @@ class AppServicePlanSelector(private val lifetime: Lifetime) :
 
     companion object {
         private val indentionSize = JBUI.scale(17)
-
-        private const val EMPTY_APP_SERVICE_PLAN_MESSAGE = "No existing Azure App Service Plans"
-        private const val EMPTY_LOCATION_MESSAGE = "No existing Azure Locations"
-        private const val EMPTY_PRICING_TIER_MESSAGE = "No existing Azure Pricing Tiers"
-
         private const val WEB_APP_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/app-service/"
     }
 
-    val rdoUseExisting = JRadioButton("Use Existing", true)
+    val rdoUseExisting = JRadioButton(message("run_config.publish.form.service_plan.use_existing"), true)
     val cbAppServicePlan = ComboBox<AppServicePlan>()
-    private val lblExistingLocationName = JLabel("Location")
-    private val lblLocationValue = JLabel("N/A")
-    private val lblExistingPricingTierName = JLabel("Pricing Tier")
-    private val lblExistingPricingTierValue = JLabel("N/A")
+    private val lblExistingLocationName = JLabel(message("run_config.publish.form.service_plan.location.label"))
+    private val lblLocationValue = JLabel(message("common.na_capitalized"))
+    private val lblExistingPricingTierName = JLabel(message("run_config.publish.form.service_plan.pricing_tier.label"))
+    private val lblExistingPricingTierValue = JLabel(message("common.na_capitalized"))
 
-    val rdoCreateNew = JRadioButton("Create New")
+    val rdoCreateNew = JRadioButton(message("run_config.publish.form.service_plan.create_new"))
     val txtName = JTextField("")
-    private val lblCreateLocationName = JLabel("Location")
+    private val lblCreateLocationName = JLabel(message("run_config.publish.form.service_plan.location.label"))
     val cbLocation = ComboBox<Location>()
     private val pnlCreatePricingTier = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[][min!]"))
-    private val lblCreatePricingTierName = JLabel("Pricing Tier")
+    private val lblCreatePricingTierName = JLabel(message("run_config.publish.form.service_plan.pricing_tier.label"))
     val cbPricingTier = ComboBox<PricingTier>()
-    private val lblPricingLink = LinkLabel("Pricing", null, { _, link -> BrowserUtil.browse(link) }, WEB_APP_PRICING_URI)
+    private val lblPricingLink = LinkLabel(message("run_config.publish.form.service_plan.pricing.label"), null, { _, link -> BrowserUtil.browse(link) }, WEB_APP_PRICING_URI)
 
     var cachedAppServicePlan: List<AppServicePlan> = emptyList()
     var cachedPricingTier: List<PricingTier> = emptyList()
@@ -164,7 +160,7 @@ class AppServicePlanSelector(private val lifetime: Lifetime) :
     }
 
     private fun initAppServicePlanComboBox() {
-        cbAppServicePlan.setDefaultRenderer(EMPTY_APP_SERVICE_PLAN_MESSAGE) { it.name() }
+        cbAppServicePlan.setDefaultRenderer(message("run_config.publish.form.service_plan.no_existing_values")) { it.name() }
 
         cbAppServicePlan.addActionListener {
             val plan = cbAppServicePlan.getSelectedValue() ?: return@addActionListener
@@ -180,11 +176,11 @@ class AppServicePlanSelector(private val lifetime: Lifetime) :
     }
 
     private fun initLocationComboBox() {
-        cbLocation.setDefaultRenderer(EMPTY_LOCATION_MESSAGE) { it.displayName() }
+        cbLocation.setDefaultRenderer(message("run_config.publish.form.service_plan.location.empty_message")) { it.displayName() }
     }
 
     private fun initPricingTierComboBox() {
-        cbPricingTier.setDefaultRenderer(EMPTY_PRICING_TIER_MESSAGE) {
+        cbPricingTier.setDefaultRenderer(message("run_config.publish.form.service_plan.pricing_tier.empty_message")) {
             val skuDescription = it.toSkuDescription()
             "${skuDescription.name()} (${skuDescription.tier()})"
         }

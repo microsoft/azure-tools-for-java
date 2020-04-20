@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,22 +24,11 @@ package com.microsoft.intellij.helpers.validator
 
 import com.intellij.openapi.util.SystemInfo
 import com.jetbrains.rider.model.PublishableProjectModel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 object ProjectValidator : AzureResourceValidator() {
 
-    private const val PROJECT_NOT_DEFINED = "Project is not defined"
-
-    private const val PROJECT_PUBLISHING_NOT_SUPPORTED =
-            "Selected project '%s' cannot be published. Please select a Web App"
-
-    private const val PROJECT_PUBLISHING_OS_NOT_SUPPORTED =
-            "Selected project '%s' cannot be published. Publishing .Net Web Apps is not yet supported on '%s'"
-
-    private const val PROJECT_TARGETS_NOT_DEFINED =
-            "Selected project '%s' cannot be published. Required target 'WebPublish' was not found."
-
-    private const val PROJECT_NOT_FUNCTION_APP =
-            "Selected project '%s' cannot be published. Please select a Function App"
+    private val projectNotDefinedMessage = message("run_config.publish.validation.project.not_defined")
 
     /**
      * Validate publishable project in the config
@@ -49,30 +38,30 @@ object ProjectValidator : AzureResourceValidator() {
      */
     fun validateProjectForWebApp(publishableProject: PublishableProjectModel?): ValidationResult {
         val status = ValidationResult()
-        publishableProject ?: return status.setInvalid(PROJECT_NOT_DEFINED)
+        publishableProject ?: return status.setInvalid(projectNotDefinedMessage)
 
         if (!publishableProject.isWeb)
             return status.setInvalid(
-                    String.format(PROJECT_PUBLISHING_NOT_SUPPORTED, publishableProject.projectName))
+                    message("run_config.publish.validation.project.publish_not_supported", publishableProject.projectName))
 
         if (!isPublishToWebAppSupported(publishableProject))
             return status.setInvalid(
-                    String.format(PROJECT_PUBLISHING_OS_NOT_SUPPORTED, publishableProject.projectName, SystemInfo.OS_NAME))
+                    message("run_config.publish.validation.project.publish_os_not_supported", publishableProject.projectName, SystemInfo.OS_NAME))
 
         if (!publishableProject.isDotNetCore && !publishableProject.hasWebPublishTarget)
             return status.setInvalid(
-                    String.format(PROJECT_TARGETS_NOT_DEFINED, publishableProject.projectName))
+                    message("run_config.publish.validation.project.target_not_defined", publishableProject.projectName))
 
         return status
     }
 
     fun validateProjectForFunctionApp(publishableProject: PublishableProjectModel?): ValidationResult {
         val status = ValidationResult()
-        publishableProject ?: return status.setInvalid(PROJECT_NOT_DEFINED)
+        publishableProject ?: return status.setInvalid(projectNotDefinedMessage)
 
         if (!isPublishToFunctionAppSupported(publishableProject))
             return status.setInvalid(
-                    String.format(PROJECT_NOT_FUNCTION_APP, publishableProject.projectName))
+                    message("run_config.publish.validation.project.not_function_app", publishableProject.projectName))
 
         return status
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -32,8 +32,6 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import org.jetbrains.plugins.azure.deploy.NotificationConstant
-import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.helpers.deploy.KuduClient
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.appStart
@@ -44,6 +42,7 @@ import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.projectAssemblyRelativePath
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.zipProjectArtifacts
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.util.*
 
 object FunctionAppDeployStateUtil {
@@ -53,20 +52,26 @@ object FunctionAppDeployStateUtil {
     private val activityNotifier = AzureDeploymentProgressNotification(null)
 
     fun functionAppStart(app: FunctionApp, processHandler: RunProcessHandler) =
-            appStart(app, processHandler, String.format(UiConstants.FUNCTION_APP_START, app.name()), NotificationConstant.FUNCTION_APP_START)
+            appStart(app = app,
+                    processHandler = processHandler,
+                    progressMessage = message("progress.publish.function_app.start", app.name()),
+                    notificationTitle = message("tool_window.azure_activity_log.publish.function_app.start"))
 
     fun functionAppStop(app: FunctionApp, processHandler: RunProcessHandler) =
-            appStop(app, processHandler, String.format(UiConstants.FUNCTION_APP_STOP, app.name()), NotificationConstant.FUNCTION_APP_STOP)
+            appStop(app = app,
+                    processHandler = processHandler,
+                    progressMessage = message("progress.publish.function_app.stop", app.name()),
+                    notificationTitle = message("tool_window.azure_activity_log.publish.function_app.stop"))
 
     fun getOrCreateFunctionAppFromConfiguration(model: FunctionAppPublishModel,
                                                 processHandler: RunProcessHandler): FunctionApp {
 
         val subscriptionId = model.subscription?.subscriptionId()
-                ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
+                ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
         if (!model.isCreatingNewApp) {
             logger.info("Use existing Function App with id: '${model.appId}'")
-            processHandler.setText(String.format(UiConstants.FUNCTION_APP_GET_EXISTING, model.appId))
+            processHandler.setText(message("process_event.publish.function_apps.get_existing", model.appId))
             return AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, model.appId)
         }
 
@@ -84,10 +89,13 @@ object FunctionAppDeployStateUtil {
                 .append("storageAccountType: ")      .append(model.storageAccountType)
 
         logger.info(functionModelLog.toString())
-        processHandler.setText(String.format(UiConstants.FUNCTION_APP_CREATE, model.appName))
+        processHandler.setText(message("process_event.publish.function_apps.creating", model.appName))
 
-        if (model.appName.isEmpty()) throw RuntimeException(UiConstants.FUNCTION_APP_NAME_NOT_DEFINED)
-        if (model.resourceGroupName.isEmpty()) throw RuntimeException(UiConstants.RESOURCE_GROUP_NAME_NOT_DEFINED)
+        if (model.appName.isEmpty())
+            throw RuntimeException(message("process_event.publish.function_apps.name_not_defined"))
+
+        if (model.resourceGroupName.isEmpty())
+            throw RuntimeException(message("process_event.publish.resource_group.not_defined"))
 
         val app = AzureFunctionAppMvpModel.createFunctionApp(
                 subscriptionId         = subscriptionId,
@@ -104,9 +112,9 @@ object FunctionAppDeployStateUtil {
                 storageAccountName     = model.storageAccountName,
                 storageAccountType     = model.storageAccountType)
 
-        val message = String.format(UiConstants.FUNCTION_APP_CREATE_SUCCESSFUL, app.name())
-        processHandler.setText(message)
-        activityNotifier.notifyProgress(NotificationConstant.FUNCTION_APP_CREATE, Date(), app.defaultHostName(), 100, message)
+        val stateMessage = message("process_event.publish.function_apps.create_success", app.name())
+        processHandler.setText(stateMessage)
+        activityNotifier.notifyProgress(message("tool_window.azure_activity_log.publish.function_app.create"), Date(), app.defaultHostName(), 100, stateMessage)
         return app
     }
 
@@ -121,8 +129,9 @@ object FunctionAppDeployStateUtil {
         val sqlServer = AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, database.sqlServerName(), true)
 
         if (sqlServer == null) {
-            val message = String.format(UiConstants.SQL_SERVER_CANNOT_GET, database.sqlServerName())
-            processHandler.setText(String.format(UiConstants.CONNECTION_STRING_CREATE_FAILED, message))
+            val errorMessage = message("process_event.publish.sql_server.find_existing_error", database.sqlServerName())
+            processHandler.setText(
+                    message("process_event.publish.connection_string.create_failed", errorMessage))
             return
         }
 
@@ -138,7 +147,7 @@ object FunctionAppDeployStateUtil {
                                  processHandler: RunProcessHandler) {
 
         packAndDeploy(project, publishableProject, app, processHandler)
-        processHandler.setText(UiConstants.DEPLOY_SUCCESSFUL)
+        processHandler.setText(message("process_event.publish.deploy_succeeded"))
     }
 
     private fun packAndDeploy(project: Project,
@@ -146,12 +155,12 @@ object FunctionAppDeployStateUtil {
                               app: FunctionApp,
                               processHandler: RunProcessHandler) {
         try {
-            processHandler.setText(String.format(UiConstants.PROJECT_ARTIFACTS_COLLECTING, publishableProject.projectName))
+            processHandler.setText(message("process_event.publish.project.artifacts.collecting", publishableProject.projectName))
             val outDir = collectProjectArtifacts(project, publishableProject)
             // Note: we need to do it only for Linux Azure instances (we might add this check to speed up)
             projectAssemblyRelativePath = getAssemblyRelativePath(publishableProject, outDir)
 
-            processHandler.setText(String.format(UiConstants.ZIP_FILE_CREATE_FOR_PROJECT, publishableProject.projectName))
+            processHandler.setText(message("process_event.publish.zip_deploy.file_creating", publishableProject.projectName))
             val zipFile = zipProjectArtifacts(outDir, processHandler)
 
             functionAppStop(app, processHandler)
@@ -159,22 +168,23 @@ object FunctionAppDeployStateUtil {
             KuduClient.kuduZipDeploy(zipFile, app, processHandler)
 
             if (zipFile.exists()) {
-                processHandler.setText(String.format(UiConstants.ZIP_FILE_DELETING, zipFile.path))
+                processHandler.setText(message("process_event.publish.zip_deploy.file_deleting", zipFile.path))
                 FileUtil.delete(zipFile)
             }
         } catch (e: Throwable) {
-            logger.error(e)
-            processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
-            throw RuntimeException(UiConstants.ZIP_DEPLOY_PUBLISH_FAIL, e)
+            val errorMessage = "${message("process_event.publish.zip_deploy.fail")}: $e"
+            logger.error(errorMessage)
+            processHandler.setText(errorMessage)
+            throw RuntimeException(message("process_event.publish.zip_deploy.fail"), e)
         }
     }
 
     private fun updateWithConnectionString(app: FunctionApp, name: String, value: String, processHandler: RunProcessHandler) {
-        val message = String.format(UiConstants.CONNECTION_STRING_CREATING, name)
+        val processMessage = message("process_event.publish.connection_string.creating", name)
 
-        processHandler.setText(message)
+        processHandler.setText(processMessage)
         app.update().withConnectionString(name, value, ConnectionStringType.SQLAZURE).apply()
 
-        activityNotifier.notifyProgress(NotificationConstant.FUNCTION_APP_UPDATE, Date(), app.defaultHostName(), 100, message)
+        activityNotifier.notifyProgress(message("tool_window.azure_activity_log.publish.function_app.update"), Date(), app.defaultHostName(), 100, processMessage)
     }
 }

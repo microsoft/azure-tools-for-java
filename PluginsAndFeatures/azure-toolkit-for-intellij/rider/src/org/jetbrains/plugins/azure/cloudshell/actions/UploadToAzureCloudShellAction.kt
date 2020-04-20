@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -33,6 +33,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.rider.util.idea.getComponent
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 
 class UploadToAzureCloudShellAction : AnAction() {
@@ -53,11 +54,11 @@ class UploadToAzureCloudShellAction : AnAction() {
 
         ApplicationManager.getApplication().invokeLater {
             val descriptor = FileChooserDescriptor(true, false, false, true, false, true)
-            descriptor.title = "Select file(s) to upload to Azure Cloud Shell"
+            descriptor.title = RiderAzureBundle.message("action.cloud_shell.upload_to_azure.title")
             FileChooser.chooseFiles(descriptor, project, null, null, object : FileChooser.FileChooserConsumer {
                 override fun consume(files: List<VirtualFile>) {
                     files.forEach {
-                        object : Task.Backgroundable(project, "Uploading file " + it.presentableName + " to Azure Cloud Shell...", true, PerformInBackgroundOption.DEAF)
+                        object : Task.Backgroundable(project, RiderAzureBundle.message("progress.cloud_shell.upload_to_azure.uploading", it.presentableName), true, PerformInBackgroundOption.DEAF)
                         {
                             override fun run(indicator: ProgressIndicator)
                             {

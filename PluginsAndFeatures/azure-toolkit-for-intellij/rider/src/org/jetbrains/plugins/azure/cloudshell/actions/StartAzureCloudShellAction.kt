@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -47,6 +47,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionParameters
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionTerminalParameters
@@ -72,7 +73,7 @@ class StartAzureCloudShellAction : AnAction() {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext) ?: return
         val azureManager = AuthMethodManager.getInstance().azureManager ?: return
 
-        object : Task.Backgroundable(project, "Retrieving Azure subscription details...", true, PerformInBackgroundOption.DEAF)
+        object : Task.Backgroundable(project, RiderAzureBundle.message("progress.cloud_shell.start.retrieving_subscription"), true, PerformInBackgroundOption.DEAF)
         {
             override fun run(indicator: ProgressIndicator)
             {
@@ -99,7 +100,7 @@ class StartAzureCloudShellAction : AnAction() {
                 ApplicationManager.getApplication().invokeLater {
                     if (project.isDisposed) return@invokeLater
 
-                    val step = object : BaseListPopupStep<SubscriptionDetail>("Select subscription to run Azure Cloud Shell", selectedSubscriptions) {
+                    val step = object : BaseListPopupStep<SubscriptionDetail>(RiderAzureBundle.message("popup.cloud_shell.start.select_subscription"), selectedSubscriptions) {
                         override fun getTextFor(value: SubscriptionDetail?): String {
                             if (value != null) {
                                 return "${value.subscriptionName} (${value.subscriptionId})"
@@ -135,12 +136,14 @@ class StartAzureCloudShellAction : AnAction() {
             // Failed to authenticate....
             logger.error("Failed to authenticate Azure Cloud Shell", e)
 
-            AzureCloudShellNotifications.notify(project,
-                    "Azure",
-                    "Failed to authenticate Azure Cloud Shell",
-                    "Authentication was unsuccessful.",
+            AzureCloudShellNotifications.notify(
+                    project,
+                    RiderAzureBundle.message("common.azure"),
+                    RiderAzureBundle.message("notification.cloud_shell.start.failed_to_authenticate.subtitle"),
+                    RiderAzureBundle.message("notification.cloud_shell.start.failed_to_authenticate.message"),
                     NotificationType.WARNING,
-                    null)
+                    null
+            )
         }
     }
 
@@ -157,7 +160,7 @@ class StartAzureCloudShellAction : AnAction() {
                         tokenCredentials)
 
                 // 1. Retrieve cloud shell preferences
-                updateIndicator(indicator, 0.05, "Retrieving cloud shell preferences...")
+                updateIndicator(indicator, 0.05, RiderAzureBundle.message("progress.cloud_shell.start.retrieving_preferences"))
 
                 val consoleUserSettingsResponse = retrofitClient.userSettings().execute()
                 if (!consoleUserSettingsResponse.isSuccessful) {
@@ -168,7 +171,12 @@ class StartAzureCloudShellAction : AnAction() {
                 val preferredOsType = consoleUserSettingsResponse.body()?.properties?.preferredOsType ?: "Linux"
 
                 // 2. Provision cloud shell
-                updateIndicator(indicator, 0.35, "Provisioning cloud shell...", "Provisioning cloud shell... (preferred OS type: $preferredOsType)")
+                updateIndicator(
+                        indicator,
+                        0.35,
+                        RiderAzureBundle.message("progress.cloud_shell.start.provisioning_cloud_shell"),
+                        RiderAzureBundle.message("progress.cloud_shell.start.provisioning_cloud_shell.debug_text", preferredOsType)
+                )
 
                 val provisionParameters = CloudConsoleProvisionParameters(
                         CloudConsoleProvisionParameters.Properties(preferredOsType))
@@ -195,7 +203,7 @@ class StartAzureCloudShellAction : AnAction() {
                 }
 
                 // 3. Request cloud shell
-                updateIndicator(indicator, 0.65, "Requesting cloud shell...")
+                updateIndicator(indicator, 0.65, RiderAzureBundle.message("progress.cloud_shell.start.requesting_cloud_shell"))
                 val shellUrl = "$provisionUrl/terminals"
 
                 // Fetch graph and key vault tokens
@@ -204,7 +212,7 @@ class StartAzureCloudShellAction : AnAction() {
                 val vaultToken = credentials.getToken("https://" + azureManager.environment.azureEnvironment.keyVaultDnsSuffix().trimStart('.') + "/")
 
                 // 4. Provision terminal
-                updateIndicator(indicator, 0.75, "Requesting cloud shell terminal...")
+                updateIndicator(indicator, 0.75, RiderAzureBundle.message("progress.cloud_shell.start.requesting_cloud_shell_terminal"))
 
                 val provisionTerminalParameters = CloudConsoleProvisionTerminalParameters()
                 provisionTerminalParameters.tokens.add(graphToken)
@@ -227,7 +235,7 @@ class StartAzureCloudShellAction : AnAction() {
                 }
 
                 // 5. Connect to terminal
-                updateIndicator(indicator, 0.85, "Connecting to cloud shell terminal...")
+                updateIndicator(indicator, 0.85, RiderAzureBundle.message("progress.cloud_shell.start.connecting_to_cloud_shell"))
 
                 val runner = AzureCloudTerminalFactory.createTerminalRunner(
                         project, retrofitClient, provisionUrl, URI(socketUri))
@@ -259,9 +267,12 @@ class StartAzureCloudShellAction : AnAction() {
         logger.warn("Azure Cloud Shell is not configured in any Azure subscription.")
 
         AzureCloudShellNotifications.notify(project,
-                "Azure",
-                "Failed to start Azure Cloud Shell",
-                "Azure Cloud Shell is not configured in any of your subscriptions. <a href='shellportal'>Configure Azure Cloud Shell</a>",
+                RiderAzureBundle.message("common.azure"),
+                RiderAzureBundle.message("notification.cloud_shell.start.failed_to_start.subtitle"),
+                RiderAzureBundle.message("notification.cloud_shell.start.failed_to_start.message") +
+                        " <a href='shellportal'>" +
+                        RiderAzureBundle.message("notification.cloud_shell.start.failed_to_start.message.configure_cloud_shell") +
+                        "</a>",
                 NotificationType.WARNING,
                 object : NotificationListener.Adapter() {
                     override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {

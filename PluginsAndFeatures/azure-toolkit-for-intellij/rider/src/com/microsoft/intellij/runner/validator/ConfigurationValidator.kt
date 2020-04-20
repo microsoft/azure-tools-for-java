@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -26,7 +26,7 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.openapi.options.ConfigurationException
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.intellij.helpers.validator.ValidationResult
-import com.microsoft.intellij.helpers.UiConstants
+import org.jetbrains.plugins.azure.RiderAzureBundle
 
 open class ConfigurationValidator {
 
@@ -39,11 +39,11 @@ open class ConfigurationValidator {
     fun validateAzureAccountIsSignedIn() {
         try {
             if (!AuthMethodManager.getInstance().isSignedIn) {
-                val message = UiConstants.SIGN_IN_REQUIRED
+                val message = RiderAzureBundle.message("run_config.publish.validation.sign_in.required")
                 throw RuntimeConfigurationError(message)
             }
         } catch (e: Throwable) {
-            throw RuntimeConfigurationError(UiConstants.SIGN_IN_REQUIRED)
+            throw RuntimeConfigurationError(RiderAzureBundle.message("run_config.publish.validation.sign_in.required"))
         }
     }
 

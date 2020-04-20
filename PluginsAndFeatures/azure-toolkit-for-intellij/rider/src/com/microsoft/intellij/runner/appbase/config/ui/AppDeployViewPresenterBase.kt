@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -42,27 +42,9 @@ import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.intellij.helpers.base.AzureMvpPresenter
 import com.microsoft.tooling.msservices.components.DefaultLoader
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 abstract class AppDeployViewPresenterBase<T : AppDeployMvpViewBase> : AzureMvpPresenter<T>() {
-
-    companion object {
-        private const val TASK_SUBSCRIPTION = "Collect Azure subscriptions"
-        private const val TASK_RESOURCE_GROUP = "Collect Azure resource groups"
-        private const val TASK_APP_SERVICE_PLAN = "Collect Azure app service plans"
-        private const val TASK_PRICING_TIER = "Collect Azure pricing tiers"
-        private const val TASK_LOCATION = "Collect Azure locations"
-        private const val TASK_SQL_DATABASE = "Collect Azure SQL databases"
-        private const val TASK_SQL_SERVER = "Collect Azure SQL servers"
-
-        private const val CANNOT_LIST_SUBSCRIPTION = "Failed to list subscriptions."
-        private const val CANNOT_LIST_RESOURCE_GROUP = "Failed to list resource groups."
-        private const val CANNOT_LIST_APP_SERVICE_PLAN = "Failed to list app service plan."
-        private const val CANNOT_LIST_LOCATION = "Failed to list locations."
-        private const val CANNOT_LIST_PRICING_TIER = "Failed to list pricing tier."
-        private const val CANNOT_LIST_SQL_DATABASE = "Failed to list SQL Database."
-        private const val CANNOT_LIST_SQL_SERVER = "Failed to list SQL Server."
-        private const val CANNOT_LIST_PUBLISHABLE_PROJECTS = "Failed to list publishable projects."
-    }
 
     private val subscriptionSignal = Signal<List<Subscription>>()
     private val resourceGroupSignal = Signal<List<ResourceGroup>>()
@@ -83,37 +65,55 @@ abstract class AppDeployViewPresenterBase<T : AppDeployMvpViewBase> : AzureMvpPr
     }
 
     fun onLoadSubscription(lifetime: Lifetime) {
-        subscribe(lifetime, subscriptionSignal, TASK_SUBSCRIPTION, CANNOT_LIST_SUBSCRIPTION,
+        subscribe(lifetime,
+                subscriptionSignal,
+                message("progress.publish.subscription.collect"),
+                message("run_config.publish.subscription.collect_error"),
                 { AzureMvpModel.getInstance().selectedSubscriptions },
                 { mvpView.fillSubscription(it) })
     }
 
     fun onLoadResourceGroups(lifetime: Lifetime, subscriptionId: String) {
-        subscribe(lifetime, resourceGroupSignal, TASK_RESOURCE_GROUP, CANNOT_LIST_RESOURCE_GROUP,
+        subscribe(lifetime,
+                resourceGroupSignal,
+                message("progress.publish.resource_group.collect"),
+                message("run_config.publish.resource_group.collect_error"),
                 { AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId) },
                 { mvpView.fillResourceGroup(it) })
     }
 
     fun onLoadAppServicePlan(lifetime: Lifetime, subscriptionId: String) {
-        subscribe(lifetime, appServicePlanSignal, TASK_APP_SERVICE_PLAN, CANNOT_LIST_APP_SERVICE_PLAN,
+        subscribe(lifetime,
+                appServicePlanSignal,
+                message("progress.publish.service_plan.collect"),
+                message("run_config.publish.service_plan.collect_error"),
                 { AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(subscriptionId) },
                 { mvpView.fillAppServicePlan(it) })
     }
 
     fun onLoadLocation(lifetime: Lifetime, subscriptionId: String) {
-        subscribe(lifetime, locationSignal, TASK_LOCATION, CANNOT_LIST_LOCATION,
+        subscribe(lifetime,
+                locationSignal,
+                message("progress.publish.location.collect"),
+                message("run_config.publish.location.collect_error"),
                 { AzureMvpModel.getInstance().listLocationsBySubscriptionId(subscriptionId) },
                 { mvpView.fillLocation(it) })
     }
 
     fun onLoadPricingTier(lifetime: Lifetime) {
-        subscribe(lifetime, pricingTierSignal, TASK_PRICING_TIER, CANNOT_LIST_PRICING_TIER,
+        subscribe(lifetime,
+                pricingTierSignal,
+                message("progress.publish.pricing_tier.collect"),
+                message("run_config.publish.pricing_tier.collect_error"),
                 { AzureMvpModel.getInstance().listPricingTier() },
                 { mvpView.fillPricingTier(it) })
     }
 
     fun onLoadSqlDatabase(lifetime: Lifetime, subscriptionId: String) {
-        subscribe(lifetime, sqlDatabaseSignal, TASK_SQL_DATABASE, CANNOT_LIST_SQL_DATABASE,
+        subscribe(lifetime,
+                sqlDatabaseSignal,
+                message("progress.publish.sql_db.collect"),
+                message("run_config.publish.sql_db.collect_error"),
                 {
                     AzureSqlDatabaseMvpModel.listSqlDatabasesBySubscriptionId(subscriptionId)
                             .filter { it.resource.name() != "master" }
@@ -123,7 +123,10 @@ abstract class AppDeployViewPresenterBase<T : AppDeployMvpViewBase> : AzureMvpPr
     }
 
     fun onLoadSqlServers(lifetime: Lifetime, subscriptionId: String) {
-        subscribe(lifetime, sqlServerSignal, TASK_SQL_SERVER, CANNOT_LIST_SQL_SERVER,
+        subscribe(lifetime,
+                sqlServerSignal,
+                message("progress.publish.sql_server.collect"),
+                message("run_config.publish.sql_server.collect_error"),
                 { AzureSqlServerMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } },
                 { mvpView.fillSqlServer(it) })
     }
@@ -136,7 +139,7 @@ abstract class AppDeployViewPresenterBase<T : AppDeployMvpViewBase> : AzureMvpPr
                     try {
                         mvpView.fillPublishableProject(project.solution.publishableProjectsModel.publishableProjects.values.toList())
                     } catch (t: Throwable) {
-                        errorHandler(CANNOT_LIST_PUBLISHABLE_PROJECTS, t)
+                        errorHandler(message("run_config.publish.project.collect_error"), t)
                     }
                 }
             }

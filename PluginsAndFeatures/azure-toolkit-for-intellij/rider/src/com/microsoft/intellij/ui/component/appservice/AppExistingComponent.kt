@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -83,7 +83,7 @@ class AppExistingComponent<T : WebAppBase> :
             return
         }
 
-        val osColumnIndex = (pnlExistingAppTable.table.model as DefaultTableModel).findColumn(ExistingAppsTableComponent.APP_TABLE_COLUMN_OS)
+        val osColumnIndex = (pnlExistingAppTable.table.model as DefaultTableModel).findColumn(pnlExistingAppTable.appTableColumnOs)
         require(osColumnIndex >= 0) { "Column index is out of range" }
         sorter.rowFilter = regexFilter(OperatingSystem.WINDOWS.name.toLowerCase().capitalize(), osColumnIndex)
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -36,6 +36,7 @@ import com.jetbrains.rider.build.BuildParameters
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.BuildTarget
 import com.jetbrains.rider.util.idea.getComponent
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfiguration
 import javax.swing.Icon
 
@@ -48,9 +49,9 @@ class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildFu
 
     override fun getId(): Key<BuildFunctionsProjectBeforeRunTask>? = providerId
 
-    override fun getName(): String? = "Build Functions Project"
+    override fun getName(): String? = message("run_config.run.form.function_app.before_run_tasks.build_function_project_name")
 
-    override fun getDescription(task: BuildFunctionsProjectBeforeRunTask?): String? = "Build Functions project"
+    override fun getDescription(task: BuildFunctionsProjectBeforeRunTask?): String? = message("run_config.run.form.function_app.before_run_tasks.build_function_project_description")
 
     override fun isConfigurable(): Boolean {
         return false

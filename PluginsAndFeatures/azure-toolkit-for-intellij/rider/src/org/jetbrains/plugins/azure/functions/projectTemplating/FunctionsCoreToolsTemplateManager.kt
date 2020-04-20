@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,6 +24,7 @@ package org.jetbrains.plugins.azure.functions.projectTemplating
 
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.info
 import com.jetbrains.rider.projectView.actions.projectTemplating.backend.ReSharperProjectTemplateProvider
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import java.io.File
@@ -51,11 +52,14 @@ object FunctionsCoreToolsTemplateManager {
         val templatesToBeRegisteredFolder = File(coreToolsInfo.coreToolsPath).resolve("templates")
         if (templatesToBeRegisteredFolder.exists()) {
             try {
-                templatesToBeRegisteredFolder
-                        .listFiles { f: File? -> isFunctionsProjectTemplate(f) }
-                        .forEach {
-                            ReSharperProjectTemplateProvider.addUserTemplateSource(it)
-                        }
+                val templateFiles = templatesToBeRegisteredFolder.listFiles { f: File? -> isFunctionsProjectTemplate(f) }
+                        ?: emptyArray<File>()
+
+                logger.info { "Found ${templateFiles.size} function template(s)" }
+
+                templateFiles.forEach { file ->
+                    ReSharperProjectTemplateProvider.addUserTemplateSource(file)
+                }
             } catch (e: Exception) {
                 logger.error("Could not register project templates from ${templatesToBeRegisteredFolder.path}", e)
             }

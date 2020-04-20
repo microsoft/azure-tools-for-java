@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,6 +24,7 @@ package org.jetbrains.plugins.azure.functions.projectTemplating
 
 import com.jetbrains.rider.projectView.actions.projectTemplating.backend.ReSharperProjectTemplateCustomizer
 import com.microsoft.icons.CommonIcons
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import javax.swing.Icon
 
 class FunctionsCoreToolsV2TemplateCustomizer : ReSharperProjectTemplateCustomizer {
@@ -34,5 +35,5 @@ class FunctionsCoreToolsV2TemplateCustomizer : ReSharperProjectTemplateCustomize
         get() = CommonIcons.AzureFunctions.TemplateAzureFunc
 
     override val newName: String
-        get() = "Azure Functions"
+        get() = RiderAzureBundle.message("template.project.function_app.name")
 }

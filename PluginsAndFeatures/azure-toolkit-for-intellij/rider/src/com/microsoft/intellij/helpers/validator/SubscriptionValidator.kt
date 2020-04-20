@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,12 +24,9 @@ package com.microsoft.intellij.helpers.validator
 
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.SubscriptionState
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 object SubscriptionValidator: AzureResourceValidator() {
-
-    private const val SUBSCRIPTION_NOT_DEFINED = "Subscription not provided."
-    private const val SUBSCRIPTION_DISABLED = "Subscription '%s' is disabled."
-    private const val SUBSCRIPTION_DELETED = "Subscription '%s' is deleted."
 
     fun validateSubscription(subscription: Subscription?): ValidationResult {
         val status = checkSubscriptionIsSet(subscription)
@@ -39,17 +36,17 @@ object SubscriptionValidator: AzureResourceValidator() {
     }
 
     fun checkSubscriptionIsSet(subscription: Subscription?) =
-            checkValueIsSet(subscription, SUBSCRIPTION_NOT_DEFINED)
+            checkValueIsSet(subscription, message("run_config.publish.validation.subscription.not_defined"))
 
     private fun validateSubscriptionState(subscription: Subscription): ValidationResult {
         val status = ValidationResult()
 
         val subscriptionState = subscription.state()
         if (subscriptionState == SubscriptionState.DISABLED)
-            return status.setInvalid(String.format(SUBSCRIPTION_DISABLED, subscription.displayName()))
+            return status.setInvalid(message("run_config.publish.validation.subscription.disabled", subscription.displayName()))
 
         if (subscriptionState == SubscriptionState.DELETED)
-            return status.setInvalid(String.format(SUBSCRIPTION_DELETED, subscription.displayName()))
+            return status.setInvalid(message("run_config.publish.validation.subscription.deleted", subscription.displayName()))
 
         return status
     }

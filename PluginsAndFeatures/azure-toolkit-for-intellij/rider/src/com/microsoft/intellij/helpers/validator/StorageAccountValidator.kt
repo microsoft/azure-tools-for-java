@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,22 +25,18 @@ package com.microsoft.intellij.helpers.validator
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 object StorageAccountValidator : AzureResourceValidator() {
 
-    private const val STORAGE_ACCOUNT_NOT_DEFINED = "Storage Account not provided."
-    private const val STORAGE_ACCOUNT_TYPE_NOT_DEFINED = "Storage Account Type not provided."
-    private const val STORAGE_ACCOUNT_NAME_NOT_DEFINED = "Storage Account name not provided."
-    private const val STORAGE_ACCOUNT_ID_NOT_DEFINED = "App Service Plan ID is not defined."
-    private const val STORAGE_ACCOUNT_NAME_INVALID = "App Service Plan name should consists of numbers and lower case letters. Invalid characters: %s."
-    private const val STORAGE_ACCOUNT_ALREADY_EXISTS = "Storage Account with name '%s' already exists."
+    private const val STORAGE_ACCOUNT_NAME_MIN_LENGTH = 3
+    private const val STORAGE_ACCOUNT_NAME_MAX_LENGTH = 24
 
     private val storageAccountNameRegex = "[^a-z0-9]".toRegex()
 
-    private const val STORAGE_ACCOUNT_NAME_MIN_LENGTH = 3
-    private const val STORAGE_ACCOUNT_NAME_MAX_LENGTH = 24
-    private const val STORAGE_ACCOUNT_NAME_LENGTH_ERROR =
-            "Storage Account name should be from $STORAGE_ACCOUNT_NAME_MIN_LENGTH to $STORAGE_ACCOUNT_NAME_MAX_LENGTH characters."
+    private val nameLengthError =
+            message("run_config.publish.validation.storage_account.name_length_error",
+                    STORAGE_ACCOUNT_NAME_MIN_LENGTH, STORAGE_ACCOUNT_NAME_MAX_LENGTH)
 
     fun validateStorageAccountName(subscriptionId: String, name: String): ValidationResult {
 
@@ -57,29 +53,40 @@ object StorageAccountValidator : AzureResourceValidator() {
     }
 
     fun checkStorageAccountIsSet(storageAccount: StorageAccount?) =
-            checkValueIsSet(storageAccount, STORAGE_ACCOUNT_NOT_DEFINED)
+            checkValueIsSet(storageAccount, message("run_config.publish.validation.storage_account.not_defined"))
 
     fun checkStorageAccountIdIsSet(storageAccountId: String?) =
-            checkValueIsSet(storageAccountId, STORAGE_ACCOUNT_ID_NOT_DEFINED)
+            checkValueIsSet(storageAccountId, message("run_config.publish.validation.storage_account.id_not_defined"))
 
     fun checkStorageAccountNameIsSet(name: String) =
-            checkValueIsSet(name, STORAGE_ACCOUNT_NAME_NOT_DEFINED)
+            checkValueIsSet(name, message("run_config.publish.validation.storage_account.name_not_defined"))
 
     fun checkStorageAccountNameMinLength(name: String) =
-            checkNameMinLength(name, STORAGE_ACCOUNT_NAME_MIN_LENGTH, STORAGE_ACCOUNT_NAME_LENGTH_ERROR)
+            checkNameMinLength(
+                    name = name,
+                    minLength = STORAGE_ACCOUNT_NAME_MIN_LENGTH,
+                    errorMessage = nameLengthError)
 
     fun checkStorageAccountNameMaxLength(name: String) =
-            checkNameMaxLength(name, STORAGE_ACCOUNT_NAME_MAX_LENGTH, STORAGE_ACCOUNT_NAME_LENGTH_ERROR)
+            checkNameMaxLength(
+                    name = name,
+                    maxLength = STORAGE_ACCOUNT_NAME_MAX_LENGTH,
+                    errorMessage = nameLengthError)
 
     fun checkInvalidCharacters(name: String) =
-            validateResourceNameRegex(name, storageAccountNameRegex, STORAGE_ACCOUNT_NAME_INVALID)
+            validateResourceNameRegex(
+                    name = name,
+                    nameRegex = storageAccountNameRegex,
+                    nameInvalidCharsMessage = "${message("run_config.publish.validation.storage_account.name_invalid")}: %s")
 
     fun checkStorageAccountTypeIsSet(type: StorageAccountSkuType) =
-            checkValueIsSet(type, STORAGE_ACCOUNT_TYPE_NOT_DEFINED)
+            checkValueIsSet(type, message("run_config.publish.validation.storage_account.type_not_defined"))
 
     fun checkStorageAccountNameExists(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()
-        if (isStorageAccountExist(subscriptionId, name)) return status.setInvalid(String.format(STORAGE_ACCOUNT_ALREADY_EXISTS, name))
+        if (isStorageAccountExist(subscriptionId, name))
+            return status.setInvalid(message("run_config.publish.validation.storage_account.name_already_exists", name))
+
         return status
     }
 

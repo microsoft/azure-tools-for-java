@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,12 +24,9 @@ package com.microsoft.intellij.helpers.validator
 
 import com.microsoft.azure.management.appservice.FunctionApp
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
-object FunctionAppValidator : AppValidator("Function") {
-
-    private const val FUNCTION_APP_NOT_DEFINED = "Function App is not set."
-    private const val FUNCTION_APP_ALREADY_EXISTS = "Function App with name '%s' already exists."
-    private const val CONNECTION_STRING_NAME_ALREADY_EXISTS = "Connection String with name '%s' already exists."
+object FunctionAppValidator : AppValidator(message("service.app_service.function_app")) {
 
     // Please see for details -
     // https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet?toc=%2Fen-us%2Fdotnet%2Fapi%2Fazure_ref_toc%2Ftoc.json&bc=%2Fen-us%2Fdotnet%2Fazure_breadcrumb%2Ftoc.json&view=azure-dotnet#create-an-app-service-plan
@@ -41,14 +38,16 @@ object FunctionAppValidator : AppValidator("Function") {
     }
 
     fun checkFunctionAppIsSet(app: FunctionApp?) =
-            checkValueIsSet(app, FUNCTION_APP_NOT_DEFINED)
+            checkValueIsSet(app, message("run_config.publish.validation.function_app.not_defined"))
 
     fun checkFunctionAppIdIsSet(appId: String) =
             checkAppIdIsSet(appId)
 
     fun checkFunctionAppExists(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()
-        if (isFunctionAppExist(subscriptionId, name)) return status.setInvalid(String.format(FUNCTION_APP_ALREADY_EXISTS, name))
+        if (isFunctionAppExist(subscriptionId, name))
+            return status.setInvalid(message("run_config.publish.validation.function_app.name_already_exists", name))
+
         return status
     }
 
@@ -57,7 +56,7 @@ object FunctionAppValidator : AppValidator("Function") {
         if (!status.isValid) return status
 
         if (AzureFunctionAppMvpModel.checkConnectionStringNameExists(subscriptionId, appId, connectionStringName))
-            status.setInvalid(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, connectionStringName))
+            status.setInvalid(message("run_config.publish.validation.connection_string.name_already_exists", connectionStringName))
 
         return status
     }

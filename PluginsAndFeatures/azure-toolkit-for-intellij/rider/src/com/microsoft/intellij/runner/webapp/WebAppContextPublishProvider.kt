@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -35,20 +35,20 @@ import com.jetbrains.rider.run.configurations.publishing.RiderContextPublishProv
 import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.runner.webapp.config.RiderWebAppConfiguration
 import com.microsoft.intellij.runner.webapp.config.RiderWebAppConfigurationType
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.Icon
 
 class WebAppContextPublishProvider : RiderContextPublishProvider {
 
     companion object {
         private const val RUN_CONFIG_PROJECT_NAME = "Publish %s to Azure"
-        private const val RUN_CONFIG_NAME = "Publish to Azure"
     }
 
     override val icon: Icon
         get() = CommonIcons.Azure
 
     override val name: String
-        get() = RUN_CONFIG_NAME
+        get() = message("context_menu.publish.web_app.publish_to_azure")
 
     override fun getConfigurationForNode(project: Project,
                                          projectModelNode: ProjectModelNode): Pair<RunConfiguration, ConfigurationFactory> {

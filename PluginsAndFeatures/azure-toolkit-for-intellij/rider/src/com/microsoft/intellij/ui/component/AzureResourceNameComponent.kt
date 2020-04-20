@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,10 +24,11 @@ package com.microsoft.intellij.ui.component
 
 import com.intellij.ui.components.Label
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 import javax.swing.JTextField
 
-open class AzureResourceNameComponent(text: String = "Name") :
+open class AzureResourceNameComponent(text: String = message("run_config.publish.form.name.label")) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 

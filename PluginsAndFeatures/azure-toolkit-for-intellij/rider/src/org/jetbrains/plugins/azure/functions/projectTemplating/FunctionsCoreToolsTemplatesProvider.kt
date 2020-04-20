@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -36,6 +36,7 @@ import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTem
 import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTemplateDialogContext
 import com.jetbrains.rider.projectView.actions.projectTemplating.impl.ProjectTemplateTransferableModel
 import com.microsoft.icons.CommonIcons
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.Icon
 import javax.swing.JComponent
 
@@ -70,7 +71,7 @@ class FunctionsCoreToolsTemplatesProvider : RiderProjectTemplateProvider {
             return object : InfoProjectTemplateGeneratorBase() {
 
                 override val expandActionName: String
-                    get() = "Reload"
+                    get() = message("template.project.function_app.actions.expand.reload")
 
                 override fun expand() {
                     // just close dialog and show again to refresh templates

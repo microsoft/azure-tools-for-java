@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -28,18 +28,17 @@ import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.intellij.runner.appbase.config.ui.AppDeployViewPresenterBase
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class DotNetWebAppDeployViewPresenter<V : DotNetWebAppDeployMvpView> : AppDeployViewPresenterBase<V>() {
-
-    companion object {
-        private const val TASK_WEB_APP = "Collect Azure web apps"
-        private const val CANNOT_LIST_WEB_APP = "Failed to list web apps."
-    }
 
     private val webAppSignal = Signal<List<ResourceEx<WebApp>>>()
 
     override fun loadApps(lifetime: Lifetime, forceRefresh: Boolean) {
-        subscribe(lifetime, webAppSignal, TASK_WEB_APP, CANNOT_LIST_WEB_APP,
+        subscribe(lifetime,
+                webAppSignal,
+                message("progress.publish.web_app.collect"),
+                message("run_config.publish.web_app.collect_error"),
                 { AzureDotNetWebAppMvpModel.listWebApps(forceRefresh) },
                 { mvpView.fillExistingWebAppsTable(it) })
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,22 +20,31 @@
  * SOFTWARE.
  */
 
-package org.jetbrains.plugins.azure.deploy
+package org.jetbrains.plugins.azure
 
-object NotificationConstant {
+import com.intellij.AbstractBundle
+import org.jetbrains.annotations.NonNls
+import org.jetbrains.annotations.PropertyKey
+import java.lang.ref.Reference
+import java.lang.ref.SoftReference
+import java.util.*
 
-    const val WEB_APP_STOP = "Stop Web App"
-    const val WEB_APP_START = "Start Web App"
-    const val WEB_APP_CREATE = "Create Web App"
-    const val WEB_APP_DEPLOY = "Deploy to Web App"
-    const val WEB_APP_UPDATE = "Update Web App"
+object RiderAzureBundle {
+    private var ourBundle: Reference<ResourceBundle>? = null
+    @NonNls
+    private const val BUNDLE = "messages.RiderAzureMessages"
 
-    const val FUNCTION_APP_STOP = "Stop Function App"
-    const val FUNCTION_APP_START = "Start Function App"
-    const val FUNCTION_APP_CREATE = "Create Function App"
-    const val FUNCTION_APP_DEPLOY = "Deploy to Function App"
-    const val FUNCTION_APP_UPDATE = "Update Function App"
+    private val bundle: ResourceBundle
+        get() {
+            var bundle = com.intellij.reference.SoftReference.dereference(ourBundle)
+            if (bundle == null) {
+                bundle = ResourceBundle.getBundle(BUNDLE)
+                ourBundle = SoftReference(bundle)
+            }
+            return bundle!!
+        }
 
-    const val SQL_DATABASE_CREATE = "Create SQL Database"
-    const val SQL_SERVER_CREATE = "Create SQL Server"
+    fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String {
+        return AbstractBundle.message(bundle, key, *params)
+    }
 }

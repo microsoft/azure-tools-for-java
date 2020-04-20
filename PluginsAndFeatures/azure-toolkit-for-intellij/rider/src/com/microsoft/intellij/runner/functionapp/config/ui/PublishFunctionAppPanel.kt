@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -51,6 +51,7 @@ import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.database.config.ui.DatabasePublishComponent
 import com.microsoft.intellij.runner.functionapp.config.FunctionAppConfiguration
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.JPanel
@@ -63,11 +64,6 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
         Activatable {
 
     companion object {
-        private const val FUNCTION_APP_SETTINGS_PANEL_NAME = "Run On Function App"
-
-        private const val TAB_WEB_APP_CONFIGURATION = "App Configuration"
-        private const val TAB_DATABASE_CONNECTION = "Database Connection"
-
         private val webAppIcon = CommonIcons.AzureFunctions.FunctionApp
         private val databaseIcon = CommonIcons.Database
     }
@@ -86,7 +82,7 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
     private val pnlDatabaseConnection =
             DatabasePublishComponent(lifetime.createNested(), configuration.model.databaseModel)
 
-    override val panelName = FUNCTION_APP_SETTINGS_PANEL_NAME
+    override val panelName = message("run_config.publish.form.function_app.app_settings_panel_name")
     override var mainPanel: JPanel = pnlRoot
 
     init {
@@ -102,8 +98,8 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
         }
 
         tpRoot.apply {
-            addTab(TAB_WEB_APP_CONFIGURATION, webAppIcon, pnlFunctionAppConfigTab)
-            addTab(TAB_DATABASE_CONNECTION, databaseIcon, pnlDbConnectionTab)
+            addTab(message("run_config.publish.form.function_app.app_config_tab_name"), webAppIcon, pnlFunctionAppConfigTab)
+            addTab(message("run_config.publish.form.function_app.db_config_tab_name"), databaseIcon, pnlDbConnectionTab)
         }
 
         pnlRoot.apply {
@@ -240,7 +236,7 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
      * in the background to use for fields validation on client side
      */
     private fun updateAzureModelInBackground() {
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Updating Azure model", false) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.publish.function_app.updating_azure_model"), false) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.isIndeterminate = true
                 AzureModelController.updateSubscriptionMaps(UpdateProgressIndicator(indicator))
@@ -252,7 +248,7 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
 
     private fun collectConnectionStringsInBackground(apps: List<FunctionApp>) {
         if (apps.isEmpty()) return
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Updating Function App connection strings map", false) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.publish.function_app.updating_connection_strings_map"), false) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.isIndeterminate = true
                 apps.forEach { functionApp -> AzureFunctionAppMvpModel.getConnectionStrings(functionApp, true) }

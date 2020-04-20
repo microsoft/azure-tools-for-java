@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -33,6 +33,8 @@ class FunctionAppConfigurationFactory(type: ConfigurationType) : ConfigurationFa
         // Note: this FACTORY_ID can not be changed, as it may break existing run configurations out here.
         private const val FACTORY_ID = "Azure Function App"
 
+        // TODO: FIX_LOCALIZATION: This name should be moved to RiderAzureMessages and might cause issues with existing
+        //       run configuration when localization is enabled
         private const val FACTORY_NAME = "Azure Function App"
     }
 

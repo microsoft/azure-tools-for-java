@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,11 +25,11 @@ package com.microsoft.intellij.helpers.deploy
 import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.PublishingProfile
 import com.microsoft.azure.management.appservice.WebAppBase
-import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.utils.AppDeploySession
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil
 import okhttp3.Response
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.io.File
 
 object KuduClient {
@@ -88,7 +88,7 @@ object KuduClient {
 
         try {
             do {
-                processHandler.setText(String.format(UiConstants.ZIP_DEPLOY_START_PUBLISHING, uploadCount + 1, UPLOADING_MAX_TRY))
+                processHandler.setText(message("process_event.publish.zip_deploy.start_publish", uploadCount + 1, UPLOADING_MAX_TRY))
 
                 try {
                     response = session.publishZip(
@@ -97,19 +97,21 @@ object KuduClient {
                             DEPLOY_TIMEOUT_MS)
                     success = response.isSuccessful
                 } catch (e: Throwable) {
-                    processHandler.setText("${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: $e")
+                    processHandler.setText("${message("process_event.publish.zip_deploy.fail")}: $e")
                 }
 
             } while (!success && ++uploadCount < UPLOADING_MAX_TRY && isWaitFinished())
 
             if (response == null || !success) {
-                val message = "${UiConstants.ZIP_DEPLOY_PUBLISH_FAIL}: Response code: ${response?.code()}. Response message: ${response?.message()}"
+                val message = "${message("process_event.publish.zip_deploy.fail")}. " +
+                        "${message("process_event.publish.zip_deploy.response_code", response?.code().toString())}. " +
+                        "${message("process_event.publish.zip_deploy.response_message", response?.message().toString())}."
                 processHandler.setText(message)
                 throw RuntimeException(message)
             }
 
-            val message = UiConstants.ZIP_DEPLOY_PUBLISH_SUCCESS
-            processHandler.setText(message)
+            val stateMessage = message("process_event.publish.zip_deploy.success")
+            processHandler.setText(stateMessage)
 
         } finally {
             response?.body()?.close()

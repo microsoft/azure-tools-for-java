@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -33,6 +33,7 @@ import com.microsoft.intellij.ui.extension.fillComboBox
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setDefaultRenderer
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -40,16 +41,13 @@ class ExistingDatabaseComponent :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
-    companion object {
-        private const val EMPTY_SQL_DATABASES_MESSAGE = "No existing Azure SQL Databases"
-        private const val NOT_APPLICABLE = "N/A"
-    }
-
-    private val lblExistingDatabase = JLabel("Database")
+    private val lblExistingDatabase = JLabel(message("run_config.publish.form.existing_db.name"))
     val cbDatabase = ComboBox<SqlDatabase>()
-    private val lblExistingAdminLogin = JLabel("Admin Login")
-    val lblExistingAdminLoginValue = JLabel(NOT_APPLICABLE)
-    private val lblExistingAdminPassword = JLabel("Admin Password")
+
+    private val lblExistingAdminLogin = JLabel(message("run_config.publish.form.existing_db.admin_login.label"))
+    val lblExistingAdminLoginValue = JLabel(message("common.na_capitalized"))
+
+    private val lblExistingAdminPassword = JLabel(message("run_config.publish.form.existing_db.admin_password.label"))
     val passExistingDbAdminPassword = JBPasswordField()
 
     var lastSelectedDatabase: SqlDatabase? = null
@@ -77,7 +75,7 @@ class ExistingDatabaseComponent :
 
     private fun initSqlDatabaseComboBox() {
         cbDatabase.setDefaultRenderer(
-                EMPTY_SQL_DATABASES_MESSAGE,
+                message("run_config.publish.form.existing_db.empty_message"),
                 CommonIcons.Database) { database -> "${database.name()} (${database.resourceGroupName()})" }
 
         cbDatabase.addActionListener {

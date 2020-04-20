@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,7 +25,6 @@ package org.jetbrains.plugins.azure.functions.run
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationTypeBase
-import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.execution.configurations.runConfigurationType
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.lifetime.Lifetime
@@ -39,11 +38,12 @@ import com.jetbrains.rider.run.configurations.project.DotNetProjectConfiguration
 import com.microsoft.icons.CommonIcons
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
         id = "AzureFunctionsHost",
-        displayName = "Azure Functions host",
-        description = "Azure Function Applications runner",
+        displayName = message("run_config.run.form.function_app.type_name"),
+        description = message("run_config.run.form.function_app.type_description"),
         icon = CommonIcons.AzureFunctions.FunctionAppRunConfiguration
 ), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
 
@@ -72,7 +72,13 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
                         // Don't create "default" config if launchSettings.json is available for any project
                         it.kind == RunnableProjectKind.LaunchSettings && LaunchSettingsJsonService.getLaunchSettingsFileForProject(it)?.exists() == true
                     }) {
-                val defaultSettings = runManager.createConfiguration("Default", factory)
+
+                val defaultSettings =
+                        runManager.createConfiguration(
+                                name = message("run_config.run.form.function_app.type_default_name"),
+                                factory = factory
+                        )
+
                 runManager.addConfiguration(defaultSettings)
                 resolvedPromise(listOf(defaultSettings))
             } else {

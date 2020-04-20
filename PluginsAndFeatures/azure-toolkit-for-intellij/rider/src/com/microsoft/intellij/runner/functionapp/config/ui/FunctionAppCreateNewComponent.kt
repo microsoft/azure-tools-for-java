@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -41,30 +41,28 @@ import com.microsoft.intellij.ui.component.appservice.AppNameComponent
 import com.microsoft.intellij.ui.component.appservice.HostingPlanSelector
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 
 class FunctionAppCreateNewComponent(lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1, hidemode 3")),
         AzureComponent {
 
-    companion object {
-        private const val HEADER_RESOURCE_GROUP = "Resource Group"
-        private const val HEADER_HOSTING_PLAN = "Hosting Plan"
-        private const val HEADER_STORAGE_ACCOUNT = "Storage Account"
-    }
-
     val pnlAppName = AppNameComponent(lifetime.createNested())
 
     val pnlSubscription = AzureSubscriptionsSelector()
 
     val pnlResourceGroup = AzureResourceGroupSelector(lifetime.createNested())
-    private val pnlResourceGroupHolder = HideableTitledPanel(HEADER_RESOURCE_GROUP, pnlResourceGroup, true)
+    private val pnlResourceGroupHolder =
+            HideableTitledPanel(message("run_config.publish.form.resource_group.header"), pnlResourceGroup, true)
 
     val pnlHostingPlan = HostingPlanSelector(lifetime.createNested())
-    private val pnlHostingPlanHolder = HideableTitledPanel(HEADER_HOSTING_PLAN, pnlHostingPlan, true)
+    private val pnlHostingPlanHolder =
+            HideableTitledPanel(message("run_config.publish.form.hosting_plan.header"), pnlHostingPlan, true)
 
     val pnlStorageAccount = StorageAccountSelector(lifetime.createNested())
-    private val pnlStorageAccountHolder = HideableTitledPanel(HEADER_STORAGE_ACCOUNT, pnlStorageAccount, true)
+    private val pnlStorageAccountHolder =
+            HideableTitledPanel(message("run_config.publish.form.storage_account.header"), pnlStorageAccount, true)
 
     init {
         add(pnlAppName, "growx")

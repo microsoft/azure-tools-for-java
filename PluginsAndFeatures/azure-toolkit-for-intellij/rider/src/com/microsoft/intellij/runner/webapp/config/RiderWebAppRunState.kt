@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -53,6 +53,8 @@ import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUti
 import com.microsoft.intellij.runner.webapp.config.runstate.WebAppDeployStateUtil.webAppStart
 import com.microsoft.intellij.runner.webapp.model.DotNetWebAppSettingModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
+import org.jetbrains.plugins.azure.RiderAzureBundle
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class RiderWebAppRunState(project: Project,
                           private val myModel: DotNetWebAppSettingModel) : AzureRunProfileState<Pair<WebApp, SqlDatabase?>>(project) {
@@ -63,8 +65,6 @@ class RiderWebAppRunState(project: Project,
     companion object {
         private const val TARGET_NAME = "WebApp"
         private const val URL_WEB_APP_WWWROOT = "/home/site/wwwroot"
-        private const val TOOL_NOTIFICATION_PUBLISH_SUCCEEDED = "Azure Publish completed"
-        private const val TOOL_NOTIFICATION_PUBLISH_FAILED = "Azure Publish failed"
     }
 
     /**
@@ -81,8 +81,11 @@ class RiderWebAppRunState(project: Project,
     public override fun executeSteps(processHandler: RunProcessHandler,
                                      telemetryMap: MutableMap<String, String>): Pair<WebApp, SqlDatabase?>? {
 
-        val publishableProject = myModel.webAppModel.publishableProject ?: throw RuntimeException(UiConstants.PROJECT_NOT_DEFINED)
-        val subscriptionId = myModel.webAppModel.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
+        val publishableProject = myModel.webAppModel.publishableProject
+                ?: throw RuntimeException(message("process_event.publish.project.not_defined"))
+
+        val subscriptionId = myModel.webAppModel.subscription?.subscriptionId()
+                ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
         val webApp = getOrCreateWebAppFromConfiguration(myModel.webAppModel, processHandler)
         deployToAzureWebApp(project, publishableProject, webApp, processHandler)
@@ -102,11 +105,16 @@ class RiderWebAppRunState(project: Project,
 
             val databaseUri = AzureMvpModel.getInstance().getResourceUri(subscriptionId, database.id())
             if (databaseUri != null)
-                processHandler.setText(String.format(UiConstants.SQL_DATABASE_URL, databaseUri))
+                processHandler.setText(message("process_event.publish.sql_db.url", databaseUri))
 
-            if (myModel.databaseModel.connectionStringName.isEmpty()) throw RuntimeException(UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+            if (myModel.databaseModel.connectionStringName.isEmpty())
+                throw RuntimeException(RiderAzureBundle.message("process_event.publish.connection_string.not_defined"))
+
+            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty())
+                throw RuntimeException(message("process_event.publish.sql_server.admin_login_not_defined"))
+
+            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty())
+                throw RuntimeException(message("process_event.publish.sql_server.admin_password_not_defined"))
 
             addConnectionString(
                     subscriptionId,
@@ -123,8 +131,8 @@ class RiderWebAppRunState(project: Project,
         webAppStart(webApp, processHandler)
 
         val url = getAppUrl(webApp)
-        processHandler.setText("URL: $url")
-        processHandler.setText(UiConstants.PUBLISH_DONE)
+        processHandler.setText(message("process_event.publish.url", url))
+        processHandler.setText(message("process_event.publish.done"))
 
         return Pair(webApp, database)
     }
@@ -143,7 +151,7 @@ class RiderWebAppRunState(project: Project,
             refreshDatabaseAfterPublish(sqlDatabase, myModel.databaseModel)
         }
 
-        showPublishNotification(TOOL_NOTIFICATION_PUBLISH_SUCCEEDED, NotificationType.INFORMATION)
+        showPublishNotification(message("notification.publish.publish_complete"), NotificationType.INFORMATION)
 
         val isOpenBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
@@ -163,7 +171,7 @@ class RiderWebAppRunState(project: Project,
         if (isDatabaseCreated)
             AzureSqlDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
 
-        showPublishNotification(TOOL_NOTIFICATION_PUBLISH_FAILED, NotificationType.ERROR)
+        showPublishNotification(message("notification.publish.publish_failed"), NotificationType.ERROR)
 
         processHandler.println(errMsg, ProcessOutputTypes.STDERR)
         processHandler.notifyComplete()

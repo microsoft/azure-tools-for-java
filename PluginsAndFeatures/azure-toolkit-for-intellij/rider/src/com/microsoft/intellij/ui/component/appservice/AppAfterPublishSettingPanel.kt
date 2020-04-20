@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -26,6 +26,7 @@ import com.intellij.ide.util.PropertiesComponent
 import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JCheckBox
 import javax.swing.JPanel
 
@@ -36,7 +37,7 @@ class AppAfterPublishSettingPanel :
     val isOpenInBrowser: Boolean
         get() = checkBoxOpenInBrowserAfterPublish.isSelected
 
-    val checkBoxOpenInBrowserAfterPublish = JCheckBox("Open in browser after publish")
+    val checkBoxOpenInBrowserAfterPublish = JCheckBox(message("run_config.publish.form.open_in_browser_after_publish"))
 
     init {
         initAppPublishCheckBox()

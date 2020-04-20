@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -30,6 +30,7 @@ import com.microsoft.intellij.ui.extension.*
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.ButtonGroup
 import javax.swing.JPanel
 import javax.swing.JRadioButton
@@ -39,14 +40,10 @@ class AzureResourceGroupSelector(private val lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
-    companion object {
-        private const val EMPTY_RESOURCE_GROUP_MESSAGE = "No existing Azure Resource Groups"
-    }
-
-    val rdoUseExisting = JRadioButton("Use Existing", true)
+    val rdoUseExisting = JRadioButton(message("run_config.publish.form.resource_group.use_existing"), true)
     val cbResourceGroup = ComboBox<ResourceGroup>()
 
-    val rdoCreateNew = JRadioButton("Create New")
+    val rdoCreateNew = JRadioButton(message("run_config.publish.form.resource_group.create_new"))
     val txtResourceGroupName = JTextField("")
 
     var lastSelectedResourceGroup: ResourceGroup? = null
@@ -108,7 +105,7 @@ class AzureResourceGroupSelector(private val lifetime: Lifetime) :
     }
 
     private fun initResourceGroupComboBox() {
-        cbResourceGroup.setDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
+        cbResourceGroup.setDefaultRenderer(message("run_config.publish.form.resource_group.empty_message")) { it.name() }
 
         cbResourceGroup.addActionListener {
             val resourceGroup = cbResourceGroup.getSelectedValue() ?: return@addActionListener

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,6 +25,7 @@ package com.microsoft.intellij.ui.component.database
 import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
@@ -33,7 +34,7 @@ class DatabaseCollationComponent(collationValue: String = AzureDefaults.SQL_DATA
         JPanel(MigLayout("novisualpadding, ins 0, fillx", "[min!][]")),
         AzureComponent {
 
-    private val lblCollation = JLabel("Collation")
+    private val lblCollation = JLabel(message("run_config.publish.form.collation.label"))
     val txtCollation = JTextField(collationValue)
 
     init {

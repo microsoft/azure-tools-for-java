@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -40,6 +40,7 @@ import com.intellij.util.ui.UIUtil
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 import org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplateManager
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.CardLayout
 import java.io.File
 import javax.swing.JLabel
@@ -48,25 +49,13 @@ import javax.swing.JPanel
 class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     companion object {
-        const val DISPLAY_NAME = "Functions"
-
         private val DEFAULT_TOP_INSET = JBUI.scale(8)
-
-        private const val PATH_TO_CORE_TOOLS = "Azure Functions Core Tools path:"
-        private const val CURRENT_VERSION = "Current version:"
-        private const val LATEST_VERSION = "Latest available version:"
-        private const val UNKNOWN = "<unknown>"
-
-        private const val PATH_TO_CORE_TOOLS_DESCRIPTION = "Path to Azure Functions Core Tools"
-        private const val DOWNLOAD_LATEST = "Download latest version..."
-        private const val ALLOW_PRERELEASE = "Allow versions marked as pre-release"
-
-        private const val CORE_TOOLS_CHECK_UPDATE = "Check updates for Azure Function Core tools on startup"
-        private const val CORE_TOOLS_CHECK_UPDATE_COMMENT = "Updates are installed in a separate plugin directory under IDE configuration folder and do not affect tool user's installations."
 
         private const val CARD_BUTTON = "button"
         private const val CARD_PROGRESS = "progress"
     }
+
+    private val unknownLabel: String = "<${message("common.unknown_lower_case")}>"
 
     private val properties: PropertiesComponent = PropertiesComponent.getInstance()
 
@@ -74,25 +63,28 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
             TextFieldWithBrowseButton().apply {
                 addBrowseFolderListener(
                         "",
-                        PATH_TO_CORE_TOOLS_DESCRIPTION,
+                        message("settings.app_services.function_app.core_tools.path_description"),
                         null,
                         FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                         TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
                 )
             }
 
-    private val currentVersionLabel = JLabel(UNKNOWN)
-    private val latestVersionLabel = JLabel(UNKNOWN)
-    private val allowPrereleaseToggle = JBCheckBox(ALLOW_PRERELEASE)
-    private val checkCoreToolsUpdateToggle = JBCheckBox(CORE_TOOLS_CHECK_UPDATE)
+    private val currentVersionLabel = JLabel(unknownLabel)
+    private val latestVersionLabel = JLabel(unknownLabel)
+    private val allowPrereleaseToggle = JBCheckBox(message("settings.app_services.function_app.core_tools.allow_prerelease"))
+    private val checkCoreToolsUpdateToggle = JBCheckBox(message("settings.app_services.function_app.core_tools.check_update"))
 
     private val releaseInfoLink = HyperlinkLabel().apply {
         setIcon(AllIcons.General.Information)
-        setHyperlinkText("Release information is retrieved from the ", "Azure Functions Core Tools GitHub repository", ".")
+        setHyperlinkText(
+                message("settings.app_services.function_app.core_tools.release_info_before_link_text"),
+                message("settings.app_services.function_app.core_tools.release_info_link_text"),
+                ".")
         setHyperlinkTarget("https://github.com/Azure/azure-functions-core-tools/releases")
     }
 
-    private val installButton = LinkLabel<Any>(DOWNLOAD_LATEST, null) { _, _ -> installLatestCoreTools() }
+    private val installButton = LinkLabel<Any>(message("settings.app_services.function_app.core_tools.download_latest"), null) { _, _ -> installLatestCoreTools() }
             .apply {
                 isEnabled = false
             }
@@ -152,8 +144,8 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
             val remote = FunctionsCoreToolsManager.determineLatestRemote(allowPrerelease = allowPrereleaseToggle.isSelected)
 
             UIUtil.invokeAndWaitIfNeeded(Runnable {
-                currentVersionLabel.text = local?.version ?: UNKNOWN
-                latestVersionLabel.text = remote?.version ?: UNKNOWN
+                currentVersionLabel.text = local?.version ?: unknownLabel
+                latestVersionLabel.text = remote?.version ?: unknownLabel
 
                 installButton.isEnabled = local == null || remote != null && local < remote
             })
@@ -165,9 +157,9 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
                 row {
                     val coreToolsPanel = FormBuilder
                             .createFormBuilder()
-                            .addLabeledComponent(PATH_TO_CORE_TOOLS, coreToolsPathField)
-                            .addLabeledComponent(CURRENT_VERSION, currentVersionLabel)
-                            .addLabeledComponent(LATEST_VERSION, latestVersionLabel, DEFAULT_TOP_INSET)
+                            .addLabeledComponent(message("settings.app_services.function_app.core_tools.path"), coreToolsPathField)
+                            .addLabeledComponent(message("settings.app_services.function_app.core_tools.current_version"), currentVersionLabel)
+                            .addLabeledComponent(message("settings.app_services.function_app.core_tools.latest_version"), latestVersionLabel, DEFAULT_TOP_INSET)
                             .addComponentToRightColumn(releaseInfoLink, DEFAULT_TOP_INSET)
                             .addComponentToRightColumn(allowPrereleaseToggle, DEFAULT_TOP_INSET)
                             .addComponentToRightColumn(installActionPanel)
@@ -176,11 +168,11 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
                 }
                 row {
                     component(checkCoreToolsUpdateToggle)
-                            .comment(CORE_TOOLS_CHECK_UPDATE_COMMENT)
+                            .comment(message("settings.app_services.function_app.core_tools.check_update_comment"))
                 }
             }
 
-    override val displayName: String = DISPLAY_NAME
+    override val displayName: String = message("settings.app_services.function_app.name")
 
     override fun doOKAction() {
         if (coreToolsPathField.text != "" && File(coreToolsPathField.text).exists()) {

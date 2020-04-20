@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -32,6 +32,7 @@ import com.microsoft.intellij.ui.extension.*
 import com.microsoft.intellij.helpers.validator.StorageAccountValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.event.ActionListener
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -43,20 +44,17 @@ class StorageAccountSelector(private val lifetime: Lifetime) :
         AzureComponent {
 
     companion object {
-        private const val EMPTY_STORAGE_ACCOUNT_MESSAGE = "No existing Storage Accounts"
-        private const val EMPTY_STORAGE_ACCOUNT_TYPE_MESSAGE = "No existing Storage Account Types"
-
         private val indentionSize = JBUI.scale(17)
     }
 
     var subscriptionId: String = ""
 
-    val rdoUseExisting = JRadioButton("Use Existing", true)
+    val rdoUseExisting = JRadioButton(message("run_config.publish.form.storage_account.use_existing"), true)
     val cbStorageAccount = ComboBox<StorageAccount>()
 
-    val rdoCreateNew = JRadioButton("Create New")
+    val rdoCreateNew = JRadioButton(message("run_config.publish.form.storage_account.create_new"))
     val txtName = JTextField("")
-    private val lblStorageAccountType = JLabel("Type")
+    private val lblStorageAccountType = JLabel(message("run_config.publish.form.storage_account.type.label"))
     val cbStorageAccountType = ComboBox<StorageAccountSkuType>()
 
     val isCreatingNew
@@ -119,13 +117,13 @@ class StorageAccountSelector(private val lifetime: Lifetime) :
     }
 
     private fun initStorageAccountComboBox() {
-        cbStorageAccount.setDefaultRenderer(EMPTY_STORAGE_ACCOUNT_MESSAGE) {
+        cbStorageAccount.setDefaultRenderer(message("run_config.publish.form.storage_account.empty_message")) {
             "${it.name()} (${it.region().name()})"
         }
     }
 
     private fun initStorageAccountTypeComboBox() {
-        cbStorageAccountType.setDefaultRenderer(EMPTY_STORAGE_ACCOUNT_TYPE_MESSAGE) { it.name().toString() }
+        cbStorageAccountType.setDefaultRenderer(message("run_config.publish.form.storage_account.type.empty_message")) { it.name().toString() }
     }
 
     private fun initStorageAccountButtonsGroup() {

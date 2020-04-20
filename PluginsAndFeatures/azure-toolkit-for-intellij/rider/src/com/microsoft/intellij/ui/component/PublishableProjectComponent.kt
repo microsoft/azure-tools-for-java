@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -36,6 +36,7 @@ import com.jetbrains.rider.projectView.nodes.isUnloadedProject
 import com.microsoft.intellij.ui.extension.fillComboBox
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.io.File
 import javax.swing.JLabel
 import javax.swing.JList
@@ -45,11 +46,7 @@ class PublishableProjectComponent(private val project: Project) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
-    companion object {
-        private const val PROJECTS_EMPTY_MESSAGE = "No projects to publish"
-    }
-
-    private val lblProject = JLabel("Project")
+    private val lblProject = JLabel(message("run_config.publish.form.project.label"))
     val cbProject = ComboBox<PublishableProjectModel>()
 
     var listenerAction: (PublishableProjectModel) -> Unit = {}
@@ -91,7 +88,7 @@ class PublishableProjectComponent(private val project: Project) :
                 if (project.isDisposed) return
 
                 if (publishableProject == null) {
-                    setText(PROJECTS_EMPTY_MESSAGE)
+                    setText(message("run_config.publish.form.project.empty_message"))
                     return
                 }
 

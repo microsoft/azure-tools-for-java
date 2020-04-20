@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -31,6 +31,7 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.apache.http.client.utils.URIBuilder
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 import org.jetbrains.plugins.azure.cloudshell.controlchannel.CloudConsoleControlChannelWebSocket
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
@@ -43,11 +44,7 @@ class AzureCloudTerminalRunner(project: Project,
                                private val cloudConsoleBaseUrl: String,
                                socketUri: URI,
                                process: AzureCloudTerminalProcess)
-    : CloudTerminalRunner(project, pipeName, process) {
-
-    companion object {
-        private const val pipeName = "Azure Cloud Shell"
-    }
+    : CloudTerminalRunner(project, message("terminal.cloud_shell.runner.pipe_name"), process) {
 
     private val logger = Logger.getInstance(AzureCloudTerminalRunner::class.java)
     private val resizeTerminalUrl: String
@@ -73,7 +70,7 @@ class AzureCloudTerminalRunner(project: Project,
 
         // Connect control socket
         // TODO: for now, this does not yet need any other wiring, it's just a convenience for e.g. downloading files
-        var controlSocketClient = CloudConsoleControlChannelWebSocket(
+        val controlSocketClient = CloudConsoleControlChannelWebSocket(
                 project, URI(controlChannelSocketUrl), cloudConsoleService, cloudConsoleBaseUrl)
         controlSocketClient.connectBlocking()
 
@@ -134,9 +131,7 @@ class AzureCloudTerminalRunner(project: Project,
                 openPreviewPorts.remove(port)
             }
 
-            override fun getName(): String {
-                return "Connector: $pipeName"
-            }
+            override fun getName(): String = message("terminal.cloud_shell.runner.name")
 
             override fun close() {
                 cloudShellComponent.unregisterConnector(this)

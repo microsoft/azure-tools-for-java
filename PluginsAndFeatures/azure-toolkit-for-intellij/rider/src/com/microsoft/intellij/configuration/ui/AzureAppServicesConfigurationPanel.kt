@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,19 +25,16 @@ package com.microsoft.intellij.configuration.ui
 import com.intellij.ide.util.PropertiesComponent
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JCheckBox
 import javax.swing.JPanel
 
 class AzureAppServicesConfigurationPanel : AzureRiderAbstractConfigurablePanel {
 
-    companion object {
-        private const val DISPLAY_NAME = "App Services"
-    }
-
     private val properties = PropertiesComponent.getInstance()
 
     private val pnlRoot = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1"))
-    private val checkBoxOpenInBrowser = JCheckBox("Open Azure Web App in browser after publish")
+    private val checkBoxOpenInBrowser = JCheckBox(message("settings.app_services.open_in_browser_after_publish"))
 
     init {
         initOpenInBrowserCheckBox()
@@ -49,7 +46,7 @@ class AzureAppServicesConfigurationPanel : AzureRiderAbstractConfigurablePanel {
 
     override val panel: JPanel = pnlRoot
 
-    override val displayName: String = DISPLAY_NAME
+    override val displayName: String = message("settings.app_services.name")
 
     override fun doOKAction() =
             properties.setValue(

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -37,7 +37,6 @@ import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import com.microsoft.intellij.configuration.AzureRiderSettings
-import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.AzureRunProfileState
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.getAppUrl
@@ -52,6 +51,7 @@ import com.microsoft.intellij.runner.functionapp.config.runstate.FunctionAppDepl
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppSettingModel
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.AzureFunctionAppModule
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class FunctionAppRunState(project: Project,
                           private val myModel: FunctionAppSettingModel) : AzureRunProfileState<Pair<FunctionApp, SqlDatabase?>>(project) {
@@ -62,8 +62,6 @@ class FunctionAppRunState(project: Project,
     companion object {
         private const val TARGET_NAME = "FunctionApp"
         private const val URL_FUNCTION_APP_WWWROOT = "/home/site/wwwroot"
-        private const val TOOL_NOTIFICATION_PUBLISH_SUCCEEDED = "Azure Publish completed"
-        private const val TOOL_NOTIFICATION_PUBLISH_FAILED = "Azure Publish failed"
     }
 
     override fun getDeployTarget() = TARGET_NAME
@@ -71,8 +69,11 @@ class FunctionAppRunState(project: Project,
     override fun executeSteps(processHandler: RunProcessHandler,
                               telemetryMap: MutableMap<String, String>): Pair<FunctionApp, SqlDatabase?> {
 
-        val publishableProject = myModel.functionAppModel.publishableProject ?: throw RuntimeException(UiConstants.PROJECT_NOT_DEFINED)
-        val subscriptionId = myModel.functionAppModel.subscription?.subscriptionId() ?: throw RuntimeException(UiConstants.SUBSCRIPTION_NOT_DEFINED)
+        val publishableProject = myModel.functionAppModel.publishableProject
+                ?: throw RuntimeException(message("process_event.publish.project.not_defined"))
+
+        val subscriptionId = myModel.functionAppModel.subscription?.subscriptionId()
+                ?: throw RuntimeException(message("process_event.publish.subscription.not_defined"))
 
         val app = getOrCreateFunctionAppFromConfiguration(myModel.functionAppModel, processHandler)
         deployToAzureFunctionApp(project, publishableProject, app, processHandler)
@@ -86,11 +87,16 @@ class FunctionAppRunState(project: Project,
 
             val databaseUri = AzureMvpModel.getInstance().getResourceUri(subscriptionId, database.id())
             if (databaseUri != null)
-                processHandler.setText(String.format(UiConstants.SQL_DATABASE_URL, databaseUri))
+                processHandler.setText(message("process_event.publish.sql_db.url", databaseUri))
 
-            if (myModel.databaseModel.connectionStringName.isEmpty()) throw RuntimeException(UiConstants.CONNECTION_STRING_NAME_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_LOGIN_NOT_DEFINED)
-            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty()) throw RuntimeException(UiConstants.SQL_SERVER_ADMIN_PASSWORD_NOT_DEFINED)
+            if (myModel.databaseModel.connectionStringName.isEmpty())
+                throw RuntimeException(message("process_event.publish.connection_string.not_defined"))
+
+            if (myModel.databaseModel.sqlServerAdminLogin.isEmpty())
+                throw RuntimeException(message("process_event.publish.sql_server.admin_login_not_defined"))
+
+            if (myModel.databaseModel.sqlServerAdminPassword.isEmpty())
+                throw RuntimeException(message("process_event.publish.sql_server.admin_password_not_defined"))
 
             addConnectionString(
                     subscriptionId,
@@ -107,8 +113,8 @@ class FunctionAppRunState(project: Project,
         functionAppStart(app, processHandler)
 
         val url = getAppUrl(app)
-        processHandler.setText("URL: $url")
-        processHandler.setText(UiConstants.PUBLISH_DONE)
+        processHandler.setText(message("process_event.publish.url", url))
+        processHandler.setText(message("process_event.publish.done"))
 
         return Pair(app, database)
     }
@@ -127,7 +133,7 @@ class FunctionAppRunState(project: Project,
             refreshDatabaseAfterPublish(sqlDatabase, myModel.databaseModel)
         }
 
-        showPublishNotification(TOOL_NOTIFICATION_PUBLISH_SUCCEEDED, NotificationType.INFORMATION)
+        showPublishNotification(message("notification.publish.publish_complete"), NotificationType.INFORMATION)
 
         val isOpenBrowser = PropertiesComponent.getInstance().getBoolean(
                 AzureRiderSettings.PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME,
@@ -149,7 +155,7 @@ class FunctionAppRunState(project: Project,
         if (isDatabaseCreated)
             AzureSqlDatabaseMvpModel.refreshSqlServerToSqlDatabaseMap()
 
-        showPublishNotification(TOOL_NOTIFICATION_PUBLISH_FAILED, NotificationType.ERROR)
+        showPublishNotification(message("notification.publish.publish_failed"), NotificationType.ERROR)
 
         processHandler.println(errorMessage, ProcessOutputTypes.STDERR)
         processHandler.notifyComplete()

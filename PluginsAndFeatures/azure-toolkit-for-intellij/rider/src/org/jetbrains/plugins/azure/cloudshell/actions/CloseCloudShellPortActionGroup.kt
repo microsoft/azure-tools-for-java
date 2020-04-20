@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -29,9 +29,11 @@ import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.jetbrains.rider.util.idea.getComponent
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 
 class CloseCloudShellPortActionGroup : ActionGroup() {
+
     private val logger = Logger.getInstance(OpenCloudShellPortAction::class.java)
 
     override fun update(e: AnActionEvent) {
@@ -80,10 +82,13 @@ private class CloseCloudShellPortAction(val port: Int) : AnAction(port.toString(
         val activeConnector = project.getComponent<CloudShellComponent>().activeConnector() ?: return
 
         ApplicationManager.getApplication().invokeLater {
-            object : Task.Backgroundable(project, "Closing preview port $port in Azure Cloud Shell...", true, PerformInBackgroundOption.DEAF)
-            {
-                override fun run(indicator: ProgressIndicator)
-                {
+            object : Task.Backgroundable(
+                    project,
+                    RiderAzureBundle.message("progress.cloud_shell.close_port.closing_preview_port", port),
+                    true,
+                    PerformInBackgroundOption.DEAF
+            ) {
+                override fun run(indicator: ProgressIndicator) {
                     logger.info("Closing preview port $port in Azure Cloud Shell...")
                     activeConnector.closePreviewPort(port)
                 }
@@ -104,10 +109,13 @@ private object CloseAllCloudShellPortsAction : AnAction("Close all") {
         val activeConnector = project.getComponent<CloudShellComponent>().activeConnector() ?: return
 
         ApplicationManager.getApplication().invokeLater {
-            object : Task.Backgroundable(project, "Closing all preview ports in Azure Cloud Shell...", true, PerformInBackgroundOption.DEAF)
-            {
-                override fun run(indicator: ProgressIndicator)
-                {
+            object : Task.Backgroundable(
+                    project,
+                    RiderAzureBundle.message("progress.cloud_shell.close_port.closing_all_preview_ports"),
+                    true,
+                    PerformInBackgroundOption.DEAF
+            ) {
+                override fun run(indicator: ProgressIndicator) {
                     logger.info("Closing all preview ports in Azure Cloud Shell...")
                     val ports = activeConnector.openPreviewPorts.toIntArray()
                     for (port in ports) {

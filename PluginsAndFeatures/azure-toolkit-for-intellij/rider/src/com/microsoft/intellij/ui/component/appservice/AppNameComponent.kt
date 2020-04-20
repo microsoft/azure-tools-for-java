@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,6 +27,7 @@ import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.extension.initValidationWithResult
 import com.microsoft.intellij.helpers.validator.WebAppValidator
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
@@ -40,7 +41,7 @@ class AppNameComponent(private val lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 3", "[min!][][min!]")),
         AzureComponent {
 
-    private val lblAppName = JLabel("App Name")
+    private val lblAppName = JLabel(message("run_config.publish.form.app_name.label"))
     val txtAppName = JTextField()
     private val lblAppNameSuffix = JLabel(".azurewebsites.net")
 

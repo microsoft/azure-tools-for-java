@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,21 +24,20 @@ package com.microsoft.intellij.runner.functionapp.config
 
 import com.intellij.execution.configurations.ConfigurationType
 import com.microsoft.icons.CommonIcons
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.Icon
 
 class FunctionAppConfigurationType : ConfigurationType {
 
     companion object {
         private const val RUN_CONFIG_TYPE_ID = "AzureFunctionAppPublish"
-        private const val RUN_CONFIG_TYPE_NAME = "Azure - Publish Function App"
-        private const val RUN_CONFIG_TYPE_DESCRIPTION = "Azure Publish Function App configuration"
     }
 
     override fun getId(): String = RUN_CONFIG_TYPE_ID
 
-    override fun getDisplayName() = RUN_CONFIG_TYPE_NAME
+    override fun getDisplayName() = message("run_config.publish.function_app.type_name")
 
-    override fun getConfigurationTypeDescription() = RUN_CONFIG_TYPE_DESCRIPTION
+    override fun getConfigurationTypeDescription() = message("run_config.publish.function_app.type_description")
 
     override fun getIcon(): Icon = CommonIcons.AzureFunctions.FunctionAppConfigurationType
 

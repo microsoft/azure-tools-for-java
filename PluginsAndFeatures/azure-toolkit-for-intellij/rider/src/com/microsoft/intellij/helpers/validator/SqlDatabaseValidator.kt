@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -28,19 +28,13 @@ import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 object SqlDatabaseValidator : AzureResourceValidator() {
 
+    private val notDefinedMessage = message("run_config.publish.validation.sql_db.not_defined")
+
     private val sqlDatabaseNameRegex = "[\\s]".toRegex()
-
-    private const val SQL_DATABASE_NOT_DEFINED = "SQL Database is not set"
-
-    private const val SQL_DATABASE_NAME_INVALID = "SQL Database name cannot contain characters: %s."
-    private const val SQL_DATABASE_NAME_NOT_DEFINED = "SQL Database name is not defined."
-    private const val SQL_DATABASE_NAME_ALREADY_EXISTS = "SQL Database name '%s' already exists."
-    private const val SQL_DATABASE_EDITION_NOT_DEFINED = "SQL Database Edition is not provided."
-    private const val SQL_DATABASE_COLLATION_NOT_DEFINED = "SQL Database Collation is not provided."
-    private const val SQL_DATABASE_COMPUTE_SIZE_NOT_DEFINED = "SQL Database Compute Size is not provided."
 
     /**
      * Validate SQL Database name
@@ -56,16 +50,19 @@ object SqlDatabaseValidator : AzureResourceValidator() {
     }
 
     fun checkDatabaseNameIsSet(name: String) =
-            checkValueIsSet(name, SQL_DATABASE_NAME_NOT_DEFINED)
+            checkValueIsSet(name, message("run_config.publish.validation.sql_db.name_not_defined"))
 
     fun checkDatabaseIsSet(sqlDatabase: SqlDatabase?) =
-            checkValueIsSet(sqlDatabase, SQL_DATABASE_NOT_DEFINED)
+            checkValueIsSet(sqlDatabase, notDefinedMessage)
 
     fun checkDatabaseIdIsSet(sqlDatabaseId: String?) =
-            checkValueIsSet(sqlDatabaseId, SQL_DATABASE_NOT_DEFINED)
+            checkValueIsSet(sqlDatabaseId, notDefinedMessage)
 
     fun checkInvalidCharacters(name: String) =
-            validateResourceNameRegex(name, sqlDatabaseNameRegex, SQL_DATABASE_NAME_INVALID)
+            validateResourceNameRegex(
+                    name = name,
+                    nameRegex = sqlDatabaseNameRegex,
+                    nameInvalidCharsMessage = "${message("run_config.publish.validation.sql_db.name_invalid")}: %s")
 
     fun checkSqlDatabaseExistence(subscriptionId: String,
                                   databaseName: String,
@@ -74,19 +71,19 @@ object SqlDatabaseValidator : AzureResourceValidator() {
 
         val sqlServer = AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, sqlServerName) ?: return status
         if (isSqlDatabaseNameExist(databaseName, sqlServer))
-            status.setInvalid(String.format(SQL_DATABASE_NAME_ALREADY_EXISTS, databaseName))
+            status.setInvalid(message("run_config.publish.validation.sql_db.name_already_exists", databaseName))
 
         return status
     }
 
     fun checkEditionIsSet(edition: DatabaseEdition?) =
-            checkValueIsSet(edition, SQL_DATABASE_EDITION_NOT_DEFINED)
+            checkValueIsSet(edition, message("run_config.publish.validation.sql_db.edition_not_defined"))
 
     fun checkComputeSizeIsSet(objective: ServiceObjectiveName?) =
-            checkValueIsSet(objective, SQL_DATABASE_COMPUTE_SIZE_NOT_DEFINED)
+            checkValueIsSet(objective, message("run_config.publish.validation.sql_db.compute_size_not_defined"))
 
     fun checkCollationIsSet(collation: String?) =
-            checkValueIsSet(collation, SQL_DATABASE_COLLATION_NOT_DEFINED)
+            checkValueIsSet(collation, message("run_config.publish.validation.sql_db.collation_not_defined"))
 
     private fun isSqlDatabaseNameExist(name: String, sqlServer: SqlServer) =
             AzureSqlDatabaseMvpModel.listSqlDatabasesBySqlServer(sqlServer).any { it.name() == name }

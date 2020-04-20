@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -23,12 +23,11 @@
 package com.microsoft.intellij.helpers.validator
 
 import com.microsoft.azure.management.appservice.PricingTier
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 object PricingTierValidator: AzureResourceValidator() {
 
-    private const val PRICING_TIER_NOT_DEFINED = "Pricing Tier not provided."
-
     fun checkPricingTierIsSet(pricingTier: PricingTier?) =
-            checkValueIsSet(pricingTier, PRICING_TIER_NOT_DEFINED)
+            checkValueIsSet(pricingTier, message("run_config.publish.validation.pricing_tire.not_defined"))
 
 }

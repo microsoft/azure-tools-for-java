@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -29,8 +29,8 @@ import com.jetbrains.rd.util.reactive.IProperty
 import com.jetbrains.rider.ui.components.ComponentFactories
 import com.jetbrains.rider.ui.components.base.Viewable
 import com.microsoft.intellij.AzureConfigurable.AZURE_CONFIGURABLE_PREFIX
-import com.microsoft.intellij.configuration.ui.AzureFunctionsConfigurationPanel
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -43,13 +43,13 @@ class InstallFunctionsCoreToolsComponent(private val validationError: IProperty<
 
     init {
         val topPane = JPanel(MigLayout("ins 0, gap ${JBUI.scale(1)}, flowy, fill, left", "[push]")).apply {
-            add(ComponentFactories.titleLabel("Azure Functions Project Templates"))
-            add(ComponentFactories.multiLineLabelPane("Rider requires the Azure Functions Core Tools to be installed and configured to create new Azure Functions projects."),
+            add(ComponentFactories.titleLabel(message("template.project.function_app.install.title")))
+            add(ComponentFactories.multiLineLabelPane(message("template.project.function_app.install.core_tools_install_and_configure_request")),
                     "growx, gapbottom ${JBUI.scale(1)}")
-            add(ComponentFactories.hyperlinkLabel("Configure Azure Functions Core Tools...") {
+            add(ComponentFactories.hyperlinkLabel(message("template.project.function_app.install.core_tools_configure_request")) {
                 val project = ProjectManager.getInstance().defaultProject
                 // TODO: FIX_LOCALIZATION: Using displayName parameter here for Settings ID need to be fixed to use ID to avoid localization issues.
-                ShowSettingsUtilImpl.showSettingsDialog(project, AZURE_CONFIGURABLE_PREFIX + AzureFunctionsConfigurationPanel.DISPLAY_NAME, "")
+                ShowSettingsUtilImpl.showSettingsDialog(project, AZURE_CONFIGURABLE_PREFIX + message("settings.app_services.function_app.name"), "")
                 validationError.set(null)
             })
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -37,6 +37,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.PathUtil
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import java.io.File
@@ -59,7 +60,7 @@ class DownloadControlMessageHandler(
     override fun handle(jsonControlMessage: String) {
         val message = gson.fromJson(jsonControlMessage, DownloadControlMessage::class.java)
 
-        object : Task.Backgroundable(project, "Downloading file...", true, PerformInBackgroundOption.DEAF) {
+        object : Task.Backgroundable(project, RiderAzureBundle.message("progress.cloud_shell.downloading_file"), true, PerformInBackgroundOption.DEAF) {
             override fun run(indicator: ProgressIndicator) {
                 val downloadResult = cloudConsoleService.downloadFileFromTerminal(cloudConsoleBaseUrl + message.fileUri).execute()
                 if (!downloadResult.isSuccessful) {
@@ -78,7 +79,7 @@ class DownloadControlMessageHandler(
 
                 ApplicationManager.getApplication().invokeLater {
                     val dialog = FileChooserFactory.getInstance().createSaveFileDialog(
-                            FileSaverDescriptor("Save file from Azure Cloud Shell",
+                            FileSaverDescriptor(RiderAzureBundle.message("context_menu.cloud_shell.save_file"),
                                     "", PathUtil.getFileExtension(fileName) ?: ""), project)
 
                     val targetFile = dialog.save(
@@ -94,9 +95,10 @@ class DownloadControlMessageHandler(
                                 outputStream.close()
 
                                 AzureCloudShellNotifications.notify(project,
-                                        "Azure",
-                                        "File downloaded - $fileName",
-                                        "The file $fileName was downloaded from Azure Cloud Shell. <a href='show'>Show file</a>",
+                                        RiderAzureBundle.message("common.azure"),
+                                        RiderAzureBundle.message("notification.cloud_shell.download_file.subtitle", fileName),
+                                        RiderAzureBundle.message("notification.cloud_shell.download_file.message", fileName) +
+                                                " <a href='show'>" + RiderAzureBundle.message("notification.cloud_shell.download_file.message.show_file") + "</a>",
                                         NotificationType.INFORMATION,
                                         object : NotificationListener.Adapter() {
                                             override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
@@ -125,4 +127,3 @@ class DownloadControlMessageHandler(
             val fileUri : String
     )
 }
-

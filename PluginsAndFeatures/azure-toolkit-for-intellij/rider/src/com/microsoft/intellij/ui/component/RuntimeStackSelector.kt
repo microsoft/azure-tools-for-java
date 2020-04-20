@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -28,6 +28,7 @@ import com.microsoft.intellij.ui.extension.fillComboBox
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setDefaultRenderer
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -36,12 +37,7 @@ class RuntimeStackSelector :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
-    companion object {
-        private const val EMPTY_RUNTIME_STACK_MESSAGE = "No existing Runtime values"
-
-    }
-
-    private val lblRuntimeStack = JLabel("Runtime Stack")
+    private val lblRuntimeStack = JLabel(message("run_config.publish.form.runtime.label"))
     val cbRuntimeStack = ComboBox<RuntimeStack>()
 
     var lastSelectedRuntimeStack: RuntimeStack? = null
@@ -57,7 +53,7 @@ class RuntimeStackSelector :
             cbRuntimeStack.fillComboBox(runtimeStacks, defaultRuntime)
 
     private fun initRuntimeStackComboBox() {
-        cbRuntimeStack.setDefaultRenderer(EMPTY_RUNTIME_STACK_MESSAGE) { it.stack() }
+        cbRuntimeStack.setDefaultRenderer(message("run_config.publish.form.runtime.empty_message")) { it.stack() }
         cbRuntimeStack.addActionListener {
             lastSelectedRuntimeStack = cbRuntimeStack.getSelectedValue()
         }

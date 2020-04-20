@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -31,37 +31,37 @@ import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpMod
 import com.microsoft.intellij.runner.appbase.config.ui.AppDeployViewPresenterBase
 import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class FunctionAppDeployViewPresenter<V : FunctionAppDeployMvpView> : AppDeployViewPresenterBase<V>() {
-
-    companion object {
-        private const val TASK_FUNCTION_APP = "Collect Azure function apps"
-        private const val TASK_STORAGE_ACCOUNT = "Collect Azure Storage Accounts"
-        private const val TASK_STORAGE_ACCOUNT_TYPE = "Collect Azure Storage Account Types"
-
-        private const val CANNOT_LIST_FUNCTION_APP = "Failed to list function apps."
-        private const val CANNOT_LIST_STORAGE_ACCOUNT = "Failed to list storage accounts."
-        private const val CANNOT_LIST_STORAGE_ACCOUNT_TYPE = "Failed to list storage account types."
-    }
 
     private val functionAppSignal = Signal<List<ResourceEx<FunctionApp>>>()
     private val storageAccountSignal = Signal<List<StorageAccount>>()
     private val storageAccountTypeSignal = Signal<List<StorageAccountSkuType>>()
 
     override fun loadApps(lifetime: Lifetime, forceRefresh: Boolean) {
-        subscribe(lifetime, functionAppSignal, TASK_FUNCTION_APP, CANNOT_LIST_FUNCTION_APP,
+        subscribe(lifetime,
+                functionAppSignal,
+                message("progress.publish.function_app.collect"),
+                message("run_config.publish.function_app.collect_error"),
                 { AzureFunctionAppMvpModel.listAllFunctionApps(forceRefresh) },
                 { functions -> mvpView.fillFunctionAppsTable(functions) })
     }
 
     fun onLoadStorageAccounts(lifetime: Lifetime, subscriptionId: String) {
-        subscribe(lifetime, storageAccountSignal, TASK_STORAGE_ACCOUNT, CANNOT_LIST_STORAGE_ACCOUNT,
+        subscribe(lifetime,
+                storageAccountSignal,
+                message("progress.publish.storage_account.collect"),
+                message("run_config.publish.storage_account.collect_error"),
                 { AzureStorageAccountMvpModel.listStorageAccountsBySubscriptionId(subscriptionId, true) },
                 { storageAccounts -> mvpView.fillStorageAccount(storageAccounts) })
     }
 
     fun onLoadStorageAccountTypes(lifetime: Lifetime) {
-        subscribe(lifetime, storageAccountTypeSignal, TASK_STORAGE_ACCOUNT_TYPE, CANNOT_LIST_STORAGE_ACCOUNT_TYPE,
+        subscribe(lifetime,
+                storageAccountTypeSignal,
+                message("progress.publish.storage_account_type.collect"),
+                message("run_config.publish.storage_account_type.collect_error"),
                 { AzureStorageAccountMvpModel.listStorageAccountType() },
                 { types -> mvpView.fillStorageAccountType(types) })
     }

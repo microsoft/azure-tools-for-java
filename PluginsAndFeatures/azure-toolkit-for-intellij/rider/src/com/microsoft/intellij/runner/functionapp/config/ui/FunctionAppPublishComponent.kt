@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -47,6 +47,7 @@ import com.microsoft.intellij.ui.extension.setComponentsVisible
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 
 class FunctionAppPublishComponent(lifetime: Lifetime,
@@ -61,7 +62,7 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-"
     }
 
-    private val pnlFunctionAppSelector = ExistingOrNewSelector("Function App")
+    private val pnlFunctionAppSelector = ExistingOrNewSelector(message("run_config.publish.form.function_app.existing_new_selector"))
     val pnlExistingFunctionApp = AppExistingComponent<FunctionApp>()
     val pnlCreateFunctionApp = FunctionAppCreateNewComponent(lifetime.createNested())
     private val pnlProject = PublishableProjectComponent(project)

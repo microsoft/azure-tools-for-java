@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -34,6 +34,7 @@ import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.microsoft.intellij.configuration.AzureRiderSettings
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 
@@ -77,8 +78,8 @@ class AzureCoreToolsNotification : StartupActivity {
     }
 
     private fun createInstallNotification(project: Project, allowPreRelease: Boolean): Notification {
-        val title = "Install Azure Functions Core Tools"
-        val description = "Install the Azure Functions Core Tools to develop, run and debug Azure Functions locally."
+        val title = message("notification.function_app.core_tools.install.title")
+        val description = message("notification.function_app.core_tools.install.description")
         val notification = notificationGroup.createNotification(
                 title = title,
                 subtitle = null,
@@ -86,14 +87,18 @@ class AzureCoreToolsNotification : StartupActivity {
                 type = NotificationType.INFORMATION
         )
 
-        notification.appendDownloadCoreToolsAction(project = project, actionName = "Install", allowPreRelease = allowPreRelease)
+        notification.appendDownloadCoreToolsAction(
+                project = project,
+                actionName = message("notification.function_app.core_tools.action.install"),
+                allowPreRelease = allowPreRelease
+        )
 
         return notification
     }
 
     private fun createUpdateNotification(project: Project, allowPreRelease: Boolean): Notification {
-        val title = "Update Azure Functions Core Tools"
-        val description = "A newer version of the Azure Functions Core Tools is available."
+        val title = message("notification.function_app.core_tools.update.title")
+        val description = message("notification.function_app.core_tools.update.description")
 
         val notification = notificationGroup.createNotification(
                 title = title,
@@ -102,7 +107,11 @@ class AzureCoreToolsNotification : StartupActivity {
                 type = NotificationType.INFORMATION
         )
 
-        notification.appendDownloadCoreToolsAction(project = project, actionName = "Update", allowPreRelease = allowPreRelease)
+        notification.appendDownloadCoreToolsAction(
+                project = project,
+                actionName = message("notification.function_app.core_tools.action.update"),
+                allowPreRelease = allowPreRelease
+        )
         notification.appendDisableUpdatesCheckAction(project = project)
 
         return notification
@@ -116,7 +125,7 @@ class AzureCoreToolsNotification : StartupActivity {
     }
 
     private fun Notification.appendDisableUpdatesCheckAction(project: Project) {
-        addAction(NotificationAction.createSimple("Disable updates") {
+        addAction(NotificationAction.createSimple(message("notification.function_app.core_tools.action.disable_updates")) {
             disableNotification(project)
             expire()
         })

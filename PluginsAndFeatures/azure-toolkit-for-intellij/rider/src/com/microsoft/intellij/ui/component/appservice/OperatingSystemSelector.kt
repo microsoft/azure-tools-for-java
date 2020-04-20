@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -26,6 +26,7 @@ import com.intellij.util.ui.JBUI
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.intellij.ui.component.AzureComponent
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.event.ActionListener
 import javax.swing.JPanel
 import javax.swing.JRadioButton
@@ -44,8 +45,8 @@ class OperatingSystemSelector :
     val deployOperatingSystem: OperatingSystem
         get() = if (rdoOperatingSystemWindows.isSelected) OperatingSystem.WINDOWS else OperatingSystem.LINUX
 
-    val rdoOperatingSystemWindows = JRadioButton("Windows", true)
-    val rdoOperatingSystemLinux = JRadioButton("Linux")
+    val rdoOperatingSystemWindows = JRadioButton(message("run_config.publish.form.os_selector.windows"), true)
+    val rdoOperatingSystemLinux = JRadioButton(message("run_config.publish.form.os_selector.linux"), false)
 
     init {
         initOperatingSystemButtonGroup()

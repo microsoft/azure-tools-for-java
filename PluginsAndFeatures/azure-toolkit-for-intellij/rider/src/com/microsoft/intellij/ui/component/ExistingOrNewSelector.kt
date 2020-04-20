@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,6 +24,7 @@ package com.microsoft.intellij.ui.component
 
 import com.intellij.util.ui.JBUI
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.event.ActionListener
 import javax.swing.JPanel
 import javax.swing.JRadioButton
@@ -34,8 +35,8 @@ class ExistingOrNewSelector(name: String) : JPanel(MigLayout("novisualpadding, i
         private val indentionSize = JBUI.scale(7)
     }
 
-    val rdoUseExisting = JRadioButton("Use Existing $name", true)
-    val rdoCreateNew = JRadioButton("Create New $name")
+    val rdoUseExisting = JRadioButton("${message("run_config.publish.form.existing_new_selector.use_existing")} $name", true)
+    val rdoCreateNew = JRadioButton("${message("run_config.publish.form.existing_new_selector.create_new")} $name")
 
     val isCreateNew: Boolean
         get() = rdoCreateNew.isSelected

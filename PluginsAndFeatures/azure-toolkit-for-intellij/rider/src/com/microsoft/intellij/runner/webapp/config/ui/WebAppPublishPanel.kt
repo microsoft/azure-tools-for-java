@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -49,6 +49,7 @@ import com.microsoft.intellij.runner.database.config.ui.DatabasePublishComponent
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.config.RiderWebAppConfiguration
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.JPanel
@@ -61,13 +62,6 @@ class WebAppPublishPanel(private val lifetime: Lifetime,
         Activatable {
 
     companion object {
-        private const val WEB_APP_SETTINGS_PANEL_NAME = "Run On Web App"
-
-        private const val RUN_CONFIG_PREFIX = "Azure Web App"
-
-        private const val TAB_WEB_APP_CONFIGURATION = "App Configuration"
-        private const val TAB_DATABASE_CONNECTION = "Database Connection"
-
         private val webAppIcon = CommonIcons.WebApp
         private val databaseIcon = CommonIcons.Database
     }
@@ -87,7 +81,7 @@ class WebAppPublishPanel(private val lifetime: Lifetime,
             DatabasePublishComponent(lifetime.createNested(), configuration.model.databaseModel)
 
     // Panels
-    override val panelName = WEB_APP_SETTINGS_PANEL_NAME
+    override val panelName = message("run_config.publish.form.web_app.app_settings_panel_name")
     override var mainPanel: JPanel = pnlRoot
 
     init {
@@ -103,8 +97,8 @@ class WebAppPublishPanel(private val lifetime: Lifetime,
         }
 
         tpRoot.apply {
-            addTab(TAB_WEB_APP_CONFIGURATION, webAppIcon, pnlWebAppConfigTab)
-            addTab(TAB_DATABASE_CONNECTION, databaseIcon, pnlDbConnectionTab)
+            addTab(message("run_config.publish.form.web_app.app_config_tab_name"), webAppIcon, pnlWebAppConfigTab)
+            addTab(message("run_config.publish.form.web_app.db_config_tab_name"), databaseIcon, pnlDbConnectionTab)
         }
 
         pnlRoot.apply {
@@ -231,7 +225,7 @@ class WebAppPublishPanel(private val lifetime: Lifetime,
      * in the background to use for fields validation on client side
      */
     private fun updateAzureModelInBackground() {
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Updating Azure model", false) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.publish.web_app.updating_azure_model"), false) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.isIndeterminate = true
                 AzureModelController.updateSubscriptionMaps(UpdateProgressIndicator(indicator))
@@ -243,7 +237,7 @@ class WebAppPublishPanel(private val lifetime: Lifetime,
 
     private fun collectConnectionStringsInBackground(webApps: List<WebApp>) {
         if (webApps.isEmpty()) return
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Updating Web App connection strings map", false) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.publish.web_app.updating_connection_strings_map"), false) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.isIndeterminate = true
                 webApps.forEach { webApp -> AzureDotNetWebAppMvpModel.getConnectionStrings(webApp, true) }

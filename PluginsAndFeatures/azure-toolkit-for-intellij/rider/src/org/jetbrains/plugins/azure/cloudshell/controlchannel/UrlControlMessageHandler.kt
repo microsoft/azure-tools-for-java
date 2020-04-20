@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -31,6 +31,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.util.WaitForUrl
 
@@ -41,8 +42,6 @@ class UrlControlMessageHandler(
 
     companion object {
         private val logger = Logger.getInstance(UrlControlMessageHandler::class.java)
-
-        private const val waitingText = "Waiting for cloud shell URL to become available..."
     }
 
     override fun handle(jsonControlMessage: String) {
@@ -50,6 +49,8 @@ class UrlControlMessageHandler(
 
         if (!message.url.isEmpty()) {
             logger.info("Waiting for success status code for URL: {message.url}")
+
+            val waitingText = RiderAzureBundle.message("terminal.cloud_shell.runner.waiting_for_cloud_shell_url_available")
 
             ProgressManager.getInstance().run(object : Task.Backgroundable(project, waitingText, true, PerformInBackgroundOption.DEAF) {
                 override fun run(indicator: ProgressIndicator) {
@@ -64,9 +65,9 @@ class UrlControlMessageHandler(
                         logger.error("Opening browser failed for URL: {message.url}", e)
 
                         AzureCloudShellNotifications.notify(project,
-                                "Failed to browse cloud shell URL",
-                                "An error occurred while browsing cloud shell URL",
-                                "Error browsing {message.url}: " + e.message,
+                                RiderAzureBundle.message("notification.cloud_shell.error_browsing_url.title"),
+                                RiderAzureBundle.message("notification.cloud_shell.error_browsing_url.subtitle"),
+                                RiderAzureBundle.message("notification.cloud_shell.error_browsing_url.message", message.url, e.message.toString()),
                                 NotificationType.ERROR)
                     }
                 }

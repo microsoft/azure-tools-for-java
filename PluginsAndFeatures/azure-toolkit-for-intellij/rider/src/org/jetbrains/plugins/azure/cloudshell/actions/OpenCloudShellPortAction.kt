@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -33,6 +33,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.ui.InputValidator
 import com.intellij.openapi.ui.Messages
 import com.jetbrains.rider.util.idea.getComponent
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 
 class OpenCloudShellPortAction : AnAction() {
@@ -51,17 +52,20 @@ class OpenCloudShellPortAction : AnAction() {
         val activeConnector = project.getComponent<CloudShellComponent>().activeConnector() ?: return
 
         val port = Messages.showInputDialog(project,
-                "Configure port to preview (in ranges [1025-8079] and [8091-49151]):",
-                "Configure port to preview",
+                RiderAzureBundle.message("dialog.cloud_shell.open_port.message"),
+                RiderAzureBundle.message("dialog.cloud_shell.open_port.title"),
                 null,
                 null,
                 PreviewPortInputValidator.INSTANCE)?.toIntOrNull() ?: return
 
         ApplicationManager.getApplication().invokeLater {
-            object : Task.Backgroundable(project, "Opening preview port $port in Azure Cloud Shell...", true, PerformInBackgroundOption.DEAF)
-            {
-                override fun run(indicator: ProgressIndicator)
-                {
+            object : Task.Backgroundable(
+                    project,
+                    RiderAzureBundle.message("progress.cloud_shell.open_port.opening_preview_port", port),
+                    true,
+                    PerformInBackgroundOption.DEAF
+            ) {
+                override fun run(indicator: ProgressIndicator) {
                     logger.info("Opening preview port $port in Azure Cloud Shell...")
                     activeConnector.openPreviewPort(port, true)
                 }

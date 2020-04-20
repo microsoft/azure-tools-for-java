@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -32,13 +32,16 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.ws.http.request.HttpRequestLanguage
 import icons.RestClientIcons
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.io.IOException
 
 class TriggerAzureFunctionAction(private val functionName: String)
-    : AnAction("Trigger '$functionName' function...", "Create trigger function HTTP request...", RestClientIcons.Http_requests_filetype) {
+    : AnAction(
+        message("action.function_app.trigger_function_app.name", functionName),
+        message("action.function_app.trigger_function_app.description"),
+        RestClientIcons.Http_requests_filetype) {
 
     companion object {
-        private val TEMPLATE_NAME = "Trigger Azure Function"
         private val logger by lazy { getLogger<TriggerAzureFunctionAction>() }
     }
 
@@ -53,7 +56,10 @@ class TriggerAzureFunctionAction(private val functionName: String)
                         project,
                         scratchFileName,
                         HttpRequestLanguage.INSTANCE,
-                        createContentFromTemplate(project, TEMPLATE_NAME, functionName) ?: "",
+                        createContentFromTemplate(
+                                project,
+                                message("action.function_app.trigger_function_app.template.name"),
+                                functionName) ?: "",
                         ScratchFileService.Option.create_if_missing)
 
         if (scratchFile != null) {

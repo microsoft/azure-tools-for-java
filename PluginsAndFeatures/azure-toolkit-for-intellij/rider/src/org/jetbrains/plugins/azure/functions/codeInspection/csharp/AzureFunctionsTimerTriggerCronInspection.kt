@@ -32,6 +32,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.CSharpLanguage
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.helpers.NCrontabCronDefinition
 import org.jetbrains.plugins.azure.functions.helpers.csharp.AzureFunctionsPsiHelper
 import java.util.*
@@ -68,14 +69,13 @@ class AzureFunctionsTimerTriggerCronInspection : LocalInspectionTool() {
                     }
                     holder.registerProblem(validDescriptor)
                 } catch (e: IllegalArgumentException) {
+                    val problemMessage = message("inspection.function_app.timer_trigger.invalid_schedule_expression")
+                    val problemDescription =
+                            if (!e.message.isNullOrBlank()) { "$problemMessage: ${e.message}" }
+                            else { problemMessage }
+
                     // Invalid
-                    holder.registerProblem(scheduleExpressionStringLiteralSibling,
-                            if (!e.message.isNullOrBlank()) {
-                                "Invalid schedule expression for timer trigger: ${e.message}"
-                            } else {
-                                "Invalid schedule expression for timer trigger"
-                            },
-                            ProblemHighlightType.ERROR)
+                    holder.registerProblem(scheduleExpressionStringLiteralSibling, problemDescription, ProblemHighlightType.ERROR)
                 }
             }
         }

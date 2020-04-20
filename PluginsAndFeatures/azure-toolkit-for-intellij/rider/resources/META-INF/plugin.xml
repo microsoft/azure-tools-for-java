@@ -139,6 +139,8 @@
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
   <idea-version since-build="201" until-build="201.*"/>
 
+  <resource-bundle>messages.RiderAzureMessages</resource-bundle>
+
   <depends>com.intellij.modules.rider</depends>
   <depends>com.intellij.database</depends>
   <depends>org.jetbrains.plugins.terminal</depends>

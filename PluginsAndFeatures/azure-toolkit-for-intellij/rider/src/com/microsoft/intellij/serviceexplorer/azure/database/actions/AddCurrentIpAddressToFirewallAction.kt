@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -40,6 +40,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.util.PublicIpAddressProvider
 import sun.net.util.IPAddressUtil
@@ -67,7 +68,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
         val sqlServer = AzureSqlServerMvpModel.getSqlServerById(databaseServerNode.subscriptionId, databaseServerNode.sqlServerId)
 
         // Fetch current IP address
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Retrieving current public IP address...", true, PerformInBackgroundOption.DEAF) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.cloud_shell.add_ip_to_firewall.retrieving_ip_address"), true, PerformInBackgroundOption.DEAF) {
             override fun run(indicator: ProgressIndicator) {
                 val publicIpAddressResult = PublicIpAddressProvider.retrieveCurrentPublicIpAddress()
 
@@ -77,9 +78,9 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
                     }
                 } else {
                     AzureCloudShellNotifications.notify(project,
-                            "Could not retrieve current public IP address",
-                            "An error occurred while retrieving current public IP address",
-                            "Try adding your IP address from the Azure management portal.",
+                            message("notification.cloud_shell.add_ip_to_firewall.title"),
+                            message("notification.cloud_shell.add_ip_to_firewall.subtitle"),
+                            message("notification.cloud_shell.add_ip_to_firewall.message"),
                             NotificationType.ERROR)
                 }
             }
@@ -88,8 +89,8 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
 
     private fun requestAddFirewallRule(project: Project, sqlServer: SqlServer, publicIpAddressResult: PublicIpAddressProvider.Result) {
         val ipAddressInput = Messages.showInputDialog(project,
-                "Add firewall rule for IP address:",
-                "Add firewall rule",
+                message("dialog.cloud_shell.app_firewall_rule.message"),
+                message("dialog.cloud_shell.app_firewall_rule.title"),
                 firewallIcon,
                 publicIpAddressResult.ipv4address,
                 IpAddressInputValidator.INSTANCE)
@@ -99,7 +100,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
         val ipAddressForRule = ipAddressInput.trim()
 
         // Add IP address
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Adding firewall rule for current public IP address...", true, PerformInBackgroundOption.DEAF) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, message("progress.cloud_shell.add_firewall_rule.adding_firewall_rule"), true, PerformInBackgroundOption.DEAF) {
             override fun run(indicator: ProgressIndicator) {
                 val currentFirewallRules = sqlServer.firewallRules().list()
 
@@ -117,9 +118,9 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
                 }
 
                 AzureCloudShellNotifications.notify(project,
-                        "Added firewall rule",
-                        "Firewall rule for your current public IP address has been added",
-                        "You can now connect to your Sql Database from within the IDE.",
+                        message("notification.cloud_shell.add_firewall_rule.title"),
+                        message("notification.cloud_shell.add_firewall_rule.subtitle"),
+                        message("notification.cloud_shell.add_firewall_rule.message"),
                         NotificationType.INFORMATION)
             }
         })

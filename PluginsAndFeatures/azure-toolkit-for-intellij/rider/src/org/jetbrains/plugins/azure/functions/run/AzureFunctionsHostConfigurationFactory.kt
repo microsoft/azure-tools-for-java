@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -32,6 +32,7 @@ import com.jetbrains.rider.build.tasks.BuildProjectBeforeRunTask
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.run.configurations.DotNetConfigurationFactoryBase
 import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParameters
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBeforeRunTaskProvider
 
 class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
@@ -40,16 +41,16 @@ class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
     companion object {
         // Note: this FACTORY_ID can not be changed, as it may break existing run configurations out here.
         private const val FACTORY_ID = "Azure Functions host"
-
-        private const val FACTORY_NAME = "Azure Functions host factory"
     }
 
     override fun getId(): String = FACTORY_ID
 
-    override fun getName(): String = FACTORY_NAME
+    override fun getName(): String = message("run_config.run.form.function_app.factory_name")
 
     override fun configureBeforeRunTaskDefaults(providerID: Key<out BeforeRunTask<BeforeRunTask<*>>>?,
                                                 task: BeforeRunTask<out BeforeRunTask<*>>?) {
+
+        // TODO: Switch to use BuildProjectBeforeRunTaskProvider that supports building custom project
         if (providerID == BuildFunctionsProjectBeforeRunTaskProvider.providerId && task is BuildProjectBeforeRunTask) {
             task.isEnabled = true
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -46,7 +46,6 @@ import com.microsoft.intellij.ui.component.AzureResourceNameComponent
 import com.microsoft.intellij.ui.component.AzureSubscriptionsSelector
 import com.microsoft.intellij.ui.extension.*
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
-import org.jetbrains.plugins.azure.deploy.NotificationConstant
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
@@ -54,6 +53,7 @@ import com.microsoft.intellij.helpers.validator.SubscriptionValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import com.microsoft.intellij.ui.components.AzureDialogWrapper
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.util.*
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -69,24 +69,11 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
         AzureComponent {
 
     companion object {
-        private const val DIALOG_TITLE = "Create SQL Database"
-        private const val DIALOG_OK_BUTTON_TEXT = "Create"
         private const val DIALOG_MIN_WIDTH = 200
-
-        private const val EMPTY_RESOURCE_GROUP_MESSAGE = "No existing Resource Groups"
-        private const val EMPTY_DATABASE_EDITIONS_MESSAGE = "No existing Azure Database Editions"
-        private const val EMPTY_COMPUTE_SIZE_MESSAGE = "No existing Azure Compute Sizes"
-
-        private const val TITLE_RESOURCE_GROUP = "Resource Group"
-        private const val TITLE_SQL_DATABASE_SETTINGS = "Database Settings"
-
-        private const val SQL_DATABASE_CREATING_MESSAGE = "Creating '%s' database..."
-        private const val SQL_DATABASE_CREATE_SUCCESSFUL = "SQL Database is created, id: '%s'"
+        private const val SQL_DATABASE_CREATE_TIMEOUT_MS = 120_000L
 
         private const val AZURE_SQL_DATABASE_HELP_URL = "https://azure.microsoft.com/en-us/services/sql-database/"
         private const val AZURE_SQL_DATABASE_PRICING_URI = "https://azure.microsoft.com/en-us/pricing/details/sql-database/"
-
-        private const val SQL_DATABASE_CREATE_TIMEOUT_MS = 120_000L
     }
 
     private val mainPanel = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1"))
@@ -97,18 +84,18 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     private val cbResourceGroup = ComboBox<ResourceGroup>()
 
     private val pnlSqlDatabaseSettings = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]"))
-    private val lblSqlServer = JLabel("SQL Server")
+    private val lblSqlServer = JLabel(message("dialog.create_sql_db.sql_server.label"))
     private val cbSqlServer = ComboBox<SqlServer>()
 
-    private val lblDatabaseEdition = JLabel("Edition")
+    private val lblDatabaseEdition = JLabel(message("dialog.create_sql_db.edition.label"))
     private val pnlDatabaseEdition = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[][min!]"))
     private val cbDatabaseEdition = ComboBox<DatabaseEdition>()
-    private val lblDatabasePricingLink = LinkLabel("Pricing", null, { _, link -> BrowserUtil.browse(link)}, AZURE_SQL_DATABASE_PRICING_URI)
+    private val lblDatabasePricingLink = LinkLabel(message("dialog.create_sql_db.pricing.label"), null, { _, link -> BrowserUtil.browse(link)}, AZURE_SQL_DATABASE_PRICING_URI)
 
-    private val lblDatabaseComputeSize = JLabel("Compute size")
+    private val lblDatabaseComputeSize = JLabel(message("dialog.create_sql_db.compute_size.label"))
     private val cbDatabaseComputeSize = ComboBox<ServiceObjectiveName>()
 
-    private val lblDatabaseCollation = JLabel("Collation")
+    private val lblDatabaseCollation = JLabel(message("dialog.create_sql_db.collation.label"))
     private val txtDatabaseCollation = JTextField(AzureDefaults.SQL_DATABASE_COLLATION)
 
     private val presenter = CreateSqlDatabaseOnServerViewPresenter<CreateSqlDatabaseOnServerDialog>()
@@ -118,8 +105,8 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     private var cachedComputeSize = listOf<ServiceObjectiveName>()
 
     init {
-        title = DIALOG_TITLE
-        setOKButtonText(DIALOG_OK_BUTTON_TEXT)
+        title = message("dialog.create_sql_db.title")
+        setOKButtonText(message("dialog.create_sql_db.ok_button.label"))
 
         initSubscriptionsComboBox()
         initResourceGroupComboBox()
@@ -209,7 +196,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     override fun doOKAction() {
 
         val sqlDatabaseName = pnlName.txtNameValue.text
-        val progressMessage = String.format(SQL_DATABASE_CREATING_MESSAGE, sqlDatabaseName)
+        val progressMessage = message("dialog.create_sql_db.creating", sqlDatabaseName)
 
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, progressMessage, true) {
 
@@ -226,7 +213,12 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
                 super.onSuccess()
 
                 activityNotifier.notifyProgress(
-                        NotificationConstant.SQL_DATABASE_CREATE, Date(), null, 100, String.format(SQL_DATABASE_CREATE_SUCCESSFUL, sqlDatabaseName))
+                        message("tool_window.azure_activity_log.publish.sql_db.create"),
+                        Date(),
+                        null,
+                        100,
+                        message("dialog.create_sql_db.create_success", sqlDatabaseName)
+                )
 
                 SpinWait.spinUntil(lifetimeDef, SQL_DATABASE_CREATE_TIMEOUT_MS) {
                     AzureSqlDatabaseMvpModel.listSqlDatabasesBySqlServer(sqlServer, true)
@@ -252,7 +244,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
 
     private fun initMainPanel() {
         pnlResourceGroup.apply {
-            border = IdeaTitledBorder(TITLE_RESOURCE_GROUP, 0, JBUI.emptyInsets())
+            border = IdeaTitledBorder(message("dialog.create_sql_db.resource_group.header"), 0, JBUI.emptyInsets())
             add(cbResourceGroup, "growx")
         }
 
@@ -262,7 +254,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
         }
 
         pnlSqlDatabaseSettings.apply {
-            border = IdeaTitledBorder(TITLE_SQL_DATABASE_SETTINGS, 0, JBUI.emptyInsets())
+            border = IdeaTitledBorder(message("dialog.create_sql_db.db_settings.header"), 0, JBUI.emptyInsets())
             add(lblSqlServer)
             add(cbSqlServer, "growx")
 
@@ -298,7 +290,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     private fun initResourceGroupComboBox() {
-        cbResourceGroup.setDefaultRenderer(EMPTY_RESOURCE_GROUP_MESSAGE) { it.name() }
+        cbResourceGroup.setDefaultRenderer(message("dialog.create_sql_db.resource_group.empty_message")) { it.name() }
         setComponentsEnabled(false, cbResourceGroup)
     }
 
@@ -313,7 +305,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     private fun initDatabaseEditionsComboBox() {
-        cbDatabaseEdition.setDefaultRenderer(EMPTY_DATABASE_EDITIONS_MESSAGE) { it.toString() }
+        cbDatabaseEdition.setDefaultRenderer(message("dialog.create_sql_db.db_edition.empty_message")) { it.toString() }
         cbDatabaseEdition.apply {
             addActionListener {
                 val edition = cbDatabaseEdition.getSelectedValue() ?: return@addActionListener
@@ -327,7 +319,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     }
 
     private fun initDatabaseComputeSizeComboBox() {
-        cbDatabaseComputeSize.setDefaultRenderer(EMPTY_COMPUTE_SIZE_MESSAGE) { it.toString() }
+        cbDatabaseComputeSize.setDefaultRenderer(message("dialog.create_sql_db.compute_size.empty_message")) { it.toString() }
     }
 
     private fun validationSqlDatabaseName() =

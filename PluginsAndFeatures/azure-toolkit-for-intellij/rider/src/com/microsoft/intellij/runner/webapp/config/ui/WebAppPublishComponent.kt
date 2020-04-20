@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -45,6 +45,7 @@ import com.microsoft.intellij.ui.component.appservice.AppExistingComponent
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setComponentsVisible
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JPanel
 
 class WebAppPublishComponent(lifetime: Lifetime,
@@ -54,10 +55,6 @@ class WebAppPublishComponent(lifetime: Lifetime,
         AzureComponent {
 
     companion object {
-
-        private const val WEB_APP_RUNTIME_MISMATCH_WARNING =
-                "Selected Azure Web App runtime '%s' mismatch with Project .Net Core Framework '%s'"
-
         private const val DEFAULT_APP_NAME = "webapp-"
         private const val DEFAULT_PLAN_NAME = "appsp-"
         private const val DEFAULT_RESOURCE_GROUP_NAME = "rg-"
@@ -66,7 +63,7 @@ class WebAppPublishComponent(lifetime: Lifetime,
         private val netAppVersionRegex = Regex("\\.NETFramework,Version=v([0-9](?:\\.[0-9])*)", RegexOption.IGNORE_CASE)
     }
 
-    private val pnlWebAppSelector = ExistingOrNewSelector("Web App")
+    private val pnlWebAppSelector = ExistingOrNewSelector(message("run_config.publish.form.web_app.existing_new_selector"))
     val pnlExistingWebApp = AppExistingComponent<WebApp>()
     val pnlCreateWebApp = WebAppCreateNewComponent(lifetime.createNested())
     private val pnlProject = PublishableProjectComponent(project)
@@ -259,7 +256,8 @@ class WebAppPublishComponent(lifetime: Lifetime,
         val projectNetCoreVersion = getProjectNetCoreFrameworkVersion(publishableProject)
         pnlExistingWebApp.setRuntimeMismatchWarning(
                 webAppFrameworkVersion != projectNetCoreVersion,
-                String.format(WEB_APP_RUNTIME_MISMATCH_WARNING, webAppFrameworkVersion, projectNetCoreVersion))
+                message("run_config.publish.form.web_app.runtime_mismatch_warning", webAppFrameworkVersion.toString(), projectNetCoreVersion)
+        )
     }
 
     //endregion Project

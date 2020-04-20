@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -37,12 +37,12 @@ import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.extension.setComponentsVisible
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import java.awt.Component
 import java.awt.Dimension
 import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
-import javax.swing.table.TableModel
 import javax.swing.table.TableRowSorter
 
 open class ExistingAppsTableComponent<T : WebAppBase> :
@@ -50,21 +50,18 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
         AzureComponent {
 
     companion object {
-        const val APP_TABLE_COLUMN_SUBSCRIPTION = "Subscription"
-        const val APP_TABLE_COLUMN_NAME = "Name"
-        const val APP_TABLE_COLUMN_RESOURCE_GROUP = "Resource group"
-        const val APP_TABLE_COLUMN_LOCATION = "Location"
-        const val APP_TABLE_COLUMN_OS = "OS"
-        const val APP_TABLE_COLUMN_DOTNET_VERSION = "Runtime"
-
-        private const val BUTTON_REFRESH_NAME = "Refresh"
-
-        private const val TABLE_LOADING_MESSAGE = "Loading ... "
-        private const val TABLE_EMPTY_MESSAGE = "No available apps."
-
         private val osWindowsIcon = CommonIcons.OS.Windows
         private val osLinuxIcon = CommonIcons.OS.Linux
     }
+
+    val appTableColumnSubscription  = message("run_config.publish.form.existing_app.table.subscription")
+    val appTableColumnName          = message("run_config.publish.form.existing_app.table.name")
+    val appTableColumnResourceGroup = message("run_config.publish.form.existing_app.table.resource_group")
+    val appTableColumnLocation      = message("run_config.publish.form.existing_app.table.location")
+    val appTableColumnOs            = message("run_config.publish.form.existing_app.table.os")
+    val appTableColumnRuntime       = message("run_config.publish.form.existing_app.table.runtime")
+
+    private val tableLoadingMessage = message("run_config.publish.form.existing_app.table.loading")
 
     val table = initExistingAppsTable()
     val btnRefresh = initRefreshButton()
@@ -93,7 +90,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
 
     fun fillAppsTable(apps: List<ResourceEx<T>>, defaultComparator: (T) -> Boolean = { false }) {
         btnRefresh.isEnabled = true
-        table.emptyText.text = TABLE_EMPTY_MESSAGE
+        table.emptyText.text = message("run_config.publish.form.existing_app.table.empty_message")
 
         val sortedApps = apps.sortedWith(compareBy (
                 { it.resource.operatingSystem() },
@@ -139,12 +136,12 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
             override fun isCellEditable(row: Int, column: Int) = false
         }
 
-        tableModel.addColumn(APP_TABLE_COLUMN_NAME)
-        tableModel.addColumn(APP_TABLE_COLUMN_RESOURCE_GROUP)
-        tableModel.addColumn(APP_TABLE_COLUMN_LOCATION)
-        tableModel.addColumn(APP_TABLE_COLUMN_OS)
-        tableModel.addColumn(APP_TABLE_COLUMN_DOTNET_VERSION)
-        tableModel.addColumn(APP_TABLE_COLUMN_SUBSCRIPTION)
+        tableModel.addColumn(appTableColumnName)
+        tableModel.addColumn(appTableColumnResourceGroup)
+        tableModel.addColumn(appTableColumnLocation)
+        tableModel.addColumn(appTableColumnOs)
+        tableModel.addColumn(appTableColumnRuntime)
+        tableModel.addColumn(appTableColumnSubscription)
 
         val table = object : JBTable(tableModel) {
             override fun getPreferredScrollableViewportSize(): Dimension? {
@@ -154,15 +151,15 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
             }
         }
 
-        table.emptyText.text = TABLE_LOADING_MESSAGE
+        table.emptyText.text = tableLoadingMessage
         table.rowSelectionAllowed = true
         table.setShowGrid(false)
         table.isStriped = true
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 
-        table.rowSorter = TableRowSorter<TableModel>(table.model)
+        table.rowSorter = TableRowSorter(table.model)
 
-        val osColumn = table.getColumn(APP_TABLE_COLUMN_OS)
+        val osColumn = table.getColumn(appTableColumnOs)
         osColumn.cellRenderer = object : DefaultTableCellRenderer() {
             override fun getTableCellRendererComponent(table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
                 val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
@@ -185,8 +182,8 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
             }
 
             val columns = table.columnModel.columns.toList().map { column -> column.identifier as String }
-            val resourceGroupIndex = columns.indexOf(APP_TABLE_COLUMN_RESOURCE_GROUP)
-            val appNameIndex = columns.indexOf(APP_TABLE_COLUMN_NAME)
+            val resourceGroupIndex = columns.indexOf(appTableColumnResourceGroup)
+            val appNameIndex = columns.indexOf(appTableColumnName)
 
             val appResourceGroup = table.getValueAt(selectedRow, resourceGroupIndex)
             val appName = table.getValueAt(selectedRow, appNameIndex)
@@ -210,7 +207,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
     }
 
     private fun initRefreshButton() =
-            object : AnActionButton(BUTTON_REFRESH_NAME, AllIcons.Actions.Refresh) {
+            object : AnActionButton(message("run_config.publish.form.existing_app.table.refresh"), AllIcons.Actions.Refresh) {
                 override fun actionPerformed(anActionEvent: AnActionEvent) {
                     resetWidget()
                     tableRefreshAction()
@@ -222,7 +219,7 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
         val model = table.model as DefaultTableModel
         model.dataVector.clear()
         model.fireTableDataChanged()
-        table.emptyText.text = TABLE_LOADING_MESSAGE
+        table.emptyText.text = tableLoadingMessage
         txtSelectedApp.text = ""
     }
 

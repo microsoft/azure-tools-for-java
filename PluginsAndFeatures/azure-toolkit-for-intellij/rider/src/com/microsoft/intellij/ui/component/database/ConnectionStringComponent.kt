@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,6 +24,7 @@ package com.microsoft.intellij.ui.component.database
 
 import com.microsoft.intellij.ui.component.AzureComponent
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
@@ -32,7 +33,7 @@ class ConnectionStringComponent :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
-    private val lblConnectionStringName = JLabel("Connection string name")
+    private val lblConnectionStringName = JLabel(message("run_config.publish.form.connection_string.label"))
     val txtConnectionStringName = JTextField()
 
     init {

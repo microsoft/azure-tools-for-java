@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -38,6 +38,7 @@ import com.microsoft.intellij.helpers.validator.SqlDatabaseValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import com.microsoft.intellij.runner.database.model.DatabasePublishModel
 import net.miginfocom.swing.MigLayout
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JCheckBox
 import javax.swing.JPanel
 
@@ -56,8 +57,8 @@ class DatabasePublishComponent(private val lifetime: Lifetime,
     private val isDbConnectionEnabled: Boolean
         get() = checkBoxEnableDbConnection.isEnabled
 
-    private val checkBoxEnableDbConnection = JCheckBox("Enable database connection", true)
-    private val pnlDbSelector = ExistingOrNewSelector("Database")
+    private val checkBoxEnableDbConnection = JCheckBox(message("run_config.publish.form.sql_db.enable_database_connection"), true)
+    private val pnlDbSelector = ExistingOrNewSelector(message("run_config.publish.form.sql_db.database.name"))
     private val pnlDbConnectionString = ConnectionStringComponent()
     private val pnlExistingDb = ExistingDatabaseComponent()
     private val pnlCreateNewDb = DatabaseCreateNewComponent(lifetime.createNested())

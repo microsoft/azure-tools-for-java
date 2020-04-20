@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,11 +24,9 @@ package com.microsoft.intellij.helpers.validator
 
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
-object WebAppValidator : AppValidator("Web") {
-
-    private const val WEB_APP_ALREADY_EXISTS = "Web App with name '%s' already exists."
-    private const val CONNECTION_STRING_NAME_ALREADY_EXISTS = "Connection String with name '%s' already exists."
+object WebAppValidator : AppValidator(message("service.app_service.web_app")) {
 
     // Please see for details -
     // https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet?toc=%2Fen-us%2Fdotnet%2Fapi%2Fazure_ref_toc%2Ftoc.json&bc=%2Fen-us%2Fdotnet%2Fazure_breadcrumb%2Ftoc.json&view=azure-dotnet#create-an-app-service-plan
@@ -41,7 +39,9 @@ object WebAppValidator : AppValidator("Web") {
 
     fun checkWebAppExists(name: String): ValidationResult {
         val status = ValidationResult()
-        if (isWebAppExist(name)) return status.setInvalid(String.format(WEB_APP_ALREADY_EXISTS, name))
+        if (isWebAppExist(name))
+            return status.setInvalid(message("run_config.publish.validation.web_app.name_already_exists", name))
+
         return status
     }
 
@@ -56,7 +56,7 @@ object WebAppValidator : AppValidator("Web") {
                 .firstOrNull { it.id() == webAppId } ?: return status
 
         if (AzureDotNetWebAppMvpModel.checkConnectionStringNameExists(webApp, name))
-            status.setInvalid(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, name))
+            status.setInvalid(message("run_config.publish.validation.connection_string.name_already_exists", name))
 
         return status
     }
