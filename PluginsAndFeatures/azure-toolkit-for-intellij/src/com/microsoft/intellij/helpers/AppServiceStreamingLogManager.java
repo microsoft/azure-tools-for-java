@@ -22,7 +22,10 @@
 package com.microsoft.intellij.helpers;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -30,12 +33,9 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
 
-import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel.isApplicationLogEnabled;
-import static com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel.isHttpLogEnabled;
 
 
 public enum AppServiceStreamingLogManager {
@@ -47,8 +47,8 @@ public enum AppServiceStreamingLogManager {
     private static final String[] YES_NO = {"Yes", "No"};
     private static final String STARTING_STREAMING_LOG = "Starting Streaming Log...";
     private static final String NOT_SUPPORTED = "Not supported";
-    private static final String LINUX_LOG_STREAMING_IS_NOT_SUPPORTED =
-            "Log streaming for Linux Function App is not supported in current version.";
+    private static final String LOG_STREAMING_IS_NOT_SUPPORTED =
+            "Log streaming for %s is not supported in current version.";
     private static final String FAILED_TO_START_STREAMING_LOG = "Failed to start streaming log";
     private static final String FAILED_TO_CLOSE_STREAMING_LOG = "Failed to close streaming log";
     private static final String CLOSING_STREAMING_LOG = "Closing Streaming Log...";
@@ -59,58 +59,21 @@ public enum AppServiceStreamingLogManager {
     private Map<String, AppServiceStreamingLogConsoleView> consoleViewMap = new HashMap<>();
 
     public void showWebAppDeploymentSlotStreamingLog(Project project, String slotId) {
-        final String slotName = AzureMvpModel.getSegment(slotId, SLOTS);
-        showAppServiceStreamingLog(project, slotId, slotName, resourceId -> {
-            final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
-            final String webAppId = resourceId.substring(0, resourceId.indexOf("/slots"));
-            final WebApp webApp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
-            final DeploymentSlot deploymentSlot = webApp.deploymentSlots().getById(resourceId);
-            if (isHttpLogEnabled(deploymentSlot) || enableHttpLog(deploymentSlot.update(), deploymentSlot.name())) {
-                return deploymentSlot.streamAllLogsAsync();
-            } else {
-                return null;
-            }
-        });
+        showAppServiceStreamingLog(project, slotId, new WebAppSlotLogStreaming(slotId));
     }
 
     public void showWebAppStreamingLog(Project project, String webAppId) {
-        final String webAppName = AzureMvpModel.getSegment(webAppId, SITES);
-        showAppServiceStreamingLog(project, webAppId, webAppName, resourceId -> {
-            final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
-            final WebApp webApp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, resourceId);
-            if (isHttpLogEnabled(webApp) || enableHttpLog(webApp.update(), webApp.name())) {
-                return webApp.streamAllLogsAsync();
-            } else {
-                return null;
-            }
-        });
+        showAppServiceStreamingLog(project, webAppId, new WebAppLogStreaming(webAppId));
     }
 
     public void showFunctionStreamingLog(Project project, String functionId) {
-        final String functionName = AzureMvpModel.getSegment(functionId, SITES);
-        showAppServiceStreamingLog(project, functionId, functionName, resourceId -> {
-            final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
-            final FunctionApp function = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId,
-                                                                                             resourceId);
-            if (function.operatingSystem() == OperatingSystem.LINUX) {
-                // Todo: Open portal Application Insight pages for function logging
-                DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayInfoDialog(
-                        NOT_SUPPORTED, LINUX_LOG_STREAMING_IS_NOT_SUPPORTED));
-                return null;
-            }
-            if (isApplicationLogEnabled(function) || enableApplicationLog(function)) {
-                return function.streamAllLogsAsync();
-            } else {
-                return null;
-            }
-        });
+        showAppServiceStreamingLog(project, functionId, new FunctionLogStreaming(functionId));
     }
 
     public void closeStreamingLog(Project project, String appId) {
         DefaultLoader.getIdeHelper().runInBackground(project, CLOSING_STREAMING_LOG, false, true, null, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
-                final AppServiceStreamingLogConsoleView consoleView = consoleViewMap.get(appId);
-                consoleView.closeStreamingLog();
+                consoleViewMap.get(appId).closeStreamingLog();
             } else {
                 DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                         FAILED_TO_CLOSE_STREAMING_LOG, STREAMING_LOG_NOT_STARTED));
@@ -118,20 +81,32 @@ public enum AppServiceStreamingLogManager {
         });
     }
 
-    private void showAppServiceStreamingLog(Project project, String resourceId, String displayName,
-                                            LogStreamingFunction logStreamingFunction) {
+    private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
         DefaultLoader.getIdeHelper().runInBackground(project, STARTING_STREAMING_LOG, false, true, null, () -> {
             try {
+                final String name = logStreaming.getLogStreamingTitle();
                 final AppServiceStreamingLogConsoleView consoleView = getOrCreateConsoleView(project, resourceId);
                 if (!consoleView.isActive()) {
-                    final Observable<String> log = logStreamingFunction.apply(resourceId);
+                    if (!logStreaming.isLogStreamingSupported()) {
+                        DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayInfoDialog(
+                                NOT_SUPPORTED, String.format(LOG_STREAMING_IS_NOT_SUPPORTED, name)));
+                        return;
+                    }
+                    if (!logStreaming.isLogStreamingEnables()) {
+                        final boolean enableLogStreaming = DefaultLoader.getUIHelper().showConfirmation(
+                                String.format(ENABLE_FILE_LOGGING_PROMPT, name), ENABLE_LOGGING, YES_NO, null);
+                        if (!enableLogStreaming || !logStreaming.enableLogStreaming()) {
+                            return;
+                        }
+                    }
+                    final Observable<String> log = logStreaming.getStreamingLog();
                     if (log == null) {
                         return;
                     }
-                    consoleView.startStreamingLog(logStreamingFunction.apply(resourceId));
+                    consoleView.startStreamingLog(log);
                 }
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
-                        project, resourceId, displayName, consoleView);
+                        project, resourceId, logStreaming.getLogStreamingTitle(), consoleView);
             } catch (Throwable e) {
                 DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                         FAILED_TO_START_STREAMING_LOG, e.getMessage()));
@@ -146,28 +121,138 @@ public enum AppServiceStreamingLogManager {
         return consoleViewMap.get(resourceId);
     }
 
-    private boolean enableHttpLog(WebAppBase.Update webApp, String name) {
-        final boolean enableLogStreaming = DefaultLoader.getUIHelper().showConfirmation(
-                String.format(ENABLE_FILE_LOGGING_PROMPT, name), ENABLE_LOGGING, YES_NO, null);
-        if (!enableLogStreaming) {
-            return false;
+    interface ILogStreaming {
+        default boolean isLogStreamingSupported() throws IOException {
+            return true;
         }
-        AzureWebAppMvpModel.enableHttpLog(webApp);
-        return true;
+
+        boolean isLogStreamingEnables() throws IOException;
+
+        boolean enableLogStreaming() throws IOException;
+
+        String getLogStreamingTitle() throws IOException;
+
+        Observable<String> getStreamingLog() throws IOException;
     }
 
-    private boolean enableApplicationLog(FunctionApp functionApp) {
-        final boolean enableLogStreaming = DefaultLoader.getUIHelper().showConfirmation(
-                String.format(ENABLE_FILE_LOGGING_PROMPT, functionApp.name()), ENABLE_LOGGING, YES_NO, null);
-        if (!enableLogStreaming) {
-            return false;
+    class FunctionLogStreaming implements ILogStreaming {
+        private String resourceId;
+        private FunctionApp functionApp;
+
+        FunctionLogStreaming(final String resourceId) {
+            this.resourceId = resourceId;
         }
-        AzureFunctionMvpModel.enableApplicationLog(functionApp);
-        return true;
+
+        @Override
+        public boolean isLogStreamingSupported() throws IOException {
+            return getFunctionApp().operatingSystem() == OperatingSystem.WINDOWS;
+        }
+
+        @Override
+        public boolean isLogStreamingEnables() throws IOException {
+            return AzureFunctionMvpModel.isApplicationLogEnabled(getFunctionApp());
+        }
+
+        @Override
+        public boolean enableLogStreaming() throws IOException {
+            AzureFunctionMvpModel.enableApplicationLog(getFunctionApp());
+            return true;
+        }
+
+        @Override
+        public String getLogStreamingTitle() {
+            return AzureMvpModel.getSegment(resourceId, SITES);
+        }
+
+        @Override
+        public Observable<String> getStreamingLog() throws IOException {
+            return getFunctionApp().streamAllLogsAsync();
+        }
+
+        private FunctionApp getFunctionApp() throws IOException {
+            if (functionApp == null) {
+                functionApp = AzureFunctionMvpModel.getInstance().getFunctionById(
+                        AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS), resourceId);
+            }
+            return functionApp;
+        }
     }
 
-    interface LogStreamingFunction {
-        @Nullable
-        Observable<String> apply(@Nullable String resourceId) throws Exception;
+    class WebAppLogStreaming implements ILogStreaming {
+        private String resourceId;
+        private WebApp webApp;
+
+        public WebAppLogStreaming(String resourceId) {
+            this.resourceId = resourceId;
+        }
+
+        @Override
+        public boolean isLogStreamingEnables() throws IOException {
+            return AzureWebAppMvpModel.isHttpLogEnabled(getWebApp());
+        }
+
+        @Override
+        public boolean enableLogStreaming() throws IOException {
+            AzureWebAppMvpModel.enableHttpLog(getWebApp().update());
+            return true;
+        }
+
+        @Override
+        public String getLogStreamingTitle() {
+            return AzureMvpModel.getSegment(resourceId, SITES);
+        }
+
+        @Override
+        public Observable<String> getStreamingLog() throws IOException {
+            return getWebApp().streamAllLogsAsync();
+        }
+
+        private WebApp getWebApp() throws IOException {
+            if (webApp == null) {
+                webApp = AzureWebAppMvpModel.getInstance().getWebAppById(
+                        AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS), resourceId);
+            }
+            return webApp;
+        }
+    }
+
+    class WebAppSlotLogStreaming implements ILogStreaming {
+        private String resourceId;
+        private DeploymentSlot deploymentSlot;
+
+        public WebAppSlotLogStreaming(String resourceId) {
+            this.resourceId = resourceId;
+        }
+
+        @Override
+        public boolean isLogStreamingEnables() throws IOException {
+            return AzureWebAppMvpModel.isHttpLogEnabled(getDeploymentSlot());
+        }
+
+        @Override
+        public boolean enableLogStreaming() throws IOException {
+            AzureWebAppMvpModel.enableHttpLog(getDeploymentSlot().update());
+            return true;
+        }
+
+        @Override
+        public String getLogStreamingTitle() {
+            return AzureMvpModel.getSegment(resourceId, SLOTS);
+        }
+
+        @Override
+        public Observable<String> getStreamingLog() throws IOException {
+            return getDeploymentSlot().streamAllLogsAsync();
+        }
+
+        private DeploymentSlot getDeploymentSlot() throws IOException {
+            if (deploymentSlot == null) {
+                final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
+                final String webAppId = resourceId.substring(0, resourceId.indexOf("/slots"));
+                final WebApp webApp = AzureWebAppMvpModel.getInstance().getWebAppById(subscriptionId, webAppId);
+                deploymentSlot = webApp.deploymentSlots().getById(resourceId);
+            }
+            return deploymentSlot;
+        }
     }
 }

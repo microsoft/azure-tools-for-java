@@ -79,11 +79,11 @@ public class AzureWebAppMvpModel {
     /**
      * get the web app by ID.
      */
-    public WebApp getWebAppById(String sid, String id) throws Exception {
+    public WebApp getWebAppById(String sid, String id) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         WebApp app = azure.webApps().getById(id);
         if (app == null) {
-            throw new Exception(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
+            throw new IOException(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
         return app;
     }
