@@ -84,7 +84,7 @@ public enum AppServiceStreamingLogManager {
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
         DefaultLoader.getIdeHelper().runInBackground(project, STARTING_STREAMING_LOG, false, true, null, () -> {
             try {
-                final String name = logStreaming.getLogStreamingTitle();
+                final String name = logStreaming.getTitle();
                 final AppServiceStreamingLogConsoleView consoleView = getOrCreateConsoleView(project, resourceId);
                 if (!consoleView.isActive()) {
                     if (!logStreaming.isLogStreamingSupported()) {
@@ -92,21 +92,24 @@ public enum AppServiceStreamingLogManager {
                                 NOT_SUPPORTED, String.format(LOG_STREAMING_IS_NOT_SUPPORTED, name)));
                         return;
                     }
-                    if (!logStreaming.isLogStreamingEnables()) {
-                        final boolean enableLogStreaming = DefaultLoader.getUIHelper().showConfirmation(
+                    if (!logStreaming.isLogStreamingEnabled()) {
+                        // Enable Log Streaming if log streaming of target is not enabled
+                        final boolean userInput = DefaultLoader.getUIHelper().showConfirmation(
                                 String.format(ENABLE_FILE_LOGGING_PROMPT, name), ENABLE_LOGGING, YES_NO, null);
-                        if (!enableLogStreaming || !logStreaming.enableLogStreaming()) {
+                        if (userInput) {
+                            logStreaming.enableLogStreaming();
+                        } else {
                             return;
                         }
                     }
-                    final Observable<String> log = logStreaming.getStreamingLog();
+                    final Observable<String> log = logStreaming.getStreamingLogContent();
                     if (log == null) {
                         return;
                     }
                     consoleView.startStreamingLog(log);
                 }
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
-                        project, resourceId, logStreaming.getLogStreamingTitle(), consoleView);
+                        project, resourceId, logStreaming.getTitle(), consoleView);
             } catch (Throwable e) {
                 DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                         FAILED_TO_START_STREAMING_LOG, e.getMessage()));
@@ -115,10 +118,9 @@ public enum AppServiceStreamingLogManager {
     }
 
     private AppServiceStreamingLogConsoleView getOrCreateConsoleView(Project project, String resourceId) {
-        if (!consoleViewMap.containsKey(resourceId) || consoleViewMap.get(resourceId).isDisposed()) {
-            consoleViewMap.put(resourceId, new AppServiceStreamingLogConsoleView(project, resourceId));
-        }
-        return consoleViewMap.get(resourceId);
+        return consoleViewMap.compute(resourceId, (id, view) -> {
+            return (view == null || view.isDisposed()) ? new AppServiceStreamingLogConsoleView(project, id) : view;
+        });
     }
 
     interface ILogStreaming {
@@ -126,13 +128,13 @@ public enum AppServiceStreamingLogManager {
             return true;
         }
 
-        boolean isLogStreamingEnables() throws IOException;
+        boolean isLogStreamingEnabled() throws IOException;
 
-        boolean enableLogStreaming() throws IOException;
+        void enableLogStreaming() throws IOException;
 
-        String getLogStreamingTitle() throws IOException;
+        String getTitle() throws IOException;
 
-        Observable<String> getStreamingLog() throws IOException;
+        Observable<String> getStreamingLogContent() throws IOException;
     }
 
     class FunctionLogStreaming implements ILogStreaming {
@@ -149,23 +151,22 @@ public enum AppServiceStreamingLogManager {
         }
 
         @Override
-        public boolean isLogStreamingEnables() throws IOException {
+        public boolean isLogStreamingEnabled() throws IOException {
             return AzureFunctionMvpModel.isApplicationLogEnabled(getFunctionApp());
         }
 
         @Override
-        public boolean enableLogStreaming() throws IOException {
+        public void enableLogStreaming() throws IOException {
             AzureFunctionMvpModel.enableApplicationLog(getFunctionApp());
-            return true;
         }
 
         @Override
-        public String getLogStreamingTitle() {
+        public String getTitle() {
             return AzureMvpModel.getSegment(resourceId, SITES);
         }
 
         @Override
-        public Observable<String> getStreamingLog() throws IOException {
+        public Observable<String> getStreamingLogContent() throws IOException {
             return getFunctionApp().streamAllLogsAsync();
         }
 
@@ -187,23 +188,22 @@ public enum AppServiceStreamingLogManager {
         }
 
         @Override
-        public boolean isLogStreamingEnables() throws IOException {
+        public boolean isLogStreamingEnabled() throws IOException {
             return AzureWebAppMvpModel.isHttpLogEnabled(getWebApp());
         }
 
         @Override
-        public boolean enableLogStreaming() throws IOException {
+        public void enableLogStreaming() throws IOException {
             AzureWebAppMvpModel.enableHttpLog(getWebApp().update());
-            return true;
         }
 
         @Override
-        public String getLogStreamingTitle() {
+        public String getTitle() {
             return AzureMvpModel.getSegment(resourceId, SITES);
         }
 
         @Override
-        public Observable<String> getStreamingLog() throws IOException {
+        public Observable<String> getStreamingLogContent() throws IOException {
             return getWebApp().streamAllLogsAsync();
         }
 
@@ -225,23 +225,22 @@ public enum AppServiceStreamingLogManager {
         }
 
         @Override
-        public boolean isLogStreamingEnables() throws IOException {
+        public boolean isLogStreamingEnabled() throws IOException {
             return AzureWebAppMvpModel.isHttpLogEnabled(getDeploymentSlot());
         }
 
         @Override
-        public boolean enableLogStreaming() throws IOException {
+        public void enableLogStreaming() throws IOException {
             AzureWebAppMvpModel.enableHttpLog(getDeploymentSlot().update());
-            return true;
         }
 
         @Override
-        public String getLogStreamingTitle() {
+        public String getTitle() {
             return AzureMvpModel.getSegment(resourceId, SLOTS);
         }
 
         @Override
-        public Observable<String> getStreamingLog() throws IOException {
+        public Observable<String> getStreamingLogContent() throws IOException {
             return getDeploymentSlot().streamAllLogsAsync();
         }
 
