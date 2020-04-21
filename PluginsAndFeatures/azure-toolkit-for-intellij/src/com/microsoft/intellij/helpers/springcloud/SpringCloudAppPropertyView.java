@@ -391,16 +391,16 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             }
         });
 
-        instanceTable.setComponentPopupMenu(instanceTablePopupMenu);
         // Select row with right click
         instanceTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(final MouseEvent mouseEvent) {
                 if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-                    instanceTable.clearSelection();
                     final int row = instanceTable.rowAtPoint(mouseEvent.getPoint());
                     if (row >= 0) {
+                        instanceTable.clearSelection();
                         instanceTable.addRowSelectionInterval(row, row);
+                        instanceTablePopupMenu.show(instanceTable, mouseEvent.getX(), mouseEvent.getY());
                     }
                 }
             }
