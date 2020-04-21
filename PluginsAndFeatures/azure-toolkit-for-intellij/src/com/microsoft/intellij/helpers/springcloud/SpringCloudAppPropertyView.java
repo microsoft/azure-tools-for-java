@@ -367,7 +367,10 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             final int row = instanceTable.getSelectedRow();
             if (row >= 0) {
                 final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
-                SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, instanceName);
+                EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD,
+                                         TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                        SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, instanceName);
+                    });
             }
         });
         final JBMenuItem stopStreamingLogsItem = new JBMenuItem("Stop Streaming Logs");
@@ -375,7 +378,10 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             final int row = instanceTable.getSelectedRow();
             if (row >= 0) {
                 final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
-                SpringCloudStreamingLogManager.getInstance().closeStreamingLog(instanceName);
+                EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD,
+                                         TelemetryConstants.STOP_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                        SpringCloudStreamingLogManager.getInstance().closeStreamingLog(instanceName);
+                    });
             }
         });
         instanceTablePopupMenu.add(startStreamingLogsItem);

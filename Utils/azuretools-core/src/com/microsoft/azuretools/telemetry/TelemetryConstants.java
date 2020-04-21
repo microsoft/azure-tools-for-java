@@ -88,6 +88,7 @@ public class TelemetryConstants {
     public static final String OPEN_INBROWSER_FUNCTION_APP = "open-inbrowser-function-app";
 
     public static final String START_STREAMING_LOG_SPRING_CLOUD_APP = "start-streaming-log-springcloud-app";
+    public static final String STOP_STREAMING_LOG_SPRING_CLOUD_APP = "stop-streaming-log-springcloud-app";
     public static final String ADD_DEPENDENCY_SPRING_CLOUD_APP = "add-dependency-springcloud-app";
     public static final String CREATE_SPRING_CLOUD_APP = "create-springcloud-app";
     public static final String DEPLOY_SPRING_CLOUD_APP = "deploy-springcloud-app";
