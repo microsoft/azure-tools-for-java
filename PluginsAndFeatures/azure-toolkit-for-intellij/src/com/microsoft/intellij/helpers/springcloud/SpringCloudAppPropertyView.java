@@ -30,6 +30,7 @@ import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.*;
@@ -61,10 +62,10 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.PopupMenuEvent;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -347,28 +348,15 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             lblInstances.setPreferredSize(size);
         });
 
-        // Select row with right click
-        instanceTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(final MouseEvent mouseEvent) {
-                if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-                    final int row = instanceTable.rowAtPoint(mouseEvent.getPoint());
-                    if (row >= 0) {
-                        instanceTable.clearSelection();
-                        instanceTable.addRowSelectionInterval(row, row);
-                    }
-                }
-            }
-        });
-
         final JBPopupMenu instanceTablePopupMenu = new JBPopupMenu();
         final JBMenuItem startStreamingLogsItem = new JBMenuItem("Start Streaming Logs");
         startStreamingLogsItem.addActionListener(event -> {
             final int row = instanceTable.getSelectedRow();
             if (row >= 0) {
                 final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
-                EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD,
-                                         TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                EventUtil.executeWithLog(
+                        TelemetryConstants.SPRING_CLOUD,
+                        TelemetryConstants.START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
                         SpringCloudStreamingLogManager.getInstance().showStreamingLog(project, appId, instanceName);
                     });
             }
@@ -378,15 +366,45 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             final int row = instanceTable.getSelectedRow();
             if (row >= 0) {
                 final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
-                EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD,
-                                         TelemetryConstants.STOP_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
+                EventUtil.executeWithLog(
+                        TelemetryConstants.SPRING_CLOUD,
+                        TelemetryConstants.STOP_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
                         SpringCloudStreamingLogManager.getInstance().closeStreamingLog(instanceName);
                     });
             }
         });
         instanceTablePopupMenu.add(startStreamingLogsItem);
         instanceTablePopupMenu.add(stopStreamingLogsItem);
+        instanceTablePopupMenu.addPopupMenuListener(new PopupMenuListenerAdapter() {
+            @Override
+            public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
+                final int row = instanceTable.getSelectedRow();
+                final boolean isRowSelected = row >= 0;
+                startStreamingLogsItem.setVisible(isRowSelected);
+                stopStreamingLogsItem.setVisible(isRowSelected);
+                if (isRowSelected) {
+                    final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
+                    final boolean isInstanceLogStreamingEnabled =
+                            SpringCloudStreamingLogManager.getInstance().isLogStreamingStarted(instanceName);
+                    stopStreamingLogsItem.setEnabled(isInstanceLogStreamingEnabled);
+                    startStreamingLogsItem.setEnabled(!isInstanceLogStreamingEnabled);
+                }
+            }
+        });
         instanceTable.setComponentPopupMenu(instanceTablePopupMenu);
+        // Select row with right click
+        instanceTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(final MouseEvent mouseEvent) {
+                if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+                    instanceTable.clearSelection();
+                    final int row = instanceTable.rowAtPoint(mouseEvent.getPoint());
+                    if (row >= 0) {
+                        instanceTable.addRowSelectionInterval(row, row);
+                    }
+                }
+            }
+        });
     }
 
     private void freezeUI() {

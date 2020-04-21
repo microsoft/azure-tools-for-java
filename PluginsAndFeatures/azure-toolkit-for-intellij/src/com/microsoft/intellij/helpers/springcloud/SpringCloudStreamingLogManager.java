@@ -85,6 +85,10 @@ public class SpringCloudStreamingLogManager {
         consoleViewMap.remove(instanceName);
     }
 
+    public boolean isLogStreamingStarted(String instanceName) {
+        return consoleViewMap.containsKey(instanceName) && consoleViewMap.get(instanceName).isEnable();
+    }
+
     private static final class SingletonHolder {
         private static final SpringCloudStreamingLogManager INSTANCE = new SpringCloudStreamingLogManager();
 
