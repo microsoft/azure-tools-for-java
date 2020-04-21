@@ -42,6 +42,7 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
@@ -65,7 +66,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -381,10 +383,10 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
                 final int row = instanceTable.getSelectedRow();
                 if (row >= 0) {
                     final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
-                    final boolean isInstanceLogStreamingEnabled =
-                            SpringCloudStreamingLogManager.getInstance().isLogStreamingStarted(instanceName);
-                    stopStreamingLogsItem.setEnabled(isInstanceLogStreamingEnabled);
-                    startStreamingLogsItem.setEnabled(!isInstanceLogStreamingEnabled);
+                    final ConsoleViewStatus status =
+                            SpringCloudStreamingLogManager.getInstance().getConsoleViewStatus(instanceName);
+                    stopStreamingLogsItem.setEnabled(status == ConsoleViewStatus.ACTIVE);
+                    startStreamingLogsItem.setEnabled(status == ConsoleViewStatus.STOPPED);
                 } else {
                     DefaultLoader.getIdeHelper().invokeLater(() -> instanceTablePopupMenu.setVisible(false));
                 }

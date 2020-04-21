@@ -28,14 +28,19 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
+import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.intellij.helpers.StreamingLogsToolWindowManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.http.HttpException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.microsoft.intellij.helpers.ConsoleViewStatus.ACTIVE;
+import static com.microsoft.intellij.helpers.ConsoleViewStatus.STOPPED;
 
 public class SpringCloudStreamingLogManager {
 
@@ -46,14 +51,18 @@ public class SpringCloudStreamingLogManager {
     }
 
     public void showStreamingLog(Project project, String appId, String instanceName) {
+        final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
+                instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
         DefaultLoader.getIdeHelper().runInBackground(project, "Starting Streaming Log...", false, true, null, () -> {
             try {
-                final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
-                        instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
-                if (!consoleView.isEnable()) {
-                    final InputStream logInputStream = AzureSpringCloudMvpModel
-                            .getLogStream(appId, instanceName, 0, 10, 0, true);
-                    consoleView.startLog(logInputStream);
+                if (consoleView.getStatus() == STOPPED) {
+                    consoleView.startLog(() -> {
+                        try {
+                            return AzureSpringCloudMvpModel.getLogStream(appId, instanceName, 0, 10, 0, true);
+                        } catch (IOException | HttpException e) {
+                            return null;
+                        }
+                    });
                 }
                 StreamingLogsToolWindowManager
                         .getInstance()
@@ -62,6 +71,7 @@ public class SpringCloudStreamingLogManager {
                 ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(
                         "Failed to start streaming log",
                         e.getMessage()));
+                consoleView.shutdown();
             }
         });
     }
@@ -71,7 +81,7 @@ public class SpringCloudStreamingLogManager {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
                 final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
-                if (consoleView != null && consoleView.isEnable()) {
+                if (consoleView != null && consoleView.getStatus() == ACTIVE) {
                     consoleView.shutdown();
                 } else {
                     ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(
@@ -85,8 +95,8 @@ public class SpringCloudStreamingLogManager {
         consoleViewMap.remove(instanceName);
     }
 
-    public boolean isLogStreamingStarted(String instanceName) {
-        return consoleViewMap.containsKey(instanceName) && consoleViewMap.get(instanceName).isEnable();
+    public ConsoleViewStatus getConsoleViewStatus(String instanceName) {
+        return consoleViewMap.containsKey(instanceName) ? consoleViewMap.get(instanceName).getStatus() : STOPPED;
     }
 
     private static final class SingletonHolder {
