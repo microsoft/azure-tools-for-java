@@ -150,9 +150,9 @@ public enum AppServiceStreamingLogManager {
         private static final String APPLICATION_INSIGHT_PATTERN = "%s/#blade/AppInsightsExtension/QuickPulseBladeV2"
                 + "/ComponentId/%s/ResourceId/%s";
         private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS =
-                "You must configure Application Insights to stream logs on Linux Function Apps.";
+                "You must configure Application Insights to enable streaming logs on Linux Function Apps.";
         private static final String AI_INSTANCES_NOT_FOUND =
-                "AI instance defined in app settings was not found in current subscription %s";
+                "AI instance defined in app settings cannot be found in current subscription %s";
 
         private String resourceId;
         private FunctionApp functionApp;
