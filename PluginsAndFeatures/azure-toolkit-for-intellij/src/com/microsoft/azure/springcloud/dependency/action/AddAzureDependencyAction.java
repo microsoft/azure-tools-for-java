@@ -87,7 +87,9 @@ public class AddAzureDependencyAction extends AzureAnAction {
         DefaultLoader.getIdeHelper().runInBackground(project, "Deleting Docker Host", false, true, "Update Azure Spring Cloud dependencies", () -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText("Syncing maven project " + project.getName());
-            projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject)).get();
+            if (projectsManager.hasScheduledProjects()) {
+                projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject)).get();
+            }
             try {
                 progressIndicator.setText("Check existing dependencies");
                 final String evaluateEffectivePom = MavenUtils.evaluateEffectivePom(project, mavenProject);
@@ -113,7 +115,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
                 dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-zipkin", versionMaps));
                 dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-sleuth", versionMaps));
                 ProgressManager.checkCanceled();
-                List<DependencyArtifact> versionChanges = manager.getCompatibleVersions(dep, springBootVer);
+                List<DependencyArtifact> versionChanges = SpringCloudDependencyManager.getCompatibleVersions(dep, springBootVer);
                 if (versionChanges.isEmpty()) {
                     PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
                                                            "No updates are needed.");
@@ -125,7 +127,8 @@ public class AddAzureDependencyAction extends AzureAnAction {
                 Map<String, DependencyArtifact> managementVersions = manager.getDependencyManagementVersions();
                 versionChanges.stream().filter(change -> managementVersions.containsKey(change.getKey())).forEach(change -> {
                     String managementVersion = managementVersions.get(change.getKey()).getCurrentVersion();
-                    if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)) {
+                    if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)
+                            || SpringCloudDependencyManager.isCompatibleVersion(managementVersion, springBootVer)) {
                         change.setCompatibleVersion("");
                     }
                 });
@@ -145,7 +148,6 @@ public class AddAzureDependencyAction extends AzureAnAction {
                                                                "Azure Spring Cloud dependencies are added to your project successfully.",
                                                                summaryVersionChanges(versionChanges));
                     }
-                    projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject));
                 });
             } catch (DocumentException | IOException | AzureExecutionException | MavenProcessCanceledException e) {
                 PluginUtil.showErrorNotification("Error",

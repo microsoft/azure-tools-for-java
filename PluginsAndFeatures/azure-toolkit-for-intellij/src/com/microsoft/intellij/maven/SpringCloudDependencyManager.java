@@ -109,8 +109,23 @@ public class SpringCloudDependencyManager {
         return res;
     }
 
+    public static boolean isCompatibleVersion(String version, String springBootVer) {
+        if (StringUtils.isNotEmpty(springBootVer)) {
+            if (springBootVer.startsWith("2.2.")) {
+                return isCompatibleVersionWithBootVersion(version, "2.2.");
+            } else if (springBootVer.startsWith("2.1.")) {
+                return isCompatibleVersionWithBootVersion(version, "2.1.");
+            }
+        }
+        return false;
+    }
+
     private static String getCompatibleVersionWithBootVersion(List<String> latestVersions, String bootVersionPrefix) {
-        return IterableUtils.find(IterableUtils.reversedIterable(latestVersions), version -> version != null && version.startsWith(bootVersionPrefix));
+        return IterableUtils.find(IterableUtils.reversedIterable(latestVersions), version -> isCompatibleVersionWithBootVersion(version, bootVersionPrefix));
+    }
+
+    private static boolean isCompatibleVersionWithBootVersion(String version, String bootVersionPrefix) {
+        return version != null && version.startsWith(bootVersionPrefix);
     }
 
     private static void collectDependencyVersionsFromNodes(List<Node> nodes, Map<String, DependencyArtifact> versionMap) {
