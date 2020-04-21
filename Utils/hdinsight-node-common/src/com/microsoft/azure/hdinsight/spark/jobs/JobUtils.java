@@ -35,6 +35,7 @@ import com.microsoft.azure.datalake.store.ADLStoreClient;
 import com.microsoft.azure.datalake.store.IfExists;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.HDInsightLoader;
+import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
@@ -460,13 +461,52 @@ public class JobUtils {
         return null;
     }
 
+    public static void ctrlInfo(@Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                @Nullable Observer<SparkBatchJobLogLine> newLogSubject,
+                                String message) {
+        assert legacyLogSubject != null || newLogSubject != null : "At least one logSubject is not null";
+        assert legacyLogSubject == null || newLogSubject == null : "At least one logSubject should be null";
+
+        if (legacyLogSubject != null) {
+            legacyLogSubject.onNext(new SimpleImmutableEntry<>(Info, message));
+        } else {
+            newLogSubject.onNext(new SparkBatchJobLogLine(Tool, Info, message));
+        }
+    }
+
+    public static void ctrlError(@Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                 @Nullable Observer<SparkBatchJobLogLine> newLogSubject,
+                                 Throwable error) {
+        assert legacyLogSubject != null || newLogSubject != null : "At least one logSubject is not null";
+        assert legacyLogSubject == null || newLogSubject == null : "At least one logSubject should be null";
+
+        if (legacyLogSubject != null) {
+            legacyLogSubject.onError(error);
+        } else {
+            newLogSubject.onError(error);
+        }
+    }
+
+    public static void ctrlComplete(@Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                    @Nullable Observer<SparkBatchJobLogLine> newLogSubject) {
+        assert legacyLogSubject != null || newLogSubject != null : "At least one logSubject is not null";
+        assert legacyLogSubject == null || newLogSubject == null : "At least one logSubject should be null";
+
+        if (legacyLogSubject != null) {
+            legacyLogSubject.onCompleted();
+        } else {
+            newLogSubject.onCompleted();
+        }
+    }
+
     @Deprecated
-    public static String uploadFileToAzure(@NotNull File file,
-                                           @NotNull IHDIStorageAccount storageAccount,
-                                           @NotNull String containerName,
-                                           @NotNull String uploadFolderPath,
-                                           @NotNull Observer<SparkBatchJobLogLine> logSubject,
-                                           @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
+    public static String uploadFileToAzureBase(File file,
+                                               IHDIStorageAccount storageAccount,
+                                               String containerName,
+                                               String uploadFolderPath,
+                                               @Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                               @Nullable Observer<SparkBatchJobLogLine> newLogSubject,
+                                               @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
         if(storageAccount.getAccountType() == StorageAccountType.BLOB) {
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
                 try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
@@ -479,9 +519,9 @@ public class JobUtils {
                     String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
                     String uploadedPath = String.format("wasbs://%s@%s/%s", containerName, blobStorageAccount.getFullStorageBlobName(), path);
 
-                    logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
-                                                               String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",
-                                          file.getPath(), uploadedPath)));
+                    ctrlInfo(legacyLogSubject, newLogSubject,
+                             String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",
+                                           file.getPath(), uploadedPath));
 
                     StorageClientSDKManager.getManager().uploadBlobFileContent(
                             blobStorageAccount.getConnectionString(),
@@ -492,25 +532,50 @@ public class JobUtils {
                             1024 * 1024,
                             file.length());
 
-                    logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
-                                                               String.format("Submit file to azure blob '%s' successfully.", uploadedPath)));
+                    ctrlInfo(legacyLogSubject, newLogSubject,
+                             String.format("Submit file to azure blob '%s' successfully.", uploadedPath));
 
                     return uploadedPath;
                 }
             }
         } else if(storageAccount.getAccountType() == StorageAccountType.ADLS) {
             String uploadPath = String.format("adl://%s.azuredatalakestore.net%s%s", storageAccount.getName(), storageAccount.getDefaultContainerOrRootPath(), "SparkSubmission");
-            logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
-                                                       String.format("Begin uploading file %s to Azure Datalake store %s ...", file.getPath(), uploadPath)));
+            ctrlInfo(legacyLogSubject, newLogSubject,
+                     String.format("Begin uploading file %s to Azure Datalake store %s ...",
+                                   file.getPath(), uploadPath));
 
             String uploadedPath = StreamUtil.uploadArtifactToADLS(file, storageAccount, uploadFolderPath);
-            logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
-                                                       String.format("Submit file to Azure Datalake store '%s' successfully.", uploadedPath)));
+
+            ctrlInfo(legacyLogSubject, newLogSubject,
+                     String.format("Submit file to Azure Datalake store '%s' successfully.", uploadedPath));
+
             return uploadedPath;
         } else {
             throw new UnsupportedOperationException("unknown storage account type");
         }
+    }
 
+    @Deprecated
+    public static String uploadFileToAzureNew(File file,
+                                              IHDIStorageAccount storageAccount,
+                                              String containerName,
+                                              String uploadFolderPath,
+                                              Observer<SparkBatchJobLogLine> logSubject,
+                                              @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback)
+            throws Exception {
+        return uploadFileToAzureBase(file, storageAccount, containerName, uploadFolderPath, null, logSubject,
+                                     uploadInProcessCallback);
+    }
+
+    @Deprecated
+    public static String uploadFileToAzure(File file,
+                                           IHDIStorageAccount storageAccount,
+                                           String containerName,
+                                           String uploadFolderPath,
+                                           Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject,
+                                           @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
+        return uploadFileToAzureBase(file, storageAccount, containerName, uploadFolderPath, logSubject, null,
+                                     uploadInProcessCallback);
     }
 
     public static String sftpFileToEmulator(String localFile, String folderPath, IClusterDetail clusterDetail)
@@ -578,11 +643,12 @@ public class JobUtils {
                 uniqueFolderId, sftpFileToEmulator(buildJarPath, folderPath, selectedClusterDetail));
     }
 
-    public static String uploadFileToHDFS(@NotNull IClusterDetail selectedClusterDetail,
-                                          @NotNull String buildJarPath,
-                                          @NotNull Observer<SparkBatchJobLogLine> logSubject) throws HDIException {
-        logSubject.onNext(new SparkBatchJobLogLine(Tool, Info, String.format("Get target jar from %s.",
-                                                                             buildJarPath)));
+    public static String uploadFileToHDFSBase(IClusterDetail selectedClusterDetail,
+                                              String buildJarPath,
+                                              @Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                              @Nullable Observer<SparkBatchJobLogLine> newLogSubject)
+            throws HDIException {
+        ctrlInfo(legacyLogSubject, newLogSubject, String.format("Get target jar from %s.", buildJarPath));
 
         File srcJarFile = new File(buildJarPath);
         URI destUri = URI.create(String.format("/SparkSubmission/%s/%s", getFormatPathByDate(), srcJarFile.getName()));
@@ -592,50 +658,66 @@ public class JobUtils {
         String sessionName = "Helper session to upload " + destUri.toString();
 
         URI livyUri = selectedClusterDetail instanceof LivyCluster ?
-                URI.create(((LivyCluster) selectedClusterDetail).getLivyConnectionUrl()) :
-                URI.create(selectedClusterDetail.getConnectionUrl());
+                      URI.create(((LivyCluster) selectedClusterDetail).getLivyConnectionUrl()) :
+                      URI.create(selectedClusterDetail.getConnectionUrl());
 
-        logSubject.onNext(new SparkBatchJobLogLine(Tool, Info, "Create Spark helper interactive session..."));
+        ctrlInfo(legacyLogSubject, newLogSubject, "Create Spark helper interactive session...");
 
         try {
             return Observable.using(() -> new SparkSession(sessionName, livyUri, username, password),
-                    SparkSession::create,
-                    SparkSession::close)
-                    .map(sparkSession -> {
-                        sparkSession.getCtrlSubject()
-                                .subscribe(logSubject::onNext, logSubject::onError, logSubject::onCompleted);
+                                    SparkSession::create,
+                                    SparkSession::close)
+                             .map(sparkSession -> {
+                                 sparkSession.getCtrlSubject()
+                                             .subscribe(logLine -> ctrlInfo(legacyLogSubject, newLogSubject,
+                                                                            logLine.getRawLog()),
+                                                        err -> ctrlError(legacyLogSubject, newLogSubject, err),
+                                                        () -> ctrlComplete(legacyLogSubject, newLogSubject));
 
-                        ClusterFileBase64BufferedOutputStream clusterFileBase64Out = new ClusterFileBase64BufferedOutputStream(
-                                sparkSession, destUri);
-                        Base64OutputStream base64Enc = new Base64OutputStream(clusterFileBase64Out, true);
-                        InputStream inFile;
+                                 ClusterFileBase64BufferedOutputStream clusterFileBase64Out =
+                                         new ClusterFileBase64BufferedOutputStream(sparkSession, destUri);
+                                 Base64OutputStream base64Enc = new Base64OutputStream(clusterFileBase64Out, true);
+                                 InputStream inFile;
 
-                        try {
-                            inFile = new BufferedInputStream(new FileInputStream(srcJarFile));
+                                 try {
+                                     inFile = new BufferedInputStream(new FileInputStream(srcJarFile));
 
-                            logSubject.onNext(new SparkBatchJobLogLine(Tool, Info, String.format("Uploading %s...",
-                                                                                                 srcJarFile)));
-                            IOUtils.copy(inFile, base64Enc);
+                                     ctrlInfo(legacyLogSubject, newLogSubject, String.format("Uploading %s...",
+                                                                                             srcJarFile));
+                                     IOUtils.copy(inFile, base64Enc);
 
-                            inFile.close();
-                            base64Enc.close();
-                        } catch (FileNotFoundException fnfEx) {
-                            throw propagate(new HDIException(String.format("Source file %s not found.", srcJarFile), fnfEx));
-                        } catch (IOException ioEx) {
-                            throw propagate(new HDIException(String.format("Failed to upload file %s.", destUri), ioEx));
-                        }
+                                     inFile.close();
+                                     base64Enc.close();
+                                 } catch (FileNotFoundException fnfEx) {
+                                     throw propagate(new HDIException(String.format("Source file %s not found.",
+                                                                                    srcJarFile), fnfEx));
+                                 } catch (IOException ioEx) {
+                                     throw propagate(new HDIException(String.format("Failed to upload file %s.",
+                                                                                    destUri), ioEx));
+                                 }
+                                 ctrlInfo(legacyLogSubject, newLogSubject, String.format("Uploaded to %s.", destUri));
 
-                        logSubject.onNext(new SparkBatchJobLogLine(Tool, Info,
-                                                                   String.format("Uploaded to %s.", destUri)));
-
-                        return destUri.toString();
-                    })
-                    .toBlocking()
-                    .single();
+                                 return destUri.toString();
+                             })
+                             .toBlocking()
+                             .single();
         } catch (NoSuchElementException ignored) {
             // The cause exception will be thrown inside
             throw new HDIException("Failed to upload file to HDFS (Should Not Reach).");
         }
+    }
+
+    public static String uploadFileToHDFSNew(IClusterDetail selectedClusterDetail,
+                                          String buildJarPath,
+                                          Observer<SparkBatchJobLogLine> logSubject) throws HDIException {
+        return uploadFileToHDFSBase(selectedClusterDetail, buildJarPath, null, logSubject);
+    }
+
+
+    public static String uploadFileToHDFS(IClusterDetail selectedClusterDetail,
+                                          String buildJarPath,
+                                          Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws HDIException {
+        return uploadFileToHDFSBase(selectedClusterDetail, buildJarPath, logSubject, null);
     }
 
     public static String uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail,
@@ -645,8 +727,8 @@ public class JobUtils {
         return selectedClusterDetail.isEmulator() ?
                 JobUtils.uploadFileToEmulator(selectedClusterDetail, buildJarPath, logSubject) :
                 (selectedClusterDetail.getStorageAccount() == null ?
-                        JobUtils.uploadFileToHDFS(selectedClusterDetail, buildJarPath, logSubject):
-                        JobUtils.uploadFileToAzure(
+                        JobUtils.uploadFileToHDFSNew(selectedClusterDetail, buildJarPath, logSubject):
+                        JobUtils.uploadFileToAzureNew(
                                 new File(buildJarPath),
                                 selectedClusterDetail.getStorageAccount(),
                                 selectedClusterDetail.getStorageAccount().getDefaultContainerOrRootPath(),
@@ -684,7 +766,7 @@ public class JobUtils {
     public static Observable<String> deployArtifact(@NotNull String artifactLocalPath,
                                                     @NotNull final IHDIStorageAccount storageAccount,
                                                     @NotNull Observer<SparkBatchJobLogLine> logSubject) {
-        return Observable.fromCallable(() -> JobUtils.uploadFileToAzure(
+        return Observable.fromCallable(() -> JobUtils.uploadFileToAzureNew(
                 new File(artifactLocalPath),
                 storageAccount,
                 storageAccount.getDefaultContainerOrRootPath(),
