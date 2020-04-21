@@ -83,13 +83,20 @@ public class AzureSDKManager {
         return newStorageAccountWithGroup.withSku(StorageAccountSkuType.fromSkuName(SkuName.fromString(skuName))).create();
     }
 
-    public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name, @NotNull String resourceGroup, boolean withNewResourceGroup,
-                                                      @NotNull String size, @NotNull String region, final VirtualMachineImage vmImage, Object knownImage, boolean isKnownImage,
-                                                      final StorageAccount storageAccount, com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount, boolean withNewStorageAccount,
-                                                      final Network network, VirtualNetwork newNetwork, boolean withNewNetwork,
-                                                      @NotNull String subnet, @Nullable PublicIPAddress pip, boolean withNewPip,
-                                                      @Nullable AvailabilitySet availabilitySet, boolean withNewAvailabilitySet,
-                                                      @NotNull final String username, @Nullable final String password, @Nullable String publicKey) throws Exception {
+    public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name,
+                                                      @NotNull String resourceGroup, boolean withNewResourceGroup,
+                                                      @NotNull String size, @NotNull String region,
+                                                      final VirtualMachineImage vmImage, Object knownImage,
+                                                      boolean isKnownImage, final StorageAccount storageAccount,
+                                                      com.microsoft.tooling.msservices.model.storage.StorageAccount
+                                                              newStorageAccount, boolean withNewStorageAccount,
+                                                      final Network network, VirtualNetwork newNetwork,
+                                                      boolean withNewNetwork, @NotNull String subnet,
+                                                      @Nullable PublicIPAddress pip, boolean withNewPip,
+                                                      @Nullable AvailabilitySet availabilitySet,
+                                                      boolean withNewAvailabilitySet, @NotNull final String username,
+                                                      @Nullable final String password, @Nullable String publicKey)
+            throws Exception {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         Azure azure = azureManager.getAzure(subscriptionId);
         boolean isWindows;
@@ -124,8 +131,8 @@ public class AzureSDKManager {
                         .withSubnet(newNetwork.subnet.name, newNetwork.subnet.addressSpace);
             }
             withPublicIpAddress = withNetwork.withNewPrimaryNetwork(newVirtualNetwork).withPrimaryPrivateIPAddressDynamic();
-//            withPublicIpAddress = withNetwork.withNewPrimaryNetwork("10.0.0.0/28").
-//                    .withPrimaryPrivateIpAddressDynamic();
+            //withPublicIpAddress = withNetwork.withNewPrimaryNetwork("10.0.0.0/28").
+            //.withPrimaryPrivateIpAddressDynamic();
         } else {
             withPublicIpAddress = withNetwork.withExistingPrimaryNetwork(network)
                     .withSubnet(subnet)
@@ -175,7 +182,8 @@ public class AzureSDKManager {
         // ---- Storage Account --------
         if (withNewStorageAccount) {
             StorageAccount.DefinitionStages.WithCreate newAccount;
-            StorageAccount.DefinitionStages.WithGroup withGroupAccount = azure.storageAccounts().define(newStorageAccount.getName()).withRegion(newStorageAccount.getLocation());
+            StorageAccount.DefinitionStages.WithGroup withGroupAccount = azure.storageAccounts()
+                    .define(newStorageAccount.getName()).withRegion(newStorageAccount.getLocation());
             if (newStorageAccount.isNewResourceGroup()) {
                 newAccount = withGroupAccount.withNewResourceGroup(newStorageAccount.getResourceGroupName());
             } else {
