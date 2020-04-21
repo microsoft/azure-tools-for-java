@@ -379,18 +379,18 @@ public class SpringCloudAppPropertyView extends BaseEditor implements IDataRefre
             @Override
             public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
                 final int row = instanceTable.getSelectedRow();
-                final boolean isRowSelected = row >= 0;
-                startStreamingLogsItem.setVisible(isRowSelected);
-                stopStreamingLogsItem.setVisible(isRowSelected);
-                if (isRowSelected) {
+                if (row >= 0) {
                     final String instanceName = (String) instancesTableModel.getValueAt(row, 0);
                     final boolean isInstanceLogStreamingEnabled =
                             SpringCloudStreamingLogManager.getInstance().isLogStreamingStarted(instanceName);
                     stopStreamingLogsItem.setEnabled(isInstanceLogStreamingEnabled);
                     startStreamingLogsItem.setEnabled(!isInstanceLogStreamingEnabled);
+                } else {
+                    DefaultLoader.getIdeHelper().invokeLater(() -> instanceTablePopupMenu.setVisible(false));
                 }
             }
         });
+
         instanceTable.setComponentPopupMenu(instanceTablePopupMenu);
         // Select row with right click
         instanceTable.addMouseListener(new MouseAdapter() {
