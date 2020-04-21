@@ -195,7 +195,7 @@ public class AzureSDKManager {
         return withCreate.create();
     }
 
-    public static List<Resource> getApplicationInsightsResources(@NotNull SubscriptionDetail subscription) throws Exception {
+    public static List<Resource> getApplicationInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException, RestOperationException {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) { // not signed in
             return null;

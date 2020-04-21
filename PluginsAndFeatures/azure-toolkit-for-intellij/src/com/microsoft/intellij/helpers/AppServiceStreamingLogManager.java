@@ -23,6 +23,7 @@ package com.microsoft.intellij.helpers;
 
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
+import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -152,7 +153,9 @@ public enum AppServiceStreamingLogManager {
         private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS =
                 "You must configure Application Insights to enable streaming logs on Linux Function Apps.";
         private static final String AI_INSTANCES_NOT_FOUND =
-                "AI instance defined in app settings cannot be found in current subscription %s";
+                "Application Insights instance defined in app settings cannot be found in current subscription %s";
+        private static final String FAILED_TO_GET_APPLICATION_INSIGHT_INSTANCE =
+                "Failed to get Application Insights instance defined in app settings";
 
         private String resourceId;
         private FunctionApp functionApp;
@@ -180,20 +183,16 @@ public enum AppServiceStreamingLogManager {
         @Override
         public Observable<String> getStreamingLogContent() throws IOException {
             if (getFunctionApp().operatingSystem() == OperatingSystem.LINUX) {
-                try {
-                    // For linux function, we will just open the "Live Metrics Stream" view in the portal
-                    openLiveMetricsStream();
-                    return null;
-                } catch (Exception e) {
-                    throw new IOException(e.getMessage(), e);
-                }
+                // For linux function, we will just open the "Live Metrics Stream" view in the portal
+                openLiveMetricsStream();
+                return null;
             }
             return getFunctionApp().streamAllLogsAsync();
         }
 
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
         // commands/logstream/startStreamingLogs.ts#L53
-        private void openLiveMetricsStream() throws Exception {
+        private void openLiveMetricsStream() throws IOException {
             final AppSetting aiAppSettings = functionApp.getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
             if (aiAppSettings == null) {
                 throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
@@ -204,8 +203,12 @@ public enum AppServiceStreamingLogManager {
             final SubscriptionDetail subscriptionDetail = azureManager.getSubscriptionManager()
                                                                       .getSubscriptionIdToSubscriptionDetailsMap()
                                                                       .get(subscriptionId);
-            final List<Resource> resources =
-                    AzureSDKManager.getApplicationInsightsResources(subscriptionDetail);
+            final List<Resource> resources;
+            try {
+                resources = AzureSDKManager.getApplicationInsightsResources(subscriptionDetail);
+            } catch (RestOperationException e) {
+                throw new IOException(FAILED_TO_GET_APPLICATION_INSIGHT_INSTANCE, e);
+            }
             final Resource target = resources
                     .stream()
                     .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
