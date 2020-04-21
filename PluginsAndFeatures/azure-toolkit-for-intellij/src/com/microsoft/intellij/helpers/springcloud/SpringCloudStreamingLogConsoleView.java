@@ -53,20 +53,21 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
         this.resourceId = resourceId;
     }
 
-    public synchronized ConsoleViewStatus getStatus() {
+    public ConsoleViewStatus getStatus() {
         return status;
     }
 
-    private synchronized void setStatus(ConsoleViewStatus status) {
+    private void setStatus(ConsoleViewStatus status) {
         this.status = status;
     }
 
     public void startLog(Supplier<InputStream> inputStreamSupplier) throws IOException {
-        if (getStatus() != ConsoleViewStatus.STOPPED) {
-            return;
+        synchronized (this) {
+            if (getStatus() != ConsoleViewStatus.STOPPED) {
+                return;
+            }
+            setStatus(ConsoleViewStatus.PENDING);
         }
-
-        setStatus(ConsoleViewStatus.PENDING);
         logInputStream = inputStreamSupplier.get();
         if (logInputStream == null) {
             throw new IOException("Failed to get log streaming content");
@@ -96,25 +97,28 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
     }
 
     public void shutdown() {
-        if (getStatus() == ConsoleViewStatus.ACTIVE) {
+        synchronized (this) {
+            if (getStatus() != ConsoleViewStatus.ACTIVE) {
+                return;
+            }
             setStatus(ConsoleViewStatus.PENDING);
-            DefaultLoader.getIdeHelper().runInBackground(getProject(), "Closing Streaming Log", false, true, "Closing Streaming Log", () -> {
-                try {
-                    if (logInputStream != null) {
-                        try {
-                            logInputStream.close();
-                        } catch (IOException e) {
-                            // swallow io exception when close
-                        }
-                    }
-                    if (executorService != null) {
-                        ThreadPoolUtils.stop(executorService, 100, TimeUnit.MICROSECONDS);
-                    }
-                } finally {
-                    setStatus(ConsoleViewStatus.STOPPED);
-                }
-            });
         }
+        DefaultLoader.getIdeHelper().runInBackground(getProject(), "Closing Streaming Log", false, true, "Closing Streaming Log", () -> {
+            try {
+                if (logInputStream != null) {
+                    try {
+                        logInputStream.close();
+                    } catch (IOException e) {
+                        // swallow io exception when close
+                    }
+                }
+                if (executorService != null) {
+                    ThreadPoolUtils.stop(executorService, 100, TimeUnit.MICROSECONDS);
+                }
+            } finally {
+                setStatus(ConsoleViewStatus.STOPPED);
+            }
+        });
     }
 
     @Override
