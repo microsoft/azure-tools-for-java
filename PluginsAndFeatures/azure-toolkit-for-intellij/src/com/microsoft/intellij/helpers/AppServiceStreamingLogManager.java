@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -145,8 +146,13 @@ public enum AppServiceStreamingLogManager {
 
     class FunctionLogStreaming implements ILogStreaming {
 
+        private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
         private static final String APPLICATION_INSIGHT_PATTERN = "%s/#blade/AppInsightsExtension/QuickPulseBladeV2"
                 + "/ComponentId/%s/ResourceId/%s";
+        private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS =
+                "You must configure Application Insights to stream logs on Linux Function Apps.";
+        private static final String AI_INSTANCES_NOT_FOUND =
+                "AI instance defined in app settings was not found in current subscription %s";
 
         private String resourceId;
         private FunctionApp functionApp;
@@ -157,8 +163,8 @@ public enum AppServiceStreamingLogManager {
 
         @Override
         public boolean isLogStreamingEnabled() throws IOException {
-            return getFunctionApp().operatingSystem() == OperatingSystem.LINUX ? true
-                   : AzureFunctionMvpModel.isApplicationLogEnabled(getFunctionApp());
+            return getFunctionApp().operatingSystem() == OperatingSystem.LINUX ?
+                   true : AzureFunctionMvpModel.isApplicationLogEnabled(getFunctionApp());
         }
 
         @Override
@@ -185,10 +191,12 @@ public enum AppServiceStreamingLogManager {
             return getFunctionApp().streamAllLogsAsync();
         }
 
+        // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/
+        // commands/logstream/startStreamingLogs.ts#L53
         private void openLiveMetricsStream() throws Exception {
-            final AppSetting aiAppSettings = functionApp.getAppSettings().get("APPINSIGHTS_INSTRUMENTATIONKEY");
+            final AppSetting aiAppSettings = functionApp.getAppSettings().get(APPINSIGHTS_INSTRUMENTATIONKEY);
             if (aiAppSettings == null) {
-                throw new IOException("You must configure Application Insights to stream logs on Linux Function Apps.");
+                throw new IOException(MUST_CONFIGURE_APPLICATION_INSIGHTS);
             }
             final String aiKey = aiAppSettings.value();
             final String subscriptionId = AzureMvpModel.getSegment(resourceId, SUBSCRIPTIONS);
@@ -198,28 +206,24 @@ public enum AppServiceStreamingLogManager {
                                                                       .get(subscriptionId);
             final List<Resource> resources =
                     AzureSDKManager.getApplicationInsightsResources(subscriptionDetail);
-            final Resource target =
-                    resources.stream()
-                             .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
-                             .findFirst()
-                             .orElseThrow(() -> new IOException(String.format(
-                                     "AI instances defined in app setting was not found in current subscription %s",
-                                     subscriptionId)));
-            final String componentId = URLEncoder.encode(getAIResourceObject(target).toString(), "utf-8");
-            final String resourceId = URLEncoder.encode(target.getId(), "utf-8");
-            final String url = String.format(APPLICATION_INSIGHT_PATTERN,
-                                             azureManager.getPortalUrl(),
-                                             componentId,
-                                             resourceId);
-            DefaultLoader.getIdeHelper().openLinkInBrowser(url);
+            final Resource target = resources
+                    .stream()
+                    .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
+                    .findFirst()
+                    .orElseThrow(() -> new IOException(String.format(AI_INSTANCES_NOT_FOUND, subscriptionId)));
+            final String aiUrl = getApplicationInsightLiveMetricsUrl(target, azureManager.getPortalUrl());
+            DefaultLoader.getIdeHelper().openLinkInBrowser(aiUrl);
         }
 
-        private JsonObject getAIResourceObject(Resource aiResource) {
+        private String getApplicationInsightLiveMetricsUrl(Resource target, String portalUrl)
+                throws UnsupportedEncodingException {
             final JsonObject componentObject = new JsonObject();
-            componentObject.addProperty("Name", aiResource.getName());
-            componentObject.addProperty("SubscriptionId", AzureMvpModel.getSegment(aiResource.getId(), SUBSCRIPTIONS));
-            componentObject.addProperty("ResourceGroup", aiResource.getResourceGroup());
-            return componentObject;
+            componentObject.addProperty("Name", target.getName());
+            componentObject.addProperty("SubscriptionId", AzureMvpModel.getSegment(target.getId(), SUBSCRIPTIONS));
+            componentObject.addProperty("ResourceGroup", target.getResourceGroup());
+            final String componentId = URLEncoder.encode(componentObject.toString(), "utf-8");
+            final String aiResourceId = URLEncoder.encode(target.getId(), "utf-8");
+            return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);
         }
 
         private FunctionApp getFunctionApp() throws IOException {
