@@ -23,7 +23,8 @@
 package com.microsoft.intellij.helpers;
 
 public enum ConsoleViewStatus {
-    PENDING,
+    STARTING,
     ACTIVE,
+    STOPPING,
     STOPPED
 }

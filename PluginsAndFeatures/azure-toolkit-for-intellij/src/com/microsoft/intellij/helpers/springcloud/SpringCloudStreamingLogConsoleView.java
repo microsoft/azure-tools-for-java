@@ -66,14 +66,14 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             if (getStatus() != ConsoleViewStatus.STOPPED) {
                 return;
             }
-            setStatus(ConsoleViewStatus.PENDING);
+            setStatus(ConsoleViewStatus.STARTING);
         }
         logInputStream = inputStreamSupplier.get();
         if (logInputStream == null) {
+            shutdown();
             throw new IOException("Failed to get log streaming content");
         }
         setStatus(ConsoleViewStatus.ACTIVE);
-
         this.print("Streaming Log Start.\n", ConsoleViewContentType.SYSTEM_OUTPUT);
         executorService = Executors.newSingleThreadExecutor();
         executorService.submit(() -> {
@@ -98,10 +98,10 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
 
     public void shutdown() {
         synchronized (this) {
-            if (getStatus() != ConsoleViewStatus.ACTIVE) {
+            if (getStatus() != ConsoleViewStatus.ACTIVE && getStatus() != ConsoleViewStatus.STARTING) {
                 return;
             }
-            setStatus(ConsoleViewStatus.PENDING);
+            setStatus(ConsoleViewStatus.STOPPING);
         }
         DefaultLoader.getIdeHelper().runInBackground(getProject(), "Closing Streaming Log", false, true, "Closing Streaming Log", () -> {
             try {

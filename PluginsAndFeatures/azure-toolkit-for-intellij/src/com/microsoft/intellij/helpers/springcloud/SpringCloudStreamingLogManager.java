@@ -55,15 +55,13 @@ public class SpringCloudStreamingLogManager {
                 instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
         DefaultLoader.getIdeHelper().runInBackground(project, "Starting Streaming Log...", false, true, null, () -> {
             try {
-                if (consoleView.getStatus() == STOPPED) {
-                    consoleView.startLog(() -> {
-                        try {
-                            return AzureSpringCloudMvpModel.getLogStream(appId, instanceName, 0, 10, 0, true);
-                        } catch (IOException | HttpException e) {
-                            return null;
-                        }
-                    });
-                }
+                consoleView.startLog(() -> {
+                    try {
+                        return AzureSpringCloudMvpModel.getLogStream(appId, instanceName, 0, 10, 0, true);
+                    } catch (IOException | HttpException e) {
+                        return null;
+                    }
+                });
                 StreamingLogsToolWindowManager
                         .getInstance()
                         .showStreamingLogConsole(project, instanceName, instanceName, consoleView);
