@@ -87,13 +87,11 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
     private SpringCloudDeploySettingPresenter presenter = null;
 
-    private boolean isFirstTimeCreated;
     private String lastSelectedSubsId;
     private String lastSelectedClusterId;
 
     public SpringCloudAppSettingPanel(@NotNull Project project, @NotNull SpringCloudDeployConfiguration configuration) {
         super(project);
-        this.isFirstTimeCreated = configuration.isFirstTimeCreated();
         this.configuration = configuration;
         this.presenter = new SpringCloudDeploySettingPresenter();
         this.presenter.onAttachView(this);
@@ -269,8 +267,11 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
     @Override
     public void fillSubscription(@NotNull List<Subscription> subscriptions) {
+        final boolean isPreviousConfigurationExisted =
+                subscriptions.stream()
+                             .anyMatch(subscription -> Comparing.equal(subscription.subscriptionId(),
+                                                                     configuration.getSubscriptionId()));
         fillComboBoxSilently(cbSubscription, () -> {
-            cbSubscription.getItemListeners();
             cbSubscription.removeAllItems();
             for (Subscription subscription : subscriptions) {
                 cbSubscription.addItem(subscription);
@@ -278,11 +279,13 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
                     cbSubscription.setSelectedItem(subscription);
                 }
             }
-        });
+        }, isPreviousConfigurationExisted);
     }
 
     @Override
     public void fillClusters(@NotNull List<ServiceResourceInner> clusters) {
+        final boolean isPreviousConfigurationExisted =
+                clusters.stream().anyMatch(cluster -> Comparing.equal(cluster.id(), configuration.getClusterId()));
         fillComboBoxSilently(cbClusters, () -> {
             boolean selected = cbClusters.getSelectedItem() != null;
             cbClusters.removeAllItems();
@@ -306,11 +309,15 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
                 cbClusters.setSelectedItem(clusters.get(0));
             }
             cbClusters.setEnabled(true);
-        });
+        }, isPreviousConfigurationExisted);
     }
 
     @Override
     public void fillApps(@NotNull List<AppResourceInner> apps) {
+        final boolean isSameSpringAppExist =
+                apps.stream().anyMatch(app -> StringUtils.equals(configuration.getAppName(), app.name()));
+        // We need to update configuration if target spring app does not exists or new create spring app succeed
+        final boolean isPreviousConfigurationExisted = configuration.isCreateNewApp() ^ isSameSpringAppExist;
         fillComboBoxSilently(cbSpringApps, () -> {
             AzureResourceWrapper currentSel = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
             cbSpringApps.removeAllItems();
@@ -346,7 +353,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
                 }
             }
             cbSpringApps.setEnabled(true);
-        });
+        }, isPreviousConfigurationExisted);
     }
 
     @NotNull
@@ -391,9 +398,8 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         setupMavenProjectCombo(mavenProjects, this.configuration.getProjectName());
     }
 
-    private void fillComboBoxSilently(JComboBox cbArtifact, Runnable runnable) {
-        if (isFirstTimeCreated) {
-            // We just need to keep silent when reset from configuration
+    private void fillComboBoxSilently(JComboBox cbArtifact, Runnable runnable, boolean shouldBeSilent) {
+        if (!shouldBeSilent) {
             runnable.run();
             return;
         }
