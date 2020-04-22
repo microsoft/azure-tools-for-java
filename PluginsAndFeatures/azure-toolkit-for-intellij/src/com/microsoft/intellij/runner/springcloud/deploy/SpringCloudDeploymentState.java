@@ -80,6 +80,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     public AppResourceInner executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         // prepare the jar to be deployed
+        updateTelemetryMap(telemetryMap);
         if (StringUtils.isEmpty(springCloudDeployConfiguration.getProjectName())) {
             throw new AzureExecutionException("You must specify a maven project.");
         }
@@ -169,6 +170,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+        telemetryMap.putAll(springCloudDeployConfiguration.getModel().getTelemetryProperties());
     }
 
     private void getUrl(String appId, RunProcessHandler processHandler) {
