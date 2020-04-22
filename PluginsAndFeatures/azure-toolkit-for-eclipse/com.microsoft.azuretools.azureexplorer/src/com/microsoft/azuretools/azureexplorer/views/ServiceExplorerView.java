@@ -25,9 +25,11 @@ package com.microsoft.azuretools.azureexplorer.views;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -83,6 +85,10 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
      * The ID of the view as specified by the extension.
      */
     public static final String ID = "com.microsoft.azuretools.azureexplorer.views.ServiceExplorerView";
+	private static final List<String> UNSUPPORTED_NODE_LIST = Arrays.asList(
+			"com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule",
+			"com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule",
+			"com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule");
 
     private TreeViewer viewer;
     private Action refreshAction;
@@ -245,6 +251,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
     }
 
     private class NodeListChangeListener implements ListChangeListener {
+    	
         private TreeNode treeNode;
 
         public NodeListChangeListener(TreeNode treeNode) {
@@ -258,8 +265,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                 // create child tree nodes for the new nodes
                 for (Node childNode : (Collection<Node>) e.getNewItems()) {
                     // Eclipse do no support arm, so here need to skip resource management node
-                    if (childNode.getClass().getName().equals(
-                            "com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule")) {
+                    if (UNSUPPORTED_NODE_LIST.contains(childNode.getClass().getName()))
+                    {
                         continue;
                     }
                     treeNode.add(createTreeNode(childNode));

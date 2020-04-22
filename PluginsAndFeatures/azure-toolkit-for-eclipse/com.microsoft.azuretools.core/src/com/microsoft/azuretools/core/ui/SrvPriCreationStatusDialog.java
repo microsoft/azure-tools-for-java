@@ -108,6 +108,7 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
     protected Control createDialogArea(Composite parent) {
         setMessage("Service Principal Creation Status");
         setTitle("Service Principal Creation Status");
+        getShell().setText("Service Principal Creation Status");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));

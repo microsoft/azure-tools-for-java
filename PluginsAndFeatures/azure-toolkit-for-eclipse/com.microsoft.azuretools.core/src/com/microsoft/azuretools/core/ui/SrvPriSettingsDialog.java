@@ -94,6 +94,7 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
     protected Control createDialogArea(Composite parent) {
         setMessage("Create Authentication Files");
         setTitle("Create Authentication Files");
+        getShell().setText("Create Authentication Files");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));

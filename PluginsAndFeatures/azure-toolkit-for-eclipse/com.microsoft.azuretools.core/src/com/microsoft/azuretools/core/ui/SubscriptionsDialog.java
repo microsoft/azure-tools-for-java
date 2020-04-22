@@ -95,6 +95,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
     protected Control createDialogArea(Composite parent) {
         setMessage("Select subscription(s) you want to use.");
         setTitle("Your Subscriptions");
+        getShell().setText("Select Subscriptions");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));

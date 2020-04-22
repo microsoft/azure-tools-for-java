@@ -128,6 +128,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     protected Control createDialogArea(Composite parent) {
         setMessage("Azure Sign In");
         setTitle("Azure Sign In");
+        getShell().setText("Azure Sign In");
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new FillLayout(SWT.HORIZONTAL));
