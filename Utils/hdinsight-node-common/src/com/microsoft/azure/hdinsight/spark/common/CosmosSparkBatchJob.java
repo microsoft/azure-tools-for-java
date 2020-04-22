@@ -99,11 +99,14 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
         return super.awaitStarted()
                 .flatMap(state -> Observable.zip(
                         getCosmosSparkCluster(), getSparkJobApplicationIdObservable().defaultIfEmpty(null),
-                        (cluster, appId) -> Pair.of(
-                                state,
-                                cluster.getSparkHistoryUiUri() == null ?
-                                        null :
-                                        cluster.getSparkMasterUiUri().toString() + "?adlaAccountName=" + cluster.getAccount().getName())))
+                        (cluster, appId) -> {
+                            final URI sparkHistoryUiUri = cluster.getSparkHistoryUiUri();
+                            return Pair.of(
+                                    state,
+                                    sparkHistoryUiUri == null ?
+                                    null :
+                                    sparkHistoryUiUri + "?adlaAccountName=" + cluster.getAccount().getName());
+                        }))
                 .map(stateJobUriPair -> {
                     if (stateJobUriPair.getRight() != null) {
                         ctrlHyperLink(stateJobUriPair.getRight());

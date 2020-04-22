@@ -23,13 +23,10 @@
 package com.microsoft.azure.hdinsight.common
 
 import com.intellij.execution.ui.ConsoleView
-import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
-import com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource
-import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
 import java.net.URI
 
 fun ConsoleView.print(typedMessage: SparkLogLine) {

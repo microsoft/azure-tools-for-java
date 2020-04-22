@@ -37,7 +37,7 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
     @NotNull
     private final SparkBatchDebugSession debugSession;
     @NotNull
-    private SparkBatchRemoteDebugJobSshAuth authData;
+    private final SparkBatchRemoteDebugJobSshAuth authData;
 
     public SparkBatchJobRemoteDebugProcess(@NotNull IdeSchedulers schedulers,
                                            @NotNull SparkBatchDebugSession debugSession,
@@ -69,10 +69,10 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
             SparkBatchRemoteDebugJob job) {
         return Observable.zip(job.getSparkDriverHost(), job.getSparkDriverDebuggingPort(), SimpleImmutableEntry::new)
                 .flatMap(remoteHostPortPair ->  {
-                    String remoteHost = remoteHostPortPair.getKey();
-                    int remotePort = remoteHostPortPair.getValue();
+                    final String remoteHost = remoteHostPortPair.getKey();
+                    final int remotePort = remoteHostPortPair.getValue();
 
-                    int localPort = 0;
+                    final int localPort;
                     try {
                         localPort = debugSession
                                 .forwardToRemotePort(remoteHost, remotePort)
@@ -80,7 +80,7 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
 
                         return Observable.just(new SparkBatchDebugJobJdbPortForwardedEvent(
                                 job, debugSession, remoteHost, remotePort, localPort, true));
-                    } catch (JSchException | UnknownServiceException e) {
+                    } catch (final JSchException | UnknownServiceException e) {
                         return Observable.error(e);
                     }
                 });

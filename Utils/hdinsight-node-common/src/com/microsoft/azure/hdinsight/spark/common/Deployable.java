@@ -32,10 +32,10 @@ public interface Deployable {
     /**
      * Deploy the job artifact into cluster
      *
-     * @param src the artifact to deploy
+     * @param src        the artifact to deploy
      * @param logSubject the subject to help print logs during deploying
      * @return Observable: upload path
-     *         Observable Error: IOException;
+     * Observable Error: IOException;
      */
     Observable<String> deploy(File src, Observer<SparkLogLine> logSubject);
 }

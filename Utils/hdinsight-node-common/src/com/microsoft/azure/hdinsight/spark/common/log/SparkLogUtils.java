@@ -54,7 +54,7 @@ public class SparkLogUtils {
             final Matcher matcher = log4jLevelRegex.matcher(msg);
 
             if (matcher.find()) {
-                Level level = Level.toLevel(matcher.group("level"));
+                final Level level = Level.toLevel(matcher.group("level"));
                 if (level.isGreaterOrEqual(Level.ERROR)) {
                     return new SparkLogLine(current.getLogSource(), Error, msg);
                 }

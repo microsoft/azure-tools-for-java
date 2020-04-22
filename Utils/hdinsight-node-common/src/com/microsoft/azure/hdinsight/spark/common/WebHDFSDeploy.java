@@ -56,13 +56,13 @@ public class WebHDFSDeploy implements Deployable, ILogger {
     IClusterDetail cluster;
 
     @NotNull
-    private HttpObservable http;
+    private final HttpObservable http;
 
     @NotNull
-    private List<NameValuePair> createDirReqParams;
+    private final List<NameValuePair> createDirReqParams;
 
     @NotNull
-    private List<NameValuePair> uploadReqParams;
+    private final List<NameValuePair> uploadReqParams;
 
     @NotNull
     public String destinationRootPath;
@@ -95,8 +95,8 @@ public class WebHDFSDeploy implements Deployable, ILogger {
         // 1.put request to create new dir
         // 2.put request to get 307 redirect uri from response
         // 3.put redirect request with file content as setEntity
-        URI dest = getUploadDir();
-        HttpPut req = new HttpPut(dest.toString());
+        final URI dest = getUploadDir();
+        final HttpPut req = new HttpPut(dest.toString());
         return http.request(req, null, this.createDirReqParams, null)
                 .doOnNext(
                         resp -> {
@@ -113,7 +113,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                         Exceptions.propagate(new UnknownServiceException("Can not get valid redirect uri using webHDFS storage type"));
                     }
                 })
-                .map(redirectedUri -> new HttpPut(redirectedUri))
+                .map(HttpPut::new)
                 .flatMap(put -> {
                     try {
                         InputStreamEntity reqEntity = new InputStreamEntity(
@@ -130,7 +130,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                 .map(ignored -> {
                     try {
                         return getArtifactUploadedPath(dest.resolve(src.getName()).toString());
-                    } catch (URISyntaxException ex) {
+                    } catch (final URISyntaxException ex) {
                         throw new RuntimeException(new IllegalArgumentException("Can not get valid artifact upload path" + ex.toString()));
                     }
                 });
@@ -138,8 +138,8 @@ public class WebHDFSDeploy implements Deployable, ILogger {
 
     @Nullable
     public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        List<NameValuePair> params = new WebHdfsParamsBuilder("OPEN").build();
-        URIBuilder uriBuilder = new URIBuilder(rootPath);
+        final List<NameValuePair> params = new WebHdfsParamsBuilder("OPEN").build();
+        final URIBuilder uriBuilder = new URIBuilder(rootPath);
         uriBuilder.addParameters(params);
         return uriBuilder.build().toString();
     }

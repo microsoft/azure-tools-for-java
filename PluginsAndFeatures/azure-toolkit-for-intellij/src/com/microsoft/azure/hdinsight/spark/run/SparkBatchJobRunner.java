@@ -38,7 +38,6 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.AbfsUri;
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.*;
@@ -57,7 +56,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.subjects.PublishSubject;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -83,8 +81,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     protected String transformToGen2Uri(String url) {
         return AbfsUri.isType(url)
-                ? AbfsUri.parse(url).getUri().toString()
-                : url;
+               ? AbfsUri.parse(url).getUri().toString()
+               : url;
     }
 
     // If we use virtual file system to select referenced jars or files on ADLS Gen2 storage, the selected file path will
@@ -92,13 +90,13 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     // "Server returned HTTP response code: 401 for URL: https://accountName.dfs.core.windows.net/fs0/Reference.jar"
     // Therefore, we need to transform the Gen2 "https" URI to "abfs" url to avoid the error.
     protected SparkSubmissionParameter prepareSubmissionParameterWithTransformedGen2Uri(SparkSubmissionParameter parameter) {
-        SparkSubmissionParameter newParameter = SparkSubmissionParameter.copyOf(parameter);
+        final SparkSubmissionParameter newParameter = SparkSubmissionParameter.copyOf(parameter);
         newParameter.setReferencedJars(newParameter.getReferencedJars().stream()
-                .map(jar -> transformToGen2Uri(jar))
-                .collect(Collectors.toList()));
+                                                   .map(this::transformToGen2Uri)
+                                                   .collect(Collectors.toList()));
         newParameter.setReferencedFiles(newParameter.getReferencedFiles().stream()
-                .map(file -> transformToGen2Uri(file))
-                .collect(Collectors.toList()));
+                                                    .map(this::transformToGen2Uri)
+                                                    .collect(Collectors.toList()));
         return newParameter;
     }
 
@@ -106,25 +104,26 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     @NotNull
     public Observable<ISparkBatchJob> buildSparkBatchJob(@NotNull SparkSubmitModel submitModel) {
         return Observable.fromCallable(() -> {
-            String clusterName = submitModel.getSubmissionParameter().getClusterName();
+            final String clusterName = submitModel.getSubmissionParameter().getClusterName();
 
             updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
                 progressIndicator.setFraction(0.2f);
                 progressIndicator.setText("Get Spark cluster [" + clusterName + "] information from subscriptions");
             });
 
-            IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
-                    .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
+            final IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
+                                                                 .orElseThrow(() -> new ExecutionException(
+                                                                         "Can't find cluster named " + clusterName));
 
             updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
                 progressIndicator.setFraction(0.7f);
                 progressIndicator.setText("Get the storage configuration for artifacts deployment");
             });
 
-            Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
+            final Deployable jobDeploy = SparkBatchJobDeployFactory.getInstance().buildSparkBatchJobDeploy(
                     submitModel, clusterDetail);
 
-            SparkSubmissionParameter submissionParameter =
+            final SparkSubmissionParameter submissionParameter =
                     prepareSubmissionParameterWithTransformedGen2Uri(submitModel.getSubmissionParameter());
 
             updateCurrentBackgroundableTaskIndicator(progressIndicator -> {
@@ -132,7 +131,10 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 progressIndicator.setText("All checks are passed.");
             });
 
-            return new SparkBatchJob(clusterDetail, submissionParameter, getClusterSubmission(clusterDetail), jobDeploy);
+            return new SparkBatchJob(clusterDetail,
+                                     submissionParameter,
+                                     getClusterSubmission(clusterDetail),
+                                     jobDeploy);
         });
     }
 
@@ -141,8 +143,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
 
     protected void sendTelemetryForParameters(@NotNull SparkSubmitModel model, @Nullable Operation operation) {
         try {
-            SparkSubmissionParameter params = model.getSubmissionParameter();
-            Map<String, String> props = new HashMap<>();
+            final SparkSubmissionParameter params = model.getSubmissionParameter();
+            final Map<String, String> props = new HashMap<>();
 
             if (params.getDriverCores() != null) {
                 props.put(SparkSubmissionParameter.DriverCores, params.getDriverCores().toString());
@@ -164,33 +166,45 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
                 props.put(SparkSubmissionParameter.NumExecutors, params.getNumExecutors().toString());
             }
 
-            props.put("refJarsCount", String.valueOf(Optional.ofNullable(params.getReferencedJars()).orElse(ImmutableList.of()).size()));
-            props.put("refFilesCount", String.valueOf(Optional.ofNullable(params.getReferencedFiles()).orElse(ImmutableList.of()).size()));
-            props.put("commandlineArgsCount", String.valueOf(Optional.ofNullable(params.getArgs()).orElse(ImmutableList.of()).size()));
+            props.put("refJarsCount",
+                      String.valueOf(Optional.ofNullable(params.getReferencedJars())
+                                             .orElse(ImmutableList.of())
+                                             .size()));
+            props.put("refFilesCount",
+                      String.valueOf(Optional.ofNullable(params.getReferencedFiles())
+                                             .orElse(ImmutableList.of())
+                                             .size()));
+            props.put("commandlineArgsCount",
+                      String.valueOf(Optional.ofNullable(params.getArgs()).orElse(ImmutableList.of()).size()));
             props.put("isLocalArtifact", String.valueOf(model.getIsLocalArtifact()));
             props.put("isDefaultArtifact",
-                    model.getIsLocalArtifact()
-                            ? "none"
-                            : String.valueOf(Optional.ofNullable(model.getArtifactName()).orElse("").toLowerCase().endsWith("defaultartifact")));
+                      model.getIsLocalArtifact()
+                      ? "none"
+                      : String.valueOf(Optional.ofNullable(model.getArtifactName())
+                                               .orElse("")
+                                               .toLowerCase()
+                                               .endsWith("defaultartifact")));
             EventUtil.logEvent(EventType.info, operation, props);
-        } catch (Exception ignored) {
-            log().warn("Error sending telemetry when submit spark jobs. " + ExceptionUtils.getStackTrace(ignored));
+        } catch (final Exception exp) {
+            log().warn("Error sending telemetry when submit spark jobs. " + ExceptionUtils.getStackTrace(exp));
         }
     }
 
     @Nullable
     @Override
-    protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) throws ExecutionException {
-        SparkBatchRemoteRunProfileState submissionState = (SparkBatchRemoteRunProfileState) state;
+    protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment)
+            throws ExecutionException {
+        final SparkBatchRemoteRunProfileState submissionState = (SparkBatchRemoteRunProfileState) state;
 
-        SparkSubmitModel submitModel = submissionState.getSubmitModel();
-        Project project = submitModel.getProject();
+        final SparkSubmitModel submitModel = submissionState.getSubmitModel();
+        final Project project = submitModel.getProject();
 
         // Prepare the run table console view UI
-        SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
+        final SparkJobLogConsoleView jobOutputView = new SparkJobLogConsoleView(project);
 
-        String artifactPath = submitModel.getArtifactPath().orElse(null);
-        assert artifactPath != null : "artifactPath should be checked in LivySparkBatchJobRunConfiguration::checkSubmissionConfigurationBeforeRun";
+        final String artifactPath = submitModel.getArtifactPath().orElse(null);
+        assert artifactPath != null
+                : "artifactPath should be checked in LivySparkBatchJobRunConfiguration::checkSubmissionConfigurationBeforeRun";
 
         // To address issue https://github.com/microsoft/azure-tools-for-java/issues/4021.
         // In this issue, when user click rerun button, we are still using the legacy ctrlSubject which has already sent
@@ -199,32 +213,38 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         final ISparkBatchJob sparkBatch = submissionState.getSparkBatch().clone();
         final PublishSubject<SparkLogLine> ctrlSubject =
                 (PublishSubject<SparkLogLine>) sparkBatch.getCtrlSubject();
-        SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
+        final SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
                 sparkBatch,
                 artifactPath,
                 submitModel.getSubmissionParameter().getMainClassName(),
                 ctrlSubject);
-        SparkBatchJobRunProcessHandler processHandler = new SparkBatchJobRunProcessHandler(remoteProcess, "Package and deploy the job to Spark cluster", null);
+        final SparkBatchJobRunProcessHandler processHandler = new SparkBatchJobRunProcessHandler(remoteProcess,
+                                                                                                 "Package and deploy the job to Spark cluster",
+                                                                                                 null);
 
         // After attaching, the console view can read the process inputStreams and display them
         jobOutputView.attachToProcess(processHandler);
 
         remoteProcess.start();
-        Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
+        final Operation operation = environment.getUserData(TelemetryKeys.OPERATION);
         // After we define a new AnAction class, IntelliJ will construct a new AnAction instance for us.
         // Use one action instance can keep behaviours like isEnabled() consistent
-        SparkBatchJobDisconnectAction disconnectAction =
+        final SparkBatchJobDisconnectAction disconnectAction =
                 (SparkBatchJobDisconnectAction) ActionManager.getInstance().getAction("Actions.SparkJobDisconnect");
         disconnectAction.init(remoteProcess, operation);
 
         sendTelemetryForParameters(submitModel, operation);
 
-        ExecutionResult result = new DefaultExecutionResult(jobOutputView, processHandler, Separator.getInstance(), disconnectAction);
+        final ExecutionResult result = new DefaultExecutionResult(jobOutputView,
+                                                                  processHandler,
+                                                                  Separator.getInstance(),
+                                                                  disconnectAction);
         submissionState.setExecutionResult(result);
-        submissionState.setConsoleView(jobOutputView.getSecondaryConsoleView());
+        final ConsoleView consoleView = jobOutputView.getSecondaryConsoleView();
+        submissionState.setConsoleView(consoleView);
 
-        addConsoleViewFilter(remoteProcess.getSparkJob(), submissionState.getConsoleView());
+        addConsoleViewFilter(remoteProcess.getSparkJob(), consoleView);
 
         submissionState.setRemoteProcessCtrlLogHandler(processHandler);
 
@@ -240,7 +260,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
     @Override
     public void setFocus(@NotNull RunConfiguration runConfiguration) {
         if (runConfiguration instanceof LivySparkBatchJobRunConfiguration) {
-            LivySparkBatchJobRunConfiguration livyRunConfig = (LivySparkBatchJobRunConfiguration) runConfiguration;
+            final LivySparkBatchJobRunConfiguration livyRunConfig =
+                    (LivySparkBatchJobRunConfiguration) runConfiguration;
             livyRunConfig.getModel().setFocusedTabIndex(1);
         }
     }

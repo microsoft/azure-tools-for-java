@@ -44,17 +44,17 @@ import java.util.Optional;
 
 public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     @NotNull
-    private IdeSchedulers schedulers;
+    private final IdeSchedulers schedulers;
     @NotNull
-    private String artifactPath;
+    private final String artifactPath;
     @NotNull
     private final String title;
     @NotNull
     private final PublishSubject<SparkLogLine> ctrlSubject;
     @NotNull
-    private SparkJobLogInputStream jobStdoutLogInputSteam;
+    private final SparkJobLogInputStream jobStdoutLogInputSteam;
     @NotNull
-    private SparkJobLogInputStream jobStderrLogInputSteam;
+    private final SparkJobLogInputStream jobStderrLogInputSteam;
     @Nullable
     private Subscription jobSubscription;
     @NotNull
@@ -179,11 +179,9 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                         sparkJob.ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
-                    Arrays.stream(err.getMessage().split("\\n")).forEach(line -> sparkJob.ctrlError(line));
+                    Arrays.stream(err.getMessage().split("\\n")).forEach(sparkJob::ctrlError);
                     destroy();
-                }, () -> {
-                    disconnect();
-                });
+                }, this::disconnect);
     }
 
     @NotNull

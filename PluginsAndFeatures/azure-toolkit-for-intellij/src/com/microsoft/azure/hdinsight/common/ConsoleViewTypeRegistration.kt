@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.hdinsight.common
 
-import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.execution.ui.ConsoleViewContentType.*
 import com.intellij.openapi.components.ApplicationComponent
 import com.intellij.openapi.util.Key
@@ -35,9 +34,9 @@ import com.intellij.openapi.util.Key
  */
 class ConsoleViewTypeRegistration: ApplicationComponent {
     companion object {
-        private val LOG_WARNING_OUTPUT_KEY = Key<Any>(ConsoleViewContentType.LOG_WARNING_OUTPUT.toString())
-        private val LOG_INFO_OUTPUT_KEY = Key<Any>(ConsoleViewContentType.LOG_INFO_OUTPUT.toString())
-        private val LOG_ERROR_OUTPUT_KEY = Key<Any>(ConsoleViewContentType.LOG_ERROR_OUTPUT.toString())
+        private val LOG_WARNING_OUTPUT_KEY = Key<Any>(LOG_WARNING_OUTPUT.toString())
+        private val LOG_INFO_OUTPUT_KEY = Key<Any>(LOG_INFO_OUTPUT.toString())
+        private val LOG_ERROR_OUTPUT_KEY = Key<Any>(LOG_ERROR_OUTPUT.toString())
 
         val contentTypeKeyMap = mapOf(
                 LOG_ERROR_OUTPUT to LOG_ERROR_OUTPUT_KEY,

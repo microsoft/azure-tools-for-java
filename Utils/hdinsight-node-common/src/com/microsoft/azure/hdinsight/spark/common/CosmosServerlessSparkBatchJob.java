@@ -49,14 +49,14 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Log;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
 import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Livy;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
 
 public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     private final AzureSparkServerlessAccount account;
     @NotNull
-    private String jobUuid;
+    private final String jobUuid;
     @NotNull
     private final Deployable jobDeploy;
 
@@ -109,15 +109,17 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     public Observable<Boolean> prepareSparkEventsLogFolder() {
         return Observable.fromCallable(() -> {
             try {
-                String path = getSubmissionParameter().sparkEventsDirectoryPath();
-                String accessToken = getHttp().getAccessToken();
-                ADLStoreClient storeClient = ADLStoreClient.createClient(URI.create(getAccount().getStorageRootPath()).getHost(), accessToken);
+                final String path = getSubmissionParameter().sparkEventsDirectoryPath();
+                final String accessToken = getHttp().getAccessToken();
+                final String storageRootPath = getAccount().getStorageRootPath();
+                assert storageRootPath != null : "Storage root path should not be null";
+                final ADLStoreClient storeClient = ADLStoreClient.createClient(URI.create(storageRootPath).getHost(), accessToken);
                 if (storeClient.checkExists(path)) {
                     return true;
                 } else {
                     return storeClient.createDirectory(path);
                 }
-            } catch (Exception ex) {
+            } catch (final Exception ex) {
                 throw new IOException("Spark events log path preparation failed", ex);
             }
         });
@@ -158,7 +160,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
         return getAccount().killSparkBatchJobRequest(getJobUuid())
                 .map(resp -> this)
                 .onErrorReturn(err -> {
-                    String errHint = "Failed to kill spark job.";
+                    final String errHint = "Failed to kill spark job.";
                     ctrlInfo(errHint + " " + err.getMessage());
                     log().warn(errHint + ExceptionUtils.getStackTrace(err));
                     return this;
@@ -186,11 +188,9 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 .repeatWhen(ob -> ob.delay(GET_JOB_DONE_REPEAT_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS))
                 .takeUntil(this::isJobEnded)
                 .filter(this::isJobEnded)
-                .map(batchResp -> {
-                    return new AbstractMap.SimpleImmutableEntry<>(
-                            Optional.ofNullable(getJobState(batchResp)).orElse("unknown"),
-                            getJobLog(batchResp));
-                });
+                .map(batchResp -> new AbstractMap.SimpleImmutableEntry<>(
+                        Optional.ofNullable(getJobState(batchResp)).orElse("unknown"),
+                        getJobLog(batchResp)));
     }
 
     @Override
@@ -220,7 +220,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                     if (isJobRunning(batchResp) || isJobSuccess(batchResp)) {
                         return Observable.just(getJobState(batchResp));
                     } else if (isJobFailed(batchResp)) {
-                        String errorMsg = "The Spark job failed to start due to:\n" + getJobLog(batchResp);
+                        final String errorMsg = "The Spark job failed to start due to:\n" + getJobLog(batchResp);
                         log().warn(errorMsg);
                         return Observable.error(new SparkJobException(errorMsg));
                     } else {
@@ -242,12 +242,11 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                                            int batchId,
                                                            int startIndex,
                                                            int maxLinePerGet) {
-        String requestUrl = String.format("%s/batches/%d/log", livyUrl, batchId);
-        List<NameValuePair> parameters = Arrays.asList(
+        final String requestUrl = String.format("%s/batches/%d/log", livyUrl, batchId);
+        final List<NameValuePair> parameters = Arrays.asList(
                 new BasicNameValuePair("from", String.valueOf(startIndex)),
                 new BasicNameValuePair("size", String.valueOf(maxLinePerGet)));
-        List<Header> headers = Arrays.asList(
-                new BasicHeader("x-ms-kobo-account-name", getAccount().getName()));
+        final List<Header> headers = Collections.singletonList(new BasicHeader("x-ms-kobo-account-name", getAccount().getName()));
         return getHttp()
                 .withUuidUserAgent()
                 .get(requestUrl, parameters, headers, SparkJobLog.class);
@@ -260,20 +259,20 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
 
     public boolean isJobSuccess(
             @NotNull com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob batchResp) {
-        String jobState = getJobState(batchResp);
+        final String jobState = getJobState(batchResp);
         return jobState != null && isSuccess(jobState);
     }
 
     public boolean isJobFailed(
             @NotNull com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob batchResp) {
-        String jobState = getJobState(batchResp);
+        final String jobState = getJobState(batchResp);
         return jobState != null && isDone(jobState) && !isSuccess(jobState);
     }
 
     public boolean isJobEnded(
             @NotNull com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.SparkBatchJob batchResp) {
-        String jobSchedulerState = getJobSchedulerState(batchResp);
-        String jobRunningState = getJobState(batchResp);
+        final String jobSchedulerState = getJobSchedulerState(batchResp);
+        final String jobRunningState = getJobState(batchResp);
         // Sometimes the job is not even started but go to ENDED state,
         // so we only get SchedulerState.ENDED state but empty jobRunningState
         return (jobSchedulerState != null && jobSchedulerState.equalsIgnoreCase(SchedulerState.ENDED.toString()))
@@ -335,7 +334,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
     @Override
     public Observable<SparkLogLine> getSubmissionLog() {
-        ImmutableSet<String> ignoredEmptyLines = ImmutableSet.of("stdout:", "stderr:", "yarn diagnostics:");
+        final ImmutableSet<String> ignoredEmptyLines = ImmutableSet.of("stdout:", "stderr:", "yarn diagnostics:");
         final int GET_LIVY_URL_REPEAT_DELAY_MILLISECONDS = 3000;
         final int MAX_LOG_LINES_PER_REQUEST = 128;
         final int GET_LOG_REPEAT_DELAY_MILLISECONDS = 1000;
@@ -357,9 +356,9 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                 .filter(batchResp -> isJobEnded(batchResp) || StringUtils.isNotEmpty(getLivyAPI(batchResp)))
                 .flatMap(job -> {
                     if (isJobEnded(job)) {
-                        String jobState = getJobState(job);
-                        String schedulerState = getJobSchedulerState(job);
-                        String message = String.format("Job scheduler state: %s. Job running state: %s.", schedulerState, jobState);
+                        final String jobState = getJobState(job);
+                        final String schedulerState = getJobSchedulerState(job);
+                        final String message = String.format("Job scheduler state: %s. Job running state: %s.", schedulerState, jobState);
                         return Observable.just(new SparkLogLine(Tool, Info, message));
                     } else {
                         return Observable.just(job)
@@ -401,11 +400,11 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                                             || jobSchedulerState != null && jobSchedulerState.equalsIgnoreCase(SchedulerState.ENDED.toString());
                                                 })
                                                 .flatMap(logAndStatesTriple -> {
-                                                    String jobRunningState = logAndStatesTriple.getMiddle();
-                                                    String jobSchedulerState = logAndStatesTriple.getRight();
+                                                    final String jobRunningState = logAndStatesTriple.getMiddle();
+                                                    final String jobSchedulerState = logAndStatesTriple.getRight();
                                                     if (jobRunningState != null && !jobRunningState.equalsIgnoreCase(SparkBatchJobState.STARTING.toString())
                                                             || jobSchedulerState != null && jobSchedulerState.equalsIgnoreCase(SchedulerState.ENDED.toString())) {
-                                                        String message = String.format("Job scheduler state: %s. Job running state: %s.", jobSchedulerState, jobRunningState);
+                                                        final String message = String.format("Job scheduler state: %s. Job running state: %s.", jobSchedulerState, jobRunningState);
                                                         return Observable.just(
                                                                 new SparkLogLine(Tool, Info, message));
                                                     } else {

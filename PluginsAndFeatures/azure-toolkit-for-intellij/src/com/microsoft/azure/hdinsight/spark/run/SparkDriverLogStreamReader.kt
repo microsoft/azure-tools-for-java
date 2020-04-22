@@ -30,7 +30,6 @@ import com.microsoft.azure.hdinsight.common.ConsoleViewLogLine
 import com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistration.Companion.contentTypeKeyMap
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
-import com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogUtils
 import java.io.InputStream
 import java.nio.charset.Charset

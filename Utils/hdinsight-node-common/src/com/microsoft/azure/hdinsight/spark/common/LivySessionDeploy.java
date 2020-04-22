@@ -30,9 +30,10 @@ import rx.Observable;
 import rx.Observer;
 
 import java.io.File;
+import java.util.AbstractMap;
 
 public class LivySessionDeploy implements Deployable, ILogger {
-    private String clusterName;
+    private final String clusterName;
 
     public LivySessionDeploy(@NotNull String clusterName) {
         this.clusterName = clusterName;
@@ -41,7 +42,7 @@ public class LivySessionDeploy implements Deployable, ILogger {
     @Override
     public Observable<String> deploy(File src, Observer<SparkLogLine> logSubject) {
         return JobUtils.deployArtifact(src.getAbsolutePath(), clusterName, logSubject)
-                .map(clusterArtifactUriPair -> clusterArtifactUriPair.getValue())
-                .toObservable();
+                       .map(AbstractMap.SimpleImmutableEntry::getValue)
+                       .toObservable();
     }
 }

@@ -36,7 +36,8 @@ import static com.microsoft.azure.hdinsight.common.MessageInfoType.HtmlPersisten
 import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
 
 public class ArcadiaSparkBatchJob extends SparkBatchJob {
-    private final @NotNull Deployable deployDelegate;
+    @NotNull
+    private final  Deployable deployDelegate;
 
     public ArcadiaSparkBatchJob(final @NotNull SparkSubmissionParameter submissionParameter,
                                 final @NotNull SparkBatchSubmission sparkBatchSubmission,
@@ -49,13 +50,13 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
         return deployDelegate.deploy(new File(artifactPath), getCtrlSubject())
-                .map(uploadedUri -> {
-                    ctrlInfo(String.format("File %s has been uploaded to %s.", artifactPath, uploadedUri));
+                             .map(uploadedUri -> {
+                                 ctrlInfo(String.format("File %s has been uploaded to %s.", artifactPath, uploadedUri));
 
-                    getSubmissionParameter().setFilePath(uploadedUri);
+                                 getSubmissionParameter().setFilePath(uploadedUri);
 
-                    return this;
-                });
+                                 return this;
+                             });
     }
 
     @NotNull
@@ -63,10 +64,10 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     public Observable<String> awaitStarted() {
         // No submission log and driver log fetching supports
         return Observable.just("no_waiting")
-                .doOnNext(state -> ctrlInfo("The Spark Batch job has been submitted to Synapse Spark pool"
-                        + getConnectUri().toString()
-                        + " with the following parameters: "
-                        + getSubmissionParameter().serializeToJson()));
+                         .doOnNext(state -> ctrlInfo("The Spark Batch job has been submitted to Synapse Spark pool"
+                                                             + getConnectUri().toString()
+                                                             + " with the following parameters: "
+                                                             + getSubmissionParameter().serializeToJson()));
     }
 
     @NotNull
@@ -79,7 +80,7 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @Override
     public Observable<SparkLogLine> getSubmissionLog() {
         // No batches/{id}/log API support yet
-        URL jobHistoryWebUrl = getJobHistoryWebUrl();
+        final URL jobHistoryWebUrl = getJobHistoryWebUrl();
         String trackingJobMsg = "Track the batch job by opening ";
         if (jobHistoryWebUrl != null) {
             trackingJobMsg += "<a href=\"" + jobHistoryWebUrl + "\">Spark Job History Server</a> and ";
@@ -97,7 +98,7 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
         return Observable.empty();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public URI getConnectUri() {
         return getArcadiaSubmission().getLivyUri().resolve("batches");

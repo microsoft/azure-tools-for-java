@@ -218,10 +218,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
             }
         });
 
-        debugEventSubject.subscribeOn(Schedulers.io()).doAfterTerminate(() -> {
-            // Call after completed or error
-            session.close();
-        }).subscribe(debugEvent -> {
+        // Call after completed or error
+        debugEventSubject.subscribeOn(Schedulers.io()).doAfterTerminate(session::close).subscribe(debugEvent -> {
             try {
                 if (debugEvent instanceof SparkBatchRemoteDebugHandlerReadyEvent) {
                     final SparkBatchRemoteDebugHandlerReadyEvent handlerReadyEvent =
@@ -344,8 +342,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         ExecutionManager.getInstance(project).startRunProfile(new RunProfileStarter() {
             @Override
             public Promise<RunContentDescriptor> executeAsync(@NotNull final RunProfileState state,
-                                                              @NotNull final ExecutionEnvironment env)
-                    throws ExecutionException {
+                                                              @NotNull final ExecutionEnvironment env) {
                 driverDebugHandler.getRemoteDebugProcess().start();
 
                 return jobDriverEnvReady

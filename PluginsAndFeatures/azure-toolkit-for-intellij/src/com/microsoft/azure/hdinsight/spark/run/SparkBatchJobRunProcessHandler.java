@@ -41,7 +41,9 @@ public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatc
         implements SparkBatchJobProcessCtrlLogOut, AnsiEscapeDecoder.ColoredTextAcceptor {
     private final AnsiEscapeDecoder myAnsiEscapeDecoder = new AnsiEscapeDecoder();
 
-    public SparkBatchJobRunProcessHandler(@NotNull SparkBatchJobRemoteProcess process, String commandLine, @Nullable Charset charset) {
+    public SparkBatchJobRunProcessHandler(@NotNull SparkBatchJobRemoteProcess process,
+                                          String commandLine,
+                                          @Nullable Charset charset) {
         super(new SparkBatchJobProcessAdapter(process), commandLine, charset);
 
         super.addProcessListener(new ProcessAdapter() {
@@ -61,7 +63,7 @@ public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatc
         process.getCtrlSubject().subscribe(
                 ignored -> {},
                 err -> notifyProcessTerminated(-1),
-                () -> notifyProcessDetached()
+                this::notifyProcessDetached
         );
     }
 

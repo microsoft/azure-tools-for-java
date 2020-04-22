@@ -26,9 +26,10 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
 import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
 
-class ConsoleViewLogLine {
+class ConsoleViewLogLine(SparkLogLine: SparkLogLine) {
     val formatText: String
     val contentType: ConsoleViewContentType
+
     companion object {
         @JvmStatic val messageInfoTypeToConsoleViewContentType = mapOf(
                 MessageInfoType.Debug to ConsoleViewContentType.LOG_DEBUG_OUTPUT,
@@ -40,7 +41,7 @@ class ConsoleViewLogLine {
         )
     }
 
-    constructor(SparkLogLine: SparkLogLine) {
+    init {
         this.formatText =
                 if (SparkLogLine.messageInfoType == MessageInfoType.HtmlPersistentMessage) {
                     SparkLogLine.rawLog

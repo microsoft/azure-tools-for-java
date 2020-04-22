@@ -208,7 +208,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         /**
          * Set Spark session configuration.
          *
-         * @param key key for Spark configuration to set into option
+         * @param key   key for Spark configuration to set into option
          * @param value value for Spark configuration to set into option
          * @return current {@link CreateParameters} instance for fluent calling
          */
@@ -246,6 +246,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
         /**
          * Build POST request body for Spark session.
+         *
          * @return current {@link PostSessions} instance Post body
          */
         public PostSessions build() {
@@ -262,15 +263,17 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
             }
 
             postBody.setExecutorCores(Integer.parseInt(jobConfig.getOrDefault(EXECUTOR_CORES,
-                    Integer.toString(EXECUTOR_CORES_DEFAULT_VALUE))));
+                                                                              Integer.toString(
+                                                                                      EXECUTOR_CORES_DEFAULT_VALUE))));
             postBody.setNumExecutors(Integer.parseInt(jobConfig.getOrDefault(NUM_EXECUTORS,
-                    Integer.toString(NUM_EXECUTORS_DEFAULT_VALUE))));
+                                                                             Integer.toString(
+                                                                                     NUM_EXECUTORS_DEFAULT_VALUE))));
             postBody.setDriverCores(Integer.parseInt(jobConfig.getOrDefault(DRIVER_CORES,
-                    Integer.toString(DRIVER_CORES_DEFAULT_VALUE))));
+                                                                            Integer.toString(DRIVER_CORES_DEFAULT_VALUE))));
             postBody.setDriverMemory(new MemorySize(jobConfig.getOrDefault(DRIVER_MEMORY,
-                    DRIVER_MEMORY_DEFAULT_VALUE)).toString());
+                                                                           DRIVER_MEMORY_DEFAULT_VALUE)).toString());
             postBody.setExecutorMemory(new MemorySize(jobConfig.getOrDefault(EXECUTOR_MEMORY,
-                    EXECUTOR_MEMORY_DEFAULT_VALUE)).toString());
+                                                                             EXECUTOR_MEMORY_DEFAULT_VALUE)).toString());
 
             if (!this.referenceFiles.isEmpty()) {
                 postBody.setFiles(this.referenceFiles);
@@ -297,8 +300,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
             // Put only spark or yarn configurations
             this.jobConfig.entrySet().stream()
-                    .filter(entry -> !jobConfigKeyBlackList.contains(entry.getKey()))
-                    .forEach(confBuilder::put);
+                          .filter(entry -> !jobConfigKeyBlackList.contains(entry.getKey()))
+                          .forEach(confBuilder::put);
 
             // In Livy 0.5.0-incubating, we have to either specify code kind in post statement
             // or set it in post session body here, or else "Code type should be specified if session kind is shared"
@@ -326,12 +329,12 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
     /**
      * Create a Livy session instance.
      *
-     * @param name the session name which will be found in resource manager, such as Yarn
-     * @param baseUrl the connect URL of Livy, also the parent URL of submitting POST Livy session request,
-     *                ending with '/'
+     * @param name             the session name which will be found in resource manager, such as Yarn
+     * @param baseUrl          the connect URL of Livy, also the parent URL of submitting POST Livy session request,
+     *                         ending with '/'
      * @param createParameters the session options for creation
-     * @param username the username of Basic Authentication, leave NULL for other authentication methods
-     * @param password the password of Basic Authentication, leave NULL for other authentication methods
+     * @param username         the username of Basic Authentication, leave NULL for other authentication methods
+     * @param password         the password of Basic Authentication, leave NULL for other authentication methods
      */
     public Session(final String name,
                    final URI baseUrl,
@@ -377,20 +380,20 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     public Observable<String> getAppId() {
         return appId != null ?
-                Observable.just(appId) :
-                this.get()
-                    .repeatWhen(ob -> ob.delay(1, TimeUnit.SECONDS))
-                    .takeUntil(session -> session.appId != null)
-                    .filter(session -> session.appId != null)
-                    .timeout(3, TimeUnit.MINUTES)
-                    .map(session -> {
-                        if (session.appId == null || session.appId.isEmpty()) {
-                            throw propagate(new ApplicationNotStartException(
-                                    getName() + " application isn't started in 3 minutes."));
-                        }
+               Observable.just(appId) :
+               this.get()
+                   .repeatWhen(ob -> ob.delay(1, TimeUnit.SECONDS))
+                   .takeUntil(session -> session.appId != null)
+                   .filter(session -> session.appId != null)
+                   .timeout(3, TimeUnit.MINUTES)
+                   .map(session -> {
+                       if (session.appId == null || session.appId.isEmpty()) {
+                           throw propagate(new ApplicationNotStartException(
+                                   getName() + " application isn't started in 3 minutes."));
+                       }
 
-                        return session.appId;
-                    });
+                       return session.appId;
+                   });
     }
 
     private void setAppId(final @Nullable String appId) {
@@ -445,9 +448,9 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
      */
     @Override
     public void close() {
-        kill().toBlocking().subscribe( session -> {}, err -> {
-            log().warn("Kill session failed. " + ExceptionUtils.getStackTrace(err));
-        });
+        kill().toBlocking().subscribe(session -> {
+                                      },
+                                      err -> log().warn("Kill session failed. " + ExceptionUtils.getStackTrace(err)));
 
         this.ctrlSubject.onCompleted();
     }
@@ -485,8 +488,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
     public String getUserAgent() {
         final String userAgentPrefix = getHttp().getUserAgentPrefix();
         final String requestId = AppInsightsClient.getConfigurationSessionId() == null ?
-                UUID.randomUUID().toString() :
-                AppInsightsClient.getConfigurationSessionId();
+                                 UUID.randomUUID().toString() :
+                                 AppInsightsClient.getConfigurationSessionId();
 
         return String.format("%s %s", userAgentPrefix.trim(), requestId);
     }
@@ -503,18 +506,18 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         }
 
         return Observable.from(getArtifactsToDeploy())
-                .doOnNext(artifactPath -> ctrlSubject.onNext(
-                        new SparkLogLine(Tool, Info, "Start uploading artifact " + artifactPath)))
-                .flatMap(artifactPath -> deployDelegate.deploy(new File(artifactPath), ctrlSubject))
-                .doOnNext(uri -> ctrlSubject.onNext(
-                        new SparkLogLine(Tool, Info, "Uploaded to " + uri)))
-                .toList()
-                .map(uploadedUris -> {
-                    this.createParameters.uploadedArtifactsUris.addAll(uploadedUris);
+                         .doOnNext(artifactPath -> ctrlSubject.onNext(
+                                 new SparkLogLine(Tool, Info, "Start uploading artifact " + artifactPath)))
+                         .flatMap(artifactPath -> deployDelegate.deploy(new File(artifactPath), ctrlSubject))
+                         .doOnNext(uri -> ctrlSubject.onNext(
+                                 new SparkLogLine(Tool, Info, "Uploaded to " + uri)))
+                         .toList()
+                         .map(uploadedUris -> {
+                             this.createParameters.uploadedArtifactsUris.addAll(uploadedUris);
 
-                    return this;
-                })
-                .defaultIfEmpty(this);
+                             return this;
+                         })
+                         .defaultIfEmpty(this);
     }
 
     /**
@@ -542,10 +545,11 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
         final PostSessions postBody = getCreateParameters().build();
         final String json = postBody.convertToJson()
-                .orElseThrow(() -> new IllegalArgumentException("Bad session arguments to post."));
+                                    .orElseThrow(() -> new IllegalArgumentException("Bad session arguments to post."));
 
         getCtrlSubject().onNext(new SparkLogLine(Tool, Debug,
-                                                 "Create Livy Session by sending request to " + uri + " with body " + json));
+                                                 "Create Livy Session by sending request to " + uri + " with body "
+                                                         + json));
 
         final StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
         entity.setContentType("application/json");
@@ -602,25 +606,30 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     public Observable<Map<String, String>> runStatement(final Statement statement) {
         return awaitReady()
-            .flatMap(session -> statement
-                    .run()
-                    .map(result -> {
-                        if (!"ok".equalsIgnoreCase(result.getStatus())) {
-                            throw propagate(new StatementExecutionError(
-                                    result.getEname(), result.getEvalue(), result.getTraceback()));
-                        }
+                .flatMap(session -> statement
+                        .run()
+                        .map(result -> {
+                            if (!"ok".equalsIgnoreCase(result.getStatus())) {
+                                throw propagate(new StatementExecutionError(
+                                        result.getEname(), result.getEvalue(), result.getTraceback()));
+                            }
 
-                        return result.getData();
-                    }));
+                            return result.getData();
+                        }));
     }
 
     public Observable<Session> awaitReady(final @Nullable Scheduler scheduler) {
         return get()
                 .repeatWhen(ob -> scheduler != null ?
-                                // Use specified scheduler to delay
-                                ob.doOnNext(any -> { try { sleep(1000); } catch (InterruptedException ignored) { } }) :
-                                // Use the default delay scheduler if scheduler not specified
-                                ob.delay(1, TimeUnit.SECONDS),
+                                  // Use specified scheduler to delay
+                                  ob.doOnNext(any -> {
+                                      try {
+                                          sleep(1000);
+                                      } catch (InterruptedException ignored) {
+                                      }
+                                  }) :
+                                  // Use the default delay scheduler if scheduler not specified
+                                  ob.delay(1, TimeUnit.SECONDS),
                             scheduler != null ? scheduler : Schedulers.trampoline())
                 .takeUntil(Session::isStatementRunnable)
                 .reduce(new ImmutablePair<>(this, getLastLogs()), (sesLogsPair, ses) -> {
@@ -628,12 +637,12 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
                     if (ses.isStop()) {
                         String exceptionMessage = StringUtils.join(sesLogsPair.right)
-                                                        .equals(StringUtils.join(currentLogs))
-                                ? StringUtils.join(currentLogs, " ; ")
-                                : StringUtils.join(Stream.of(sesLogsPair.right, currentLogs)
-                                                       .flatMap(Collection::stream)
-                                                       .collect(Collectors.toList()),
-                                                 " ; ");
+                                                             .equals(StringUtils.join(currentLogs))
+                                                  ? StringUtils.join(currentLogs, " ; ")
+                                                  : StringUtils.join(Stream.of(sesLogsPair.right, currentLogs)
+                                                                           .flatMap(Collection::stream)
+                                                                           .collect(Collectors.toList()),
+                                                                     " ; ");
 
                         throw propagate(new SessionNotStartException(
                                 "Session " + getName() + " is " + getLastState() + ". " + exceptionMessage));

@@ -53,7 +53,7 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
 
     private URI getUploadDir() {
         return URI.create(destinationRootPath)
-                .resolve(JobUtils.getFormatPathByDate() + "/");
+                  .resolve(JobUtils.getFormatPathByDate() + "/");
     }
 
     @Override
@@ -64,41 +64,49 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
         // 3.patch request to append data to file
         // 4.patch request to flush data to file
 
-        URI destURI = getUploadDir();
+        final URI destURI = getUploadDir();
 
         //remove request / end otherwise invalid url response
-        String destStr = destURI.toString();
-        String dirPath = destStr.endsWith("/") ? destStr.substring(0, destStr.length() - 1) : destStr;
-        String filePath = String.format("%s/%s", dirPath, src.getName());
+        final String destStr = destURI.toString();
+        final String dirPath = destStr.endsWith("/") ? destStr.substring(0, destStr.length() - 1) : destStr;
+        final String filePath = String.format("%s/%s", dirPath, src.getName());
 
-        ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
+        final ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
         return op.createDir(dirPath)
-                .onErrorReturn(err -> {
-                    if (err.getMessage()!= null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
-                            || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
-                        // Sample destinationRootPath: https://accountName.dfs.core.windows.net/fsName/SparkSubmission/
-                        String fileSystemRootPath = UriUtil.normalizeWithSlashEnding(URI.create(destinationRootPath)).resolve("../").toString();
-                        String errorMessage = String.format("Failed to create folder %s when uploading Spark application artifacts with error: %s. %s",
-                                dirPath, err.getMessage(), getForbiddenErrorHints(fileSystemRootPath));
-                        throw new IllegalArgumentException(errorMessage);
-                    } else {
-                        throw Exceptions.propagate(err);
-                    }
-                })
-                .doOnNext(ignore -> log().info(String.format("Create filesystem %s successfully.", dirPath)))
-                .flatMap(ignore -> op.createFile(filePath))
-                .flatMap(ignore -> op.uploadData(filePath, src))
-                .doOnNext(ignore -> log().info(String.format("Append data to file %s successfully.", filePath)))
-                .map(ignored -> AbfsUri.parse(filePath).getUri().toString());
+                 .onErrorReturn(err -> {
+                     if (err.getMessage() != null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
+                             || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
+                         // Sample destinationRootPath: https://accountName.dfs.core.windows.net/fsName/SparkSubmission/
+                         String fileSystemRootPath = UriUtil.normalizeWithSlashEnding(URI.create(destinationRootPath))
+                                                            .resolve("../")
+                                                            .toString();
+                         String errorMessage = String.format(
+                                 "Failed to create folder %s when uploading Spark application artifacts with error: %s. %s",
+                                 dirPath,
+                                 err.getMessage(),
+                                 getForbiddenErrorHints(fileSystemRootPath));
+                         throw new IllegalArgumentException(errorMessage);
+                     } else {
+                         throw Exceptions.propagate(err);
+                     }
+                 })
+                 .doOnNext(ignore -> log().info(String.format("Create filesystem %s successfully.", dirPath)))
+                 .flatMap(ignore -> op.createFile(filePath))
+                 .flatMap(ignore -> op.uploadData(filePath, src))
+                 .doOnNext(ignore -> log().info(String.format("Append data to file %s successfully.", filePath)))
+                 .map(ignored -> AbfsUri.parse(filePath).getUri().toString());
     }
 
     public static String getForbiddenErrorHints(String fileSystemRootPath) {
-        String signInUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
-        return new StringBuilder(" Please verify if\n")
-                .append("1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n")
-                .append("2. The signed in user " + signInUserEmail + " has Storage Blob Data Contributor or Storage Blob Data Owner role over the storage path " + fileSystemRootPath + ".\n")
-                .append("   If the role is recently granted, please wait a while and try again later.\n")
-                .append("   Find more details at https://docs.microsoft.com/en-us/azure/storage/common/storage-access-blobs-queues-portal#azure-ad-account")
-                .toString();
+        final String signInUserEmail = AuthMethodManager.getInstance().getAuthMethodDetails().getAccountEmail();
+        return " Please verify if\n"
+                + "1. The ADLS Gen2 root path matches with the access key if you enter the credential in the configuration.\n"
+                + "2. The signed in user "
+                + signInUserEmail
+                + " has Storage Blob Data Contributor or Storage Blob Data Owner role over the storage path "
+                + fileSystemRootPath
+                + ".\n"
+                + "   If the role is recently granted, please wait a while and try again later.\n"
+                + "   Find more details at https://docs.microsoft.com/en-us/azure/storage/common/storage-access-blobs-queues-portal#azure-ad-account";
     }
 }

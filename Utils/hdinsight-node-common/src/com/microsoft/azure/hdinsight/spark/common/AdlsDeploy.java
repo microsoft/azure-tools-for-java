@@ -33,9 +33,9 @@ import java.io.File;
 // for cluster with adls gen1 account to deploy using ADLS storage account type
 public class AdlsDeploy implements Deployable {
     @NotNull
-    private String adlsRootPath;
+    private final String adlsRootPath;
     @NotNull
-    private String accessToken;
+    private final String accessToken;
 
     public AdlsDeploy(@NotNull String adlsRootPath,
                       @NotNull String accessToken) {
