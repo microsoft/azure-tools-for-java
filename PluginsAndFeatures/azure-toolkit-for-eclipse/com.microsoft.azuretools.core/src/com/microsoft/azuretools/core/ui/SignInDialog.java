@@ -147,7 +147,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
         rbtnDevice.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if(rbtnDevice.getSelection()) {
+                if (rbtnDevice.getSelection()) {
                     rbtnDevice.setFocus();
                     enableAutomatedAuthControls(false);
                 }
@@ -188,25 +188,26 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
 
         lblAutomatedInfo = new Label(compositeAutomated, SWT.WRAP | SWT.HORIZONTAL);
         lblAutomatedInfo.setEnabled(false);
-        GridData gd_lblAutomatedInfo = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-        gd_lblAutomatedInfo.widthHint = 483;
-        gd_lblAutomatedInfo.horizontalIndent = 11;
-        gd_lblAutomatedInfo.heightHint = 49;
-        lblAutomatedInfo.setLayoutData(gd_lblAutomatedInfo);
-        lblAutomatedInfo.setText("An authentication file with credentials for an Azure Active Directory service principal will be used for automated sign ins.");
+        GridData gdLblAutomatedInfo = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
+        gdLblAutomatedInfo.widthHint = 483;
+        gdLblAutomatedInfo.horizontalIndent = 11;
+        gdLblAutomatedInfo.heightHint = 49;
+        lblAutomatedInfo.setLayoutData(gdLblAutomatedInfo);
+        lblAutomatedInfo.setText("An authentication file with credentials for an Azure Active Directory service" +
+                " principal will be used for automated sign ins.");
 
         lblAuthenticationFile = new Label(compositeAutomated, SWT.NONE);
         lblAuthenticationFile.setEnabled(false);
-        GridData gd_lblAuthenticationFile = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblAuthenticationFile.horizontalIndent = 10;
-        lblAuthenticationFile.setLayoutData(gd_lblAuthenticationFile);
+        GridData gdLblAuthenticationFile = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdLblAuthenticationFile.horizontalIndent = 10;
+        lblAuthenticationFile.setLayoutData(gdLblAuthenticationFile);
         lblAuthenticationFile.setText("Authentication file:");
 
         textAuthenticationFilePath = new Text(compositeAutomated, SWT.BORDER | SWT.READ_ONLY);
         textAuthenticationFilePath.setEnabled(false);
-        GridData gd_textAuthenticationFilePath = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        gd_textAuthenticationFilePath.horizontalIndent = 10;
-        textAuthenticationFilePath.setLayoutData(gd_textAuthenticationFilePath);
+        GridData gdTextAuthenticationFilePath = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gdTextAuthenticationFilePath.horizontalIndent = 10;
+        textAuthenticationFilePath.setLayoutData(gdTextAuthenticationFilePath);
 
         btnBrowse = new Button(compositeAutomated, SWT.NONE);
         btnBrowse.setEnabled(false);
@@ -282,7 +283,9 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
     private void doSelectCredFilepath() {
         setErrorMessage(null);
         String path = fileDialog.open();
-        if (path == null) return;
+        if (path == null) {
+            return;
+        }
         textAuthenticationFilePath.setText(path);
     }
 
@@ -398,7 +401,7 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
                 }
             }
 
-            SrvPriCreationStatusDialog  d1 = SrvPriCreationStatusDialog
+            SrvPriCreationStatusDialog d1 = SrvPriCreationStatusDialog
                     .go(accessTokenAzureManager, this.getShell(), tidSidsMap, destinationFolder);
             if (d1 == null) {
                 System.out.println(">> Canceled by the user");

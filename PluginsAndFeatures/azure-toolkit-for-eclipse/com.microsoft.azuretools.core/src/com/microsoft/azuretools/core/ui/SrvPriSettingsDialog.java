@@ -25,7 +25,6 @@ package com.microsoft.azuretools.core.ui;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -101,10 +100,11 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Label lblInfo = new Label(container, SWT.WRAP);
-        GridData gd_lblInfo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        gd_lblInfo.heightHint = 82;
-        lblInfo.setLayoutData(gd_lblInfo);
-        lblInfo.setText("A new Active Directory service principal representing this IDE will be created as needed and as allowed by your access permissions.\nThe service principal will be granted Contributor-level access to each selected subscription.");
+        GridData gdLblInfo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+        gdLblInfo.heightHint = 82;
+        lblInfo.setLayoutData(gdLblInfo);
+        lblInfo.setText("A new Active Directory service principal representing this IDE will be created as needed " +
+                "and as allowed by your access permissions.\nThe service principal will be granted Contributor-level access to each selected subscription.");
 
         Label lblNewLabel = new Label(container, SWT.NONE);
         lblNewLabel.setEnabled(true);
@@ -112,9 +112,9 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
 
         table = new Table(container, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
         table.setEnabled(true);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 300;
-        table.setLayoutData(gd_table);
+        GridData gdTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdTable.heightHint = 300;
+        table.setLayoutData(gdTable);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
 
@@ -149,14 +149,15 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
         dirDialog.setFilterPath(initDirPath);
         dirDialog.setText("Select Destination Folder");
 
-
         Button btnBrowse = new Button(grpDestinationFolder, SWT.NONE);
         btnBrowse.setEnabled(true);
         btnBrowse.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String path = dirDialog.open();
-                if (path == null) return;
+                if (path == null) {
+                    return;
+                }
                 textDestinationFolderPath.setText(path);
             }
         });

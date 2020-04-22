@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -66,7 +65,7 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
     org.eclipse.swt.widgets.List listCreatedFiles;
 
     private String destinationFolder;
-    private Map<String, List<String> > tidSidsMap;
+    private Map<String, List<String>> tidSidsMap;
     private final AccessTokenAzureManager preAccessTokenAzureManager;
 
     private String selectedAuthFilePath;
@@ -77,7 +76,7 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
 
     public static SrvPriCreationStatusDialog go(AccessTokenAzureManager preAccessTokenAzureManager,
                                                 Shell parentShell,
-                                                Map<String, List<String> > tidSidsMap,
+                                                Map<String, List<String>> tidSidsMap,
                                                 String destinationFolder) {
         SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(preAccessTokenAzureManager, parentShell);
         d.tidSidsMap = tidSidsMap;
@@ -115,9 +114,9 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 300;
-        table.setLayoutData(gd_table);
+        GridData gdTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdTable.heightHint = 300;
+        table.setLayoutData(gdTable);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
 
@@ -147,10 +146,10 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
         super.create();
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-              System.out.println("Starting createServicePrincipalAsync()...");
-              createServicePrincipalAsync();
+                System.out.println("Starting createServicePrincipalAsync()...");
+                createServicePrincipalAsync();
             }
-          });
+        });
     }
 
     /**
@@ -219,7 +218,7 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
                             });
                             return;
                         }
-                        List <String> sidList = tidSidsMap.get(tid);
+                        List<String> sidList = tidSidsMap.get(tid);
                         if (!sidList.isEmpty()) {
                             try {
                                 Display.getDefault().asyncExec(new Runnable() {
@@ -244,7 +243,8 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
                                 }
                             } catch (Exception ex) {
                                 ex.printStackTrace();
-                                LOG.log(new org.eclipse.core.runtime.Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@createServicePrincipalAsync@SrvPriCreationStatusDialog", ex));
+                                LOG.log(new org.eclipse.core.runtime.Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                        "run@ProgressDialog@createServicePrincipalAsync@SrvPriCreationStatusDialog", ex));
 
                             }
                         }

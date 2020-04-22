@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.codec.binary.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -85,10 +84,10 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
      * The ID of the view as specified by the extension.
      */
     public static final String ID = "com.microsoft.azuretools.azureexplorer.views.ServiceExplorerView";
-	private static final List<String> UNSUPPORTED_NODE_LIST = Arrays.asList(
-			"com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule",
-			"com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule",
-			"com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule");
+    private static final List<String> UNSUPPORTED_NODE_LIST = Arrays.asList(
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule",
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule",
+        "com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule");
 
     private TreeViewer viewer;
     private Action refreshAction;
@@ -121,7 +120,9 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         @Override
         public Object[] getElements(Object parent) {
             if (parent.equals(getViewSite())) {
-                if (invisibleRoot == null) initialize();
+                if (invisibleRoot == null) {
+                    initialize();
+                }
                 return getChildren(invisibleRoot);
             }
             return getChildren(parent);
@@ -145,13 +146,14 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
 
         @Override
         public boolean hasChildren(Object parent) {
-            if (parent instanceof TreeNode)
+            if (parent instanceof TreeNode) {
                 return ((TreeNode) parent).getChildNodes().size() > 0;
-                return false;
+            }
+            return false;
         }
 
         private void setHDInsightRootModule(@NotNull AzureModule azureModule) {
-            HDInsightRootModuleImpl hdInsightRootModule =  new HDInsightRootModuleImpl(azureModule);
+            HDInsightRootModuleImpl hdInsightRootModule = new HDInsightRootModuleImpl(azureModule);
             azureModule.setHdInsightModule(hdInsightRootModule);
 
             // Enable HDInsight new SDK for Eclipse
@@ -183,7 +185,6 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             childNodes.add(treeNode);
         }
 
-
         public List<TreeNode> getChildNodes() {
             return childNodes;
         }
@@ -214,7 +215,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         node.getChildNodes().addChangeListener(new NodeListChangeListener(treeNode));
 
         // create child tree nodes for each child node
-        if(node.hasChildNodes()) {
+        if (node.hasChildNodes()) {
             for (Node childNode : node.getChildNodes()) {
                 treeNode.add(createTreeNode(childNode));
             }
@@ -228,7 +229,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         ObservableList<Node> childNodes = node.getChildNodes();
         childNodes.removeAllChangeListeners();
         //
-        if(node.hasChildNodes()) {
+        if (node.hasChildNodes()) {
             // this remove call should cause the NodeListChangeListener object
             // registered on it's child nodes to fire which should recursively
             // clean up event handlers on it's children
@@ -251,7 +252,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
     }
 
     private class NodeListChangeListener implements ListChangeListener {
-    	
+
         private TreeNode treeNode;
 
         public NodeListChangeListener(TreeNode treeNode) {
@@ -261,27 +262,27 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
         @Override
         public void listChanged(final ListChangedEvent e) {
             switch (e.getAction()) {
-            case add:
-                // create child tree nodes for the new nodes
-                for (Node childNode : (Collection<Node>) e.getNewItems()) {
-                    // Eclipse do no support arm, so here need to skip resource management node
-                    if (UNSUPPORTED_NODE_LIST.contains(childNode.getClass().getName()))
-                    {
-                        continue;
+                case add:
+                    // create child tree nodes for the new nodes
+                    for (Node childNode : (Collection<Node>) e.getNewItems()) {
+                        // Eclipse do no support arm, so here need to skip resource management node
+                        if (UNSUPPORTED_NODE_LIST.contains(childNode.getClass().getName())) {
+                            continue;
+                        }
+                        treeNode.add(createTreeNode(childNode));
                     }
-                    treeNode.add(createTreeNode(childNode));
-                }
-                break;
-            case remove:
-                // unregister all event handlers recursively and remove
-                // child nodes from the tree
-                for(Node childNode : (Collection<Node>)e.getOldItems()) {
-                    removeEventHandlers(childNode);
-
-                    // remove this node from the tree
-                    treeNode.remove((TreeNode) childNode.getViewData());
-                }
-                break;
+                    break;
+                case remove:
+                    // unregister all event handlers recursively and remove
+                    // child nodes from the tree
+                    for (Node childNode : (Collection<Node>) e.getOldItems()) {
+                        removeEventHandlers(childNode);
+                        // remove this node from the tree
+                        treeNode.remove((TreeNode) childNode.getViewData());
+                    }
+                    break;
+                default:
+                    break;
             }
             Display.getDefault().asyncExec(new Runnable() {
                 @Override
@@ -304,7 +305,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             if (obj instanceof TreeNode) {
                 String iconPath = ((TreeNode) obj).node.getIconPath();
                 if (iconPath != null) {
-                    return Activator.getImageDescriptor("icons/" + iconPath).createImage();//Activator.getDefault().getImageRegistry().get((((Node) obj).getIconPath()));
+                    return Activator.getImageDescriptor("icons/" + iconPath).createImage();
+                    // Activator.getDefault().getImageRegistry().get((((Node) obj).getIconPath()));
                 }
             }
             return super.getImage(obj);
@@ -355,7 +357,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                     Node node = ((TreeNode) selection.getFirstElement()).node;
                     if (node.hasNodeActions()) {
                         for (final NodeAction nodeAction : node.getNodeActions()) {
-                            ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ? Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
+                            ImageDescriptor imageDescriptor = nodeAction.getIconPath() != null ?
+                                Activator.getImageDescriptor("icons/" + nodeAction.getIconPath()) : null;
                             Action action = new Action(nodeAction.getName(), imageDescriptor) {
                                 @Override
                                 public void run() {
@@ -433,7 +436,8 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
                 }
             }
         };
-        selectSubscriptionAction = new Action("Select Subscriptions", com.microsoft.azuretools.core.Activator.getImageDescriptor("icons/ConnectAccountsLight_16.png")) {
+        selectSubscriptionAction = new Action("Select Subscriptions", com.microsoft.azuretools.core.Activator
+            .getImageDescriptor("icons/ConnectAccountsLight_16.png")) {
             @Override
             public void run() {
                 try {
@@ -472,7 +476,7 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
             @Override
             public void mouseUp(MouseEvent e) {
                 if (e.button == 1) { // left button
-                    TreeItem[] selection = ((Tree)e.widget).getSelection();
+                    TreeItem[] selection = ((Tree) e.widget).getSelection();
                     if (selection.length > 0) {
                         TreeItem item = ((Tree) e.widget).getSelection()[0];
                         Node node = ((TreeNode) item.getData()).node;
@@ -490,17 +494,17 @@ public class ServiceExplorerView extends ViewPart implements PropertyChangeListe
     private void hookShortcut() {
         Tree tree = (Tree) viewer.getControl();
         tree.addKeyListener(new KeyAdapter() {
-          public void keyReleased(KeyEvent event) {
-            if (event.keyCode == SWT.CR && tree.getSelectionCount() > 0) {
-              final TreeItem item = tree.getSelection()[0];
-              Node node = ((TreeNode) item.getData()).node;
-              // if the node in question is in a "loading" state then
-              // we do not propagate the click event to it
-              if (!node.isLoading()) {
-                  node.getClickAction().fireNodeActionEvent();
-              }
+            public void keyReleased(KeyEvent event) {
+                if (event.keyCode == SWT.CR && tree.getSelectionCount() > 0) {
+                    final TreeItem item = tree.getSelection()[0];
+                    Node node = ((TreeNode) item.getData()).node;
+                    // if the node in question is in a "loading" state then
+                    // we do not propagate the click event to it
+                    if (!node.isLoading()) {
+                        node.getClickAction().fireNodeActionEvent();
+                    }
+                }
             }
-          }
         });
     }
 

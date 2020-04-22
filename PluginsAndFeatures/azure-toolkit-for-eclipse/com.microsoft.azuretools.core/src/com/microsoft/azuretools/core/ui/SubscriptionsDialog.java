@@ -37,7 +37,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -102,9 +101,9 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         table = new Table(container, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 300;
-        table.setLayoutData(gd_table);
+        GridData gdTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdTable.heightHint = 300;
+        table.setLayoutData(gdTable);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
 
@@ -112,9 +111,9 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         tblclmnNewColumn.setWidth(300);
         tblclmnNewColumn.setText("Subscription Name");
 
-        TableColumn tblclmnNewColumn_1 = new TableColumn(table, SWT.NONE);
-        tblclmnNewColumn_1.setWidth(270);
-        tblclmnNewColumn_1.setText("Subscription ID");
+        TableColumn tblclmnNewColumn1 = new TableColumn(table, SWT.NONE);
+        tblclmnNewColumn1.setWidth(270);
+        tblclmnNewColumn1.setText("Subscription ID");
 
         Button btnRefresh = new Button(container, SWT.NONE);
         btnRefresh.addSelectionListener(new SelectionAdapter() {
@@ -123,9 +122,9 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 refreshSubscriptions();
             }
         });
-        GridData gd_btnRefresh = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
-        gd_btnRefresh.widthHint = 78;
-        btnRefresh.setLayoutData(gd_btnRefresh);
+        GridData gdBtnRefresh = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
+        gdBtnRefresh.widthHint = 78;
+        btnRefresh.setLayoutData(gdBtnRefresh);
         btnRefresh.setText("Refresh");
 
         return area;
@@ -136,11 +135,11 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         super.create();
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-              System.out.println("refreshSubscriptionsAsync");
-              refreshSubscriptionsAsync();
-              setSubscriptionDetails();
+                System.out.println("refreshSubscriptionsAsync");
+                refreshSubscriptionsAsync();
+                setSubscriptionDetails();
             }
-          });
+        });
     }
 
     public void refreshSubscriptionsAsync() {
@@ -152,16 +151,16 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                     EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
                         subscriptionManager.getSubscriptionDetails();
                     }, (ex) -> {
-                        ex.printStackTrace();
-                        LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
-                    });
+                            ex.printStackTrace();
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
+                        });
                     monitor.done();
                 }
             });
         } catch (InvocationTargetException | InterruptedException ex) {
             ex.printStackTrace();
             //LOGGER.log(LogService.LOG_ERROR, "run@refreshSubscriptionsAsync@SubscriptionDialog", e);
-             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@refreshSubscriptionsAsync@SubscriptionDialog", ex));
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@refreshSubscriptionsAsync@SubscriptionDialog", ex));
         }
     }
 
