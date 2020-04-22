@@ -60,6 +60,9 @@ import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 
 public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
+    private static final String SUBSCRIPTION_MESSAGE = "Select subscription(s) you want to use.";
+    private static final String SUBSCRIPTION_TITLE = "Your Subscriptions";
+    private static final String DIALOG_TITLE = "Select Subscriptions";
     private static ILog LOG = Activator.getDefault().getLog();
 
     private Table table;
@@ -92,9 +95,9 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setMessage("Select subscription(s) you want to use.");
-        setTitle("Your Subscriptions");
-        getShell().setText("Select Subscriptions");
+        setMessage(SUBSCRIPTION_MESSAGE);
+        setTitle(SUBSCRIPTION_TITLE);
+        getShell().setText(DIALOG_TITLE);
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));

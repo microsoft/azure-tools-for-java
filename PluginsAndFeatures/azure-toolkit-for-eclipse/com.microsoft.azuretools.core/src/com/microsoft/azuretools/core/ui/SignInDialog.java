@@ -75,6 +75,7 @@ import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 
 public class SignInDialog extends AzureTitleAreaDialogWrapper {
+    private static final String AZURE_SIGN_IN = "Azure Sign In";
     private static ILog LOG = Activator.getDefault().getLog();
     private Text textAuthenticationFilePath;
     private Button rbtnDevice;
@@ -126,9 +127,9 @@ public class SignInDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setMessage("Azure Sign In");
-        setTitle("Azure Sign In");
-        getShell().setText("Azure Sign In");
+        setMessage(AZURE_SIGN_IN);
+        setTitle(AZURE_SIGN_IN);
+        getShell().setText(AZURE_SIGN_IN);
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new FillLayout(SWT.HORIZONTAL));

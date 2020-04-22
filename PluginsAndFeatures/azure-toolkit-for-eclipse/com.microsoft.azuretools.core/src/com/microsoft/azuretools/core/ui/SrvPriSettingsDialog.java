@@ -47,6 +47,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 
 public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
+    private static final String CREATE_AUTHENTICATION_FILES = "Create Authentication Files";
     private Table table;
     private Text textDestinationFolderPath;
 
@@ -91,9 +92,9 @@ public class SrvPriSettingsDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setMessage("Create Authentication Files");
-        setTitle("Create Authentication Files");
-        getShell().setText("Create Authentication Files");
+        setMessage(CREATE_AUTHENTICATION_FILES);
+        setTitle(CREATE_AUTHENTICATION_FILES);
+        getShell().setText(CREATE_AUTHENTICATION_FILES);
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));

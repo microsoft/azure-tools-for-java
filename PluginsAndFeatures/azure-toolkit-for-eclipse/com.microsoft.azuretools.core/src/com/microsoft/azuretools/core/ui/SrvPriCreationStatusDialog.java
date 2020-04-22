@@ -60,6 +60,7 @@ import org.eclipse.swt.events.SelectionEvent;
 
 
 public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
+    private static final String SERVICE_PRINCIPAL_CREATION_STATUS = "Service Principal Creation Status";
     private static ILog LOG = Activator.getDefault().getLog();
     private Table table;
     org.eclipse.swt.widgets.List listCreatedFiles;
@@ -105,9 +106,9 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setMessage("Service Principal Creation Status");
-        setTitle("Service Principal Creation Status");
-        getShell().setText("Service Principal Creation Status");
+        setMessage(SERVICE_PRINCIPAL_CREATION_STATUS);
+        setTitle(SERVICE_PRINCIPAL_CREATION_STATUS);
+        getShell().setText(SERVICE_PRINCIPAL_CREATION_STATUS);
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
