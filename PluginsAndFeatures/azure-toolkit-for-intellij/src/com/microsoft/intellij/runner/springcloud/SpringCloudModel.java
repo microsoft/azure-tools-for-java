@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.springcloud;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SpringCloudModel {
@@ -145,5 +146,17 @@ public class SpringCloudModel {
 
     public void setClusterId(final String clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Map<String, String> getTelemetryProperties() {
+        HashMap result = new HashMap();
+        try {
+            result.put("runtime", this.getRuntimeVersion());
+            result.put("subscriptionId", this.getSubscriptionId());
+            result.put("isCreateNew", String.valueOf(this.isCreateNewApp()));
+        } catch (Exception e) {
+            // swallow exception as telemetry should not break users operation
+        }
+        return result;
     }
 }
