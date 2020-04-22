@@ -23,7 +23,7 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
@@ -39,7 +39,7 @@ public class LivySessionDeploy implements Deployable, ILogger {
     }
 
     @Override
-    public Observable<String> deploy(File src, Observer<SparkBatchJobLogLine> logSubject) {
+    public Observable<String> deploy(File src, Observer<SparkLogLine> logSubject) {
         return JobUtils.deployArtifact(src.getAbsolutePath(), clusterName, logSubject)
                 .map(clusterArtifactUriPair -> clusterArtifactUriPair.getValue())
                 .toObservable();

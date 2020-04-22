@@ -22,22 +22,15 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
-import rx.Observer;
 
 import java.net.URI;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
-
-public interface ISparkBatchJob extends Cloneable {
+public interface ISparkBatchJob extends Cloneable, SparkClientControlMessage {
     /**
      * Getter of the base connection URI for HDInsight Spark Job service
      *
@@ -123,7 +116,7 @@ public interface ISparkBatchJob extends Cloneable {
      * @return the log type and content pair observable
      */
     @NotNull
-    Observable<SparkBatchJobLogLine> getSubmissionLog();
+    Observable<SparkLogLine> getSubmissionLog();
 
     /**
      * Await the job started observable
@@ -147,50 +140,6 @@ public interface ISparkBatchJob extends Cloneable {
      */
     @NotNull
     Observable<String> awaitPostDone();
-
-    /**
-     * Get the job control messages observable
-     *
-     * @return the job control message type and content pair observable
-     */
-    @NotNull
-    Observer<SparkBatchJobLogLine> getCtrlSubject();
-
-    /**
-     * Send a line of log from ctrlSubject
-     * @param logSource source of the log
-     * @param messageInfoType message info type
-     * @param rawLog a line of raw log
-     */
-    default void ctrlLog(final SparkBatchJobLogSource logSource,
-                         final MessageInfoType messageInfoType,
-                         final String rawLog) {
-        getCtrlSubject().onNext(new SparkBatchJobLogLine(logSource, messageInfoType, rawLog));
-    }
-
-    /**
-     * Send client info message from ctrlSubject
-     * @param message the message to sent
-     */
-    default void ctrlInfo(final String message) {
-        getCtrlSubject().onNext(new SparkBatchJobLogLine(Tool, Info, message));
-    }
-
-    /**
-     * Send client error message from ctrlSubject
-     * @param message the message to sent
-     */
-    default void ctrlError(final String message) {
-        getCtrlSubject().onNext(new SparkBatchJobLogLine(Tool, Error, message));
-    }
-
-    /**
-     * Send client hyperlink message from ctrlSubject
-     * @param url the message to sent
-     */
-    default void ctrlHyperLink(final String url) {
-        getCtrlSubject().onNext(new SparkBatchJobLogLine(Tool, Hyperlink, url));
-    }
 
     /**
      * Deploy the job artifact into cluster

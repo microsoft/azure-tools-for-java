@@ -24,7 +24,7 @@ package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import rx.Observable;
 import rx.Observer;
@@ -41,7 +41,7 @@ public class LegacySDKDeploy implements Deployable, ILogger {
     }
 
     @Override
-    public Observable<String> deploy(File src, Observer<SparkBatchJobLogLine> logSubject) {
+    public Observable<String> deploy(File src, Observer<SparkLogLine> logSubject) {
         return JobUtils.deployArtifact(src.getAbsolutePath(), storageAccount, logSubject);
     }
 }

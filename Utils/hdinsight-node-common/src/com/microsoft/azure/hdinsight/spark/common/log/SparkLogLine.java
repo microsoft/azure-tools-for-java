@@ -24,14 +24,14 @@ package com.microsoft.azure.hdinsight.spark.common.log;
 
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 
-public class SparkBatchJobLogLine {
-    private final SparkBatchJobLogSource logSource;
+public class SparkLogLine {
+    private final String logSource;
     private final MessageInfoType messageInfoType;
     private final String rawLog;
 
-    public SparkBatchJobLogLine(final SparkBatchJobLogSource logSource,
-                                final MessageInfoType messageInfoType,
-                                final String rawLog) {
+    public SparkLogLine(final String logSource,
+                        final MessageInfoType messageInfoType,
+                        final String rawLog) {
         this.logSource = logSource;
         this.messageInfoType = messageInfoType;
         this.rawLog = rawLog;
@@ -41,7 +41,7 @@ public class SparkBatchJobLogLine {
         return messageInfoType;
     }
 
-    public SparkBatchJobLogSource getLogSource() {
+    public String getLogSource() {
         return logSource;
     }
 

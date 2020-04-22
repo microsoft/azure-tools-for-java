@@ -37,7 +37,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttempt;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppAttemptsResponse;
 import com.microsoft.azure.hdinsight.sdk.rest.yarn.rm.AppResponse;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -60,8 +60,8 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Livy;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Livy;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -71,7 +71,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
     @Nullable
     private String currentLogUrl;
     @NotNull
-    private Observer<SparkBatchJobLogLine> ctrlSubject;
+    private Observer<SparkLogLine> ctrlSubject;
 
     /**
      * Livy log fetching offset in Spark Batch Job context. Accessing with {@link #livyLogOffsetLock}
@@ -407,9 +407,9 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             this.setBatchId(jobResp.getId());
 
             getCtrlSubject().onNext(
-                    new SparkBatchJobLogLine(Tool,
-                                             Info,
-                                             "Spark Batch submission " + httpResponse.toString()));
+                    new SparkLogLine(Tool,
+                                     Info,
+                                     "Spark Batch submission " + httpResponse.toString()));
 
             return this;
         }
@@ -804,7 +804,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     @Override
     @NotNull
-    public Observable<SparkBatchJobLogLine> getSubmissionLog() {
+    public Observable<SparkLogLine> getSubmissionLog() {
         if (getConnectUri() == null) {
             return Observable.error(new SparkJobNotConfiguredException("Can't get Spark job connection URI, " +
                     "please configure Spark cluster which the Spark job will be submitted."));
@@ -846,7 +846,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         // To subscriber
                         sparkJobLog.getLog().stream()
                                 .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
-                                .forEach(line -> ob.onNext(new SparkBatchJobLogLine(Livy, Log, line)));
+                                .forEach(line -> ob.onNext(new SparkLogLine(Livy, Log, line)));
 
                         linesGot = sparkJobLog.getLog().size();
                         nextLivyLogOffset += linesGot;
@@ -860,7 +860,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     }
                 }
             } catch (IOException ex) {
-                ob.onNext(new SparkBatchJobLogLine(Tool, Error, ex.getMessage()));
+                ob.onNext(new SparkLogLine(Tool, Error, ex.getMessage()));
             } catch (InterruptedException ignored) {
             } finally {
                 ob.onCompleted();
@@ -1084,7 +1084,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
 
     @NotNull
     @Override
-    public Observer<SparkBatchJobLogLine> getCtrlSubject() {
+    public Observer<SparkLogLine> getCtrlSubject() {
         return ctrlSubject;
     }
 
@@ -1185,7 +1185,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                 .repeatWhen(ob -> ob
                         .doOnNext(ignored -> {
                             getCtrlSubject().onNext(
-                                    new SparkBatchJobLogLine(Tool, Info, "The Spark job is starting..."));
+                                    new SparkLogLine(Tool, Info, "The Spark job is starting..."));
                         })
                         .delay(getDelaySeconds(), TimeUnit.SECONDS)
                 )

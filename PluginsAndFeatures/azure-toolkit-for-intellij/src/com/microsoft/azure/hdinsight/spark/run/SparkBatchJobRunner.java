@@ -42,7 +42,7 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.spark.common.*;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
@@ -197,8 +197,8 @@ public class SparkBatchJobRunner extends DefaultProgramRunner implements SparkSu
         // "onComplete" message when the job is done in the previous time. To avoid this issue,  We clone a new Spark
         // batch job instance to re-initialize everything in the object.
         final ISparkBatchJob sparkBatch = submissionState.getSparkBatch().clone();
-        final PublishSubject<SparkBatchJobLogLine> ctrlSubject =
-                (PublishSubject<SparkBatchJobLogLine>) sparkBatch.getCtrlSubject();
+        final PublishSubject<SparkLogLine> ctrlSubject =
+                (PublishSubject<SparkLogLine>) sparkBatch.getCtrlSubject();
         SparkBatchJobRemoteProcess remoteProcess = new SparkBatchJobRemoteProcess(
                 new IdeaSchedulers(project),
                 sparkBatch,

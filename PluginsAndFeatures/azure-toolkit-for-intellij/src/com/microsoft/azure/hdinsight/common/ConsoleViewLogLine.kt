@@ -23,7 +23,7 @@
 package com.microsoft.azure.hdinsight.common
 
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
 import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
 
 class ConsoleViewLogLine {
@@ -40,14 +40,14 @@ class ConsoleViewLogLine {
         )
     }
 
-    constructor(sparkBatchJobLogLine: SparkBatchJobLogLine) {
+    constructor(SparkLogLine: SparkLogLine) {
         this.formatText =
-                if (sparkBatchJobLogLine.messageInfoType == MessageInfoType.HtmlPersistentMessage) {
-                    sparkBatchJobLogLine.rawLog
+                if (SparkLogLine.messageInfoType == MessageInfoType.HtmlPersistentMessage) {
+                    SparkLogLine.rawLog
                 } else {
-                    "${sparkBatchJobLogLine.logSource}: ${sparkBatchJobLogLine.rawLog}".trimEnd('\n') + "\n"
+                    "${SparkLogLine.logSource}: ${SparkLogLine.rawLog}".trimEnd('\n') + "\n"
                 }
         this.contentType = messageInfoTypeToConsoleViewContentType.getOrDefault(
-                sparkBatchJobLogLine.messageInfoType, ConsoleViewContentType.ERROR_OUTPUT)
+                SparkLogLine.messageInfoType, ConsoleViewContentType.ERROR_OUTPUT)
     }
 }

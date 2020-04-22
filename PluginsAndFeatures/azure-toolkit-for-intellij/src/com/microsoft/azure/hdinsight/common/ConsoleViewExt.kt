@@ -27,12 +27,12 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource
 import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
 import java.net.URI
 
-fun ConsoleView.print(typedMessage: SparkBatchJobLogLine) {
+fun ConsoleView.print(typedMessage: SparkLogLine) {
     // Redirect the remote process control message to console view
     val consoleViewLogLine = ConsoleViewLogLine(typedMessage)
     when (typedMessage.messageInfoType) {

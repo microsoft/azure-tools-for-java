@@ -41,7 +41,7 @@ import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
 import com.microsoft.azure.hdinsight.spark.common.*;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration;
 import com.microsoft.azure.hdinsight.spark.ui.SparkJobLogConsoleView;
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionAdvancedConfigPanel;
@@ -150,8 +150,8 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         final IdeaSchedulers schedulers = new IdeaSchedulers(project);
         final PublishSubject<SparkBatchJobSubmissionEvent> debugEventSubject = PublishSubject.create();
         final ISparkBatchDebugJob sparkDebugBatch = (ISparkBatchDebugJob) submissionState.getSparkBatch().clone();
-        final PublishSubject<SparkBatchJobLogLine> ctrlSubject =
-                (PublishSubject<SparkBatchJobLogLine>) sparkDebugBatch.getCtrlSubject();
+        final PublishSubject<SparkLogLine> ctrlSubject =
+                (PublishSubject<SparkLogLine>) sparkDebugBatch.getCtrlSubject();
         final SparkBatchJobRemoteDebugProcess driverDebugProcess = new SparkBatchJobRemoteDebugProcess(
                 schedulers,
                 session,

@@ -26,7 +26,7 @@ import com.intellij.execution.process.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.io.BaseOutputReader;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.subjects.PublishSubject;
@@ -35,7 +35,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.Future;
 
 import static com.intellij.execution.process.ProcessOutputTypes.STDOUT;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.SparkDriverStdErr;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.SparkDriverStdErr;
 
 public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatchJobProcessAdapter>
         implements SparkBatchJobProcessCtrlLogOut, AnsiEscapeDecoder.ColoredTextAcceptor {
@@ -122,7 +122,7 @@ public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatc
 
     @NotNull
     @Override
-    public PublishSubject<SparkBatchJobLogLine> getCtrlSubject() {
+    public PublishSubject<SparkLogLine> getCtrlSubject() {
         return getProcess().getSparkJobProcess().getCtrlSubject();
     }
 

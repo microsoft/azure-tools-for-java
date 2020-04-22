@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import rx.Observable;
 import rx.Observer;
 
@@ -37,5 +37,5 @@ public interface Deployable {
      * @return Observable: upload path
      *         Observable Error: IOException;
      */
-    Observable<String> deploy(File src, Observer<SparkBatchJobLogLine> logSubject);
+    Observable<String> deploy(File src, Observer<SparkLogLine> logSubject);
 }

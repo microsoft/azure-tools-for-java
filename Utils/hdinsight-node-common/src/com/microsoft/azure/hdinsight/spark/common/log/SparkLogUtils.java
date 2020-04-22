@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
 
-public class SparkBatchJobLogUtils {
+public class SparkLogUtils {
     public static final List<Level> log4jAllLevels = Arrays.asList(
             Level.FATAL,
             Level.ERROR,
@@ -46,9 +46,9 @@ public class SparkBatchJobLogUtils {
             "\\b(?<level>"
                     + log4jAllLevels.stream().map(Level::toString).collect(Collectors.joining("|")) + ")\\b");
 
-    public static SparkBatchJobLogLine mapTypedMessageByLog4jLevels(
-            final SparkBatchJobLogLine previous,
-            final SparkBatchJobLogLine current) {
+    public static SparkLogLine mapTypedMessageByLog4jLevels(
+            final SparkLogLine previous,
+            final SparkLogLine current) {
         if (current.getMessageInfoType() == Log) {
             final String msg = current.getRawLog();
             final Matcher matcher = log4jLevelRegex.matcher(msg);
@@ -56,15 +56,15 @@ public class SparkBatchJobLogUtils {
             if (matcher.find()) {
                 Level level = Level.toLevel(matcher.group("level"));
                 if (level.isGreaterOrEqual(Level.ERROR)) {
-                    return new SparkBatchJobLogLine(current.getLogSource(), Error, msg);
+                    return new SparkLogLine(current.getLogSource(), Error, msg);
                 }
 
                 if (level == Level.WARN) {
-                    return new SparkBatchJobLogLine(current.getLogSource(), Warning, msg);
+                    return new SparkLogLine(current.getLogSource(), Warning, msg);
                 }
 
                 if (level == Level.INFO) {
-                    return new SparkBatchJobLogLine(current.getLogSource(), Info, msg);
+                    return new SparkLogLine(current.getLogSource(), Info, msg);
                 }
 
                 // Keep the current level
@@ -72,7 +72,7 @@ public class SparkBatchJobLogUtils {
             }
 
             // No level keyword found, use the previous's level
-            return new SparkBatchJobLogLine(current.getLogSource(), previous.getMessageInfoType(), msg);
+            return new SparkLogLine(current.getLogSource(), previous.getMessageInfoType(), msg);
         }
 
         return current;

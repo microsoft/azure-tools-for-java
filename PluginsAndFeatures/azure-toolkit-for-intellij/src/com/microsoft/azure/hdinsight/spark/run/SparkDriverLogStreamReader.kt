@@ -29,27 +29,27 @@ import com.intellij.util.io.BaseOutputReader
 import com.microsoft.azure.hdinsight.common.ConsoleViewLogLine
 import com.microsoft.azure.hdinsight.common.ConsoleViewTypeRegistration.Companion.contentTypeKeyMap
 import com.microsoft.azure.hdinsight.common.MessageInfoType
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogUtils
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogUtils
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.concurrent.Future
 
 class SparkDriverLogStreamReader(val processHandler: ProcessHandler,
                                  inputStream: InputStream,
-                                 private val logSource: SparkBatchJobLogSource)
+                                 private val logSource: String)
     : BaseOutputReader(inputStream, Charset.forName("UTF-8")) {
     private val defaultMessageInfoType = MessageInfoType.Log
-    private var previousLogLine = SparkBatchJobLogLine(logSource, defaultMessageInfoType, "")
+    private var previousLogLine = SparkLogLine(logSource, defaultMessageInfoType, "")
 
     init {
         start("Reading Spark Driver log $logSource")
     }
 
     override fun onTextAvailable(s: String) {
-        val currentLogLine = SparkBatchJobLogLine(logSource, defaultMessageInfoType, s)
-        val typedLogLine = SparkBatchJobLogUtils.mapTypedMessageByLog4jLevels(previousLogLine, currentLogLine)
+        val currentLogLine = SparkLogLine(logSource, defaultMessageInfoType, s)
+        val typedLogLine = SparkLogUtils.mapTypedMessageByLog4jLevels(previousLogLine, currentLogLine)
         val consoleViewLogLine = ConsoleViewLogLine(typedLogLine)
 
         // The second parameter is of Key<Any> type and there are only 3 registered Keys: SYSTEM, STDOUT and STDERR.

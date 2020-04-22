@@ -29,7 +29,7 @@ import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
 import cucumber.api.java.After
 import cucumber.api.java.Before
 import cucumber.api.java.en.Given
@@ -46,7 +46,7 @@ import kotlin.test.assertEquals
 
 class CosmosServerlessSparkBatchJobScenario {
     private val httpServerMock = MockHttpService()
-    private val ctrlSubject = PublishSubject.create<SparkBatchJobLogLine>()
+    private val ctrlSubject = PublishSubject.create<SparkLogLine>()
     private val ctrlSubscription = ctrlSubject.subscribe()
     private val jobUuid = "46c07889-3590-48f8-b2bc-7f52622b5a0b"
     private var serverlessJobMock = mock(CosmosServerlessSparkBatchJob::class.java, CALLS_REAL_METHODS)
@@ -138,7 +138,7 @@ class CosmosServerlessSparkBatchJobScenario {
     @Then("^the return log line should be '(.+)'$")
     fun verifyReturnLog(logLine: String) {
         caught = null
-        var logEntry: SparkBatchJobLogLine? = null
+        var logEntry: SparkLogLine? = null
         try {
             logEntry = serverlessJobMock.submissionLog.toBlocking().last()
         } catch (ex: Exception) {

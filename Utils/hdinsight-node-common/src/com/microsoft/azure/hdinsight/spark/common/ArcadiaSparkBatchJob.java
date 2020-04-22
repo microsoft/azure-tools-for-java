@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import rx.Observable;
@@ -33,7 +33,7 @@ import java.net.URL;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.HtmlPersistentMessage;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
 
 public class ArcadiaSparkBatchJob extends SparkBatchJob {
     private final @NotNull Deployable deployDelegate;
@@ -77,7 +77,7 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
 
     @NotNull
     @Override
-    public Observable<SparkBatchJobLogLine> getSubmissionLog() {
+    public Observable<SparkLogLine> getSubmissionLog() {
         // No batches/{id}/log API support yet
         URL jobHistoryWebUrl = getJobHistoryWebUrl();
         String trackingJobMsg = "Track the batch job by opening ";

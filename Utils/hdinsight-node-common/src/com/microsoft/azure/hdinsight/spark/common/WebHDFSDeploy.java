@@ -26,7 +26,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -90,7 +90,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
 
     @Override
     public Observable<String> deploy(File src,
-                                     Observer<SparkBatchJobLogLine> logSubject) {
+                                     Observer<SparkLogLine> logSubject) {
         //three steps to upload via webhdfs
         // 1.put request to create new dir
         // 2.put request to get 307 redirect uri from response

@@ -36,7 +36,7 @@ import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionKind;
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.SessionState;
 import com.microsoft.azure.hdinsight.sdk.rest.livy.interactive.api.PostSessions;
 import com.microsoft.azure.hdinsight.spark.common.Deployable;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +61,7 @@ import java.util.stream.Stream;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Debug;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -317,7 +317,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
     private final CreateParameters createParameters;
 
-    final private PublishSubject<SparkBatchJobLogLine> ctrlSubject;
+    final private PublishSubject<SparkLogLine> ctrlSubject;
 
     /*
      * Constructor
@@ -436,7 +436,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         return lastLogs;
     }
 
-    public PublishSubject<SparkBatchJobLogLine> getCtrlSubject() {
+    public PublishSubject<SparkLogLine> getCtrlSubject() {
         return ctrlSubject;
     }
 
@@ -504,10 +504,10 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
         return Observable.from(getArtifactsToDeploy())
                 .doOnNext(artifactPath -> ctrlSubject.onNext(
-                        new SparkBatchJobLogLine(Tool, Info, "Start uploading artifact " + artifactPath)))
+                        new SparkLogLine(Tool, Info, "Start uploading artifact " + artifactPath)))
                 .flatMap(artifactPath -> deployDelegate.deploy(new File(artifactPath), ctrlSubject))
                 .doOnNext(uri -> ctrlSubject.onNext(
-                        new SparkBatchJobLogLine(Tool, Info, "Uploaded to " + uri)))
+                        new SparkLogLine(Tool, Info, "Uploaded to " + uri)))
                 .toList()
                 .map(uploadedUris -> {
                     this.createParameters.uploadedArtifactsUris.addAll(uploadedUris);
@@ -544,8 +544,8 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         final String json = postBody.convertToJson()
                 .orElseThrow(() -> new IllegalArgumentException("Bad session arguments to post."));
 
-        getCtrlSubject().onNext(new SparkBatchJobLogLine(Tool, Debug,
-                                                         "Create Livy Session by sending request to " + uri + " with body " + json));
+        getCtrlSubject().onNext(new SparkLogLine(Tool, Debug,
+                                                 "Create Livy Session by sending request to " + uri + " with body " + json));
 
         final StringEntity entity = new StringEntity(json, StandardCharsets.UTF_8);
         entity.setContentType("application/json");

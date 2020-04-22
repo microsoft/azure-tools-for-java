@@ -27,8 +27,8 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkJobUploadArtifactException;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogLine;
-import com.microsoft.azure.hdinsight.spark.common.log.SparkBatchJobLogUtils;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
@@ -50,7 +50,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     @NotNull
     private final String title;
     @NotNull
-    private final PublishSubject<SparkBatchJobLogLine> ctrlSubject;
+    private final PublishSubject<SparkLogLine> ctrlSubject;
     @NotNull
     private SparkJobLogInputStream jobStdoutLogInputSteam;
     @NotNull
@@ -69,7 +69,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                                       @NotNull ISparkBatchJob sparkJob,
                                       @NotNull String artifactPath,
                                       @NotNull String title,
-                                      @NotNull PublishSubject<SparkBatchJobLogLine> ctrlSubject) {
+                                      @NotNull PublishSubject<SparkLogLine> ctrlSubject) {
         this.schedulers = schedulers;
         this.sparkJob = sparkJob;
         this.artifactPath = artifactPath;
@@ -216,13 +216,13 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
 
     protected Observable<ISparkBatchJob> startJobSubmissionLogReceiver(ISparkBatchJob job) {
         return job.getSubmissionLog()
-                .scan(SparkBatchJobLogUtils::mapTypedMessageByLog4jLevels)
+                .scan(SparkLogUtils::mapTypedMessageByLog4jLevels)
                 .doOnNext(ctrlSubject::onNext)
                 // "ctrlSubject::onError" leads to uncaught exception
                 // while "ctrlError" only print error message in console view
                 .doOnError(err -> job.ctrlError(err.getMessage()))
                 .lastOrDefault(null)
-                .map((@Nullable SparkBatchJobLogLine messageTypeText) -> job);
+                .map((@Nullable SparkLogLine messageTypeText) -> job);
     }
 
     // Build and deploy artifact
@@ -280,7 +280,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     }
 
     @NotNull
-    public PublishSubject<SparkBatchJobLogLine> getCtrlSubject() {
+    public PublishSubject<SparkLogLine> getCtrlSubject() {
         return ctrlSubject;
     }
 

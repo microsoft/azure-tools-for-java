@@ -22,23 +22,8 @@
 
 package com.microsoft.azure.hdinsight.spark.common.log;
 
-public enum SparkBatchJobLogSource {
-    Tool("tool"),
-    Livy("livy"),
-    SparkDriverStdErr("driver.stderr");
-
-    private final String value;
-
-    SparkBatchJobLogSource(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return this.value;
-    }
+public class SparkLogSource {
+    public static final String Tool = "azuretool";
+    public static final String  Livy = "livy";
+    public static final String SparkDriverStdErr = "driver.stderr";
 }
