@@ -50,13 +50,12 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.awt.event.ItemListener;
+import java.util.*;
 import java.util.function.Function;
 
-public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDeployConfiguration> implements SpringCloudDeploySettingMvpView {
+public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDeployConfiguration>
+        implements SpringCloudDeploySettingMvpView {
     private final SpringCloudDeployConfiguration configuration;
     private static final String CREATE_APP = "Create app ...";
     private JPanel panelRoot;
@@ -88,11 +87,13 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
     private SpringCloudDeploySettingPresenter presenter = null;
 
+    private boolean isFirstTimeCreated;
     private String lastSelectedSubsId;
     private String lastSelectedClusterId;
 
     public SpringCloudAppSettingPanel(@NotNull Project project, @NotNull SpringCloudDeployConfiguration configuration) {
         super(project);
+        this.isFirstTimeCreated = configuration.isFirstTimeCreated();
         this.configuration = configuration;
         this.presenter = new SpringCloudDeploySettingPresenter();
         this.presenter.onAttachView(this);
@@ -220,7 +221,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
     private void createNewAppWizard() {
         cbSpringApps.setSelectedItem(null);
-        final CreateSpringCloudAppDialog dialog = new CreateSpringCloudAppDialog(null, cbSpringApps, "Create Azure Spring Cloud app");
+        final CreateSpringCloudAppDialog dialog = new CreateSpringCloudAppDialog(null,
+                                                                                 cbSpringApps,
+                                                                                 "Create Azure Spring Cloud app");
         dialog.pack();
         if (dialog.showAndGet()) {
             AzureResourceWrapper newApp = dialog.getNewAppWrapper();
@@ -266,77 +269,84 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
     @Override
     public void fillSubscription(@NotNull List<Subscription> subscriptions) {
-        cbSubscription.removeAllItems();
-        for (Subscription subscription : subscriptions) {
-            cbSubscription.addItem(subscription);
-            if (Comparing.equal(subscription.subscriptionId(), configuration.getSubscriptionId())) {
-                cbSubscription.setSelectedItem(subscription);
+        fillComboBoxSilently(cbSubscription, () -> {
+            cbSubscription.getItemListeners();
+            cbSubscription.removeAllItems();
+            for (Subscription subscription : subscriptions) {
+                cbSubscription.addItem(subscription);
+                if (Comparing.equal(subscription.subscriptionId(), configuration.getSubscriptionId())) {
+                    cbSubscription.setSelectedItem(subscription);
+                }
             }
-        }
+        });
     }
 
     @Override
     public void fillClusters(@NotNull List<ServiceResourceInner> clusters) {
-        boolean selected = cbClusters.getSelectedItem() != null;
-        cbClusters.removeAllItems();
-        clusters.sort(Comparator.comparing(ProxyResource::name));
-        boolean first = true;
+        fillComboBoxSilently(cbClusters, () -> {
+            boolean selected = cbClusters.getSelectedItem() != null;
+            cbClusters.removeAllItems();
+            clusters.sort(Comparator.comparing(ProxyResource::name));
+            boolean first = true;
 
-        for (ServiceResourceInner cluster : clusters) {
-            // https://stackoverflow.com/questions/15549568/jcombobox-selects-the-first-item-by-iteself
-            if (first && selected) {
-                cbClusters.insertItemAt(cluster, 0);
-            } else {
-                cbClusters.addItem(cluster);
+            for (ServiceResourceInner cluster : clusters) {
+                // https://stackoverflow.com/questions/15549568/jcombobox-selects-the-first-item-by-iteself
+                if (first && selected) {
+                    cbClusters.insertItemAt(cluster, 0);
+                } else {
+                    cbClusters.addItem(cluster);
+                }
+                first = false;
+                if (Comparing.equal(cluster.id(), configuration.getClusterId())) {
+                    cbClusters.setSelectedItem(cluster);
+                }
             }
-            first = false;
-            if (Comparing.equal(cluster.id(), configuration.getClusterId())) {
-                cbClusters.setSelectedItem(cluster);
+            // select first if there are clusters
+            if (cbClusters.getSelectedItem() == null && !clusters.isEmpty()) {
+                cbClusters.setSelectedItem(clusters.get(0));
             }
-        }
-        // select first if there are clusters
-        if (cbClusters.getSelectedItem() == null && !clusters.isEmpty()) {
-            cbClusters.setSelectedItem(clusters.get(0));
-        }
-        cbClusters.setEnabled(true);
+            cbClusters.setEnabled(true);
+        });
     }
 
     @Override
     public void fillApps(@NotNull List<AppResourceInner> apps) {
-        AzureResourceWrapper currentSel = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
-        cbSpringApps.removeAllItems();
-        cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
-        apps.sort(Comparator.comparing(ProxyResource::name));
-        AzureResourceWrapper firstItem = null;
-        for (AppResourceInner app : apps) {
-            AzureResourceWrapper wrapper = new AzureResourceWrapper(app);
-            cbSpringApps.addItem(wrapper);
-            if (firstItem == null) {
-                firstItem = wrapper;
+        fillComboBoxSilently(cbSpringApps, () -> {
+            AzureResourceWrapper currentSel = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
+            cbSpringApps.removeAllItems();
+            cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
+            apps.sort(Comparator.comparing(ProxyResource::name));
+            AzureResourceWrapper firstItem = null;
+            for (AppResourceInner app : apps) {
+                AzureResourceWrapper wrapper = new AzureResourceWrapper(app);
+                cbSpringApps.addItem(wrapper);
+                if (firstItem == null) {
+                    firstItem = wrapper;
+                }
+                if (currentSel != null && StringUtils.equals(currentSel.getName(), app.name())) {
+                    cbSpringApps.setSelectedItem(wrapper);
+                    currentSel = null;
+                }
             }
-            if (currentSel != null && StringUtils.equals(currentSel.getName(), app.name())) {
-                cbSpringApps.setSelectedItem(wrapper);
-                currentSel = null;
+            if (currentSel != null && currentSel.isFixedOption()) {
+                cbSpringApps.setSelectedItem(null);
             }
-        }
-        if (currentSel != null && currentSel.isFixedOption()) {
-            cbSpringApps.setSelectedItem(null);
-        }
 
-        if (currentSel != null && currentSel.isNewCreate()) {
-            cbSpringApps.addItem(currentSel);
-            cbSpringApps.setSelectedItem(currentSel);
-        } else {
-            // avoid select createApp by default
-            if (apps.isEmpty()) {
-                AzureResourceWrapper emptyOption = new AzureResourceWrapper("<Empty>", true);
-                cbSpringApps.addItem(emptyOption);
-                cbSpringApps.setSelectedItem(emptyOption);
+            if (currentSel != null && currentSel.isNewCreate()) {
+                cbSpringApps.addItem(currentSel);
+                cbSpringApps.setSelectedItem(currentSel);
             } else {
-                cbSpringApps.setSelectedItem(firstItem);
+                // avoid select createApp by default
+                if (apps.isEmpty()) {
+                    AzureResourceWrapper emptyOption = new AzureResourceWrapper("<Empty>", true);
+                    cbSpringApps.addItem(emptyOption);
+                    cbSpringApps.setSelectedItem(emptyOption);
+                } else {
+                    cbSpringApps.setSelectedItem(firstItem);
+                }
             }
-        }
-        cbSpringApps.setEnabled(true);
+            cbSpringApps.setEnabled(true);
+        });
     }
 
     @NotNull
@@ -381,6 +391,18 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         setupMavenProjectCombo(mavenProjects, this.configuration.getProjectName());
     }
 
+    private void fillComboBoxSilently(JComboBox cbArtifact, Runnable runnable) {
+        if (isFirstTimeCreated) {
+            // We just need to keep silent when reset from configuration
+            runnable.run();
+            return;
+        }
+        ItemListener[] listeners = cbArtifact.getItemListeners();
+        Arrays.stream(listeners).forEach(listener -> cbArtifact.removeItemListener(listener));
+        runnable.run();
+        Arrays.stream(listeners).forEach(listener -> cbArtifact.addItemListener(listener));
+    }
+
     private static String intToString(Integer i, int defaultValue) {
         if (i != null) {
             return i.toString();
@@ -390,17 +412,25 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
     @Override
     protected void apply(@NotNull SpringCloudDeployConfiguration configuration) {
-        configuration.setSubscriptionId(getValueFromComboBox(this.cbSubscription, Subscription::subscriptionId, Subscription.class));
+        configuration.setSubscriptionId(getValueFromComboBox(this.cbSubscription,
+                                                             Subscription::subscriptionId,
+                                                             Subscription.class));
 
         if (cbClusters.getSelectedItem() instanceof ServiceResourceInner) {
             configuration.setClusterId(getValueFromComboBox(this.cbClusters, ProxyResource::id,
-                                                ServiceResourceInner.class));
+                                                            ServiceResourceInner.class));
+        } else {
+            // Set cluster and app value from old configuration in case refreshing when edit existing configuration
+            configuration.setClusterId(this.configuration.getClusterId());
         }
 
         AzureResourceWrapper ar = getValueFromComboBox(this.cbSpringApps, t -> t, AzureResourceWrapper.class);
         if (ar != null && !ar.isFixedOption()) {
             configuration.setAppName(ar.getName());
             configuration.setCreateNewApp(ar.isNewCreate());
+        } else {
+            configuration.setAppName(this.configuration.getAppName());
+            configuration.setCreateNewApp(this.configuration.isCreateNewApp());
         }
 
         configuration.setCpu(getValueFromComboBox(this.cbCPU, Integer::parseInt, String.class));
