@@ -27,6 +27,7 @@ public class DependencyArtifact {
     private String artifactId;
     private String compatibleVersion;
     private String currentVersion;
+    private String managementVersion;
 
     public DependencyArtifact(String groupId, String artifactId) {
         this.groupId = groupId;
@@ -73,5 +74,13 @@ public class DependencyArtifact {
 
     public String getKey() {
         return groupId + ":" + artifactId;
+    }
+
+    public void setManagementVersion(final String managementVersion) {
+        this.managementVersion = managementVersion;
+    }
+
+    public String getManagementVersion() {
+        return managementVersion;
     }
 }

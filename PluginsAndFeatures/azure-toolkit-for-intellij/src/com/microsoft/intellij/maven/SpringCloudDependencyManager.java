@@ -80,14 +80,17 @@ public class SpringCloudDependencyManager {
         return res;
     }
 
-    public void update(File file, List<DependencyArtifact> des) throws IOException, DocumentException {
-        new PomXmlUpdater().updateDependencies(file, des);
+    public boolean update(File file, List<DependencyArtifact> des) throws IOException, DocumentException {
+        return new PomXmlUpdater().updateDependencies(file, des);
     }
 
     public static List<DependencyArtifact> getCompatibleVersions(List<DependencyArtifact> dependencies, String springBootVer)
             throws AzureExecutionException, IOException, DocumentException {
         List<DependencyArtifact> res = new ArrayList<>();
         for (DependencyArtifact dependency : dependencies) {
+            if (StringUtils.isNotEmpty(dependency.getCurrentVersion()) && isCompatibleVersion(dependency.getCurrentVersion(), springBootVer)) {
+                continue;
+            }
             List<String> latestVersions = getMavenCentralVersions(dependency.getGroupId(), dependency.getArtifactId());
             String targetVer = "";
             if (springBootVer.startsWith("2.2.")) {
