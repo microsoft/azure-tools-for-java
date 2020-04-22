@@ -130,9 +130,14 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)
                             || SpringCloudDependencyManager.isCompatibleVersion(managementVersion, springBootVer)) {
                         change.setCompatibleVersion("");
+                        change.setManagementVersion(managementVersion);
                     }
                 });
-                manager.update(pomFile, versionChanges);
+                if (!manager.update(pomFile, versionChanges)) {
+                    PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
+                                                           "No updates are needed.");
+                    return;
+                }
 
                 final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pomFile);
                 RefreshQueue.getInstance().refresh(true, false, null, new VirtualFile[]{vf});
@@ -206,7 +211,8 @@ public class AddAzureDependencyAction extends AzureAnAction {
                                          change.getGroupId(),
                                          change.getArtifactId(),
                                          isUpdate ? (change.getCurrentVersion() + " -> ") : "",
-                                         change.getCompatibleVersion()));
+                                         StringUtils.isNotEmpty(change.getCompatibleVersion()) ? change.getCompatibleVersion() :
+                                         change.getManagementVersion()));
         }
         return builder.toString();
     }

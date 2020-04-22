@@ -94,7 +94,7 @@ public class PomXmlUpdater {
 
         if (targetNode != null) {
             final String thisVersion = XmlUtils.getChildValue(targetNode, "version");
-            if (StringUtils.equals(thisVersion, version)) {
+            if (StringUtils.equals(thisVersion, version) || (StringUtils.isEmpty(thisVersion) && StringUtils.isEmpty(version))) {
                 // no need to update
                 return null;
             }
@@ -112,7 +112,7 @@ public class PomXmlUpdater {
         return targetNode;
     }
 
-    public void updateDependencies(final File pom, List<DependencyArtifact> apply)
+    public boolean updateDependencies(final File pom, List<DependencyArtifact> apply)
             throws DocumentException, IOException {
         final SAXReader reader = new CustomSAXReader();
         reader.setDocumentFactory(new LocatorAwareDocumentFactory());
@@ -127,7 +127,7 @@ public class PomXmlUpdater {
             }
         }
         if (newNodes.isEmpty()) {
-            return;
+            return false;
         }
         if (dependenciesNode instanceof LocationAwareElement) {
             for (int i = 1; i < newNodes.size(); i++) {
@@ -139,6 +139,7 @@ public class PomXmlUpdater {
             FileUtils.writeStringToFile(pom, formatElement(FileUtils.readFileToString(pom, "utf-8"),
                     (LocationAwareElement) dependenciesNode.getParent(), dependenciesNode), "utf-8");
         }
+        return true;
     }
 
     private static void updateText(Element node, String key, String text) {
