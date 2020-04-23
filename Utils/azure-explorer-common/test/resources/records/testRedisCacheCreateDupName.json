@@ -135,7 +135,7 @@
         "x-ms-routing-request-id": "WESTUS2:20170726T061321Z:79bc2683-cd4a-492b-9bfd-6db49e0a9e32",
         "Expires": "-1",
         "Content-Length": "326",
-        "Body": "{\"error\":{\"code\":\"NameNotAvailable\",\"message\":\"An error occured when trying to reserve the DNS name for the cache instance. This may be a temporary issue if a cache instance of this name was recently deleted. Please choose a different name or try again later.\\r\\nRequestID=b3796427-11e3-4d74-8999-0848af2bc85f\",\"target\":null}}",
+        "Body": "{\"error\":{\"code\":\"NameNotAvailable\",\"message\":\"An error occurred when trying to reserve the DNS name for the cache instance. This may be a temporary issue if a cache instance of this name was recently deleted. Please choose a different name or try again later.\\r\\nRequestID=b3796427-11e3-4d74-8999-0848af2bc85f\",\"target\":null}}",
         "x-ms-request-id": "b3796427-11e3-4d74-8999-0848af2bc85f",
         "Content-Type": "application/json; charset=utf-8"
       }
