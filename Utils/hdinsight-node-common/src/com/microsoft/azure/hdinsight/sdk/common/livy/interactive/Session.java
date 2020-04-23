@@ -61,7 +61,7 @@ import java.util.stream.Stream;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Debug;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -507,10 +507,10 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
 
         return Observable.from(getArtifactsToDeploy())
                          .doOnNext(artifactPath -> ctrlSubject.onNext(
-                                 new SparkLogLine(Tool, Info, "Start uploading artifact " + artifactPath)))
+                                 new SparkLogLine(TOOL, Info, "Start uploading artifact " + artifactPath)))
                          .flatMap(artifactPath -> deployDelegate.deploy(new File(artifactPath), ctrlSubject))
                          .doOnNext(uri -> ctrlSubject.onNext(
-                                 new SparkLogLine(Tool, Info, "Uploaded to " + uri)))
+                                 new SparkLogLine(TOOL, Info, "Uploaded to " + uri)))
                          .toList()
                          .map(uploadedUris -> {
                              this.createParameters.uploadedArtifactsUris.addAll(uploadedUris);
@@ -547,7 +547,7 @@ public abstract class Session implements AutoCloseable, Closeable, ILogger {
         final String json = postBody.convertToJson()
                                     .orElseThrow(() -> new IllegalArgumentException("Bad session arguments to post."));
 
-        getCtrlSubject().onNext(new SparkLogLine(Tool, Debug,
+        getCtrlSubject().onNext(new SparkLogLine(TOOL, Debug,
                                                  "Create Livy Session by sending request to " + uri + " with body "
                                                          + json));
 

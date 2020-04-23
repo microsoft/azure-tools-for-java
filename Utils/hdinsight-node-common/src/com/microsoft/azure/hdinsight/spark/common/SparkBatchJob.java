@@ -60,8 +60,8 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Livy;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.LIVY;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -407,7 +407,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
             this.setBatchId(jobResp.getId());
 
             getCtrlSubject().onNext(
-                    new SparkLogLine(Tool,
+                    new SparkLogLine(TOOL,
                                      Info,
                                      "Spark Batch submission " + httpResponse.toString()));
 
@@ -848,7 +848,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                         // To subscriber
                         sparkJobLog.getLog().stream()
                                 .filter(line -> !ignoredEmptyLines.contains(line.trim().toLowerCase()))
-                                .forEach(line -> ob.onNext(new SparkLogLine(Livy, Log, line)));
+                                .forEach(line -> ob.onNext(new SparkLogLine(LIVY, Log, line)));
 
                         linesGot = sparkJobLog.getLog().size();
                         nextLivyLogOffset += linesGot;
@@ -862,7 +862,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                     }
                 }
             } catch (final IOException ex) {
-                ob.onNext(new SparkLogLine(Tool, Error, ex.getMessage()));
+                ob.onNext(new SparkLogLine(TOOL, Error, ex.getMessage()));
             } catch (final InterruptedException ignored) {
             } finally {
                 ob.onCompleted();
@@ -1186,7 +1186,7 @@ public class SparkBatchJob implements ISparkBatchJob, ILogger {
                 .map(status -> new SimpleImmutableEntry<>(status.getState(), String.join("\n", status.getLog())))
                 .retry(getRetriesMax())
                 .repeatWhen(ob -> ob.doOnNext(ignored -> getCtrlSubject().onNext(
-                        new SparkLogLine(Tool, Info, "The Spark job is starting...")))
+                        new SparkLogLine(TOOL, Info, "The Spark job is starting...")))
                                     .delay(getDelaySeconds(), TimeUnit.SECONDS))
                 .takeUntil(stateLogPair -> isDone(stateLogPair.getKey()) || isRunning(stateLogPair.getKey()))
                 .filter(stateLogPair -> isDone(stateLogPair.getKey()) || isRunning(stateLogPair.getKey()))

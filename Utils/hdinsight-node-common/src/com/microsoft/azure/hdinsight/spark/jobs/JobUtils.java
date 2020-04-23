@@ -111,7 +111,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static rx.exceptions.Exceptions.propagate;
 
@@ -470,7 +470,7 @@ public class JobUtils {
         if (legacyLogSubject != null) {
             legacyLogSubject.onNext(new SimpleImmutableEntry<>(Info, message));
         } else {
-            newLogSubject.onNext(new SparkLogLine(Tool, Info, message));
+            newLogSubject.onNext(new SparkLogLine(TOOL, Info, message));
         }
     }
 
@@ -635,7 +635,7 @@ public class JobUtils {
     public static String uploadFileToEmulator(@NotNull IClusterDetail selectedClusterDetail,
                                               @NotNull String buildJarPath,
                                               @NotNull Observer<SparkLogLine> logSubject) throws Exception {
-        logSubject.onNext(new SparkLogLine(Tool, Info, String.format("Get target jar from %s.",
+        logSubject.onNext(new SparkLogLine(TOOL, Info, String.format("Get target jar from %s.",
                                                                      buildJarPath)));
         final String uniqueFolderId = UUID.randomUUID().toString();
         final String folderPath = String.format("../opt/livy/SparkSubmission/%s", uniqueFolderId);

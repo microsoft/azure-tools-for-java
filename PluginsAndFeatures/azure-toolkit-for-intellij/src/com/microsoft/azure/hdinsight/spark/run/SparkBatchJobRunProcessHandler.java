@@ -35,7 +35,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.Future;
 
 import static com.intellij.execution.process.ProcessOutputTypes.STDOUT;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.SparkDriverStdErr;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.SPARK_DRIVER_STDERR;
 
 public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatchJobProcessAdapter>
         implements SparkBatchJobProcessCtrlLogOut, AnsiEscapeDecoder.ColoredTextAcceptor {
@@ -82,7 +82,7 @@ public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatc
                     final BaseOutputReader stderrReader =
                             new SparkDriverLogStreamReader(SparkBatchJobRunProcessHandler.this,
                                                            myProcess.getErrorStream(),
-                                                           SparkDriverStdErr);
+                                                           SPARK_DRIVER_STDERR);
 
                     myWaitFor.setTerminationCallback(exitCode -> {
                         try {

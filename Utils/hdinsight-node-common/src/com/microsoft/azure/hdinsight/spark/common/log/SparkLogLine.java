@@ -25,9 +25,9 @@ package com.microsoft.azure.hdinsight.spark.common.log;
 import com.microsoft.azure.hdinsight.common.MessageInfoType;
 
 public class SparkLogLine {
-    public static final String Tool = "azuretool";
-    public static final String Livy = "livy";
-    public static final String SparkDriverStdErr = "driver.stderr";
+    public static final String TOOL = "azuretool";
+    public static final String LIVY = "livy";
+    public static final String SPARK_DRIVER_STDERR = "driver.stderr";
 
     private final String logSource;
     private final MessageInfoType messageInfoType;

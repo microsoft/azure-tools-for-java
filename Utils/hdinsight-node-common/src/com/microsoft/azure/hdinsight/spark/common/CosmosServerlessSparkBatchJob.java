@@ -49,8 +49,8 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Log;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Livy;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.LIVY;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 
 public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull
@@ -359,7 +359,7 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                         final String jobState = getJobState(job);
                         final String schedulerState = getJobSchedulerState(job);
                         final String message = String.format("Job scheduler state: %s. Job running state: %s.", schedulerState, jobState);
-                        return Observable.just(new SparkLogLine(Tool, Info, message));
+                        return Observable.just(new SparkLogLine(TOOL, Info, message));
                     } else {
                         return Observable.just(job)
                                 .doOnNext(batchResp -> {
@@ -406,10 +406,10 @@ public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
                                                             || jobSchedulerState != null && jobSchedulerState.equalsIgnoreCase(SchedulerState.ENDED.toString())) {
                                                         final String message = String.format("Job scheduler state: %s. Job running state: %s.", jobSchedulerState, jobRunningState);
                                                         return Observable.just(
-                                                                new SparkLogLine(Tool, Info, message));
+                                                                new SparkLogLine(TOOL, Info, message));
                                                     } else {
                                                         return Observable.from(logAndStatesTriple.getLeft())
-                                                                .map(line -> new SparkLogLine(Livy, Log, line));
+                                                                .map(line -> new SparkLogLine(LIVY, Log, line));
                                                     }
                                                 })
                                 );

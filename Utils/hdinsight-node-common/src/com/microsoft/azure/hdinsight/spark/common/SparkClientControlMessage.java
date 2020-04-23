@@ -29,7 +29,7 @@ import rx.Observer;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 
 public interface SparkClientControlMessage {
     /**
@@ -57,7 +57,7 @@ public interface SparkClientControlMessage {
      * @param message the message to sent
      */
     default void ctrlInfo(final String message) {
-        getCtrlSubject().onNext(new SparkLogLine(Tool, Info, message));
+        getCtrlSubject().onNext(new SparkLogLine(TOOL, Info, message));
     }
 
     /**
@@ -65,7 +65,7 @@ public interface SparkClientControlMessage {
      * @param message the message to sent
      */
     default void ctrlError(final String message) {
-        getCtrlSubject().onNext(new SparkLogLine(Tool, Error, message));
+        getCtrlSubject().onNext(new SparkLogLine(TOOL, Error, message));
     }
 
     /**
@@ -73,6 +73,6 @@ public interface SparkClientControlMessage {
      * @param url the message to sent
      */
     default void ctrlHyperLink(final String url) {
-        getCtrlSubject().onNext(new SparkLogLine(Tool, Hyperlink, url));
+        getCtrlSubject().onNext(new SparkLogLine(TOOL, Hyperlink, url));
     }
 }

@@ -33,7 +33,7 @@ import java.net.URL;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.HtmlPersistentMessage;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 
 public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @NotNull
@@ -86,7 +86,7 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
             trackingJobMsg += "<a href=\"" + jobHistoryWebUrl + "\">Spark Job History Server</a> and ";
         }
         trackingJobMsg += "<a href=\"" + getJobDetailsWebUrl() + "\">Spark Job Details UI</a> in Browser";
-        ctrlLog(Tool, HtmlPersistentMessage, trackingJobMsg);
+        ctrlLog(TOOL, HtmlPersistentMessage, trackingJobMsg);
 
         return Observable.empty();
     }
