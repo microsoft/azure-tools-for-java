@@ -33,7 +33,7 @@ import java.net.URL;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.HtmlPersistentMessage;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
 
 public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @NotNull

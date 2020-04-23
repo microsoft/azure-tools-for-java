@@ -111,7 +111,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static rx.exceptions.Exceptions.propagate;
 

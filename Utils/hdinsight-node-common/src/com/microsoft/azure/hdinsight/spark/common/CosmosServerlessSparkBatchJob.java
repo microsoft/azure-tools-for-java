@@ -49,8 +49,8 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Log;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Livy;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Livy;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
 
 public class CosmosServerlessSparkBatchJob extends SparkBatchJob {
     @NotNull

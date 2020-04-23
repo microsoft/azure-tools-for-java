@@ -35,7 +35,7 @@ import java.nio.charset.Charset;
 import java.util.concurrent.Future;
 
 import static com.intellij.execution.process.ProcessOutputTypes.STDOUT;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.SparkDriverStdErr;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.SparkDriverStdErr;
 
 public class SparkBatchJobRunProcessHandler extends BaseProcessHandler<SparkBatchJobProcessAdapter>
         implements SparkBatchJobProcessCtrlLogOut, AnsiEscapeDecoder.ColoredTextAcceptor {

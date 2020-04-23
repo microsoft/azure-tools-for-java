@@ -61,7 +61,7 @@ import java.util.stream.Stream;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Debug;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 

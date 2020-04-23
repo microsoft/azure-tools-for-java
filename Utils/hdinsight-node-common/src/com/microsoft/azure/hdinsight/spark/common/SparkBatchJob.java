@@ -60,8 +60,8 @@ import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Error;
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Livy;
-import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogSource.Tool;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Livy;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.Tool;
 import static java.lang.Thread.sleep;
 import static rx.exceptions.Exceptions.propagate;
 
