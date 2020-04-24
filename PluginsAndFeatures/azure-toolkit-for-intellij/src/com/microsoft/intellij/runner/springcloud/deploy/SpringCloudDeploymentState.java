@@ -227,9 +227,9 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         }
         final String dependencyPrompt = getDependenciesValidationPrompt(
                 missingDependencies, inCompatibleDependencies, springVersion);
-        if (inCompatibleDependencies.size() > 0) {
+        if (!inCompatibleDependencies.isEmpty()) {
             PluginUtil.showWarningNotificationProject(project, AZURE_DEPENDENCIES_WARNING_TITLE, dependencyPrompt);
-        } else if (missingDependencies.size() > 0) {
+        } else if (!missingDependencies.isEmpty()) {
             PluginUtil.showInfoNotificationProject(project, AZURE_DEPENDENCIES_WARNING_TITLE, dependencyPrompt);
         }
     }
