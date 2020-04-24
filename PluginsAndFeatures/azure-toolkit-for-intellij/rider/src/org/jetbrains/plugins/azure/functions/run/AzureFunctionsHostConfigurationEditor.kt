@@ -31,22 +31,16 @@ import com.jetbrains.rd.util.lifetime.SequentialLifetimes
 import com.jetbrains.rdclient.protocol.IPermittedModalities
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.jetbrains.rider.run.configurations.LifetimedSettingsEditor
 import com.jetbrains.rider.run.configurations.controls.*
 import com.jetbrains.rider.run.configurations.controls.startBrowser.BrowserSettingsEditor
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import javax.swing.JComponent
 
 class AzureFunctionsHostConfigurationEditor(private val project: Project)
-    : SettingsEditor<AzureFunctionsHostConfiguration>() {
+    : LifetimedSettingsEditor<AzureFunctionsHostConfiguration>() {
 
     lateinit var viewModel: AzureFunctionsHostConfigurationViewModel
-    private val lifetimeDefinition = Lifetime.Eternal.createNested()
-    private val editorLifetime = SequentialLifetimes(lifetimeDefinition.lifetime)
-
-    override fun disposeEditor() {
-        lifetimeDefinition.terminate()
-        super.disposeEditor()
-    }
 
     override fun resetEditorFrom(configuration: AzureFunctionsHostConfiguration) {
         configuration.parameters.apply {
@@ -98,10 +92,9 @@ class AzureFunctionsHostConfigurationEditor(private val project: Project)
         }
     }
 
-    override fun createEditor(): JComponent {
+    override fun createEditor(lifetime: Lifetime): JComponent {
         IPermittedModalities.getInstance().allowPumpProtocolUnderCurrentModality()
 
-        val lifetime = editorLifetime.next()
         viewModel = AzureFunctionsHostConfigurationViewModel(
                 lifetime,
                 project.solution.runnableProjectsModel,

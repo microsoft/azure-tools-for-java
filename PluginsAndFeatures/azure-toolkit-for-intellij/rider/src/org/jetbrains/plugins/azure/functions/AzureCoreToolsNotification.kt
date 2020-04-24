@@ -27,8 +27,8 @@ import com.intellij.notification.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.createLifetime
 import com.intellij.openapi.startup.StartupActivity
+import com.jetbrains.rd.platform.util.lifetime
 import com.jetbrains.rd.util.reactive.adviseOnce
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
@@ -55,7 +55,7 @@ class AzureCoreToolsNotification : StartupActivity {
         if (!properties.getBoolean(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES, true))
             return
 
-        project.solution.runnableProjectsModel.projects.adviseOnce(project.createLifetime()) { runnableProjects ->
+        project.solution.runnableProjectsModel.projects.adviseOnce(project.lifetime.createNested()) { runnableProjects ->
             if (runnableProjects.none { it.kind == RunnableProjectKind.AzureFunctions }) return@adviseOnce
 
             ApplicationManager.getApplication().executeOnPooledThread {

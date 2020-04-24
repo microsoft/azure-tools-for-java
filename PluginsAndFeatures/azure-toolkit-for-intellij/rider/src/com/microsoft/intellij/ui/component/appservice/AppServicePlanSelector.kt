@@ -146,7 +146,10 @@ class AppServicePlanSelector(private val lifetime: Lifetime) :
     }
 
     fun fillLocationComboBox(locations: List<Location>, defaultLocation: Region? = AzureDefaults.location) {
-        cbLocation.fillComboBox<Location>(locations) { location -> location.region() == defaultLocation }
+        cbLocation.fillComboBox<Location>(
+                elements = locations,
+                defaultComparator = { location -> location.region() == defaultLocation }
+        )
     }
 
     fun fillPricingTier(pricingTiers: List<PricingTier>, defaultPricingTier: PricingTier? = AzureDefaults.pricingTier) {

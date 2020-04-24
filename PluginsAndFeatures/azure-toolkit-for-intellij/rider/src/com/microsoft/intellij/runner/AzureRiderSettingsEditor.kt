@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -24,9 +24,22 @@ package com.microsoft.intellij.runner
 
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SettingsEditor
+import com.jetbrains.rd.util.lifetime.Lifetime
+import com.jetbrains.rd.util.lifetime.SequentialLifetimes
 import javax.swing.JComponent
 
+/**
+ * Base Editor for Azure run configurations for Rider.
+ *
+ * Notes:
+ *   - Similar to [com.microsoft.intellij.runner.AzureSettingsEditor], but avoid all Java related logic inside a base class.
+ *   - Define editor lifetime that is disposed after editor is terminated. Unable to use [LifetimedSettingsEditor]
+ *     due to protected final dispose() method.
+ */
 abstract class AzureRiderSettingsEditor<T : AzureRunConfigurationBase<*>> : SettingsEditor<T>() {
+
+    private val lifetimeDefinition = Lifetime.Eternal.createNested()
+    protected val editorLifetime = SequentialLifetimes(lifetimeDefinition.lifetime)
 
     protected abstract val panel: AzureRiderSettingPanel<T>
 
@@ -46,6 +59,7 @@ abstract class AzureRiderSettingsEditor<T : AzureRunConfigurationBase<*>> : Sett
     }
 
     override fun disposeEditor() {
+        lifetimeDefinition.terminate()
         panel.disposeEditor()
         super.disposeEditor()
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.functionapp.config
 
 import com.intellij.openapi.project.Project
-import com.jetbrains.rd.platform.util.lifetime
 import com.jetbrains.rdclient.protocol.IPermittedModalities
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.AzureRiderSettingsEditor
@@ -33,9 +32,7 @@ import javax.swing.JComponent
 class FunctionAppSettingEditor(project: Project, configuration: FunctionAppConfiguration) :
         AzureRiderSettingsEditor<FunctionAppConfiguration>() {
 
-    private val lifetimeDef = project.lifetime.createNested()
-
-    private val myPanel = PublishFunctionAppPanel(lifetimeDef, project, configuration)
+    private val myPanel = PublishFunctionAppPanel(editorLifetime.next(), project, configuration)
 
     override val panel: AzureRiderSettingPanel<FunctionAppConfiguration>
         get() = myPanel
@@ -44,10 +41,4 @@ class FunctionAppSettingEditor(project: Project, configuration: FunctionAppConfi
         IPermittedModalities.getInstance().allowPumpProtocolUnderCurrentModality()
         return super.createEditor()
     }
-
-    override fun disposeEditor() {
-        lifetimeDef.terminate()
-        super.disposeEditor()
-    }
-
 }

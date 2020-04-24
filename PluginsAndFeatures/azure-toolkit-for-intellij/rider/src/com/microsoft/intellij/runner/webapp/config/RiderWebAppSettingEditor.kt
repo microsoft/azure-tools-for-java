@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.webapp.config
 
 import com.intellij.openapi.project.Project
-import com.jetbrains.rd.platform.util.lifetime
 import com.jetbrains.rdclient.protocol.IPermittedModalities
 import com.microsoft.intellij.runner.AzureRiderSettingPanel
 import com.microsoft.intellij.runner.AzureRiderSettingsEditor
@@ -33,9 +32,7 @@ import javax.swing.JComponent
 class RiderWebAppSettingEditor(project: Project, configuration: RiderWebAppConfiguration) :
         AzureRiderSettingsEditor<RiderWebAppConfiguration>() {
 
-    private val lifetimeDef = project.lifetime.createNested()
-
-    private val myPanel = WebAppPublishPanel(lifetimeDef, project, configuration)
+    private val myPanel = WebAppPublishPanel(editorLifetime.next(), project, configuration)
 
     override val panel: AzureRiderSettingPanel<RiderWebAppConfiguration>
         get() = myPanel
@@ -43,10 +40,5 @@ class RiderWebAppSettingEditor(project: Project, configuration: RiderWebAppConfi
     override fun createEditor(): JComponent {
         IPermittedModalities.getInstance().allowPumpProtocolUnderCurrentModality()
         return super.createEditor()
-    }
-
-    override fun disposeEditor() {
-        lifetimeDef.terminate()
-        super.disposeEditor()
     }
 }

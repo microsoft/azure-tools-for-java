@@ -165,7 +165,10 @@ class SqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
     }
 
     fun fillLocationComboBox(locations: List<Location>, defaultLocation: Region? = AzureDefaults.location) {
-        cbLocation.fillComboBox<Location>(locations) { location -> location.region() == defaultLocation }
+        cbLocation.fillComboBox<Location>(
+                elements = locations,
+                defaultComparator = { location: Location -> location.region() == defaultLocation }
+        )
 
         if (locations.isEmpty()) {
             lastSelectedLocation = null
