@@ -46,7 +46,10 @@ class AzureCloudTerminalRunner(project: Project,
                                process: AzureCloudTerminalProcess)
     : CloudTerminalRunner(project, message("terminal.cloud_shell.runner.pipe_name"), process) {
 
-    private val logger = Logger.getInstance(AzureCloudTerminalRunner::class.java)
+    companion object {
+        private val logger = Logger.getInstance(AzureCloudTerminalRunner::class.java)
+    }
+
     private val resizeTerminalUrl: String
     private val uploadFileToTerminalUrl: String
     private val previewPortBaseUrl: String

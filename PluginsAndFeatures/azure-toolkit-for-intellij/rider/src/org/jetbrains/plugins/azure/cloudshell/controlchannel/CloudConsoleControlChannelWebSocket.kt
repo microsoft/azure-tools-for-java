@@ -24,6 +24,7 @@ package org.jetbrains.plugins.azure.cloudshell.controlchannel
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.annotations.SerializedName
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
@@ -35,6 +36,10 @@ class CloudConsoleControlChannelWebSocket(private val project: Project,
                                           private val cloudConsoleService: CloudConsoleService,
                                           private val cloudConsoleBaseUrl: String)
     : WebSocketClient(serverURI) {
+
+    companion object {
+        private val logger = Logger.getInstance(CloudConsoleControlChannelWebSocket::class.java)
+    }
 
     private val gson = Gson()
 
@@ -53,7 +58,7 @@ class CloudConsoleControlChannelWebSocket(private val project: Project,
                             .handle(message)
                 }
             } catch (e: JsonSyntaxException) {
-                // TODO
+                logger.error("Error on receiving message from cloud shell terminal: $e")
             }
         }
     }

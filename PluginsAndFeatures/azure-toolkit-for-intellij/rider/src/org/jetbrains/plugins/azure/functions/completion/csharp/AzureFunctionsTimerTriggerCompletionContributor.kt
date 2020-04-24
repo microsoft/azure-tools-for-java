@@ -37,7 +37,9 @@ import java.util.*
 
 class AzureFunctionsTimerTriggerCompletionContributor : CompletionContributor() {
 
-    private val logger = Logger.getInstance(AzureFunctionsTimerTriggerCompletionContributor::class.java)
+    companion object {
+        private val logger = Logger.getInstance(AzureFunctionsTimerTriggerCompletionContributor::class.java)
+    }
 
     private val cronParser = CronParser(NCrontabCronDefinition)
     private val cronDescriptor = CronDescriptor.instance(Locale.getDefault())

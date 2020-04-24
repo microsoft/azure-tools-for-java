@@ -22,12 +22,12 @@
 
 package org.jetbrains.plugins.azure.functions.actions
 
-import com.jetbrains.rider.util.idea.getLogger
 import com.intellij.ide.fileTemplates.FileTemplateManager
 import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.ws.http.request.HttpRequestLanguage
@@ -42,7 +42,7 @@ class TriggerAzureFunctionAction(private val functionName: String)
         RestClientIcons.Http_requests_filetype) {
 
     companion object {
-        private val logger by lazy { getLogger<TriggerAzureFunctionAction>() }
+        private val logger by lazy { Logger.getInstance(TriggerAzureFunctionAction::class.java) }
     }
 
     override fun actionPerformed(e: AnActionEvent) {

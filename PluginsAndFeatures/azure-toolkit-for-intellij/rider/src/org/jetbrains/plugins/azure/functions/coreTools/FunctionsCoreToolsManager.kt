@@ -26,6 +26,7 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -36,10 +37,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.ZipUtil
 import com.intellij.util.text.VersionComparatorUtil
-import com.jetbrains.rd.util.error
-import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.string.printToString
-import com.jetbrains.rd.util.warn
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.GitHubReleasesService
 import java.io.File
@@ -52,7 +50,7 @@ object FunctionsCoreToolsManager {
 
     private val downloadPath: String = PathManager.getConfigPath() + File.separator + CORE_TOOLS_DIR
 
-    private val logger = getLogger<FunctionsCoreToolsManager>()
+    private val logger = Logger.getInstance(FunctionsCoreToolsManager::class.java)
 
     fun downloadLatestRelease(allowPrerelease: Boolean, indicator: ProgressIndicator, onComplete: (String) -> Unit) {
         object : Task.Backgroundable(null, message("progress.function_app.core_tools.downloading_latest"), true) {
@@ -176,7 +174,7 @@ object FunctionsCoreToolsManager {
 
         try {
             if (!coreToolsExecutable.canExecute()) {
-                logger.warn { "Updating executable flag for $coreToolsPath..." }
+                logger.warn("Updating executable flag for $coreToolsPath...")
                 try {
                     coreToolsExecutable.setExecutable(true)
                 } catch (s: SecurityException) {
@@ -255,9 +253,9 @@ object FunctionsCoreToolsManager {
                 }
             }
         } catch (e: UnknownHostException) {
-            logger.warn { "Could not determine latest remote: " + e.printToString() }
+            logger.warn("Could not determine latest remote: " + e.printToString())
         } catch (e: IOException) {
-            logger.warn { "Could not determine latest remote: " + e.printToString() }
+            logger.warn("Could not determine latest remote: " + e.printToString())
         }
 
         return null

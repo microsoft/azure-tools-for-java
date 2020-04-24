@@ -29,6 +29,7 @@ import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.ide.browsers.BrowserStarter
 import com.intellij.ide.browsers.StartBrowserSettings
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.util.execution.ParametersListUtil
@@ -44,7 +45,6 @@ import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParamete
 import com.jetbrains.rider.runtime.DotNetExecutable
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.util.idea.getComponent
-import com.jetbrains.rider.util.idea.getLogger
 import org.jdom.Element
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
@@ -91,7 +91,7 @@ open class AzureFunctionsHostConfigurationParameters(
         const val PROJECT_NOT_SPECIFIED = "Project is not specified"
         const val SOLUTION_IS_LOADING = "Solution is loading, please wait for a few seconds"
 
-        private val logger = getLogger<AzureFunctionsHostConfigurationParameters>()
+        private val logger = Logger.getInstance(AzureFunctionsHostConfigurationParameters::class.java)
     }
 
     val isUnloadedProject: Boolean

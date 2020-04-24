@@ -34,7 +34,9 @@ import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 
 class CloseCloudShellPortActionGroup : ActionGroup() {
 
-    private val logger = Logger.getInstance(OpenCloudShellPortAction::class.java)
+    companion object {
+        private val logger = Logger.getInstance(OpenCloudShellPortAction::class.java)
+    }
 
     override fun update(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext)
@@ -71,7 +73,9 @@ class CloseCloudShellPortActionGroup : ActionGroup() {
 }
 
 private class CloseCloudShellPortAction(val port: Int) : AnAction(port.toString()) {
-    private val logger = Logger.getInstance(CloseCloudShellPortAction::class.java)
+    companion object {
+        private val logger= Logger.getInstance(CloseCloudShellPortAction::class.java)
+    }
 
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = true
@@ -98,7 +102,7 @@ private class CloseCloudShellPortAction(val port: Int) : AnAction(port.toString(
 }
 
 private object CloseAllCloudShellPortsAction : AnAction("Close all") {
-    private val logger = Logger.getInstance(CloseCloudShellPortAction::class.java)
+    private val logger= Logger.getInstance(CloseCloudShellPortAction::class.java)
 
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = true

@@ -22,15 +22,13 @@
 
 package org.jetbrains.plugins.azure.functions.projectTemplating
 
-import com.jetbrains.rd.util.error
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.info
+import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.rider.projectView.actions.projectTemplating.backend.ReSharperProjectTemplateProvider
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import java.io.File
 
 object FunctionsCoreToolsTemplateManager {
-    private val logger = getLogger<FunctionsCoreToolsTemplateManager>()
+    private val logger = Logger.getInstance(FunctionsCoreToolsTemplateManager::class.java)
 
     private fun isFunctionsProjectTemplate(file: File?): Boolean =
             file != null && file.isFile && file.name.startsWith("projectTemplates.", true) && file.name.endsWith(".nupkg", true)
@@ -55,7 +53,7 @@ object FunctionsCoreToolsTemplateManager {
                 val templateFiles = templatesToBeRegisteredFolder.listFiles { f: File? -> isFunctionsProjectTemplate(f) }
                         ?: emptyArray<File>()
 
-                logger.info { "Found ${templateFiles.size} function template(s)" }
+                logger.info("Found ${templateFiles.size} function template(s)")
 
                 templateFiles.forEach { file ->
                     ReSharperProjectTemplateProvider.addUserTemplateSource(file)

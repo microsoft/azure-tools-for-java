@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -22,9 +22,8 @@
 
 package com.microsoft.intellij.runner.webapp
 
+import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.rd.util.concurrentMapOf
-import com.jetbrains.rd.util.error
-import com.jetbrains.rd.util.getLogger
 import com.microsoft.azure.management.Azure
 import com.microsoft.azure.management.appservice.*
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
@@ -34,7 +33,7 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx
 
 object AzureDotNetWebAppMvpModel {
 
-    private val LOG = getLogger<AzureDotNetWebAppMvpModel>()
+    private val logger = Logger.getInstance(AzureDotNetWebAppMvpModel::class.java)
 
     class WebAppDefinition(val name: String,
                            val isCreatingResourceGroup: Boolean,
@@ -81,7 +80,7 @@ object AzureDotNetWebAppMvpModel {
             subscriptionIdToWebAppsMap[subscriptionId] = webAppList
             return webAppList
         } catch (e: Throwable) {
-            LOG.error(e)
+            logger.error(e)
         }
 
         return listOf()

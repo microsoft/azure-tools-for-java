@@ -23,6 +23,7 @@
 package com.microsoft.intellij.runner.appbase.config.runstate
 
 import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.wm.ToolWindowId
@@ -35,7 +36,6 @@ import com.jetbrains.rdclient.util.idea.toIOFile
 import com.jetbrains.rider.model.BuildResultKind
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.jetbrains.rider.run.configurations.publishing.base.MsBuildPublishingService
-import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
@@ -55,7 +55,7 @@ import java.util.zip.ZipOutputStream
 
 object AppDeployStateUtil {
 
-    private val logger = getLogger<AppDeployStateUtil>()
+    private val logger = Logger.getInstance(AppDeployStateUtil::class.java)
 
     private const val COLLECT_ARTIFACTS_TIMEOUT_MS = 180000L
 

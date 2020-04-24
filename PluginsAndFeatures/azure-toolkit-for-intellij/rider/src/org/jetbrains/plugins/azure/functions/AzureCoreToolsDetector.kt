@@ -23,10 +23,9 @@
 package org.jetbrains.plugins.azure.functions
 
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.info
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import java.io.File
@@ -37,7 +36,7 @@ import java.io.File
 class AzureCoreToolsDetector : StartupActivity {
 
     companion object {
-        private val logger = getLogger<AzureCoreToolsDetector>()
+        private val logger = Logger.getInstance(AzureCoreToolsDetector::class.java)
     }
 
     override fun runActivity(project: Project) {
@@ -45,15 +44,15 @@ class AzureCoreToolsDetector : StartupActivity {
 
         val existingCoreToolPath = properties.getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, "")
         if (existingCoreToolPath.isNotEmpty() && File(existingCoreToolPath).exists()) {
-            logger.info { "Azure Function Core Tool is setup: '$existingCoreToolPath'" }
+            logger.info("Azure Function Core Tool is setup: '$existingCoreToolPath'")
             return
         }
 
-        logger.info { "Detecting Azure Function Core Tool..." }
+        logger.info("Detecting Azure Function Core Tool...")
         val functionCoreToolPath = FunctionsCoreToolsInfoProvider.detectFunctionCoreToolsPath()
 
         if (functionCoreToolPath == null) {
-            logger.info { "Unable to detect Azure Core Tool path" }
+            logger.info("Unable to detect Azure Core Tool path")
             return
         }
 

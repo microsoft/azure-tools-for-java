@@ -23,11 +23,8 @@
 package org.jetbrains.plugins.azure.functions.coreTools
 
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
-import com.jetbrains.rd.util.error
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.info
-import com.jetbrains.rd.util.warn
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.runner.functions.core.FunctionCliResolver
 import java.io.File
@@ -35,7 +32,7 @@ import java.io.File
 data class FunctionsCoreToolsInfo(val coreToolsPath: String, var coreToolsExecutable: String)
 
 object FunctionsCoreToolsInfoProvider {
-    private val logger = getLogger<FunctionsCoreToolsInfoProvider>()
+    private val logger = Logger.getInstance(FunctionsCoreToolsInfoProvider::class.java)
 
     fun retrieve(): FunctionsCoreToolsInfo? {
         val funcCoreToolsPath = PropertiesComponent.getInstance().getValue(AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH)
@@ -54,7 +51,7 @@ object FunctionsCoreToolsInfoProvider {
         }
 
         if (!coreToolsExecutablePath.canExecute()) {
-            logger.warn { "Updating executable flag for $coreToolsExecutablePath..." }
+            logger.warn("Updating executable flag for $coreToolsExecutablePath...")
             try {
                 coreToolsExecutablePath.setExecutable(true)
             } catch (s: SecurityException) {
@@ -93,13 +90,13 @@ object FunctionsCoreToolsInfoProvider {
         // Plugin tool downloads has higher priority then manual downloads.
         val pluginCoreToolsExecutable = detectPluginDownloads()
         if (pluginCoreToolsExecutable != null) {
-            logger.info { "Found an existing download from the plugin for function core tool: '${pluginCoreToolsExecutable.canonicalPath}'" }
+            logger.info("Found an existing download from the plugin for function core tool: '${pluginCoreToolsExecutable.canonicalPath}'")
             return pluginCoreToolsExecutable.parentFile.canonicalPath
         }
 
         val manualCoreToolsExecutable = detectManualDownloads()
         if (manualCoreToolsExecutable != null) {
-            logger.info { "Found an existing manual setup for function core tool: '${manualCoreToolsExecutable.canonicalPath}'" }
+            logger.info("Found an existing manual setup for function core tool: '${manualCoreToolsExecutable.canonicalPath}'")
             return manualCoreToolsExecutable.parentFile.canonicalPath
         }
 

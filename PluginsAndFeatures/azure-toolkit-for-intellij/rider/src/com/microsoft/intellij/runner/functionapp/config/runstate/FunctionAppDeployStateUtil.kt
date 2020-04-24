@@ -22,10 +22,10 @@
 
 package com.microsoft.intellij.runner.functionapp.config.runstate
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.jetbrains.rider.model.PublishableProjectModel
-import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.ConnectionStringType
 import com.microsoft.azure.management.appservice.FunctionApp
 import com.microsoft.azure.management.sql.SqlDatabase
@@ -47,7 +47,7 @@ import java.util.*
 
 object FunctionAppDeployStateUtil {
 
-    private val logger = getLogger<FunctionAppDeployStateUtil>()
+    private val logger = Logger.getInstance(FunctionAppDeployStateUtil::class.java)
 
     private val activityNotifier = AzureDeploymentProgressNotification(null)
 

@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package org.jetbrains.plugins.azure.cloudshell.actions
 
 import com.intellij.openapi.actionSystem.AnAction
@@ -37,7 +38,9 @@ import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 
 class UploadToAzureCloudShellAction : AnAction() {
-    private val logger = Logger.getInstance(UploadToAzureCloudShellAction::class.java)
+    companion object {
+        private val logger = Logger.getInstance(UploadToAzureCloudShellAction::class.java)
+    }
 
     override fun update(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext)

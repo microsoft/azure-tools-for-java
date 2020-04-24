@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package org.jetbrains.plugins.azure.cloudshell.actions
 
 import com.intellij.ide.BrowserUtil
@@ -59,7 +60,9 @@ import java.net.URI
 import javax.swing.event.HyperlinkEvent
 
 class StartAzureCloudShellAction : AnAction() {
-    private val logger = Logger.getInstance(StartAzureCloudShellAction::class.java)
+    companion object {
+        private val logger = Logger.getInstance(StartAzureCloudShellAction::class.java)
+    }
 
     private val defaultTerminalColumns = 100
     private val defaultTerminalRows = 30

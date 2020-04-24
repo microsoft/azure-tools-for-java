@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.helpers.deploy
 
-import com.jetbrains.rider.util.idea.getLogger
+import com.intellij.openapi.diagnostic.Logger
 import com.microsoft.azure.management.appservice.PublishingProfile
 import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.intellij.runner.RunProcessHandler
@@ -34,7 +34,7 @@ import java.io.File
 
 object KuduClient {
 
-    private val logger = getLogger<WebAppDeployStateUtil>()
+    private val logger = Logger.getInstance(WebAppDeployStateUtil::class.java)
 
     private const val URL_KUDU_ZIP_DEPLOY_SUFFIX = "/api/zipdeploy"
     private const val URL_AZURE_BASE = ".azurewebsites.net"

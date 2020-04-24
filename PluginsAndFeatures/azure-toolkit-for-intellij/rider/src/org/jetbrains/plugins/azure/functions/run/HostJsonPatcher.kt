@@ -23,11 +23,11 @@
 package org.jetbrains.plugins.azure.functions.run
 
 import com.google.gson.*
-import com.jetbrains.rider.util.idea.getLogger
+import com.intellij.openapi.diagnostic.Logger
 import java.io.File
 
 object HostJsonPatcher {
-    private val logger = getLogger<HostJsonPatcher>()
+    private val logger = Logger.getInstance(HostJsonPatcher::class.java)
     private val functionsPropertyName = "functions"
 
     private fun determineHostJsonFile(workingDirectory: String): File? {

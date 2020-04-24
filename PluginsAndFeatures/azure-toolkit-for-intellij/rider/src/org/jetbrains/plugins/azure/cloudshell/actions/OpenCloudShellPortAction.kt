@@ -37,7 +37,9 @@ import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
 
 class OpenCloudShellPortAction : AnAction() {
-    private val logger = Logger.getInstance(OpenCloudShellPortAction::class.java)
+    companion object {
+        private val logger = Logger.getInstance(OpenCloudShellPortAction::class.java)
+    }
 
     override fun update(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext)

@@ -27,14 +27,16 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.diagnostic.Logger
 import com.jetbrains.rider.run.configurations.IExecutorFactory
-import com.jetbrains.rider.util.idea.getLogger
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 
 class AzureFunctionsHostExecutorFactory(private val parameters: AzureFunctionsHostConfigurationParameters) : IExecutorFactory {
 
-    private val logger = getLogger<AzureFunctionsHostExecutorFactory>()
+    companion object {
+        private val logger = Logger.getInstance(AzureFunctionsHostExecutorFactory::class.java)
+    }
 
     override fun create(executorId: String, environment: ExecutionEnvironment): RunProfileState {
         val coreToolsInfo: FunctionsCoreToolsInfo? = FunctionsCoreToolsInfoProvider.retrieve()

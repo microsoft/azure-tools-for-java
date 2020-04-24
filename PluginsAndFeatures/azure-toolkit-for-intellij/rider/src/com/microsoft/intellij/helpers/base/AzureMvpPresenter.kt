@@ -22,11 +22,11 @@
 
 package com.microsoft.intellij.helpers.base
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.jetbrains.rd.platform.util.application
-import com.jetbrains.rider.util.idea.getLogger
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.reactive.Signal
@@ -38,7 +38,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader
 open class AzureMvpPresenter<V : MvpView> : MvpPresenter<V>() {
 
     companion object {
-        private val logger = getLogger(this)
+        private val logger = Logger.getInstance(AzureMvpPresenter::class.java)
     }
 
     fun <T>subscribe(lifetime: Lifetime,
