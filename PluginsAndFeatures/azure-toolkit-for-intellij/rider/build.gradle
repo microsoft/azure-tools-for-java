@@ -2,6 +2,7 @@ dependencies {
     compile rootProject
     compile "org.java-websocket:Java-WebSocket:$webSocketVersion"
     compile "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    implementation 'com.cronutils:cron-utils:9.0.2'
 
     testCompile rootProject
 }

@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.azure.functions.codeInspection
+package org.jetbrains.plugins.azure.functions.codeInspection.msbuild
 
 import com.intellij.codeInspection.*
 import com.intellij.openapi.project.Project

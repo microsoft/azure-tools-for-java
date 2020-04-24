@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.jetbrains.plugins.azure.functions.run
+package org.jetbrains.plugins.azure.functions.run.csharp
 
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
@@ -28,7 +28,7 @@ import com.intellij.openapi.actionSystem.Separator
 import com.intellij.psi.PsiElement
 import com.microsoft.icons.CommonIcons
 import org.jetbrains.plugins.azure.functions.actions.TriggerAzureFunctionAction
-import org.jetbrains.plugins.azure.functions.helpers.AzureFunctionsPsiHelper
+import org.jetbrains.plugins.azure.functions.helpers.csharp.AzureFunctionsPsiHelper
 
 class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
 

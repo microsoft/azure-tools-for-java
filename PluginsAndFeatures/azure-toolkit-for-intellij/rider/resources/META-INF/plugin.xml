@@ -161,7 +161,7 @@
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBeforeRunTaskProvider"/>
     <configurationType implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationType"/>
     <runConfigurationProducer implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsConfigurationProducer"/>
-    <runLineMarkerContributor language="C#" implementationClass="org.jetbrains.plugins.azure.functions.run.AzureFunctionsRunMarkerContributor"/>
+    <runLineMarkerContributor language="C#" implementationClass="org.jetbrains.plugins.azure.functions.run.csharp.AzureFunctionsRunMarkerContributor"/>
 
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsDetector" />
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsMissingNupkgInstaller" />
@@ -178,7 +178,17 @@
                      shortName="AzureFunctionsVersionNotSpecified"
                      displayName="Azure Functions version not specified"
                      groupName="Azure"
-                     implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.AzureFunctionsVersionInspection"/>
+                     implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.msbuild.AzureFunctionsVersionInspection"/>
+
+    <completion.contributor language="C#"
+                            implementationClass="org.jetbrains.plugins.azure.functions.completion.csharp.AzureFunctionsTimerTriggerCompletionContributor"/>
+
+    <localInspection language="C#"
+                     enabledByDefault="true"
+                     shortName="AzureFunctionsTimerTriggerCron"
+                     displayName="Validates schedule expression for timer trigger"
+                     groupName="Azure"
+                     implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.csharp.AzureFunctionsTimerTriggerCronInspection"/>
 
     <internalFileTemplate name="Trigger Azure Function"/>
   </extensions>

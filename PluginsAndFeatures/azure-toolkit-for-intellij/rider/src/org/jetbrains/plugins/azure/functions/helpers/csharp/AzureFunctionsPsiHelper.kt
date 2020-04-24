@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.jetbrains.plugins.azure.functions.helpers
+package org.jetbrains.plugins.azure.functions.helpers.csharp
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
@@ -77,5 +77,39 @@ object AzureFunctionsPsiHelper {
         }
 
         return null
+    }
+
+    fun tryResolveTimerTriggerAttributeFromScheduleExpressionStringLiteralSibling(element: PsiElement?): PsiElement? {
+        if (element == null) return null
+        if (element.language != CSharpLanguage) return null
+
+        if (element.elementType != CSharpTokenType.STRING_LITERAL_REGULAR) return null
+
+        // [TimerTrigger("<-- search backward from here
+        val timerTriggerAttributeSibling = element.parent.siblings(forward = false)
+                .takeWhile { it.text != "[" }
+                .firstOrNull { it.text == "TimerTrigger" || it.text == "TimerTriggerAttribute" }
+
+        return timerTriggerAttributeSibling
+    }
+
+    fun tryResolveTimerTriggerScheduleExpressionStringLiteral(element: PsiElement?): PsiElement? {
+        if (element == null) return null
+        if (element.language != CSharpLanguage) return null
+
+        if (element.text != "[") return null
+
+        val timerTriggerAttributeSibling = element.siblings(forward = true)
+                .takeWhile { it.text != "]" }
+                .firstOrNull { it.text == "TimerTrigger" || it.text == "TimerTriggerAttribute" }
+                ?: return null
+
+        // [TimerTrigger("* * * * * *")] - take the string content
+        val timerTriggerScheduleExpressionStringLiteralSibling = timerTriggerAttributeSibling.siblings(forward = true)
+                .takeWhile { it.text != "]" && it.text != ")" }
+                .firstOrNull { it is CSharpStringLiteralExpression }
+                ?.children?.firstOrNull { it.elementType == CSharpTokenType.STRING_LITERAL_REGULAR }
+
+        return timerTriggerScheduleExpressionStringLiteralSibling;
     }
 }

@@ -33,7 +33,7 @@ import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.getSelectedProject
-import org.jetbrains.plugins.azure.functions.helpers.AzureFunctionsPsiHelper
+import org.jetbrains.plugins.azure.functions.helpers.csharp.AzureFunctionsPsiHelper
 import java.io.File
 
 class AzureFunctionsConfigurationProducer
