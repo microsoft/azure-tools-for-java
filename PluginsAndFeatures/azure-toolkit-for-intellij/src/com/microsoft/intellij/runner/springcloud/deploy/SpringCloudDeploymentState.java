@@ -34,9 +34,11 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.intellij.maven.SpringCloudDependencyManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.util.MavenUtils;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.SpringCloudUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
@@ -50,20 +52,40 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Predicate;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 public class SpringCloudDeploymentState extends AzureRunProfileState<AppResourceInner> {
 
     private static final int GET_URL_TIMEOUT = 60;
     private static final int GET_STATUS_TIMEOUT = 180;
+    private static final String[] SPRING_ARTIFACTS = {
+        "spring-boot-starter-actuator",
+        "spring-cloud-config-client",
+        "spring-cloud-starter-netflix-eureka-client",
+        "spring-cloud-starter-zipkin",
+        "spring-cloud-starter-sleuth"
+    };
     private static final List<DeploymentResourceStatus> DEPLOYMENT_PROCESSING_STATUS =
             Arrays.asList(DeploymentResourceStatus.COMPILING,
                           DeploymentResourceStatus.ALLOCATING,
                           DeploymentResourceStatus.UPGRADING);
+    private static final String JAR = ".jar";
+    private static final String MAIN_CLASS = "Main-Class";
+    private static final String SPRING_BOOT_LIB = "Spring-Boot-Lib";
+    private static final String SPRING_BOOT_AUTOCONFIGURE = "spring-boot-autoconfigure";
+    private static final String NOT_SPRING_BOOT_PROJECT = "Project %s is not a spring-boot project.";
+    private static final String CAN_NOT_VALIDATE_DEPENDENCIES = "Can not validate dependencies.";
+    private static final String DEPENDENCIES_IS_NOT_UPDATED = "Azure Spring Cloud dependencies is not updated.";
+    private static final String MAIN_CLASS_NOT_FOUND =
+            "Main class was not found in current artifact, which is required for spring cloud app.";
+    private static final String DEPENDENCY_WARNING = "Dependency %s is missing or out of date, you "
+            + "may update the dependencies with `Add Azure Spring Cloud dependency`.";
 
     private final SpringCloudDeployConfiguration springCloudDeployConfiguration;
 
@@ -99,6 +121,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             throw new AzureExecutionException(String.format("File '%s' cannot be found.",
                                                             finalJarName));
         }
+        validateSpringBootApp(finalJarName);
         // get or create spring cloud app
         setText(processHandler, "Creating/Updating spring cloud app...");
         final AppResourceInner appResourceInner = SpringCloudUtils.createOrUpdateSpringCloudApp(springCloudDeployConfiguration);
@@ -171,6 +194,55 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         telemetryMap.putAll(springCloudDeployConfiguration.getModel().getTelemetryProperties());
+    }
+
+    private void validateSpringBootApp(String finalJar) throws AzureExecutionException, IOException {
+        final JarFile jarFile = new JarFile(finalJar);
+        final Attributes maniFestAttributes = jarFile.getManifest().getMainAttributes();
+        final String mainClass = maniFestAttributes.getValue(MAIN_CLASS);
+        final String library = maniFestAttributes.getValue(SPRING_BOOT_LIB);
+        if (StringUtils.isEmpty(mainClass)) {
+            throw new AzureExecutionException(MAIN_CLASS_NOT_FOUND);
+        }
+        if (StringUtils.isEmpty(library)) {
+            throw new AzureExecutionException(CAN_NOT_VALIDATE_DEPENDENCIES);
+        }
+        final Map<String, String> dependencies = getSpringAppDependencies(jarFile.entries(), library);
+        if (!dependencies.containsKey(SPRING_BOOT_AUTOCONFIGURE)) {
+            throw new AzureExecutionException(NOT_SPRING_BOOT_PROJECT);
+        }
+        final String springVersion = dependencies.get(SPRING_BOOT_AUTOCONFIGURE);
+        for (String artifact : SPRING_ARTIFACTS) {
+            if (!SpringCloudDependencyManager.isCompatibleVersion(dependencies.get(artifact),
+                                                                  springVersion)) {
+                PluginUtil.showInfoNotificationProject(project, DEPENDENCIES_IS_NOT_UPDATED,
+                                                       String.format(DEPENDENCY_WARNING, artifact));
+                return;
+            }
+        }
+    }
+
+    private Map<String, String> getSpringAppDependencies(Enumeration<JarEntry> jarEntryEnumeration,
+                                                         String libraryPath) {
+        final List<JarEntry> jarEntries = new ArrayList<JarEntry>();
+        while (jarEntryEnumeration.hasMoreElements()) {
+            jarEntries.add(jarEntryEnumeration.nextElement());
+        }
+        return jarEntries.stream()
+                         .filter(jarEntry -> StringUtils.startsWith(jarEntry.getName(), libraryPath)
+                                 && StringUtils.endsWith(jarEntry.getName(), JAR))
+                         .map(jarEntry -> {
+                             String fileName = StringUtils.strip(jarEntry.getName(), libraryPath);
+                             fileName = StringUtils.stripEnd(fileName, JAR);
+                             final int i = StringUtils.lastIndexOf(fileName, "-");
+                             return (i > 0 && i < fileName.length() - 1) ?
+                                    new String[]{
+                                            StringUtils.substring(fileName, 0, i),
+                                            StringUtils.substring(fileName, i + 1)
+                                    } :
+                                    new String[]{fileName, ""};
+                         })
+                         .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
     }
 
     private void getUrl(String appId, RunProcessHandler processHandler) {
