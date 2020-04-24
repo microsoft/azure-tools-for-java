@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -19,12 +19,19 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package org.jetbrains.plugins.azure.cloudshell
 
-import com.intellij.openapi.components.ProjectComponent
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.azure.cloudshell.terminal.AzureCloudProcessTtyConnector
 
-class CloudShellComponent : ProjectComponent {
+class CloudShellService {
+
+    companion object {
+        fun getInstance(project: Project): CloudShellService = ServiceManager.getService(project, CloudShellService::class.java)
+    }
+
     private val connectors = mutableListOf<AzureCloudProcessTtyConnector>()
 
     fun registerConnector(connector: AzureCloudProcessTtyConnector) {

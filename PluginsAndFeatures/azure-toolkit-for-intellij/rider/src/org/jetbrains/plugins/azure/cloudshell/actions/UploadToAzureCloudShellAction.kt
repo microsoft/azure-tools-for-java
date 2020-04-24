@@ -33,9 +33,8 @@ import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.vfs.VirtualFile
-import com.jetbrains.rider.util.idea.getComponent
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
+import org.jetbrains.plugins.azure.cloudshell.CloudShellService
 
 class UploadToAzureCloudShellAction : AnAction() {
     companion object {
@@ -44,16 +43,19 @@ class UploadToAzureCloudShellAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext)
-        val cloudShellComponent = project?.getComponent<CloudShellComponent>()
+                ?: let {
+                    e.presentation.isEnabled = false
+                    return
+                }
 
-        e.presentation.isEnabled = CommonDataKeys.PROJECT.getData(e.dataContext) != null
-                && cloudShellComponent != null
-                && cloudShellComponent.activeConnector() != null
+        val cloudShellComponent = CloudShellService.getInstance(project)
+
+        e.presentation.isEnabled = cloudShellComponent.activeConnector() != null
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext) ?: return
-        val activeConnector = project.getComponent<CloudShellComponent>().activeConnector() ?: return
+        val activeConnector = CloudShellService.getInstance(project).activeConnector() ?: return
 
         ApplicationManager.getApplication().invokeLater {
             val descriptor = FileChooserDescriptor(true, false, false, true, false, true)

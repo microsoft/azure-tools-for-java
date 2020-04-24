@@ -171,6 +171,8 @@
 
     <projectTemplateProvider implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplatesProvider" order="first"/>
 
+    <projectService serviceImplementation="org.jetbrains.plugins.azure.cloudshell.CloudShellService" />
+
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV1TemplateCustomizer" />
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV2TemplateCustomizer" />
 
@@ -209,10 +211,6 @@
     <component>
       <implementation-class>com.microsoft.intellij.AzureRiderPlugin</implementation-class>
       <loadForDefaultProject/>
-    </component>
-
-    <component>
-      <implementation-class>org.jetbrains.plugins.azure.cloudshell.CloudShellComponent</implementation-class>
     </component>
   </project-components>
 

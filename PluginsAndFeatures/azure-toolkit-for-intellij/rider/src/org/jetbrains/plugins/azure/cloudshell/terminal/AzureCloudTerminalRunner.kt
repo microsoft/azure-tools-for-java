@@ -32,7 +32,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.apache.http.client.utils.URIBuilder
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
+import org.jetbrains.plugins.azure.cloudshell.CloudShellService
 import org.jetbrains.plugins.azure.cloudshell.controlchannel.CloudConsoleControlChannelWebSocket
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import org.jetbrains.plugins.terminal.cloud.CloudTerminalProcess
@@ -69,7 +69,7 @@ class AzureCloudTerminalRunner(project: Project,
     }
 
     override fun createTtyConnector(process: CloudTerminalProcess): TtyConnector {
-        val cloudShellComponent = project.getComponent<CloudShellComponent>()
+        val cloudShellComponent = CloudShellService.getInstance(project)
 
         // Connect control socket
         // TODO: for now, this does not yet need any other wiring, it's just a convenience for e.g. downloading files

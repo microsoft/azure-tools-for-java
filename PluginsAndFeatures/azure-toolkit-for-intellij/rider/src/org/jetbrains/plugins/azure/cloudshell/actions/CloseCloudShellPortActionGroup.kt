@@ -28,9 +28,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
-import com.jetbrains.rider.util.idea.getComponent
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.cloudshell.CloudShellComponent
+import org.jetbrains.plugins.azure.cloudshell.CloudShellService
 
 class CloseCloudShellPortActionGroup : ActionGroup() {
 
@@ -40,10 +39,14 @@ class CloseCloudShellPortActionGroup : ActionGroup() {
 
     override fun update(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext)
-        val cloudShellComponent = project?.getComponent<CloudShellComponent>()
+                ?: let {
+                    e.presentation.isEnabled = false
+                    return
+                }
+
+        val cloudShellComponent = CloudShellService.getInstance(project)
 
         e.presentation.isEnabled = CommonDataKeys.PROJECT.getData(e.dataContext) != null
-                && cloudShellComponent != null
                 && cloudShellComponent.activeConnector() != null
                 && cloudShellComponent.activeConnector()!!.openPreviewPorts.any()
     }
@@ -51,8 +54,9 @@ class CloseCloudShellPortActionGroup : ActionGroup() {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         if (e?.dataContext == null) return emptyArray()
 
-        val project = CommonDataKeys.PROJECT.getData(e.dataContext)
-        val cloudShellComponent = project?.getComponent<CloudShellComponent>() ?: return emptyArray()
+        val project = CommonDataKeys.PROJECT.getData(e.dataContext) ?: return emptyArray()
+
+        val cloudShellComponent = CloudShellService.getInstance(project)
         val currentConnector = cloudShellComponent.activeConnector() ?: return emptyArray()
 
         if (!currentConnector.openPreviewPorts.any()) return emptyArray()
@@ -83,7 +87,7 @@ private class CloseCloudShellPortAction(val port: Int) : AnAction(port.toString(
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext) ?: return
-        val activeConnector = project.getComponent<CloudShellComponent>().activeConnector() ?: return
+        val activeConnector = CloudShellService.getInstance(project).activeConnector() ?: return
 
         ApplicationManager.getApplication().invokeLater {
             object : Task.Backgroundable(
@@ -110,7 +114,7 @@ private object CloseAllCloudShellPortsAction : AnAction("Close all") {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext) ?: return
-        val activeConnector = project.getComponent<CloudShellComponent>().activeConnector() ?: return
+        val activeConnector = CloudShellService.getInstance(project).activeConnector() ?: return
 
         ApplicationManager.getApplication().invokeLater {
             object : Task.Backgroundable(
