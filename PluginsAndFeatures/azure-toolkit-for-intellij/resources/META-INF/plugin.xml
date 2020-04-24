@@ -20,44 +20,27 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.35.0</h3>
+    <h3>3.36.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Add Azure Spring Cloud support in Azure Toolkits
-            <ul>
-                <li>Manage Azure Spring Cloud project dependencies</li>
-                <li>Manage Azure Spring Cloud apps in Azure Explorer</li>
-                <ul>
-                    <li>Create/Delete/Start/Stop/Restart</li>
-                    <li>Assign/un-assign public endpoint</li>
-                    <li>Update environment variables </li>
-                    <li>Update JVM options</li>
-                    <li>View app properties</li>
-                </ul>
-                <li>Deploying apps from current project</li>
-                <li>Monitoring and troubleshooting apps</li>
-                <ul>
-                    <li>Getting public url</li>
-                    <li>Getting test endpoint</li>
-                    <li>Instance status(shown in app properties view)</li>
-                </ul>
-            </ul>
-        </li>
-        <li>Support trigger function with timer trigger</li>
-        <li>Support log streaming for Windows functions</li>
+        <li>Support log streaming for webapp</li>
+        <li>Support open portal Live Metrics Stream for linux function app </li>
+        <li>Validate Azure dependencies version before deploying</li>
+        <li>Tag log line with log source(azuretool, livy, driver.stderr) for Spark batch job logs and interactive session
+            logs</li>
+    </ul>
+    <h4">Changed</h4>
+    <ul>
+        <li>Remove version of Azure Spring Cloud dependencies when it is not necessary</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4157">#4157</a> Can't trigger function/admin
-            http function when click 'Trigger Function' button</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4160">#4160</a> Nothing shown in function run
-            mark</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4179">#4179</a> Fixed NPE caused Spark job
-            submission failure in 201EAP</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4213">#4213</a> Unhandled error when creating
-            function app</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4215">#4215</a> App settings not loaded when
-            openning the deploy wizard</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4179">#4179</a> Fix NPE caused job submission
+            failure issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4204">#4204</a> Deploy Azure Spring Cloud App
+            dialog default value is apply</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4231">#4231</a> Cannot use Auth file for
+            spring cloud authentication</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
