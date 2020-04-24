@@ -80,7 +80,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
     private static final String SPRING_BOOT_LIB = "Spring-Boot-Lib";
     private static final String SPRING_BOOT_AUTOCONFIGURE = "spring-boot-autoconfigure";
     private static final String NOT_SPRING_BOOT_PROJECT = "Project %s is not a spring-boot project.";
-    private static final String CAN_NOT_VALIDATE_DEPENDENCIES = "Can not validate dependencies.";
+    private static final String FAILED_TO_LOAD_DEPENDENCIES = "Failed to load spring cloud app dependencies";
     private static final String DEPENDENCIES_IS_NOT_UPDATED = "Azure Spring Cloud dependencies is not updated.";
     private static final String MAIN_CLASS_NOT_FOUND =
             "Main class was not found in current artifact, which is required for spring cloud app.";
@@ -205,7 +205,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             throw new AzureExecutionException(MAIN_CLASS_NOT_FOUND);
         }
         if (StringUtils.isEmpty(library)) {
-            throw new AzureExecutionException(CAN_NOT_VALIDATE_DEPENDENCIES);
+            throw new AzureExecutionException(FAILED_TO_LOAD_DEPENDENCIES);
         }
         final Map<String, String> dependencies = getSpringAppDependencies(jarFile.entries(), library);
         if (!dependencies.containsKey(SPRING_BOOT_AUTOCONFIGURE)) {
@@ -224,10 +224,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     private Map<String, String> getSpringAppDependencies(Enumeration<JarEntry> jarEntryEnumeration,
                                                          String libraryPath) {
-        final List<JarEntry> jarEntries = new ArrayList<JarEntry>();
-        while (jarEntryEnumeration.hasMoreElements()) {
-            jarEntries.add(jarEntryEnumeration.nextElement());
-        }
+        final List<JarEntry> jarEntries = Collections.list(jarEntryEnumeration);
         return jarEntries.stream()
                          .filter(jarEntry -> StringUtils.startsWith(jarEntry.getName(), libraryPath)
                                  && StringUtils.endsWith(jarEntry.getName(), JAR))
