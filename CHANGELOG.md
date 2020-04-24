@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.36.0](#3360)
   - [3.35.0](#3350)
   - [3.34.0](#3340)
   - [3.33.1](#3331)
@@ -47,6 +48,22 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.36.0
+
+### Added
+- Support log streaming for webapp
+- Support open portal Live Metrics Stream for linux function app 
+- Validate Azure dependencies version before deploying
+- Tag log line with log source(azuretool, livy, driver.stderr) for Spark batch job logs and interactive session logs
+
+### Changed
+- Remove version of Azure Spring Cloud dependencies when it is not necessary
+
+### Fixed
+- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fix NPE caused job submission failure issue
+- [#4204](https://github.com/microsoft/azure-tools-for-java/issues/4204) Deploy Azure Spring Cloud App dialog default value is apply
+- [#4231](https://github.com/microsoft/azure-tools-for-java/issues/4231) Cannot use Auth file for spring cloud authentication
 
 ## 3.35.0
 
