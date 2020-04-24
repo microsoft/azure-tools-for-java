@@ -42,6 +42,7 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.SpringCloudUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.DefaultAzureResourceTracker;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
@@ -75,17 +76,20 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             Arrays.asList(DeploymentResourceStatus.COMPILING,
                           DeploymentResourceStatus.ALLOCATING,
                           DeploymentResourceStatus.UPGRADING);
-    private static final String JAR = ".jar";
+    private static final String JAR = "jar";
     private static final String MAIN_CLASS = "Main-Class";
     private static final String SPRING_BOOT_LIB = "Spring-Boot-Lib";
     private static final String SPRING_BOOT_AUTOCONFIGURE = "spring-boot-autoconfigure";
-    private static final String NOT_SPRING_BOOT_PROJECT = "Project %s is not a spring-boot project.";
-    private static final String FAILED_TO_LOAD_DEPENDENCIES = "Failed to load spring cloud app dependencies";
-    private static final String DEPENDENCIES_IS_NOT_UPDATED = "Azure Spring Cloud dependencies is not updated.";
+    private static final String NOT_SPRING_BOOT_Artifact = "Artifact %s is not a spring-boot artifact.";
+    private static final String NO_SPRING_BOOT_LIB = "Missing Spring-Boot-Lib in %s!META_INF/MANIFEST.MF, "
+            + "did you use Spring Boot Maven plugin to repackage the target jar?";
+    private static final String DEPENDENCIES_IS_NOT_UPDATED = "Azure Spring Cloud dependencies are not updated.";
     private static final String MAIN_CLASS_NOT_FOUND =
-            "Main class was not found in current artifact, which is required for spring cloud app.";
-    private static final String DEPENDENCY_WARNING = "Dependency %s is missing or out of date, you "
-            + "may update the dependencies with `Add Azure Spring Cloud dependency`.";
+            "Main class cannot be found in %s, which is required for spring cloud app.";
+    private static final String AZURE_DEPENDENCIES_WARNING_TITLE =
+            "Azure dependencies are missing or incompatible";
+    private static final String DEPENDENCY_WARNING = "Azure dependencies are missing or incompatible, you "
+            + "may update the dependencies by Azure -> Add Azure Spring Cloud dependency on project context menu.\n";
 
     private final SpringCloudDeployConfiguration springCloudDeployConfiguration;
 
@@ -121,7 +125,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             throw new AzureExecutionException(String.format("File '%s' cannot be found.",
                                                             finalJarName));
         }
-        validateSpringBootApp(finalJarName);
+        validateSpringCloudAppArtifact(finalJarName);
         // get or create spring cloud app
         setText(processHandler, "Creating/Updating spring cloud app...");
         final AppResourceInner appResourceInner = SpringCloudUtils.createOrUpdateSpringCloudApp(springCloudDeployConfiguration);
@@ -196,30 +200,52 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         telemetryMap.putAll(springCloudDeployConfiguration.getModel().getTelemetryProperties());
     }
 
-    private void validateSpringBootApp(String finalJar) throws AzureExecutionException, IOException {
+    private void validateSpringCloudAppArtifact(String finalJar) throws AzureExecutionException, IOException {
         final JarFile jarFile = new JarFile(finalJar);
         final Attributes maniFestAttributes = jarFile.getManifest().getMainAttributes();
         final String mainClass = maniFestAttributes.getValue(MAIN_CLASS);
-        final String library = maniFestAttributes.getValue(SPRING_BOOT_LIB);
         if (StringUtils.isEmpty(mainClass)) {
-            throw new AzureExecutionException(MAIN_CLASS_NOT_FOUND);
+            throw new AzureExecutionException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
         }
+        final String library = maniFestAttributes.getValue(SPRING_BOOT_LIB);
         if (StringUtils.isEmpty(library)) {
-            throw new AzureExecutionException(FAILED_TO_LOAD_DEPENDENCIES);
+            throw new AzureExecutionException(String.format(NO_SPRING_BOOT_LIB, finalJar));
         }
         final Map<String, String> dependencies = getSpringAppDependencies(jarFile.entries(), library);
         if (!dependencies.containsKey(SPRING_BOOT_AUTOCONFIGURE)) {
-            throw new AzureExecutionException(NOT_SPRING_BOOT_PROJECT);
+            throw new AzureExecutionException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
         }
         final String springVersion = dependencies.get(SPRING_BOOT_AUTOCONFIGURE);
+        final List<String> missingDependencies = new ArrayList<>();
+        final Map<String, String> inCompatibleDependencies = new HashMap<>();
         for (String artifact : SPRING_ARTIFACTS) {
-            if (!SpringCloudDependencyManager.isCompatibleVersion(dependencies.get(artifact),
-                                                                  springVersion)) {
-                PluginUtil.showInfoNotificationProject(project, DEPENDENCIES_IS_NOT_UPDATED,
-                                                       String.format(DEPENDENCY_WARNING, artifact));
-                return;
+            if (!dependencies.containsKey(artifact)) {
+                missingDependencies.add(artifact);
+            } else if (!SpringCloudDependencyManager.isCompatibleVersion(dependencies.get(artifact), springVersion)) {
+                inCompatibleDependencies.put(artifact, dependencies.get(artifact));
             }
         }
+        final String dependencyPrompt = getDependenciesValidationPrompt(
+                missingDependencies, inCompatibleDependencies, springVersion);
+        if (inCompatibleDependencies.size() > 0) {
+            PluginUtil.showWarningNotificationProject(project, AZURE_DEPENDENCIES_WARNING_TITLE, dependencyPrompt);
+        } else if (missingDependencies.size() > 0) {
+            PluginUtil.showInfoNotificationProject(project, AZURE_DEPENDENCIES_WARNING_TITLE, dependencyPrompt);
+        }
+    }
+
+    private String getDependenciesValidationPrompt(List<String> missingDependencies,
+                                                   Map<String, String> inCompatibleDependencies, String springVersion) {
+        StringBuilder result = new StringBuilder();
+        result.append(DEPENDENCY_WARNING);
+        for (String dependency : missingDependencies) {
+            result.append(String.format("%s : Missing \n", dependency));
+        }
+        for (String dependency : inCompatibleDependencies.keySet()) {
+            result.append(String.format("%s : Incompatible, current version %s, spring boot version %s \n",
+                                        dependency, inCompatibleDependencies.get(dependency), springVersion));
+        }
+        return result.toString();
     }
 
     private Map<String, String> getSpringAppDependencies(Enumeration<JarEntry> jarEntryEnumeration,
@@ -227,10 +253,9 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         final List<JarEntry> jarEntries = Collections.list(jarEntryEnumeration);
         return jarEntries.stream()
                          .filter(jarEntry -> StringUtils.startsWith(jarEntry.getName(), libraryPath)
-                                 && StringUtils.endsWith(jarEntry.getName(), JAR))
+                                 && StringUtils.equalsIgnoreCase(FilenameUtils.getExtension(jarEntry.getName()), JAR))
                          .map(jarEntry -> {
-                             String fileName = StringUtils.strip(jarEntry.getName(), libraryPath);
-                             fileName = StringUtils.stripEnd(fileName, JAR);
+                             String fileName = FilenameUtils.getBaseName(jarEntry.getName());
                              final int i = StringUtils.lastIndexOf(fileName, "-");
                              return (i > 0 && i < fileName.length() - 1) ?
                                     new String[]{
