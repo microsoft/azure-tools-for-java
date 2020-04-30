@@ -1,27 +1,29 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.common.utils.SneakyThrowUtils;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import org.apache.commons.lang3.StringUtils;
 
 import com.microsoft.azure.AzureEnvironment;
@@ -75,7 +77,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         }
     }
 
-    private final static Logger LOGGER = Logger.getLogger(ServicePrincipalAzureManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ServicePrincipalAzureManager.class.getName());
     private static Settings settings;
     private final SubscriptionManager subscriptionManager;
     private final File credFile;
@@ -125,6 +127,17 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     @Override
+    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
+            try {
+                return authSpringCloud(sid);
+            } catch (IOException e) {
+                return SneakyThrowUtils.sneakyThrow(e);
+            }
+        });
+    }
+
+    @Override
     public List<Subscription> getSubscriptions() throws IOException {
         List<Subscription> sl = auth().subscriptions().list();
         return sl;
@@ -136,12 +149,8 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         for (Tenant t : getTenants()) {
             //String tid = t.tenantId();
             for (Subscription s : getSubscriptions()) {
-                stl.add(new Pair<Subscription, Tenant>(s, t));
+                stl.add(new Pair<>(s, t));
             }
-//            try {
-//            } catch (IOException e) {
-//                System.out.println(e.getMessage());
-//            }
         }
         return stl;
     }
@@ -208,18 +217,18 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         initEnv();
         return env;
     }
-    
+
     @Override
     public String getStorageEndpointSuffix() {
-    	return getEnvironment().getAzureEnvironment().storageEndpointSuffix();
+        return getEnvironment().getAzureEnvironment().storageEndpointSuffix();
     }
 
     private void initATCIfNeeded() throws IOException {
         if (atc == null) {
             atc = ApplicationTokenCredentials.fromFile(credFile);
-        }  
+        }
     }
-    
+
     private void initEnv() {
         if (env != null) {
             return;
@@ -245,4 +254,15 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
             env = Environment.GLOBAL;
         }
     }
+
+    private AppPlatformManager authSpringCloud(String sid) throws IOException {
+        if (credFile != null) {
+            initATCIfNeeded();
+        }
+        return AppPlatformManager.configure()
+                .withInterceptor(new TelemetryInterceptor())
+                .withUserAgent(CommonSettings.USER_AGENT)
+                .authenticate(atc, sid);
+    }
+
 }

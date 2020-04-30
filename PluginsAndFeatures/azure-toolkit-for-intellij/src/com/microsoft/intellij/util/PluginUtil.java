@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -26,6 +26,9 @@ import com.intellij.ide.DataManager;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.projectView.impl.ProjectRootsUtil;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.application.ApplicationManager;
@@ -41,26 +44,27 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
-
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.common.CommonConst;
 
-import javax.swing.*;
+import javax.swing.Icon;
+
 import java.io.File;
 import java.util.HashMap;
 
 
 public class PluginUtil {
-    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.util.PluginUtil");
     public static final String BASE_PATH = "${basedir}" + File.separator + "..";
+    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.util.PluginUtil");
+    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
     //todo: check with multiple Idea projects open in separate windows
     private static HashMap<ToolWindowKey, IToolWindowProcessor> toolWindowManagerCollection = new HashMap<>();
 
-    public static void registerToolWindowManager(ToolWindowKey toolWindowFactoryKey, IToolWindowProcessor IToolWindowProcessor) {
+    public static void registerToolWindowManager(ToolWindowKey toolWindowFactoryKey, IToolWindowProcessor toolWindowProcessor) {
         synchronized (PluginUtil.class) {
-            toolWindowManagerCollection.put(toolWindowFactoryKey, IToolWindowProcessor);
+            toolWindowManagerCollection.put(toolWindowFactoryKey, toolWindowProcessor);
         }
     }
 
@@ -76,7 +80,7 @@ public class PluginUtil {
         return moduleFolder != null && ProjectRootsUtil.isModuleContentRoot(moduleFolder, module.getProject());
     }
 
-    public enum ProjExportType {WAR, EAR, JAR}
+    public enum ProjExportType { WAR, EAR, JAR }
 
     /**
      * This method returns current project.
@@ -84,12 +88,12 @@ public class PluginUtil {
      * @return Project
      */
     public static Project getSelectedProject() {
-        DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
+        final DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
         return DataKeys.PROJECT.getData(dataContext);
     }
 
     public static Module getSelectedModule() {
-        DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
+        final DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
         return DataKeys.MODULE.getData(dataContext);
     }
 
@@ -130,7 +134,6 @@ public class PluginUtil {
         Messages.showWarningDialog(message, title);
     }
 
-
     public static void displayWarningDialogInAWT(final String title, final String message) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
@@ -150,8 +153,8 @@ public class PluginUtil {
     public static String convertPath(Project project, String path) {
         String newPath = "";
         if (path.startsWith(BASE_PATH)) {
-            String projectPath = project.getBasePath();
-            String rplStr = path.substring(path.indexOf('}') + 4, path.length());
+            final String projectPath = project.getBasePath();
+            final String rplStr = path.substring(path.indexOf('}') + 4, path.length());
             newPath = String.format("%s%s", projectPath, rplStr);
         } else {
             newPath = path;
@@ -160,7 +163,7 @@ public class PluginUtil {
     }
 
     public static Module findModule(Project project, String path) {
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
+        for (final Module module : ModuleManager.getInstance(project).getModules()) {
             if (PluginUtil.getModulePath(module).equals(path)) {
                 return module;
             }
@@ -169,7 +172,7 @@ public class PluginUtil {
     }
 
     public static String getPluginRootDirectory() {
-        IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID));
+        final IdeaPluginDescriptor pluginDescriptor = PluginManager.getPlugin(PluginId.findId(CommonConst.PLUGIN_ID));
         return pluginDescriptor.getPath().getAbsolutePath();
     }
 
@@ -178,10 +181,36 @@ public class PluginUtil {
     }
 
     public static void dialogShaker(ValidationInfo info, DialogWrapper dialogWrapper) {
-        if(info.component != null && info.component.isVisible()) {
-            IdeFocusManager.getInstance((Project)null).requestFocus(info.component, true);
+        if (info.component != null && info.component.isVisible()) {
+            IdeFocusManager.getInstance((Project) null).requestFocus(info.component, true);
         }
 
         DialogEarthquakeShaker.shake(dialogWrapper.getPeer().getWindow());
+    }
+
+    public static void showInfoNotificationProject(Project project, String title, String message) {
+        new Notification(NOTIFICATION_GROUP_ID, title,
+                message, NotificationType.INFORMATION).notify(project);
+    }
+
+    public static void showWarningNotificationProject(Project project, String title, String message) {
+        new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.WARNING).notify(project);
+    }
+
+    public static void showErrorNotificationProject(Project project, String title, String message) {
+        new Notification(NOTIFICATION_GROUP_ID, title,
+                         message, NotificationType.ERROR).notify(project);
+    }
+
+    public static void showWarnNotification(String title, String message) {
+        Notification notification = new Notification(NOTIFICATION_GROUP_ID, title,
+                message, NotificationType.WARNING);
+        Notifications.Bus.notify(notification);
+    }
+
+    public static void showErrorNotification(String title, String message) {
+        Notification notification = new Notification(NOTIFICATION_GROUP_ID, title,
+                message, NotificationType.ERROR);
+        Notifications.Bus.notify(notification);
     }
 }

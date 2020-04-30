@@ -51,9 +51,6 @@ object ArcadiaSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-        return when {
-            CommonSettings.isProjectArcadiaFeatureEnabled -> arrayOf(ArcadiaSparkConfigurationFactory(this))
-            else -> arrayOf()
-        }
+        return arrayOf(ArcadiaSparkConfigurationFactory(this))
     }
 }

@@ -44,7 +44,7 @@ public abstract class AzureNodeActionPromptListener extends AzureNodeActionListe
     protected Callable<Boolean> beforeAsyncActionPerformed() {
         return () -> {
             DefaultLoader.getIdeHelper().invokeAndWait(() -> optionDialog = DefaultLoader.getUIHelper()
-                    .showConfirmation(
+                    .showConfirmation(this.azureNode.getTree().getParent(),
                             promptMessage,
                             "Azure Explorer",
                             new String[]{"Yes", "No"},

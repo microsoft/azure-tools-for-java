@@ -35,7 +35,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.AnActionButton;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.ListTableModel;
-import com.microsoft.intellij.ui.components.ListTableWithButtons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,7 +116,6 @@ public class EnvVariablesTable extends ListTableWithButtons<EnvironmentVariable>
         return element.getName().isEmpty() && element.getValue().isEmpty();
     }
 
-
     @Override
     protected EnvironmentVariable cloneElement(EnvironmentVariable envVariable) {
         return envVariable.clone();
@@ -150,6 +148,7 @@ public class EnvVariablesTable extends ListTableWithButtons<EnvironmentVariable>
             environmentVariable.setName(s);
             setModified();
         }
+
         @Override
         protected String getDescription(EnvironmentVariable environmentVariable) {
             return environmentVariable.getDescription();
@@ -164,10 +163,12 @@ public class EnvVariablesTable extends ListTableWithButtons<EnvironmentVariable>
         public String valueOf(EnvironmentVariable environmentVariable) {
             return environmentVariable.getValue();
         }
+
         @Override
         public boolean isCellEditable(EnvironmentVariable environmentVariable) {
             return !environmentVariable.getIsPredefined();
         }
+
         @Override
         public void setValue(EnvironmentVariable environmentVariable, String s) {
             if (s.equals(valueOf(environmentVariable))) {
@@ -219,7 +220,6 @@ public class EnvVariablesTable extends ListTableWithButtons<EnvironmentVariable>
             }
             CopyPasteManager.getInstance().setContents(new StringSelection(sb.toString()));
         }
-
 
         @Override
         public boolean isCopyEnabled(@NotNull DataContext dataContext) {

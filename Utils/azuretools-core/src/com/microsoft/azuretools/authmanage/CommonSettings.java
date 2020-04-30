@@ -1,23 +1,23 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.authmanage;
@@ -52,7 +52,6 @@ public class CommonSettings {
     private static final String ENV_NAME_KEY = "EnvironmentName";
     private static final String MOVE_RESOURCE_FILE_FAIL = "Fail to move Azure Toolkit resource file %s to %s";
     private static final String CLEAN_DEPRECATED_FOLDER_FAIL = "Fail to clean deprecated folder %s";
-    private static final String PROJECT_ARCADIA_KEY = "EnableProjectArcadia";
     private static final List<String> RESOURCE_FILE_LIST = Arrays.asList(
             FILE_NAME_AAD_PROVIDER,
             FILE_NAME_AUTH_METHOD_DETAILS,
@@ -65,8 +64,6 @@ public class CommonSettings {
     private static String settingsBaseDir = null;
     private static IUIFactory uiFactory;
     private static Environment ENV = Environment.GLOBAL;
-
-    public static boolean isProjectArcadiaFeatureEnabled = false;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
@@ -126,9 +123,6 @@ public class CommonSettings {
                         ENV = providedEnv;
                     }
                 }
-
-                JsonElement arcadiaElement = jsonObject.get(PROJECT_ARCADIA_KEY);
-                isProjectArcadiaFeatureEnabled = arcadiaElement != null && arcadiaElement.getAsBoolean();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,7 +137,7 @@ public class CommonSettings {
     }
 
     public static AzureEnvironment getAdEnvironment() {
-    	return ENV.getAzureEnvironment();
+        return ENV.getAzureEnvironment();
     }
 
     public static Environment getEnvironment() {

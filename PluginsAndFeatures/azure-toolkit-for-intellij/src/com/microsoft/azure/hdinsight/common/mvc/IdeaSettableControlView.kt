@@ -24,12 +24,21 @@ package com.microsoft.azure.hdinsight.common.mvc
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import javax.swing.SwingUtilities
 
 interface IdeaSettableControlView<T> : SettableControl<T> {
     fun getModel(clazz: Class<T>): T = clazz.newInstance().apply { getData(this) }
 
     override fun setData(from: T) {
-        ApplicationManager.getApplication().invokeAndWait({ setDataInDispatch(from) }, ModalityState.any())
+        val application = ApplicationManager.getApplication()
+        val isInEDT = application?.isDispatchThread ?: SwingUtilities.isEventDispatchThread()
+
+        if (isInEDT) {
+            setDataInDispatch(from)
+        } else {
+            application?.invokeAndWait({ setDataInDispatch(from) }, ModalityState.any())
+                    ?:SwingUtilities.invokeAndWait {setDataInDispatch(from) }
+        }
     }
 
     fun setDataInDispatch(from: T)

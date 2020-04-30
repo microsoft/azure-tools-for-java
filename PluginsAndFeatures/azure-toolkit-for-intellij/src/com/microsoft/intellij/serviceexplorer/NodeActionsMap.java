@@ -26,18 +26,13 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
-import com.microsoft.intellij.serviceexplorer.azure.arm.CreateDeploymentAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.EditDeploymentAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.ExportParameterAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.ExportTemplateAction;
-import com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.arm.*;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
-import com.microsoft.intellij.serviceexplorer.azure.docker.CreateNewDockerHostAction;
-import com.microsoft.intellij.serviceexplorer.azure.docker.DeleteDockerHostAction;
-import com.microsoft.intellij.serviceexplorer.azure.docker.DeployDockerContainerAction;
-import com.microsoft.intellij.serviceexplorer.azure.docker.PublishDockerContainerAction;
-import com.microsoft.intellij.serviceexplorer.azure.docker.ViewDockerHostAction;
+import com.microsoft.intellij.serviceexplorer.azure.docker.*;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
+import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ConfirmDialogAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateQueueAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
@@ -53,20 +48,18 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.De
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.BlobModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ExternalStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NodeActionsMap {
     public static final Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions =
@@ -120,10 +113,16 @@ public class NodeActionsMap {
         node2Actions.put(ResourceManagementNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
             .add(CreateDeploymentAction.class).build());
 
-//        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
-//
-//        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+        node2Actions.put(SpringCloudAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(SpringCloudStreamingLogsAction.class).build());
+
+        node2Actions.put(FunctionNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 }

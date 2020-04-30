@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -58,6 +58,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.PlatformUtils;
@@ -129,7 +130,6 @@ public class AzurePlugin extends AbstractProjectComponent {
             TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
     }
 
-
     public void projectOpened() {
         initializeAIRegistry();
         initializeFeedbackNotification();
@@ -156,9 +156,11 @@ public class AzurePlugin extends AbstractProjectComponent {
                 initializeTelemetry();
                 clearTempDirectory();
                 loadWebappsSettings();
+            } catch (ProcessCanceledException e) {
+                throw e;
             } catch (Exception e) {
-            /* This is not a user initiated task
-               So user should not get any exception prompt.*/
+                /* This is not a user initiated task
+                   So user should not get any exception prompt.*/
                 LOG.error(AzureBundle.message("expErlStrtUp"), e);
             }
         }
@@ -358,7 +360,8 @@ public class AzurePlugin extends AbstractProjectComponent {
             for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
                 if (azureLibrary.getLocation() != null) {
                     if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
-                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator +
+                                CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
                             new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
                             copyResourceFile(entryName, pluginFolder + File.separator + entryName);
                         }
@@ -424,7 +427,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
-    synchronized private boolean isFirstInstallationByVersion() {
+    private synchronized boolean isFirstInstallationByVersion() {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion.booleanValue();
         }

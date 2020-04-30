@@ -4,7 +4,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.33.0</version>
+        <version>3.37.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>hdinsight-node-common</artifactId>
@@ -14,6 +14,7 @@
         <project.build.encoding>UTF-8</project.build.encoding>
         <scala.version>2.11.11</scala.version>
         <spark.version>2.1.0</spark.version>
+        <checkstyle.skip>true</checkstyle.skip>
     </properties>
 
     <profiles>

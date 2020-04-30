@@ -182,7 +182,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             CardLayout layout = (CardLayout) (authCardsPanel.getLayout());
             layout.show(authCardsPanel, ((AuthType) e.getItem()).getTypeName());
         });
-        
+
         // field validation check
         Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> validateBasicInputs()));
 
@@ -204,7 +204,6 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
         consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
     }
-
 
     @Nullable
     @Override
@@ -354,7 +353,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
     protected boolean isBasicAuthSelected() {
-        return  authComboBox.getSelectedItem() == AuthType.BasicAuth;
+        return authComboBox.getSelectedItem() == AuthType.BasicAuth;
     }
 
     protected void validateBasicInputs() {
@@ -441,7 +440,6 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected Action[] createLeftSideActions() {
         return new Action[0];
     }
-
 
     @Nullable
     @Override

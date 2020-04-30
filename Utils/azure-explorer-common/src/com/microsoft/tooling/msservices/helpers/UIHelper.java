@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.tooling.msservices.helpers;
 
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -28,10 +29,13 @@ import com.microsoft.tooling.msservices.model.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
+import java.awt.*;
 import java.io.File;
 
 public interface UIHelper {
@@ -45,6 +49,11 @@ public interface UIHelper {
 
     boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption);
 
+    default boolean showConfirmation(@NotNull Component component, @NotNull String message, @NotNull String title, @NotNull String[] options,
+                                     String defaultOption) {
+        return showConfirmation(message, title, options, defaultOption);
+    }
+
     void showInfo(@NotNull Node node, @NotNull String message);
 
     void showError(@NotNull Node node, @NotNull String message);
@@ -55,9 +64,13 @@ public interface UIHelper {
 
     File showFileSaver(String title, String fileName);
 
-    <T extends StorageServiceTreeItem> void openItem(Object projectObject, final StorageAccount storageAccount, final T item, String itemType, String itemName, String iconName);
+    <T extends StorageServiceTreeItem> void openItem(
+            Object projectObject, final StorageAccount storageAccount,
+            final T item, String itemType, String itemName, String iconName);
 
-    <T extends StorageServiceTreeItem> void openItem(Object projectObject, final ClientStorageAccount clientStorageAccount, final T item, String itemType, String itemName, String iconName);
+    <T extends StorageServiceTreeItem> void openItem(
+            Object projectObject, final ClientStorageAccount clientStorageAccount,
+            final T item, String itemType, String itemName, String iconName);
 
     void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile);
 
@@ -83,6 +96,13 @@ public interface UIHelper {
 
     void openWebAppPropertyView(@NotNull WebAppNode node);
 
+    default void openFunctionAppPropertyView(@NotNull FunctionNode node) {
+
+    }
+
+    default void openSpringCloudAppPropertyView(@NotNull SpringCloudAppNode node) {
+    }
+
     void openDeploymentSlotPropertyView(@NotNull DeploymentSlotNode node);
 
     @Nullable
@@ -91,4 +111,8 @@ public interface UIHelper {
             @NotNull T item);
 
     boolean isDarkTheme();
+
+    default void closeSpringCloudAppPropertyView(@NotNull Object project, @NotNull String appId) {
+
+    }
 }

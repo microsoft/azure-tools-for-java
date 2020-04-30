@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.tooling.msservices.helpers.azure.sdk;
 
 import com.microsoft.applicationinsights.management.rest.ApplicationInsightsManagementClient;
@@ -63,18 +64,16 @@ public class AzureSDKManager {
         } else {
             newStorageAccountWithGroup = newStorageAccountBlank.withExistingResourceGroup(resourceGroup);
         }
-        switch (kind) {
-	        case STORAGE:
-		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
-		        	break;
-	        case STORAGE_V2:
-		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKindV2();
-		        	break;
-	        case BLOB_STORAGE:
-		        	newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
-		        	break;
-		    default:
-		    	    throw new Exception("Unknown Storage Account Kind:" + kind.toString());
+
+        if (Kind.STORAGE.equals(kind)) {
+            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKind();
+        } else if (Kind.STORAGE_V2.equals(kind)) {
+            newStorageAccountWithGroup = newStorageAccountWithGroup.withGeneralPurposeAccountKindV2();
+        } else if (Kind.BLOB_STORAGE.equals(kind)) {
+            newStorageAccountWithGroup = newStorageAccountWithGroup.withBlobStorageAccountKind().withAccessTier(accessTier);
+        } else {
+            throw new Exception("Unknown Storage Account Kind:" + kind.toString());
+
         }
 
         if (enableEncription) {
@@ -84,13 +83,20 @@ public class AzureSDKManager {
         return newStorageAccountWithGroup.withSku(StorageAccountSkuType.fromSkuName(SkuName.fromString(skuName))).create();
     }
 
-    public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name, @NotNull String resourceGroup, boolean withNewResourceGroup,
-                                                      @NotNull String size, @NotNull String region, final VirtualMachineImage vmImage, Object knownImage, boolean isKnownImage,
-                                                      final StorageAccount storageAccount, com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount, boolean withNewStorageAccount,
-                                                      final Network network, VirtualNetwork newNetwork, boolean withNewNetwork,
-                                                      @NotNull String subnet, @Nullable PublicIPAddress pip, boolean withNewPip,
-                                                      @Nullable AvailabilitySet availabilitySet, boolean withNewAvailabilitySet,
-                                                      @NotNull final String username, @Nullable final String password, @Nullable String publicKey) throws Exception {
+    public static VirtualMachine createVirtualMachine(String subscriptionId, @NotNull String name,
+                                                      @NotNull String resourceGroup, boolean withNewResourceGroup,
+                                                      @NotNull String size, @NotNull String region,
+                                                      final VirtualMachineImage vmImage, Object knownImage,
+                                                      boolean isKnownImage, final StorageAccount storageAccount,
+                                                      com.microsoft.tooling.msservices.model.storage.StorageAccount
+                                                              newStorageAccount, boolean withNewStorageAccount,
+                                                      final Network network, VirtualNetwork newNetwork,
+                                                      boolean withNewNetwork, @NotNull String subnet,
+                                                      @Nullable PublicIPAddress pip, boolean withNewPip,
+                                                      @Nullable AvailabilitySet availabilitySet,
+                                                      boolean withNewAvailabilitySet, @NotNull final String username,
+                                                      @Nullable final String password, @Nullable String publicKey)
+            throws Exception {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         Azure azure = azureManager.getAzure(subscriptionId);
         boolean isWindows;
@@ -125,8 +131,8 @@ public class AzureSDKManager {
                         .withSubnet(newNetwork.subnet.name, newNetwork.subnet.addressSpace);
             }
             withPublicIpAddress = withNetwork.withNewPrimaryNetwork(newVirtualNetwork).withPrimaryPrivateIPAddressDynamic();
-//            withPublicIpAddress = withNetwork.withNewPrimaryNetwork("10.0.0.0/28").
-//                    .withPrimaryPrivateIpAddressDynamic();
+            //withPublicIpAddress = withNetwork.withNewPrimaryNetwork("10.0.0.0/28").
+            //.withPrimaryPrivateIpAddressDynamic();
         } else {
             withPublicIpAddress = withNetwork.withExistingPrimaryNetwork(network)
                     .withSubnet(subnet)
@@ -176,7 +182,8 @@ public class AzureSDKManager {
         // ---- Storage Account --------
         if (withNewStorageAccount) {
             StorageAccount.DefinitionStages.WithCreate newAccount;
-            StorageAccount.DefinitionStages.WithGroup withGroupAccount = azure.storageAccounts().define(newStorageAccount.getName()).withRegion(newStorageAccount.getLocation());
+            StorageAccount.DefinitionStages.WithGroup withGroupAccount = azure.storageAccounts()
+                    .define(newStorageAccount.getName()).withRegion(newStorageAccount.getLocation());
             if (newStorageAccount.isNewResourceGroup()) {
                 newAccount = withGroupAccount.withNewResourceGroup(newStorageAccount.getResourceGroupName());
             } else {
@@ -196,7 +203,7 @@ public class AzureSDKManager {
         return withCreate.create();
     }
 
-    public static List<Resource> getApplicationInsightsResources(@NotNull SubscriptionDetail subscription) throws Exception {
+    public static List<Resource> getApplicationInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException, RestOperationException {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) { // not signed in
             return null;

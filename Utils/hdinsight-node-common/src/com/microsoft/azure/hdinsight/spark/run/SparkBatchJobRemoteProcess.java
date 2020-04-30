@@ -23,11 +23,12 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.google.common.net.HostAndPort;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkJobUploadArtifactException;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
@@ -38,23 +39,22 @@ import rx.subjects.PublishSubject;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
 import java.util.Optional;
-
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
 
 public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     @NotNull
-    private IdeSchedulers schedulers;
+    private final IdeSchedulers schedulers;
     @NotNull
-    private String artifactPath;
+    private final String artifactPath;
     @NotNull
     private final String title;
     @NotNull
-    private final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
+    private final PublishSubject<SparkLogLine> ctrlSubject;
     @NotNull
-    private SparkJobLogInputStream jobStdoutLogInputSteam;
+    private final SparkJobLogInputStream jobStdoutLogInputSteam;
     @NotNull
-    private SparkJobLogInputStream jobStderrLogInputSteam;
+    private final SparkJobLogInputStream jobStderrLogInputSteam;
     @Nullable
     private Subscription jobSubscription;
     @NotNull
@@ -69,7 +69,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                                       @NotNull ISparkBatchJob sparkJob,
                                       @NotNull String artifactPath,
                                       @NotNull String title,
-                                      @NotNull PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+                                      @NotNull PublishSubject<SparkLogLine> ctrlSubject) {
         this.schedulers = schedulers;
         this.sparkJob = sparkJob;
         this.artifactPath = artifactPath;
@@ -165,23 +165,23 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                 .flatMap(this::awaitForJobStarted)
                 .flatMap(this::attachInputStreams)
                 .flatMap(this::awaitForJobDone)
+                // Fetch remaining Livy logs if error happens at job submission stage
+                .doOnError(err -> startJobSubmissionLogReceiver(getSparkJob()))
                 .subscribe(sdPair -> {
                     if (sparkJob.isSuccess(sdPair.getKey())) {
-                        ctrlInfo("");
-                        ctrlInfo("========== RESULT ==========");
-                        ctrlInfo("Job run successfully.");
+                        sparkJob.ctrlInfo("");
+                        sparkJob.ctrlInfo("========== RESULT ==========");
+                        sparkJob.ctrlInfo("Job run successfully.");
                     } else {
-                        ctrlInfo("");
-                        ctrlInfo("========== RESULT ==========");
-                        ctrlError("Job state is " + sdPair.getKey());
-                        ctrlError("Diagnostics: " + sdPair.getValue());
+                        sparkJob.ctrlInfo("");
+                        sparkJob.ctrlInfo("========== RESULT ==========");
+                        sparkJob.ctrlError("Job state is " + sdPair.getKey());
+                        sparkJob.ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
-                    ctrlSubject.onError(err);
+                    Arrays.stream(err.getMessage().split("\\n")).forEach(sparkJob::ctrlError);
                     destroy();
-                }, () -> {
-                    disconnect();
-                });
+                }, this::disconnect);
     }
 
     @NotNull
@@ -207,14 +207,6 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
         }
     }
 
-    protected void ctrlInfo(String message) {
-        ctrlSubject.onNext(new SimpleImmutableEntry<>(Info, message));
-    }
-
-    protected void ctrlError(String message) {
-        ctrlSubject.onNext(new SimpleImmutableEntry<>(MessageInfoType.Error, message));
-    }
-
     @NotNull
     public PublishSubject<SparkBatchJobSubmissionEvent> getEventSubject() {
         return eventSubject;
@@ -222,12 +214,13 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
 
     protected Observable<ISparkBatchJob> startJobSubmissionLogReceiver(ISparkBatchJob job) {
         return job.getSubmissionLog()
+                .scan(SparkLogUtils::mapTypedMessageByLog4jLevels)
                 .doOnNext(ctrlSubject::onNext)
-                // "ctrlSubject::onNext" lead to uncaught exception
+                // "ctrlSubject::onError" leads to uncaught exception
                 // while "ctrlError" only print error message in console view
-                .doOnError(err -> ctrlError(err.getMessage()))
+                .doOnError(err -> job.ctrlError(err.getMessage()))
                 .lastOrDefault(null)
-                .map((@Nullable SimpleImmutableEntry<MessageInfoType, String> messageTypeText) -> job);
+                .map((@Nullable SparkLogLine messageTypeText) -> job);
     }
 
     // Build and deploy artifact
@@ -285,7 +278,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     }
 
     @NotNull
-    public PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
+    public PublishSubject<SparkLogLine> getCtrlSubject() {
         return ctrlSubject;
     }
 

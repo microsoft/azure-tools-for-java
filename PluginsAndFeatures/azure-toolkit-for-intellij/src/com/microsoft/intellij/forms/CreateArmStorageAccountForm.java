@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.forms;
 
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -78,7 +79,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     private JRadioButton useExistingRadioButton;
     private JTextField resourceGrpField;
     //private JComboBox resourceGrpCombo;
-    private JComboBox accoountKindCombo;
+    private JComboBox accountKindCombo;
     private JComboBox performanceComboBox;
     private JComboBox accessTeirComboBox;
     private JLabel accessTierLabel;
@@ -161,19 +162,17 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         resourceGrpCombo.setName("ResourceGroup");
         regionComboBox.addItemListener(e -> loadGroups());
 
-        accoountKindCombo.setRenderer(new ListCellRendererWrapper<Kind>() {
+        accountKindCombo.setRenderer(new ListCellRendererWrapper<Kind>() {
             @Override
             public void customize(JList jList, Kind kind, int i, boolean b, boolean b1) {
-                switch (kind) {
-                    case STORAGE:
-                        setText("General Purpose v1");
-                        break;
-                    case STORAGE_V2:
-                        setText("General Purpose v2");
-                        break;
-                    case BLOB_STORAGE:
-                        setText("Blob Storage");
-                        break;
+                if (kind == null) {
+                    return;
+                } else if (kind == Kind.STORAGE) {
+                    setText("General Purpose v1");
+                } else if (kind == Kind.STORAGE_V2) {
+                    setText("General Purpose v2");
+                } else if (kind == Kind.BLOB_STORAGE) {
+                    setText("Blob Storage");
                 }
             }
         });
@@ -205,7 +204,6 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         setOKActionEnabled(allFieldsCompleted);
     }
 
-
     @Nullable
     @Override
     protected ValidationInfo doValidate() {
@@ -221,8 +219,6 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-
-
 //        final String name = nameTextField.getText();
 //        final String region = regionComboBox.getSelectedItem().toString();
 //        final String replication = replicationComboBox.getSelectedItem().toString();
@@ -258,7 +254,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             newStorageAccount.setNewResourceGroup(isNewResourceGroup);
             newStorageAccount.setType(replicationComboBox.getSelectedItem().toString());
             newStorageAccount.setLocation(((Location) regionComboBox.getSelectedItem()).name());
-            newStorageAccount.setKind((Kind) accoountKindCombo.getSelectedItem());
+            newStorageAccount.setKind((Kind) accountKindCombo.getSelectedItem());
             newStorageAccount.setAccessTier((AccessTier)accessTeirComboBox.getSelectedItem());
 
             if (onCreate != null) {
@@ -307,7 +303,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             boolean isNewResourceGroup = createNewRadioButton.isSelected();
             final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
             AzureSDKManager.createStorageAccount(((SubscriptionDetail) subscriptionComboBox.getSelectedItem()).getSubscriptionId(), nameTextField.getText(), ((Location) regionComboBox.getSelectedItem()).name(),
-                    isNewResourceGroup, resourceGroupName, (Kind) accoountKindCombo.getSelectedItem(), (AccessTier)accessTeirComboBox.getSelectedItem(),
+                    isNewResourceGroup, resourceGroupName, (Kind) accountKindCombo.getSelectedItem(), (AccessTier)accessTeirComboBox.getSelectedItem(),
                     (Boolean)encriptonComboBox.getSelectedItem(), replicationComboBox.getSelectedItem().toString());
             // update resource groups cache if new resource group was created when creating storage account
             if (createNewRadioButton.isSelected()) {
@@ -345,8 +341,8 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     public void fillFields(final SubscriptionDetail subscription, Location region) {
         if (subscription == null) {
 //            loadRegions();
-            accoountKindCombo.setModel(new DefaultComboBoxModel(Kind.values()));
-            accoountKindCombo.addItemListener(new ItemListener() {
+            accountKindCombo.setModel(new DefaultComboBoxModel(Kind.values().toArray()));
+            accountKindCombo.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -389,8 +385,8 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         } else { // if you create SA while creating VM
             this.subscription = subscription;
             subscriptionComboBox.addItem(subscription);
-            accoountKindCombo.addItem(Kind.STORAGE); // only General purpose accounts supported for VMs
-            accoountKindCombo.setEnabled(false);
+            accountKindCombo.addItem(Kind.STORAGE); // only General purpose accounts supported for VMs
+            accountKindCombo.setEnabled(false);
             accessTeirComboBox.setVisible(false); // Access tier is not available for General purpose accounts
             accessTierLabel.setVisible(false);
             regionComboBox.addItem(region);
@@ -420,7 +416,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     }
 
     private void fillPerformanceComboBox() {
-        if (accoountKindCombo.getSelectedItem().equals(Kind.BLOB_STORAGE)) {
+        if (accountKindCombo.getSelectedItem().equals(Kind.BLOB_STORAGE)) {
             performanceComboBox.setModel(new DefaultComboBoxModel(new SkuTier[] {SkuTier.STANDARD}));
         } else {
             performanceComboBox.setModel(new DefaultComboBoxModel(SkuTier.values()));
@@ -431,7 +427,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         if (performanceComboBox.getSelectedItem().equals(SkuTier.STANDARD)) {
             // Create storage account from Azure Explorer
             if (regionComboBox.isEnabled()) {
-                if (accoountKindCombo.getSelectedItem().equals(Kind.BLOB_STORAGE)) {
+                if (accountKindCombo.getSelectedItem().equals(Kind.BLOB_STORAGE)) {
                     replicationComboBox.setModel(
                             new DefaultComboBoxModel(new ReplicationTypes[] {
                                     ReplicationTypes.Standard_LRS,

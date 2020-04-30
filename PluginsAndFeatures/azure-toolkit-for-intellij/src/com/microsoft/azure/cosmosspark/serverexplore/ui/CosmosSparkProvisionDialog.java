@@ -36,7 +36,6 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.microsoft.azure.cosmosspark.common.IntegerWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
-import com.microsoft.intellij.ui.components.JsonEnvPropertiesField;
 import com.microsoft.azure.cosmosspark.common.TextWithErrorHintedField;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterProvisionSettingsModel;
@@ -47,6 +46,7 @@ import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServe
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
+import com.microsoft.intellij.ui.components.JsonEnvPropertiesField;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -66,9 +66,9 @@ import java.util.stream.Stream;
 public class CosmosSparkProvisionDialog extends DialogWrapper
         implements SettableControl<CosmosSparkClusterProvisionSettingsModel>, ILogger {
     @NotNull
-    private CosmosSparkClusterProvisionCtrlProvider ctrlProvider;
+    private final CosmosSparkClusterProvisionCtrlProvider ctrlProvider;
     @NotNull
-    private CosmosSparkADLAccountNode adlAccountNode;
+    private final CosmosSparkADLAccountNode adlAccountNode;
 
     protected TextWithErrorHintedField clusterNameField;
     protected JTextField adlAccountField;
@@ -94,7 +94,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     protected JPanel provisionDialogPanel;
     protected JButton refreshButton;
     protected JLabel storageRootPathLabel;
-    protected JComboBox sparkVersionComboBox;
+    protected JComboBox<String> sparkVersionComboBox;
     protected JLabel sparkVersionLabel;
     private JXHyperLinkWithUri jobQueueHyperLink;
     protected JPanel errorMessagePanel;
@@ -110,11 +110,14 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     @NotNull
     private final List<TextWithErrorHintedField> allTextFields = Arrays.asList(clusterNameField, sparkEventsField);
     @NotNull
-    private final List<IntegerWithErrorHintedField> allAURelatedFields = Arrays.asList(masterCoresField, workerCoresField,
-            masterMemoryField, workerMemoryField, workerNumberOfContainersField);
+    private final List<IntegerWithErrorHintedField> allAURelatedFields = Arrays.asList(masterCoresField,
+                                                                                       workerCoresField,
+                                                                                       masterMemoryField,
+                                                                                       workerMemoryField,
+                                                                                       workerNumberOfContainersField);
 
-    public CosmosSparkProvisionDialog(@NotNull CosmosSparkADLAccountNode adlAccountNode,
-                                      @NotNull AzureSparkServerlessAccount account) {
+    public CosmosSparkProvisionDialog(@NotNull final CosmosSparkADLAccountNode adlAccountNode,
+                                      @NotNull final AzureSparkServerlessAccount account) {
         // TODO: refactor the design of getProject Method for Node Class
         // TODO: get project through ProjectUtils.theProject()
         super((Project) adlAccountNode.getProject(), true);
@@ -135,8 +138,10 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
         // add console view panel to error message panel
         consoleViewPanel = new ConsoleViewImpl((Project) adlAccountNode.getProject(), false);
         errorMessagePanel.add(consoleViewPanel.getComponent(), BorderLayout.CENTER);
-        ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("provisionLog",
-                new DefaultActionGroup(consoleViewPanel.createConsoleActions()), false);
+        final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(
+                "provisionLog",
+                new DefaultActionGroup(consoleViewPanel.createConsoleActions()),
+                false);
         errorMessagePanel.add(toolbar.getComponent(), BorderLayout.WEST);
 
         this.jobQueueHyperLink.setURI(account.getJobManagementURI());
@@ -147,38 +152,42 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
         this.storageRootPathLabel.setText(Optional.ofNullable(account.getStorageRootPath()).orElse(""));
 
         refreshButton.addActionListener(event -> ctrlProvider.updateAvailableAU().subscribe(
-                data -> {},
-                err -> log().warn("Update available AU in provision cluster dialog get exceptions. Error: " + ExceptionUtils.getStackTrace(err))));
+                data -> {
+                },
+                err -> log().warn("Update available AU in provision cluster dialog get exceptions. Error: "
+                                          + ExceptionUtils.getStackTrace(err))));
 
-        allAURelatedFields.forEach(comp ->
-                comp.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        if (isAllAURelatedFieldsLegal()) {
-                            ctrlProvider.updateCalculatedAU().subscribe(
-                                    data -> {},
-                                    err -> log().warn("Update AU Required in provision cluster dialog get exceptions. Error: "
+        allAURelatedFields.forEach(comp -> comp.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(final FocusEvent e) {
+                if (isAllAURelatedFieldsLegal()) {
+                    ctrlProvider.updateCalculatedAU().subscribe(
+                            data -> {
+                            },
+                            err -> log().warn(
+                                    "Update AU Required in provision cluster dialog get exceptions. Error: "
                                             + ExceptionUtils.getStackTrace(err)));
-                        }
-                        super.focusLost(e);
-                    }
-                }));
+                }
+                super.focusLost(e);
+            }
+        }));
         // These action listeners promise that Ok button can only be clicked until all the fields are legal
-        Stream.concat(allTextFields.stream(), allAURelatedFields.stream()).forEach(comp ->
-                comp.getDocument().addDocumentListener(new DocumentAdapter() {
+        Stream.concat(allTextFields.stream(), allAURelatedFields.stream()).forEach(
+                comp -> comp.getDocument().addDocumentListener(new DocumentAdapter() {
                     @Override
-                    protected void textChanged(DocumentEvent e) {
+                    protected void textChanged(@NotNull final DocumentEvent e) {
                         getOKAction().setEnabled(isAllFieldsLegal());
                     }
                 }));
         getOKAction().setEnabled(false);
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
-            public void windowOpened(WindowEvent e) {
-                ctrlProvider.updateAvailableAUAndTotalAU()
-                        .subscribe(
-                                data -> {},
-                                err -> log().warn("Update available AU, total AU and calculated AU in provision cluster dialog get exceptions. Error: " + ExceptionUtils.getStackTrace(err)));
+            public void windowOpened(final WindowEvent e) {
+                ctrlProvider.updateAvailableAUAndTotalAU().subscribe(
+                        data -> {
+                        },
+                        err -> log().warn("Update available AU, total AU and calculated AU in provision cluster dialog"
+                                                  + " get exceptions. Error: " + ExceptionUtils.getStackTrace(err)));
                 super.windowOpened(e);
             }
         });
@@ -207,18 +216,19 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
             // The text setting is necessary. By default, '/' is not allowed for TextWithErrorHintedField, leading to
             // error tooltip. We have to set the text to trigger the validator of the new pattern.
             sparkEventsField.setText("spark-events/");
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             log().warn("Got exceptions when getting cluster names: " + ex);
         }
     }
 
-    protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
-        consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
+    protected void printLogLine(@NotNull final ConsoleViewContentType logLevel, @NotNull final String log) {
+        consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n",
+                               logLevel);
     }
 
     // Data -> Components
     @Override
-    public void setData(@NotNull CosmosSparkClusterProvisionSettingsModel data) {
+    public void setData(@NotNull final CosmosSparkClusterProvisionSettingsModel data) {
         ApplicationManager.getApplication().invokeAndWait(() -> {
             clusterNameField.setText(data.getClusterName());
             adlAccountField.setText(data.getAdlAccount());
@@ -249,21 +259,21 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
 
     // Components -> Data
     @Override
-    public void getData(@NotNull CosmosSparkClusterProvisionSettingsModel data) {
+    public void getData(@NotNull final CosmosSparkClusterProvisionSettingsModel data) {
         data.setClusterName(clusterNameField.getText())
-                .setAdlAccount(adlAccountField.getText())
-                .setSparkEvents(sparkEventsField.getText())
-                .setExtendedProperties(extendedPropertiesField.getEnvs())
-                .setAvailableAU(NumberUtils.toInt(availableAUNumberLabel.getText()))
-                .setTotalAU(NumberUtils.toInt(totalAUNumberLabel.getText()))
-                .setCalculatedAU(NumberUtils.toInt(calculatedAUNumberLabel.getText()))
-                .setRefreshEnabled(refreshButton.isEnabled())
-                .setMasterCores(masterCoresField.getValue())
-                .setMasterMemory(masterMemoryField.getValue())
-                .setWorkerCores(workerCoresField.getValue())
-                .setWorkerMemory(workerMemoryField.getValue())
-                .setWorkerNumberOfContainers(workerNumberOfContainersField.getValue())
-                .setStorageRootPathLabelTitle(storageRootPathLabel.getText());
+            .setAdlAccount(adlAccountField.getText())
+            .setSparkEvents(sparkEventsField.getText())
+            .setExtendedProperties(extendedPropertiesField.getEnvs())
+            .setAvailableAU(NumberUtils.toInt(availableAUNumberLabel.getText()))
+            .setTotalAU(NumberUtils.toInt(totalAUNumberLabel.getText()))
+            .setCalculatedAU(NumberUtils.toInt(calculatedAUNumberLabel.getText()))
+            .setRefreshEnabled(refreshButton.isEnabled())
+            .setMasterCores(masterCoresField.getValue())
+            .setMasterMemory(masterMemoryField.getValue())
+            .setWorkerCores(workerCoresField.getValue())
+            .setWorkerMemory(workerMemoryField.getValue())
+            .setWorkerNumberOfContainers(workerNumberOfContainersField.getValue())
+            .setStorageRootPathLabelTitle(storageRootPathLabel.getText());
     }
 
     @Override

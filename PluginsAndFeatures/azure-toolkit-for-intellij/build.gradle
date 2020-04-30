@@ -33,7 +33,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
 
 checkstyle {
-    toolVersion = '8.24'
+    toolVersion = '8.30'
     configFile = new File('config/checkstyle/checkstyle.xml')
     showViolations = false
 }
@@ -47,7 +47,7 @@ intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = intellij_version == "IC-2019.1" ? ['maven', dep_plugins, "properties"] : ['java', 'maven', dep_plugins, "properties"]
+    plugins = ['java', 'maven', dep_plugins, "properties"]
 	downloadSources = Boolean.valueOf(sources)
 }
 
@@ -72,7 +72,6 @@ sourceSets {
 }
 
 repositories {
-    maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
     mavenLocal()
     mavenCentral()
 }
@@ -91,25 +90,34 @@ dependencies {
     compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
     compile 'commons-io:commons-io:2.5'
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     compile 'net.minidev:json-smart:2.3'
     compile 'com.microsoft.azure:azure-client-runtime:1.6.13', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.6.13', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.33.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.37.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.33.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.37.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.33.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.37.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
+    compile 'com.microsoft.azure:azure-tools-common:0.2.0'
+    compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2'
     compile 'com.spotify:docker-client:8.11.7'
+
+    compile group: 'org.dom4j', name: 'dom4j', version: '2.1.1'
+    compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
+
+    compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
     testCompile 'junit:junit:4.12'
     testCompile 'info.cukes:cucumber-junit:1.2.5'
@@ -132,7 +140,7 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
-} 
+}
 
 task cucumberPackJar(type: Jar) {
     appendix = 'pathing'
@@ -176,6 +184,7 @@ task wrapper(type: Wrapper) {
 apply plugin: BundleBuildIDEAPlugin
 
 installIdea.dependsOn buildPlugin
+installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild

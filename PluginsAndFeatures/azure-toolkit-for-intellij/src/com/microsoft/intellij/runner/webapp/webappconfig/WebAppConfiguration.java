@@ -45,12 +45,11 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
+import static com.microsoft.intellij.common.CommonConst.NEED_SIGN_IN;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel> {
 
     // const string
-    private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
     private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
     private static final String MISSING_SLOT_NAME = "The deployment slot name is not provided.";

@@ -1,30 +1,32 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.adauth.PromptBehavior;
@@ -129,6 +131,18 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     }
 
     @Override
+    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
+            String tid = subscriptionManager.getSubscriptionTenant(sid);
+            try {
+                return authSpringCloud(sid, tid);
+            } catch (IOException e) {
+                return SneakyThrowUtils.sneakyThrow(e);
+            }
+        });
+    }
+
+    @Override
     public List<Subscription> getSubscriptions() throws IOException {
         List<Subscription> sl = new LinkedList<Subscription>();
         // could be multi tenant - return all subscriptions for the current account
@@ -199,13 +213,20 @@ public class AccessTokenAzureManager extends AzureManagerBase {
                 .authenticate(new RefreshableTokenCredentials(this, tid));
     }
 
+    private AppPlatformManager authSpringCloud(String sid, String tid) throws IOException {
+        return AppPlatformManager.configure()
+                .withInterceptor(new TelemetryInterceptor())
+                .withUserAgent(CommonSettings.USER_AGENT)
+                .authenticate(new RefreshableTokenCredentials(this, tid), sid);
+    }
+
     @Override
     public KeyVaultClient getKeyVaultClient(String tid) {
         ServiceClientCredentials creds = new KeyVaultCredentials() {
             @Override
             public String doAuthenticate(String authorization, String resource, String scope) {
             try {
-            	// TODO: check usage
+                // TODO: check usage
                 return delegateADAuthManager.getAccessToken(tid, resource, PromptBehavior.Auto);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -235,7 +256,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     public String getStorageEndpointSuffix() {
         return CommonSettings.getAdEnvironment().storageEndpointSuffix();
     }
-    
+
     @Override
     public Environment getEnvironment() {
         return CommonSettings.getEnvironment();

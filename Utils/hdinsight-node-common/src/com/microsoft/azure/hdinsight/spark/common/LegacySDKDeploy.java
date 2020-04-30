@@ -19,37 +19,29 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 import rx.Observer;
 
 import java.io.File;
-import java.net.URI;
-import java.util.AbstractMap;
 
 // for cluster with blob/adls gen1 account to deploy using default storage account type
 // will be replaced by AdlsDeploy/ADLSGen1HDFSDeploy
 public class LegacySDKDeploy implements Deployable, ILogger {
     private IHDIStorageAccount storageAccount;
-    private Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
 
-    public Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
-        return ctrlSubject;
-    }
-
-    public LegacySDKDeploy(IHDIStorageAccount storageAccount, Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+    public LegacySDKDeploy(IHDIStorageAccount storageAccount) {
         this.storageAccount = storageAccount;
-        this.ctrlSubject = ctrlSubject;
     }
 
     @Override
-    public Observable<String> deploy(@NotNull File src) {
-        return JobUtils.deployArtifact(src.getAbsolutePath(), storageAccount, getCtrlSubject());
+    public Observable<String> deploy(File src, Observer<SparkLogLine> logSubject) {
+        return JobUtils.deployArtifact(src.getAbsolutePath(), storageAccount, logSubject);
     }
 }

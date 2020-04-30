@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
@@ -33,6 +32,7 @@ import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -79,11 +79,11 @@ public class AzureWebAppMvpModel {
     /**
      * get the web app by ID.
      */
-    public WebApp getWebAppById(String sid, String id) throws Exception {
+    public WebApp getWebAppById(String sid, String id) throws IOException {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         WebApp app = azure.webApps().getById(id);
         if (app == null) {
-            throw new Exception(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
+            throw new IOException(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
         return app;
     }
@@ -129,13 +129,13 @@ public class AzureWebAppMvpModel {
         }
     }
 
-     /**
-     * API to create Web App on Windows .
-     *
-     * @param model parameters
-     * @return instance of created WebApp
-     * @throws Exception exception
-     */
+    /**
+    * API to create Web App on Windows .
+    *
+    * @param model parameters
+    * @return instance of created WebApp
+    * @throws Exception exception
+    */
     public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
@@ -471,7 +471,6 @@ public class AzureWebAppMvpModel {
         return appServicePlans;
     }
 
-
     /**
      * List app service plan by subscription id.
      */
@@ -656,20 +655,7 @@ public class AzureWebAppMvpModel {
      */
     public boolean getPublishingProfileXmlWithSecrets(String sid, String webAppId, String filePath) throws Exception {
         WebApp app = getWebAppById(sid, webAppId);
-        File file = new File(Paths.get(filePath, app.name() + "_" + System.currentTimeMillis() + ".PublishSettings")
-                .toString());
-        file.createNewFile();
-        try (InputStream inputStream = app.manager().inner().webApps()
-                .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(),
-                        new CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP));
-             OutputStream outputStream = new FileOutputStream(file);
-        ) {
-            IOUtils.copy(inputStream, outputStream);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return AppServiceUtils.getPublishingProfileXmlWithSecrets(app, filePath);
     }
 
     /**
@@ -693,6 +679,17 @@ public class AzureWebAppMvpModel {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // Refers https://github.com/microsoft/vscode-azureappservice/blob/v0.16.5/src/explorer/SiteTreeItem.ts#L133
+    public static boolean isHttpLogEnabled(WebAppBase webAppBase) {
+        final WebAppDiagnosticLogs config = webAppBase.diagnosticLogsConfig();
+        return config != null && config.inner() != null && config.inner().httpLogs() != null &&
+                config.inner().httpLogs().fileSystem() != null && config.inner().httpLogs().fileSystem().enabled();
+    }
+
+    public static void enableHttpLog(WebAppBase.Update webApp) {
+        webApp.withContainerLoggingEnabled().apply();
     }
 
     public void clearWebAppsCache() {

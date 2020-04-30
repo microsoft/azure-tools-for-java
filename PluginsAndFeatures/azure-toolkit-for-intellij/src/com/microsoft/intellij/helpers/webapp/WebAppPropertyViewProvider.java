@@ -31,6 +31,7 @@ import com.microsoft.intellij.helpers.UIHelperImpl;
 
 public class WebAppPropertyViewProvider extends WebAppBasePropertyViewProvider {
     public static final String TYPE = "WEB_APP_PROPERTY";
+
     @NotNull
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {

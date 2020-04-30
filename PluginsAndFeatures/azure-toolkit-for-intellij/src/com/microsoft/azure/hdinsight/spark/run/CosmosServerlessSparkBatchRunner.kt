@@ -24,15 +24,13 @@ package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunProfile
-import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.CreateSparkBatchJobParameters
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkConfiguration
 import org.apache.commons.lang3.exception.ExceptionUtils
-import rx.Observer
+import rx.Observable
 import java.io.IOException
-import java.util.*
 import java.util.stream.Collectors
 
 class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
@@ -55,8 +53,7 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         }
     }
 
-    @Throws(ExecutionException::class)
-    override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel): Observable<ISparkBatchJob> = Observable.fromCallable {
         val submissionParameter = submitModel.submissionParameter as CreateSparkBatchJobParameters
         val adlAccountName = submissionParameter.clusterName
         val account = AzureSparkCosmosClusterManager.getInstance().getAccountByName(adlAccountName)
@@ -70,11 +67,10 @@ class CosmosServerlessSparkBatchRunner : SparkBatchJobRunner() {
         }
         val storageRootPath = account.storageRootPath ?: throw ExecutionException("Error getting ADLS storage root path for account ${account.name}")
 
-        return CosmosServerlessSparkBatchJob(
+        CosmosServerlessSparkBatchJob(
             account,
             AdlsDeploy(storageRootPath, accessToken),
             prepareSubmissionParameterWithTransformedGen2Uri(submissionParameter) as CreateSparkBatchJobParameters,
-            SparkBatchSubmission.getInstance(),
-            ctrlSubject)
+            SparkBatchSubmission.getInstance())
     }
 }

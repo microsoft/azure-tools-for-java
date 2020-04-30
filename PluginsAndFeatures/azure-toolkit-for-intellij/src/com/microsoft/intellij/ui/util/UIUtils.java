@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -22,7 +22,12 @@
 
 package com.microsoft.intellij.ui.util;
 
+import com.intellij.diagnostic.ThreadDumper;
 import com.intellij.ide.ui.LafManager;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Attachment;
+import com.intellij.openapi.diagnostic.RuntimeExceptionWithAttachments;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -30,12 +35,14 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.util.ShutDownTracker;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.Consumer;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +66,26 @@ public class UIUtils {
                 if (files.length > 0) {
                     final StringBuilder builder = new StringBuilder();
                     for (VirtualFile file : files) {
+                        if (builder.length() > 0) {
+                            builder.append(File.pathSeparator);
+                        }
+                        builder.append(FileUtil.toSystemDependentName(file.getPath()));
+                    }
+                    parent.setText(builder.toString());
+                }
+            }
+        };
+    }
+
+    public static ActionListener createFileChooserListenerWithTextPath(final TextFieldWithBrowseButton parent, final @Nullable Project project,
+                                                                       final FileChooserDescriptor descriptor) {
+        return new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final VirtualFile[] files = FileChooser.chooseFiles(descriptor, parent, project,
+                        StringUtils.isNotEmpty(parent.getText()) ? LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
+                if (files.length > 0) {
+                    final StringBuilder builder = new StringBuilder();
+                    for (final VirtualFile file : files) {
                         if (builder.length() > 0) {
                             builder.append(File.pathSeparator);
                         }
@@ -161,21 +188,49 @@ public class UIUtils {
         showNotification(statusBar, message, type);
     }
 
-    public static boolean showYesNoDialog(String title, String prompt){
+    public static boolean showYesNoDialog(String title, String prompt) {
         return Messages.showYesNoDialog(null, prompt, title, "Yes", "No", null) == 0;
     }
 
-    public static boolean isUnderIntelliJTheme(){
+    public static boolean isUnderIntelliJTheme() {
         UIManager.LookAndFeelInfo theme = LafManager.getInstance().getCurrentLookAndFeel();
         return theme.getName().equalsIgnoreCase("intellij");
     }
 
-    public static void setPanelBackGroundColor(JPanel panel, Color color){
+    public static void setPanelBackGroundColor(JPanel panel, Color color) {
         panel.setBackground(color);
         for (Component child : panel.getComponents()) {
             if (child instanceof JPanel) {
                 setPanelBackGroundColor((JPanel) child, color);
             }
         }
+    }
+
+    public static void assertInDispatchThread() {
+        ApplicationManager.getApplication().assertIsDispatchThread();
+    }
+
+    public static void assertInPooledThread() {
+        Application app = ApplicationManager.getApplication();
+
+        if (!app.isDispatchThread()) {
+            return;
+        }
+
+        if (ShutDownTracker.isShutdownHookRunning()) {
+            return;
+        }
+
+        throw new RuntimeExceptionWithAttachments(
+                "Accessing IO or performing other time consuming operations from event dispatch thread will block UI.",
+                "EventQueue.isDispatchThread()=" + EventQueue.isDispatchThread() +
+                        " Toolkit.getEventQueue()=" + Toolkit.getDefaultToolkit().getSystemEventQueue() +
+                        "\nCurrent thread: " + describe(Thread.currentThread()),
+                new Attachment("threadDump.txt", ThreadDumper.dumpThreadsToString()));
+    }
+
+    // copy from IntelliJ ApplicationImpl
+    private static String describe(Thread o) {
+        return o == null ? "null" : o + " " + System.identityHashCode(o);
     }
 }

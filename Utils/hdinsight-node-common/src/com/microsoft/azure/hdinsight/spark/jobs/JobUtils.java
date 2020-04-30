@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.jobs;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
@@ -53,6 +54,7 @@ import com.microsoft.azure.hdinsight.sdk.storage.StorageAccountType;
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchEspMfaSubmission;
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchSubmission;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivyBatchesInformation;
 import com.microsoft.azure.hdinsight.spark.jobs.livy.LivySession;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -109,37 +111,38 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.microsoft.azure.hdinsight.common.MessageInfoType.Info;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static rx.exceptions.Exceptions.propagate;
 
 public class JobUtils {
-    private static Logger LOGGER = LoggerFactory.getLogger(JobUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobUtils.class);
     private static final String JobLogFolderName = "SparkJobLog";
-    private static String yarnUIHisotryFormat = "%s/yarnui/hn/cluster/app/%s";
+    private static final String yarnUIHisotryFormat = "%s/yarnui/hn/cluster/app/%s";
 
-    private static String sparkUIHistoryFormat = "%s/sparkhistory/history/%s/%s/jobs";
+    private static final String sparkUIHistoryFormat = "%s/sparkhistory/history/%s/%s/jobs";
 
-    private static CredentialsProvider provider = new BasicCredentialsProvider();
+    private static final CredentialsProvider provider = new BasicCredentialsProvider();
 
     public static void setResponse(@NotNull HttpExchange httpExchange, @NotNull String message) {
         setResponse(httpExchange, message, 200);
     }
 
-    public static void setResponse(@NotNull HttpExchange httpExchange, @NotNull String message, @NotNull int code) {
+    public static void setResponse(@NotNull HttpExchange httpExchange, @NotNull String message, int code) {
         try {
             httpExchange.sendResponseHeaders(code, message.length());
-            OutputStream stream = httpExchange.getResponseBody();
+            final OutputStream stream = httpExchange.getResponseBody();
             stream.write(message.getBytes());
             stream.flush();
             httpExchange.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("JobUtils set Response error", e);
         }
     }
 
     public static URI getLivyLogPath(@NotNull String rootPath, @NotNull String applicationId) {
-        String path = StringHelper.concat(rootPath, File.separator, JobLogFolderName, File.separator, applicationId);
-        File file = new File(path);
+        final String path = StringHelper.concat(rootPath, File.separator, JobLogFolderName, File.separator, applicationId);
+        final File file = new File(path);
         if(!file.exists()) {
             file.mkdirs();
         }
@@ -147,35 +150,35 @@ public class JobUtils {
     }
 
     public static String getJobInformation(@NotNull String allBatchesInformation, @NotNull String applicationId) {
-        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
-        Type subscriptionsType = new TypeToken<LivyBatchesInformation>() {
+        final Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        final Type subscriptionsType = new TypeToken<LivyBatchesInformation>() {
         }.getType();
 
-        LivyBatchesInformation information = gson.fromJson(allBatchesInformation, subscriptionsType);
-        LivySession session =  information.getSession(applicationId);
+        final LivyBatchesInformation information = gson.fromJson(allBatchesInformation, subscriptionsType);
+        final LivySession session =  information.getSession(applicationId);
         String result = "Cannot get the Livy Log";
 
         if(session != null) {
-            String livyLog = session.getFormatLog();
+            final String livyLog = session.getFormatLog();
             result = StringHelper.isNullOrWhiteSpace(livyLog) ? "No Livy Log" : livyLog;
         }
         return result;
     }
 
     public static void openYarnUIHistory(@NotNull String clusterConnectString, @NotNull String applicationId) {
-        String yarnHistoryUrl = String.format(yarnUIHisotryFormat, clusterConnectString, applicationId);;
+        final String yarnHistoryUrl = String.format(yarnUIHisotryFormat, clusterConnectString, applicationId);
         try {
             openDefaultBrowser(yarnHistoryUrl);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             DefaultLoader.getUIHelper().showError(e.getMessage(), "open Yarn UI");
         }
     }
 
-    public static void openSparkUIHistory(@NotNull String clusterConnectString, @NotNull String applicationId, @NotNull int attemptId) {
-        String sparkHistoryUrl = String.format(sparkUIHistoryFormat, clusterConnectString, applicationId, attemptId);
+    public static void openSparkUIHistory(@NotNull String clusterConnectString, @NotNull String applicationId, int attemptId) {
+        final String sparkHistoryUrl = String.format(sparkUIHistoryFormat, clusterConnectString, applicationId, attemptId);
         try {
             openDefaultBrowser(sparkHistoryUrl);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             DefaultLoader.getUIHelper().showError(e.getMessage(), "open Spark UI");
         }
     }
@@ -188,9 +191,9 @@ public class JobUtils {
     public static void openDefaultBrowser(@NotNull final URI uri) throws IOException {
         if (Desktop.isDesktopSupported()) {
             final String scheme = uri.getScheme();
-            if (scheme.equalsIgnoreCase("https") || scheme.equalsIgnoreCase("http")) {
+            if ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme)) {
                 Desktop.getDesktop().browse(uri);
-            } else if (scheme.equalsIgnoreCase("file")) {
+            } else if ("file".equalsIgnoreCase(scheme)) {
                 Desktop.getDesktop().open(new File(uri.getPath()));
             }
         }
@@ -204,7 +207,7 @@ public class JobUtils {
         final URI livyUri = getLivyLogPath(HDInsightLoader.getHDInsightHelper().getPluginRootPath(), applicationId);
         try {
             openDefaultBrowser(livyUri);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             DefaultLoader.getUIHelper().showError(e.getMessage(), "Open Livy Logs");
         }
     }
@@ -213,40 +216,40 @@ public class JobUtils {
 
     private static final String DRIVER_LOG_INFO_URL = "%s/yarnui/jobhistory/logs/%s/port/%s/%s/%s/livy";
 
-    public static ApplicationMasterLogs getYarnLogs(@NotNull ApplicationKey key) throws IOException, ExecutionException, HDIException {
-        App app = JobViewCacheManager.getYarnApp(key);
+    public static ApplicationMasterLogs getYarnLogs(@NotNull ApplicationKey key) throws ExecutionException, HDIException {
+        final App app = JobViewCacheManager.getYarnApp(key);
 
         // amHostHttpAddress example: 10.0.0.4:30060
         final String amHostHttpAddress = app.getAmHostHttpAddress();
-        String [] addressAndPort = amHostHttpAddress.split(":");
+        final String [] addressAndPort = amHostHttpAddress.split(":");
         if(addressAndPort.length != 2) {
             throw new HDIException("Yarn Application Master Host parse error");
         }
-        String address = addressAndPort[0];
+        final String address = addressAndPort[0];
         // TODO: Set Node Manager port to default value(30050) temporarily, we need a better way to detect it
-        String nodeManagerPort = "30050";
+        final String nodeManagerPort = "30050";
         final String amContainerLogPath = app.getAmContainerLogs();
-        String amContainerId = getContainerIdFromAmContainerLogPath(amContainerLogPath);
-        String url = String.format(DRIVER_LOG_INFO_URL, key.getClusterConnString(), address, nodeManagerPort, amContainerId, amContainerId);
-        IClusterDetail clusterDetail = key.getClusterDetails();
+        final String amContainerId = getContainerIdFromAmContainerLogPath(amContainerLogPath);
+        final String url = String.format(DRIVER_LOG_INFO_URL, key.getClusterConnString(), address, nodeManagerPort, amContainerId, amContainerId);
+        final IClusterDetail clusterDetail = key.getClusterDetails();
         return getYarnLogsFromWebClient(clusterDetail, url);
     }
 
     private static String getContainerIdFromAmContainerLogPath(@NotNull String amContainerLogPath) {
         // AM container Logs path example: http://10.0.0.4:30060/node/containerlogs/container_1488459864280_0006_01_000001/livy
-        String [] res = amContainerLogPath.split("/");
+        final String [] res = amContainerLogPath.split("/");
         assert res.length == 7;
-        String amContainerId = res[res.length - 2];
+        final String amContainerId = res[res.length - 2];
         assert amContainerId.startsWith("container_");
         return amContainerId;
     }
 
-    private static ApplicationMasterLogs getYarnLogsFromWebClient(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) throws HDIException, IOException {
+    private static ApplicationMasterLogs getYarnLogsFromWebClient(@NotNull final IClusterDetail clusterDetail, @NotNull final String url) {
         final String authCode = SparkBatchSubmission.getClusterSubmission(clusterDetail).getAuthCode();
 
-        String standerr = getInformationFromYarnLogDom(authCode, url, "stderr", 0, 0);
-        String standout = getInformationFromYarnLogDom(authCode, url, "stdout", 0, 0);
-        String directoryInfo = getInformationFromYarnLogDom(authCode, url, "directory.info", 0, 0);
+        final String standerr = getInformationFromYarnLogDom(authCode, url, "stderr", 0, 0);
+        final String standout = getInformationFromYarnLogDom(authCode, url, "stdout", 0, 0);
+        final String directoryInfo = getInformationFromYarnLogDom(authCode, url, "directory.info", 0, 0);
 
         return new ApplicationMasterLogs(standout, standerr, directoryInfo);
     }
@@ -278,16 +281,16 @@ public class JobUtils {
             url = new URI(baseUrl + "/").resolve(
                     String.format("%s?start=%d", type, start) +
                             (size <= 0 ? "" : String.format("&&end=%d", start + size)));
-            HtmlPage htmlPage = client.getPage(url.toString());
+            final HtmlPage htmlPage = client.getPage(url.toString());
 
-            Iterator<DomElement> iterator = htmlPage.getElementById("navcell").getNextElementSibling().getChildElements().iterator();
+            final Iterator<DomElement> iterator = htmlPage.getElementById("navcell").getNextElementSibling().getChildElements().iterator();
 
-            HashMap<String, String> logTypeMap = new HashMap<>();
+            final HashMap<String, String> logTypeMap = new HashMap<>();
             final AtomicReference<String> logType = new AtomicReference<>();
             String logs = "";
 
             while (iterator.hasNext()) {
-                DomElement node = iterator.next();
+                final DomElement node = iterator.next();
 
                 if (node instanceof HtmlParagraph) {
                     // In history server, need to read log type paragraph in page
@@ -316,7 +319,7 @@ public class JobUtils {
             }
 
             return logTypeMap.getOrDefault(type, logs);
-        } catch (FailingHttpStatusCodeException httpError) {
+        } catch (final FailingHttpStatusCodeException httpError) {
             // If the URL is wrong, will get 200 response with content:
             //      Unable to locate 'xxx' log for container
             //  OR
@@ -329,9 +332,9 @@ public class JobUtils {
             if (httpError.getStatusCode() != HttpStatus.SC_FORBIDDEN) {
                 LOGGER.warn("The GET request to " + url + " responded error: " + httpError.getMessage());
             }
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             LOGGER.error("baseUrl has syntax error: " + baseUrl);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.warn("get Spark job log Error", e);
         }
         return "";
@@ -352,7 +355,7 @@ public class JobUtils {
                                                              @NotNull final String containerLogUrl,
                                                              @NotNull final String type,
                                                              final int blockSize) {
-        int retryIntervalMs = 1000;
+        final int retryIntervalMs = 1000;
 
         if (blockSize <= 0)
             return Observable.empty();
@@ -396,7 +399,7 @@ public class JobUtils {
                                     // We need to handle this since the web client may convert the LF to CRLF
                                     return (line.length() + 1);
                                 })
-                                .reduce((x, y) -> x + y)
+                                .reduce(Integer::sum)
                                 .orElse(0);
 
                         nextStart += handledLength - remainedLine.length();
@@ -438,7 +441,7 @@ public class JobUtils {
 
         final HttpGet get = new HttpGet(url);
         final HttpResponse response = client.execute(get);
-        int code = response.getStatusLine().getStatusCode();
+        final int code = response.getStatusLine().getStatusCode();
         if (code == HttpStatus.SC_OK || code == HttpStatus.SC_CREATED) {
             return response.getEntity();
         } else {
@@ -448,8 +451,8 @@ public class JobUtils {
 
     @Nullable
     private static BlobContainer getSparkClusterContainer(ClientStorageAccount storageAccount, String dealtContainerName) throws AzureCmdException {
-        List<BlobContainer> containerList = StorageClientSDKManager.getManager().getBlobContainers(storageAccount.getConnectionString());
-        for (BlobContainer container : containerList) {
+        final List<BlobContainer> containerList = StorageClientSDKManager.getManager().getBlobContainers(storageAccount.getConnectionString());
+        for (final BlobContainer container : containerList) {
             if (container.getName().toLowerCase().equals(dealtContainerName.toLowerCase())) {
                 return container;
             }
@@ -458,28 +461,67 @@ public class JobUtils {
         return null;
     }
 
+    public static void ctrlInfo(@Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                @Nullable Observer<SparkLogLine> newLogSubject,
+                                String message) {
+        assert legacyLogSubject != null || newLogSubject != null : "At least one logSubject is not null";
+        assert legacyLogSubject == null || newLogSubject == null : "At least one logSubject should be null";
+
+        if (legacyLogSubject != null) {
+            legacyLogSubject.onNext(new SimpleImmutableEntry<>(Info, message));
+        } else {
+            newLogSubject.onNext(new SparkLogLine(TOOL, Info, message));
+        }
+    }
+
+    public static void ctrlError(@Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                 @Nullable Observer<SparkLogLine> newLogSubject,
+                                 Throwable error) {
+        assert legacyLogSubject != null || newLogSubject != null : "At least one logSubject is not null";
+        assert legacyLogSubject == null || newLogSubject == null : "At least one logSubject should be null";
+
+        if (legacyLogSubject != null) {
+            legacyLogSubject.onError(error);
+        } else {
+            newLogSubject.onError(error);
+        }
+    }
+
+    public static void ctrlComplete(@Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                    @Nullable Observer<SparkLogLine> newLogSubject) {
+        assert legacyLogSubject != null || newLogSubject != null : "At least one logSubject is not null";
+        assert legacyLogSubject == null || newLogSubject == null : "At least one logSubject should be null";
+
+        if (legacyLogSubject != null) {
+            legacyLogSubject.onCompleted();
+        } else {
+            newLogSubject.onCompleted();
+        }
+    }
+
     @Deprecated
-    public static String uploadFileToAzure(@NotNull File file,
-                                           @NotNull IHDIStorageAccount storageAccount,
-                                           @NotNull String containerName,
-                                           @NotNull String uploadFolderPath,
-                                           @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject,
-                                           @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
+    public static String uploadFileToAzureBase(File file,
+                                               IHDIStorageAccount storageAccount,
+                                               String containerName,
+                                               String uploadFolderPath,
+                                               @Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                               @Nullable Observer<SparkLogLine> newLogSubject,
+                                               @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
         if(storageAccount.getAccountType() == StorageAccountType.BLOB) {
-            try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-                    HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
-                    BlobContainer container = getSparkClusterContainer(blobStorageAccount, containerName);
+            try (final FileInputStream fileInputStream = new FileInputStream(file)) {
+                try (final BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
+                    final HDStorageAccount blobStorageAccount = (HDStorageAccount) storageAccount;
+                    final BlobContainer container = getSparkClusterContainer(blobStorageAccount, containerName);
                     if (container == null) {
                         throw new IllegalArgumentException("Can't get the valid container.");
                     }
 
-                    String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
-                    String uploadedPath = String.format("wasbs://%s@%s/%s", containerName, blobStorageAccount.getFullStorageBlobName(), path);
+                    final String path = String.format("SparkSubmission/%s/%s", uploadFolderPath, file.getName());
+                    final String uploadedPath = String.format("wasbs://%s@%s/%s", containerName, blobStorageAccount.getFullStorageBlobName(), path);
 
-                    logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                            String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",
-                                          file.getPath(), uploadedPath)));
+                    ctrlInfo(legacyLogSubject, newLogSubject,
+                             String.format("Begin uploading file %s to Azure Blob Storage Account %s ...",
+                                           file.getPath(), uploadedPath));
 
                     StorageClientSDKManager.getManager().uploadBlobFileContent(
                             blobStorageAccount.getConnectionString(),
@@ -490,56 +532,81 @@ public class JobUtils {
                             1024 * 1024,
                             file.length());
 
-                    logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                            String.format("Submit file to azure blob '%s' successfully.", uploadedPath)));
+                    ctrlInfo(legacyLogSubject, newLogSubject,
+                             String.format("Submit file to azure blob '%s' successfully.", uploadedPath));
 
                     return uploadedPath;
                 }
             }
         } else if(storageAccount.getAccountType() == StorageAccountType.ADLS) {
-            String uploadPath = String.format("adl://%s.azuredatalakestore.net%s%s", storageAccount.getName(), storageAccount.getDefaultContainerOrRootPath(), "SparkSubmission");
-            logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                              String.format("Begin uploading file %s to Azure Datalake store %s ...", file.getPath(), uploadPath)));
+            final String uploadPath = String.format("adl://%s.azuredatalakestore.net%s%s", storageAccount.getName(), storageAccount.getDefaultContainerOrRootPath(), "SparkSubmission");
+            ctrlInfo(legacyLogSubject, newLogSubject,
+                     String.format("Begin uploading file %s to Azure Datalake store %s ...",
+                                   file.getPath(), uploadPath));
 
-            String uploadedPath = StreamUtil.uploadArtifactToADLS(file, storageAccount, uploadFolderPath);
-            logSubject.onNext(new SimpleImmutableEntry<>(Info,
-                    String.format("Submit file to Azure Datalake store '%s' successfully.", uploadedPath)));
+            final String uploadedPath = StreamUtil.uploadArtifactToADLS(file, storageAccount, uploadFolderPath);
+
+            ctrlInfo(legacyLogSubject, newLogSubject,
+                     String.format("Submit file to Azure Datalake store '%s' successfully.", uploadedPath));
+
             return uploadedPath;
         } else {
             throw new UnsupportedOperationException("unknown storage account type");
         }
+    }
 
+    @Deprecated
+    public static String uploadFileToAzureNew(File file,
+                                              IHDIStorageAccount storageAccount,
+                                              String containerName,
+                                              String uploadFolderPath,
+                                              Observer<SparkLogLine> logSubject,
+                                              @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback)
+            throws Exception {
+        return uploadFileToAzureBase(file, storageAccount, containerName, uploadFolderPath, null, logSubject,
+                                     uploadInProcessCallback);
+    }
+
+    @Deprecated
+    public static String uploadFileToAzure(File file,
+                                           IHDIStorageAccount storageAccount,
+                                           String containerName,
+                                           String uploadFolderPath,
+                                           Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject,
+                                           @Nullable CallableSingleArg<Void, Long> uploadInProcessCallback) throws Exception {
+        return uploadFileToAzureBase(file, storageAccount, containerName, uploadFolderPath, logSubject, null,
+                                     uploadInProcessCallback);
     }
 
     public static String sftpFileToEmulator(String localFile, String folderPath, IClusterDetail clusterDetail)
                                            throws  IOException,HDIException, JSchException, SftpException {
-        EmulatorClusterDetail emulatorClusterDetail = (EmulatorClusterDetail) clusterDetail;
+        final EmulatorClusterDetail emulatorClusterDetail = (EmulatorClusterDetail) clusterDetail;
         final File file = new File(localFile);
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            try (BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-                String sshEndpoint = emulatorClusterDetail.getSSHEndpoint();
-                URL url = new URL(sshEndpoint);
-                String host = url.getHost();
-                int port = url.getPort();
+        try (final FileInputStream fileInputStream = new FileInputStream(file)) {
+            try (final BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
+                final String sshEndpoint = emulatorClusterDetail.getSSHEndpoint();
+                final URL url = new URL(sshEndpoint);
+                final String host = url.getHost();
+                final int port = url.getPort();
 
-                JSch jsch = new JSch();
-                Session session = jsch.getSession(emulatorClusterDetail.getHttpUserName(), host, port);
+                final JSch jsch = new JSch();
+                final Session session = jsch.getSession(emulatorClusterDetail.getHttpUserName(), host, port);
                 session.setPassword(emulatorClusterDetail.getHttpPassword());
 
-                java.util.Properties config = new java.util.Properties();
+                final java.util.Properties config = new java.util.Properties();
                 config.put("StrictHostKeyChecking", "no");
                 session.setConfig(config);
 
                 session.connect();
-                ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
+                final ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
                 channel.connect();
 
-                String[] folders = folderPath.split( "/" );
-                for ( String folder : folders ) {
+                final String[] folders = folderPath.split("/");
+                for ( final String folder : folders ) {
                     if (folder.length() > 0) {
                         try {
                             channel.cd(folder);
-                        } catch (SftpException e) {
+                        } catch (final SftpException e) {
                             channel.mkdir(folder);
                             channel.cd(folder);
                         }
@@ -555,11 +622,11 @@ public class JobUtils {
     }
 
     public static String getFormatPathByDate() {
-        int year = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR);
-        int month = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.MONTH) + 1;
-        int day = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.DAY_OF_MONTH);
+        final int year = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.YEAR);
+        final int month = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.MONTH) + 1;
+        final int day = Calendar.getInstance(TimeZone.getTimeZone("UTC")).get(Calendar.DAY_OF_MONTH);
 
-        String uniqueFolderId = UUID.randomUUID().toString();
+        final String uniqueFolderId = UUID.randomUUID().toString();
 
         return String.format("%04d/%02d/%02d/%s", year, month, day, uniqueFolderId);
     }
@@ -567,77 +634,101 @@ public class JobUtils {
 
     public static String uploadFileToEmulator(@NotNull IClusterDetail selectedClusterDetail,
                                               @NotNull String buildJarPath,
-                                              @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws Exception {
-        logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Get target jar from %s.", buildJarPath)));
-        String uniqueFolderId = UUID.randomUUID().toString();
-        String folderPath = String.format("../opt/livy/SparkSubmission/%s", uniqueFolderId);
+                                              @NotNull Observer<SparkLogLine> logSubject) throws Exception {
+        logSubject.onNext(new SparkLogLine(TOOL, Info, String.format("Get target jar from %s.",
+                                                                     buildJarPath)));
+        final String uniqueFolderId = UUID.randomUUID().toString();
+        final String folderPath = String.format("../opt/livy/SparkSubmission/%s", uniqueFolderId);
         return String.format("/opt/livy/SparkSubmission/%s/%s",
                 uniqueFolderId, sftpFileToEmulator(buildJarPath, folderPath, selectedClusterDetail));
     }
 
-    public static String uploadFileToHDFS(@NotNull IClusterDetail selectedClusterDetail,
-                                          @NotNull String buildJarPath,
-                                          @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws HDIException {
-        logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Get target jar from %s.", buildJarPath)));
+    public static String uploadFileToHDFSBase(IClusterDetail selectedClusterDetail,
+                                              String buildJarPath,
+                                              @Nullable Observer<SimpleImmutableEntry<MessageInfoType, String>> legacyLogSubject,
+                                              @Nullable Observer<SparkLogLine> newLogSubject)
+            throws HDIException {
+        ctrlInfo(legacyLogSubject, newLogSubject, String.format("Get target jar from %s.", buildJarPath));
 
-        File srcJarFile = new File(buildJarPath);
-        URI destUri = URI.create(String.format("/SparkSubmission/%s/%s", getFormatPathByDate(), srcJarFile.getName()));
+        final File srcJarFile = new File(buildJarPath);
+        final URI destUri = URI.create(String.format("/SparkSubmission/%s/%s", getFormatPathByDate(), srcJarFile.getName()));
 
-        String username = selectedClusterDetail.getHttpUserName();
-        String password = selectedClusterDetail.getHttpPassword();
-        String sessionName = "Helper session to upload " + destUri.toString();
+        final String username = selectedClusterDetail.getHttpUserName();
+        final String password = selectedClusterDetail.getHttpPassword();
+        final String sessionName = "Helper session to upload " + destUri.toString();
 
-        URI livyUri = selectedClusterDetail instanceof LivyCluster ?
-                URI.create(((LivyCluster) selectedClusterDetail).getLivyConnectionUrl()) :
-                URI.create(selectedClusterDetail.getConnectionUrl());
+        final URI livyUri = selectedClusterDetail instanceof LivyCluster ?
+                            URI.create(((LivyCluster) selectedClusterDetail).getLivyConnectionUrl()) :
+                            URI.create(selectedClusterDetail.getConnectionUrl());
 
-        logSubject.onNext(new SimpleImmutableEntry<>(Info, "Create Spark helper interactive session..."));
+        ctrlInfo(legacyLogSubject, newLogSubject, "Create Spark helper interactive session...");
 
         try {
             return Observable.using(() -> new SparkSession(sessionName, livyUri, username, password),
-                    SparkSession::create,
-                    SparkSession::close)
-                    .map(sparkSession -> {
-                        ClusterFileBase64BufferedOutputStream clusterFileBase64Out = new ClusterFileBase64BufferedOutputStream(
-                                sparkSession, destUri);
-                        Base64OutputStream base64Enc = new Base64OutputStream(clusterFileBase64Out, true);
-                        InputStream inFile;
+                                    SparkSession::create,
+                                    SparkSession::close)
+                             .map(sparkSession -> {
+                                 sparkSession.getCtrlSubject()
+                                             .subscribe(logLine -> ctrlInfo(legacyLogSubject, newLogSubject,
+                                                                            logLine.getRawLog()),
+                                                        err -> ctrlError(legacyLogSubject, newLogSubject, err),
+                                                        () -> ctrlComplete(legacyLogSubject, newLogSubject));
 
-                        try {
-                            inFile = new BufferedInputStream(new FileInputStream(srcJarFile));
+                                 ClusterFileBase64BufferedOutputStream clusterFileBase64Out =
+                                         new ClusterFileBase64BufferedOutputStream(sparkSession, destUri);
+                                 Base64OutputStream base64Enc = new Base64OutputStream(clusterFileBase64Out, true);
+                                 InputStream inFile;
 
-                            logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Uploading %s...", srcJarFile)));
-                            IOUtils.copy(inFile, base64Enc);
+                                 try {
+                                     inFile = new BufferedInputStream(new FileInputStream(srcJarFile));
 
-                            inFile.close();
-                            base64Enc.close();
-                        } catch (FileNotFoundException fnfEx) {
-                            throw propagate(new HDIException(String.format("Source file %s not found.", srcJarFile), fnfEx));
-                        } catch (IOException ioEx) {
-                            throw propagate(new HDIException(String.format("Failed to upload file %s.", destUri), ioEx));
-                        }
+                                     ctrlInfo(legacyLogSubject, newLogSubject, String.format("Uploading %s...",
+                                                                                             srcJarFile));
+                                     IOUtils.copy(inFile, base64Enc);
 
-                        logSubject.onNext(new SimpleImmutableEntry<>(Info, String.format("Uploaded to %s.", destUri)));
+                                     inFile.close();
+                                     base64Enc.close();
+                                 } catch (FileNotFoundException fnfEx) {
+                                     throw propagate(new HDIException(String.format("Source file %s not found.",
+                                                                                    srcJarFile), fnfEx));
+                                 } catch (IOException ioEx) {
+                                     throw propagate(new HDIException(String.format("Failed to upload file %s.",
+                                                                                    destUri), ioEx));
+                                 }
+                                 ctrlInfo(legacyLogSubject, newLogSubject, String.format("Uploaded to %s.", destUri));
 
-                        return destUri.toString();
-                    })
-                    .toBlocking()
-                    .single();
-        } catch (NoSuchElementException ignored) {
+                                 return destUri.toString();
+                             })
+                             .toBlocking()
+                             .single();
+        } catch (final NoSuchElementException ignored) {
             // The cause exception will be thrown inside
             throw new HDIException("Failed to upload file to HDFS (Should Not Reach).");
         }
     }
 
+    public static String uploadFileToHDFSNew(IClusterDetail selectedClusterDetail,
+                                          String buildJarPath,
+                                          Observer<SparkLogLine> logSubject) throws HDIException {
+        return uploadFileToHDFSBase(selectedClusterDetail, buildJarPath, null, logSubject);
+    }
+
+
+    public static String uploadFileToHDFS(IClusterDetail selectedClusterDetail,
+                                          String buildJarPath,
+                                          Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws HDIException {
+        return uploadFileToHDFSBase(selectedClusterDetail, buildJarPath, logSubject, null);
+    }
+
     public static String uploadFileToCluster(@NotNull final IClusterDetail selectedClusterDetail,
                                     @NotNull final String buildJarPath,
-                                    @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) throws Exception {
+                                    @NotNull Observer<SparkLogLine> logSubject) throws Exception {
 
         return selectedClusterDetail.isEmulator() ?
                 JobUtils.uploadFileToEmulator(selectedClusterDetail, buildJarPath, logSubject) :
                 (selectedClusterDetail.getStorageAccount() == null ?
-                        JobUtils.uploadFileToHDFS(selectedClusterDetail, buildJarPath, logSubject):
-                        JobUtils.uploadFileToAzure(
+                        JobUtils.uploadFileToHDFSNew(selectedClusterDetail, buildJarPath, logSubject):
+                        JobUtils.uploadFileToAzureNew(
                                 new File(buildJarPath),
                                 selectedClusterDetail.getStorageAccount(),
                                 selectedClusterDetail.getStorageAccount().getDefaultContainerOrRootPath(),
@@ -652,17 +743,17 @@ public class JobUtils {
                                                  @NotNull String adlRootPath,
                                                  @NotNull String accessToken) {
         return Observable.fromCallable(() -> {
-            File localFile = new File(artifactLocalPath);
+            final File localFile = new File(artifactLocalPath);
 
-            URI remote = URI.create(adlRootPath)
-                    .resolve("SparkSubmission/")
-                    .resolve(getFormatPathByDate() + "/")
-                    .resolve(localFile.getName());
+            final URI remote = URI.create(adlRootPath)
+                                  .resolve("SparkSubmission/")
+                                  .resolve(getFormatPathByDate() + "/")
+                                  .resolve(localFile.getName());
 
-            ADLStoreClient storeClient = ADLStoreClient.createClient(remote.getHost(), accessToken);
+            final ADLStoreClient storeClient = ADLStoreClient.createClient(remote.getHost(), accessToken);
 
-            try (OutputStream adlsOutputStream = storeClient.createFile(remote.getPath(), IfExists.OVERWRITE, "755", true)) {
-                long size = IOUtils.copyLarge(new FileInputStream(localFile), adlsOutputStream);
+            try (final OutputStream adlsOutputStream = storeClient.createFile(remote.getPath(), IfExists.OVERWRITE, "755", true)) {
+                final long size = IOUtils.copyLarge(new FileInputStream(localFile), adlsOutputStream);
 
                 adlsOutputStream.flush();
                 adlsOutputStream.close();
@@ -674,8 +765,8 @@ public class JobUtils {
 
     public static Observable<String> deployArtifact(@NotNull String artifactLocalPath,
                                                     @NotNull final IHDIStorageAccount storageAccount,
-                                                    @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
-        return Observable.fromCallable(() -> JobUtils.uploadFileToAzure(
+                                                    @NotNull Observer<SparkLogLine> logSubject) {
+        return Observable.fromCallable(() -> JobUtils.uploadFileToAzureNew(
                 new File(artifactLocalPath),
                 storageAccount,
                 storageAccount.getDefaultContainerOrRootPath(),
@@ -686,21 +777,23 @@ public class JobUtils {
 
     public static Single<SimpleImmutableEntry<IClusterDetail, String>> deployArtifact(@NotNull String artifactLocalPath,
                                                         @NotNull String clusterName,
-                                                        @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+                                                        @NotNull Observer<SparkLogLine> logSubject) {
         return Single.create(ob -> {
             try {
-                IClusterDetail clusterDetail = ClusterManagerEx.getInstance()
-                        .getClusterDetailByName(clusterName)
-                        .orElseThrow(() -> new HDIException("No cluster name matched selection: " + clusterName));
+                final IClusterDetail clusterDetail = ClusterManagerEx.getInstance()
+                                                                     .getClusterDetailByName(clusterName)
+                                                                     .orElseThrow(() -> new HDIException(
+                                                                             "No cluster name matched selection: "
+                                                                                     + clusterName));
 
-                String jobArtifactUri = JobUtils.uploadFileToCluster(
+                final String jobArtifactUri = JobUtils.uploadFileToCluster(
                         clusterDetail,
                         artifactLocalPath,
                         logSubject);
 
 
                 ob.onSuccess(new SimpleImmutableEntry<>(clusterDetail, jobArtifactUri));
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 ob.onError(e);
             }
         });
@@ -710,9 +803,9 @@ public class JobUtils {
                                                     @NotNull String destinationRootPath,
                                                     @NotNull String artifactPath) {
         return Observable.fromCallable(() -> {
-            File file = new File(artifactPath);
-            String webHdfsUploadPath = destinationRootPath.concat(file.getName());
-            String redirectUri = null;
+            final File file = new File(artifactPath);
+            final String webHdfsUploadPath = destinationRootPath + file.getName();
+            final String redirectUri;
 
             List<NameValuePair> params = new WebHdfsParamsBuilder("CREATE")
                     .setOverwrite("true")
@@ -725,8 +818,8 @@ public class JobUtils {
                     .put(uriBuilder.build())
                     .build();
 
-            CloseableHttpClient httpclient = submission.getHttpClient();
-            try (CloseableHttpResponse response = httpclient.execute(req)) {
+            final CloseableHttpClient httpclient = submission.getHttpClient();
+            try (final CloseableHttpResponse response = httpclient.execute(req)) {
                 //two steps to upload via webhdfs
                 // 1.put request the get 307 redirect uri from response
                 // 2.put redirect request with file content as setEntity
@@ -737,16 +830,16 @@ public class JobUtils {
                 if (StringUtils.isBlank(redirectUri)) {
                     throw new UnknownServiceException("can not get valid redirect uri using webhdfs");
                 }
-            } catch (Exception ex) {
-                throw new UnknownServiceException("using webhdfs encounter problem:".concat(ex.toString()));
+            } catch (final Exception ex) {
+                throw new UnknownServiceException("using webhdfs encounter problem:" + ex.toString());
             }
 
-            InputStreamEntity reqEntity = new InputStreamEntity(
+            final InputStreamEntity reqEntity = new InputStreamEntity(
                     new FileInputStream(file),
                     -1,
                     ContentType.APPLICATION_OCTET_STREAM);
             reqEntity.setChunked(true);
-            BufferedHttpEntity reqEntityBuf = new BufferedHttpEntity(reqEntity);
+            final BufferedHttpEntity reqEntityBuf = new BufferedHttpEntity(reqEntity);
 
             //setup url with redirect url and entity ,config 100 continue to header
             req = RequestBuilder
@@ -756,7 +849,7 @@ public class JobUtils {
                     .build();
 
             // execute put request
-            try (CloseableHttpResponse putResp = httpclient.execute(req)) {
+            try (final CloseableHttpResponse putResp = httpclient.execute(req)) {
                 params = new WebHdfsParamsBuilder("OPEN")
                         .build();
                 uriBuilder = new URIBuilder(webHdfsUploadPath);
@@ -774,8 +867,8 @@ public class JobUtils {
 
     public static AbstractMap.SimpleImmutableEntry<Integer, List<Header>>
     authenticate(IClusterDetail clusterDetail) throws HDIException, IOException {
-        SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
-        String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
+        final SparkBatchSubmission submission = SparkBatchSubmission.getInstance();
+        final String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
         if (livyUrl == null) {
             throw new IOException("Can't get livy connection Url");
         }
@@ -784,11 +877,11 @@ public class JobUtils {
             submission.setUsernamePasswordCredential(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
         }
 
-        com.microsoft.azure.hdinsight.sdk.common.HttpResponse response = clusterDetail instanceof MfaEspCluster
+        final com.microsoft.azure.hdinsight.sdk.common.HttpResponse response = clusterDetail instanceof MfaEspCluster
                 ? submission.negotiateAuthMethodWithResp(livyUrl)
                 : submission.getHttpResponseViaHead(livyUrl);
 
-        int statusCode = response.getCode();
+        final int statusCode = response.getCode();
         if (statusCode >= 200 && statusCode <= 302) {
             return new AbstractMap.SimpleImmutableEntry<>(statusCode, response.getHeaders());
         }

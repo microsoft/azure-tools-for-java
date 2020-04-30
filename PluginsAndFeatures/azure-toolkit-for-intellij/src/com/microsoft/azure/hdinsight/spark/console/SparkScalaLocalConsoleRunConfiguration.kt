@@ -28,6 +28,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaCommandLineState
 import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.jarRepository.JarRepositoryManager
 import com.intellij.jarRepository.RemoteRepositoriesConfiguration
@@ -52,7 +53,7 @@ import com.microsoft.azure.hdinsight.spark.run.SparkBatchLocalRunState
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow
 import com.microsoft.intellij.util.runInWriteAction
-import org.jetbrains.plugins.scala.console.ScalaConsoleRunConfiguration
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfiguration
 import java.nio.file.Paths
 import javax.swing.Action
 
@@ -239,7 +240,11 @@ class SparkScalaLocalConsoleRunConfiguration(
             }
         }
 
-        state.consoleBuilder = SparkScalaConsoleBuilder(project)
+        batchRunConfiguration.configurationModule.setModuleToAnyFirstIfNotSpecified()
+
+        state.consoleBuilder = SparkScalaConsoleBuilder(project, batchRunConfiguration.modules.firstOrNull()
+                ?: throw ExecutionException(RuntimeConfigurationError(
+                        "The default module needs to be set in the local run tab of Run Configuration")))
 
         return state
     }

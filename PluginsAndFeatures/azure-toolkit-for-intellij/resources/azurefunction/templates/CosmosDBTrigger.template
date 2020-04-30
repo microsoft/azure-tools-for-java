@@ -1,0 +1,29 @@
+package $(packageName);
+
+import com.microsoft.azure.functions.annotation.*;
+import com.microsoft.azure.functions.*;
+
+/**
+ * Azure Functions with Cosmos DB trigger.
+ */
+public class $(className) {
+    /**
+     * This function will be invoked when there are inserts or updates in the specified database and collection.
+     */
+    @FunctionName("CosmosDBTrigger-Java")
+    public void run(
+        @CosmosDBTrigger(
+            name = "items",
+            databaseName = "<your-monitored-database>",
+            collectionName = "<your-monitored-collection>",
+            leaseCollectionName="leases",
+            connectionStringSetting = "<your-connectionstring-setting>",
+            createLeaseCollectionIfNotExists = true
+        )
+        Object[] items,
+        final ExecutionContext context
+    ) {
+        context.getLogger().info("Java Cosmos DB trigger function executed.");
+        context.getLogger().info("Documents count: " + items.length);
+    }
+}

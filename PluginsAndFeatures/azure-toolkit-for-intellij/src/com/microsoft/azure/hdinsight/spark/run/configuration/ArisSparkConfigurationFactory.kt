@@ -35,11 +35,8 @@ open class ArisSparkConfigurationFactory(type: ConfigurationType) :
         val NAME = "Aris On Spark"
     }
 
-    override fun createTemplateConfiguration(project: Project): RunConfiguration = ArisSparkConfiguration(
-            NAME,
-            ArisSparkConfigurationModule(project),
-            this
-    )
+    override fun createTemplateConfiguration(project: Project): RunConfiguration =
+            ArisSparkConfiguration(project, NAME, ArisSparkConfigurableModel(project), this)
 
     override fun getName(): String {
         return NAME

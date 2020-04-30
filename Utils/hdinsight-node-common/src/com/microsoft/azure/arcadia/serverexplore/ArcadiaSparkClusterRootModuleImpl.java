@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.arcadia.serverexplore;
 
 import com.microsoft.azure.hdinsight.common.CommonConst;
@@ -54,7 +55,7 @@ public class ArcadiaSparkClusterRootModuleImpl extends HDInsightRootModule {
 
     @Override
     public boolean isFeatureEnabled() {
-        return CommonSettings.isProjectArcadiaFeatureEnabled;
+        return true;
     }
 
     @Override

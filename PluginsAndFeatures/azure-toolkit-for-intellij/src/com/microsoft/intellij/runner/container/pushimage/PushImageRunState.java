@@ -112,7 +112,6 @@ public class PushImageRunState extends AzureRunProfileState<String> {
         return TelemetryManager.createOperation(TelemetryConstants.ACR, TelemetryConstants.ACR_PUSHIMAGE);
     }
 
-
     @Override
     protected void onSuccess(String image, @NotNull RunProcessHandler processHandler) {
         processHandler.setText("pushed.");

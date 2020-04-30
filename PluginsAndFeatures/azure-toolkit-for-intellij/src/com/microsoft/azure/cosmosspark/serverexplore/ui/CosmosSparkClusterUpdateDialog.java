@@ -96,7 +96,7 @@ public class CosmosSparkClusterUpdateDialog extends CosmosSparkProvisionDialog i
                 .validateAndUpdate()
                 .doOnEach(notification -> getOKAction().setEnabled(true))
                 .subscribe(
-                        toUpdate ->  ApplicationManager.getApplication().invokeAndWait(()->close(OK_EXIT_CODE) , ModalityState.any()),
+                        toUpdate -> ApplicationManager.getApplication().invokeAndWait(()->close(OK_EXIT_CODE) , ModalityState.any()),
                         err -> log().warn("Error update a cluster. " + err.toString())
                 );
     }

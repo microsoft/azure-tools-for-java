@@ -22,19 +22,19 @@
 
 package com.microsoft.intellij.ui.util
 
-import javax.swing.ComboBoxModel
+import javax.swing.ListModel
 
-fun <T> ComboBoxModel<T>.findFirst(propertyMatcher: (T) -> Boolean): T? {
-    synchronized(this) {
-        for (i in 0 until this.size) {
-            val itemToCheck = this.getElementAt(i)
+val <T> ListModel<T>?.iterator: Iterator<T>
+    get() = if (this != null) {
+        object: Iterator<T> {
+            private var position: Int = 0
 
-            if (propertyMatcher(itemToCheck)) {
-                return itemToCheck
-            }
+            override fun hasNext() = size > position
+            override fun next() = getElementAt(position++)
         }
+    } else {
+        emptyList<T>().iterator()
     }
 
-    return null
-}
+fun <T> ListModel<T>?.findFirst(predicate: (T) -> Boolean): T? = this?.iterator?.asSequence()?.find(predicate)
 

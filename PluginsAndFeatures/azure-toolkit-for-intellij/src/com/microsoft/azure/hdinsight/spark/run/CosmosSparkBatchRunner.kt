@@ -28,6 +28,8 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager
 import com.microsoft.azure.hdinsight.spark.common.*
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosSparkRunConfiguration
+import rx.Observable
+import rx.Observable.just
 import rx.Observer
 import java.net.URI
 import java.util.AbstractMap.SimpleImmutableEntry
@@ -42,29 +44,19 @@ class CosmosSparkBatchRunner : SparkBatchJobRunner() {
     }
 
     @Throws(ExecutionException::class)
-    override fun buildSparkBatchJob(submitModel: SparkSubmitModel, ctrlSubject: Observer<SimpleImmutableEntry<MessageInfoType, String>>): ISparkBatchJob {
-        val tenantId = (submitModel as CosmosSparkSubmitModel).tenantId
-        val accountName = submitModel.accountName
-
-        if (submitModel.clusterId == null) {
-            throw ExecutionException("Can't get the Azure Serverless Spark cluster, please sign in and refresh.")
-        }
-
-        val clusterId = submitModel.clusterId
-        try {
-            val clusterDetail = AzureSparkCosmosClusterManager.getInstance().findCluster(accountName, clusterId)
-                .toBlocking().singleOrDefault(null) ?: throw ExecutionException("Can't get Spark on Cosmos cluster")
-
-            val livyUri = submitModel.livyUri?.let { URI.create(it) }
-                ?: clusterDetail.get().toBlocking().singleOrDefault(clusterDetail).livyUri
-
-            return CosmosSparkBatchJob(
-                prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
-                SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri),
-                ctrlSubject)
-        } catch (e: Exception) {
-            throw ExecutionException("Can't get Spark on Cosmos cluster, please sign in and refresh.", e)
-        }
-
+    override fun buildSparkBatchJob(submitModel: SparkSubmitModel)
+            : Observable<ISparkBatchJob> = just(Triple((submitModel as CosmosSparkSubmitModel).tenantId,
+                                                       submitModel.accountName,
+                                                  submitModel.clusterId
+                                                          ?: throw ExecutionException("Can't get the Azure Serverless Spark cluster, please sign in and refresh."))
+    ).flatMap { (tenantId, accountName, clusterId) -> AzureSparkCosmosClusterManager.getInstance()
+            .findCluster(accountName, clusterId)
+            .flatMap { clusterDetail -> submitModel.livyUri
+                    ?.let { just(URI.create(it)) }
+                    ?: clusterDetail.get().map { it.livyUri } }
+            .map { livyUri -> CosmosSparkBatchJob(
+                    prepareSubmissionParameterWithTransformedGen2Uri(submitModel.submissionParameter),
+                    SparkBatchAzureSubmission(tenantId, accountName, clusterId, livyUri))
+            }
     }
 }

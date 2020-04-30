@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosClusterManager;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
@@ -30,7 +29,6 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import rx.Observable;
-import rx.Observer;
 
 import java.io.File;
 import java.net.URI;
@@ -40,9 +38,8 @@ import java.util.Objects;
 
 public class CosmosSparkBatchJob extends SparkBatchJob {
     public CosmosSparkBatchJob(@NotNull SparkSubmissionParameter submissionParameter,
-                               @NotNull SparkBatchAzureSubmission azureSubmission,
-                               @NotNull Observer<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
-        super(submissionParameter, azureSubmission, ctrlSubject);
+                               @NotNull SparkBatchAzureSubmission azureSubmission) {
+        super(submissionParameter, azureSubmission);
     }
 
     @NotNull
@@ -102,15 +99,17 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
         return super.awaitStarted()
                 .flatMap(state -> Observable.zip(
                         getCosmosSparkCluster(), getSparkJobApplicationIdObservable().defaultIfEmpty(null),
-                        (cluster, appId) -> Pair.of(
-                                state,
-                                cluster.getSparkHistoryUiUri() == null ?
-                                        null :
-                                        cluster.getSparkMasterUiUri().toString() + "?adlaAccountName=" + cluster.getAccount().getName())))
+                        (cluster, appId) -> {
+                            final URI sparkHistoryUiUri = cluster.getSparkHistoryUiUri();
+                            return Pair.of(
+                                    state,
+                                    sparkHistoryUiUri == null ?
+                                    null :
+                                    sparkHistoryUiUri + "?adlaAccountName=" + cluster.getAccount().getName());
+                        }))
                 .map(stateJobUriPair -> {
                     if (stateJobUriPair.getRight() != null) {
-                        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Hyperlink,
-                                                                           stateJobUriPair.getRight()));
+                        ctrlHyperLink(stateJobUriPair.getRight());
                     }
 
                     return stateJobUriPair.getKey();
@@ -146,7 +145,11 @@ public class CosmosSparkBatchJob extends SparkBatchJob {
         return (SparkBatchAzureSubmission) getSubmission();
     }
 
-    private void ctrlInfo(@NotNull String message) {
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Info, message));
+    @Override
+    public CosmosSparkBatchJob clone() {
+        return new CosmosSparkBatchJob(
+                this.getSubmissionParameter(),
+                this.getAzureSubmission()
+        );
     }
 }

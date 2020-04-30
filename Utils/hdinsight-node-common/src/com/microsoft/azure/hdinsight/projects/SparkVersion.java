@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -49,18 +49,18 @@ public enum SparkVersion {
     public String toString() {
         return String.format("Spark %s (Scala %s)", this.sparkVersion, this.scalaVersion);
     }
-    
+
     public static SparkVersion parseString(String strSparkVersion) {
-    	String[] tokens = strSparkVersion.split(" ");
-    	for (SparkVersion sparkVersion : SparkVersion.class.getEnumConstants()) {
-    		if (sparkVersion.getSparkVersion().equalsIgnoreCase(tokens[1])) {
-    			if (tokens[3].contains(sparkVersion.getScalaVersion())) {
-    				return sparkVersion;
-    			}
-    		}
-    	}
-    	
-    	return SparkVersion.class.getEnumConstants()[0];
+        String[] tokens = strSparkVersion.split(" ");
+        for (SparkVersion sparkVersion : SparkVersion.class.getEnumConstants()) {
+            if (sparkVersion.getSparkVersion().equalsIgnoreCase(tokens[1])) {
+                if (tokens[3].contains(sparkVersion.getScalaVersion())) {
+                    return sparkVersion;
+                }
+            }
+        }
+
+        return SparkVersion.class.getEnumConstants()[0];
     }
 
     public String getSparkVersion() {
@@ -74,9 +74,9 @@ public enum SparkVersion {
     public String getScalaVer() {
         return scalaVer;
     }
-    
+
     public String getSparkVersioninDashFormat() {
-    	return sparkVersion.replace(".", "_") + "_";
+        return sparkVersion.replace(".", "_") + "_";
     }
 
     public static Comparator<SparkVersion> sparkVersionComparator = (v1, v2) -> {

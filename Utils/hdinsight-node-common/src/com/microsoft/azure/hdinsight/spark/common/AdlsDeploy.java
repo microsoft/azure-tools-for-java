@@ -22,19 +22,20 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
+import rx.Observer;
 
 import java.io.File;
-import java.net.URI;
 
 // for cluster with adls gen1 account to deploy using ADLS storage account type
 public class AdlsDeploy implements Deployable {
     @NotNull
-    private String adlsRootPath;
+    private final String adlsRootPath;
     @NotNull
-    private String accessToken;
+    private final String accessToken;
 
     public AdlsDeploy(@NotNull String adlsRootPath,
                       @NotNull String accessToken) {
@@ -44,7 +45,7 @@ public class AdlsDeploy implements Deployable {
 
     @NotNull
     @Override
-    public Observable<String> deploy(@NotNull File src)  {
+    public Observable<String> deploy(File src, Observer<SparkLogLine> logSubject) {
         return JobUtils.deployArtifactToADLS(src.getAbsolutePath(), adlsRootPath, accessToken);
     }
 }

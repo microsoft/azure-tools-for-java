@@ -19,19 +19,50 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.project.Project;
+
 import com.microsoft.azure.hdinsight.common.CommonConst;
 import com.microsoft.azure.hdinsight.common.IconPathBuilder;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.PluginUtil;
 
 import javax.swing.*;
 
 public class LivySparkBatchJobRunConfigurationType implements ConfigurationType {
+    private class DefaultConfigFactory extends ConfigurationFactory {
+        private static final String NAME = "HDInsight Spark";
+
+        DefaultConfigFactory() {
+            super(LivySparkBatchJobRunConfigurationType.this);
+        }
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @NotNull
+        @Override
+        public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
+            return new LivySparkBatchJobRunConfiguration(project, new SparkBatchJobConfigurableModel(project), this, NAME);
+        }
+    }
+
+    @NotNull
+    private final ConfigurationFactory myConfigurationFactory;
+
+    public LivySparkBatchJobRunConfigurationType() {
+        this.myConfigurationFactory = new DefaultConfigFactory();
+    }
+
     @Override
     public String getDisplayName() {
         return "Apache Spark on HDInsight";
@@ -57,7 +88,7 @@ public class LivySparkBatchJobRunConfigurationType implements ConfigurationType 
 
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
-        return new ConfigurationFactory[] { new LivySparkBatchJobConfigurationFactory(this) };
+        return new ConfigurationFactory[] { myConfigurationFactory };
     }
 
     @NotNull

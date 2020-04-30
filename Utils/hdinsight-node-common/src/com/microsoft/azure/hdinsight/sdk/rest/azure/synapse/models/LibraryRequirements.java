@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -18,13 +18,11 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -37,7 +35,7 @@ public class LibraryRequirements {
      * The last update time of the library requirements file.
      */
     @JsonProperty(value = "time", access = JsonProperty.Access.WRITE_ONLY)
-    private DateTime time;
+    private String time;
 
     /**
      * The library requirements.
@@ -56,7 +54,7 @@ public class LibraryRequirements {
      *
      * @return the time value
      */
-    public DateTime time() {
+    public String time() {
         return this.time;
     }
 

@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -37,19 +37,19 @@ import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
-import java.util.HashMap;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 
-public abstract class AzureRunProfileState <T> implements RunProfileState {
+import java.util.HashMap;
+import java.util.Map;
+
+public abstract class AzureRunProfileState<T> implements RunProfileState {
     protected final Project project;
 
     public AzureRunProfileState(@NotNull Project project) {
         this.project = project;
     }
-
 
     @Nullable
     @Override
@@ -83,7 +83,7 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
                         telemetryMap, null);
                     operation.complete();
                 }
-                this.onFail(err.getMessage(), processHandler);
+                this.onFail(err, processHandler);
                 this.sendTelemetry(telemetryMap, false, err.getMessage());
             });
         return new DefaultExecutionResult(consoleView, processHandler);
@@ -93,7 +93,21 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
         return null;
     }
 
-    protected void updateTelemetryMap(@NotNull  Map<String, String> telemetryMap){}
+    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
+        onFail(error.getMessage(), processHandler);
+    }
+
+    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
+
+    }
+
+    protected void setText(RunProcessHandler runProcessHandler, String text) {
+        if (runProcessHandler.isProcessRunning()) {
+            runProcessHandler.setText(text);
+        }
+    }
+
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap){}
 
     private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
         updateTelemetryMap(telemetryMap);
@@ -107,8 +121,9 @@ public abstract class AzureRunProfileState <T> implements RunProfileState {
     }
 
     protected abstract String getDeployTarget();
+
     protected abstract T executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception;
+
     protected abstract void onSuccess(T result, @NotNull RunProcessHandler processHandler);
-    protected abstract void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler);
 }

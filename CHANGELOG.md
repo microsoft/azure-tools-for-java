@@ -3,6 +3,11 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.36.0](#3360)
+  - [3.35.0](#3350)
+  - [3.34.0](#3340)
+  - [3.33.1](#3331)
+  - [3.33.0](#3330)
   - [3.32.0](#3320)
   - [3.31.0](#3310)
   - [3.30.0](#3300)
@@ -43,6 +48,90 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.36.0
+
+### Added
+- Support log streaming for webapp
+- Support open portal Live Metrics Stream for linux function app 
+- Validate Azure dependencies version before deploying
+- Tag log line with log source(azuretool, livy, driver.stderr) for Spark batch job logs and interactive session logs
+
+### Changed
+- Remove version of Azure Spring Cloud dependencies when it is not necessary
+
+### Fixed
+- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fix NPE caused job submission failure issue
+- [#4204](https://github.com/microsoft/azure-tools-for-java/issues/4204) Deploy Azure Spring Cloud App dialog default value is apply
+- [#4231](https://github.com/microsoft/azure-tools-for-java/issues/4231) Cannot use Auth file for spring cloud authentication
+
+## 3.35.0
+
+### Added
+- Add Azure Spring Cloud support in Azure Toolkits
+  - Manage Azure Spring Cloud project dependencies
+  - Manage Azure Spring Cloud apps in Azure Explorer
+    * Create/Delete/Start/Stop/Restart
+    * Assign/un-assign public endpoint
+    * Update environment variables
+    * Update JVM options
+    * View app properties
+  - Deploying apps from current project
+  - Monitoring and troubleshooting apps
+    * Getting public url
+    * Getting test endpoint
+    * Instance status(shown in app properties view)
+- Support trigger function with timer trigger
+- Support log streaming for Windows functions
+
+### Fixed
+- [#4157](https://github.com/microsoft/azure-tools-for-java/issues/4157) Can't trigger function/admin http function when click 'Trigger Function' button
+- [#4160](https://github.com/microsoft/azure-tools-for-java/issues/4160) Nothing shown in function run mark
+- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fixed NPE caused Spark job submission failure in 201EAP
+- [#4213](https://github.com/microsoft/azure-tools-for-java/issues/4213) Unhandled error when creating function app
+- [#4215](https://github.com/microsoft/azure-tools-for-java/issues/4215) App settings not loaded when openning the deploy wizard
+
+## 3.34.0
+
+### Added
+- Add Azure Function support in Azure Toolkits
+    * Scaffold functions project
+    * Create new functions class by trigger type
+    * Local run/debug functions
+    * Create/deploy Function apps on Azure
+    * List/view existing Function apps on Azure
+    * Stop/start/restart Function apps on Azure
+    * Trigger azure functions
+- Support project artifact dependencies in Spark interactive console
+- Add more debug log when creating Spark Livy interactive console
+
+### Changed
+- Enable Spark on Synapse feature by default
+
+## 3.33.1
+
+### Fixed
+- [#4061](https://github.com/microsoft/azure-tools-for-java/issues/4061) The error of Spark job remote debugging
+- [#4079](https://github.com/microsoft/azure-tools-for-java/issues/4079) The regression of Spark console can not start
+
+## 3.33.0
+
+### Added
+ - Support upload artifact to ADLS Gen1 storage for Spark on Cosmos Spark Pool
+ - Detect authentication type automatically when user types cluster name and lost focus when link an HDInsight cluster
+ - Fetch more Livy logs when submit Spark job to HDInsight cluster failed
+ - Add background task indicator to improve user experience
+ - Support virtual file system on ADLS Gen2 storage for HDInsight Spark cluster and Synapse Spark pool
+
+### Changed
+ - Seperator for multiple referenced jars and referenced files is changed from semicolon to space in Spark batch job configuration
+ - "Continue Anyway" is changed to "Cancel submit" in "Change configuration settings" dialog when validation check failed for spark batch job
+ - The behavior of "Rerun" button action for Spark batch job is changed from re-run with current selected configuration to re-run with previous job configuration
+
+### Fixed
+ - [#3935](https://github.com/microsoft/azure-tools-for-java/pull/3935) Clean up HDInsight clusters from cache when user signs out
+ - [#3887](https://github.com/microsoft/azure-tools-for-java/issues/3887), [#4023](https://github.com/microsoft/azure-tools-for-java/pull/4023) Fix uncaught StackOverflowError reported by user
+ - [#4045](https://github.com/microsoft/azure-tools-for-java/issues/4045) Fix uncaught NullPointerException reported by user
 
 ## 3.32.0
 
