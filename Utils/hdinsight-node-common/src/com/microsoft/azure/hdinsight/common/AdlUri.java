@@ -35,15 +35,17 @@ import java.util.regex.Pattern;
 
 public class AdlUri extends AzureStorageUri {
     public static final Pattern ADL_URI_PATTERN = Pattern.compile(
-            "^adl[s]?://(?<storageName>[^/.]+)\\.azuredatalakestore\\.net"
+            "^adl[s]?://(?<storageName>[^/.]+)\\.(?<dnsName>azuredatalakestore|caboaccountdogfood)\\.net"
                     + "(:(?<port>[0-9]+))?(/(?<path>.*))?$",
             Pattern.CASE_INSENSITIVE);
     public static final Pattern HTTP_URI_PATTERN = Pattern.compile(
-            "^http[s]?://(?<storageName>[^/.]+)\\.azuredatalakestore\\.net"
+            "^http[s]?://(?<storageName>[^/.]+)\\.(?<dnsName>azuredatalakestore|caboaccountdogfood)\\.net"
                     + "(:(?<port>[0-9]+))?/webhdfs/v1(/(?<path>.*))?$",
             Pattern.CASE_INSENSITIVE);
 
     private final LaterInit<String> storageName = new LaterInit<>();
+
+    private final LaterInit<String> dnsName = new LaterInit<>();
 
     private AdlUri(URI rawUri) {
         super(rawUri);
@@ -51,15 +53,15 @@ public class AdlUri extends AzureStorageUri {
 
     @Override
     public URI getUri() {
-        return URI.create(String.format("adl://%s.azuredatalakestore.net%s",
-                getStorageName(), getPath()));
+        return URI.create(String.format("adl://%s.%s.net%s",
+                getStorageName(), getDnsName(), getPath()));
     }
 
     @Override
     public URL getUrl() {
         try {
-            return URI.create(String.format("https://%s.azuredatalakestore.net/webhdfs/v1%s",
-                    getStorageName(), getPath())).toURL();
+            return URI.create(String.format("https://%s.%s.net/webhdfs/v1%s",
+                    getStorageName(), getDnsName(), getPath())).toURL();
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
@@ -67,6 +69,10 @@ public class AdlUri extends AzureStorageUri {
 
     public String getStorageName() {
         return this.storageName.get();
+    }
+
+    public String getDnsName() {
+        return this.dnsName.get();
     }
 
     @Override
@@ -100,6 +106,7 @@ public class AdlUri extends AzureStorageUri {
         final AdlUri uri = new AdlUri(URI.create(adlUri));
 
         uri.storageName.set(matcher.group("storageName"));
+        uri.dnsName.set(matcher.group("dnsName"));
 
         final String pathMatched = matcher.group("path");
         final String relativePathMatched = URI.create("/" + (pathMatched == null ? "" : pathMatched)).getPath();
