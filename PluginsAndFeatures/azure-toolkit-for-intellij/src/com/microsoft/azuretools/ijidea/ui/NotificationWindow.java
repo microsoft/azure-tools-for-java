@@ -22,7 +22,9 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.ui.Messages;
 import com.microsoft.azuretools.authmanage.interact.INotification;
 
 import javax.swing.*;
@@ -37,10 +39,7 @@ public class NotificationWindow implements INotification {
             @Override
             public void run() {
                 JPanel panel = new JPanel();
-                JOptionPane.showMessageDialog(panel,
-                        message,
-                        subject,
-                        JOptionPane.INFORMATION_MESSAGE);
+                Messages.showMessageDialog(panel, message, subject, AllIcons.General.Information);
             }
         });
 

@@ -32,37 +32,24 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.AuthMethod;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.BaseADAuthManager;
-import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXHyperlink;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
@@ -71,10 +58,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInDCProp;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInSPProp;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
@@ -324,7 +308,8 @@ public class SignInWindow extends AzureDialogWrapper {
             }
 
             authFileTextField.setText(path);
-            PluginUtil.displayInfoDialog("Authentication File Created", String.format("Your credentials have been exported to %s, please keep the authentication file safe", path));
+            PluginUtil.displayInfoDialog("Authentication File Created", String.format(
+                    "Your credentials have been exported to %s, please keep the authentication file safe", path));
         } catch (Exception ex) {
             ex.printStackTrace();
             //LOGGER.error("doCreateServicePrincipal", ex);
@@ -355,11 +340,10 @@ public class SignInWindow extends AzureDialogWrapper {
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
-                JOptionPane.showMessageDialog(
-                    contentPane,
-                    "Select authentication file",
-                    "Sign in dialog info",
-                    JOptionPane.INFORMATION_MESSAGE);
+                DefaultLoader.getUIHelper().showMessageDialog(contentPane,
+                                                              "Select authentication file",
+                                                              "Sign in dialog info",
+                                                              Messages.getInformationIcon());
                 return;
             }
 

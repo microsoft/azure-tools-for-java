@@ -72,11 +72,19 @@ public class AppSettingsTableUtils {
         final AnActionButton btnAdd = new AnActionButton("Add", AllIcons.General.Add) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
-                final String key = JOptionPane.showInputDialog(appSettingsTable, "Please input value for key: ");
+                final String key = DefaultLoader.getUIHelper().showInputDialog(
+                        appSettingsTable,
+                        "Set app settings key",
+                        "Please input the app setting key: ",
+                        null);
                 if (StringUtils.isEmpty(key)) {
                     return;
                 }
-                final String value = JOptionPane.showInputDialog(appSettingsTable, "Please input value for value: ");
+                final String value = DefaultLoader.getUIHelper().showInputDialog(
+                        appSettingsTable,
+                        "Set app settings value",
+                        "Please input the app setting value: ",
+                        null);
                 appSettingsTable.addAppSettings(key, value);
                 appSettingsTable.repaint();
             }

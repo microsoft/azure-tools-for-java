@@ -24,6 +24,7 @@ package com.microsoft.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.forms.ExternalStorageAccountForm;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.ExternalStorageHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -56,11 +57,10 @@ public class AttachExternalStorageAccountAction extends NodeActionListener {
                 for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList(storageModule.getProject())) {
                     String name = storageAccount.getName();
                     if (clientStorageAccount.getName().equals(name)) {
-                        JOptionPane.showMessageDialog(form.getContentPane(),
+                        DefaultLoader.getUIHelper().showError(
+                                form.getContentPane(),
                                 "Storage account with name '" + name + "' already exists.",
-                                "Azure Explorer",
-                                JOptionPane.ERROR_MESSAGE);
-
+                                "Azure Explorer");
                         return;
                     }
                 }

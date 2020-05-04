@@ -22,8 +22,6 @@
 
 package com.microsoft.intellij.helpers;
 
-import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
-
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserFactory;
@@ -34,6 +32,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -78,6 +77,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
+import org.apache.commons.lang.ArrayUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -88,8 +88,13 @@ import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
+import java.util.function.Supplier;
 
 import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper.getSubscriptionId;
+import static com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider.TYPE;
 import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider.SPRING_CLOUD_APP_PROPERTY_TYPE;
 
 
@@ -134,38 +139,37 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void showError(@NotNull final String message, @NotNull final String title) {
+        showError(null, message, title);
+    }
+
+    @Override
+    public void showError(Component component, String message, String title) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
+                Messages.showErrorDialog(component, message, title);
             }
         });
     }
 
     @Override
-    public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption) {
-        int optionDialog = JOptionPane.showOptionDialog(null,
-                message,
-                title,
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                defaultOption);
-        return (optionDialog == JOptionPane.YES_OPTION);
+    public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options,
+                              String defaultOption) {
+        return runFromDispatchThread(() -> 0 == Messages.showDialog(message,
+                                                                    title,
+                                                                    options,
+                                                                    ArrayUtils.indexOf(options, defaultOption),
+                                                                    null));
     }
 
     @Override
     public boolean showConfirmation(@NotNull Component node, @NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption) {
-        int optionDialog = JOptionPane.showOptionDialog(node,
-                message,
-                title,
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                defaultOption);
-        return (optionDialog == JOptionPane.YES_OPTION);
+        return runFromDispatchThread(() -> 0 == Messages.showDialog(node,
+                                                                    message,
+                                                                    title,
+                                                                    options,
+                                                                    ArrayUtils.indexOf(options, defaultOption),
+                                                                    null));
     }
 
     @Override
@@ -723,5 +727,45 @@ public class UIHelperImpl implements UIHelper {
         final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+
+    @Override
+    public void showMessageDialog(Component component, String message, String title, Icon icon) {
+        DefaultLoader.getIdeHelper().invokeLater(() -> Messages.showMessageDialog(component, message, title, icon));
+    }
+
+    @Override
+    public int showConfirmDialog(Component component, String message, String title, String[] options,
+                               String defaultOption, Icon icon) {
+        return runFromDispatchThread(() -> Messages.showDialog(component,
+                                                               message,
+                                                               title,
+                                                               options,
+                                                               ArrayUtils.indexOf(options, defaultOption),
+                                                               icon));
+    }
+
+    @Override
+    public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
+        return runFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
+                == Messages.YES);
+    }
+
+    @Override
+    public String showInputDialog(Component component, String message, String title, Icon icon) {
+        return runFromDispatchThread(() -> Messages.showInputDialog(component, message, title, icon));
+    }
+
+    private static <T> T runFromDispatchThread(Supplier<T> supplier) {
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            return supplier.get();
+        }
+        RunnableFuture<T> runnableFuture = new FutureTask<>(() -> supplier.get());
+        ApplicationManager.getApplication().invokeLater(runnableFuture);
+        try {
+            return runnableFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            return null;
+        }
     }
 }

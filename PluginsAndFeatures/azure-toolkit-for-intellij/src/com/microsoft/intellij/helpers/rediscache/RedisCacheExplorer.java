@@ -30,6 +30,7 @@ import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.components.AzureListSelectionListenerWrapper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
 
@@ -273,7 +274,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
 
     @Override
     public void onErrorWithException(String message, Exception ex) {
-        JOptionPane.showMessageDialog(null, ex.getMessage(), message, JOptionPane.ERROR_MESSAGE, null);
+        DefaultLoader.getUIHelper().showError(ex.getMessage(), message);
         setWidgetEnableStatus(true);
     }
 

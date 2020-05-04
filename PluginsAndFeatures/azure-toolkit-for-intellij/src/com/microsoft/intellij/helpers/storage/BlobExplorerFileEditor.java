@@ -165,16 +165,18 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
 
         sorter.setComparator(2, new Comparator<String>() {
             @Override
-            public int compare(String s, String t1) {
-                if (s == null || s.isEmpty()) {
-                    s = "0";
+            public int compare(String f, String s) {
+                String first = f;
+                String second = s;
+                if (first == null || first.isEmpty()) {
+                    first = "0";
                 }
 
-                if (t1 == null || t1.isEmpty()) {
-                    t1 = "0";
+                if (second == null || second.isEmpty()) {
+                    second = "0";
                 }
 
-                return getValue(s).compareTo(getValue(t1));
+                return getValue(first).compareTo(getValue(second));
             }
 
             private Long getValue(String strValue) {
@@ -350,23 +352,23 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                             for (BlobItem blobItem : blobItems) {
                                 if (blobItem instanceof BlobDirectory) {
                                     model.addRow(new Object[]{
-                                            UIHelperImpl.loadIcon("storagefolder.png"),
-                                            blobItem.getName(),
-                                            "",
-                                            "",
-                                            "",
-                                            blobItem.getUri()
+                                        UIHelperImpl.loadIcon("storagefolder.png"),
+                                        blobItem.getName(),
+                                        "",
+                                        "",
+                                        "",
+                                        blobItem.getUri()
                                     });
                                 } else {
                                     BlobFile blobFile = (BlobFile) blobItem;
 
                                     model.addRow(new String[]{
-                                            "",
-                                            blobFile.getName(),
-                                            UIHelperImpl.readableFileSize(blobFile.getSize()),
-                                            new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
-                                            blobFile.getContentType(),
-                                            blobFile.getUri()
+                                        "",
+                                        blobFile.getName(),
+                                        UIHelperImpl.readableFileSize(blobFile.getSize()),
+                                        new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
+                                        blobFile.getContentType(),
+                                        blobFile.getUri()
                                     });
                                 }
                             }
@@ -518,7 +520,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         final BlobFile blobItem = getFileSelection();
 
         if (blobItem != null) {
-            if (JOptionPane.showConfirmDialog(mainPanel, "Are you sure you want to delete this blob?", "Delete Blob", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION) {
+            boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(mainPanel, "Are you sure you want to "
+                    + "delete this blob?", "Delete Blob", null);
+            if (isConfirm) {
                 setUIState(true);
 
                 ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting blob...", false) {
@@ -629,7 +633,8 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                                         Throwable connectionFault = e.getCause().getCause();
 
                                         progressIndicator.setText("Error downloading Blob");
-                                        progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : connectionFault.getMessage());
+                                        progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ?
+                                                                   "Connection timed out" : connectionFault.getMessage());
                                     } catch (IOException ex) {
                                         try {
                                             final Process p;
@@ -679,8 +684,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                 String path = form.getFolder();
                 File selectedFile = form.getSelectedFile();
 
-                if (!path.endsWith("/"))
+                if (!path.endsWith("/")) {
                     path = path + "/";
+                }
 
                 if (path.startsWith("/")) {
                     path = path.substring(1);

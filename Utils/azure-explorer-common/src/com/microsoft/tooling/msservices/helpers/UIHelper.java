@@ -25,7 +25,11 @@ package com.microsoft.tooling.msservices.helpers;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.tooling.msservices.model.storage.*;
+import com.microsoft.tooling.msservices.model.storage.BlobContainer;
+import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
+import com.microsoft.tooling.msservices.model.storage.Queue;
+import com.microsoft.tooling.msservices.model.storage.StorageServiceTreeItem;
+import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
@@ -35,7 +39,9 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.Spring
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
-import java.awt.*;
+import javax.swing.Icon;
+import javax.swing.JOptionPane;
+import java.awt.Component;
 import java.io.File;
 
 public interface UIHelper {
@@ -46,6 +52,10 @@ public interface UIHelper {
             boolean suggestDetail);
 
     void showError(@NotNull String message, @NotNull String title);
+
+    default void showError(Component component, @NotNull String message, @NotNull String title) {
+        JOptionPane.showMessageDialog(component, message, title, JOptionPane.ERROR_MESSAGE);
+    }
 
     boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options, String defaultOption);
 
@@ -114,5 +124,34 @@ public interface UIHelper {
 
     default void closeSpringCloudAppPropertyView(@NotNull Object project, @NotNull String appId) {
 
+    }
+
+    default void showMessageDialog(Component component, String message, String title, Icon icon) {
+        JOptionPane.showMessageDialog(component, message, title, JOptionPane.INFORMATION_MESSAGE, icon);
+    }
+
+    default int showConfirmDialog(Component component, String message, String title, String[] options, String defaultOption, Icon icon) {
+        return JOptionPane.showOptionDialog(component,
+                message,
+                title,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                icon,
+                options,
+                defaultOption);
+    }
+
+    default boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
+        return JOptionPane.showConfirmDialog(
+                component,
+                message,
+                title,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                icon) == JOptionPane.YES_OPTION;
+    }
+
+    default String showInputDialog(Component component, String message, String title, Icon icon) {
+        return (String) JOptionPane.showInputDialog(component, message, title, JOptionPane.QUESTION_MESSAGE, icon, null, null);
     }
 }

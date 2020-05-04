@@ -23,9 +23,6 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
-
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -33,11 +30,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
@@ -52,36 +45,25 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpView {
 
@@ -476,10 +458,10 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                     });
                     dispose();
                 }, (ex) -> {
-                    JOptionPane.showMessageDialog(null, "Create WebApp Failed : " + ex.getMessage(),
-                        "Create WebApp Failed", JOptionPane.ERROR_MESSAGE);
-                    sendTelemetry(false, ex.getMessage());
-                });
+                        DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
+                                                              "Create WebApp Failed");
+                        sendTelemetry(false, ex.getMessage());
+                    });
             }
         });
     }
@@ -509,7 +491,8 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         }
     }
 
-    private boolean isJarApplication(){
-        return MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName()).equalsIgnoreCase(MavenConstants.TYPE_JAR);
+    private boolean isJarApplication() {
+        return MavenRunTaskUtil.getFileType(webAppConfiguration.getTargetName())
+                               .equalsIgnoreCase(MavenConstants.TYPE_JAR);
     }
 }

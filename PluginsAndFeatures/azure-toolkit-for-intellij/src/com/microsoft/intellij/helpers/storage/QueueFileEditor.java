@@ -36,6 +36,7 @@ import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.QueueMessageForm;
 import com.microsoft.intellij.forms.ViewMessageForm;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.model.storage.QueueMessage;
@@ -186,20 +187,20 @@ public class QueueFileEditor implements FileEditor {
     }
 
     private FileEditorVirtualNode createFileEditorVirtualNode(final String name) {
-        FileEditorVirtualNode fileEditorVirtualNode = new FileEditorVirtualNode(this, name);
-        fileEditorVirtualNode.addAction(REFRESH, new NodeActionListener() {
+        FileEditorVirtualNode node = new FileEditorVirtualNode(this, name);
+        node.addAction(REFRESH, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 fillGrid();
             }
         });
-        fileEditorVirtualNode.addAction(DEQUEUE, new NodeActionListener() {
+        node.addAction(DEQUEUE, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 dequeueFirstMessage();
             }
         });
-        fileEditorVirtualNode.addAction(ADD_MESSAGE, new NodeActionListener() {
+        node.addAction(ADD_MESSAGE, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 QueueMessageForm queueMessageForm = new QueueMessageForm(project);
@@ -216,19 +217,18 @@ public class QueueFileEditor implements FileEditor {
                 queueMessageForm.show();
             }
         });
-        fileEditorVirtualNode.addAction(CLEAR_QUEUE, new NodeActionListener() {
+        node.addAction(CLEAR_QUEUE, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                int optionDialog = JOptionPane.showOptionDialog(null,
+                int optionDialog = DefaultLoader.getUIHelper().showConfirmDialog(
+                        null,
                         "Are you sure you want to clear the queue \"" + queue.getName() + "\"?",
                         "Azure Explorer",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
                         new String[]{"Yes", "No"},
+                        null,
                         null);
 
-                if (optionDialog == JOptionPane.YES_OPTION) {
+                if (optionDialog == 0) {
                     ProgressManager.getInstance().run(new Task.Backgroundable(project, "Clearing queue messages", false) {
                         @Override
                         public void run(@NotNull ProgressIndicator progressIndicator) {
@@ -243,7 +243,8 @@ public class QueueFileEditor implements FileEditor {
                                     }
                                 });
                             } catch (AzureCmdException e) {
-                                String msg = "An error occurred while attempting to clear queue messages." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
+                                String msg = "An error occurred while attempting to clear queue messages." + "\n" +
+                                String.format(message("webappExpMsg"), e.getMessage());
                                 PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
                             }*/
                         }
@@ -251,13 +252,13 @@ public class QueueFileEditor implements FileEditor {
                 }
             }
         });
-        fileEditorVirtualNode.addAction(OPEN, new NodeActionListener() {
+        node.addAction(OPEN, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 viewMessageText();
             }
         });
-        return fileEditorVirtualNode;
+        return node;
     }
 
     public void fillGrid() {
@@ -313,11 +314,9 @@ public class QueueFileEditor implements FileEditor {
     }
 
     private void dequeueFirstMessage() {
-        if (JOptionPane.showConfirmDialog(mainPanel,
-                "Are you sure you want to dequeue the first message in the queue?",
-                "Azure Explorer",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION) {
+        final boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(
+                mainPanel, "Are you sure you want to dequeue the first message in the queue?", "Azure Explorer", null);
+        if (isConfirm) {
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Dequeuing message", false) {
                 @Override
                 public void run(@NotNull ProgressIndicator progressIndicator) {
@@ -448,47 +447,47 @@ public class QueueFileEditor implements FileEditor {
     public <T> void putUserData(@NotNull Key<T> key, @Nullable T t) {
     }
 
-//    private void registerSubscriptionsChanged()
-//            throws AzureCmdException {
-//        synchronized (subscriptionsChangedSync) {
-//            if (subscriptionsChanged == null) {
-//                subscriptionsChanged = AzureManagerImpl.getManager(project).registerSubscriptionsChanged();
-//            }
-//
-//            registeredSubscriptionsChanged = true;
-//
-//            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        subscriptionsChanged.waitEvent(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                if (registeredSubscriptionsChanged) {
-//                                    Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(project, storageAccount.getName(), queue);
-//
-//                                    if (openedFile != null) {
-//                                        DefaultLoader.getIdeHelper().closeFile(project, openedFile);
-//                                    }
-//                                }
-//                            }
-//                        });
-//                    } catch (AzureCmdException ignored) {
-//                    }
-//                }
-//            });
-//        }
-//    }
+    //    private void registerSubscriptionsChanged()
+    //            throws AzureCmdException {
+    //        synchronized (subscriptionsChangedSync) {
+    //            if (subscriptionsChanged == null) {
+    //                subscriptionsChanged = AzureManagerImpl.getManager(project).registerSubscriptionsChanged();
+    //            }
+    //
+    //            registeredSubscriptionsChanged = true;
+    //
+    //            DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
+    //                @Override
+    //                public void run() {
+    //                    try {
+    //                        subscriptionsChanged.waitEvent(new Runnable() {
+    //                            @Override
+    //                            public void run() {
+    //                                if (registeredSubscriptionsChanged) {
+    //                                    Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(project, storageAccount.getName(), queue);
+    //
+    //                                    if (openedFile != null) {
+    //                                        DefaultLoader.getIdeHelper().closeFile(project, openedFile);
+    //                                    }
+    //                                }
+    //                            }
+    //                        });
+    //                    } catch (AzureCmdException ignored) {
+    //                    }
+    //                }
+    //            });
+    //        }
+    //    }
 
     private void unregisterSubscriptionsChanged()
             throws AzureCmdException {
-//        synchronized (subscriptionsChangedSync) {
-//            registeredSubscriptionsChanged = false;
-//
-//            if (subscriptionsChanged != null) {
-//                AzureManagerImpl.getManager(project).unregisterSubscriptionsChanged(subscriptionsChanged);
-//                subscriptionsChanged = null;
-//            }
-//        }
+    //        synchronized (subscriptionsChangedSync) {
+    //            registeredSubscriptionsChanged = false;
+    //
+    //            if (subscriptionsChanged != null) {
+    //                AzureManagerImpl.getManager(project).unregisterSubscriptionsChanged(subscriptionsChanged);
+    //                subscriptionsChanged = null;
+    //            }
+    //        }
     }
 }

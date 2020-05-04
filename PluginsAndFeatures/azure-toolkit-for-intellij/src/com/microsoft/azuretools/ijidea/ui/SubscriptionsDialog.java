@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -39,6 +40,7 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -120,10 +122,10 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             subscriptionManager.setSubscriptionDetails(sdl);
 
         }, (ex) -> {
-            ex.printStackTrace();
-            //LOGGER.error("refreshSubscriptions", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
-        });
+                ex.printStackTrace();
+                //LOGGER.error("refreshSubscriptions", ex);
+                ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
+            });
     }
 
     private void setSubscriptions() {
@@ -206,10 +208,9 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
         }
 
         if (unselectedCount == rc) {
-            JOptionPane.showMessageDialog(contentPane,
-                    "Please select at least one subscription",
-                    "Subscription dialog info",
-                    JOptionPane.INFORMATION_MESSAGE);
+            DefaultLoader.getUIHelper().showMessageDialog(
+                    contentPane, "Please select at least one subscription",
+                    "Subscription dialog info", Messages.getInformationIcon());
             return;
         }
 
@@ -228,7 +229,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     private class SubscriptionTableModel extends DefaultTableModel {
         final Class[] columnClass = new Class[]{
-                Boolean.class, String.class, String.class
+            Boolean.class, String.class, String.class
         };
 
         @Override

@@ -672,7 +672,7 @@ public class JobUtils {
                                              .subscribe(logLine -> ctrlInfo(legacyLogSubject, newLogSubject,
                                                                             logLine.getRawLog()),
                                                         err -> ctrlError(legacyLogSubject, newLogSubject, err),
-                                                        () -> ctrlComplete(legacyLogSubject, newLogSubject));
+                                                        () -> {});
 
                                  ClusterFileBase64BufferedOutputStream clusterFileBase64Out =
                                          new ClusterFileBase64BufferedOutputStream(sparkSession, destUri);

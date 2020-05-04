@@ -36,7 +36,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
-import javax.swing.JOptionPane;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +119,7 @@ public class SubFunctionNode extends Node {
     private void triggerEventHubTrigger() {
         try {
             final HttpPost request = getFunctionTriggerRequest();
-            final String value = JOptionPane.showInputDialog(tree.getParent(), "Please input test value: ");
+            final String value = DefaultLoader.getUIHelper().showInputDialog(tree.getParent(), "Please input test value: ", "Trigger Event Hub", null);
             final StringEntity entity = new StringEntity(String.format("{\"input\":\"'%s'\"}", value));
             request.setEntity(entity);
             HttpClients.createDefault().execute(request);
