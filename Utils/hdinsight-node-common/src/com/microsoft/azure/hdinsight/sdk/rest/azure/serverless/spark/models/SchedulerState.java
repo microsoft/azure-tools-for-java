@@ -25,7 +25,6 @@ package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -85,7 +84,11 @@ public final class SchedulerState extends ExpandableStringEnum<SchedulerState> i
     }
 
     @Override
-    public int compareTo(@NotNull final SchedulerState other) {
+    public int compareTo(final SchedulerState other) {
+        if (this == other) {
+            return 0;
+        }
+
         return TO_PRIORITY.getOrDefault(this, 0).compareTo(TO_PRIORITY.getOrDefault(other, 0));
     }
 }
