@@ -22,16 +22,20 @@
 
 package com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models;
 
-import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.microsoft.rest.ExpandableStringEnum;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Defines values for SchedulerState.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class SchedulerState extends ExpandableStringEnum<SchedulerState> {
+public final class SchedulerState extends ExpandableStringEnum<SchedulerState> implements Comparable<SchedulerState> {
     /** Static value Any for SchedulerState. */
     public static final SchedulerState ANY = fromString("Any");
 
@@ -53,6 +57,16 @@ public final class SchedulerState extends ExpandableStringEnum<SchedulerState> {
     /** Static value Ended for SchedulerState. */
     public static final SchedulerState ENDED = fromString("Ended");
 
+    public static final Map<SchedulerState, Integer> TO_PRIORITY = new HashMap<SchedulerState, Integer>() {{
+        put(ANY, 1);
+        put(SUBMITTED, 2);
+        put(PREPARING, 3);
+        put(QUEUED, 4);
+        put(SCHEDULED, 5);
+        put(FINALIZING, 6);
+        put(ENDED, 7);
+    }};
+
     /**
      * Creates or finds a SchedulerState from its string representation.
      * @param name a name to look for
@@ -68,5 +82,10 @@ public final class SchedulerState extends ExpandableStringEnum<SchedulerState> {
      */
     public static Collection<SchedulerState> values() {
         return values(SchedulerState.class);
+    }
+
+    @Override
+    public int compareTo(@NotNull final SchedulerState other) {
+        return TO_PRIORITY.getOrDefault(this, 0).compareTo(TO_PRIORITY.getOrDefault(other, 0));
     }
 }

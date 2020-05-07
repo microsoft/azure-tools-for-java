@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.sdk.common.azure.serverless;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterContainer;
@@ -168,7 +169,9 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
 
         return getHttp()
                 .withUuidUserAgent()
-                .get(uri.toString(), null, null, SparkBatchJobList.class);
+                // Fetch the jobs sorted by submitTime in descending order
+                .get(uri.toString(), ImmutableList.of(ODataParam.orderby("submitTime desc")), null,
+                     SparkBatchJobList.class);
     }
 
     /**

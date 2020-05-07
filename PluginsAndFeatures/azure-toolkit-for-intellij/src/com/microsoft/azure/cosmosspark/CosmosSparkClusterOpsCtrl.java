@@ -297,8 +297,13 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
             public List<UniqueColumnNameTableSchema.RowDescriptor> items() {
                 CosmosServerlessSparkBatchJobsTableSchema tableSchema = new CosmosServerlessSparkBatchJobsTableSchema();
                 return jobList.value().stream()
-                        .map(sparkBatchJob -> tableSchema.new CosmosServerlessSparkJobDescriptor(account, sparkBatchJob))
-                        .collect(Collectors.toList());
+                              .sorted((job1, job2) -> job1.state().compareTo(job2.state()) != 0
+                                                      // sort by job state in ascending order
+                                                      ? job1.state().compareTo(job2.state())
+                                                      // then sort by submit time in descending order
+                                                      : -job1.submitTime().compareTo(job2.submitTime()))
+                              .map(sparkBatchJob -> tableSchema.new CosmosServerlessSparkJobDescriptor(account, sparkBatchJob))
+                              .collect(Collectors.toList());
             }
 
             @Nullable
