@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -105,7 +105,6 @@ class FunctionAppPublishModel {
 
         isCreatingStorageAccount = false
         storageAccountName = ""
-
     }
 
     fun readExternal(project: Project, element: Element) {

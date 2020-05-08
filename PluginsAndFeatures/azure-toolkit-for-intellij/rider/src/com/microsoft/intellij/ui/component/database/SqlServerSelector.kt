@@ -128,7 +128,7 @@ class SqlServerSelector(private val lifetimeDef: LifetimeDefinition) :
         txtSqlServerName.initValidationWithResult(
                 lifetimeDef,
                 textChangeValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
-                    SqlServerValidator.checkNameMaxLength(txtSqlServerName.text)
+                    SqlServerValidator.checkSqlServerNameMaxLength(txtSqlServerName.text)
                             .merge(SqlServerValidator.checkInvalidCharacters(txtSqlServerName.text)) },
                 focusLostValidationAction = { if (!isEnabled || rdoExistingSqlServer.isSelected) return@initValidationWithResult ValidationResult()
                     SqlServerValidator.checkStartsEndsWithDash(txtSqlServerName.text) })

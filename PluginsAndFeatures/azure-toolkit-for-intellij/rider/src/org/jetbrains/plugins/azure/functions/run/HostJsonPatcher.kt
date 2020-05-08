@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,8 +27,10 @@ import com.intellij.openapi.diagnostic.Logger
 import java.io.File
 
 object HostJsonPatcher {
+
     private val logger = Logger.getInstance(HostJsonPatcher::class.java)
-    private val functionsPropertyName = "functions"
+
+    private const val FUNCTION_PROPERTY_NAME = "functions"
 
     private fun determineHostJsonFile(workingDirectory: String): File? {
         val candidates = listOf(
@@ -41,6 +43,7 @@ object HostJsonPatcher {
     }
 
     fun tryPatchHostJsonFile(workingDirectory: String, functionNames: String) {
+
         val hostJsonFile = determineHostJsonFile(workingDirectory)
 
         if (hostJsonFile == null) {
@@ -59,7 +62,7 @@ object HostJsonPatcher {
                     .filter { it.isNotBlank() }
                     .forEach { functionsArray.add(JsonPrimitive(it)) }
 
-            hostJson.add(functionsPropertyName, functionsArray)
+            hostJson.add(FUNCTION_PROPERTY_NAME, functionsArray)
 
             hostJsonFile.writeText(gson.toJson(hostJson))
         } catch (e: JsonParseException) {

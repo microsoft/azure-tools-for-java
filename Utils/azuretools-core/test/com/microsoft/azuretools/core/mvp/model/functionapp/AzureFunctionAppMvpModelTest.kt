@@ -93,7 +93,7 @@ class AzureFunctionAppMvpModelTest {
         Mockito.reset(azureMock)
         Mockito.reset(azureMvpModelMock)
         Mockito.reset(authMethodManagerMock)
-        AzureFunctionAppMvpModel.clearSubscriptionIdToFunctionMap()
+        AzureFunctionAppMvpModel.clearSubscriptionIdToFunctionAppMap()
     }
 
     @Test

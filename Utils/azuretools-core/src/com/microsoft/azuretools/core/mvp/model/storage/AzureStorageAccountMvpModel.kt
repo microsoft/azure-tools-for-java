@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,6 +27,7 @@ import com.microsoft.azure.management.storage.StorageAccountSkuType
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import org.jetbrains.annotations.TestOnly
 import java.lang.reflect.Modifier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -117,5 +118,13 @@ object AzureStorageAccountMvpModel {
 
     fun clearStorageAccountMap() {
         subscriptionIdToStorageAccountMap.clear()
+    }
+
+    @TestOnly
+    fun setSubscriptionIdToStorageAccountMap(map: Map<String, List<StorageAccount>>) {
+        subscriptionIdToStorageAccountMap.clear()
+        map.forEach { (subscriptionId, storageAccountList) ->
+            subscriptionIdToStorageAccountMap[subscriptionId] = storageAccountList
+        }
     }
 }

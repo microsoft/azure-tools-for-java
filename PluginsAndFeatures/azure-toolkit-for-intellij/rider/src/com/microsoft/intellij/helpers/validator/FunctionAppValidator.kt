@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.helpers.validator
 
-import com.microsoft.azure.management.appservice.FunctionApp
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
@@ -36,12 +35,6 @@ object FunctionAppValidator : AppValidator(message("service.app_service.function
 
         return status.merge(checkFunctionAppExists(subscriptionId, name))
     }
-
-    fun checkFunctionAppIsSet(app: FunctionApp?) =
-            checkValueIsSet(app, message("run_config.publish.validation.function_app.not_defined"))
-
-    fun checkFunctionAppIdIsSet(appId: String) =
-            checkAppIdIsSet(appId)
 
     fun checkFunctionAppExists(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()
@@ -61,6 +54,7 @@ object FunctionAppValidator : AppValidator(message("service.app_service.function
         return status
     }
 
-    private fun isFunctionAppExist(subscriptionId: String, functionAppName: String) =
-            AzureFunctionAppMvpModel.checkFunctionAppNameExists(subscriptionId, functionAppName)
+    private fun isFunctionAppExist(subscriptionId: String, functionAppName: String): Boolean =
+            AzureFunctionAppMvpModel.checkFunctionAppNameExists(
+                    subscriptionId = subscriptionId, nameToCheck = functionAppName, force = false)
 }

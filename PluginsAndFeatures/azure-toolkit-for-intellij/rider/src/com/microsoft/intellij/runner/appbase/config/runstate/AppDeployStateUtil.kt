@@ -174,16 +174,17 @@ object AppDeployStateUtil {
     }
 
     /**
-     * Get a relative path for an assembly name based from a project output directory
+     * Get a relative path for an assembly name from a project output directory
      */
     fun getAssemblyRelativePath(publishableProject: PublishableProjectModel, outDir: File): String {
         val defaultPath = "${publishableProject.projectName}.dll"
 
-        val outputs = publishableProject.projectOutputs.firstOrNull() ?: return defaultPath
-        val assemblyFile = outputs.exePath.toIOFile()
-        if (!assemblyFile.exists()) return defaultPath
+        val assemblyFile = publishableProject.projectOutputs.find { output ->
+            val exeFile = output.exePath.toIOFile()
+            exeFile.exists()
+        }?.exePath?.toIOFile() ?: return defaultPath
 
-        return outDir.walk().find { it.name == assemblyFile.name }?.relativeTo(outDir)?.path ?: defaultPath
+        return outDir.walk().find { it.isFile && it.name == assemblyFile.name }?.relativeTo(outDir)?.path ?: defaultPath
     }
 
     @Throws(FileNotFoundException::class)

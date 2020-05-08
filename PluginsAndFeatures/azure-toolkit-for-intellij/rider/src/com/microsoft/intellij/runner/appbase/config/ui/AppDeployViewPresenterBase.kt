@@ -127,7 +127,7 @@ abstract class AppDeployViewPresenterBase<T : AppDeployMvpViewBase> : AzureMvpPr
                 sqlServerSignal,
                 message("progress.publish.sql_server.collect"),
                 message("run_config.publish.sql_server.collect_error"),
-                { AzureSqlServerMvpModel.listSqlServersBySubscriptionId(subscriptionId, true).map { it.resource } },
+                { AzureSqlServerMvpModel.listSqlServersBySubscriptionId(subscriptionId, true) },
                 { mvpView.fillSqlServer(it) })
     }
 

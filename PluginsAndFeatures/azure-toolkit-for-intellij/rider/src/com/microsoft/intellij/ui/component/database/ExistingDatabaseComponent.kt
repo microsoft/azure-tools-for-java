@@ -34,6 +34,7 @@ import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setDefaultRenderer
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
+import java.lang.IllegalStateException
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -82,12 +83,18 @@ class ExistingDatabaseComponent :
             val database = cbDatabase.getSelectedValue() ?: return@addActionListener
             if (lastSelectedDatabase == database) return@addActionListener
 
-            val subscriptionId = database.id().split("/")[2]
+            val id = database.id()
+            val parts = id.split("/")
+            val subscriptionIndex = parts.indexOf("subscriptions")
+            if (subscriptionIndex == -1)
+                throw IllegalStateException("Unable to collect information about subscription from database ID: '$id'")
+
+            val subscriptionId = parts[subscriptionIndex + 1]
 
             ApplicationManager.getApplication().invokeLater {
                 val sqlServer =
                         AzureSqlServerMvpModel.listSqlServersBySubscriptionId(subscriptionId)
-                                .first { subscription -> subscription.resource.name() == database.sqlServerName() }.resource
+                                .first { sqlServer -> sqlServer.name() == database.sqlServerName() }
                 lblExistingAdminLoginValue.text = sqlServer.administratorLogin()
             }
 

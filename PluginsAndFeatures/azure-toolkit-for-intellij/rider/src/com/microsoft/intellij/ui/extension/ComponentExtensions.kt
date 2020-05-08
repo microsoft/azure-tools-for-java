@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -34,6 +34,7 @@ private const val COMPONENT_ENABLED_STATE_PROPERTY_NAME = "ComponentEnabledState
 fun setComponentsEnabled(isEnabled: Boolean, vararg components: JComponent) {
     components.forEach { it.isEnabled = isEnabled }
 }
+
 fun setComponentsVisible(isVisible: Boolean, vararg components: JComponent) {
     components.forEach { it.isVisible = isVisible }
 }

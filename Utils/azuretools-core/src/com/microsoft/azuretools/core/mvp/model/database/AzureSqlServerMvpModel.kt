@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -27,6 +27,7 @@ import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import org.jetbrains.annotations.TestOnly
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -36,7 +37,7 @@ object AzureSqlServerMvpModel {
 
     private val logger = Logger.getLogger(this::class.java.name)
 
-    private val subscriptionIdToSqlServersMap = ConcurrentHashMap<String, List<ResourceEx<SqlServer>>>()
+    private val subscriptionIdToSqlServersMap = ConcurrentHashMap<String, List<SqlServer>>()
 
     fun refreshSubscriptionToSqlServerMap() {
         val subscriptions = AzureMvpModel.getInstance().selectedSubscriptions
@@ -51,7 +52,7 @@ object AzureSqlServerMvpModel {
         return azure.sqlServers().getById(sqlServerId)
     }
 
-    fun listSqlServersBySubscriptionId(subscriptionId: String, force: Boolean = false): List<ResourceEx<SqlServer>> {
+    fun listSqlServersBySubscriptionId(subscriptionId: String, force: Boolean = false): List<SqlServer> {
         if (!force && subscriptionIdToSqlServersMap.containsKey(subscriptionId)) {
             val sqlServers = subscriptionIdToSqlServersMap[subscriptionId]
             if (sqlServers != null) return sqlServers
@@ -75,24 +76,27 @@ object AzureSqlServerMvpModel {
         if (!force && subscriptionIdToSqlServersMap.containsKey(subscriptionId)) {
             val sqlServers = subscriptionIdToSqlServersMap[subscriptionId]
             if (sqlServers != null) {
-                return sqlServers.find { it.resource.name() == name }?.resource
+                return sqlServers.find { it.name() == name }
             }
         }
 
-        return listSqlServersBySubscriptionId(subscriptionId, true).find { it.resource.name() == name }?.resource
+        return listSqlServersBySubscriptionId(subscriptionId, true).find { it.name() == name }
     }
 
     fun listSqlServers(force: Boolean = false): List<ResourceEx<SqlServer>> {
         if (!force && subscriptionIdToSqlServersMap.isNotEmpty())
-            return subscriptionIdToSqlServersMap.flatMap { it.value }
+            return subscriptionIdToSqlServersMap.flatMap { idToList ->
+                idToList.value.map { sqlServer -> ResourceEx(sqlServer, idToList.key) }
+            }
 
         val sqlServers = ArrayList<ResourceEx<SqlServer>>()
         val subscriptions = AzureMvpModel.getInstance().selectedSubscriptions
 
         for (subscription in subscriptions) {
-            val servers = listSqlServersBySubscriptionId(subscription.subscriptionId(), force)
-            subscriptionIdToSqlServersMap[subscription.subscriptionId()] = servers
-            sqlServers.addAll(servers)
+            val subscriptionId = subscription.subscriptionId()
+            val servers = listSqlServersBySubscriptionId(subscriptionId, force)
+            subscriptionIdToSqlServersMap[subscriptionId] = servers
+            sqlServers.addAll(servers.map { sqlServer -> ResourceEx(sqlServer, subscriptionId) })
         }
 
         return sqlServers
@@ -133,15 +137,27 @@ object AzureSqlServerMvpModel {
         return azure.sqlServers().checkNameAvailability(name).isAvailable
     }
 
-    private fun getSqlServersBySubscriptionId(subscriptionId: String): List<ResourceEx<SqlServer>> {
-        val sqlServerList = ArrayList<ResourceEx<SqlServer>>()
+    fun clearSubscriptionIdToSqlServersMap() {
+        subscriptionIdToSqlServersMap.clear()
+    }
+
+    @TestOnly
+    fun setSubscriptionIdToSqlServersMap(map: Map<String, List<SqlServer>>) {
+        subscriptionIdToSqlServersMap.clear()
+        map.forEach { (subscriptionId, sqlServerList) ->
+            subscriptionIdToSqlServersMap[subscriptionId] = sqlServerList
+        }
+    }
+
+    private fun getSqlServersBySubscriptionId(subscriptionId: String): List<SqlServer> {
+        val sqlServerList = ArrayList<SqlServer>()
 
         try {
             val azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId)
             val sqlServers = azure.sqlServers().list()
 
             for (sqlServer in sqlServers) {
-                sqlServerList.add(ResourceEx(sqlServer, subscriptionId))
+                sqlServerList.add(sqlServer)
             }
         } catch (e: IOException) {
             logger.warning(e.toString())

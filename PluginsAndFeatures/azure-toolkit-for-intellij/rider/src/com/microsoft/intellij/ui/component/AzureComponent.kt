@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -35,7 +35,7 @@ interface AzureComponent {
 
     fun initButtonsGroup(buttonActionMap: Map<JRadioButton, ActionListener>) {
         val buttonGroup = ButtonGroup()
-        buttonActionMap.forEach { button, action ->
+        buttonActionMap.forEach { (button, action) ->
             buttonGroup.add(button)
             button.addActionListener(action)
         }

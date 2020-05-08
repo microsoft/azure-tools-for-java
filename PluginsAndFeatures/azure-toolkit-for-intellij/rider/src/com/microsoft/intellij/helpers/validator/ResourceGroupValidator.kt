@@ -44,8 +44,8 @@ object ResourceGroupValidator : AzureResourceValidator() {
 
         return status
                 .merge(checkEndsWithPeriod(name))
-                .merge(checkNameMinLength(name))
-                .merge(checkNameMaxLength(name))
+                .merge(checkResourceGroupNameMinLength(name))
+                .merge(checkResourceGroupNameMaxLength(name))
                 .merge(checkInvalidCharacters(name))
     }
 
@@ -59,7 +59,7 @@ object ResourceGroupValidator : AzureResourceValidator() {
             validateResourceNameRegex(
                     name = name,
                     nameRegex = resourceGroupRegex,
-                    nameInvalidCharsMessage = "${message("run_config.publish.validation.resource_group.name_invalid")}: %s")
+                    nameInvalidCharsMessage = "${message("run_config.publish.validation.resource_group.name_invalid")} %s.")
 
     fun checkEndsWithPeriod(name: String): ValidationResult {
         val status = ValidationResult()
@@ -69,19 +69,19 @@ object ResourceGroupValidator : AzureResourceValidator() {
         return status
     }
 
-    fun checkNameMaxLength(name: String): ValidationResult =
+    fun checkResourceGroupNameMaxLength(name: String): ValidationResult =
             checkNameMaxLength(
                     name = name,
                     maxLength = RESOURCE_GROUP_NAME_MAX_LENGTH,
                     errorMessage = nameLengthError)
 
-    fun checkNameMinLength(name: String): ValidationResult =
+    fun checkResourceGroupNameMinLength(name: String): ValidationResult =
             checkNameMinLength(
                     name = name,
                     minLength = RESOURCE_GROUP_NAME_MIN_LENGTH,
                     errorMessage = nameLengthError)
 
-    fun checkResourceGroupExistence(subscriptionId: String, name: String): ValidationResult {
+    fun checkResourceGroupNameExists(subscriptionId: String, name: String): ValidationResult {
         val status = ValidationResult()
         if (isResourceGroupExist(subscriptionId, name))
             status.setInvalid(message("run_config.publish.validation.resource_group.name_already_exists", name))

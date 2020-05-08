@@ -62,14 +62,16 @@ object SqlDatabaseValidator : AzureResourceValidator() {
             validateResourceNameRegex(
                     name = name,
                     nameRegex = sqlDatabaseNameRegex,
-                    nameInvalidCharsMessage = "${message("run_config.publish.validation.sql_db.name_invalid")}: %s")
+                    nameInvalidCharsMessage = "${message("run_config.publish.validation.sql_db.name_invalid")} %s.")
 
-    fun checkSqlDatabaseExistence(subscriptionId: String,
-                                  databaseName: String,
-                                  sqlServerName: String): ValidationResult {
+    fun checkSqlDatabaseExists(subscriptionId: String,
+                               databaseName: String,
+                               sqlServerName: String): ValidationResult {
         val status = ValidationResult()
 
-        val sqlServer = AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, sqlServerName) ?: return status
+        val sqlServer = AzureSqlServerMvpModel.getSqlServerByName(
+                subscriptionId = subscriptionId, name = sqlServerName, force = false) ?: return status
+
         if (isSqlDatabaseNameExist(databaseName, sqlServer))
             status.setInvalid(message("run_config.publish.validation.sql_db.name_already_exists", databaseName))
 
@@ -86,5 +88,6 @@ object SqlDatabaseValidator : AzureResourceValidator() {
             checkValueIsSet(collation, message("run_config.publish.validation.sql_db.collation_not_defined"))
 
     private fun isSqlDatabaseNameExist(name: String, sqlServer: SqlServer) =
-            AzureSqlDatabaseMvpModel.listSqlDatabasesBySqlServer(sqlServer).any { it.name() == name }
+            AzureSqlDatabaseMvpModel.listSqlDatabasesBySqlServer(sqlServer = sqlServer, force = false)
+                    .any { sqlDatabase -> sqlDatabase.name() == name }
 }

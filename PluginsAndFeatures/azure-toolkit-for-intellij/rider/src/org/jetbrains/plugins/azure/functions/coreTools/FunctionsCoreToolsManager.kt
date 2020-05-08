@@ -37,7 +37,6 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.ZipUtil
 import com.intellij.util.text.VersionComparatorUtil
-import com.jetbrains.rd.util.string.printToString
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.GitHubReleasesService
 import java.io.File
@@ -45,6 +44,7 @@ import java.io.IOException
 import java.net.UnknownHostException
 
 object FunctionsCoreToolsManager {
+
     private const val CORE_TOOLS_DIR = "azure-functions-coretools"
     private const val API_URL_RELEASES = "repos/Azure/azure-functions-core-tools/releases?per_page=100"
 
@@ -171,7 +171,6 @@ object FunctionsCoreToolsManager {
         if (!coreToolsExecutable.exists())
             return null
 
-
         try {
             if (!coreToolsExecutable.canExecute()) {
                 logger.warn("Updating executable flag for $coreToolsPath...")
@@ -216,17 +215,18 @@ object FunctionsCoreToolsManager {
     }
 
     fun determineLatestRemote(allowPrerelease: Boolean): AzureFunctionsCoreToolsRemoteAsset? {
-        val expectedFileNamePrefix = "Azure.Functions.Cli." + if (SystemInfo.isWindows && SystemInfo.is64Bit) {
-            "win-x64"
-        } else if (SystemInfo.isWindows) {
-            "win-x86"
-        } else if (SystemInfo.isMac) {
-            "osx-x64"
-        } else if (SystemInfo.isLinux) {
-            "linux-x64"
-        } else {
-            "unknown"
-        }
+        val expectedFileNamePrefix = "Azure.Functions.Cli." +
+                if (SystemInfo.isWindows && SystemInfo.is64Bit) {
+                    "win-x64"
+                } else if (SystemInfo.isWindows) {
+                    "win-x86"
+                } else if (SystemInfo.isMac) {
+                    "osx-x64"
+                } else if (SystemInfo.isLinux) {
+                    "linux-x64"
+                } else {
+                    "unknown"
+                }
 
         try {
             val gitHubReleases = GitHubReleasesService.createInstance()
@@ -253,9 +253,9 @@ object FunctionsCoreToolsManager {
                 }
             }
         } catch (e: UnknownHostException) {
-            logger.warn("Could not determine latest remote: " + e.printToString())
+            logger.warn("Could not determine latest remote: $e")
         } catch (e: IOException) {
-            logger.warn("Could not determine latest remote: " + e.printToString())
+            logger.warn("Could not determine latest remote: $e")
         }
 
         return null

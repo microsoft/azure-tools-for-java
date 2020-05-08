@@ -55,7 +55,7 @@ object WebAppValidator : AppValidator(message("service.app_service.web_app")) {
                 .flatMap { it.value }
                 .firstOrNull { it.id() == webAppId } ?: return status
 
-        if (AzureDotNetWebAppMvpModel.checkConnectionStringNameExists(webApp, name))
+        if (AzureDotNetWebAppMvpModel.checkConnectionStringNameExists(webApp = webApp, connectionStringName = name, force = false))
             status.setInvalid(message("run_config.publish.validation.connection_string.name_already_exists", name))
 
         return status

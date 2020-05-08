@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -90,32 +90,34 @@ class AzureFunctionsHostConfigurationViewModel(
     }
 
     private fun handleChangeTfmSelection() {
-        projectSelector.project.valueOrNull?.projectOutputs?.singleOrNull { it.tfm == tfmSelector.string.valueOrNull }?.let {
-            val shouldChangeExePath = trackProjectExePath
-            val shouldChangeWorkingDirectory = trackProjectWorkingDirectory
-            if (shouldChangeExePath) {
-                exePathSelector.path.set(it.exePath)
-            }
-            if (shouldChangeWorkingDirectory) {
-                workingDirectorySelector.path.set(it.workingDirectory)
-            }
-            exePathSelector.defaultValue.set(it.exePath)
+        projectSelector.project.valueOrNull?.projectOutputs
+                ?.singleOrNull { it.tfm == tfmSelector.string.valueOrNull }
+                ?.let { projectOutput ->
+                    val shouldChangeExePath = trackProjectExePath
+                    val shouldChangeWorkingDirectory = trackProjectWorkingDirectory
+                    if (shouldChangeExePath) {
+                        exePathSelector.path.set(projectOutput.exePath)
+                    }
+                    if (shouldChangeWorkingDirectory) {
+                        workingDirectorySelector.path.set(projectOutput.workingDirectory)
+                    }
+                    exePathSelector.defaultValue.set(projectOutput.exePath)
 
-            // Ensure we have the defaults if needed...
-            val patchedProjectOutput = AzureFunctionsRunnableProjectUtil.patchProjectOutput(it)
+                    // Ensure we have the defaults if needed...
+                    val patchedProjectOutput = AzureFunctionsRunnableProjectUtil.patchProjectOutput(projectOutput)
 
-            // ...but keep the previous value if it's not empty
-            if (programParametersEditor.parametersString.value.isNullOrEmpty()) {
-                if (patchedProjectOutput.defaultArguments.isNotEmpty()) {
-                    programParametersEditor.parametersString.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
-                    programParametersEditor.defaultValue.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
-                } else {
-                    programParametersEditor.parametersString.set("")
-                    programParametersEditor.defaultValue.set("")
+                    // ...but keep the previous value if it's not empty
+                    if (programParametersEditor.parametersString.value.isNullOrEmpty()) {
+                        if (patchedProjectOutput.defaultArguments.isNotEmpty()) {
+                            programParametersEditor.parametersString.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
+                            programParametersEditor.defaultValue.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
+                        } else {
+                            programParametersEditor.parametersString.set("")
+                            programParametersEditor.defaultValue.set("")
+                        }
+                    }
+                    workingDirectorySelector.defaultValue.set(patchedProjectOutput.workingDirectory)
                 }
-            }
-            workingDirectorySelector.defaultValue.set(patchedProjectOutput.workingDirectory)
-        }
     }
 
     private fun recalculateTrackProjectOutput() {

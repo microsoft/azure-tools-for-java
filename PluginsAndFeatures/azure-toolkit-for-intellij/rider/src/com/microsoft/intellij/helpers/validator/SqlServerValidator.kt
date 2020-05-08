@@ -44,7 +44,6 @@ object SqlServerValidator : AzureResourceValidator() {
             message("run_config.publish.validation.sql_server.admin_password_length_error",
                     ADMIN_PASSWORD_MIN_LENGTH, ADMIN_PASSWORD_MAX_LENGTH)
 
-    private val adminLoginWhitespaceRegex = "\\s".toRegex()
     private val adminLoginStartWithDigitNonWordRegex = "^(\\d|\\W)".toRegex()
     private val adminLoginRegex = "[^\\p{L}0-9]".toRegex()
     private val sqlServerRestrictedAdminLoginNames =
@@ -63,8 +62,8 @@ object SqlServerValidator : AzureResourceValidator() {
 
         return status
                 .merge(checkStartsEndsWithDash(name))
-                .merge(checkNameMinLength(name))
-                .merge(checkNameMaxLength(name))
+                .merge(checkSqlServerNameMinLength(name))
+                .merge(checkSqlServerNameMaxLength(name))
                 .merge(checkInvalidCharacters(name))
     }
 
@@ -81,7 +80,7 @@ object SqlServerValidator : AzureResourceValidator() {
             validateResourceNameRegex(
                     name = name,
                     nameRegex = sqlServerNameRegex,
-                    nameInvalidCharsMessage = "${message("run_config.publish.validation.sql_server.name_invalid")}: %s")
+                    nameInvalidCharsMessage = "${message("run_config.publish.validation.sql_server.name_invalid")} %s.")
 
     fun checkStartsEndsWithDash(name: String): ValidationResult {
         val status = ValidationResult()
@@ -91,13 +90,13 @@ object SqlServerValidator : AzureResourceValidator() {
         return status
     }
 
-    fun checkNameMinLength(name: String) =
+    fun checkSqlServerNameMinLength(name: String) =
             checkNameMinLength(
                     name = name,
                     minLength = SQL_SERVER_NAME_MIN_LENGTH,
                     errorMessage = nameLengthError)
 
-    fun checkNameMaxLength(name: String) =
+    fun checkSqlServerNameMaxLength(name: String) =
             checkNameMaxLength(
                     name = name,
                     maxLength = SQL_SERVER_NAME_MAX_LENGTH,
@@ -137,9 +136,6 @@ object SqlServerValidator : AzureResourceValidator() {
     fun checkLoginInvalidCharacters(username: String): ValidationResult {
         val status = ValidationResult()
 
-        if (username.contains(adminLoginWhitespaceRegex))
-            status.setInvalid(message("run_config.publish.validation.sql_server.admin_login_cannot_contain_whitespaces"))
-
         if (username.contains(adminLoginStartWithDigitNonWordRegex))
             status.setInvalid(message("run_config.publish.validation.sql_server.admin_login_cannot_begin_with_digit_nonword"))
 
@@ -147,7 +143,7 @@ object SqlServerValidator : AzureResourceValidator() {
                 validateResourceNameRegex(
                         name = username,
                         nameRegex = adminLoginRegex,
-                        nameInvalidCharsMessage = "${message("run_config.publish.validation.sql_server.admin_login_invalid")}: %s"))
+                        nameInvalidCharsMessage = "${message("run_config.publish.validation.sql_server.admin_login_invalid")} %s."))
     }
 
     /**

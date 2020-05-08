@@ -30,6 +30,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
+import org.jetbrains.annotations.TestOnly
 
 object AzureDotNetWebAppMvpModel {
 
@@ -63,8 +64,12 @@ object AzureDotNetWebAppMvpModel {
         listWebApps(true)
     }
 
-    fun cleanWebApps() {
+    fun clearSubscriptionToWebAppMap() {
         subscriptionIdToWebAppsMap.clear()
+    }
+
+    fun clearWebAppToConnectionStringsMap() {
+        webAppToConnectionStringsMap.clear()
     }
 
     private fun listWebAppsBySubscriptionId(subscriptionId: String, force: Boolean): List<ResourceEx<WebApp>> {
@@ -141,7 +146,7 @@ object AzureDotNetWebAppMvpModel {
     fun checkConnectionStringNameExists(webApp: WebApp, connectionStringName: String, force: Boolean = false): Boolean {
         if (!force) {
             if (!webAppToConnectionStringsMap.containsKey(webApp)) return false
-            return webAppToConnectionStringsMap[webApp]?.any { it.name() == connectionStringName } ?: false
+            return webAppToConnectionStringsMap.getValue(webApp).any { it.name() == connectionStringName }
         }
 
         val connectionStrings = getConnectionStrings(webApp, true)
@@ -165,6 +170,14 @@ object AzureDotNetWebAppMvpModel {
     }
 
     //endregion Check Existence
+
+    @TestOnly
+    fun setWebAppToConnectionStringsMap(map: Map<WebApp, List<ConnectionString>>) {
+        webAppToConnectionStringsMap.clear()
+        map.forEach { (webApp, connectionStringList) ->
+            webAppToConnectionStringsMap[webApp] = connectionStringList
+        }
+    }
 
     //region Private Methods and Operators
 

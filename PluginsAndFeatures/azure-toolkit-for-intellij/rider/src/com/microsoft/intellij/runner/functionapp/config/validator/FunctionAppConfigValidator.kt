@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.functionapp.config.validator
 
 import com.intellij.execution.configurations.RuntimeConfigurationError
-import com.microsoft.azure.management.appservice.FunctionApp
 import com.microsoft.intellij.helpers.validator.*
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import com.microsoft.intellij.runner.validator.ConfigurationValidator
@@ -40,7 +39,7 @@ object FunctionAppConfigValidator : ConfigurationValidator() {
 
             if (model.isCreatingResourceGroup) {
                 checkStatus(ResourceGroupValidator.validateResourceGroupName(model.resourceGroupName))
-                checkStatus(ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, model.resourceGroupName))
+                checkStatus(ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, model.resourceGroupName))
             } else {
                 checkStatus(ResourceGroupValidator.checkResourceGroupNameIsSet(model.resourceGroupName))
             }
@@ -60,7 +59,7 @@ object FunctionAppConfigValidator : ConfigurationValidator() {
                 checkStatus(StorageAccountValidator.checkStorageAccountIdIsSet(model.storageAccountId))
             }
         } else {
-            checkStatus(FunctionAppValidator.checkFunctionAppIdIsSet(model.appId))
+            checkStatus(FunctionAppValidator.checkAppIdIsSet(model.appId))
             checkStatus(SubscriptionValidator.validateSubscription(model.subscription))
         }
     }

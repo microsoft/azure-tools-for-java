@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -31,6 +31,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel
 import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.listSqlServers
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.refreshSubscriptionToSqlServerMap
+import org.jetbrains.annotations.TestOnly
 import java.io.IOException
 import java.lang.reflect.Modifier
 import java.util.*
@@ -152,5 +153,17 @@ object AzureSqlDatabaseMvpModel {
         }
 
         return databaseEditions
+    }
+
+    fun clearSqlServerToSqlDatabasesMap() {
+        sqlServerToSqlDatabasesMap.clear()
+    }
+
+    @TestOnly
+    fun setSqlServerToSqlDatabasesMap(map: Map<SqlServer, List<SqlDatabase>>) {
+        sqlServerToSqlDatabasesMap.clear()
+        map.forEach { (sqlServer, sqlDatabaseList) ->
+            sqlServerToSqlDatabasesMap[sqlServer] = sqlDatabaseList
+        }
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -38,6 +38,7 @@ import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.Functi
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import org.apache.commons.io.IOUtils
+import org.jetbrains.annotations.TestOnly
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -225,10 +226,6 @@ object AzureFunctionAppMvpModel {
         listAllFunctionApps(true)
     }
 
-    fun clearSubscriptionIdToFunctionMap() {
-        subscriptionIdToFunctionAppsMap.clear()
-    }
-
     fun listFunctionsForAppWithId(subscriptionId: String, functionAppId: String): List<Function> {
         val functionApp = getFunctionAppById(subscriptionId, functionAppId)
         return listFunctionsForAppWithId(functionApp)
@@ -312,6 +309,31 @@ object AzureFunctionAppMvpModel {
         }
         update.apply()
     }
+
+    fun clearSubscriptionIdToFunctionAppMap() {
+        subscriptionIdToFunctionAppsMap.clear()
+    }
+
+    fun clearAppToConnectionStringsMap() {
+        appToConnectionStringsMap.clear()
+    }
+
+    @TestOnly
+    fun setSubscriptionIdToFunctionAppsMap(map: Map<String, List<FunctionApp>>) {
+        subscriptionIdToFunctionAppsMap.clear()
+        map.forEach { (subscriptionId, functionAppList) ->
+            subscriptionIdToFunctionAppsMap[subscriptionId] = functionAppList
+        }
+    }
+
+    @TestOnly
+    fun setAppToConnectionStringsMap(map: Map<FunctionApp, List<ConnectionString>>) {
+        appToConnectionStringsMap.clear()
+        map.forEach { (functionApp, connectionStringList) ->
+            appToConnectionStringsMap[functionApp] = connectionStringList
+        }
+    }
+
 
     private fun createFunctionAppDefinition(subscriptionId: String, name: String) =
             AuthMethodManager.getInstance().getAzureClient(subscriptionId).appServices().functionApps().define(name)

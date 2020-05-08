@@ -1,6 +1,12 @@
 import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
 import org.apache.tools.ant.filters.ReplaceTokens
 
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
+
 dependencies {
     compile rootProject
 

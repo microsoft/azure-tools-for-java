@@ -1,15 +1,15 @@
 dependencies {
     compile rootProject
-    compile "org.java-websocket:Java-WebSocket:$webSocketVersion"
-    compile "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    compile "org.java-websocket:Java-WebSocket:$web_socket_version"
+    compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
-    implementation "com.cronutils:cron-utils:$cronUtilsVersion"
+    implementation "com.cronutils:cron-utils:$cron_utils_version"
 
     testCompile rootProject
 }
 
 if (!ext.has("BuildNumber"))
-    ext.BuildNumber = "3.35.0.9999-2020.2"
+    ext.BuildNumber = buildNumber
 
 version "$BuildNumber"
 logger.lifecycle("version=$version")
@@ -36,8 +36,4 @@ patchPluginXml {
 
 test {
     useTestNG()
-}
-
-publishPlugin {
-    channels publishChanel
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -39,7 +39,7 @@ object WebAppConfigValidator : ConfigurationValidator() {
 
             if (model.isCreatingResourceGroup) {
                 checkStatus(ResourceGroupValidator.validateResourceGroupName(model.resourceGroupName))
-                checkStatus(ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, model.resourceGroupName))
+                checkStatus(ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, model.resourceGroupName))
             } else {
                 checkStatus(ResourceGroupValidator.checkResourceGroupNameIsSet(model.resourceGroupName))
             }

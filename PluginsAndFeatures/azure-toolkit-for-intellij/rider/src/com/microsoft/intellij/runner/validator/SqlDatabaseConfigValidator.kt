@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -41,11 +41,11 @@ object SqlDatabaseConfigValidator : ConfigurationValidator() {
             val subscriptionId = model.subscription!!.subscriptionId()
 
             checkStatus(SqlDatabaseValidator.validateDatabaseName(model.databaseName))
-            checkStatus(SqlDatabaseValidator.checkSqlDatabaseExistence(subscriptionId, model.databaseName, model.sqlServerName))
+            checkStatus(SqlDatabaseValidator.checkSqlDatabaseExists(subscriptionId, model.databaseName, model.sqlServerName))
 
             if (model.isCreatingResourceGroup) {
                 checkStatus(ResourceGroupValidator.validateResourceGroupName(model.resourceGroupName))
-                checkStatus(ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, model.resourceGroupName))
+                checkStatus(ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, model.resourceGroupName))
             } else {
                 checkStatus(ResourceGroupValidator.checkResourceGroupNameIsSet(model.resourceGroupName))
             }
@@ -57,11 +57,11 @@ object SqlDatabaseConfigValidator : ConfigurationValidator() {
                 checkStatus(SqlServerValidator.validateAdminPassword(model.sqlServerAdminLogin, model.sqlServerAdminPassword))
                 checkStatus(SqlServerValidator.checkPasswordsMatch(model.sqlServerAdminPassword, model.sqlServerAdminPasswordConfirm))
             } else {
-                checkStatus(SqlServerValidator.checkPasswordIsSet(model.sqlServerAdminPassword))
                 checkStatus(SqlServerValidator.checkSqlServerIdIsSet(model.sqlServerId))
+                checkStatus(SqlServerValidator.checkPasswordIsSet(model.sqlServerAdminPassword))
             }
 
-            SqlDatabaseValidator.checkCollationIsSet(model.collation)
+            checkStatus(SqlDatabaseValidator.checkCollationIsSet(model.collation))
         } else {
             checkStatus(SqlDatabaseValidator.checkDatabaseIdIsSet(model.databaseId))
             checkStatus(SqlServerValidator.checkAdminLoginIsSet(model.sqlServerAdminLogin))

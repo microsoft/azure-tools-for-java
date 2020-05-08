@@ -28,13 +28,13 @@ package com.microsoft.intellij.helpers.validator
  */
 open class AzureResourceValidator {
 
-    fun checkValueIsSet(value: String?, message: String) =
+    fun checkValueIsSet(value: String?, message: String): ValidationResult =
             checkValueIsSet(failCondition = { value.isNullOrEmpty() }, message = message)
 
-    fun checkValueIsSet(value: CharArray?, message: String) =
+    fun checkValueIsSet(value: CharArray?, message: String): ValidationResult =
             checkValueIsSet(failCondition = { value == null || value.isEmpty() }, message = message)
 
-    fun checkValueIsSet(value: Any?, message: String) =
+    fun checkValueIsSet(value: Any?, message: String): ValidationResult =
             checkValueIsSet(failCondition = { value == null }, message = message)
 
     fun validateResourceNameRegex(name: String,

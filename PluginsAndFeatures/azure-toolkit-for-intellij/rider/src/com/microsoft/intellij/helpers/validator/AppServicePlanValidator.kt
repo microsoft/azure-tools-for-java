@@ -76,10 +76,13 @@ object AppServicePlanValidator : AzureResourceValidator() {
 
     fun checkAppServicePlanNameExists(name: String): ValidationResult {
         val status = ValidationResult()
-        if (isAppServicePlanExist(name)) return status.setInvalid(message("run_config.publish.validation.service_plan.already_exists", name))
+        if (isAppServicePlanExist(name))
+            return status.setInvalid(message("run_config.publish.validation.service_plan.already_exists", name))
+
         return status
     }
 
+    // TODO: Check for subscriptions by ID
     private fun isAppServicePlanExist(appServicePlanName: String): Boolean {
         val resourceGroupToAppServicePlanMap = AzureModel.getInstance().resourceGroupToAppServicePlanMap ?: return false
 

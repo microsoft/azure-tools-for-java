@@ -73,7 +73,7 @@ class AzureResourceGroupSelector(private val lifetime: Lifetime) :
                     .toValidationInfo(cbResourceGroup))
 
         return listOfNotNull(ResourceGroupValidator.validateResourceGroupName(txtResourceGroupName.text)
-                .merge(ResourceGroupValidator.checkResourceGroupExistence(subscriptionId, txtResourceGroupName.text))
+                .merge(ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, txtResourceGroupName.text))
                 .toValidationInfo(txtResourceGroupName))
     }
 
@@ -82,7 +82,7 @@ class AzureResourceGroupSelector(private val lifetime: Lifetime) :
                 lifetime.createNested(),
                 textChangeValidationAction = {
                     if (!isEnabled || rdoUseExisting.isSelected) return@initValidationWithResult ValidationResult()
-                    ResourceGroupValidator.checkNameMaxLength(txtResourceGroupName.text)
+                    ResourceGroupValidator.checkResourceGroupNameMaxLength(txtResourceGroupName.text)
                             .merge(ResourceGroupValidator.checkInvalidCharacters(txtResourceGroupName.text)) },
                 focusLostValidationAction = {
                     if (!isEnabled || rdoUseExisting.isSelected) return@initValidationWithResult ValidationResult()

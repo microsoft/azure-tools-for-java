@@ -55,7 +55,7 @@ object StorageAccountValidator : AzureResourceValidator() {
     fun checkStorageAccountIsSet(storageAccount: StorageAccount?) =
             checkValueIsSet(storageAccount, message("run_config.publish.validation.storage_account.not_defined"))
 
-    fun checkStorageAccountIdIsSet(storageAccountId: String?) =
+    fun checkStorageAccountIdIsSet(storageAccountId: String) =
             checkValueIsSet(storageAccountId, message("run_config.publish.validation.storage_account.id_not_defined"))
 
     fun checkStorageAccountNameIsSet(name: String) =
@@ -77,9 +77,9 @@ object StorageAccountValidator : AzureResourceValidator() {
             validateResourceNameRegex(
                     name = name,
                     nameRegex = storageAccountNameRegex,
-                    nameInvalidCharsMessage = "${message("run_config.publish.validation.storage_account.name_invalid")}: %s")
+                    nameInvalidCharsMessage = "${message("run_config.publish.validation.storage_account.name_invalid")} %s.")
 
-    fun checkStorageAccountTypeIsSet(type: StorageAccountSkuType) =
+    fun checkStorageAccountTypeIsSet(type: StorageAccountSkuType?) =
             checkValueIsSet(type, message("run_config.publish.validation.storage_account.type_not_defined"))
 
     fun checkStorageAccountNameExists(subscriptionId: String, name: String): ValidationResult {

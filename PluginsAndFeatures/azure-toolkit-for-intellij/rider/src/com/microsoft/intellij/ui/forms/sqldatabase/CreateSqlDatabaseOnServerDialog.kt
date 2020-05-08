@@ -153,7 +153,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     override fun validateComponent(): List<ValidationInfo> {
         return listOfNotNull(
                 SqlDatabaseValidator.validateDatabaseName(pnlName.txtNameValue.text)
-                        .merge(SqlDatabaseValidator.checkSqlDatabaseExistence(
+                        .merge(SqlDatabaseValidator.checkSqlDatabaseExists(
                                 pnlSubscription.lastSelectedSubscriptionId,
                                 pnlName.txtNameValue.text,
                                 cbSqlServer.getSelectedValue()?.name() ?: ""))
@@ -187,7 +187,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
                 validationSqlDatabaseName(),
                 SubscriptionValidator.checkSubscriptionIsSet(subscription).toValidationInfo(pnlSubscription.cbSubscription),
                 ResourceGroupValidator.checkResourceGroupIsSet(resourceGroup).toValidationInfo(cbResourceGroup),
-                SqlDatabaseValidator.checkSqlDatabaseExistence(subscriptionId, sqlDatabaseName, sqlServer.name()).toValidationInfo(pnlName.txtNameValue),
+                SqlDatabaseValidator.checkSqlDatabaseExists(subscriptionId, sqlDatabaseName, sqlServer.name()).toValidationInfo(pnlName.txtNameValue),
                 SqlDatabaseValidator.checkEditionIsSet(cbDatabaseEdition.getSelectedValue()).toValidationInfo(cbDatabaseEdition),
                 SqlDatabaseValidator.checkComputeSizeIsSet(cbDatabaseComputeSize.getSelectedValue()).toValidationInfo(cbDatabaseComputeSize),
                 SqlDatabaseValidator.checkCollationIsSet(txtDatabaseCollation.text).toValidationInfo(txtDatabaseCollation))

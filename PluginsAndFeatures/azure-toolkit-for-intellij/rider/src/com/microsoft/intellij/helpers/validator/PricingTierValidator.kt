@@ -29,5 +29,4 @@ object PricingTierValidator: AzureResourceValidator() {
 
     fun checkPricingTierIsSet(pricingTier: PricingTier?) =
             checkValueIsSet(pricingTier, message("run_config.publish.validation.pricing_tire.not_defined"))
-
 }

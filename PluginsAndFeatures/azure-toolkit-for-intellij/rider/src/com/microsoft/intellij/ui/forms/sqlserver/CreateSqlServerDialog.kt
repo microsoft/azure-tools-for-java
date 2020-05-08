@@ -135,7 +135,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
         pnlName.txtNameValue.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { SqlServerValidator.checkNameMaxLength(pnlName.txtNameValue.text)
+                textChangeValidationAction = { SqlServerValidator.checkSqlServerNameMaxLength(pnlName.txtNameValue.text)
                         .merge(SqlServerValidator.checkInvalidCharacters(pnlName.txtNameValue.text)) },
                 focusLostValidationAction = { SqlServerValidator.checkStartsEndsWithDash(pnlName.txtNameValue.text) })
 

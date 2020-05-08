@@ -36,8 +36,9 @@ open class AppValidator(type: String) : AzureResourceValidator() {
     private val appNotDefined = message("run_config.publish.validation.app.not_defined", type)
     private val appNameNotDefined = message("run_config.publish.validation.app.name_not_defined", type)
     private val appNameCannotStartEndWithDash = message("run_config.publish.validation.app.name_cannot_start_end_with_dash", type)
-    private val appNameInvalid = "${message("run_config.publish.validation.app.name_invalid", type)} %s"
+    private val appNameInvalid = "${message("run_config.publish.validation.app.name_invalid", type)} %s."
     private val appNameLengthError = message("run_config.publish.validation.app.name_length_error", type, APP_NAME_MIN_LENGTH, APP_NAME_MAX_LENGTH)
+    private val connectionStringNotDefined = message("run_config.publish.validation.connection_string.not_defined")
 
     // Please see for details -
     // https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet?toc=%2Fen-us%2Fdotnet%2Fapi%2Fazure_ref_toc%2Ftoc.json&bc=%2Fen-us%2Fdotnet%2Fazure_breadcrumb%2Ftoc.json&view=azure-dotnet#create-an-app-service-plan
@@ -78,5 +79,5 @@ open class AppValidator(type: String) : AzureResourceValidator() {
             validateResourceNameRegex(name, appNameRegex, appNameInvalid)
 
     fun checkConnectionStringNameIsSet(name: String) =
-            checkValueIsSet(name, message("run_config.publish.validation.connection_string.not_defined"))
+            checkValueIsSet(name, connectionStringNotDefined)
 }
