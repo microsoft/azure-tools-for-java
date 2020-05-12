@@ -23,9 +23,9 @@
 package com.microsoft.intellij.helpers;
 
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.lang.Language;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -36,7 +36,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.intellij.plugins.markdown.ui.preview.MarkdownSplitEditor;
 import org.intellij.plugins.markdown.ui.split.SplitFileEditor;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,6 +47,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.microsoft.intellij.helpers.WhatsNewViewProvider.AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
 
 public enum WhatsNewHelper {
     INSTANCE;
@@ -55,7 +60,7 @@ public enum WhatsNewHelper {
     private static final String WHAT_S_NEW_CONTENT_PATH = "/whatsnew/whatsnew.md";
     private static final Key<String> WHAT_S_NEW_ID = new Key<>(WHAT_S_NEW_CONSTANT);
 
-    public synchronized void showWhatsNew(boolean force, Project project) throws IOException {
+    public synchronized void showWhatsNew(@NotNull boolean force, @NotNull Project project) throws IOException {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final VirtualFile existingWhatsNewFile = searchExistingFile(fileEditorManager);
         if (existingWhatsNewFile != null) {
@@ -76,7 +81,47 @@ public enum WhatsNewHelper {
     private void createAndShowWhatsNew(Project project, FileEditorManager fileEditorManager, String content)
             throws IOException {
         final LightVirtualFile virtualFile = new LightVirtualFile(AZURE_TOOLKIT_FOR_JAVA);
-        virtualFile.setLanguage(Language.findLanguageByID("Markdown"));
+        virtualFile.setFileType(new FileType() {
+            @NotNull
+            @Override
+            public String getName() {
+                return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
+            }
+
+            @NotNull
+            @Override
+            public String getDescription() {
+                return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
+            }
+
+            @NotNull
+            @Override
+            public String getDefaultExtension() {
+                return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
+            }
+
+            @Nullable
+            @Override
+            public Icon getIcon() {
+                return UIHelperImpl.loadIcon("azure.png");
+            }
+
+            @Override
+            public boolean isBinary() {
+                return false;
+            }
+
+            @Override
+            public boolean isReadOnly() {
+                return true;
+            }
+
+            @Nullable
+            @Override
+            public String getCharset(@NotNull final VirtualFile virtualFile, @NotNull final byte[] bytes) {
+                return "UTF-8";
+            }
+        });
         virtualFile.setBinaryContent(content.getBytes());
         virtualFile.putUserData(WHAT_S_NEW_ID, WHAT_S_NEW_CONSTANT);
         final FileEditor[] fileEditors = fileEditorManager.openFile(virtualFile, true, true);

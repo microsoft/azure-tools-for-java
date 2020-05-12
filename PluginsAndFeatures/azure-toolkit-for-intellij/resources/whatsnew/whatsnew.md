@@ -1,16 +1,16 @@
 <!-- Version: 3.36.0 -->
 ## What's new
 
-##### Open *gs-spring-boot* project
+### pen *gs-spring-boot* project
 1. [Download](https://github.com/spring-guides/gs-spring-boot/archive/master.zip) and unzip the source repository for this toturial, or clone it using Git: `git clone https://github.com/spring-guides/gs-spring-boot.git`
 2. cd into *gs-spring-boot\complete*
 3. Open IntelliJ Welcome dialog, select *Import Project* to open the import wizard, select *complete* folder, and then choose *Maven* as the importer, proceed with default settings by clicking *next* and then finish the import wizard, wait for some while why intellij are downloading dependencies.
 
-![image](https://user-images.githubusercontent.com/17075863/77132475-97a67d80-6a9a-11ea-99b1-1f1a46a13dac.png)
+![image](https://user-images.githubusercontent.com/12445236/64397308-6b458980-d093-11e9-8f75-32ad38b92def.gif)
 
 ![image](https://user-images.githubusercontent.com/17075863/77132650-392dcf00-6a9b-11ea-9213-2ece51a293f1.png)
 
-##### Deploy to Azure Spring Cloud
+### Deploy to Azure Spring Cloud
 
 1. Before deploy to Azure, you need to sign-in with your azure account, and choose the subscription as you want, see this *[tutorial](https://docs.microsoft.com/en-us/azure/java/intellij/azure-toolkit-for-intellij-create-hello-world-web-app)* to get more details of sign-in your account.
 
@@ -29,7 +29,7 @@
 ![image](https://user-images.githubusercontent.com/17075863/77133334-b35f5300-6a9d-11ea-9552-bfaae43193cd.png)
 
 
-#####  Open Azure Spring Cloud app in Azure Explorer
+###  Open Azure Spring Cloud app in Azure Explorer
 1. Click the Azure Explorer button at left side bar and sign-in to Azure
 
 ![image](https://user-images.githubusercontent.com/17075863/77133434-06d1a100-6a9e-11ea-91f9-123efb4258d9.png)
@@ -44,7 +44,7 @@
 
 ![image](https://user-images.githubusercontent.com/17075863/77133618-a5f69880-6a9e-11ea-9349-9b53c3c809e8.png)
 
-##### Navigate in browser
+### Navigate in browser
 1. In the property view, you will see 'N/A' in the URL, this is because by default the *public endpoint* is not enabled, you can assign endpoint which can be accessed publicly by clicking `Assign endpoint` button.
 
 ![image](https://user-images.githubusercontent.com/17075863/77134962-62069200-6aa4-11ea-9cbc-4ea7fe218ac0.png)
@@ -53,7 +53,7 @@
 
 ![image](https://user-images.githubusercontent.com/17075863/77135088-e0fbca80-6aa4-11ea-8255-9239a5e85e3b.png)
 
-#### Add Azure specific dependencies
+### Add Azure specific dependencies
 You need to read this [tutorial](https://docs.microsoft.com/en-us/azure/spring-cloud/spring-cloud-tutorial-prepare-app-deployment) for Azure specific dependencies, to simplify the steps to configure dependencies, this plugin provides the dependency management for you. Open the *pom.xml* file in Intellij, right click on the editor, select *Add Azure Spring Cloud dependency* menu, wait a few minutes for the dependency resolving, it will update your *pom.xml* file with the compatible latest version mentioned in this [tutorial](https://docs.microsoft.com/en-us/azure/spring-cloud/spring-cloud-tutorial-prepare-app-deployment) 
 
 ![image](https://user-images.githubusercontent.com/17075863/77284376-7d260b80-6d09-11ea-8cc0-769a3fdc169f.png)

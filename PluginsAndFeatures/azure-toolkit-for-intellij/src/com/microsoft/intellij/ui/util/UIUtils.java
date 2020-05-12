@@ -55,14 +55,14 @@ import java.util.List;
 
 public class UIUtils {
 
-    public static ActionListener createFileChooserListener(final TextFieldWithBrowseButton parent, final @Nullable Project project,
+    public static ActionListener createFileChooserListener(final TextFieldWithBrowseButton parent,
+                                                           final @Nullable Project project,
                                                            final FileChooserDescriptor descriptor) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-//                final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createAllButJarContentsDescriptor();
-//                DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
                 final VirtualFile[] files = FileChooser.chooseFiles(descriptor, parent, project,
-                        (project == null) && !parent.getText().isEmpty() ? LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
+                        (project == null) && !parent.getText().isEmpty() ?
+                        LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
                 if (files.length > 0) {
                     final StringBuilder builder = new StringBuilder();
                     for (VirtualFile file : files) {
@@ -77,12 +77,14 @@ public class UIUtils {
         };
     }
 
-    public static ActionListener createFileChooserListenerWithTextPath(final TextFieldWithBrowseButton parent, final @Nullable Project project,
+    public static ActionListener createFileChooserListenerWithTextPath(final TextFieldWithBrowseButton parent,
+                                                                       final @Nullable Project project,
                                                                        final FileChooserDescriptor descriptor) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 final VirtualFile[] files = FileChooser.chooseFiles(descriptor, parent, project,
-                        StringUtils.isNotEmpty(parent.getText()) ? LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
+                        StringUtils.isNotEmpty(parent.getText()) ?
+                        LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
                 if (files.length > 0) {
                     final StringBuilder builder = new StringBuilder();
                     for (final VirtualFile file : files) {
@@ -102,7 +104,8 @@ public class UIUtils {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 final VirtualFile[] files = FileChooser.chooseFiles(descriptor, parent, project,
-                        (project == null) && !parent.getText().isEmpty() ? LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
+                        (project == null) && !parent.getText().isEmpty() ?
+                        LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
                 if (files.length > 0) {
                     final StringBuilder builder = new StringBuilder();
                     for (VirtualFile file : files) {
@@ -117,12 +120,15 @@ public class UIUtils {
         };
     }
 
-    public static ActionListener createFileChooserListener(final TextFieldWithBrowseButton parent, final @Nullable Project project,
-                                                           final FileChooserDescriptor descriptor, final Consumer<List<VirtualFile>> consumer) {
+    public static ActionListener createFileChooserListener(final TextFieldWithBrowseButton parent,
+                                                           final @Nullable Project project,
+                                                           final FileChooserDescriptor descriptor,
+                                                           final Consumer<List<VirtualFile>> consumer) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 FileChooser.chooseFiles(descriptor, project, parent,
-                        parent.getText().isEmpty() ? null : LocalFileSystem.getInstance().findFileByPath(parent.getText()), consumer);
+                        parent.getText().isEmpty() ? null :
+                        LocalFileSystem.getInstance().findFileByPath(parent.getText()), consumer);
             }
         };
     }
@@ -227,6 +233,11 @@ public class UIUtils {
                         " Toolkit.getEventQueue()=" + Toolkit.getDefaultToolkit().getSystemEventQueue() +
                         "\nCurrent thread: " + describe(Thread.currentThread()),
                 new Attachment("threadDump.txt", ThreadDumper.dumpThreadsToString()));
+    }
+
+    // Refers https://stackoverflow.com/questions/3607858/convert-a-rgb-color-value-to-a-hexadecimal-string
+    public static String convertRGB2Hex(@NotNull Color color) {
+        return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
     // copy from IntelliJ ApplicationImpl
