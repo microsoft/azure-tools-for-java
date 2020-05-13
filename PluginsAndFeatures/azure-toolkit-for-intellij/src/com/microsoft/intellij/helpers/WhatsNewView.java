@@ -37,6 +37,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import java.awt.*;
 import java.io.IOException;
 
@@ -47,15 +49,20 @@ public class WhatsNewView extends BaseEditor {
 
     public WhatsNewView(Project project, VirtualFile virtualFile) {
         pane.setBackground(contentPanel.getBackground());
+        pane.setEditorKit(new HTMLEditorKit());
         pane.setMargin(new Insets(0, 50, 0, 50));
+        pane.addHyperlinkListener(new BrowserHyperlinkListener());
         try {
             final String content = IOUtils.readInputStreamToString(virtualFile.getInputStream());
             final String markDownHTML = MarkdownUtil.INSTANCE.generateMarkdownHtml(virtualFile, content, project);
             pane.setText(markDownHTML);
             final Color foreground = EditorColorsManager.getInstance().getGlobalScheme().getDefaultForeground();
-            final String cssRule = String.format("body { color: %s; } ", UIUtils.convertRGB2Hex(foreground));
-            ((HTMLDocument) this.pane.getDocument()).getStyleSheet().addRule(cssRule);
-            pane.addHyperlinkListener(new BrowserHyperlinkListener());
+            final StyleSheet styleSheet = ((HTMLDocument) this.pane.getDocument()).getStyleSheet();
+            styleSheet.addRule("h1 { margin: 12px; font-size: 24px; }");
+            styleSheet.addRule("h2 { margin: 10px; font-size: 18px; }");
+            styleSheet.addRule("code { font-size: 14px; }");
+            styleSheet.addRule(String.format("body { color: %s; font-size: 14px;} ",
+                                             UIUtils.convertRGB2Hex(foreground)));
         } catch (IOException e) {
             final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
             fileEditorManager.closeFile(virtualFile);
