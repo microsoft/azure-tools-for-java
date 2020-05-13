@@ -15,7 +15,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="7f570" class="javax.swing.JEditorPane" binding="editPane">
+          <component id="1191c" class="javax.swing.JEditorPane" binding="pane">
             <constraints/>
             <properties>
               <contentType value="text/html"/>

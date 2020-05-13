@@ -43,17 +43,19 @@ import java.io.IOException;
 public class WhatsNewView extends BaseEditor {
     public static final String FAILED_TO_LOAD_WHATS_NEW_DOCUMENT = "Failed to load whats new document";
     private JPanel contentPanel;
-    private JEditorPane editPane;
+    private JEditorPane pane;
 
     public WhatsNewView(Project project, VirtualFile virtualFile) {
+        pane.setBackground(contentPanel.getBackground());
+        pane.setMargin(new Insets(0, 50, 0, 50));
         try {
             final String content = IOUtils.readInputStreamToString(virtualFile.getInputStream());
             final String markDownHTML = MarkdownUtil.INSTANCE.generateMarkdownHtml(virtualFile, content, project);
-            editPane.setText(markDownHTML);
+            pane.setText(markDownHTML);
             final Color foreground = EditorColorsManager.getInstance().getGlobalScheme().getDefaultForeground();
-            final String cssColorRule = String.format("body { color: #%s; } ", UIUtils.convertRGB2Hex(foreground));
-            ((HTMLDocument) this.editPane.getDocument()).getStyleSheet().addRule(cssColorRule);
-            editPane.addHyperlinkListener(new BrowserHyperlinkListener());
+            final String cssRule = String.format("body { color: %s; } ", UIUtils.convertRGB2Hex(foreground));
+            ((HTMLDocument) this.pane.getDocument()).getStyleSheet().addRule(cssRule);
+            pane.addHyperlinkListener(new BrowserHyperlinkListener());
         } catch (IOException e) {
             final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
             fileEditorManager.closeFile(virtualFile);
