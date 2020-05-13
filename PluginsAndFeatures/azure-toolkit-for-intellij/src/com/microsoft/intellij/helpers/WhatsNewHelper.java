@@ -23,7 +23,6 @@
 package com.microsoft.intellij.helpers;
 
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
@@ -34,8 +33,6 @@ import com.microsoft.azure.hdinsight.common.StreamUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.intellij.plugins.markdown.ui.preview.MarkdownSplitEditor;
-import org.intellij.plugins.markdown.ui.split.SplitFileEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +56,7 @@ public enum WhatsNewHelper {
     private static final String WHAT_S_NEW_CONSTANT = "WHAT_S_NEW";
     private static final String WHAT_S_NEW_CONTENT_PATH = "/whatsnew/whatsnew.md";
     private static final Key<String> WHAT_S_NEW_ID = new Key<>(WHAT_S_NEW_CONSTANT);
+    private static final FileType WHATS_NEW_FILE_TYPE = new AzureToolkitWhatsNewType();
 
     public synchronized void showWhatsNew(@NotNull boolean force, @NotNull Project project) throws IOException {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
@@ -78,60 +76,12 @@ public enum WhatsNewHelper {
         }
     }
 
-    private void createAndShowWhatsNew(Project project, FileEditorManager fileEditorManager, String content)
-            throws IOException {
+    private void createAndShowWhatsNew(Project project, FileEditorManager fileEditorManager, String content) {
         final LightVirtualFile virtualFile = new LightVirtualFile(AZURE_TOOLKIT_FOR_JAVA);
-        virtualFile.setFileType(new FileType() {
-            @NotNull
-            @Override
-            public String getName() {
-                return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
-            }
-
-            @NotNull
-            @Override
-            public String getDescription() {
-                return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
-            }
-
-            @NotNull
-            @Override
-            public String getDefaultExtension() {
-                return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
-            }
-
-            @Nullable
-            @Override
-            public Icon getIcon() {
-                return UIHelperImpl.loadIcon("azure.png");
-            }
-
-            @Override
-            public boolean isBinary() {
-                return false;
-            }
-
-            @Override
-            public boolean isReadOnly() {
-                return true;
-            }
-
-            @Nullable
-            @Override
-            public String getCharset(@NotNull final VirtualFile virtualFile, @NotNull final byte[] bytes) {
-                return "UTF-8";
-            }
-        });
-        virtualFile.setBinaryContent(content.getBytes());
+        virtualFile.setFileType(WHATS_NEW_FILE_TYPE);
+        virtualFile.setContent(null, content, true);
         virtualFile.putUserData(WHAT_S_NEW_ID, WHAT_S_NEW_CONSTANT);
-        final FileEditor[] fileEditors = fileEditorManager.openFile(virtualFile, true, true);
-        for (FileEditor fileEditor : fileEditors) {
-            if (fileEditor instanceof MarkdownSplitEditor) {
-                // Switch to markdown preview panel
-                ((MarkdownSplitEditor) fileEditor).triggerLayoutChange(SplitFileEditor.SplitEditorLayout.SECOND,
-                                                                       true);
-            }
-        }
+        fileEditorManager.openFile(virtualFile, true, true);
     }
 
     private String getWhatsNewContent() throws IOException {
@@ -165,6 +115,48 @@ public enum WhatsNewHelper {
             String versionLine = scanner.nextLine();
             final Matcher matcher = Pattern.compile(VERSION_PATTERN).matcher(versionLine);
             return matcher.matches() ? new DefaultArtifactVersion(matcher.group(1)) : null;
+        }
+    }
+
+    static class AzureToolkitWhatsNewType implements FileType {
+        @NotNull
+        @Override
+        public String getName() {
+            return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
+        }
+
+        @NotNull
+        @Override
+        public String getDescription() {
+            return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
+        }
+
+        @NotNull
+        @Override
+        public String getDefaultExtension() {
+            return AZURE_TOOLKIT_WHATS_NEW_VIEW_TYPE;
+        }
+
+        @Nullable
+        @Override
+        public Icon getIcon() {
+            return UIHelperImpl.loadIcon("azure.png");
+        }
+
+        @Override
+        public boolean isBinary() {
+            return false;
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
+
+        @Nullable
+        @Override
+        public String getCharset(@NotNull final VirtualFile virtualFile, @NotNull final byte[] bytes) {
+            return "UTF-8";
         }
     }
 }
