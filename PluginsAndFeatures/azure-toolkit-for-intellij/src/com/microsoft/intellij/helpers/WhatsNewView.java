@@ -58,10 +58,10 @@ public class WhatsNewView extends BaseEditor {
             pane.setText(markDownHTML);
             final Color foreground = EditorColorsManager.getInstance().getGlobalScheme().getDefaultForeground();
             final StyleSheet styleSheet = ((HTMLDocument) this.pane.getDocument()).getStyleSheet();
-            styleSheet.addRule("h1 { margin: 12px; font-size: 24px; }");
-            styleSheet.addRule("h2 { margin: 10px; font-size: 18px; }");
-            styleSheet.addRule("code { font-size: 14px; }");
-            styleSheet.addRule(String.format("body { color: %s; font-size: 14px;} ",
+            styleSheet.addRule("h1 { margin: 12px; font-size: 16px; }");
+            styleSheet.addRule("h2 { margin: 10px; font-size: 14px; }");
+            styleSheet.addRule("code { font-size: 12px;}");
+            styleSheet.addRule(String.format("body { color: %s; font-size: 12px; font-family: arial; }",
                                              UIUtils.convertRGB2Hex(foreground)));
         } catch (IOException e) {
             final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
