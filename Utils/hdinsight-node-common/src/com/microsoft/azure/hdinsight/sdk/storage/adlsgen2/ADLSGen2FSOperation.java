@@ -86,7 +86,7 @@ public class ADLSGen2FSOperation {
         final List<Header> headers = ImmutableList.of(
                 new BasicHeader("x-ms-permissions", permission),
                 new BasicHeader("x-ms-umask", uMask));
-        return http.executeReqAndCheckStatus(req, 201, this.createDirReqParams, headers)
+        return http.executeReqAndCheckStatus(req, null, this.createDirReqParams, headers, 201)
                    .map(ignore -> true);
     }
 
@@ -95,7 +95,7 @@ public class ADLSGen2FSOperation {
         final List<Header> headers = ImmutableList.of(
                 new BasicHeader("x-ms-permissions", permission),
                 new BasicHeader("x-ms-umask", uMask));
-        return http.executeReqAndCheckStatus(req, 201, this.createFileReqParams, headers)
+        return http.executeReqAndCheckStatus(req, null, this.createFileReqParams, headers, 201)
                 .map(ignore -> true);
     }
 
@@ -127,10 +127,9 @@ public class ADLSGen2FSOperation {
             long len = entity.getContentLength();
 
             HttpPatch req = new HttpPatch(filePath);
-            req.setEntity(entity);
             http.setContentType("application/octet-stream");
 
-            return http.executeReqAndCheckStatus(req, 202, this.appendReqParams)
+            return http.executeReqAndCheckStatus(req, entity, this.appendReqParams, null, 202)
                     .map(ignore -> len);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(new IllegalArgumentException("Can not find the aritifact"));
@@ -144,7 +143,7 @@ public class ADLSGen2FSOperation {
         List<NameValuePair> flushReqParams = this.flushReqParamsBuilder.setPosition(flushLen).build();
         http.setContentType("application/json");
 
-        return http.executeReqAndCheckStatus(req, 200, flushReqParams)
+        return http.executeReqAndCheckStatus(req, null, flushReqParams, null, 200)
                 .map(ignore -> true);
     }
 }
