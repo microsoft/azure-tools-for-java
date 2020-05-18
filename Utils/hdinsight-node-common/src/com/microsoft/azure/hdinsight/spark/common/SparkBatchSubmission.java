@@ -51,7 +51,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -64,11 +63,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class SparkBatchSubmission implements ILogger {
     SparkBatchSubmission() {
@@ -139,21 +134,20 @@ public class SparkBatchSubmission implements ILogger {
         return sslSocketFactory;
     }
 
-    @NotNull
-    public CloseableHttpClient getHttpClient(boolean disableRedirect) throws IOException {
-        HttpClientBuilder clientBuilder = HttpClients.custom()
-                .useSystemProperties()
-                .setSSLSocketFactory(getSSLSocketFactory())
-                .setDefaultCredentialsProvider(credentialsProvider);
-
-        return disableRedirect
-                ? clientBuilder.disableRedirectHandling().build()
-                : clientBuilder.build();
+    public CloseableHttpClient getHttpClientWithoutCredentialAndRedirect() {
+        return HttpClients.custom()
+                          .useSystemProperties()
+                          .setSSLSocketFactory(getSSLSocketFactory())
+                          .disableRedirectHandling()
+                          .build();
     }
 
-    @NotNull
     public CloseableHttpClient getHttpClient() throws IOException {
-        return getHttpClient(false);
+        return HttpClients.custom()
+                          .useSystemProperties()
+                          .setSSLSocketFactory(getSSLSocketFactory())
+                          .setDefaultCredentialsProvider(credentialsProvider)
+                          .build();
     }
 
 
@@ -240,7 +234,7 @@ public class SparkBatchSubmission implements ILogger {
     public HttpResponse negotiateAuthMethodWithResp(String connectUrl) throws IOException{
         List<Header> additionHeader = new ArrayList<>();
         additionHeader.add(new BasicHeader("User-Agent", "Mozilla/5"));
-        return getHttpResponseViaGet(connectUrl, getHttpClient(true), additionHeader);
+        return getHttpResponseViaGet(connectUrl, getHttpClientWithoutCredentialAndRedirect(), additionHeader);
     }
 
     public HttpResponse getHttpResponseViaGet(String connectUrl, CloseableHttpClient httpclient, List<Header> additionHeaders) throws IOException {

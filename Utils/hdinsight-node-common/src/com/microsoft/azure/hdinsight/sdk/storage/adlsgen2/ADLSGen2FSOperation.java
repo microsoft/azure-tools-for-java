@@ -22,17 +22,20 @@
 
 package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.api.GetRemoteFilesResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.message.BasicHeader;
 import rx.Observable;
 
 import java.io.File;
@@ -78,15 +81,21 @@ public class ADLSGen2FSOperation {
                 .setAction("flush");
     }
 
-    public Observable<Boolean> createDir(String dirpath) {
+    public Observable<Boolean> createDir(String dirpath, String permission, String uMask) {
         HttpPut req = new HttpPut(dirpath);
-        return http.executeReqAndCheckStatus(req, 201, this.createDirReqParams)
-                .map(ignore -> true);
+        final List<Header> headers = ImmutableList.of(
+                new BasicHeader("x-ms-permissions", permission),
+                new BasicHeader("x-ms-umask", uMask));
+        return http.executeReqAndCheckStatus(req, 201, this.createDirReqParams, headers)
+                   .map(ignore -> true);
     }
 
-    public Observable<Boolean> createFile(String filePath) {
+    public Observable<Boolean> createFile(String filePath, String permission, String uMask) {
         HttpPut req = new HttpPut(filePath);
-        return http.executeReqAndCheckStatus(req, 201, this.createFileReqParams)
+        final List<Header> headers = ImmutableList.of(
+                new BasicHeader("x-ms-permissions", permission),
+                new BasicHeader("x-ms-umask", uMask));
+        return http.executeReqAndCheckStatus(req, 201, this.createFileReqParams, headers)
                 .map(ignore -> true);
     }
 

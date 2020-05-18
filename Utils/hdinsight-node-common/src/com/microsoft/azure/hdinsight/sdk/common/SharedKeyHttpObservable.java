@@ -31,14 +31,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.HeaderGroup;
 import rx.Observable;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,8 +62,15 @@ public class SharedKeyHttpObservable extends HttpObservable {
         }
     }
 
-    public SharedKeyHttpObservable setAuthorization(@NotNull HttpRequestBase req, List<NameValuePair> pairs) {
-        String key = cred.generateSharedKey(req, getDefaultHeaderGroup(), pairs);
+    public SharedKeyHttpObservable setAuthorization(HttpRequestBase req,
+                                                    List<NameValuePair> pairs,
+                                                    @Nullable List<Header> addOrReplaceHeaders) {
+        HeaderGroup headerGroup = new HeaderGroup();
+        headerGroup.setHeaders(getDefaultHeaderGroup().getAllHeaders());
+        if (addOrReplaceHeaders != null) {
+            addOrReplaceHeaders.stream().forEach(header -> headerGroup.addHeader(header));
+        }
+        String key = cred.generateSharedKey(req, headerGroup, pairs);
         getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", key));
         return this;
     }
@@ -100,13 +105,13 @@ public class SharedKeyHttpObservable extends HttpObservable {
             // so remove this header after key generation otherwise header already exists exp happens
             // MUST follow the order when content length is needed to generate key
             setContentLength(String.valueOf(entityFromRequest.getContentLength()));
-            this.setAuthorization(httpRequest, parameters);
+            this.setAuthorization(httpRequest, parameters, addOrReplaceHeaders);
             this.removeContentLength();
         } else {
-            this.setAuthorization(httpRequest, parameters);
+            this.setAuthorization(httpRequest, parameters, addOrReplaceHeaders);
         }
 
-        return super.request(httpRequest, entityFromRequest, parameters, null);
+        return super.request(httpRequest, entityFromRequest, parameters, addOrReplaceHeaders);
     }
 
     @Override

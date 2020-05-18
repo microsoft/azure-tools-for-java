@@ -457,17 +457,25 @@ public class HttpObservable implements ILogger {
                 .map(resp -> this.convertJsonResponseToObject(resp, clazz));
     }
 
-    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req, int validStatueCode, List<NameValuePair> pairs) {
-        return request(req, req.getEntity(), pairs, Arrays.asList(getDefaultHeaderGroup().getAllHeaders()))
-                .doOnNext(
-                        resp -> {
-                            int statusCode = resp.getStatusLine().getStatusCode();
-                            if (statusCode != validStatueCode) {
-                                Exceptions.propagate(new UnknownServiceException(
-                                        String.format("Exceute request with unexpected code %s and resp %s", statusCode, resp)
-                                ));
-                            }
-                        }
-                );
+    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req,
+                                                                      int validStatueCode,
+                                                                      List<NameValuePair> pairs,
+                                                                      List<Header> addOrReplaceHeaders) {
+        return request(req, req.getEntity(), pairs, addOrReplaceHeaders)
+                .doOnNext(resp -> {
+                    int statusCode = resp.getStatusLine().getStatusCode();
+                    if (statusCode != validStatueCode) {
+                        Exceptions.propagate(new UnknownServiceException(
+                                String.format("Exceute request with unexpected code %s and resp %s", statusCode, resp)
+                        ));
+                    }
+                });
+    }
+
+
+    public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpEntityEnclosingRequestBase req,
+                                                                      int validStatueCode,
+                                                                      List<NameValuePair> pairs) {
+        return executeReqAndCheckStatus(req, validStatueCode, pairs, null);
     }
 }
