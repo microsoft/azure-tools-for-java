@@ -22,25 +22,19 @@
 
 package com.microsoft.intellij.runner.webapp.config
 
-import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.microsoft.icons.CommonIcons
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import javax.swing.Icon
 
-class RiderWebAppConfigurationType : ConfigurationType {
+class RiderWebAppConfigurationType : ConfigurationTypeBase(
+        id = "AzureDotNetWebAppPublish",
+        displayName = message("run_config.publish.web_app.type_name"),
+        description = message("run_config.publish.web_app.type_description"),
+        icon = CommonIcons.PublishAzure
+) {
+    val factory: RiderWebAppConfigurationFactory = RiderWebAppConfigurationFactory(this)
 
-    companion object {
-        private const val RUN_CONFIG_TYPE_ID = "AzureDotNetWebAppPublish"
+    init {
+        addFactory(factory)
     }
-
-    override fun getId() = RUN_CONFIG_TYPE_ID
-
-    override fun getDisplayName() = message("run_config.publish.web_app.type_name")
-
-    override fun getConfigurationTypeDescription() = message("run_config.publish.web_app.type_description")
-
-    override fun getIcon(): Icon = CommonIcons.PublishAzure
-
-    override fun getConfigurationFactories() =
-            arrayOf(RiderWebAppConfigurationFactory(this))
 }

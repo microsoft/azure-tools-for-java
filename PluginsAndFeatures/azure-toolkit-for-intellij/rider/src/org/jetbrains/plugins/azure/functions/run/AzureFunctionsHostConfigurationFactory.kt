@@ -45,7 +45,7 @@ class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
 
     override fun getId(): String = FACTORY_ID
 
-    override fun getName(): String = message("run_config.run.form.function_app.factory_name")
+    override fun getName(): String = message("run_config.run_function_app.form.function_app.factory_name")
 
     override fun configureBeforeRunTaskDefaults(providerID: Key<out BeforeRunTask<BeforeRunTask<*>>>?,
                                                 task: BeforeRunTask<out BeforeRunTask<*>>?) {

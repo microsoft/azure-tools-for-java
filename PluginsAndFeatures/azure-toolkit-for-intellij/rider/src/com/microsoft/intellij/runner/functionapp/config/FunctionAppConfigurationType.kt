@@ -22,24 +22,19 @@
 
 package com.microsoft.intellij.runner.functionapp.config
 
-import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.microsoft.icons.CommonIcons
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import javax.swing.Icon
 
-class FunctionAppConfigurationType : ConfigurationType {
+class FunctionAppConfigurationType : ConfigurationTypeBase(
+        id = "AzureFunctionAppPublish",
+        displayName = message("run_config.publish.function_app.type_name"),
+        description = message("run_config.publish.function_app.type_description"),
+        icon = CommonIcons.AzureFunctions.FunctionAppConfigurationType
+) {
+    val factory: FunctionAppConfigurationFactory = FunctionAppConfigurationFactory(this)
 
-    companion object {
-        private const val RUN_CONFIG_TYPE_ID = "AzureFunctionAppPublish"
+    init {
+        addFactory(factory)
     }
-
-    override fun getId(): String = RUN_CONFIG_TYPE_ID
-
-    override fun getDisplayName() = message("run_config.publish.function_app.type_name")
-
-    override fun getConfigurationTypeDescription() = message("run_config.publish.function_app.type_description")
-
-    override fun getIcon(): Icon = CommonIcons.AzureFunctions.FunctionAppConfigurationType
-
-    override fun getConfigurationFactories() = arrayOf(FunctionAppConfigurationFactory(this))
 }

@@ -42,8 +42,8 @@ import org.jetbrains.plugins.azure.RiderAzureBundle.message
 
 class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
         id = "AzureFunctionsHost",
-        displayName = message("run_config.run.form.function_app.type_name"),
-        description = message("run_config.run.form.function_app.type_description"),
+        displayName = message("run_config.run_function_app.form.function_app.type_name"),
+        description = message("run_config.run_function_app.form.function_app.type_description"),
         icon = CommonIcons.AzureFunctions.FunctionAppRunConfiguration
 ), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
 
@@ -54,7 +54,7 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
                 kind == RunnableProjectKind.AzureFunctions
     }
 
-    private val factory: AzureFunctionsHostConfigurationFactory = AzureFunctionsHostConfigurationFactory(this)
+    val factory: AzureFunctionsHostConfigurationFactory = AzureFunctionsHostConfigurationFactory(this)
 
     init {
         addFactory(factory)
@@ -75,7 +75,7 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
 
                 val defaultSettings =
                         runManager.createConfiguration(
-                                name = message("run_config.run.form.function_app.type_default_name"),
+                                name = message("run_config.run_function_app.form.function_app.type_default_name"),
                                 factory = factory
                         )
 

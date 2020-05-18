@@ -49,9 +49,9 @@ class BuildFunctionsProjectBeforeRunTaskProvider : BeforeRunTaskProvider<BuildFu
 
     override fun getId(): Key<BuildFunctionsProjectBeforeRunTask>? = providerId
 
-    override fun getName(): String? = message("run_config.run.form.function_app.before_run_tasks.build_function_project_name")
+    override fun getName(): String? = message("run_config.run_function_app.form.function_app.before_run_tasks.build_function_project_name")
 
-    override fun getDescription(task: BuildFunctionsProjectBeforeRunTask?): String? = message("run_config.run.form.function_app.before_run_tasks.build_function_project_description")
+    override fun getDescription(task: BuildFunctionsProjectBeforeRunTask?): String? = message("run_config.run_function_app.form.function_app.before_run_tasks.build_function_project_description")
 
     override fun isConfigurable(): Boolean {
         return false

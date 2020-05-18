@@ -46,6 +46,7 @@ import com.jetbrains.rider.runtime.DotNetExecutable
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.util.idea.getComponent
 import org.jdom.Element
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import java.io.File
@@ -88,8 +89,6 @@ open class AzureFunctionsHostConfigurationParameters(
         private const val PROJECT_KIND = "PROJECT_KIND"
         private const val PROJECT_TFM = "PROJECT_TFM"
         private const val FUNCTION_NAMES = "FUNCTION_NAMES"
-        const val PROJECT_NOT_SPECIFIED = "Project is not specified"
-        const val SOLUTION_IS_LOADING = "Solution is loading, please wait for a few seconds"
 
         private val logger = Logger.getInstance(AzureFunctionsHostConfigurationParameters::class.java)
     }
@@ -98,7 +97,9 @@ open class AzureFunctionsHostConfigurationParameters(
         get() = project.getComponent<ProjectModelViewHost>().isUnloadedProject(projectFilePath)
 
     override fun toDotNetExecutable(): DotNetExecutable {
-        val runnableProject = tryGetRunnableProject() ?: throw CantRunException("Project is not specified")
+        val runnableProject = tryGetRunnableProject()
+                ?: throw CantRunException("Project is not specified")
+
         val projectOutput = tryGetProjectOutput(runnableProject)
 
         val coreToolsInfo: FunctionsCoreToolsInfo? = FunctionsCoreToolsInfoProvider.retrieve()
@@ -110,11 +111,16 @@ open class AzureFunctionsHostConfigurationParameters(
             workingDirectory
         }
 
-        val effectiveArguments = if (trackProjectArguments && programParameters.isEmpty() && projectOutput != null && projectOutput.defaultArguments.isNotEmpty()) {
-            ParametersListUtil.join(projectOutput.defaultArguments)
-        } else {
-            programParameters
-        }
+        val effectiveArguments =
+                if (trackProjectArguments &&
+                        programParameters.isEmpty() &&
+                        projectOutput != null &&
+                        projectOutput.defaultArguments.isNotEmpty()
+                ) {
+                    ParametersListUtil.join(projectOutput.defaultArguments)
+                } else {
+                    programParameters
+                }
 
         return DotNetExecutable(
                 exePath = coreToolsInfo!!.coreToolsExecutable,
@@ -145,7 +151,9 @@ open class AzureFunctionsHostConfigurationParameters(
     }
 
     private fun tryGetRunnableProject(): RunnableProject? {
-        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull ?: return null
+        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull
+        if (runnableProjects.isNullOrEmpty())
+            return null
 
         val applicableProjects = runnableProjects.filter {
             it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
@@ -169,28 +177,34 @@ open class AzureFunctionsHostConfigurationParameters(
     }
 
     override fun validate(riderDotNetActiveRuntimeHost: RiderDotNetActiveRuntimeHost) {
-        if (project.solution.isLoaded.valueOrNull != true) throw RuntimeConfigurationError(SOLUTION_IS_LOADING)
-        val runnableProject = tryGetRunnableProject() ?: throw RuntimeConfigurationError(PROJECT_NOT_SPECIFIED)
-        if (!runnableProject.problems.isNullOrEmpty()) {
+        if (project.solution.isLoaded.valueOrNull != true)
+            throw RuntimeConfigurationError(message("run_config.run_function_app.validation.solution_loading"))
+
+        val runnableProject = tryGetRunnableProject()
+                ?: throw RuntimeConfigurationError(message("run_config.run_function_app.validation.project_not_specified"))
+
+        if (!runnableProject.problems.isNullOrEmpty())
             throw RuntimeConfigurationError(runnableProject.problems)
-        }
+
         if (!trackProjectExePath) {
             val exeFile = File(exePath)
             if (!exeFile.exists() || !exeFile.isFile)
-                throw RuntimeConfigurationError("Invalid exe path: ${if (exePath.isNotEmpty()) exePath else "<empty>"}")
+                throw RuntimeConfigurationError(
+                        message("run_config.run_function_app.validation.invalid_exe_path", if (exePath.isNotEmpty()) exePath else "<${message("common.empty")}>"))
         }
+
         if (!trackProjectWorkingDirectory) {
             val workingDirectoryFile = File(workingDirectory)
             if (!workingDirectoryFile.exists() || !workingDirectoryFile.isDirectory)
-                throw RuntimeConfigurationError("Invalid working directory: ${if (workingDirectory.isNotEmpty()) workingDirectory else "<empty>"}")
+                throw RuntimeConfigurationError(
+                        message("run_config.run_function_app.validation.invalid_working_directory", if (workingDirectory.isNotEmpty()) workingDirectory else "<${message("common.empty")}>"))
         }
 
         FunctionsCoreToolsInfoProvider.retrieve()
-                ?: throw RuntimeConfigurationError("Path to Azure Functions core tools has not been configured. This can be done in the settings under Tools | Azure | Functions.")
+                ?: throw RuntimeConfigurationError(message("run_config.run_function_app.validation.missing_core_tools_path"))
 
         if (useMonoRuntime && riderDotNetActiveRuntimeHost.monoRuntime == null)
-            throw RuntimeConfigurationError("Mono runtime not found. " +
-                    "Please setup Mono path in settings (File | Settings | Build, Execution, Deployment | Toolset and Build)")
+            throw RuntimeConfigurationError(message("run_config.run_function_app.validation.missing_mono_runtime"))
     }
 
     override fun readExternal(element: Element) {
@@ -206,7 +220,7 @@ open class AzureFunctionsHostConfigurationParameters(
                 ?: ""
         trackProjectWorkingDirectory = trackProjectWorkingDirectoryString != "0"
         projectKind = RunnableProjectKind.valueOf(JDOMExternalizerUtil.readField(element, PROJECT_KIND)
-                ?: "None")
+                ?: message("common.none_capitalized"))
         projectTfm = JDOMExternalizerUtil.readField(element, PROJECT_TFM) ?: ""
         functionNames = JDOMExternalizerUtil.readField(element, FUNCTION_NAMES) ?: ""
         startBrowserParameters = DotNetStartBrowserParameters.readExternal(element)

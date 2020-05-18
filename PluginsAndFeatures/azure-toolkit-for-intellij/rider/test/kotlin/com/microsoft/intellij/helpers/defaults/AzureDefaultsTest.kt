@@ -23,7 +23,6 @@
 package com.microsoft.intellij.helpers.defaults
 
 import com.jetbrains.rider.test.asserts.shouldBe
-import com.jetbrains.rider.test.asserts.shouldBeFalse
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.sql.DatabaseEdition
