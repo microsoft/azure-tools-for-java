@@ -69,7 +69,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
     @Override
     public Observable<CloseableHttpResponse> request(final HttpRequestBase httpRequest,
                                                      @Nullable final HttpEntity entity,
-                                                     @Nullable final List<NameValuePair> parameters,
+                                                     final List<NameValuePair> parameters,
                                                      @Nullable final List<Header> addOrReplaceHeaders) {
         // We add necessary information to a temporary header group which is used to generate shared keys
         final HeaderGroup headerGroup = new HeaderGroup();

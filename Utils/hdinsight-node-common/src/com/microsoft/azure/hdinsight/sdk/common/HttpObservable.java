@@ -459,7 +459,7 @@ public class HttpObservable implements ILogger {
 
     public Observable<CloseableHttpResponse> executeReqAndCheckStatus(HttpRequestBase httpRequest,
                                                                       @Nullable HttpEntity entity,
-                                                                      @Nullable List<NameValuePair> parameters,
+                                                                      List<NameValuePair> parameters,
                                                                       @Nullable List<Header> addOrReplaceHeaders,
                                                                       int validStatueCode) {
         return request(httpRequest, entity, parameters, addOrReplaceHeaders)

@@ -49,7 +49,7 @@ public final class SharedKeyCredential {
         this.accountKey = Base64.getDecoder().decode(accountKey);
     }
 
-    private String buildStringToSign(HttpRequestBase request, HeaderGroup httpHeaders, @Nullable List<NameValuePair> pairs) {
+    private String buildStringToSign(HttpRequestBase request, HeaderGroup httpHeaders, List<NameValuePair> pairs) {
         String contentLength = getStandardHeaderValue(httpHeaders, Constants.HeaderConstants.CONTENT_LENGTH);
         contentLength = contentLength.equals("0") ? Constants.EMPTY_STRING : contentLength;
 
@@ -90,7 +90,7 @@ public final class SharedKeyCredential {
         builder.append(element);
     }
 
-    private String getCanonicalizedResource(URI requestURL, @Nullable List<NameValuePair> pairs) {
+    private String getCanonicalizedResource(URI requestURL, List<NameValuePair> pairs) {
         // Resource path
         final StringBuilder canonicalizedResource = new StringBuilder("/");
         canonicalizedResource.append(this.accountName);
@@ -103,7 +103,7 @@ public final class SharedKeyCredential {
         }
 
         // check for no query params and return
-        if (pairs == null || pairs.size() == 0) {
+        if (pairs.size() == 0) {
             return canonicalizedResource.toString();
         }
 
@@ -157,7 +157,7 @@ public final class SharedKeyCredential {
         }
     }
 
-    public String generateSharedKey(HttpRequestBase request, HeaderGroup httpHeaders, @Nullable List<NameValuePair> pairs) {
+    public String generateSharedKey(HttpRequestBase request, HeaderGroup httpHeaders, List<NameValuePair> pairs) {
         try {
             String stringToSign = buildStringToSign(request, httpHeaders, pairs);
             String computedBase64Signature = computeHmac256(stringToSign);
