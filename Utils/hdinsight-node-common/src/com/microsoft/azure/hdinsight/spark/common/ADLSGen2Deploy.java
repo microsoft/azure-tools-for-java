@@ -72,7 +72,7 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
         final String filePath = String.format("%s/%s", dirPath, src.getName());
 
         final ADLSGen2FSOperation op = new ADLSGen2FSOperation(this.http);
-        return op.createDir(dirPath, "0755", "0000")
+        return op.createDir(dirPath, "0755")
                  .onErrorReturn(err -> {
                      if (err.getMessage() != null && (err.getMessage().contains(String.valueOf(HttpStatus.SC_FORBIDDEN))
                              || err.getMessage().contains(String.valueOf(HttpStatus.SC_NOT_FOUND)))) {
@@ -91,7 +91,7 @@ public class ADLSGen2Deploy implements Deployable, ILogger {
                      }
                  })
                  .doOnNext(ignore -> log().info(String.format("Create filesystem %s successfully.", dirPath)))
-                 .flatMap(ignore -> op.createFile(filePath, "0755", "0000"))
+                 .flatMap(ignore -> op.createFile(filePath, "0755"))
                  .flatMap(ignore -> op.uploadData(filePath, src))
                  .doOnNext(ignore -> log().info(String.format("Append data to file %s successfully.", filePath)))
                  .map(ignored -> AbfsUri.parse(filePath).getUri().toString());

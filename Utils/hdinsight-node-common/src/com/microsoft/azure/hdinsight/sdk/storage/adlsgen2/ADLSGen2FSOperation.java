@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.RemoteFile;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.storageaccounts.api.GetRemoteFilesResponse;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
@@ -45,6 +46,10 @@ import java.io.IOException;
 import java.util.List;
 
 public class ADLSGen2FSOperation {
+    public static final String DEFAULT_UMASK = "0000";
+    public static final String PERMISSIONS_HEADER = "x-ms-permissions";
+    public static final String UMASK_HEADER = "x-ms-umask";
+
     private HttpObservable http;
 
     @NotNull
@@ -81,20 +86,42 @@ public class ADLSGen2FSOperation {
                 .setAction("flush");
     }
 
-    public Observable<Boolean> createDir(String dirpath, String permission, String uMask) {
-        HttpPut req = new HttpPut(dirpath);
-        final List<Header> headers = ImmutableList.of(
-                new BasicHeader("x-ms-permissions", permission),
-                new BasicHeader("x-ms-umask", uMask));
+    public Observable<Boolean> createDir(String dirPath) {
+        return createDir(dirPath, null);
+    }
+
+    public Observable<Boolean> createDir(String dirPath, String permission) {
+        return createDir(dirPath, permission, DEFAULT_UMASK);
+    }
+
+    public Observable<Boolean> createDir(String dirPath, @Nullable String permission, @Nullable String uMask) {
+        HttpPut req = new HttpPut(dirPath);
+        // We will filter out these headers if OAuth is used as authorization method.
+        // Check class ADLSGen2OAuthHttpObservable for more details
+        final List<Header> headers = permission != null && uMask != null
+                                     ? ImmutableList.of(new BasicHeader(PERMISSIONS_HEADER, permission),
+                                                        new BasicHeader(UMASK_HEADER, uMask))
+                                     : null;
         return http.executeReqAndCheckStatus(req, null, this.createDirReqParams, headers, 201)
                    .map(ignore -> true);
     }
 
-    public Observable<Boolean> createFile(String filePath, String permission, String uMask) {
+    public Observable<Boolean> createFile(String filePath) {
+        return createFile(filePath, null);
+    }
+
+    public Observable<Boolean> createFile(String filePath, String permission) {
+        return createFile(filePath, permission, DEFAULT_UMASK);
+    }
+
+    public Observable<Boolean> createFile(String filePath, @Nullable String permission, @Nullable String uMask) {
         HttpPut req = new HttpPut(filePath);
-        final List<Header> headers = ImmutableList.of(
-                new BasicHeader("x-ms-permissions", permission),
-                new BasicHeader("x-ms-umask", uMask));
+        // We will filter out these headers if OAuth is used as authorization method.
+        // Check class ADLSGen2OAuthHttpObservable for more details
+        final List<Header> headers = permission != null && uMask != null
+                                     ? ImmutableList.of(new BasicHeader(PERMISSIONS_HEADER, permission),
+                                                        new BasicHeader(UMASK_HEADER, uMask))
+                                     : null;
         return http.executeReqAndCheckStatus(req, null, this.createFileReqParams, headers, 201)
                 .map(ignore -> true);
     }
