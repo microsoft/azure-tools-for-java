@@ -35,7 +35,7 @@ class SparkScalaLocalConsoleConfigurationType : ScalaConsoleConfigurationType() 
 
     override fun getDisplayName(): String = "Spark Local Console(Scala)"
 
-    override fun getConfigurationTypeDescription(): String = "Spark local console(Scala) run configurations"
+    override fun getConfigurationTypeDescription(): String = "Apache Spark local console(Scala) run configurations"
 
     override fun getId(): String = "SparkScalaLocalConsoleRunConfiguration"
 }

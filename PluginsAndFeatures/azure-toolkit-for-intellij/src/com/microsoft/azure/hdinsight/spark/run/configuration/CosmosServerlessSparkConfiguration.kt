@@ -22,7 +22,7 @@ class CosmosServerlessSparkConfiguration(
         return LivySparkRunConfigurationSettingsEditor(CosmosServerlessSparkConfigurable(project))
     }
 
-    override fun getSuggestedNamePrefix() : String = "[Spark on Cosmos Serverless]"
+    override fun getSuggestedNamePrefix() : String = "[Apache Spark on Cosmos Serverless]"
 
     override fun getErrorMessageClusterNull(): String = "The account should be selected as the target for Spark application submission"
 

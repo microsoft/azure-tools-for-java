@@ -110,7 +110,7 @@ public class ArcadiaWorkSpace implements ClusterContainer, Comparable<ArcadiaWor
         try {
             return fetchClusters().toBlocking().singleOrDefault(this);
         } catch (Exception ignored) {
-            log().warn("Got Exceptions when refreshing Synapse Spark pools. " + ExceptionUtils.getStackTrace(ignored));
+            log().warn("Got Exceptions when refreshing Apache Spark Pool for Azure Synapse. " + ExceptionUtils.getStackTrace(ignored));
             return this;
         }
     }

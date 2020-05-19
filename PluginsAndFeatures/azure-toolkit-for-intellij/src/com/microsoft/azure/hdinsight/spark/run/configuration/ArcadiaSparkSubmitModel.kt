@@ -39,5 +39,5 @@ class ArcadiaSparkSubmitModel(project: Project) : SparkSubmitModel(project) {
     @Attribute("spark_app_type")
     var sparkApplicationType: SparkApplicationType = SparkApplicationType.None
 
-    override fun getSparkClusterTypeDisplayName(): String = "Synapse Spark Pool"
+    override fun getSparkClusterTypeDisplayName(): String = "Apache Spark Pool for Azure Synapse"
 }

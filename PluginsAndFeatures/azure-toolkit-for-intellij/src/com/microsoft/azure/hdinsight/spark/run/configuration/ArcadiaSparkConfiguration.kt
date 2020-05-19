@@ -43,7 +43,7 @@ class ArcadiaSparkConfiguration (
     }
 
     override fun getSuggestedNamePrefix(): String {
-        return "[Spark on Synapse]"
+        return "[Apache Spark on Azure Synapse]"
     }
 
     override fun getErrorMessageClusterNull(): String {

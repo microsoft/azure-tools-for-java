@@ -64,7 +64,8 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     public Observable<String> awaitStarted() {
         // No submission log and driver log fetching supports
         return Observable.just("no_waiting")
-                         .doOnNext(state -> ctrlInfo("The Spark Batch job has been submitted to Synapse Spark pool"
+                         .doOnNext(state -> ctrlInfo("The Spark Batch job has been submitted to "
+                                                             + "Apache Spark Pool for Azure Synapse "
                                                              + getConnectUri().toString()
                                                              + " with the following parameters: "
                                                              + getSubmissionParameter().serializeToJson()));

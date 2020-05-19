@@ -482,7 +482,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
     }
 
     public String getSuggestedNamePrefix() {
-        return "[Spark on HDInsight]";
+        return "[Apache Spark on HDInsight]";
     }
 
     @Nullable

@@ -34,7 +34,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 public class ArcadiaSparkClusterRootModuleImpl extends HDInsightRootModule {
     private static final String SERVICE_MODULE_ID = ArcadiaSparkClusterRootModuleImpl.class.getName();
     private static final String ICON_PATH = CommonConst.ARCADIA_WORKSPACE_MODULE_ICON_PATH;
-    private static final String BASE_MODULE_NAME = "Apache Spark on Synapse";
+    private static final String BASE_MODULE_NAME = "Apache Spark on Azure Synapse";
 
     public ArcadiaSparkClusterRootModuleImpl(@NotNull Node parent) {
         super(SERVICE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH, true);

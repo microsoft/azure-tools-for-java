@@ -80,9 +80,9 @@ public class CosmosSparkADLAccountNode extends AzureRefreshableNode implements I
 
         addAction("Provision Spark Cluster", new CosmosSparkProvisionAction(
                 this, adlAccount, CosmosSparkClusterOps.getInstance().getProvisionAction()));
-        addAction("Submit Spark on Cosmos Serverless Job", new CosmosServerlessSparkSubmitAction(
+        addAction("Submit Apache Spark on Cosmos Serverless Job", new CosmosServerlessSparkSubmitAction(
                 this, adlAccount, CosmosSparkClusterOps.getInstance().getServerlessSubmitAction()));
-        addAction("View Spark on Cosmos Serverless Jobs", new CosmosServerlessSparkViewJobsAction(
+        addAction("View Apache Spark on Cosmos Serverless Jobs", new CosmosServerlessSparkViewJobsAction(
                 this, adlAccount, CosmosSparkClusterOps.getInstance().getViewServerlessJobsAction()));
     }
 

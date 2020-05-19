@@ -35,7 +35,8 @@ class SparkScalaLivyConsoleConfigurationType : ScalaConsoleConfigurationType() {
 
     override fun getDisplayName(): String = "Spark Livy Interactive Session Console(Scala)"
 
-    override fun getConfigurationTypeDescription(): String = "Spark Livy Interactive Session Console(Scala) run configurations"
+    override fun getConfigurationTypeDescription(): String = "Apache Spark Livy Interactive Session Console(Scala) " +
+            "run configurations"
 
     override fun getId(): String = "SparkScalaLivyConsoleRunConfiguration"
 }

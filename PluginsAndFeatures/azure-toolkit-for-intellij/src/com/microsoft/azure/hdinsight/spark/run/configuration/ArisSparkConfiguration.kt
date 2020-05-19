@@ -42,6 +42,6 @@ class ArisSparkConfiguration(
     }
 
     override fun getSuggestedNamePrefix(): String {
-        return "[Spark on SQL]"
+        return "[Apache Spark on SQL]"
     }
 }

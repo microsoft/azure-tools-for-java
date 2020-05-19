@@ -206,23 +206,27 @@
     </action>
 
     <action id="Actions.SubmitSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction" text="Submit Spark Application"
-            description="Submit Spark Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.SparkSubmitJobAction"
+            text="Submit Apache Spark Application"
+            description="Submit Apache Spark Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitLivySparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="Spark on HDInsight"
-            description="Submit Spark on HDInsight Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.LivySparkSelectAndSubmitAction" text="Apache Spark on HDInsight"
+            description="Submit Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction" text="Spark on Cosmos"
-            description="Submit Spark on Cosmos Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosSparkSelectAndSubmitAction"
+            text="Apache Spark on Cosmos"
+            description="Submit Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitCosmosServerlessSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Spark on Cosmos Serverless"
-            description="Submit Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.CosmosServerlessSparkSelectAndSubmitAction" text="Apache Spark on Cosmos Serverless"
+            description="Submit Apache Spark on Cosmos Serverless Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitArisSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction" text="Spark on SQL Server Big Data Cluster"
-            description="Submit Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.ArisSparkSelectAndSubmitAction"
+            text="Apache Spark on SQL Server Big Data Cluster"
+            description="Submit Apache Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
     <action id="Actions.SubmitArcadiaSparkApplicationAction"
-            class="com.microsoft.azure.hdinsight.spark.actions.ArcadiaSparkSelectAndSubmitAction" text="Spark on Synapse"
-            description="Submit Spark on Synapse Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.actions.ArcadiaSparkSelectAndSubmitAction"
+            text="Apache Spark on Azure Synapse"
+            description="Submit Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
 
     <action id="AzureToolkit.AzureSignIn" class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction" text="Azure Sign In..." />
     <action id="AzureToolkit.SelectSubscriptions" class="com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction" text="Select Subscriptions..."
@@ -276,17 +280,17 @@
       <keyboard-shortcut first-keystroke="ctrl shift alt F2" keymap="$default"/>
     </action>
     <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"
-            text="Run Spark Local Console(Scala)" description="Run Spark Local Console (Scala language)">
+            text="Run Apache Spark Local Console(Scala)" description="Run Apache Spark Local Console (Scala language)">
     </action>
     <action id="Spark.RunScalaLivyConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleActionDelegate"
-            text="Run Spark Livy Interactive Session Console(Scala)" description="Run Spark Livy Interactive Session Console (Scala language)">
+            text="Run Apache Spark Livy Interactive Session Console(Scala)" description="Run Apache Spark Livy Interactive Session Console (Scala language)">
     </action>
     <action id="SparkConsole.Execute" class="com.microsoft.azure.hdinsight.spark.console.SparkConsoleExecuteAction" text="Execute Spark Console Statement">
       <keyboard-shortcut first-keystroke="control ENTER" keymap="$default"/>
       <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift ENTER"/>
     </action>
     <action id="Spark.SendSelectionToConsole" class="com.microsoft.azure.hdinsight.spark.console.SparkSendSelectionToConsoleActionDelegate"
-            text="Send Selection To Spark Console" description="Send selection to Spark console">
+            text="Send Selection To Apache Spark Console" description="Send selection to Apache Spark console">
       <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
       <keyboard-shortcut first-keystroke="control shift S" keymap="$default"/>
       <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl shift S"/>
@@ -354,7 +358,7 @@
       <reference ref="Actions.WhatsNew"/>
     </group>
 
-    <group id="SparkConsoleGroup" text="Spark Console" description="Spark Console" popup="true">
+    <group id="SparkConsoleGroup" text="Apache Spark Console" description="Apache Spark Console" popup="true">
       <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
       <add-to-group group-id="ToolsMenu" anchor="last"/>
       <reference ref="Spark.RunScalaLocalConsole"/>
@@ -368,53 +372,58 @@
               class="com.microsoft.azure.hdinsight.spark.run.action.SelectNoneSparkTypeAction" text="None" >
       </action>
       <action id="Actions.SelectCosmosSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Spark on Cosmos" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosSparkTypeAction" text="Apache Spark on Cosmos" >
       </action>
       <action id="Actions.SelectCosmosServerlessSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Spark on Cosmos Serverless" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectCosmosServerlessSparkTypeAction" text="Apache Spark on Cosmos Serverless" >
       </action>
       <action id="Actions.SelectHDInsightSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Spark on HDInsight" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectHDInsightSparkTypeAction" text="Apache Spark on HDInsight" >
       </action>
       <action id="Actions.SelectArisSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction" text="Spark on SQL Server Big Data Cluster" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArisSparkTypeAction"
+              text="Apache Spark on SQL Server Big Data Cluster" >
       </action>
       <action id="Actions.SelectArcadiaSparkType"
-              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction" text="Spark on Synapse" >
+              class="com.microsoft.azure.hdinsight.spark.run.action.SelectArcadiaSparkTypeAction"
+              text="Apache Spark on Azure Synapse" >
       </action>
     </group>
 
-    <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Spark Application"/>
+    <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Apache Spark Application"/>
 
-    <action id="Actions.SparkRunLivyConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLivyConsoleActionGroups" text="Run Spark Console"/>
+    <action id="Actions.SparkRunLivyConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLivyConsoleActionGroups" text="Run Apache Spark Console"/>
 
-    <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Spark Local Console"/>
+    <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Apache Spark Local Console"/>
 
     <action id="Actions.RunArcadiaSparkConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLivyConsoleAction" text="Spark on Arcadia"
-            description="Start an interactive console for Spark on Arcadia Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLivyConsoleAction"
+            text="Apache Spark on Azure Synapse"
+            description="Start an interactive console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunLivySparkConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Spark on HDInsight"
-            description="Start an interactive console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Apache Spark on HDInsight"
+            description="Start an interactive console for Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunCosmosSparkConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Spark on Cosmos"
-            description="Start an interactive console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Apache Spark on Cosmos"
+            description="Start an interactive console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunArisSparkConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction" text="Spark on SQL Server Big Data Cluster"
-            description="Start an interactive console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction"
+            text="Apache Spark on SQL Server Big Data Cluster"
+            description="Start an interactive console for Apache Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
 
     <action id="Actions.RunArcadiaSparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction" text="Spark on Arcadia"
-            description="Start a Spark local console for Spark on Arcadia Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Azure Synapse"
+            description="Start a Apache Spark local console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunLivySparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Spark on HDInsight"
-            description="Start a Spark local console for Spark on HDInsight Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Apache Spark on HDInsight"
+            description="Start a Apache Spark local console for Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunCosmosSparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Spark on Cosmos"
-            description="Start a Spark local console for Spark on Cosmos Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Cosmos"
+            description="Start a Apache Spark local console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
     <action id="Actions.RunArisSparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction" text="Spark on SQL Server Big Data Cluster"
-            description="Start a Spark local console for Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction"
+            text="Apache Spark on SQL Server Big Data Cluster"
+            description="Start a Apache Spark local console for Apache Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
     <action id="page.new" class="com.microsoft.intellij.actions.CreateFunctionAction"
             text="Azure Function Class"
             description="Create New Azure Function Class">

@@ -63,7 +63,7 @@ class SparkSendSelectionToConsoleAction : AzureAnAction(), ILogger {
 
             setEnabled(true)
         } catch (ex: Exception) {
-            log().debug("Send to Spark Console action is Disabled", ex)
+            log().debug("Send to Apache Spark Console action is Disabled", ex)
         }
     }
 
@@ -96,7 +96,7 @@ class SparkSendSelectionToConsoleAction : AzureAnAction(), ILogger {
             outputStream.write("$text\n".toByteArray(UTF_8))
             outputStream.flush()
         } catch (ex: Exception) {
-            val errMsg = "Failed to send codes `$text` to Spark Console"
+            val errMsg = "Failed to send codes `$text` to Apache Spark Console"
             log().warn(errMsg, ex)
             EventUtil.logError(operation, ErrorType.systemError, IOException(errMsg, ex), null, null)
         }

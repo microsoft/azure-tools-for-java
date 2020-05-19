@@ -35,7 +35,7 @@ object CosmosSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark on Cosmos Run Configuration"
+        return "Apache Spark on Cosmos Run Configuration"
     }
 
     override fun getId(): String {

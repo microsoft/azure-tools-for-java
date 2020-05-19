@@ -70,7 +70,7 @@ public class LivySparkBatchJobRunConfigurationType implements ConfigurationType 
 
     @Override
     public String getConfigurationTypeDescription() {
-        return "Spark on HDInsight Run Configuration";
+        return "Apache Spark on HDInsight Run Configuration";
     }
 
     @Override

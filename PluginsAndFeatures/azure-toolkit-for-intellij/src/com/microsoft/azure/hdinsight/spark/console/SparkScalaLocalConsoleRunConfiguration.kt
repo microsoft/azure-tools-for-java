@@ -217,7 +217,7 @@ class SparkScalaLocalConsoleRunConfiguration(
             val newLibConf: NewLibraryConfiguration = JarRepositoryManager.resolveAndDownload(
                     project, libraryCoord, false, false, true, null, projectRepositories) ?: return@runInWriteAction
             val libraryType = newLibConf.libraryType
-            val library = LibraryTablesRegistrar.getInstance().getLibraryTable(project).createLibrary("Spark Console(auto-fix): $libraryCoord")
+            val library = LibraryTablesRegistrar.getInstance().getLibraryTable(project).createLibrary("Apache Spark Console(auto-fix): $libraryCoord")
 
             val editor = NewLibraryEditor(libraryType, newLibConf.properties)
             newLibConf.addRoots(editor)

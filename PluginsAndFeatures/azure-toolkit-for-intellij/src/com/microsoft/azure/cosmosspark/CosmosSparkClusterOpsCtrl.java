@@ -276,7 +276,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                     String errorHint = "Error loading Serverless jobs. ";
                     log().warn(errorHint + ExceptionUtils.getStackTrace(err));
                     // show warning message when view serverless jobs failed
-                    PluginUtil.displayWarningDialog("View Spark on Cosmos Serverless Jobs ", errorHint + err.getMessage());
+                    PluginUtil.displayWarningDialog("View Apache Spark on Cosmos Serverless Jobs ", errorHint + err.getMessage());
                 })
                 // retry should be allowed when error happened
                 .retry()

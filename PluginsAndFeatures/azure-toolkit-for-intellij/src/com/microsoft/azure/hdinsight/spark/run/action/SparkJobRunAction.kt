@@ -36,7 +36,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants
 class SparkJobRunAction
     : SparkRunConfigurationAction(
         "SparkJobRun",
-        "Submit Spark Application to remote cluster",
+        "Submit Apache Spark Application to remote cluster",
         StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobRunIcon_13x_Path)?: AllIcons.Actions.Upload) {
 
     override val runExecutor: Executor
