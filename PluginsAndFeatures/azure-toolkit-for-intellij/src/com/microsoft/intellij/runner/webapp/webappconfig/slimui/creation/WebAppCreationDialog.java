@@ -24,16 +24,18 @@ package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -43,7 +45,9 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -51,26 +55,18 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
 import java.util.function.Function;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
-public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpView {
+public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCreationMvpView {
 
     private static final String DIALOG_TITLE = "Create WebApp";
     private static final String NOT_APPLICABLE = "N/A";
-    private static final String WARNING_MESSAGE = "<html><font size=\"3\" color=\"red\">%s</font></html>";
 
     public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JRE8;
     public static final JdkModel DEFAULT_WINDOWS_JAVAVERSION = JdkModel.JAVA_8_NEWEST;
@@ -82,8 +78,6 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private WebAppCreationViewPresenter presenter = null;
 
     private JPanel contentPanel;
-    private JButton buttonOK;
-    private JButton buttonCancel;
     private JPanel pnlCreate;
     private JTextField txtWebAppName;
     private JComboBox cbSubscription;
@@ -111,23 +105,19 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
     private JLabel lblMessage;
     private JLabel lblRuntimeStack;
     private JComboBox cbRuntimeStack;
-    private JPanel lblPanelRoot;
 
     private WebAppConfiguration webAppConfiguration;
     private WebApp result = null;
 
-    public WebAppCreationDialog(WebAppConfiguration configuration) {
-        setContentPane(contentPanel);
+    public WebAppCreationDialog(Project project, WebAppConfiguration configuration) {
+        super(project, true);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
 
         this.setTitle(DIALOG_TITLE);
         this.webAppConfiguration = configuration;
         this.presenter = new WebAppCreationViewPresenter<>();
         this.presenter.onAttachView(this);
 
-        buttonOK.addActionListener(e -> onOK());
-        buttonCancel.addActionListener(e -> onCancel());
         cbSubscription.addActionListener(e -> selectSubscription());
         cbExistAppServicePlan.addActionListener(e -> selectAppServicePlan());
         cbJdkVersion.addItemListener((itemEvent) -> loadWebContainers());
@@ -200,15 +190,6 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
             }
         });
 
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
-
-        addValidationListener(contentPanel, e -> validateConfiguration());
         init();
     }
 
@@ -218,12 +199,12 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
 
     @Override
     public void fillSubscription(@NotNull List<Subscription> subscriptions) {
-        fillCombobox(this, cbSubscription, subscriptions, null);
+        fillCombobox(cbSubscription, subscriptions, null);
     }
 
     @Override
     public void fillResourceGroup(@NotNull List<ResourceGroup> resourceGroups) {
-        fillCombobox(this, cbExistResGrp, resourceGroups, null);
+        fillCombobox(cbExistResGrp, resourceGroups, null);
     }
 
     @Override
@@ -255,22 +236,22 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
 
     @Override
     public void fillPricingTier(@NotNull List<PricingTier> prices) {
-        fillCombobox(this, cbPricing, prices, DEFAULT_PRICINGTIER);
+        fillCombobox(cbPricing, prices, DEFAULT_PRICINGTIER);
     }
 
     @Override
     public void fillWebContainer(@NotNull List<WebAppUtils.WebContainerMod> webContainers) {
-        fillCombobox(this, cbWebContainer, webContainers, DEFAULT_WINDOWS_CONTAINER);
+        fillCombobox(cbWebContainer, webContainers, DEFAULT_WINDOWS_CONTAINER);
     }
 
     @Override
     public void fillJdkVersion(@NotNull List<JdkModel> jdks) {
-        fillCombobox(this, cbJdkVersion, jdks, DEFAULT_WINDOWS_JAVAVERSION);
+        fillCombobox(cbJdkVersion, jdks, DEFAULT_WINDOWS_JAVAVERSION);
     }
 
     @Override
     public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
-        fillCombobox(this, cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
+        fillCombobox(cbRuntimeStack, linuxRuntimes, DEFAULT_LINUX_RUNTIME);
     }
 
     private void loadRegionsBySku() {
@@ -281,51 +262,16 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         presenter.onLoadRegion(subscriptionId, (PricingTier) cbPricing.getSelectedItem());
     }
 
-    private void addValidationListener(Container parent, ActionListener actionListener) {
-        for (Component component : parent.getComponents()) {
-            if (component instanceof AbstractButton) {
-                ((AbstractButton) component).addActionListener(actionListener);
-            } else if (component instanceof JComboBox) {
-                ((JComboBox) component).addActionListener(actionListener);
-            } else if (component instanceof JTextField) {
-                ((JTextField) component).getDocument().addDocumentListener(new DocumentListener() {
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        validateConfiguration();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        validateConfiguration();
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                        validateConfiguration();
-                    }
-                });
-            } else if (component instanceof Container) {
-                addValidationListener((Container) component, actionListener);
-            }
-        }
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return contentPanel;
     }
 
-    private void toggleOS(boolean isWindows) {
-        lblJavaVersion.setVisible(isWindows);
-        cbJdkVersion.setVisible(isWindows);
-        lblWebContainer.setVisible(isWindows);
-        cbWebContainer.setVisible(isWindows);
-        lblRuntimeStack.setVisible(!isWindows);
-        cbRuntimeStack.setVisible(!isWindows);
-        // Filter App Service Plan
-        Subscription subscription = (Subscription) cbSubscription.getSelectedItem();
-        if (subscription != null) {
-            presenter.onLoadAppServicePlan(subscription.subscriptionId());
-        }
-        pack();
-    }
+    @Override
+    protected void init() {
+        super.init();
 
-    private void init() {
         final String projectName = webAppConfiguration.getProject().getName();
         final DateFormat df = new SimpleDateFormat("yyMMddHHmmss");
         final String date = df.format(new Date());
@@ -344,11 +290,81 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         presenter.onLoadLinuxRuntimes();
     }
 
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        updateConfiguration();
+        List<ValidationInfo> res = new ArrayList<>();
+        // Validate azure status
+        if (!AuthMethodManager.getInstance().isSignedIn()) {
+            res.add(new ValidationInfo("Please sign in with your Azure account.", cbSubscription));
+        }
+        try {
+            ValidationUtils.validateAppServiceName(webAppConfiguration.getSubscriptionId(),
+                                                   webAppConfiguration.getWebAppName());
+        } catch (IllegalArgumentException iae) {
+            res.add(new ValidationInfo(iae.getMessage(), txtWebAppName));
+        }
+        if (StringUtils.isEmpty(webAppConfiguration.getSubscriptionId())) {
+            res.add(new ValidationInfo("Please select subscription", cbSubscription));
+        }
+        if (StringUtils.isEmpty(webAppConfiguration.getResourceGroup())) {
+            JComponent component = webAppConfiguration.isCreatingResGrp() ? txtNewResGrp : cbExistResGrp;
+            res.add(new ValidationInfo("Please select resource group", component));
+        }
+        if (StringUtils.isEmpty(webAppConfiguration.getAppServicePlanName())) {
+            JComponent component =
+                    webAppConfiguration.isCreatingAppServicePlan() ? txtCreateAppServicePlan : cbExistAppServicePlan;
+            res.add(new ValidationInfo("Please select app service plan", component));
+        }
+        if (webAppConfiguration.isCreatingAppServicePlan()) {
+            if (StringUtils.isEmpty(webAppConfiguration.getPricing())) {
+                res.add(new ValidationInfo("Please select app service plan pricing tier", cbPricing));
+            }
+            if (StringUtils.isEmpty(webAppConfiguration.getRegion())) {
+                res.add(new ValidationInfo("Please select app service plan region", cbRegion));
+            }
+        }
+        if (webAppConfiguration.getOS() == OperatingSystem.LINUX) {
+            final RuntimeStack runtimeStack = webAppConfiguration.getLinuxRuntime();
+            if (StringUtils.isEmpty(runtimeStack.stack()) || StringUtils.isEmpty(runtimeStack.version())) {
+                res.add(new ValidationInfo("Please select Linux web container", cbRuntimeStack));
+            }
+        } else {
+            if (webAppConfiguration.getJdkVersion() == null) {
+                res.add(new ValidationInfo("Please select Java Version", cbJdkVersion));
+            }
+            if (StringUtils.isEmpty(webAppConfiguration.getWebContainer())) {
+                res.add(new ValidationInfo("Please select web container", cbWebContainer));
+            }
+        }
+        return res;
+    }
+
+    @Override
+    protected void doOKAction() {
+        createWebApp();
+    }
+
     private void selectSubscription() {
         Subscription subscription = (Subscription) cbSubscription.getSelectedItem();
         presenter.onLoadResourceGroups(subscription.subscriptionId());
         presenter.onLoadAppServicePlan(subscription.subscriptionId());
         presenter.onLoadRegion(subscription.subscriptionId(), getValueFromComboBox(cbPricing, (PricingTier p) -> p));
+    }
+
+    private void toggleOS(boolean isWindows) {
+        lblJavaVersion.setVisible(isWindows);
+        cbJdkVersion.setVisible(isWindows);
+        lblWebContainer.setVisible(isWindows);
+        cbWebContainer.setVisible(isWindows);
+        lblRuntimeStack.setVisible(!isWindows);
+        cbRuntimeStack.setVisible(!isWindows);
+        // Filter App Service Plan
+        Subscription subscription = (Subscription) cbSubscription.getSelectedItem();
+        if (subscription != null) {
+            presenter.onLoadAppServicePlan(subscription.subscriptionId());
+        }
+        pack();
     }
 
     private void toggleResourceGroup(boolean isCreateNew) {
@@ -378,13 +394,12 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         createWebApp();
     }
 
-    private static <T> void fillCombobox(Window window, JComboBox<T> comboBox, List<T> values, T defaultValue) {
+    private static <T> void fillCombobox(JComboBox<T> comboBox, List<T> values, T defaultValue) {
         comboBox.removeAllItems();
         values.forEach(value -> comboBox.addItem(value));
         if (defaultValue != null && values.contains(defaultValue)) {
             comboBox.setSelectedItem(defaultValue);
         }
-        window.pack();
     }
 
     private void updateConfiguration() {
@@ -427,22 +442,6 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
         webAppConfiguration.setCreatingNew(true);
     }
 
-    private void validateConfiguration() {
-        updateConfiguration();
-        try {
-            webAppConfiguration.validate();
-            lblMessage.setText("");
-            buttonOK.setEnabled(true);
-        } catch (ConfigurationException e) {
-            lblMessage.setText(String.format(WARNING_MESSAGE, e.getMessage()));
-            buttonOK.setEnabled(false);
-        }
-    }
-
-    private void onCancel() {
-        dispose();
-    }
-
     private void createWebApp() {
         updateConfiguration();
         ProgressManager.getInstance().run(new Task.Modal(null, "Creating New WebApp...", true) {
@@ -460,7 +459,7 @@ public class WebAppCreationDialog extends JDialog implements WebAppCreationMvpVi
                                 null));
                         }
                     });
-                    dispose();
+                    DefaultLoader.getIdeHelper().invokeLater(() -> WebAppCreationDialog.super.doOKAction());
                 }, (ex) -> {
                         DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
                                                               "Create WebApp Failed");

@@ -26,9 +26,13 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
+import java.awt.Component;
 import java.util.concurrent.Callable;
 
 public abstract class AzureNodeActionPromptListener extends AzureNodeActionListener {
+    private static final String PROMPT_TITLE = "Azure Explorer";
+    private static final String[] PROMPT_OPTIONS = new String[]{"Yes", "No"};
+
     private final String promptMessage;
     private boolean optionDialog;
 
@@ -43,13 +47,12 @@ public abstract class AzureNodeActionPromptListener extends AzureNodeActionListe
     @Override
     protected Callable<Boolean> beforeAsyncActionPerformed() {
         return () -> {
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> optionDialog = DefaultLoader.getUIHelper()
-                    .showConfirmation(this.azureNode.getTree().getParent(),
-                            promptMessage,
-                            "Azure Explorer",
-                            new String[]{"Yes", "No"},
-                            null));
-
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                final Component component = (azureNode == null || azureNode.getTree() == null) ? null : this.azureNode.getTree().getParent();
+                optionDialog = component == null ?
+                        DefaultLoader.getUIHelper().showConfirmation(promptMessage, PROMPT_TITLE, PROMPT_OPTIONS, null) :
+                        DefaultLoader.getUIHelper().showConfirmation(component, promptMessage, PROMPT_TITLE, PROMPT_OPTIONS, null);
+            });
             return optionDialog;
         };
     }

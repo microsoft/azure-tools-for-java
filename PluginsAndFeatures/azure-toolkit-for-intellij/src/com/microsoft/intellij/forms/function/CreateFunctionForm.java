@@ -272,7 +272,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     protected List<ValidationInfo> doValidateAll() {
         List<ValidationInfo> res = new ArrayList<>();
         validateProperties(res, "Package name", txtPackageName, ValidationUtils::isValidJavaPackageName);
-        validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidFunctionName);
+        validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidAppServiceName);
 
         final String trigger = (String) cbTriggerType.getSelectedItem();
         if (StringUtils.equals(trigger, EVENT_HUB_TRIGGER)) {

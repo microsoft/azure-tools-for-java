@@ -69,7 +69,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     private JPanel contentPanel;
     private JButton buttonOK;
     private JPanel pnlCreate;
-    private JTextField txtWebAppName;
+    private JTextField txtFunctionAppName;
     private JRadioButton rdoLinuxOS;
     private JRadioButton rdoWindowsOS;
     private JLabel lblOS;
@@ -138,7 +138,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         final String date = df.format(new Date());
         final String defaultWebAppName = String.format("%s-%s", projectName, date);
 
-        txtWebAppName.setText(defaultWebAppName);
+        txtFunctionAppName.setText(defaultWebAppName);
 
         rdoWindowsOS.setSelected(true);
         subscriptionPanel.loadSubscription();
@@ -149,7 +149,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     }
 
     private void applyToConfiguration() {
-        functionConfiguration.setAppName(txtWebAppName.getText());
+        functionConfiguration.setAppName(txtFunctionAppName.getText());
         functionConfiguration.setSubscription(subscriptionPanel.getSubscriptionId());
         // resource group
         functionConfiguration.setResourceGroup(resourceGroupPanel.getResourceGroupName());
@@ -189,10 +189,10 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
             res.add(new ValidationInfo("Please sign in with your Azure account.", subscriptionPanel.getComboComponent()));
         }
         try {
-            ValidationUtils.validateFunctionAppName(functionConfiguration.getSubscription(),
-                                                    functionConfiguration.getAppName());
+            ValidationUtils.validateAppServiceName(functionConfiguration.getSubscription(),
+                                                   functionConfiguration.getAppName());
         } catch (IllegalArgumentException iae) {
-            res.add(new ValidationInfo(iae.getMessage(), subscriptionPanel.getComboComponent()));
+            res.add(new ValidationInfo(iae.getMessage(), txtFunctionAppName));
         }
         if (StringUtils.isEmpty(functionConfiguration.getSubscription())) {
             res.add(new ValidationInfo("Please select subscription", subscriptionPanel.getComboComponent()));
@@ -232,11 +232,12 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
                     });
                     DefaultLoader.getIdeHelper().invokeLater(() -> FunctionCreationDialog.super.doOKAction());
                 }, (ex) -> {
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        PluginUtil.displayErrorDialog("Create Function App Failed", "Create Function Failed : " + ex.getMessage());
-                        sendTelemetry(false, ex.getMessage());
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            PluginUtil.displayErrorDialog("Create Function App Failed",
+                                                          "Create Function Failed : " + ex.getMessage());
+                            sendTelemetry(false, ex.getMessage());
+                        });
                     });
-                });
             }
         });
     }

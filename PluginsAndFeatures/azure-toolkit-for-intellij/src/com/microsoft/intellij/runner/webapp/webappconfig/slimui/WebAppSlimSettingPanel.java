@@ -55,7 +55,10 @@ import javax.swing.*;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -223,15 +226,15 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
             @Override
-            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+            public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
                 if (mavenProject != null) {
                     setIcon(MavenIcons.MavenProject);
                     setText(mavenProject.toString());
                 }
             }
         });
-        cbArtifact.addItemListener((itemEvent)->updateArtifactConfiguration());
-        cbMavenProject.addItemListener((itemEvent)->updateArtifactConfiguration());
+        cbArtifact.addItemListener((itemEvent) -> updateArtifactConfiguration());
+        cbMavenProject.addItemListener((itemEvent) -> updateArtifactConfiguration());
 
         JLabel labelForNewSlotName = new JLabel("Slot Name");
         labelForNewSlotName.setLabelFor(txtNewSlotName);
@@ -256,22 +259,28 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     @Override
     public synchronized void fillWebApps(List<ResourceEx<WebApp>> webAppLists) {
         cbxWebApp.removeAllItems();
-        webAppLists = webAppLists.stream()
+        List<ResourceEx<WebApp>> sortedWebAppLists = webAppLists
+                .stream()
                 .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
                 .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
                 .collect(Collectors.toList());
-        if (webAppLists.size() == 0) {
+        if (sortedWebAppLists.size() == 0) {
             lblCreateWebApp.setVisible(true);
             cbxWebApp.setVisible(false);
         } else {
             lblCreateWebApp.setVisible(false);
             cbxWebApp.setVisible(true);
             cbxWebApp.addItem(CREATE_NEW_WEBAPP);
-            webAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
-            // Find webapp which id equals to configuration, or use the first available one.
-            final ResourceEx<WebApp> selectWebApp = webAppLists.stream()
-                    .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(webAppConfiguration.getWebAppId()))
-                    .findFirst().orElse(webAppLists.get(0));
+            sortedWebAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
+            // Find webapp which id equals to selected web app(when cancel creation) or configuration
+            // Use the first one as fallback
+            final String targetId = selectedWebApp == null ? webAppConfiguration.getWebAppId() :
+                                    selectedWebApp.getResource().id();
+            final ResourceEx<WebApp> selectWebApp = sortedWebAppLists
+                    .stream()
+                    .filter(webAppResourceEx -> StringUtils.equals(webAppResourceEx.getResource().id(), targetId))
+                    .findFirst()
+                    .orElse(sortedWebAppLists.get(0));
             cbxWebApp.setSelectedItem(selectWebApp);
         }
         selectWebApp();
@@ -392,7 +401,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         } else if (Comparing.equal(CREATE_NEW_WEBAPP, value)) {
             // Create new web app
             cbxWebApp.setSelectedItem(null);
-            ApplicationManager.getApplication().invokeLater(()->createNewWebApp());
+            ApplicationManager.getApplication().invokeLater(() -> createNewWebApp());
         }
     }
 
@@ -408,27 +417,23 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     private void createNewWebApp() {
-        final WebAppCreationDialog dialog = new WebAppCreationDialog(this.webAppConfiguration);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this.getMainPanel());
-        dialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                super.windowClosed(e);
-                WebApp newWebApp = dialog.getCreatedWebApp();
-                if (newWebApp != null) {
-                    webAppConfiguration.setWebAppId(newWebApp.id());
-                    refreshWebApps(true);
-                } else {
-                    refreshWebApps(false);
-                }
+        final WebAppCreationDialog dialog = new WebAppCreationDialog(this.project, this.webAppConfiguration);
+        if (dialog.showAndGet()) {
+            final WebApp webApp = dialog.getCreatedWebApp();
+            if (webApp != null) {
+                webAppConfiguration.setWebAppId(webApp.id());
+                refreshWebApps(true);
+            } else {
+                // In case created failed
+                refreshWebApps(false);
             }
-        });
-        dialog.setVisible(true);
+        } else {
+            refreshWebApps(false);
+        }
     }
 
-    private void toggleSlotPanel(boolean isDeployToSlot) {
-        isDeployToSlot &= (selectedWebApp != null);
+    private void toggleSlotPanel(boolean slot) {
+        boolean isDeployToSlot = slot && (selectedWebApp != null);
         rbtNewSlot.setEnabled(isDeployToSlot);
         rbtExistingSlot.setEnabled(isDeployToSlot);
         lblSlotName.setEnabled(isDeployToSlot);
@@ -472,7 +477,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         private final JComboBox comboBox;
         private final int cellHeight;
-        private final String TEMPLATE_STRING = "<html><div>TEMPLATE</div><small>TEMPLATE</small></html>";
+        private static final String TEMPLATE_STRING = "<html><div>TEMPLATE</div><small>TEMPLATE</small></html>";
 
         public WebAppCombineBoxRender(JComboBox comboBox) {
             this.comboBox = comboBox;
@@ -482,7 +487,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         }
 
         @Override
-        public void customize(JList jList, Object value, int i, boolean b, boolean b1) {
+        public void customize(JList list, Object value, int i, boolean b, boolean b1) {
             if (value == null) {
                 return;
             } else if (value instanceof String) {
@@ -490,10 +495,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             } else {
                 final ResourceEx<WebApp> webApp = (ResourceEx<WebApp>) value;
                 // For label in combobox textfield, just show webapp name
-                final String text = i>=0 ? getWebAppLabelText(webApp.getResource()) : webApp.getResource().name();
+                final String text = i >= 0 ? getWebAppLabelText(webApp.getResource()) : webApp.getResource().name();
                 setText(text);
             }
-            jList.setFixedCellHeight(cellHeight);
+            list.setFixedCellHeight(cellHeight);
         }
 
         private String getStringLabelText(String message) {

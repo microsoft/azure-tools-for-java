@@ -48,6 +48,8 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
     private static final String DEFAULT_REGION = "eastus";
     private static final String RECOMMEND_SUFFIX = " (Recommended)";
+    private static final String MISSING_PRICING_TIER_PROMPT = "Please set pricing tier for app service plan";
+    private static final String MISSING_REGION_PROMPT = "Please set region for app service plan";
 
     private JPanel contentPane;
     private JPanel pnlNewAppServicePlan;
@@ -114,6 +116,12 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
             ValidationUtils.validateAppServicePlanName(txtAppServicePlanName.getText());
         } catch (IllegalArgumentException iae) {
             res.add(new ValidationInfo(iae.getMessage(), txtAppServicePlanName));
+        }
+        if (cbPricing.getSelectedItem() == null) {
+            res.add(new ValidationInfo(MISSING_PRICING_TIER_PROMPT, cbPricing));
+        }
+        if (cbRegion.getSelectedItem() == null) {
+            res.add(new ValidationInfo(MISSING_REGION_PROMPT, cbRegion));
         }
         return res;
     }

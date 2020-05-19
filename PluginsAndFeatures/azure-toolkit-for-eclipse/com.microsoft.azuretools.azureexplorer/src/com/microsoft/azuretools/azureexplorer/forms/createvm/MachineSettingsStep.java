@@ -27,15 +27,12 @@ import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.OperatingSystemTypes;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.Activator;
-import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -45,7 +42,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 
-import java.io.File;
 import java.net.URL;
 import java.util.*;
 
@@ -68,8 +64,8 @@ public class MachineSettingsStep extends WizardPage {
     private Button certificateButton;
     private Text certificateField;
     private Button certificateCheckBox;
-//    private JPanel certificatePanel;
-//    private JPanel passwordPanel;
+    //    private JPanel certificatePanel;
+    //    private JPanel passwordPanel;
     private CreateVMWizard wizard;
 
     private boolean inSetPageComplete = false;
@@ -81,12 +77,12 @@ public class MachineSettingsStep extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        GridLayout gridLayout = new GridLayout(1, false);
         GridData gridData = new GridData();
         gridData.grabExcessHorizontalSpace = true;
         gridData.grabExcessVerticalSpace = true;
         gridData.verticalAlignment = SWT.FILL;
         Composite container = new Composite(parent, 0);
+        GridLayout gridLayout = new GridLayout(1, false);
         container.setLayout(gridLayout);
         container.setLayoutData(gridData);
 
@@ -134,7 +130,8 @@ public class MachineSettingsStep extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/"));
+                    PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+                            .openURL(new URL("https://azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/"));
                 } catch (Exception ex) {
                     DefaultLoader.getUIHelper().logError(ex.getMessage(), ex);
                 }
@@ -214,13 +211,13 @@ public class MachineSettingsStep extends WizardPage {
     }
 
     private void createCertificatePanel(Composite composite) {
-        Composite panel = new Composite(composite, SWT.NONE);
         GridLayout gridLayout = new GridLayout();
         gridLayout.numColumns = 2;
         GridData gridData = new GridData();
         gridData.horizontalAlignment = SWT.FILL;
         gridData.grabExcessHorizontalSpace = true;
         gridData.widthHint = 250;
+        Composite panel = new Composite(composite, SWT.NONE);
         panel.setLayout(gridLayout);
         panel.setLayoutData(gridData);
 
@@ -272,7 +269,7 @@ public class MachineSettingsStep extends WizardPage {
 
         validateEmptyFields();
 
-//        imageDescription.setText(wizard.getHtmlFromVMImage(virtualMachineImage));
+        //        imageDescription.setText(wizard.getHtmlFromVMImage(virtualMachineImage));
 
         if (vmSizeComboBox.getItemCount() == 0) {
             vmSizeComboBox.setItems(new String[] { LOADING });
@@ -312,7 +309,7 @@ public class MachineSettingsStep extends WizardPage {
                             if (sizes.size() > 0) {
                                 vmSizeComboBox.select(0);
                             }
-//                            selectDefaultSize();
+                            //selectDefaultSize();
                         }
                     });
                 }
@@ -329,15 +326,16 @@ public class MachineSettingsStep extends WizardPage {
             String name = vmNameTextField.getText();
 
             if (name.length() > 15 || name.length() < 3) {
-                DefaultLoader.getUIHelper().showError("Invalid virtual machine name. The name must be between 3 and 15 character long.", "Error creating the virtual machine");
-                return this;
+                DefaultLoader.getUIHelper().showError("Invalid virtual machine name. " +
+                        "The name must be between 3 and 15 character long.", "Error creating the virtual machine");
+                return null;
             }
 
             if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
                 DefaultLoader.getUIHelper().showError("Invalid virtual machine name. The name must start with a letter, \n" +
                         "contain only letters, numbers, and hyphens, " +
                         "and end with a letter or number.", "Error creating the virtual machine");
-                return this;
+                return null;
             }
 
             String password = passwordCheckBox.getSelection() ? vmPasswordField.getText() : "";
@@ -347,13 +345,15 @@ public class MachineSettingsStep extends WizardPage {
 
                 if (!password.equals(conf)) {
                     DefaultLoader.getUIHelper().showError("Password confirmation should match password", "Error creating the service");
-                    return this;
+                    return null;
                 }
 
-                if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
+                if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])" +
+                        "(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
                     DefaultLoader.getUIHelper().showError("The password does not conform to complexity requirements.\n" +
-                            "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", "Error creating the virtual machine");
-                    return this;
+                            "It should be at least eight characters long and contain a mixture of upper case, lower case, " +
+                            "digits and symbols.", "Error creating the virtual machine");
+                    return null;
                 }
             }
 
@@ -369,7 +369,7 @@ public class MachineSettingsStep extends WizardPage {
     }
 
     private void selectDefaultSize() {
-//TODO
+    //TODO
         /*DefaultLoader.getIdeHelper().invokeAndWait(new Runnable() {
             @Override
             public void run() {
