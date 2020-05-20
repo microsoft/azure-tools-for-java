@@ -57,6 +57,7 @@
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
+  <depends>org.intellij.plugins.markdown</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -180,6 +181,9 @@
   </project-components>
 
   <actions>
+    <action id="Actions.WhatsNew"
+            class="com.microsoft.intellij.actions.ShowWhatsNewAction" text="What's New"
+            description="Show What's New"/>
     <action id="Actions.LibraryConfigurationAction"
             class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
             description="Libraries Configuration"/>
@@ -345,6 +349,7 @@
       <reference ref="AzureToolkit.GithubIssue"/>
       <reference ref="AzureToolkit.FeatureRequest"/>
       <reference ref="AzureToolkit.Survey"/>
+      <reference ref="Actions.WhatsNew"/>
     </group>
 
     <group id="SparkConsoleGroup" text="Spark Console" description="Spark Console" popup="true">

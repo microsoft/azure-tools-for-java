@@ -82,6 +82,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
+import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
@@ -133,6 +134,16 @@ public class AzurePlugin extends AbstractProjectComponent {
     public void projectOpened() {
         initializeAIRegistry();
         initializeFeedbackNotification();
+        initializeWhatsNew();
+    }
+
+    private void initializeWhatsNew() {
+        try {
+            WhatsNewManager.INSTANCE.showWhatsNew(false, myProject);
+        } catch (IOException e) {
+            // swallow this exception as shown whats new in startup should not block users
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     private void initializeFeedbackNotification() {

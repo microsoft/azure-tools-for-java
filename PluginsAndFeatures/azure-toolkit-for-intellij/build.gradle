@@ -48,8 +48,8 @@ intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', dep_plugins, "properties"]
-    downloadSources = Boolean.valueOf(sources)
+    plugins = ['java', 'maven', dep_plugins, "properties", 'markdown']
+	downloadSources = Boolean.valueOf(sources)
 }
 
 sourceSets {
