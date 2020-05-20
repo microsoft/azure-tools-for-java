@@ -65,8 +65,8 @@ public class ADLSGen2OAuthHttpObservable extends OAuthTokenHttpObservable {
     @Override
     public Observable<CloseableHttpResponse> request(@NotNull final HttpRequestBase httpRequest,
                                                      final @Nullable HttpEntity entity,
-                                                     final @Nullable List<NameValuePair> parameters,
-                                                     final @Nullable List<Header> addOrReplaceHeaders) {
+                                                     final List<NameValuePair> parameters,
+                                                     final List<Header> addOrReplaceHeaders) {
         // Filter out set permission related headers since they are not supported in request with OAuth
         List<Header> filteredHeaders = addOrReplaceHeaders;
         if (filteredHeaders != null) {

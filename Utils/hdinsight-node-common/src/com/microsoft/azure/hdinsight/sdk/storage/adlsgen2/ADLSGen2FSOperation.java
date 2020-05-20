@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class ADLSGen2FSOperation {
@@ -101,7 +102,7 @@ public class ADLSGen2FSOperation {
         final List<Header> headers = permission != null && uMask != null
                                      ? ImmutableList.of(new BasicHeader(PERMISSIONS_HEADER, permission),
                                                         new BasicHeader(UMASK_HEADER, uMask))
-                                     : null;
+                                     : Collections.emptyList();
         return http.executeReqAndCheckStatus(req, null, this.createDirReqParams, headers, 201)
                    .map(ignore -> true);
     }
@@ -121,7 +122,7 @@ public class ADLSGen2FSOperation {
         final List<Header> headers = permission != null && uMask != null
                                      ? ImmutableList.of(new BasicHeader(PERMISSIONS_HEADER, permission),
                                                         new BasicHeader(UMASK_HEADER, uMask))
-                                     : null;
+                                     : Collections.emptyList();
         return http.executeReqAndCheckStatus(req, null, this.createFileReqParams, headers, 201)
                 .map(ignore -> true);
     }
@@ -156,7 +157,7 @@ public class ADLSGen2FSOperation {
             HttpPatch req = new HttpPatch(filePath);
             http.setContentType("application/octet-stream");
 
-            return http.executeReqAndCheckStatus(req, entity, this.appendReqParams, null, 202)
+            return http.executeReqAndCheckStatus(req, entity, this.appendReqParams, Collections.emptyList(), 202)
                     .map(ignore -> len);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(new IllegalArgumentException("Can not find the aritifact"));
@@ -170,7 +171,7 @@ public class ADLSGen2FSOperation {
         List<NameValuePair> flushReqParams = this.flushReqParamsBuilder.setPosition(flushLen).build();
         http.setContentType("application/json");
 
-        return http.executeReqAndCheckStatus(req, null, flushReqParams, null, 200)
+        return http.executeReqAndCheckStatus(req, null, flushReqParams, Collections.emptyList(), 200)
                 .map(ignore -> true);
     }
 }

@@ -70,7 +70,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
     public Observable<CloseableHttpResponse> request(final HttpRequestBase httpRequest,
                                                      @Nullable final HttpEntity entity,
                                                      final List<NameValuePair> parameters,
-                                                     @Nullable final List<Header> addOrReplaceHeaders) {
+                                                     final List<Header> addOrReplaceHeaders) {
         // We add necessary information to a temporary header group which is used to generate shared keys
         final HeaderGroup headerGroup = new HeaderGroup();
         headerGroup.setHeaders(getDefaultHeaderGroup().getAllHeaders());
@@ -80,9 +80,7 @@ public class SharedKeyHttpObservable extends HttpObservable {
             // cannot be added to default header group in case of duplication.
             headerGroup.addHeader(new BasicHeader("Content-Length", String.valueOf(entity.getContentLength())));
         }
-        if (addOrReplaceHeaders != null) {
-            addOrReplaceHeaders.stream().forEach(header -> headerGroup.addHeader(header));
-        }
+        addOrReplaceHeaders.stream().forEach(header -> headerGroup.addHeader(header));
         String key = cred.generateSharedKey(httpRequest, headerGroup, parameters);
 
         getDefaultHeaderGroup().updateHeader(new BasicHeader("Authorization", key));
