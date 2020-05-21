@@ -1,6 +1,10 @@
 import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
 import org.apache.tools.ant.filters.ReplaceTokens
 
+plugins {
+    id "com.github.spotbugs" version "4.2.3"
+}
+
 configurations {
     cucumberRuntime {
         extendsFrom testRuntime
@@ -27,7 +31,6 @@ dependencies {
 }
 
 apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
 apply plugin: BundleBuildIDEAPlugin
 
 processResources {
@@ -48,11 +51,6 @@ checkstyle {
     toolVersion = '7.7'
     configFile = new File(rootProject.projectDir, 'config/checkstyle/checkstyle.xml')
     showViolations = false
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
 }
 
 test {

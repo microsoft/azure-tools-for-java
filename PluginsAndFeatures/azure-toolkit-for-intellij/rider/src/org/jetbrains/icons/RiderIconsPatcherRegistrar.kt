@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,25 +20,14 @@
  * SOFTWARE.
  */
 
-package org.jetbrains.plugins.azure.functions.run.csharp
+package org.jetbrains.icons
 
-import com.intellij.execution.lineMarker.ExecutorAction
-import com.intellij.execution.lineMarker.RunLineMarkerContributor
-import com.intellij.openapi.actionSystem.Separator
-import com.intellij.psi.PsiElement
-import com.microsoft.icons.CommonIcons
-import org.jetbrains.plugins.azure.functions.actions.TriggerAzureFunctionAction
-import org.jetbrains.plugins.azure.functions.helpers.csharp.AzureFunctionsPsiHelper
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.StartupActivity
 
-class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
+internal class RiderIconsPatcherRegistrar : StartupActivity {
 
-    override fun getInfo(element: PsiElement): Info? {
-        val functionName = AzureFunctionsPsiHelper.tryResolveAzureFunctionName(element) ?: return null
-
-        val actions = ExecutorAction.getActions() + arrayOf(
-                Separator(),
-                TriggerAzureFunctionAction(functionName)
-        )
-        return Info(CommonIcons.AzureFunctions.FunctionAppRunConfiguration, actions) { "Run Azure Function" }
+    override fun runActivity(project: Project) {
+        RiderIconsPatcher.install()
     }
 }

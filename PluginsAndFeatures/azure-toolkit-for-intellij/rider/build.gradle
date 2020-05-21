@@ -8,7 +8,12 @@ dependencies {
     testCompile rootProject
 }
 
-if (!ext.has("BuildNumber"))
+ext.resharperPluginPath = new File(projectDir, 'ReSharper.Azure')
+
+apply plugin: 'org.jetbrains.intellij'
+apply from: 'backend.gradle'
+
+if (!ext.has('BuildNumber'))
     ext.BuildNumber = buildNumber
 
 version "$BuildNumber"
@@ -25,7 +30,9 @@ intellij {
 }
 
 tasks.withType(prepareSandbox.class) {
+    dependsOn buildReSharperPlugin
     from(extensionsFrom, { into "$intellij.pluginName/dotnet" })
+    from(buildReSharperPlugin.outputs, { into "${intellij.pluginName}/dotnet" })
 }
 
 buildSearchableOptions.onlyIf { false }
@@ -35,5 +42,8 @@ patchPluginXml {
 }
 
 test {
+    dependsOn ':rider:buildPlugin'
     useTestNG()
 }
+
+jar.dependsOn ':rider:protocol:generateModel'

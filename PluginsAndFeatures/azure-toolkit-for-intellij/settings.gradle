@@ -2,3 +2,4 @@ rootProject.name = 'azure-toolkit-for-intellij'
 
 include "idea"
 include "rider"
+include "rider:protocol"

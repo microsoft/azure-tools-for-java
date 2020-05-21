@@ -1,0 +1,7 @@
+NuGet.Config
+
+# Rider Protocol generated files
+*Generated.kt
+
+# Rider Tests tmp files (appears on results mismatch)
+**/gold/*.tmp

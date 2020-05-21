@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net461</TargetFramework>
+        <RootNamespace>Azure.Daemon</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Rider.SDK" Version="$(RiderSDKVersion)" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0-preview.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Azure.Localization\Azure.Localization.csproj" />
+        <ProjectReference Include="..\Azure.Project\Azure.Project.csproj" />
+        <ProjectReference Include="..\Azure.Psi\Azure.Psi.csproj" />
+    </ItemGroup>
+    
+</Project>

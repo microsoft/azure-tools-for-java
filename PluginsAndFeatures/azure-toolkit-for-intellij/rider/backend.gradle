@@ -1,0 +1,108 @@
+def backendGroup = 'backend'
+
+ext.nugetConfigPath = new File(projectDir, 'NuGet.Config')
+ext.riderSdkVersionPropsPath = new File(resharperPluginPath, 'RiderSdkPackageVersion.props')
+
+// https://www.nuget.org/packages/JetBrains.Rider.SDK/
+ext.riderNugetSdkVersion = rider_nuget_sdk_version
+
+task prepareBuildProps {
+    group = backendGroup
+
+    doLast {
+        def configText = """<Project>
+  <PropertyGroup>
+    <RiderSDKVersion>[$riderNugetSdkVersion]</RiderSDKVersion>
+  </PropertyGroup>
+</Project>
+"""
+        writeTextIfChanged(riderSdkVersionPropsPath, configText)
+    }
+}
+
+task prepareNuGetConfig {
+    group = backendGroup
+
+    doLast {
+        def nugetPath = getNugetPackagesPath()
+        def configText = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="resharper-sdk" value="${nugetPath}" />
+  </packageSources>
+</configuration>
+"""
+        writeTextIfChanged(nugetConfigPath, configText)
+    }
+}
+
+task restoreReSharperPluginPackages() {
+    group = backendGroup
+    description = 'Restores packages for backend plugin'
+    dependsOn prepareBuildProps, prepareNuGetConfig
+
+    doLast {
+        exec {
+            executable = 'dotnet'
+            args = ['restore', "${resharperPluginPath.canonicalPath}/ReSharper.Azure.sln" ]
+        }
+    }
+}
+
+task buildReSharperPlugin {
+    group = backendGroup
+    description = 'Builds the full ReSharper backend plugin solution'
+    dependsOn restoreReSharperPluginPackages, ':rider:protocol:generateModel'
+
+    doLast {
+        def executableName = 'dotnet'
+        def arguments = [ 'build', "${resharperPluginPath.canonicalPath}/ReSharper.Azure.sln" ]
+
+        exec {
+            executable = executableName
+            args = arguments
+        }
+    }
+
+    outputs.files({
+        fileTree(file("${resharperPluginPath.absolutePath}/src")).matching {
+            include '**/bin/Debug/**/Azure*.dll'
+            include '**/bin/Debug/**/Azure*.pdb'
+            include '**/bin/Debug/**/Azure.DebuggerTools.exe'
+            include '**/bin/Debug/**/Azure.DebuggerTools.runtimeconfig.json'
+        }.collect()
+    })
+}
+
+project.tasks.clean.dependsOn(project.tasks.cleanBuildReSharperPlugin)
+
+private File getNugetPackagesPath() {
+    def sdkPath = intellij.ideaDependency.classes
+    println("SDK path: $sdkPath")
+
+    // 2019
+    def riderSdk = new File(sdkPath, 'lib/ReSharperHostSdk')
+    // 2020.1
+    if (!riderSdk.exists()) {
+        riderSdk = new File(sdkPath, 'lib/DotNetSdkForRdPlugins')
+    }
+
+    println("NuGet packages: $riderSdk")
+    if (!riderSdk.isDirectory())
+        throw new IllegalStateException("${riderSdk} does not exist or not a directory")
+
+    return riderSdk
+}
+
+private static void writeTextIfChanged(File file, String content) {
+    def bytes = content.bytes
+
+    if (!file.isFile() || byteArrayToHexString(file.readBytes()) != byteArrayToHexString(bytes)) {
+        println("Writing ${file.canonicalPath}")
+        file.withOutputStream { it.write(bytes) }
+    }
+}
+
+private static String byteArrayToHexString(byte[] byteArray) {
+    return byteArray.encodeHex().toString()
+}

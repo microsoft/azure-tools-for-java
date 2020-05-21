@@ -1,0 +1,75 @@
+buildscript {
+    // https://www.myget.org/feed/rd-snapshots/package/maven/com.jetbrains.rd/rd-gen
+    ext.rd_version = rd_version
+
+    println("Generate models with rd-gen versin: $rd_version")
+
+    repositories {
+        maven { url 'https://www.myget.org/F/rd-snapshots/maven/' }
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "com.jetbrains.rd:rd-gen:$rd_version"
+    }
+}
+
+ext.rdLibDirectory = new File(intellij.ideaDependency.classes, 'lib/rd')
+
+// Add RD SDK and rd-gen into a classpath.
+repositories {
+    flatDir {
+        dirs rdLibDirectory.absolutePath
+    }
+    maven { url 'https://www.myget.org/F/rd-snapshots/maven/' }
+}
+
+apply plugin: 'com.jetbrains.rdgen'
+
+// Add dependencies to make it discoverable inside protocol models.
+dependencies {
+    implementation name: 'rider-model'
+    implementation "com.jetbrains.rd:rd-gen:$rd_version"
+}
+
+def protocolGroup = 'protocol'
+
+ext.csDaemonGeneratedOutput = new File(resharperPluginPath, 'src/Azure.Daemon/Protocol')
+ext.ktGeneratedOutput = new File(projectDir, '../src/org/jetbrains/protocol')
+ext.modelDir = new File(projectDir, 'src/model')
+
+task generateModel(type: tasks.getByName('rdgen').class) {
+    group = protocolGroup
+    description = 'Generates protocol models'
+
+    // NOTE: classpath is evaluated lazily, at execution time, because it comes from the unzipped
+    // intellij SDK, which is extracted in afterEvaluate
+    params {
+        verbose = true
+        hashFolder = 'build/rdgen'
+
+        logger.info('Configuring rdgen params')
+        classpath {
+            "${rdLibDirectory.canonicalPath}/rider-model.jar"
+        }
+
+        sources modelDir.canonicalPath
+        packages = "model"
+
+        properties['ktGeneratedOutput']="${ktGeneratedOutput.canonicalPath}"
+        properties['csDaemonGeneratedOutput']="${resharperPluginPath.canonicalPath}/src/Azure.Daemon/Protocol"
+    }
+}
+
+task cleanProtocolModels {
+    group = protocolGroup
+    description = 'Clean up generated protocol models'
+
+    def protocolOutDirs = [ ktGeneratedOutput, csDaemonGeneratedOutput ]
+
+    protocolOutDirs.forEach { dir ->
+        if (dir.isDirectory()) {
+            dir.deleteDir()
+        }
+    }
+}
