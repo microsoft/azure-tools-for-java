@@ -7,6 +7,7 @@ def IJ_VERSION_LATEST = IJ_VERSION_MINOR?.trim()?.isEmpty() ? IJ_VERSION_MAJOR :
 def mavenArgs = { conf ->
     List<String> mvnArgs = (forceClean.toBoolean() ? [ 'clean' ] : []) + conf.goals + [
             '-B',
+            '-T 1C',
             '-Didea.io.use.fallback=true'   // A workaround to remove Maven Kotlin script exec warnings on Windows
     ]
 
@@ -34,10 +35,13 @@ def mavenArgs = { conf ->
 }
 
 ext.maven = { Closure mavenClosure ->
+    def envVars = [:]
+    envVars['JAVA_OPTS'] = "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx1G -Xms100m"
     exec {
         executable mavenExec
         args mavenArgs(configure([:], mavenClosure))
     }
+     tasks.withType(Exec) { environment << envVars }
 }
 
 task buildUtils {
