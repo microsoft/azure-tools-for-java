@@ -1,10 +1,8 @@
 <!-- Version: 3.37.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
-- [New Features](#)
-  - [App Service Log Streaming](#3360)
-  - [Azure Spring Cloud Support](#3350)
-  - [Azure Function Support](#3340)
+> Scroll down to checkout our newly added support for **Azure Functions**, **Azure Spring Cloud** and
+ **log streaming for Azure App Service**.
 
 ## 3.37.0(Current Release)
 
@@ -46,7 +44,8 @@ Azure Toolkit support Log Streaming for App Service now! You could get the live 
 
 We are proud to announce the support for [Azure Spring Cloud](https://docs.microsoft.com/en-us/azure/spring-cloud/) in Azure Toolkit!
 
-You could have full Azure Spring Cloud experience in IntelliJ Toolkit, which cludes resolve project dependencies, create/deploy and troubleshooting spring cloud apps. You may try the azure spring cloud in intellij toolkit with the [quick start](https://docs.microsoft.com/en-us/azure/spring-cloud/spring-cloud-tutorial-intellij-deploy-apps?source=intellijwhatsnew)
+You could have full Azure Spring Cloud experience in IntelliJ Toolkit, which cludes resolve project dependencies
+, create/deploy and troubleshooting spring cloud apps. You may try the azure spring cloud in intellij toolkit with the [quick start](https://docs.microsoft.com/en-us/azure/spring-cloud/spring-cloud-tutorial-intellij-deploy-apps?source=intellijwhatsnew).
 
 ![Azure Spring Cloud](https://user-images.githubusercontent.com/12445236/82417195-c4344100-9aad-11ea-9791-fd0f33f446cd.png)
 
