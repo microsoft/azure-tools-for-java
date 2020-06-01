@@ -171,6 +171,8 @@
 
     <projectTemplateProvider implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplatesProvider" order="first"/>
 
+    <fileTypeStatisticProvider implementation="org.jetbrains.plugins.azure.statistics.AzureFileTypeStatisticsProvider"/>
+
     <projectService serviceImplementation="org.jetbrains.plugins.azure.cloudshell.CloudShellService" />
 
     <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV1TemplateCustomizer" />
