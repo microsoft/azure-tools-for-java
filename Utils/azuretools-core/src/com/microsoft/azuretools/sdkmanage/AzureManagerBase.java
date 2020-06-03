@@ -28,13 +28,12 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementa
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.authmanage.Environment;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.microsoft.azuretools.authmanage.Environment.*;
 
@@ -48,8 +47,8 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String CHINA_SCM_SUFFIX = ".scm.chinacloudsites.cn";
     private static final String GLOBAL_SCM_SUFFIX = ".scm.azurewebsites.net";
 
-    protected Map<String, Azure> sidToAzureMap = new HashMap<>();
-    protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new HashMap<>();
+    protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
+    protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
 
     @Override
     public String getPortalUrl() {
@@ -82,7 +81,7 @@ public abstract class AzureManagerBase implements AzureManager {
     @Override
     public String getTenantIdBySubscription(String subscriptionId) throws IOException {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
-                .filter(pair -> pair!= null && pair.first() != null && pair.second() != null)
+                .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
                 .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
                 .findFirst().orElseThrow(() -> new IOException("Failed to find storage subscription id"));
         return subscriptionTenantPair.second().tenantId();
