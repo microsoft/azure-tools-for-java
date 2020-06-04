@@ -22,10 +22,16 @@
 
 package com.microsoft.tooling.msservices.helpers.azure.sdk;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.microsoft.applicationinsights.management.rest.ApplicationInsightsManagementClient;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationType;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.KnownWindowsVirtualMachineImage;
@@ -43,12 +49,20 @@ import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.management.storage.StorageAccountSkuType;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
+import com.sun.tools.sjavac.Log;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AzureSDKManager {
@@ -245,5 +259,72 @@ public class AzureSDKManager {
             throws RestOperationException, IOException {
         String userAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0";
         return new ApplicationInsightsManagementClient(tenantId, accessToken, userAgent);
+    }
+
+    @NotNull
+    private static InsightsManager getInsightsManagerClient(@NotNull String subscriptionId)
+            throws IOException {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        return azureManager == null ? null : azureManager.getInsightsManager(subscriptionId);
+    }
+
+    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException, RestOperationException {
+        final InsightsManager insightsManager = getInsightsManagerClient(subscription.getSubscriptionId());
+        return insightsManager == null ? null : insightsManager.components().list();
+    }
+
+    public static ApplicationInsightsComponent createInsightsResource(@NotNull SubscriptionDetail subscription,
+                                                             @NotNull String resourceGroupName,
+                                                             boolean isNewGroup,
+                                                             @NotNull String resourceName,
+                                                             @NotNull String location) throws Exception {
+        final InsightsManager insightsManager = getInsightsManagerClient(subscription.getSubscriptionId());
+        if (insightsManager == null) { // not signed in
+            return null;
+        }
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscription.getSubscriptionId());
+        if (isNewGroup) {
+            azure.resourceGroups().define(resourceGroupName).withRegion(location).create();
+        }
+        return insightsManager.components()
+                .define(resourceName)
+                .withRegion(location)
+                .withExistingResourceGroup(resourceGroupName)
+                .withApplicationType(ApplicationType.WEB)
+                .withKind("web")
+                .create();
+    }
+
+    // As AI SDK didn't provide list supported regions interface, call the api directly
+    public static List<String> getLocationsForInsights(SubscriptionDetail subscription) throws Exception {
+        final String requestUrl = "https://management.azure.com/providers/microsoft.insights?api-version=2015-05-01";
+        final HttpGet request = new HttpGet(requestUrl);
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            return Collections.emptyList();
+        }
+        final String accessToken = azureManager.getAccessToken(azureManager.getTenantIdBySubscription(subscription.getSubscriptionId()));
+        request.setHeader("Authorization", accessToken);
+        final CloseableHttpResponse response = HttpClients.createDefault().execute(request);
+        final InputStream responseStream = response.getEntity().getContent();
+        try (final InputStreamReader isr = new InputStreamReader(responseStream)) {
+            final Gson gson = new Gson();
+            final JsonObject jsonContent = (gson).fromJson(isr, JsonObject.class);
+            final JsonArray jsonResourceTypes = jsonContent.getAsJsonArray("resourceTypes");
+            for (int i = 0; i < jsonResourceTypes.size(); ++i) {
+                Object obj = jsonResourceTypes.get(i);
+                if (obj instanceof JsonObject) {
+                    JsonObject jsonResourceType = (JsonObject) obj;
+                    String resourceType = jsonResourceType.get("resourceType").getAsString();
+                    if (resourceType.equalsIgnoreCase("components")) {
+                        JsonArray jsonLocations = jsonResourceType.getAsJsonArray("locations");
+                        return gson.fromJson(jsonLocations, new ArrayList().getClass());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.error(e);
+        }
+        return Collections.emptyList();
     }
 }

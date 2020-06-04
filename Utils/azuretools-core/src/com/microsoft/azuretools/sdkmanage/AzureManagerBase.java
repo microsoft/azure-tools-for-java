@@ -23,11 +23,15 @@
 package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.AzureEnvironment;
+import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
+import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
 
@@ -49,6 +53,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
     protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
+    protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
 
     @Override
     public String getPortalUrl() {
@@ -85,5 +90,10 @@ public abstract class AzureManagerBase implements AzureManager {
                 .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
                 .findFirst().orElseThrow(() -> new IOException("Failed to find storage subscription id"));
         return subscriptionTenantPair.second().tenantId();
+    }
+
+    protected <T extends AzureConfigurable<T>> T buildAzureManager(AzureConfigurable<T> configurable) {
+        return configurable.withInterceptor(new TelemetryInterceptor())
+                .withUserAgent(CommonSettings.USER_AGENT);
     }
 }

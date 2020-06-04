@@ -22,10 +22,10 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
@@ -90,7 +90,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
         }
     }
 
-    private final static Logger LOGGER = Logger.getLogger(AccessTokenAzureManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AccessTokenAzureManager.class.getName());
     private final SubscriptionManager subscriptionManager;
     private final BaseADAuthManager delegateADAuthManager;
 
@@ -131,14 +131,18 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+    public AppPlatformManager getAzureSpringCloudClient(String sid) {
         return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
             String tid = subscriptionManager.getSubscriptionTenant(sid);
-            try {
-                return authSpringCloud(sid, tid);
-            } catch (IOException e) {
-                return SneakyThrowUtils.sneakyThrow(e);
-            }
+            return authSpringCloud(sid, tid);
+        });
+    }
+
+    @Override
+    public InsightsManager getInsightsManager(String sid) {
+        return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
+            String tid = subscriptionManager.getSubscriptionTenant(sid);
+            return authApplicationInsights(sid, tid);
         });
     }
 
@@ -198,13 +202,13 @@ public class AccessTokenAzureManager extends AzureManagerBase {
         return tl;
     }
 
-//    public static Azure.Authenticated auth(String accessToken) throws Exception {
-//        return Azure.configure().authenticate(getTokenCredentials(accessToken));
-//    }
+    //    public static Azure.Authenticated auth(String accessToken) throws Exception {
+    //        return Azure.configure().authenticate(getTokenCredentials(accessToken));
+    //    }
 
-//    private static TokenCredentials getTokenCredentials(String token) throws Exception {
-//        return null;
-//    }
+    //    private static TokenCredentials getTokenCredentials(String token) throws Exception {
+    //        return null;
+    //    }
 
     private Azure.Authenticated authTid(String tid) throws IOException {
         return Azure.configure()
@@ -213,10 +217,13 @@ public class AccessTokenAzureManager extends AzureManagerBase {
                 .authenticate(new RefreshableTokenCredentials(this, tid));
     }
 
-    private AppPlatformManager authSpringCloud(String sid, String tid) throws IOException {
-        return AppPlatformManager.configure()
-                .withInterceptor(new TelemetryInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT)
+    private AppPlatformManager authSpringCloud(String sid, String tid) {
+        return buildAzureManager(AppPlatformManager.configure())
+                .authenticate(new RefreshableTokenCredentials(this, tid), sid);
+    }
+
+    private InsightsManager authApplicationInsights(String sid, String tid) {
+        return buildAzureManager(InsightsManager.configure())
                 .authenticate(new RefreshableTokenCredentials(this, tid), sid);
     }
 
@@ -225,15 +232,14 @@ public class AccessTokenAzureManager extends AzureManagerBase {
         ServiceClientCredentials creds = new KeyVaultCredentials() {
             @Override
             public String doAuthenticate(String authorization, String resource, String scope) {
-            try {
-                // TODO: check usage
-                return delegateADAuthManager.getAccessToken(tid, resource, PromptBehavior.Auto);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
+                try {
+                    // TODO: check usage
+                    return delegateADAuthManager.getAccessToken(tid, resource, PromptBehavior.Auto);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         };
-
         return new KeyVaultClient(creds);
     }
 
@@ -261,4 +267,5 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     public Environment getEnvironment() {
         return CommonSettings.getEnvironment();
     }
+
 }

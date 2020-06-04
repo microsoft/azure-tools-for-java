@@ -23,6 +23,7 @@
 package com.microsoft.azuretools.sdkmanage;
 
 import com.microsoft.azure.common.utils.SneakyThrowUtils;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import org.apache.commons.lang3.StringUtils;
 
@@ -131,6 +132,17 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
             try {
                 return authSpringCloud(sid);
+            } catch (IOException e) {
+                return SneakyThrowUtils.sneakyThrow(e);
+            }
+        });
+    }
+
+    @Override
+    public InsightsManager getInsightsManager(String sid) throws IOException {
+        return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
+            try {
+                return authApplicationInsights(sid);
             } catch (IOException e) {
                 return SneakyThrowUtils.sneakyThrow(e);
             }
@@ -259,10 +271,14 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         if (credFile != null) {
             initATCIfNeeded();
         }
-        return AppPlatformManager.configure()
-                .withInterceptor(new TelemetryInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT)
-                .authenticate(atc, sid);
+        return buildAzureManager(AppPlatformManager.configure()).authenticate(atc, sid);
+    }
+
+    private InsightsManager authApplicationInsights(String sid) throws IOException {
+        if (credFile != null) {
+            initATCIfNeeded();
+        }
+        return buildAzureManager(InsightsManager.configure()).authenticate(atc, sid);
     }
 
 }
