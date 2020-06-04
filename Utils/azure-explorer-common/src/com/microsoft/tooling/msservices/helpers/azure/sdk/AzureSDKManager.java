@@ -254,20 +254,6 @@ public class AzureSDKManager {
                 .getAvailableGeoLocations();
     }
 
-    @NotNull
-    private static ApplicationInsightsManagementClient getApplicationManagementClient(@NotNull String tenantId, @NotNull String accessToken)
-            throws RestOperationException, IOException {
-        String userAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0";
-        return new ApplicationInsightsManagementClient(tenantId, accessToken, userAgent);
-    }
-
-    @NotNull
-    private static InsightsManager getInsightsManagerClient(@NotNull String subscriptionId)
-            throws IOException {
-        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        return azureManager == null ? null : azureManager.getInsightsManager(subscriptionId);
-    }
-
     public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException, RestOperationException {
         final InsightsManager insightsManager = getInsightsManagerClient(subscription.getSubscriptionId());
         return insightsManager == null ? null : insightsManager.components().list();
@@ -326,5 +312,19 @@ public class AzureSDKManager {
             Log.error(e);
         }
         return Collections.emptyList();
+    }
+
+    @NotNull
+    private static ApplicationInsightsManagementClient getApplicationManagementClient(@NotNull String tenantId, @NotNull String accessToken)
+            throws RestOperationException, IOException {
+        String userAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0";
+        return new ApplicationInsightsManagementClient(tenantId, accessToken, userAgent);
+    }
+
+    @NotNull
+    private static InsightsManager getInsightsManagerClient(@NotNull String subscriptionId)
+            throws IOException {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        return azureManager == null ? null : azureManager.getInsightsManager(subscriptionId);
     }
 }
