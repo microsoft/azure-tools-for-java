@@ -39,7 +39,7 @@ object HostJsonPatcher {
                 File(workingDirectory, "../../host.json")
         )
 
-        return candidates.firstOrNull { it.exists() }
+        return candidates.firstOrNull { it.exists() }?.canonicalFile
     }
 
     fun tryPatchHostJsonFile(workingDirectory: String, functionNames: String) {

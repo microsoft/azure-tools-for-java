@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -40,9 +40,7 @@ class AzureFunctionsHostConfiguration(
         project,
         factory,
         { AzureFunctionsHostSettingsEditorGroup(it) },
-        AzureFunctionsHostExecutorFactory(
-                parameters
-        )
+        AzureFunctionsHostExecutorFactory(parameters)
 ), IRiderDebuggable {
 
     private val riderDotNetActiveRuntimeHost = project.getComponent<RiderDotNetActiveRuntimeHost>()

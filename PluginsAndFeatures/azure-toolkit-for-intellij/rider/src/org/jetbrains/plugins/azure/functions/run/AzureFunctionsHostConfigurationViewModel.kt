@@ -25,12 +25,18 @@ package org.jetbrains.plugins.azure.functions.run
 import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.adviseOnce
-import com.jetbrains.rider.model.*
+import com.jetbrains.rider.model.EnvironmentVariable
+import com.jetbrains.rider.model.Key
+import com.jetbrains.rider.model.ProjectOutput
+import com.jetbrains.rider.model.RunnableProjectsModel
+import com.jetbrains.rider.model.RunnableProjectKind
+import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.run.configurations.controls.*
 import com.jetbrains.rider.run.configurations.controls.startBrowser.BrowserSettings
 import com.jetbrains.rider.run.configurations.controls.startBrowser.BrowserSettingsEditor
 import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfigurationViewModel
 import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParameters
+import org.apache.http.client.utils.URIBuilder
 import java.io.File
 
 class AzureFunctionsHostConfigurationViewModel(
@@ -43,7 +49,7 @@ class AzureFunctionsHostConfigurationViewModel(
         val functionNamesEditor: TextEditor,
         environmentVariablesEditor: EnvironmentVariablesEditor,
         useExternalConsoleEditor: FlagEditor,
-        val separator: ViewSeparator,
+        separator: ViewSeparator,
         val urlEditor: TextEditor,
         val dotNetBrowserSettingsEditor: BrowserSettingsEditor
 ) : DotNetExeConfigurationViewModel(
@@ -76,7 +82,8 @@ class AzureFunctionsHostConfigurationViewModel(
     var trackProjectExePath = true
     var trackProjectArguments = true
     var trackProjectWorkingDirectory = true
-    private val portRegex = Regex("--port (\\d+)", RegexOption.IGNORE_CASE)
+
+    private val portRegex = Regex("(--port|-p) (\\d+)", RegexOption.IGNORE_CASE)
 
     init {
         disable()
@@ -87,6 +94,13 @@ class AzureFunctionsHostConfigurationViewModel(
         exePathSelector.path.advise(lifetime) { recalculateTrackProjectOutput() }
         programParametersEditor.parametersString.advise(lifetime) { recalculateTrackProjectOutput() }
         workingDirectorySelector.path.advise(lifetime) { recalculateTrackProjectOutput() }
+
+        // Please make sure it is executed after you enable controls through [RunConfigurationViewModelBase::enable]
+        disableBrowserUrl()
+    }
+
+    private fun disableBrowserUrl() {
+        urlEditor.isEnabled.set(false)
     }
 
     private fun handleChangeTfmSelection() {
@@ -107,7 +121,7 @@ class AzureFunctionsHostConfigurationViewModel(
                     val patchedProjectOutput = AzureFunctionsRunnableProjectUtil.patchProjectOutput(projectOutput)
 
                     // ...but keep the previous value if it's not empty
-                    if (programParametersEditor.parametersString.value.isNullOrEmpty()) {
+                    if (programParametersEditor.parametersString.value.isEmpty()) {
                         if (patchedProjectOutput.defaultArguments.isNotEmpty()) {
                             programParametersEditor.parametersString.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
                             programParametersEditor.defaultValue.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
@@ -120,45 +134,59 @@ class AzureFunctionsHostConfigurationViewModel(
                 }
     }
 
+    // TODO: FIX_WHEN. Add integration tests when enabled in the plugin.
     private fun recalculateTrackProjectOutput() {
-        val selectedProject = projectSelector.project.valueOrNull
-        val selectedTfm = tfmSelector.string.valueOrNull
-        if (selectedProject != null && selectedTfm != null) {
-            selectedProject.projectOutputs.singleOrNull { it.tfm == selectedTfm }?.let {
-                trackProjectExePath = exePathSelector.path.value == it.exePath
-                trackProjectArguments = (it.defaultArguments.isEmpty()
-                        || programParametersEditor.parametersString.value ==
-                        ParametersListUtil.join(it.defaultArguments))
-                trackProjectWorkingDirectory = workingDirectorySelector.path.value == it.workingDirectory
-            }
+        val selectedProject = projectSelector.project.valueOrNull ?: return
+        val selectedTfm = tfmSelector.string.valueOrNull ?: return
 
-            val result = portRegex.find(programParametersEditor.parametersString.value)
-            if (result != null && result.groups.count() == 2) {
-                urlEditor.defaultValue.value = "http://localhost:${result.groupValues[1]}"
-                urlEditor.text.value = "http://localhost:${result.groupValues[1]}"
-                dotNetBrowserSettingsEditor.settings.value = BrowserSettings(false, false, null)
-            }
+        val programParameters = programParametersEditor.parametersString.value
+
+        selectedProject.projectOutputs.singleOrNull { it.tfm == selectedTfm }?.let { projectOutput ->
+            trackProjectExePath = exePathSelector.path.value == projectOutput.exePath
+
+            val defaultArguments = projectOutput.defaultArguments
+            trackProjectArguments = (defaultArguments.isEmpty() || ParametersListUtil.parse(programParameters).containsAll(defaultArguments))
+
+            trackProjectWorkingDirectory = workingDirectorySelector.path.value == projectOutput.workingDirectory
         }
+
+        val parametersPortMatch = portRegex.find(programParameters)
+        val parametersPortValue = parametersPortMatch?.groupValues?.getOrNull(2)?.toIntOrNull() ?: -1
+        composeUrlString(parametersPortValue)
     }
 
-    private fun handleProjectSelection(project: RunnableProject) {
+    private fun composeUrlString(port: Int) {
+        val currentUrl = urlEditor.text.value
+        val originalUrl = if (currentUrl.isNotEmpty()) currentUrl else "http://localhost"
+
+        val updatedUrl = URIBuilder(originalUrl).setPort(port).build().toString()
+
+        urlEditor.text.set(updatedUrl)
+        urlEditor.defaultValue.set(updatedUrl)
+    }
+
+    private fun handleProjectSelection(runnableProject: RunnableProject) {
         if (!isLoaded) return
-        reloadTfmSelector(project)
+        reloadTfmSelector(runnableProject)
 
-        val startBrowserUrl = project.customAttributes.singleOrNull { it.key == Key.StartBrowserUrl }?.value ?: ""
-        val launchBrowser = project.customAttributes.singleOrNull { it.key == Key.LaunchBrowser }?.value?.toBoolean() ?: false
+        val startBrowserUrl = runnableProject.customAttributes.singleOrNull { it.key == Key.StartBrowserUrl }?.value ?: ""
+        val launchBrowser = runnableProject.customAttributes.singleOrNull { it.key == Key.LaunchBrowser }?.value?.toBoolean() ?: false
         if (startBrowserUrl.isNotEmpty()) {
-            urlEditor.defaultValue.value = startBrowserUrl
-            urlEditor.text.value = startBrowserUrl
-            dotNetBrowserSettingsEditor.settings.value = BrowserSettings(launchBrowser, false, null)
+            urlEditor.defaultValue.set(startBrowserUrl)
+            urlEditor.text.set(startBrowserUrl)
+            dotNetBrowserSettingsEditor.settings.set(
+                    BrowserSettings(
+                            startAfterLaunch = launchBrowser,
+                            withJavaScriptDebugger = dotNetBrowserSettingsEditor.settings.value.withJavaScriptDebugger,
+                            myBrowser = dotNetBrowserSettingsEditor.settings.value.myBrowser))
         }
 
-        environmentVariablesEditor.envs.set(project.environmentVariables.map { it.key to it.value }.toMap())
+        environmentVariablesEditor.envs.set(runnableProject.environmentVariables.map { it.key to it.value }.toMap())
     }
 
-    private fun reloadTfmSelector(project: RunnableProject) {
+    private fun reloadTfmSelector(runnableProject: RunnableProject) {
         tfmSelector.stringList.clear()
-        project.projectOutputs.map { it.tfm }.sorted().forEach {
+        runnableProject.projectOutputs.map { it.tfm }.sorted().forEach {
             tfmSelector.stringList.add(it)
         }
         if (tfmSelector.stringList.isNotEmpty()) {
@@ -195,6 +223,7 @@ class AzureFunctionsHostConfigurationViewModel(
         }
 
         isLoaded = false
+
         this.trackProjectExePath = trackProjectExePath
         this.trackProjectArguments = trackProjectArguments
         this.trackProjectWorkingDirectory = trackProjectWorkingDirectory
@@ -202,13 +231,15 @@ class AzureFunctionsHostConfigurationViewModel(
         this.functionNamesEditor.defaultValue.value = ""
         this.functionNamesEditor.text.value = functionNames
 
+        this.dotNetBrowserSettingsEditor.settings.set(BrowserSettings(
+                startAfterLaunch = dotNetStartBrowserParameters.startAfterLaunch,
+                withJavaScriptDebugger = dotNetStartBrowserParameters.withJavaScriptDebugger,
+                myBrowser = dotNetStartBrowserParameters.browser))
+
+        this.urlEditor.defaultValue.value = dotNetStartBrowserParameters.url
+        this.urlEditor.text.value = dotNetStartBrowserParameters.url
+
         runnableProjectsModel.projects.adviseOnce(lifetime) { projectList ->
-            urlEditor.defaultValue.value = dotNetStartBrowserParameters.url
-            urlEditor.text.value = dotNetStartBrowserParameters.url
-            dotNetBrowserSettingsEditor.settings.set(BrowserSettings(
-                    dotNetStartBrowserParameters.startAfterLaunch,
-                    dotNetStartBrowserParameters.withJavaScriptDebugger,
-                    dotNetStartBrowserParameters.browser))
 
             if (projectFilePath.isEmpty() || projectList.none {
                         it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
