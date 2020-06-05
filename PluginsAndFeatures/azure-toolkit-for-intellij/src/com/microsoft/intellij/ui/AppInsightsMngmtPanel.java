@@ -27,11 +27,11 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTableElement;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTableElements;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -182,7 +182,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
             if (sub.isSelected()) {
                 try {
                     // fetch resources available for particular subscription
-                    List<Resource> resourceList = AzureSDKManager.getApplicationInsightsResources(sub);
+                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub);
                     // Removal logic
                     List<ApplicationInsightsResource> importedList = ApplicationInsightsResourceRegistry.prepareAppResListFromRes(resourceList, sub);
                     // Addition logic

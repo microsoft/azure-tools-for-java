@@ -23,8 +23,7 @@ package com.microsoft.intellij.helpers;
 
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
-import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
-import com.microsoft.applicationinsights.management.rest.model.Resource;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -203,29 +202,25 @@ public enum AppServiceStreamingLogManager {
             final SubscriptionDetail subscriptionDetail = azureManager.getSubscriptionManager()
                                                                       .getSubscriptionIdToSubscriptionDetailsMap()
                                                                       .get(subscriptionId);
-            final List<Resource> resources;
-            try {
-                resources = AzureSDKManager.getApplicationInsightsResources(subscriptionDetail);
-            } catch (RestOperationException e) {
-                throw new IOException(FAILED_TO_GET_APPLICATION_INSIGHT_INSTANCE, e);
-            }
-            final Resource target = resources
+            final List<ApplicationInsightsComponent> insightsResources =
+                    AzureSDKManager.getInsightsResources(subscriptionDetail);
+            final ApplicationInsightsComponent target = insightsResources
                     .stream()
-                    .filter(aiResource -> StringUtils.equals(aiResource.getInstrumentationKey(), aiKey))
+                    .filter(aiResource -> StringUtils.equals(aiResource.instrumentationKey(), aiKey))
                     .findFirst()
                     .orElseThrow(() -> new IOException(String.format(AI_INSTANCES_NOT_FOUND, subscriptionId)));
             final String aiUrl = getApplicationInsightLiveMetricsUrl(target, azureManager.getPortalUrl());
             DefaultLoader.getIdeHelper().openLinkInBrowser(aiUrl);
         }
 
-        private String getApplicationInsightLiveMetricsUrl(Resource target, String portalUrl)
+        private String getApplicationInsightLiveMetricsUrl(ApplicationInsightsComponent target, String portalUrl)
                 throws UnsupportedEncodingException {
             final JsonObject componentObject = new JsonObject();
-            componentObject.addProperty("Name", target.getName());
-            componentObject.addProperty("SubscriptionId", AzureMvpModel.getSegment(target.getId(), SUBSCRIPTIONS));
-            componentObject.addProperty("ResourceGroup", target.getResourceGroup());
+            componentObject.addProperty("Name", target.name());
+            componentObject.addProperty("SubscriptionId", AzureMvpModel.getSegment(target.id(), SUBSCRIPTIONS));
+            componentObject.addProperty("ResourceGroup", target.resourceGroupName());
             final String componentId = URLEncoder.encode(componentObject.toString(), "utf-8");
-            final String aiResourceId = URLEncoder.encode(target.getId(), "utf-8");
+            final String aiResourceId = URLEncoder.encode(target.id(), "utf-8");
             return String.format(APPLICATION_INSIGHT_PATTERN, portalUrl, componentId, aiResourceId);
         }
 

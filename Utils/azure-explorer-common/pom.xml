@@ -139,11 +139,6 @@
             <artifactId>applicationinsights-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>applicationinsights-management</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-        <dependency>
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
             <version>3.0.3</version>

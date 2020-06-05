@@ -22,6 +22,9 @@
 
 package com.microsoft.applicationinsights.preference;
 
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+
 import java.io.Serializable;
 /**
  * Model class to store application insights resource data.
@@ -39,6 +42,17 @@ public class ApplicationInsightsResource implements Serializable, Comparable<App
 
     public ApplicationInsightsResource() {
         super();
+    }
+
+    public ApplicationInsightsResource(ApplicationInsightsComponent component, SubscriptionDetail subscription, boolean imported) {
+        super();
+        this.resourceName = component.name();
+        this.instrumentationKey = component.instrumentationKey();
+        this.subscriptionName = subscription.getSubscriptionName();
+        this.subscriptionId = subscription.getSubscriptionId();
+        this.location = component.regionName();
+        this.resourceGroup = component.resourceGroupName();
+        this.imported = imported;
     }
 
     public ApplicationInsightsResource(String resourceName,

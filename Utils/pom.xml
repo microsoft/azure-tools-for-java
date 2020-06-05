@@ -105,27 +105,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>com.microsoft.azure</groupId>
-                            <artifactId>applicationinsights-management</artifactId>
-                            <version>1.0.3</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/lib/applicationinsights-management-1.0.3.jar</file>
-                        </configuration>
-                    </execution>
-                </executions>
-                <inherited>false</inherited>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>3.0.1</version>
@@ -140,6 +119,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
+                <artifactId>azure-mgmt-insights</artifactId>
+                <version>1.0.0-beta</version>
+            </dependency>
             <dependency>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-client</artifactId>

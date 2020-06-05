@@ -26,9 +26,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.microsoft.applicationinsights.management.rest.ApplicationInsightsManagementClient;
-import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
-import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationType;
@@ -220,44 +217,7 @@ public class AzureSDKManager {
         return withCreate.create();
     }
 
-    public static List<Resource> getApplicationInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException, RestOperationException {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) { // not signed in
-            return null;
-        }
-        String tenantId = subscription.getTenantId();
-        return getApplicationManagementClient(tenantId, azureManager.getAccessToken(tenantId)).getResources(subscription.getSubscriptionId());
-    }
-
-    public static Resource createApplicationInsightsResource(@NotNull SubscriptionDetail subscription,
-                                                             @NotNull String resourceGroupName,
-                                                             boolean isNewGroup,
-                                                             @NotNull String resourceName,
-                                                             @NotNull String location) throws Exception {
-
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) { // not signed in
-            return null;
-        }
-        String tenantId = subscription.getTenantId();
-        ApplicationInsightsManagementClient client = getApplicationManagementClient(tenantId, azureManager.getAccessToken(tenantId));
-        if (isNewGroup) {
-            client.createResourceGroup(subscription.getSubscriptionId(), resourceGroupName, location);
-        }
-        return client.createResource(subscription.getSubscriptionId(), resourceGroupName, resourceName, location);
-    }
-
-    public static List<String> getLocationsForApplicationInsights(SubscriptionDetail subscription) throws Exception {
-        AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-        if (azureManager == null) { // not signed in
-            return null;
-        }
-        String tenantId = subscription.getTenantId();
-        return getApplicationManagementClient(tenantId, azureManager.getAccessToken(tenantId))
-                .getAvailableGeoLocations();
-    }
-
-    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException, RestOperationException {
+    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException {
         final InsightsManager insightsManager = getInsightsManagerClient(subscription.getSubscriptionId());
         return insightsManager == null ? null : insightsManager.components().list();
     }
@@ -315,13 +275,6 @@ public class AzureSDKManager {
             Log.error(e);
         }
         return Collections.emptyList();
-    }
-
-    @NotNull
-    private static ApplicationInsightsManagementClient getApplicationManagementClient(@NotNull String tenantId, @NotNull String accessToken)
-            throws RestOperationException, IOException {
-        String userAgent = "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0";
-        return new ApplicationInsightsManagementClient(tenantId, accessToken, userAgent);
     }
 
     @NotNull

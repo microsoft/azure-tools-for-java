@@ -88,7 +88,6 @@ configurations {
 apply plugin: 'java'
 
 dependencies {
-    compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
     compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
     compile 'commons-io:commons-io:2.6'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'

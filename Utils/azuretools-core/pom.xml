@@ -99,7 +99,6 @@
         <dependency>
             <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
             <artifactId>azure-mgmt-insights</artifactId>
-            <version>1.0.0-beta</version>
         </dependency>
         <dependency>
             <groupId>com.spotify</groupId>
@@ -178,11 +177,6 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>applicationinsights-management</artifactId>
-            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>

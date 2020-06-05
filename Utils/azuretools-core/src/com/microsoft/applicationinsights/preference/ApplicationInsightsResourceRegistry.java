@@ -22,7 +22,7 @@
 
 package com.microsoft.applicationinsights.preference;
 
-import com.microsoft.applicationinsights.management.rest.model.Resource;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 
 import java.util.*;
@@ -210,13 +210,10 @@ public class ApplicationInsightsResourceRegistry {
      * @return
      */
     public static List<ApplicationInsightsResource> prepareAppResListFromRes(
-            List<Resource> resourceList, SubscriptionDetail sub) {
+            List<ApplicationInsightsComponent> resourceList, SubscriptionDetail sub) {
         List<ApplicationInsightsResource> list = new ArrayList<ApplicationInsightsResource>();
-        for (Resource resource : resourceList) {
-            ApplicationInsightsResource resourceToAdd = new ApplicationInsightsResource(
-                    resource.getName(), resource.getInstrumentationKey(),
-                    sub.toString(), sub.getSubscriptionId(),
-                    resource.getLocation(), resource.getResourceGroup(), true);
+        for (ApplicationInsightsComponent resource : resourceList) {
+            ApplicationInsightsResource resourceToAdd = new ApplicationInsightsResource(resource, sub, true);
             list.add(resourceToAdd);
         }
         return list;
