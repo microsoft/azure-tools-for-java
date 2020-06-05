@@ -153,8 +153,6 @@ public enum AppServiceStreamingLogManager {
                 "You must configure Application Insights to enable streaming logs on Linux Function Apps.";
         private static final String AI_INSTANCES_NOT_FOUND =
                 "Application Insights instance defined in app settings cannot be found in current subscription %s";
-        private static final String FAILED_TO_GET_APPLICATION_INSIGHT_INSTANCE =
-                "Failed to get Application Insights instance defined in app settings";
 
         private String resourceId;
         private FunctionApp functionApp;
