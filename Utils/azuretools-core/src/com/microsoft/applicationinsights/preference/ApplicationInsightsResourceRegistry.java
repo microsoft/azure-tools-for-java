@@ -103,9 +103,9 @@ public class ApplicationInsightsResourceRegistry {
         List<ApplicationInsightsResourceWithSameName> sameResourceNameList =
                 new ArrayList<ApplicationInsightsResourceWithSameName>();
         for (int i = 0; i < nameList.size(); i++) {
-            for (int j = i+1; j < nameList.size(); j++) {
+            for (int j = i + 1; j < nameList.size(); j++) {
                 // check if duplicate entry present in list.
-                if (i!=j && nameList.get(i).equals(nameList.get(j))) {
+                if (i != j && nameList.get(i).equals(nameList.get(j))) {
                     ApplicationInsightsResourceWithSameName resource =
                             new ApplicationInsightsResourceWithSameName(nameList.get(i));
                     /*
@@ -151,7 +151,6 @@ public class ApplicationInsightsResourceRegistry {
      * @param resourceName
      * @param subName
      * @return String
-     * <sapplication-insight-resource-name> (<subscription name>)
      */
     public static String concatenateRsrcAndSubName(String resourceName, String subName) {
         String resourceAndSub = resourceName + " (" + subName + ")";

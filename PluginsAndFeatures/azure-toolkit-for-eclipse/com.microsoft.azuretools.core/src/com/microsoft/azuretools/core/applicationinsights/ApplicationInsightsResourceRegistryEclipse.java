@@ -55,7 +55,7 @@ public class ApplicationInsightsResourceRegistryEclipse {
             if (sub.isSelected()) {
                 try {
                     // fetch resources available for particular subscription
-                	 List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub);
+                    List<ApplicationInsightsComponent> resourceList = AzureSDKManager.getInsightsResources(sub);
 
                     // Removal logic
                     List<ApplicationInsightsResource> registryList = ApplicationInsightsResourceRegistry
@@ -138,16 +138,16 @@ public class ApplicationInsightsResourceRegistryEclipse {
         try {
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
             IWorkspaceRoot root = workspace.getRoot();
-            for (IProject iProject : root.getProjects()) {
-                if (iProject.isOpen() && WebPropertyTester.isWebProj(iProject)) {
+            for (IProject project : root.getProjects()) {
+                if (project.isOpen() && WebPropertyTester.isWebProj(project)) {
                     String aiXMLPath;
-                    if (iProject.hasNature(Messages.natMaven)) {
+                    if (project.hasNature(Messages.natMaven)) {
                         aiXMLPath = Messages.aiXMLPathMaven;
                     } else {
                         aiXMLPath = Messages.aiXMLPath;
                     }
                     AILibraryHandler handler = new AILibraryHandler();
-                    IFile file = iProject.getFile(aiXMLPath);
+                    IFile file = project.getFile(aiXMLPath);
                     if (file.exists()) {
                         handler.parseAIConfXmlPath(file.getLocation().toOSString());
                         String key = handler.getAIInstrumentationKey();
@@ -157,7 +157,7 @@ public class ApplicationInsightsResourceRegistryEclipse {
                     }
                 }
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Activator.getDefault().log(ex.getMessage(), ex);
         }
         return keyList;

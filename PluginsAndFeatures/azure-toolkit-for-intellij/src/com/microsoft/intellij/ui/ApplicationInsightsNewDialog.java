@@ -87,15 +87,7 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
         };
         createNewBtn.addItemListener(updateListener);
         useExistingBtn.addItemListener(updateListener);
-//        comboReg.setRenderer(new ListCellRendererWrapper<Object>() {
-//
-//            @Override
-//            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
-//                if (o != null && (o instanceof Location)) {
-//                    setText("  " + ((Location)o).displayName());
-//                }
-//            }
-//        });
+
         createNewBtn.setSelected(true);
         populateValues();
     }
@@ -140,8 +132,8 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
 
     private void populateResourceGroupValues(String subscriptionId, String valtoSet) {
         try {
-            com.microsoft.azuretools.sdkmanage.AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            Azure azure = azureManager.getAzure(subscriptionId);
+            AzureManager manager = AuthMethodManager.getInstance().getAzureManager();
+            Azure azure = manager.getAzure(subscriptionId);
             List<com.microsoft.azure.management.resources.ResourceGroup> groups = azure.resourceGroups().list();
             List<String> groupStringList = groups.stream().map(com.microsoft.azure.management.resources.ResourceGroup::name).collect(Collectors.toList());
             if (groupStringList.size() > 0) {
@@ -173,7 +165,8 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
     protected void doOKAction() {
         if (txtName.getText().trim().isEmpty()
                 || comboSub.getSelectedItem() == null
-                || ((((String) comboGrp.getSelectedItem()).isEmpty() && useExistingBtn.isSelected()) || (textGrp.getText().isEmpty() && createNewBtn.isSelected()))
+                || ((((String) comboGrp.getSelectedItem()).isEmpty() && useExistingBtn.isSelected())
+                || (textGrp.getText().isEmpty() && createNewBtn.isSelected()))
                 || ((String) comboReg.getSelectedItem()).isEmpty()) {
             if (comboSub.getSelectedItem() == null || comboSub.getItemCount() <= 0) {
                 PluginUtil.displayErrorDialog(message("aiErrTtl"), message("noSubErrMsg"));
@@ -185,8 +178,12 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
         } else {
             boolean isNewGroup = createNewBtn.isSelected();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
-            DefaultLoader.getIdeHelper().runInBackground(null,"Creating Application Insights Resource " + txtName.getText(), false, true,
-                    "Creating Application Insights Resource " + txtName.getText(), new Runnable() {
+            DefaultLoader.getIdeHelper().runInBackground(null,
+                                                         "Creating Application Insights Resource " + txtName.getText(),
+                                                         false,
+                                                         true,
+                                                         "Creating Application Insights Resource " + txtName.getText(),
+                                                         new Runnable() {
                         @Override
                         public void run() {
                             try {

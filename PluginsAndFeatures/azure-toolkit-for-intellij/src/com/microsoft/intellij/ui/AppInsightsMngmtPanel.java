@@ -139,16 +139,12 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
                 AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
                 List<SubscriptionDetail> subList = azureManager.getSubscriptionManager().getSubscriptionDetails();
                 if (subList.size() > 0) {
-//                if (!AzureSettings.getSafeInstance(myProject).isAppInsightsLoaded()) {
                     updateApplicationInsightsResourceRegistry(subList, myProject);
                 } else {
                     // just show manually added list from preferences
                     // Neither clear subscription list nor show sign in dialog as user may just want to add key manually.
                     keeepManuallyAddedList(myProject);
                 }
-//                } else {
-                // show list from preferences - getTableContent() does it. So nothing to handle here
-//                }
             } else {
                 // just show manually added list from preferences
                 keeepManuallyAddedList(myProject);
@@ -212,7 +208,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
                 // Neither clear subscription list nor show sign in dialog as user may just want to add key manually.
                 keeepManuallyAddedList(project);
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage());
         }
     }
@@ -221,7 +217,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
         return e -> {
             try {
                 createNewDilaog();
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 AzurePlugin.log(ex.getMessage(), ex);
             }
         };
@@ -245,7 +241,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
                     dialog.show();
                 }
             }, ModalityState.defaultModalityState());
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage(), ex);
         }
     }
@@ -365,8 +361,9 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
                     return resource.getResourceName();
                 case 1:
                     return resource.getInstrumentationKey();
+                default:
+                    return null;
             }
-            return null;
         }
     }
 }
