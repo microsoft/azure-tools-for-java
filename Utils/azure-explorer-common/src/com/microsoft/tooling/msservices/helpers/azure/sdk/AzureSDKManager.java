@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.helpers.azure.sdk;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.microsoft.applicationinsights.management.rest.ApplicationInsightsManagementClient;
 import com.microsoft.applicationinsights.management.rest.client.RestOperationException;
 import com.microsoft.applicationinsights.management.rest.model.Resource;
@@ -66,6 +67,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class AzureSDKManager {
+
+    private static final String INSIGHTS_REGION_LIST_URL = "https://management.azure.com/providers/microsoft.insights?api-version=2015-05-01";
 
     public static StorageAccount createStorageAccount(String subscriptionId, String name, String region, boolean newResourceGroup, String resourceGroup,
                                                       Kind kind, AccessTier accessTier, boolean enableEncription, String skuName) throws Exception {
@@ -281,16 +284,16 @@ public class AzureSDKManager {
                 .create();
     }
 
-    // As AI SDK didn't provide list supported regions interface, call the api directly
-    public static List<String> getLocationsForInsights(SubscriptionDetail subscription) throws Exception {
-        final String requestUrl = "https://management.azure.com/providers/microsoft.insights?api-version=2015-05-01";
-        final HttpGet request = new HttpGet(requestUrl);
+    // TODO: AI SDK doesn't provide a method to list regions which are available regions to create AI,
+    // we are requiring the SDK to provide that API, before SDK side fix, we will use our own impl
+    public static List<String> getLocationsForInsights(SubscriptionDetail subscription) throws IOException {
+        final HttpGet request = new HttpGet(INSIGHTS_REGION_LIST_URL);
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) {
             return Collections.emptyList();
         }
         final String accessToken = azureManager.getAccessToken(azureManager.getTenantIdBySubscription(subscription.getSubscriptionId()));
-        request.setHeader("Authorization", accessToken);
+        request.setHeader("Authorization", String.format("Bearer %s", accessToken));
         final CloseableHttpResponse response = HttpClients.createDefault().execute(request);
         final InputStream responseStream = response.getEntity().getContent();
         try (final InputStreamReader isr = new InputStreamReader(responseStream)) {
@@ -308,7 +311,7 @@ public class AzureSDKManager {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException | JsonParseException e) {
             Log.error(e);
         }
         return Collections.emptyList();
