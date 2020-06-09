@@ -73,9 +73,6 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     private static final String DIALOG_TITLE = "Create Function App";
     private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
     private static final String APPINSIGHTS_INSTRUMENTATION_KEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
-    private static final String APPLICTION_INSIGHTS_CONFLICTS = "Can not set `APPINSIGHTS_INSTRUMENTATIONKEY` in app "
-            + "settings while disable application insights, please remove `APPINSIGHTS_INSTRUMENTATIONKEY` or enable"
-            + " application insights";
 
     private JPanel contentPanel;
     private JButton buttonOK;

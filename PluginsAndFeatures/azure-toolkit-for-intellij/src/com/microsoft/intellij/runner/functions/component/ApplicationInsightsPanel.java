@@ -51,7 +51,7 @@ public class ApplicationInsightsPanel extends JPanel {
     public ApplicationInsightsPanel() {
         cbInsights.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(@NotNull final JList jList,
+            public void customize(@NotNull final JList list,
                                   final Object o,
                                   final int i,
                                   final boolean b,
@@ -61,7 +61,7 @@ public class ApplicationInsightsPanel extends JPanel {
                     setText(insights.isNewCreated ?
                             String.format(AzureFunctionsConstants.NEW_CREATED_RESOURCE, insights.name) :
                             String.format("%s (Resource Group: %s)", insights.name, insights.resourceGroup));
-                }else if(o instanceof String){
+                } else if (o instanceof String) {
                     setText((String) o);
                 }
             }
@@ -74,7 +74,7 @@ public class ApplicationInsightsPanel extends JPanel {
             }
         });
 
-        newInsightsWrapper = ApplicationInsightsWrapper.wrapperNewInsightsInstance("New_AppInsights");
+        newInsightsWrapper = ApplicationInsightsWrapper.wrapperNewInsightsInstance();
     }
 
     public void loadApplicationInsights(String subscriptionId) {
@@ -95,15 +95,15 @@ public class ApplicationInsightsPanel extends JPanel {
     }
 
     public boolean isCreateNewInsights() {
-        return selectWrapper.isNewCreated;
+        return selectWrapper == null ? false : selectWrapper.isNewCreated;
     }
 
     public String getApplicationInsightsInstrumentKey() {
-        return selectWrapper.instrumentKey;
+        return selectWrapper == null ? null : selectWrapper.instrumentKey;
     }
 
     public String getNewApplicationInsightsName() {
-        return selectWrapper.name;
+        return selectWrapper == null ? null : selectWrapper.name;
     }
 
     private void onSelectApplicationInsights() {
@@ -150,9 +150,8 @@ public class ApplicationInsightsPanel extends JPanel {
         private String instrumentKey;
         private boolean isNewCreated;
 
-        public static ApplicationInsightsWrapper wrapperNewInsightsInstance(final String name) {
+        public static ApplicationInsightsWrapper wrapperNewInsightsInstance() {
             final ApplicationInsightsWrapper result = new ApplicationInsightsWrapper();
-            result.name = name;
             result.isNewCreated = true;
             return result;
         }
