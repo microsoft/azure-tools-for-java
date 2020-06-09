@@ -217,22 +217,25 @@ public class AzureSDKManager {
         return withCreate.create();
     }
 
-    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException {
-        final InsightsManager insightsManager = getInsightsManagerClient(subscription.getSubscriptionId());
+    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull String subscriptionId) throws IOException {
+        final InsightsManager insightsManager = getInsightsManagerClient(subscriptionId);
         return insightsManager == null ? null : insightsManager.components().list();
     }
 
-    public static ApplicationInsightsComponent createInsightsResource(@NotNull SubscriptionDetail subscription,
-                                                             @NotNull String resourceGroupName,
-                                                             boolean isNewGroup,
-                                                             @NotNull String resourceName,
-                                                             @NotNull String location) throws Exception {
-        final InsightsManager insightsManager = getInsightsManagerClient(subscription.getSubscriptionId());
+    public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException {
+        return getInsightsResources(subscription.getSubscriptionId());
+    }
+
+    public static ApplicationInsightsComponent createInsightsResource(@NotNull String subscriptionId,
+                                                                      @NotNull String resourceGroupName,
+                                                                      @NotNull String resourceName,
+                                                                      @NotNull String location) throws IOException {
+        final InsightsManager insightsManager = getInsightsManagerClient(subscriptionId);
         if (insightsManager == null) { // not signed in
             return null;
         }
-        final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscription.getSubscriptionId());
-        if (isNewGroup) {
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
+        if (!azure.resourceGroups().contain(resourceGroupName)) {
             azure.resourceGroups().define(resourceGroupName).withRegion(location).create();
         }
         return insightsManager.components()
@@ -244,15 +247,21 @@ public class AzureSDKManager {
                 .create();
     }
 
-    // TODO: AI SDK doesn't provide a method to list regions which are available regions to create AI,
-    // we are requiring the SDK to provide that API, before SDK side fix, we will use our own impl
-    public static List<String> getLocationsForInsights(SubscriptionDetail subscription) throws IOException {
+    public static ApplicationInsightsComponent createInsightsResource(@NotNull SubscriptionDetail subscription,
+                                                                      @NotNull String resourceGroupName,
+                                                                      boolean isNewGroup,
+                                                                      @NotNull String resourceName,
+                                                                      @NotNull String location) throws IOException {
+        return createInsightsResource(subscription.getSubscriptionId(), resourceGroupName, resourceName, location);
+    }
+
+    public static List<String> getLocationsForInsights(String subscriptionId) throws IOException {
         final HttpGet request = new HttpGet(INSIGHTS_REGION_LIST_URL);
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         if (azureManager == null) {
             return Collections.emptyList();
         }
-        final String accessToken = azureManager.getAccessToken(azureManager.getTenantIdBySubscription(subscription.getSubscriptionId()));
+        final String accessToken = azureManager.getAccessToken(azureManager.getTenantIdBySubscription(subscriptionId));
         request.setHeader("Authorization", String.format("Bearer %s", accessToken));
         final CloseableHttpResponse response = HttpClients.createDefault().execute(request);
         final InputStream responseStream = response.getEntity().getContent();
@@ -275,6 +284,12 @@ public class AzureSDKManager {
             Log.error(e);
         }
         return Collections.emptyList();
+    }
+
+    // TODO: AI SDK doesn't provide a method to list regions which are available regions to create AI,
+    // we are requiring the SDK to provide that API, before SDK side fix, we will use our own impl
+    public static List<String> getLocationsForInsights(SubscriptionDetail subscription) throws IOException {
+        return getLocationsForInsights(subscription.getSubscriptionId());
     }
 
     @NotNull
