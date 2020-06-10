@@ -77,11 +77,10 @@ public class ApplicationInsightsPanel extends JPanel {
 
     public void loadApplicationInsights(String subscriptionId) {
         this.subscriptionId = subscriptionId;
+        beforeLoadApplicationInsights();
         if (rxDisposable != null && !rxDisposable.isDisposed()) {
             rxDisposable.dispose();
         }
-        beforeLoadApplicationInsights();
-
         rxDisposable = Observable
                 .fromCallable(() -> {
                     try {

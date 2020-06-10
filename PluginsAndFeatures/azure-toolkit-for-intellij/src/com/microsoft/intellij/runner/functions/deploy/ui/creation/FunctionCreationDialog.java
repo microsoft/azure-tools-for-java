@@ -200,7 +200,6 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
 
     private void selectOS() {
         appServicePlanPanel.setOSType(getSelectedOperationSystemEnum());
-        pack();
     }
 
     private void onOK() {

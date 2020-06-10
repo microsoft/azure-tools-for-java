@@ -30,15 +30,16 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
-import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.*;
 import java.awt.event.ItemListener;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,7 +56,7 @@ public class AppServicePlanPanel extends JPanel {
     private JPanel pnlRoot;
 
     private Window window;
-    private Subscription subscription;
+    private Disposable rxDisposable;
 
     private String subscriptionId;
     private OperatingSystem operatingSystem;
@@ -118,16 +119,22 @@ public class AppServicePlanPanel extends JPanel {
         if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
             this.subscriptionId = subscriptionId;
             this.operatingSystem = operatingSystem;
-            if (subscription != null && !subscription.isUnsubscribed()) {
-                subscription.unsubscribe();
-            }
             beforeLoadAppServicePlan();
-            subscription = Observable.fromCallable(() -> {
-                return AzureFunctionMvpModel.getInstance()
-                                            .listAppServicePlanBySubscriptionId(subscriptionId).stream()
-                                            .sorted((first, second) -> StringUtils.compare(first.name(), second.name()))
-                                            .collect(Collectors.toList());
-            }).subscribeOn(Schedulers.newThread()).subscribe(this::fillAppServicePlan);
+            if (rxDisposable != null && !rxDisposable.isDisposed()) {
+                rxDisposable.dispose();
+            }
+            rxDisposable = Observable.fromCallable(() -> {
+                try {
+                    return AzureFunctionMvpModel.getInstance()
+                                                .listAppServicePlanBySubscriptionId(subscriptionId).stream()
+                                                .sorted((first, second) ->
+                                                                StringUtils.compare(first.name(), second.name()))
+                                                .collect(Collectors.toList());
+                } catch (InterruptedIOException | RuntimeException ex) {
+                    // swallow InterruptedException while switch subscription
+                    return new ArrayList<AppServicePlan>();
+                }
+            }).subscribeOn(Schedulers.io()).subscribe(this::fillAppServicePlan);
         }
     }
 

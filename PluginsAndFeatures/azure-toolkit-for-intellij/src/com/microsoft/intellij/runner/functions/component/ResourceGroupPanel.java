@@ -27,14 +27,17 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.microsoft.intellij.common.CommonConst.NEW_CREATED_RESOURCE;
@@ -42,11 +45,13 @@ import static com.microsoft.intellij.common.CommonConst.NEW_CREATED_RESOURCE;
 public class ResourceGroupPanel extends JPanel {
     public static final String CREATE_RESOURCE_GROUP = "Create resource group...";
     private JComboBox cbResourceGroup;
-    private JPanel panel1;
+    private JPanel pnlRoot;
 
     private Window window;
     private String subscriptionId;
     private ResourceGroupWrapper selectedResourceGroup;
+
+    private Disposable rxDisposable;
 
     public ResourceGroupPanel(Window window) {
         this();
@@ -91,9 +96,20 @@ public class ResourceGroupPanel extends JPanel {
         if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
             this.subscriptionId = subscriptionId;
             beforeLoadSubscription();
-            Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId))
-                      .subscribeOn(Schedulers.newThread())
-                      .subscribe(this::fillResourceGroup);
+            if (rxDisposable != null && !rxDisposable.isDisposed()) {
+                rxDisposable.dispose();
+            }
+            rxDisposable = Observable
+                    .fromCallable(() -> {
+                        try {
+                            return AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId);
+                        } catch (RuntimeException ex) {
+                            // swallow run time exception caused by interrupt while switch subscription
+                            return new ArrayList<ResourceGroup>();
+                        }
+                    })
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(this::fillResourceGroup, e -> fillResourceGroup(Collections.emptyList()));
         }
     }
 
