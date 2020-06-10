@@ -280,6 +280,13 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             return Observable.empty();
         }
 
+        // To fix issue https://github.com/microsoft/azure-tools-for-java/issues/4419
+        // When we updated the job configurations table and clicked cancel, the new table config actually takes
+        // effect. However, the new table config doesn't apply to submission parameter. So we need to manually update
+        // the submission parameter with the new table here.
+        getSubmitModel().getSubmissionParameter().applyFlattedJobConf(
+                getSubmitModel().getTableModel().getJobConfigMap());
+
         return ((SparkSubmissionRunner) runner).buildSparkBatchJob(getSubmitModel())
                                                .doOnNext(batch -> sparkRemoteBatch = batch);
     }
