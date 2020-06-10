@@ -26,25 +26,28 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.intellij.runner.functions.AzureFunctionsConstants;
+import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.jetbrains.annotations.NotNull;
-import rx.Observable;
-import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
+import java.io.InterruptedIOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ApplicationInsightsPanel extends JPanel {
-    public static final String CREATE_NEW_APPLICATION_INSIGHTS = "Create New Application Insights...";
+    private static final String CREATE_NEW_APPLICATION_INSIGHTS = "Create New Application Insights...";
 
     private JComboBox cbInsights;
     private JPanel pnlRoot;
     private String subscriptionId;
 
-    private Subscription subscription;
+    private Disposable rxDisposable;
     private ApplicationInsightsWrapper selectWrapper;
     private ApplicationInsightsWrapper newInsightsWrapper;
 
@@ -56,13 +59,8 @@ public class ApplicationInsightsPanel extends JPanel {
                                   final int i,
                                   final boolean b,
                                   final boolean b1) {
-                if (o instanceof ApplicationInsightsWrapper) {
-                    final ApplicationInsightsWrapper insights = (ApplicationInsightsWrapper) o;
-                    setText(insights.isNewCreated ?
-                            String.format(AzureFunctionsConstants.NEW_CREATED_RESOURCE, insights.name) :
-                            String.format("%s (Resource Group: %s)", insights.name, insights.resourceGroup));
-                } else if (o instanceof String) {
-                    setText((String) o);
+                if (o != null) {
+                    setText(o.toString());
                 }
             }
         });
@@ -79,14 +77,22 @@ public class ApplicationInsightsPanel extends JPanel {
 
     public void loadApplicationInsights(String subscriptionId) {
         this.subscriptionId = subscriptionId;
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
+        if (rxDisposable != null && !rxDisposable.isDisposed()) {
+            rxDisposable.dispose();
         }
         beforeLoadApplicationInsights();
-        subscription = Observable
-                .fromCallable(() -> AzureSDKManager.getInsightsResources(subscriptionId))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(this::fillApplicationInsights);
+
+        rxDisposable = Observable
+                .fromCallable(() -> {
+                    try {
+                        return AzureSDKManager.getInsightsResources(subscriptionId);
+                    } catch (InterruptedIOException | RuntimeException ex) {
+                        // swallow InterruptedException while switch subscription
+                        return new ArrayList<ApplicationInsightsComponent>();
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .subscribe(this::fillApplicationInsights, e -> fillApplicationInsights(Collections.emptyList()));
     }
 
     public void changeDefaultApplicationInsightsName(String name) {
@@ -109,13 +115,13 @@ public class ApplicationInsightsPanel extends JPanel {
     private void onSelectApplicationInsights() {
         final Object selectedObject = cbInsights.getSelectedItem();
         if (CREATE_NEW_APPLICATION_INSIGHTS.equals(selectedObject)) {
-            ApplicationManager.getApplication().invokeLater(this::createApplicationInsights);
+            ApplicationManager.getApplication().invokeLater(this::onSelectCreateApplicationInsights);
         } else if (selectedObject instanceof ApplicationInsightsWrapper) {
             selectWrapper = (ApplicationInsightsWrapper) selectedObject;
         }
     }
 
-    private void createApplicationInsights() {
+    private void onSelectCreateApplicationInsights() {
         cbInsights.setSelectedItem(null);
         cbInsights.setPopupVisible(false);
         final NewApplicationInsightsDialog dialog = new NewApplicationInsightsDialog();
@@ -134,14 +140,17 @@ public class ApplicationInsightsPanel extends JPanel {
         cbInsights.addItem(newInsightsWrapper);
         applicationInsightsComponents
                 .forEach(component -> cbInsights.addItem(ApplicationInsightsWrapper.wrapperInsightsInstance(component)));
-        cbInsights.setSelectedItem(selectWrapper == null ? newInsightsWrapper : selectWrapper);
+        final ApplicationInsightsWrapper toSelectWrapper =
+                selectWrapper != null && applicationInsightsComponents.contains(selectWrapper) ?
+                selectWrapper : newInsightsWrapper;
+        cbInsights.setSelectedItem(toSelectWrapper);
         onSelectApplicationInsights();
     }
 
     private void beforeLoadApplicationInsights() {
         cbInsights.removeAllItems();
         cbInsights.setEnabled(false);
-        cbInsights.addItem("Loading...");
+        cbInsights.addItem(CommonConst.LOADING_TEXT);
     }
 
     static class ApplicationInsightsWrapper {
@@ -183,6 +192,12 @@ public class ApplicationInsightsPanel extends JPanel {
 
         public void setName(final String name) {
             this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return isNewCreated ? String.format(CommonConst.NEW_CREATED_RESOURCE, name) :
+                   String.format(CommonConst.RESOURCE_WITH_RESOURCE_GROUP, name, resourceGroup);
         }
     }
 }

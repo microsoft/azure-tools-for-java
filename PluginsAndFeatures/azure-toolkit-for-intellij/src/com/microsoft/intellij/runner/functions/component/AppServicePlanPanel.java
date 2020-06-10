@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEW_CREATED_RESOURCE;
+import static com.microsoft.intellij.common.CommonConst.NEW_CREATED_RESOURCE;
 import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION;
 import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION_PRICING_TIER;
 

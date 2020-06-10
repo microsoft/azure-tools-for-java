@@ -37,7 +37,7 @@ import java.awt.Window;
 import java.awt.event.ItemListener;
 import java.util.List;
 
-import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEW_CREATED_RESOURCE;
+import static com.microsoft.intellij.common.CommonConst.NEW_CREATED_RESOURCE;
 
 public class ResourceGroupPanel extends JPanel {
     public static final String CREATE_RESOURCE_GROUP = "Create resource group...";

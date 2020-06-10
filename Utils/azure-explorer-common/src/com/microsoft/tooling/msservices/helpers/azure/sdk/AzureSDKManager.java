@@ -26,6 +26,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationType;
@@ -219,7 +220,7 @@ public class AzureSDKManager {
 
     public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull String subscriptionId) throws IOException {
         final InsightsManager insightsManager = getInsightsManagerClient(subscriptionId);
-        return insightsManager == null ? null : insightsManager.components().list();
+        return insightsManager == null ? Collections.emptyList() : new ArrayList<>(insightsManager.components().list());
     }
 
     public static List<ApplicationInsightsComponent> getInsightsResources(@NotNull SubscriptionDetail subscription) throws IOException {
