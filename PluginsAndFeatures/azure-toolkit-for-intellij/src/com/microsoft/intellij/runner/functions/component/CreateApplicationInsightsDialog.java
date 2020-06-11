@@ -31,14 +31,13 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewApplicationInsightsDialog extends AzureDialogWrapper {
+public class CreateApplicationInsightsDialog extends AzureDialogWrapper {
     private JPanel contentPane;
     private JTextField txtInsightsName;
     private JButton buttonOK;
-
     private String applicationInsightsName;
 
-    public NewApplicationInsightsDialog() {
+    public CreateApplicationInsightsDialog() {
         super(false);
         setModal(true);
         setTitle("Create new Application Insights");

@@ -181,6 +181,13 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         } catch (IllegalArgumentException iae) {
             res.add(new ValidationInfo(iae.getMessage(), txtFunctionAppName));
         }
+        if (applicationInsightsPanel.isCreateNewInsights()) {
+            try {
+                ValidationUtils.validateApplicationInsightsName(applicationInsightsPanel.getNewApplicationInsightsName());
+            } catch (IllegalArgumentException iae) {
+                res.add(new ValidationInfo(iae.getMessage(), applicationInsightsPanel.getComboComponent()));
+            }
+        }
         if (StringUtils.isEmpty(functionConfiguration.getSubscription())) {
             res.add(new ValidationInfo("Please select subscription", subscriptionPanel.getComboComponent()));
         }
@@ -282,10 +289,10 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
             final String region = appServicePlanPanel.getAppServicePlanRegion();
             final String insightsName = applicationInsightsPanel.getNewApplicationInsightsName();
             final ApplicationInsightsComponent insights =
-                    AzureSDKManager.createInsightsResource(functionConfiguration.getSubscription(),
-                                                           functionConfiguration.getResourceGroup(),
-                                                           insightsName,
-                                                           region);
+                    AzureSDKManager.getOrCreateApplicationInsights(functionConfiguration.getSubscription(),
+                                                                   functionConfiguration.getResourceGroup(),
+                                                                   insightsName,
+                                                                   region);
             instrumentationKey = insights.instrumentationKey();
         }
         functionConfiguration.getAppSettings().put(APPINSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);

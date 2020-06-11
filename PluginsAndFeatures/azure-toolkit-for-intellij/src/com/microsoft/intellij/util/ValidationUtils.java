@@ -135,10 +135,10 @@ public class ValidationUtils {
             throw new IllegalArgumentException("Application insights name cannot be longer than 255 characters.");
         }
         if (applicationInsightsName.endsWith(".")) {
-            throw new IllegalArgumentException("Application name cannot end with '.'.");
+            throw new IllegalArgumentException("Application insights name cannot end with '.'.");
         }
         if (applicationInsightsName.endsWith(" ") || applicationInsightsName.startsWith(" ")) {
-            throw new IllegalArgumentException("Application name cannot begin or end with space character.");
+            throw new IllegalArgumentException("Application insights name cannot begin or end with space character.");
         }
         final Pattern pattern = Pattern.compile(APP_INSIGHTS_NAME_INVALID_CHARACTERS);
         final Matcher matcher = pattern.matcher(applicationInsightsName);

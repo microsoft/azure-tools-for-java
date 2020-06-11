@@ -226,6 +226,25 @@ public class AzureSDKManager {
         return getInsightsResources(subscription.getSubscriptionId());
     }
 
+    // SDK will return existing application insights component when you create new one with existing name
+    // Use this method in case SDK service update their behavior
+    public static ApplicationInsightsComponent getOrCreateApplicationInsights(@NotNull String subscriptionId,
+                                                                              @NotNull String resourceGroupName,
+                                                                              @NotNull String resourceName,
+                                                                              @NotNull String location) throws IOException {
+        final InsightsManager insightsManager = getInsightsManagerClient(subscriptionId);
+        if (insightsManager == null) {
+            return null;
+        }
+        ApplicationInsightsComponent component = null;
+        try {
+            component = insightsManager.components().getByResourceGroup(resourceGroupName, resourceName);
+        } catch (Exception e) {
+            // SDK will throw exception when resource not found
+        }
+        return component != null ? component : createInsightsResource(subscriptionId, resourceGroupName, resourceName, location);
+    }
+
     public static ApplicationInsightsComponent createInsightsResource(@NotNull String subscriptionId,
                                                                       @NotNull String resourceGroupName,
                                                                       @NotNull String resourceName,

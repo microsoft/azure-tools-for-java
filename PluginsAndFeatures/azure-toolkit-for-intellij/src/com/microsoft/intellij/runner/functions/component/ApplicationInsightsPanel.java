@@ -110,6 +110,10 @@ public class ApplicationInsightsPanel extends JPanel {
         return selectWrapper == null ? null : selectWrapper.name;
     }
 
+    public JComponent getComboComponent() {
+        return cbInsights;
+    }
+
     private void onSelectApplicationInsights() {
         final Object selectedObject = cbInsights.getSelectedItem();
         if (CREATE_NEW_APPLICATION_INSIGHTS.equals(selectedObject)) {
@@ -122,7 +126,7 @@ public class ApplicationInsightsPanel extends JPanel {
     private void onSelectCreateApplicationInsights() {
         cbInsights.setSelectedItem(null);
         cbInsights.setPopupVisible(false);
-        final NewApplicationInsightsDialog dialog = new NewApplicationInsightsDialog();
+        final CreateApplicationInsightsDialog dialog = new CreateApplicationInsightsDialog();
         dialog.pack();
         if (dialog.showAndGet()) {
             newInsightsWrapper.setName(dialog.getApplicationInsightsName());
