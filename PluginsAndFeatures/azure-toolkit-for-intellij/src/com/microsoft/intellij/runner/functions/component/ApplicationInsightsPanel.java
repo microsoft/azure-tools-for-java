@@ -78,7 +78,7 @@ public class ApplicationInsightsPanel extends JPanel {
             rxDisposable.dispose();
         }
         rxDisposable =
-                ComponentUtils.loadResourcesSync(
+                ComponentUtils.loadResourcesAsync(
                     () -> AzureSDKManager.getInsightsResources(subscriptionId),
                     insightsComponents -> fillApplicationInsights(insightsComponents),
                     exception -> {

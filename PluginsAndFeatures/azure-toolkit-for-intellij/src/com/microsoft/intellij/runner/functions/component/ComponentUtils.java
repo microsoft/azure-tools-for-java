@@ -33,9 +33,9 @@ import java.util.function.Consumer;
 
 public class ComponentUtils {
 
-    public static <T> Disposable loadResourcesSync(Callable<T> callable,
-                                                   Consumer<T> resourceHandler,
-                                                   Consumer<? super Throwable> errorHandler) {
+    public static <T> Disposable loadResourcesAsync(Callable<T> callable,
+                                                    Consumer<T> resourceHandler,
+                                                    Consumer<? super Throwable> errorHandler) {
         return Observable
                 .fromCallable(() -> {
                     try {
@@ -51,14 +51,14 @@ public class ComponentUtils {
                 })
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        resource -> {
-                            DefaultLoader.getIdeHelper().invokeLater(() -> resourceHandler.accept(resource));
-                        },
-                        exception -> {
-                            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                                errorHandler.accept(exception);
-                            });
+                    resource -> {
+                        DefaultLoader.getIdeHelper().invokeLater(() -> resourceHandler.accept(resource));
+                    },
+                    exception -> {
+                        DefaultLoader.getIdeHelper().invokeLater(() -> {
+                            errorHandler.accept(exception);
                         });
+                    });
     }
 
     private ComponentUtils(){

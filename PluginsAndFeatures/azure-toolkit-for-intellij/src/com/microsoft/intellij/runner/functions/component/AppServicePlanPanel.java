@@ -123,7 +123,7 @@ public class AppServicePlanPanel extends JPanel {
                 rxDisposable.dispose();
             }
             rxDisposable =
-                    ComponentUtils.loadResourcesSync(
+                    ComponentUtils.loadResourcesAsync(
                         () -> AzureFunctionMvpModel.getInstance()
                                                    .listAppServicePlanBySubscriptionId(subscriptionId).stream()
                                                    .sorted((first, second) ->

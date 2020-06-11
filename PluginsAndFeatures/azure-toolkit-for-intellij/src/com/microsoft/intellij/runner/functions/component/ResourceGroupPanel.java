@@ -98,7 +98,7 @@ public class ResourceGroupPanel extends JPanel {
                 rxDisposable.dispose();
             }
             rxDisposable =
-                    ComponentUtils.loadResourcesSync(
+                    ComponentUtils.loadResourcesAsync(
                         () -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId),
                         resourceGroups -> fillResourceGroup(resourceGroups),
                         exception -> {
