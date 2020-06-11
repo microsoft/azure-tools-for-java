@@ -5,13 +5,10 @@
  **log streaming for Azure App Service**.
 
 ## 3.38.0(Current Release)
-We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! You would have following experiences around Azure Synapse feature in IntelliJ.
+We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! The following feature is waiting to be discovered.
  - List Azure Synapse workspaces and Apache Spark pools
- ![list-workspaces-pools](https://user-images.githubusercontent.com/32627233/84374093-18939200-ac10-11ea-9b09-901c7c2bd03f.gif)
- - Submit Apache Spark batch jobs to Apache Spark pools
- ![add-config-submit-batch-job](https://user-images.githubusercontent.com/32627233/84374124-2517ea80-ac10-11ea-8866-b7a6fc0daad6.gif)
- - Run Apache Spark Livy interactive console on Azure Synapse
- ![spark-interactive-console](https://user-images.githubusercontent.com/32627233/84374160-319c4300-ac10-11ea-902a-f98dec9d6f99.gif)
+
+![list-workspaces-pools-blur](https://user-images.githubusercontent.com/32627233/84378742-3dd7ce80-ac17-11ea-871f-d85e9bedf99f.gif)
 
 ## 3.37.0
 
