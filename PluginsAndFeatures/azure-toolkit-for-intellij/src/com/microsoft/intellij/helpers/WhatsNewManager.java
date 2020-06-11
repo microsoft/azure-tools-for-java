@@ -33,7 +33,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -63,8 +62,8 @@ public enum WhatsNewManager {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
         final VirtualFile existingWhatsNewFile = getExistingWhatsNewFile(fileEditorManager);
         if (existingWhatsNewFile != null) {
-            DefaultLoader.getIdeHelper().invokeLater(
-                () -> fileEditorManager.openFile(existingWhatsNewFile, true, true));
+            ApplicationManager.getApplication().invokeLater(
+                () -> fileEditorManager.openFile(existingWhatsNewFile, true, true), ModalityState.NON_MODAL);
         } else {
             // Get whats new file
             final String content = getWhatsNewContent();
