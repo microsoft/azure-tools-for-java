@@ -31,6 +31,7 @@ import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -59,9 +60,7 @@ public class ApplicationInsightsPanel extends JPanel {
                                   final int i,
                                   final boolean b,
                                   final boolean b1) {
-                if (o != null) {
-                    setText(o.toString());
-                }
+                setText(o == null ? StringUtils.EMPTY : o.toString());
             }
         });
 
