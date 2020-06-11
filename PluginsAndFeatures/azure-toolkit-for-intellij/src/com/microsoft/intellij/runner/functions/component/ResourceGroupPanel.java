@@ -27,6 +27,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -36,6 +37,7 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.*;
 import java.awt.event.ItemListener;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -104,12 +106,26 @@ public class ResourceGroupPanel extends JPanel {
                         try {
                             return AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId);
                         } catch (RuntimeException ex) {
-                            // swallow run time exception caused by interrupt while switch subscription
-                            return new ArrayList<ResourceGroup>();
+                            if (ex.getCause() instanceof InterruptedIOException) {
+                                // swallow InterruptedException while switch subscription
+                                return new ArrayList<ResourceGroup>();
+                            } else {
+                                throw ex;
+                            }
                         }
                     })
                     .subscribeOn(Schedulers.io())
-                    .subscribe(this::fillResourceGroup, e -> fillResourceGroup(Collections.emptyList()));
+                    .subscribe(
+                        resourceGroups -> {
+                            DefaultLoader.getIdeHelper().invokeLater(() -> fillResourceGroup(resourceGroups));
+                        },
+                        exception -> {
+                            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                                DefaultLoader.getUIHelper().showError(
+                                        "Failed to load resource groups", exception.getMessage());
+                                fillResourceGroup(Collections.emptyList());
+                            });
+                        });
         }
     }
 

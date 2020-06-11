@@ -27,6 +27,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -84,13 +85,27 @@ public class ApplicationInsightsPanel extends JPanel {
                 .fromCallable(() -> {
                     try {
                         return AzureSDKManager.getInsightsResources(subscriptionId);
-                    } catch (InterruptedIOException | RuntimeException ex) {
-                        // swallow InterruptedException while switch subscription
-                        return new ArrayList<ApplicationInsightsComponent>();
+                    } catch (RuntimeException ex) {
+                        if (ex.getCause() instanceof InterruptedIOException) {
+                            // swallow InterruptedException while switch subscription
+                            return new ArrayList<ApplicationInsightsComponent>();
+                        } else {
+                            throw ex;
+                        }
                     }
                 })
                 .subscribeOn(Schedulers.io())
-                .subscribe(this::fillApplicationInsights, e -> fillApplicationInsights(Collections.emptyList()));
+                .subscribe(
+                    insightsComponents -> {
+                        DefaultLoader.getIdeHelper().invokeLater(() -> fillApplicationInsights(insightsComponents));
+                    },
+                    exception -> {
+                        DefaultLoader.getIdeHelper().invokeLater(() -> {
+                            DefaultLoader.getUIHelper().showError(
+                                    "Failed to load application insights", exception.getMessage());
+                            fillApplicationInsights(Collections.emptyList());
+                        });
+                    });
     }
 
     public void changeDefaultApplicationInsightsName(String name) {
