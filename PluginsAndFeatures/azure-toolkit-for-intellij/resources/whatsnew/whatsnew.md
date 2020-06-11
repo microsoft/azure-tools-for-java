@@ -98,7 +98,7 @@ Full Azure Function experience are enabled in IntelliJ Toolkit now, which includ
 
 ## Summary
 
-These plugins allow Java developers, Azure HDInsight developers and SQL Server Spark users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
+These plugins allow Java developers, Azure HDInsight developers and Apache Spark on SQL Server users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
 
 #### Features
 - Azure Web App Workflow: Run your web applications on Azure Web App and view logs.
@@ -107,5 +107,5 @@ These plugins allow Java developers, Azure HDInsight developers and SQL Server S
 - Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux)- via Azure Container Registry.
 - Azure Explorer: View and manage your cloud resources on Azure with embedded Azure Explorer.
 - Azure Resource Management template: Create and update your Azure resource deployments with ARM- template support.
-- Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor- and debug Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.
-- Link to SQL Server Big Data Cluster; Create a Spark project, author and submit Spark jobs to cluster; Monitor and debug Spark jobs easily.
+- Azure HDInsight: Create an Apache Spark project, author and submit Apache Spark jobs to HDInsight cluster; Monitor and debug Apache Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.
+- Link to SQL Server Big Data Cluster; Create an Apache Spark project, author and submit Apache Spark jobs to cluster; Monitor and debug Apache Spark jobs easily.
