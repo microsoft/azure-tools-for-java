@@ -28,17 +28,13 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.*;
 import java.awt.event.ItemListener;
-import java.io.InterruptedIOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -101,30 +97,14 @@ public class ResourceGroupPanel extends JPanel {
             if (rxDisposable != null && !rxDisposable.isDisposed()) {
                 rxDisposable.dispose();
             }
-            rxDisposable = Observable
-                    .fromCallable(() -> {
-                        try {
-                            return AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId);
-                        } catch (RuntimeException ex) {
-                            if (ex.getCause() instanceof InterruptedIOException) {
-                                // swallow InterruptedException while switch subscription
-                                return new ArrayList<ResourceGroup>();
-                            } else {
-                                throw ex;
-                            }
-                        }
-                    })
-                    .subscribeOn(Schedulers.io())
-                    .subscribe(
-                        resourceGroups -> {
-                            DefaultLoader.getIdeHelper().invokeLater(() -> fillResourceGroup(resourceGroups));
-                        },
+            rxDisposable =
+                    ComponentUtils.loadResourcesSync(
+                        () -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId),
+                        resourceGroups -> fillResourceGroup(resourceGroups),
                         exception -> {
-                            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                                DefaultLoader.getUIHelper().showError(
-                                        "Failed to load resource groups", exception.getMessage());
-                                fillResourceGroup(Collections.emptyList());
-                            });
+                            DefaultLoader.getUIHelper().showError(
+                                    "Failed to load resource groups", exception.getMessage());
+                            fillResourceGroup(Collections.emptyList());
                         });
         }
     }

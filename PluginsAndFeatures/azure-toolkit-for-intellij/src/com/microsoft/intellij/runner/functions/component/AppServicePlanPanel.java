@@ -31,16 +31,13 @@ import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.*;
 import java.awt.event.ItemListener;
-import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -125,35 +122,18 @@ public class AppServicePlanPanel extends JPanel {
             if (rxDisposable != null && !rxDisposable.isDisposed()) {
                 rxDisposable.dispose();
             }
-            rxDisposable = Observable
-                    .fromCallable(() -> {
-                        try {
-                            return AzureFunctionMvpModel.getInstance()
-                                                        .listAppServicePlanBySubscriptionId(subscriptionId).stream()
-                                                        .sorted((first, second) ->
-                                                                        StringUtils.compare(first.name(),
-                                                                                            second.name()))
-                                                        .collect(Collectors.toList());
-                        } catch (RuntimeException ex) {
-                            if (ex.getCause() instanceof InterruptedIOException) {
-                                // swallow InterruptedException while switch subscription
-                                return new ArrayList<AppServicePlan>();
-                            } else {
-                                throw ex;
-                            }
-                        }
-                    })
-                    .subscribeOn(Schedulers.io())
-                    .subscribe(
-                        appServicePlans -> {
-                            DefaultLoader.getIdeHelper().invokeLater(() -> fillAppServicePlan(appServicePlans));
-                        },
+            rxDisposable =
+                    ComponentUtils.loadResourcesSync(
+                        () -> AzureFunctionMvpModel.getInstance()
+                                                   .listAppServicePlanBySubscriptionId(subscriptionId).stream()
+                                                   .sorted((first, second) ->
+                                                                   StringUtils.compare(first.name(), second.name()))
+                                                   .collect(Collectors.toList()),
+                        appServicePlans -> fillAppServicePlan(appServicePlans),
                         exception -> {
-                            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                                DefaultLoader.getUIHelper().showError(
-                                        "Failed to load app service plans", exception.getMessage());
-                                fillAppServicePlan(Collections.emptyList());
-                            });
+                            DefaultLoader.getUIHelper().showError(
+                                    "Failed to load app service plans", exception.getMessage());
+                            fillAppServicePlan(Collections.emptyList());
                         });
         }
     }

@@ -29,16 +29,12 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.Applicatio
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.io.InterruptedIOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -81,30 +77,14 @@ public class ApplicationInsightsPanel extends JPanel {
         if (rxDisposable != null && !rxDisposable.isDisposed()) {
             rxDisposable.dispose();
         }
-        rxDisposable = Observable
-                .fromCallable(() -> {
-                    try {
-                        return AzureSDKManager.getInsightsResources(subscriptionId);
-                    } catch (RuntimeException ex) {
-                        if (ex.getCause() instanceof InterruptedIOException) {
-                            // swallow InterruptedException while switch subscription
-                            return new ArrayList<ApplicationInsightsComponent>();
-                        } else {
-                            throw ex;
-                        }
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .subscribe(
-                    insightsComponents -> {
-                        DefaultLoader.getIdeHelper().invokeLater(() -> fillApplicationInsights(insightsComponents));
-                    },
+        rxDisposable =
+                ComponentUtils.loadResourcesSync(
+                    () -> AzureSDKManager.getInsightsResources(subscriptionId),
+                    insightsComponents -> fillApplicationInsights(insightsComponents),
                     exception -> {
-                        DefaultLoader.getIdeHelper().invokeLater(() -> {
-                            DefaultLoader.getUIHelper().showError(
-                                    "Failed to load application insights", exception.getMessage());
-                            fillApplicationInsights(Collections.emptyList());
-                        });
+                        DefaultLoader.getUIHelper().showError(
+                                "Failed to load application insights", exception.getMessage());
+                        fillApplicationInsights(Collections.emptyList());
                     });
     }
 
