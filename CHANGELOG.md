@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.38.0](#3380)
   - [3.37.0](#3370)
   - [3.36.0](#3360)
   - [3.35.0](#3350)
@@ -49,6 +50,22 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.38.0
+
+### Added
+- Support create application insights connection while creating new function app
+
+### Changed
+- Deprecate Docker Host(will be removed in v3.39.0)
+
+### Fixed
+- [#4423](https://github.com/microsoft/azure-tools-for-java/issues/4423) Spark local run mockfs issue with Hive support enabled
+- [#4410](https://github.com/microsoft/azure-tools-for-java/issues/4410) the context menu `Submit Spark Application` action regression issue at IDEA 2020.1
+- [#4419](https://github.com/microsoft/azure-tools-for-java/issues/4419) the run configuration Spark config table changes didn't take effects regression
+- [#4413](https://github.com/microsoft/azure-tools-for-java/issues/4413) the regression issue of Spark local console with Scala plugin 2020.1.36 
+- [#4422](https://github.com/microsoft/azure-tools-for-java/issues/4422) Fixes `ConcurrentModificationException` while refreshing spring cloud clusters
+- [#4438](https://github.com/microsoft/azure-tools-for-java/issues/4438) Fixes modality state issue when open what's new document
 
 ## 3.37.0
 
