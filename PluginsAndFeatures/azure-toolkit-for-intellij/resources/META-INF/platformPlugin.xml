@@ -4,17 +4,19 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Changes:</h4>
+      <h4>Support:</h4>
       <ul>
-        <li>Update OrchestrationTrigger Function template</li>
-        <li>Bump Azure Utils version</li>
-        <li>Bump missing NuGet packages version</li>
+        <li>Support Rider 2020.2 EAP builds</li>
+      </ul>
+      <h4>Improvements:</h4>
+      <ul>
+        <li>Autodetect installed Function App core tools path - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/293">#293</a></li>
+        <li>Improve running Function Apps from gutter mark logic - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/234">#234</a></li>
+        <li>Add Function Apps Timer Trigger completion options and Cron expression inspections - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/296">#296</a></li>
       </ul>
       <h4>Fixed bugs:</h4>
       <ul>
-		<li>Existing Azure-related Run Configurations broken after upgrading to new plugin version - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/291">#291</a></li>
-        <li>Remove duplicated run configuration for running Azure Functions - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/285">#285</a></li>
-        <li>Fix thread assertion failure on Plugin startup - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/287">#287</a></li>
+		<li>Persists launch browser settings for launch Function Apps run configuration - <a href="https://youtrack.jetbrains.com/issue/RIDER-45405">RIDER-45405</a></li>
       </ul>
     </html>
     ]]>
