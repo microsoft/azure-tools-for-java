@@ -1,4 +1,4 @@
-<!-- Version: 3.37.0 -->
+<!-- Version: 3.38.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
 > Scroll down to checkout our newly added support for **Azure Functions**, **Azure Spring Cloud** and
@@ -9,6 +9,11 @@ We are proud to announce the support for [Azure Synapse](https://docs.microsoft.
  - List Azure Synapse workspaces and Apache Spark pools
 
 ![list-workspaces-pools-blur](https://user-images.githubusercontent.com/32627233/84378742-3dd7ce80-ac17-11ea-871f-d85e9bedf99f.gif)
+
+ - Submit Apache Spark batch jobs to Apache Spark pools
+
+![add-config-submit-batch-job](https://user-images.githubusercontent.com/32627233/84374124-2517ea80-ac10-11ea-8866-b7a6fc0daad6.gif)
+
 
 ## 3.37.0
 
@@ -104,7 +109,7 @@ Full Azure Function experience are enabled in IntelliJ Toolkit now, which includ
 
 ## Summary
 
-These plugins allow Java developers, Azure HDInsight developers and Apache Spark on SQL Server users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
+The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and deploy Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
 
 #### Features
 - Azure Web App Workflow: Run your web applications on Azure Web App and view logs.
@@ -113,5 +118,6 @@ These plugins allow Java developers, Azure HDInsight developers and Apache Spark
 - Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux)- via Azure Container Registry.
 - Azure Explorer: View and manage your cloud resources on Azure with embedded Azure Explorer.
 - Azure Resource Management template: Create and update your Azure resource deployments with ARM- template support.
+- Azure Synapse: List workspaces and Apache Spark Pools, compose an Apache Spark project, author and submit Apache Spark jobs to Azure Synapse Spark pools.
 - Azure HDInsight: Create an Apache Spark project, author and submit Apache Spark jobs to HDInsight cluster; Monitor and debug Apache Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.
 - Link to SQL Server Big Data Cluster; Create an Apache Spark project, author and submit Apache Spark jobs to cluster; Monitor and debug Apache Spark jobs easily.
