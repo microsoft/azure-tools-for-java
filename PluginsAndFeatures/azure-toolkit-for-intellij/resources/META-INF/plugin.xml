@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.37.0</version>
+  <version>3.38.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -23,29 +23,29 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.37.0</h3>
+    <h3>3.38.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Add what's new document in Azure menu</li>
-        <li>Filter unsupported regions when creating new app service plan</li>
+        <li>Support create application insights connection while creating new function app</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Sort Spark on Cosmos Serverless jobs in descending order by job submission time</li>
+        <li>Deprecate Docker Host(will be removed in v3.39.0)</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li>Fixed Spark batch job submission skipped after uploading artifact to SQL Server big data cluster issue</li>
-        <li>Fixed no permission issue after submitting Spark batch job to ESP HDInsight cluster with ADLS Gen2 as default
-            storage account type</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4370">#4370</a> Fixes NPE while loading
-            Function deployment panel</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4347">#4347</a> Fixes NPE while getting action
-            status</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4380">#4380</a> Fixes validation may freeze UI
-            in spring cloud deployment panel</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4350">#4350</a> Fixes null value in spring
-            cloud property view</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4423">#4423</a> Spark local run mockfs issue
+            with Hive support enabled</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4410">#4410</a> the context menu
+            <code>Submit Spark Application</code> action regression issue at IDEA 2020.1</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4419">#4419</a> the run configuration Spark
+            config table changes didn't take effects regression</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4413">#4413</a> the regression issue of Spark
+            local console with Scala plugin 2020.1.36 </li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4422">#4422</a> Fixes
+            <code>ConcurrentModificationException</code> while refreshing spring cloud clusters</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4438">#4438</a> Fixes modality state issue
+            when open what's new document</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
