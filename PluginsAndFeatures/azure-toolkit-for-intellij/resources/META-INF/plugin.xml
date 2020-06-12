@@ -37,12 +37,12 @@
     <ul>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4423">#4423</a> Spark local run mockfs issue
             with Hive support enabled</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4410">#4410</a> the context menu
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4410">#4410</a> The context menu
             <code>Submit Spark Application</code> action regression issue at IDEA 2020.1</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4419">#4419</a> the run configuration Spark
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4419">#4419</a> The run configuration Spark
             config table changes didn't take effects regression</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4413">#4413</a> the regression issue of Spark
-            local console with Scala plugin 2020.1.36 </li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4413">#4413</a> The regression issue of Spark
+            local console with Scala plugin 2020.1.36</li>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4422">#4422</a> Fixes
             <code>ConcurrentModificationException</code> while refreshing spring cloud clusters</li>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4438">#4438</a> Fixes modality state issue

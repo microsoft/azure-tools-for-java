@@ -14,6 +14,19 @@ We are proud to announce the support for [Azure Synapse](https://docs.microsoft.
 
 ![add-config-submit-batch-job](https://user-images.githubusercontent.com/32627233/84374124-2517ea80-ac10-11ea-8866-b7a6fc0daad6.gif)
 
+### Added
+- Support create application insights connection while creating new function app
+
+### Changed
+- Deprecate Docker Host(will be removed in v3.39.0)
+
+### Fixed
+- [#4423](https://github.com/microsoft/azure-tools-for-java/issues/4423) Spark local run mockfs issue with Hive support enabled
+- [#4410](https://github.com/microsoft/azure-tools-for-java/issues/4410) The context menu <code>Submit Spark Application</code> action regression issue at IDEA 2020.1
+- [#4419](https://github.com/microsoft/azure-tools-for-java/issues/4419) The run configuration Spark config table changes didn't take effects regression
+- [#4413](https://github.com/microsoft/azure-tools-for-java/issues/4413) The regression issue of Spark local console with Scala plugin 2020.1.36
+- [#4422](https://github.com/microsoft/azure-tools-for-java/issues/4422) Fixes <code>ConcurrentModificationException</code> while refreshing spring cloud clusters
+- [#4438](https://github.com/microsoft/azure-tools-for-java/issues/4438) Fixes modality state issue when open what's new document
 
 ## 3.37.0
 
