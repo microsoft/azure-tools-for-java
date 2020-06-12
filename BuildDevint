@@ -17,6 +17,8 @@ set -e
 # echo shell commands when they are executed.
 set -x
 
+set -euxo pipefail
+
 tc_open "Initializing build script"
 {
     BUILD_COUNTER="9999"
