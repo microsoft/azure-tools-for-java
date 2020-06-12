@@ -2,7 +2,7 @@
 
 RiderSdkPackageVersion.props
 
-# Rider Protocol Generated files
+# Rider Protocol and Inspections generated files
 *Generated.cs
 
 # Build results

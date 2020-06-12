@@ -19,13 +19,13 @@
 // SOFTWARE.
 
 using System.Collections.Generic;
-using Azure.Daemon.FunctionApp;
-using Azure.Localization;
-using Azure.Psi.FunctionApp;
 using JetBrains.Annotations;
 using JetBrains.Application.UI.Controls.BulbMenu.Anchors;
 using JetBrains.Application.UI.Controls.BulbMenu.Items;
 using JetBrains.ProjectModel;
+using JetBrains.ReSharper.Azure.Daemon.FunctionApp;
+using JetBrains.ReSharper.Azure.Localization;
+using JetBrains.ReSharper.Azure.Psi.FunctionApp;
 using JetBrains.ReSharper.Host.Features.RunMarkers;
 using JetBrains.ReSharper.Resources.Shell;
 using JetBrains.TextControl.DocumentMarkup;
@@ -35,7 +35,7 @@ using JetBrains.UI.ThemedIcons;
 using JetBrains.Util;
 using JetBrains.Util.Logging;
 
-namespace Azure.Daemon.RunMarkers
+namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
 {
     public abstract class FunctionAppRunMarkerGutterMark : IconGutterMark
     {

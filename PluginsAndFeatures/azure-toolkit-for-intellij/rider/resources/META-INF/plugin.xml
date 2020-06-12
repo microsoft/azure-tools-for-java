@@ -185,17 +185,10 @@
                      groupName="Azure"
                      implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.msbuild.AzureFunctionsVersionInspection"/>
 
-    <completion.contributor language="C#"
-                            implementationClass="org.jetbrains.plugins.azure.functions.completion.csharp.AzureFunctionsTimerTriggerCompletionContributor"/>
-
-    <localInspection language="C#"
-                     enabledByDefault="true"
-                     shortName="AzureFunctionsTimerTriggerCron"
-                     displayName="Validates schedule expression for timer trigger"
-                     groupName="Azure"
-                     implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.csharp.AzureFunctionsTimerTriggerCronInspection"/>
-
     <internalFileTemplate name="Trigger Azure Function"/>
+
+    <completion.contributor language="C#"
+                            implementationClass="org.jetbrains.plugins.azure.functions.completion.csharp.TimerTriggerCompletionContributor" />
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">

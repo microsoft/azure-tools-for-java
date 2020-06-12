@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net461</TargetFramework>
-        <RootNamespace>JetBrains.ReSharper.Azure.Localization</RootNamespace>
-        <AssemblyName>JetBrains.ReSharper.Azure.Localization</AssemblyName>
+        <RootNamespace>JetBrains.ReSharper.Azure.Intellisense</RootNamespace>
+        <AssemblyName>JetBrains.ReSharper.Azure.Intellisense</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,9 +12,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="..\..\..\resources\messages\RiderAzureMessages.properties">
-        <Link>Resources/RiderAzureMessages.properties</Link>
-      </EmbeddedResource>
+      <Folder Include="FunctionApp" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Azure.Psi\Azure.Psi.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,3 +1,5 @@
+import groovy.io.FileType
+
 def backendGroup = 'backend'
 
 ext.nugetConfigPath = new File(projectDir, 'NuGet.Config')
@@ -49,47 +51,116 @@ task restoreReSharperPluginPackages() {
     }
 }
 
+/*
+ Task to up clean Info, Warning, Error generated files used in ReSharper inspections
+ */
+task cleanGeneratedErrors {
+    group = backendGroup
+    description = 'Clean up generated inspection infos, warnings, and warnings'
+
+    def srcDir = "${resharperPluginPath.absolutePath}/src"
+    String[] generatedFilesMatches = [
+            "Azure.Daemon/Errors/*.Generated.cs"
+    ]
+
+    doLast {
+        cleanFilesByMask(srcDir, generatedFilesMatches)
+    }
+}
+
+task cleanBackendProjects {
+    group = backendGroup
+    description = 'Clean backend projects'
+    dependsOn prepareBuildProps, prepareNuGetConfig, cleanGeneratedErrors
+
+    doLast {
+        exec {
+            executable = 'dotnet'
+            args = ['clean', "${resharperPluginPath.canonicalPath}/ReSharper.Azure.sln"]
+        }
+    }
+}
+
+task cleanBin {
+    group = backendGroup
+    description = 'Clean compiled folders'
+
+    def srcDir = "${resharperPluginPath.absolutePath}/src"
+    def cleanupDirNames = [ 'bin', 'obj' ]
+
+    doLast {
+        def dirsToDelete = new ArrayList<File>()
+        new File(srcDir).eachFileRecurse(FileType.DIRECTORIES) { dirToCheck ->
+            if (cleanupDirNames.any { dirToCheck.name == it }) { dirsToDelete << dirToCheck }
+        }
+        dirsToDelete.forEach { toDelete -> toDelete.deleteDir() }
+    }
+}
+
+/*
+ The task is used to clean up generated backend files including compiled directories and files.
+ We need to call this task before building a backend projects
+ */
+task cleanBackend {
+    group = backendGroup
+    description = 'Clean all data from backend project'
+    dependsOn cleanBackendProjects, cleanBin
+}
+
 task buildReSharperPlugin {
     group = backendGroup
     description = 'Builds the full ReSharper backend plugin solution'
     dependsOn restoreReSharperPluginPackages, ':rider:protocol:generateModel'
 
+    def libFiles = [
+            "**/bin/$rider_backend_build_configuration/net461/JetBrains.ReSharper.Azure*.dll",
+            "**/bin/$rider_backend_build_configuration/net461/JetBrains.ReSharper.Azure*.pdb",
+            "Azure.Daemon/bin/$rider_backend_build_configuration/net461/NCrontab.Signed.dll",
+    ]
+
+    def srcPath = "${resharperPluginPath.absolutePath}/src"
+
     doLast {
         def executableName = 'dotnet'
         def arguments = [ 'build', "${resharperPluginPath.canonicalPath}/ReSharper.Azure.sln" ]
 
+        println("Building ReSharper.Azure solution...")
         exec {
             executable = executableName
             args = arguments
         }
+
+        println("Validating output contains all expected DLL files...")
+        def finder = new FileNameFinder()
+        libFiles.forEach { filePattern ->
+            def matches = finder.getFileNames(srcPath, filePattern)
+            if (matches.isEmpty())
+                throw new IllegalStateException("Expected plugin backend file is missing: $filePattern")
+        }
     }
 
+    // Set list of expected compiled DLL files to task output files
     outputs.files({
-        fileTree(file("${resharperPluginPath.absolutePath}/src")).matching {
-            include '**/bin/Debug/**/Azure*.dll'
-            include '**/bin/Debug/**/Azure*.pdb'
-            include '**/bin/Debug/**/Azure.DebuggerTools.exe'
-            include '**/bin/Debug/**/Azure.DebuggerTools.runtimeconfig.json'
+        fileTree(file(srcPath)).matching {
+            libFiles.forEach { match -> include match }
         }.collect()
     })
 }
 
-project.tasks.clean.dependsOn(project.tasks.cleanBuildReSharperPlugin)
+project.tasks.clean.dependsOn(project.tasks.cleanBackend)
 
 private File getNugetPackagesPath() {
     def sdkPath = intellij.ideaDependency.classes
     println("SDK path: $sdkPath")
 
-    // 2019
-    def riderSdk = new File(sdkPath, 'lib/ReSharperHostSdk')
-    // 2020.1
-    if (!riderSdk.exists()) {
-        riderSdk = new File(sdkPath, 'lib/DotNetSdkForRdPlugins')
-    }
+    def riderSdk = new File(sdkPath, 'lib/DotNetSdkForRdPlugins')
+    println("NuGet packages path: $riderSdk")
 
-    println("NuGet packages: $riderSdk")
+    if (!riderSdk.exists())
+        throw new IllegalStateException("${riderSdk} does not exist.")
+
     if (!riderSdk.isDirectory())
-        throw new IllegalStateException("${riderSdk} does not exist or not a directory")
+        throw new IllegalStateException("${riderSdk} not a directory.")
 
     return riderSdk
 }
@@ -105,4 +176,16 @@ private static void writeTextIfChanged(File file, String content) {
 
 private static String byteArrayToHexString(byte[] byteArray) {
     return byteArray.encodeHex().toString()
+}
+
+private static void cleanFilesByMask(String baseDir, String[] masks) {
+    def finder = new FileNameFinder()
+    masks.each { fileMask ->
+        def matches = finder.getFileNames(baseDir, fileMask)
+        matches.forEach { match ->
+            def toDelete = new File(match)
+            if (toDelete.isFile())
+                toDelete.delete()
+        }
+    }
 }

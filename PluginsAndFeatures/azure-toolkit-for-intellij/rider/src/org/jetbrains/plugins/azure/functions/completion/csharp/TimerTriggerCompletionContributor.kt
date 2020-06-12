@@ -20,32 +20,17 @@
  * SOFTWARE.
  */
 
-package org.jetbrains.plugins.azure.functions.helpers
+package org.jetbrains.plugins.azure.functions.completion.csharp
 
-import com.cronutils.model.definition.CronDefinition
-import com.cronutils.model.definition.CronDefinitionBuilder
+import com.jetbrains.rdclient.completion.ProtocolCompletionContributor
 
-/**
- * Creates CronDefinition instance matching NCRONTAB specification.
- * https://github.com/atifaziz/NCrontab
- *
- * In general, NCRONTAB expressions are as follows:
- *
- *       * * * * * *
- *       - - - - - -
- *       | | | | | |
- *       | | | | | +--- day of week (0 - 6) (Sunday=0)
- *       | | | | +----- month (1 - 12)
- *       | | | +------- day of month (1 - 31)
- *       | | +--------- hour (0 - 23)
- *       | +----------- min (0 - 59)
- *       +------------- sec (0 - 59)
- */
-val NCrontabCronDefinition : CronDefinition = CronDefinitionBuilder.defineCron()
-            .withSeconds().and()
-            .withMinutes().and()
-            .withHours().and()
-            .withDayOfMonth().and()
-            .withMonth().and()
-            .withDayOfWeek().withValidRange(0, 6).withMondayDoWValue(1).and()
-            .instance()
+class TimerTriggerCompletionContributor : ProtocolCompletionContributor() {
+
+    /**
+     * Override default Rider behavior to terminate on first digit prefix.
+     *
+     * Please note, this is a global behavior. There is no option for now to handle this for a particular completion case.
+     * Please consider switching back if cause any issues in future.
+     */
+    override fun shouldStopOnPrefix(prefix: String): Boolean = false
+}

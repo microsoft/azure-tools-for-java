@@ -3,8 +3,6 @@ dependencies {
     compile "org.java-websocket:Java-WebSocket:$web_socket_version"
     compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
-    implementation "com.cronutils:cron-utils:$cron_utils_version"
-
     testCompile rootProject
 }
 
@@ -31,6 +29,7 @@ intellij {
 
 tasks.withType(prepareSandbox.class) {
     dependsOn buildReSharperPlugin
+
     from(extensionsFrom, { into "$intellij.pluginName/dotnet" })
     from(buildReSharperPlugin.outputs, { into "${intellij.pluginName}/dotnet" })
 }

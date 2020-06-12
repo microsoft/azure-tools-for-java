@@ -2,12 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>net461</TargetFramework>
-        <RootNamespace>Azure.Psi</RootNamespace>
+        <RootNamespace>JetBrains.ReSharper.Azure.Psi</RootNamespace>
+        <AssemblyName>JetBrains.ReSharper.Azure.Psi</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="JetBrains.Rider.SDK" Version="$(RiderSDKVersion)" />
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0-preview.2" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0" />
     </ItemGroup>
 
 </Project>

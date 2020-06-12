@@ -18,22 +18,14 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using JetBrains.ReSharper.Azure.Daemon.RunMarkers;
-using JetBrains.TextControl.DocumentMarkup;
+using JetBrains.Application.BuildScript.Application.Zones;
+using JetBrains.ReSharper.Feature.Services;
+using JetBrains.ReSharper.Psi.CSharp;
 
-[assembly:
-    RegisterHighlighter(
-        FunctionAppRunMarkerAttributeIds.FUNCTION_APP_RUN_METHOD_MARKER_ID,
-        GutterMarkType = typeof(FunctionAppMethodRunMarkerGutterMark),
-        EffectType = EffectType.GUTTER_MARK,
-        Layer = HighlighterLayer.SYNTAX + 1
-    )
-]
-
-namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
+namespace JetBrains.ReSharper.Azure.Intellisense
 {
-    public static class FunctionAppRunMarkerAttributeIds
+    [ZoneMarker]
+    public class ZoneMarker : IRequire<ILanguageCSharpZone>, IRequire<ICodeEditingZone>
     {
-        public const string FUNCTION_APP_RUN_METHOD_MARKER_ID = "Azure Function App Run Method Gutter Mark";
     }
 }

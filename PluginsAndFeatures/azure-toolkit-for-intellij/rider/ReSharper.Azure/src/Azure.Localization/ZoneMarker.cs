@@ -21,7 +21,7 @@
 using JetBrains.Application.BuildScript.Application.Zones;
 using JetBrains.ReSharper.Psi.CSharp;
 
-namespace Azure.Localization
+namespace JetBrains.ReSharper.Azure.Localization
 {
     [ZoneMarker]
     public class ZoneMarker : IRequire<ILanguageCSharpZone>

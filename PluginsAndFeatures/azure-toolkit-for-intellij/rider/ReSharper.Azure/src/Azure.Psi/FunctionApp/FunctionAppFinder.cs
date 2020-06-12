@@ -27,15 +27,23 @@ using JetBrains.ReSharper.Psi;
 using JetBrains.Util;
 using JetBrains.Util.Logging;
 
-namespace Azure.Psi.FunctionApp
+namespace JetBrains.ReSharper.Azure.Psi.FunctionApp
 {
     public static class FunctionAppFinder
     {
         private static ILogger ourLogger = Logger.GetLogger(typeof(FunctionAppFinder));
         
-        private static readonly IClrTypeName FunctionNameAttributeTypeName =
+        static readonly IClrTypeName FunctionNameAttributeTypeName =
             new ClrTypeName("Microsoft.Azure.WebJobs.FunctionNameAttribute");
-        
+
+        static readonly IClrTypeName TimerTriggerAttributeTypeName =
+            new ClrTypeName("Microsoft.Azure.WebJobs.TimerTriggerAttribute");
+
+        /// <summary>
+        /// Get Function Name from Attribute for a provided method or null if attribute is missing
+        /// </summary>
+        /// <param name="method">A Method instance to check.</param>
+        /// <returns>Function App name string value.</returns>
         [CanBeNull]
         public static string GetFunctionNameFromMethod([CanBeNull] IMethod method)
         {
@@ -67,14 +75,24 @@ namespace Azure.Psi.FunctionApp
         /// Check whether a method define a Function App that can be run.
         /// Reference link: https://docs.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library#methods-recognized-as-functions
         /// </summary>
-        /// <param name="method">A Method to check if it .</param>
-        /// <returns></returns>
+        /// <param name="method">A Method instance to check.</param>
+        /// <returns>Flag whether provided method can be considered as a method to start a Function App of any type.</returns>
         public static bool IsSuitableFunctionAppMethod([CanBeNull] IMethod method)
         {
             return method != null &&
                    method.GetAccessRights() == AccessRights.PUBLIC &&
                    method.IsStatic &&
                    GetFunctionNameAttribute(method) != null;
+        }
+
+        /// <summary>
+        /// Check whether declared type is a Function App Timer Trigger type.
+        /// </summary>
+        /// <param name="typeElement">A type element to check.</param>
+        /// <returns>Flag whether type element match Function App Timer Trigger attribute type.</returns>
+        public static bool IsTimerTriggerAttribute([NotNull] ITypeElement typeElement)
+        {
+            return typeElement.GetClrName().Equals(TimerTriggerAttributeTypeName);
         }
 
         [CanBeNull]

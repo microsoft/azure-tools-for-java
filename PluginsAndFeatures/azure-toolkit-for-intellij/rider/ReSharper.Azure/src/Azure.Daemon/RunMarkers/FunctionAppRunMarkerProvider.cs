@@ -18,9 +18,9 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using Azure.Project.FunctionApp;
-using Azure.Psi.FunctionApp;
 using JetBrains.Application.Settings;
+using JetBrains.ReSharper.Azure.Project.FunctionApp;
+using JetBrains.ReSharper.Azure.Psi.FunctionApp;
 using JetBrains.ReSharper.Feature.Services.Daemon;
 using JetBrains.ReSharper.Host.Features.RunMarkers;
 using JetBrains.ReSharper.Psi;
@@ -30,7 +30,7 @@ using JetBrains.ReSharper.Psi.CSharp.Tree;
 using JetBrains.ReSharper.Psi.Tree;
 using IMethodDeclaration = JetBrains.ReSharper.Psi.CSharp.Tree.IMethodDeclaration;
 
-namespace Azure.Daemon.RunMarkers
+namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
 {
     [Language(typeof(CSharpLanguage))]
     public class FunctionAppRunMarkerProvider : IRunMarkerProvider

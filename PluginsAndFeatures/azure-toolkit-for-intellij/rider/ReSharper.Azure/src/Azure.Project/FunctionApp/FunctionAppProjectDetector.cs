@@ -22,7 +22,7 @@ using JetBrains.Annotations;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Host.Features.ProjectModel;
 
-namespace Azure.Project.FunctionApp
+namespace JetBrains.ReSharper.Azure.Project.FunctionApp
 {
     public static class FunctionAppProjectDetector
     {

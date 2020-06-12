@@ -27,7 +27,7 @@ using System.Text.RegularExpressions;
 using JetBrains.ProjectModel;
 using JetBrains.Util;
 
-namespace Azure.Localization
+namespace JetBrains.ReSharper.Azure.Localization
 {
     /// <summary>
     /// Simple loader for Java .properties files with localized strings.
@@ -55,8 +55,11 @@ namespace Azure.Localization
             {
                 if (myLocalizedStrings.IsNullOrEmpty())
                 {
-                    using (var stream = Assembly.GetExecutingAssembly()
-                        .GetManifestResourceStream("Azure.Localization.Resources.RiderAzureMessages.properties"))
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceFullName = assembly.GetManifestResourceNames()
+                        .Single(name => name.EndsWith("RiderAzureMessages.properties"));
+
+                    using (var stream = assembly.GetManifestResourceStream(resourceFullName))
                     {
                         Load(stream);
                     }

@@ -2,18 +2,28 @@
 
     <PropertyGroup>
         <TargetFramework>net461</TargetFramework>
-        <RootNamespace>Azure.Daemon</RootNamespace>
+        <RootNamespace>JetBrains.ReSharper.Azure.Daemon</RootNamespace>
+        <AssemblyName>JetBrains.ReSharper.Azure.Daemon</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="JetBrains.Rider.SDK" Version="$(RiderSDKVersion)" />
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0-preview.2" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0" />
+        <PackageReference Include="NCrontab.Signed" Version="3.3.2" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Azure.Localization\Azure.Localization.csproj" />
         <ProjectReference Include="..\Azure.Project\Azure.Project.csproj" />
         <ProjectReference Include="..\Azure.Psi\Azure.Psi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Label="C#">
+        <ErrorsGen Include="Errors\FunctionAppErrors.xml">
+            <Namespace>JetBrains.ReSharper.Azure.Daemon.Errors.FunctionAppErrors</Namespace>
+            <OutputFile>Errors\FunctionAppErrors.Generated.cs</OutputFile>
+            <Mode>ERRORS</Mode>
+        </ErrorsGen>
     </ItemGroup>
     
 </Project>

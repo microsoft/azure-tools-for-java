@@ -67,9 +67,11 @@ task cleanProtocolModels {
 
     def protocolOutDirs = [ ktGeneratedOutput, csDaemonGeneratedOutput ]
 
-    protocolOutDirs.forEach { dir ->
-        if (dir.isDirectory()) {
-            dir.deleteDir()
+    doLast {
+        protocolOutDirs.forEach { dir ->
+            if (dir.isDirectory()) {
+                dir.deleteDir()
+            }
         }
     }
 }

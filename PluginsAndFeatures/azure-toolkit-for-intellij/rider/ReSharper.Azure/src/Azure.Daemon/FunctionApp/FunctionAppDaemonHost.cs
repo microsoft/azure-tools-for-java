@@ -22,7 +22,7 @@ using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Host.Features;
 using JetBrains.Rider.Model;
 
-namespace Azure.Daemon.FunctionApp
+namespace JetBrains.ReSharper.Azure.Daemon.FunctionApp
 {
     [SolutionComponent]
     public class FunctionAppDaemonHost

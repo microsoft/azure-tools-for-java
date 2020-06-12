@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Errors language="C#" >
+
+    <Usings>
+        JetBrains.ReSharper.Azure.Daemon.Errors;
+        JetBrains.ReSharper.Azure.Daemon.FunctionApp.Stages.Analysis;
+        JetBrains.ReSharper.Psi.CSharp;
+        JetBrains.ReSharper.Psi.CSharp.Tree;
+    </Usings>
+
+    <!-- Register the static severity groups. This is mostly used in grouping items in SWEA results.
+         The groups should be different to any configurable severity groups -->
+    <StaticSeverityGroups>
+        <Group name="Azure Errors" key="AzureErrors" />
+        <Group name="Azure Warnings" key="AzureWarnings" />
+        <Group name="Azure Gutter Marks" key="AzureGutterMarks" />
+    </StaticSeverityGroups>
+
+    <!-- Register the configurable severities
+         Can take a child Tag or Group element
+         * Tag is configurable severity without a group
+         * Group[@name] specifies the name of the group, expects child Tag elements.
+           Note that the group name/title should be registered with
+           [assembly: RegisterConfigurableHighlightingsGroup(name, "Title")]
+         * Tag[@name] is the HIGHLIGHTING_ID of a warning/error. It is treated as a string
+           literal and quoted. It is referenced in Warning[@configurableSeverity]
+         * Tag[@default] is the default severity. Just the enum value, no leading "Severity."
+         * Tag[@type] is optional. Default is "simple". Other options include "global",
+           "localAndGlobal"
+         * Tag[@externalName] is also the HIGHLIGHTING_ID, but is treated verbatim, rather
+           than as a string literal. This allows for using the fully qualified name of the
+           HIGHLIGHTING_ID
+         * Tag[@alternatives] the value of RegisterConfigurableSeverityAttribute.AlternativeIDs
+         * Tag/Title is the short title of the severity, usually matching the highlight's MESSAGE
+         * Tag/Description is a longer description, shown in the options pages
+         * Tag/CompoundItemName only used if Tag[@type] is missing or "simple". Sets the compound
+           item name
+         -->
+    <!-- TODO: We are not able to set severity configuration for our inspections since RegisterConfigurableHighlightingsGroup
+               is moved from assembly to class level in 202. Need to verify it first. -->
+    <!--
+    <SeverityConfiguration>
+        <Group name="AzureHighlightingGroupIds.FunctionApp">
+
+            <Tag externalName="TimerTriggerCronExpressionError.HIGHLIGHTING_ID" default="ERROR">
+                <Title>Invalid Function App Timer Trigger Cron expression</Title>
+                <Description>Function App Timer Trigger Cron expresion is not valid and can not be used.</Description>
+            </Tag>
+
+        </Group>
+    </SeverityConfiguration>
+    -->
+
+    <!-- Warning, Error, Info or LocalAndGlobal
+         * @name - name of the highlighting. Suffix based on parent element is automatically added
+         * @configurableSeverity - the value of HIGHLIGHTING_ID. Treated as a string literal and quoted
+         * @externalConfigurableSeverity - the value of HIGHLIGHTING_ID. Treated verbatim to refer to code
+         * @staticGroup - define the static group this highlight belongs to. Must have been registered
+           in /Errors/StaticSeverityGroups
+         * ./Parameter - multiple elements for constructor parameters. Requires the @name and @type attributes.
+         * ./Parameter[@name] is capitalised and turned into a public property
+         * ./Message[@value] the string format template for the message
+         * ./Message/Argument multiple code snippets to be used as the arguments to string.Format
+         * ./Range code snippt to be the return value of CalculateRange()
+         * ./Behavour - NOTE THE SPELLING!
+         * ./Behavour[@attributeID] (optional) defines ConfigurableSeverityHighlightingAttribute.AttributeId
+         * ./Behavour[@overlapResolvePolicy] (optional) defines ConfigurableSeverityHighlightingAttribute.OverlapResolve
+         * ./Behavour/QuickFix multiple elements listing the types that will implement a quick fix
+           for this highlight. Only used when the file is processed in QUICKFIX mode (default is
+           to use ERROR mode)
+         -->
+    <!-- TODO: If severity configuration is available (see above comment) - add property to error tag:
+               configurableSeverity="Azure.FunctionApp.TimerTriggerCronExpression -->
+    <Error staticGroup="AzureErrors" name="TimerTriggerCronExpression">
+        <Parameter type="ICSharpExpression" name="expression" />
+        <Parameter type="string" name="cronErrorMessage"/>
+        <Message value="{0}">
+            <Argument>cronErrorMessage</Argument>
+        </Message>
+        <Range>Expression.GetHighlightingRange()</Range>
+        <Behavour overlapResolvePolicy="NONE"/>
+    </Error>
+
+</Errors>
