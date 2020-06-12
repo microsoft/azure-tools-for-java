@@ -31,8 +31,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
@@ -41,6 +42,7 @@ public class ValidationUtils {
     private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
     private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
     private static final String AZURE_SPRING_CLOUD_APP_NAME_REGEX = "[a-z]([a-z0-9\\-_])*[a-z0-9]";
+    private static final String APP_INSIGHTS_NAME_INVALID_CHARACTERS = "[*;/?:@&=+$,<>#%\\\"\\{}|^'`\\\\\\[\\]]";
 
     private static Map<Pair<String, String>, String> appServiceNameValidationCache = new HashMap<>();
     private static Map<String, String> resourceGroupValidationCache = new HashMap<>();
@@ -122,6 +124,32 @@ public class ValidationUtils {
             throw new IllegalArgumentException("App Service Plan name is required");
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
             throw new IllegalArgumentException(String.format("App Service Plan Name should match %s", APP_SERVICE_PLAN_NAME_PATTERN));
+        }
+    }
+
+    public static void validateApplicationInsightsName(String applicationInsightsName) {
+        if (StringUtils.isEmpty(applicationInsightsName)) {
+            throw new IllegalArgumentException("Application Insights name is required");
+        }
+        if (applicationInsightsName.length() > 255) {
+            throw new IllegalArgumentException("Application insights name cannot be longer than 255 characters.");
+        }
+        if (applicationInsightsName.endsWith(".")) {
+            throw new IllegalArgumentException("Application insights name cannot end with '.'.");
+        }
+        if (applicationInsightsName.endsWith(" ") || applicationInsightsName.startsWith(" ")) {
+            throw new IllegalArgumentException("Application insights name cannot begin or end with space character.");
+        }
+        final Pattern pattern = Pattern.compile(APP_INSIGHTS_NAME_INVALID_CHARACTERS);
+        final Matcher matcher = pattern.matcher(applicationInsightsName);
+        final Set<String> invalidCharacters = new HashSet<>();
+        while (matcher.find()) {
+            invalidCharacters.add(matcher.group());
+        }
+        if (!invalidCharacters.isEmpty()) {
+            throw new IllegalArgumentException(String.format(
+                    "The following characters are not valid in an application insights name: %s",
+                    String.join(",", invalidCharacters)));
         }
     }
 

@@ -38,4 +38,6 @@ public class CommonConst {
     public static final String LOADING_TEXT = "Loading...";
     public static final String EMPTY_TEXT = "Empty";
     public static final String REFRESH_TEXT = "Refreshing...";
+    public static final String RESOURCE_WITH_RESOURCE_GROUP = "%s (Resource Group: %s)";
+    public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
 }
