@@ -117,8 +117,8 @@ BUILD_NUMBER="3.35.0.$BUILD_COUNTER-2020.2"
 # Build JetBrains Rider 2020.1 plugin
 tc_open "Building Rider plugin"
 {
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:test -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain)
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain)
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:test)
     cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-$BUILD_NUMBER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-$BUILD_NUMBER.zip
     df -h
 }
