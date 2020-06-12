@@ -27,10 +27,10 @@ intellij {
     plugins 'terminal', 'restClient', dep_plugins_rider
 }
 
-tasks.withType(prepareSandbox.class) {
+tasks.withType(prepareSandbox.class).configureEach {
     dependsOn buildReSharperPlugin
 
-    from(extensionsFrom, { into "$intellij.pluginName/dotnet" })
+    from(extensionsFrom, { into "${intellij.pluginName}/dotnet" })
     from(buildReSharperPlugin.outputs, { into "${intellij.pluginName}/dotnet" })
 }
 
@@ -45,4 +45,6 @@ test {
     useTestNG()
 }
 
-jar.dependsOn ':rider:protocol:generateModel'
+jar {
+    dependsOn ':rider:protocol:generateModel'
+}
