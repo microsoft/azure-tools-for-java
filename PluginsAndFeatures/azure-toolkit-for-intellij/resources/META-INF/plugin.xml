@@ -6,7 +6,7 @@
 
   <description><![CDATA[
       <html>
-        <p>The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and deploy Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
+        <p>The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and submit Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
         <ul>
           <li>Azure Web App Workflow: Run your web applications on Azure Web App and view logs.</li>
           <li>Azure Functions Workflow: Scaffold, run, debug your Functions App locally and deploy it on Azure.</li>

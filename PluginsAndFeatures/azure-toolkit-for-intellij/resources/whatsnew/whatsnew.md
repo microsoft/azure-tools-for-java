@@ -5,7 +5,7 @@
  **log streaming for Azure App Service**.
 
 ## 3.38.0(Current Release)
-We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! The following feature is waiting to be discovered.
+We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! The following features are waiting to be discovered.
  - List Azure Synapse workspaces and Apache Spark pools
 
 ![list-workspaces-pools-blur](https://user-images.githubusercontent.com/32627233/84378742-3dd7ce80-ac17-11ea-871f-d85e9bedf99f.gif)
@@ -122,7 +122,7 @@ Full Azure Function experience are enabled in IntelliJ Toolkit now, which includ
 
 ## Summary
 
-The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and deploy Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
+The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and submit Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
 
 #### Features
 - Azure Web App Workflow: Run your web applications on Azure Web App and view logs.
