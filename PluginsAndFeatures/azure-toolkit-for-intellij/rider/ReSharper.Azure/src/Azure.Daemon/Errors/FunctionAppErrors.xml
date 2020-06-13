@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Errors language="C#" >
+<Errors language="C#" configurableSeverityImplementationLanguage="CSHARP">
 
     <Usings>
         JetBrains.ReSharper.Azure.Daemon.Errors;
         JetBrains.ReSharper.Azure.Daemon.FunctionApp.Stages.Analysis;
+        JetBrains.ReSharper.Azure.Daemon.Highlighters;
         JetBrains.ReSharper.Psi.CSharp;
         JetBrains.ReSharper.Psi.CSharp.Tree;
     </Usings>
@@ -36,9 +37,6 @@
          * Tag/CompoundItemName only used if Tag[@type] is missing or "simple". Sets the compound
            item name
          -->
-    <!-- TODO: We are not able to set severity configuration for our inspections since RegisterConfigurableHighlightingsGroup
-               is moved from assembly to class level in 202. Need to verify it first. -->
-    <!--
     <SeverityConfiguration>
         <Group name="AzureHighlightingGroupIds.FunctionApp">
 
@@ -49,7 +47,6 @@
 
         </Group>
     </SeverityConfiguration>
-    -->
 
     <!-- Warning, Error, Info or LocalAndGlobal
          * @name - name of the highlighting. Suffix based on parent element is automatically added
@@ -69,9 +66,10 @@
            for this highlight. Only used when the file is processed in QUICKFIX mode (default is
            to use ERROR mode)
          -->
-    <!-- TODO: If severity configuration is available (see above comment) - add property to error tag:
-               configurableSeverity="Azure.FunctionApp.TimerTriggerCronExpression -->
-    <Error staticGroup="AzureErrors" name="TimerTriggerCronExpression">
+    <Error staticGroup="AzureErrors"
+           name="TimerTriggerCronExpression"
+           configurableSeverity="Azure.FunctionApp.TimerTriggerCronExpression">
+
         <Parameter type="ICSharpExpression" name="expression" />
         <Parameter type="string" name="cronErrorMessage"/>
         <Message value="{0}">

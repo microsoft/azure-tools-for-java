@@ -75,7 +75,9 @@ class FunctionsCoreToolsManagerTests {
                 "Function core tools version for a non-existing function core tools directory must return NULL version.")
     }
 
-    @Test
+    // TODO: The test uses GeneralCommandLine() IDEA wrapper that require Application instance.
+    //  This test requires Application to be mocked or to be moved to integration test.
+    @Test(enabled = false)
     fun testDetermineVersion_ValidVersion() {
         val resourceToolPath =
                 ResourceUtil.getResource(this::class.java.classLoader, ".", "tools").path.toIOFile()
@@ -89,7 +91,9 @@ class FunctionsCoreToolsManagerTests {
         version.version.shouldBe("3.0.2009")
     }
 
-    @Test(description = "Executable flag should be set inside a call.")
+    // TODO: The test uses GeneralCommandLine() IDEA wrapper that require Application instance.
+    //  This test requires Application to be mocked or to be moved to integration test.
+    @Test(enabled = false, description = "Executable flag should be set inside a call.")
     fun testDetermineVersion_NoExecutableFlag() {
         val resourceToolPath =
                 ResourceUtil.getResource(this::class.java.classLoader, ".", "tools").path.toIOFile()

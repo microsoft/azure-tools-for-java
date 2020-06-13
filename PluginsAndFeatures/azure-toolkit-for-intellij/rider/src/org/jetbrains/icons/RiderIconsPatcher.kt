@@ -24,6 +24,8 @@ package org.jetbrains.icons
 
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.IconPathPatcher
+import com.intellij.ui.ScalableIconWrapperWithToolTip
+import com.intellij.util.ReflectionUtil
 import com.microsoft.icons.CommonIcons
 import icons.RestClientIcons
 import javax.swing.Icon
@@ -43,11 +45,15 @@ internal class RiderIconsPatcher : IconPathPatcher() {
         }
 
         private fun path(icon: Icon): String {
-            val iconToProcess = icon as? IconLoader.CachedImageIcon
-                ?: throw RuntimeException("${icon.javaClass.simpleName} should be CachedImageIcon")
+            val iconToProcess =
+                    if (icon is ScalableIconWrapperWithToolTip) icon.retrieveIcon()
+                    else icon
 
-            return iconToProcess.originalPath
-                ?: throw RuntimeException("Unable to get original path for icon: ${iconToProcess.javaClass.simpleName}")
+            val cachedIcon = iconToProcess as? IconLoader.CachedImageIcon
+                    ?: throw RuntimeException("${icon.javaClass.simpleName} should be CachedImageIcon")
+
+            return cachedIcon.originalPath
+                    ?: throw RuntimeException("Unable to get original path for icon: ${cachedIcon.javaClass.simpleName}")
         }
     }
 

@@ -45,6 +45,10 @@ test {
     useTestNG()
 }
 
+clean {
+    dependsOn cleanBackend, ':rider:protocol:cleanProtocolModels'
+}
+
 jar {
     dependsOn ':rider:protocol:generateModel'
 }

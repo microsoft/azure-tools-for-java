@@ -311,7 +311,7 @@ class WebAppPublishComponent(lifetime: Lifetime,
 
     private fun getCurrentFrameworkId(publishableProject: PublishableProjectModel): String? {
         val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
-        return targetFramework?.currentTargetFrameworkId?.valueOrNull?.id
+        return targetFramework?.currentTargetFrameworkId?.valueOrNull?.framework?.id
     }
 
     private fun getProjectNetFrameworkVersion(publishableProject: PublishableProjectModel): String {

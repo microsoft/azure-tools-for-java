@@ -4,9 +4,9 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Support:</h4>
+      <h4>Compatibility:</h4>
       <ul>
-        <li>Support Rider 2020.2 EAP builds</li>
+        <li>Plugin build compatible with Rider 2020.2 EAP</li>
       </ul>
       <h4>Improvements:</h4>
       <ul>

@@ -60,9 +60,6 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
         addFactory(factory)
     }
 
-    override val priority: IRunConfigurationWithDefault.Priority
-        get() = IRunConfigurationWithDefault.Priority.Top
-
     override fun isApplicable(kind: RunnableProjectKind) = isTypeApplicable(kind)
 
     override fun tryCreateDefault(project: Project, lifetime: Lifetime, projects: List<RunnableProject>, runManager: RunManager): Promise<List<RunnerAndConfigurationSettings>>? =

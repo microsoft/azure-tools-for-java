@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -101,8 +101,10 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                                         for (installableProject in installableProjects) {
                                             val riderNuGetFacade = RiderNuGetHost.getInstance(installableProject.project).facade
 
-                                            val isInstalled = riderNuGetFacade.host.projectInfos[installableProject.id]?.
-                                                    packages?.any { it.id.equals(dependency.id, ignoreCase = true) } ?: false
+                                            val isInstalled =
+                                                    riderNuGetFacade.host.nuGetProjectModel.projects[installableProject.id]
+                                                            ?.explicitPackages?.any { it.id.equals(dependency.id, ignoreCase = true) }
+                                                            ?: false
 
                                             if (!isInstalled) {
                                                 riderNuGetFacade.installForProject(

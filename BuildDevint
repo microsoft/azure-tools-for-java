@@ -112,14 +112,21 @@ fi
 
 BUILD_NUMBER="3.35.0.$BUILD_COUNTER-2020.2"
 
-# Build JetBrains Rider 2020.1 plugin
-tc_open "Building Rider plugin"
+tc_open "Run Rider tests"
 {
     (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:test -s --console=plain)
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:clean -s --console=plain)
+    rm -rf ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/
+    df -h
+}
+tc_close "Run Rider tests"
+
+tc_open "Building Rider plugin"
+{
     # :rider:test task depends on :buildPlugin that prepare the plugin package.
     # When we run then :rider:buildPlugin Gradle task, some tasks (including a task that get outputs from backend compilation) are skipped.
     # TODO: Fix --rerun-tasks: split tests execution step from the build process.
-    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain --rerun-tasks)
+    (cd PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info --rerun-tasks :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain)
     cp ./PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-$BUILD_NUMBER.zip ./$ARTIFACTS_DIR/azure-toolkit-for-rider-$BUILD_NUMBER.zip
     df -h
 }

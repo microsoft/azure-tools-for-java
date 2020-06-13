@@ -49,7 +49,7 @@
   <xi:include href="/META-INF/platformPlugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="201" until-build="201.*"/>
+  <idea-version since-build="202" until-build="202.*"/>
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true" config-file="">org.intellij.scala</depends>
