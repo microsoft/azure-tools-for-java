@@ -12,7 +12,7 @@ We are proud to announce the support for [Azure Synapse](https://docs.microsoft.
 
  - Submit Apache Spark batch jobs to Apache Spark pools
 
-![add-config-submit-batch-job](https://user-images.githubusercontent.com/32627233/84374124-2517ea80-ac10-11ea-8866-b7a6fc0daad6.gif)
+![synapse-submit-middle-quick](https://user-images.githubusercontent.com/32627233/84487331-2f4ded80-acd1-11ea-8fe1-b6cc15b9371b.gif)
 
 ### Added
 - Support create application insights connection while creating new function app
