@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,14 +20,23 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.storage.azurite
 
-import com.intellij.openapi.options.ConfigurableProvider
+import com.intellij.ide.actions.ShowSettingsUtilImpl
+import com.intellij.javascript.nodejs.util.NodePackageDescriptor
 import com.intellij.openapi.project.Project
+import com.microsoft.intellij.AzureConfigurable
+import org.jetbrains.plugins.azure.RiderAzureBundle
 
-class AzureRiderConfigurableProvider(private val project: Project) : ConfigurableProvider() {
+object Azurite {
+    const val PackageName = "azurite"
+    val PackageDescriptor = NodePackageDescriptor(PackageName)
 
-    override fun canCreateConfigurable() = true
+    const val ManagedPathSuffix = "azurite"
+    const val ProjectPathSuffix = ".idea/azurite"
 
-    override fun createConfigurable() = AzureRiderConfigurable(project)
+    fun showSettings(project: Project) {
+        // TODO: FIX_LOCALIZATION: Using displayName parameter here for Settings ID need to be fixed to use ID to avoid localization issues.
+        ShowSettingsUtilImpl.showSettingsDialog(project, AzureConfigurable.AZURE_CONFIGURABLE_PREFIX + RiderAzureBundle.message("settings.azurite.name"), "")
+    }
 }

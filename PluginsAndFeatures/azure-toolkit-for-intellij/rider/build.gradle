@@ -24,7 +24,7 @@ intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version
 
-    plugins 'terminal', 'restClient', dep_plugins_rider
+    plugins 'JavaScriptLanguage', 'terminal', 'restClient', dep_plugins_rider
 }
 
 tasks.withType(prepareSandbox.class).configureEach {

@@ -23,7 +23,6 @@
 package com.microsoft.intellij.configuration
 
 import com.intellij.application.options.OptionsContainingConfigurable
-import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.SearchableConfigurable
 import com.microsoft.intellij.AzureConfigurable.AZURE_CONFIGURABLE_PREFIX
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
@@ -31,7 +30,7 @@ import org.jetbrains.annotations.Nls
 import javax.swing.JComponent
 
 class AzureRiderAbstractConfigurable(private val panel: AzureRiderAbstractConfigurablePanel) :
-        SearchableConfigurable, Configurable.NoScroll, OptionsContainingConfigurable {
+        SearchableConfigurable, OptionsContainingConfigurable {
 
     @Nls
     override fun getDisplayName(): String? {

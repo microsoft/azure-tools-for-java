@@ -25,11 +25,13 @@ package com.microsoft.intellij.configuration
 import com.intellij.application.options.OptionsContainingConfigurable
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.project.Project
 import com.microsoft.intellij.configuration.ui.AzureAppServicesConfigurationPanel
 import com.microsoft.intellij.configuration.ui.AzureFunctionsConfigurationPanel
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
+import org.jetbrains.plugins.azure.storage.azurite.AzuriteConfigurationPanel
 
-class AzureRiderConfigurable :
+class AzureRiderConfigurable(private val project: Project) :
         SearchableConfigurable.Parent.Abstract(), OptionsContainingConfigurable {
 
     companion object {
@@ -45,7 +47,8 @@ class AzureRiderConfigurable :
     override fun buildConfigurables(): Array<Configurable> {
         val panels = listOf<Configurable>(
                 AzureRiderAbstractConfigurable(AzureAppServicesConfigurationPanel()),
-                AzureRiderAbstractConfigurable(AzureFunctionsConfigurationPanel())
+                AzureRiderAbstractConfigurable(AzureFunctionsConfigurationPanel()),
+                AzureRiderAbstractConfigurable(AzuriteConfigurationPanel(project))
         )
         myPanels = panels
         return panels.toTypedArray()

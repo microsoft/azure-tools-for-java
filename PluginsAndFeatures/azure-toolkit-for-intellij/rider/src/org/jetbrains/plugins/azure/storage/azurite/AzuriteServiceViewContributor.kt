@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,14 +20,24 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.storage.azurite
 
-import com.intellij.openapi.options.ConfigurableProvider
+import com.intellij.execution.services.ServiceViewContributor
 import com.intellij.openapi.project.Project
 
-class AzureRiderConfigurableProvider(private val project: Project) : ConfigurableProvider() {
+class AzuriteServiceViewContributor
+    : ServiceViewContributor<AzuriteServiceViewContributor.AzuriteSession> {
 
-    override fun canCreateConfigurable() = true
+    private val azuriteSessions = mutableListOf(AzuriteSession())
 
-    override fun createConfigurable() = AzureRiderConfigurable(project)
+    // All Azurite sessions are visible to all projects
+    override fun getServices(project: Project) = azuriteSessions
+
+    override fun getViewDescriptor(project: Project) = AzuriteServiceViewSessionDescriptor(project)
+
+    override fun getServiceDescriptor(project: Project, session: AzuriteSession) = AzuriteServiceViewSessionDescriptor(project)
+
+    class AzuriteSession {
+        // NOTE: This class is a placeholder to be able to display an entry.
+    }
 }

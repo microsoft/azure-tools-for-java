@@ -22,7 +22,15 @@
 
 package com.microsoft.intellij.configuration
 
+import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.azure.RiderAzureBundle
+import org.jetbrains.plugins.azure.storage.azurite.Azurite
+import java.io.File
+
 object AzureRiderSettings {
+
     // Web Apps
     const val PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME = "AzureOpenWebAppInBrowser"
     const val OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE = false
@@ -31,4 +39,65 @@ object AzureRiderSettings {
     const val PROPERTY_FUNCTIONS_CORETOOLS_PATH = "AzureFunctionsCoreToolsPath"
     const val PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE = "AzureFunctionsCoreToolsAllowPrerelease"
     const val PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES = "AzureFunctionCoreToolsCheckUpdates"
+
+    // Azurite
+    const val PROPERTY_AZURITE_NODE_INTERPRETER = "AzureAzuriteNodeInterpreter"
+    const val PROPERTY_AZURITE_NODE_PACKAGE = "AzureAzuriteNodePackage"
+
+    const val PROPERTY_AZURITE_BLOB_HOST = "AzureAzuriteBlobHost"
+    const val VALUE_AZURITE_BLOB_HOST_DEFAULT = "127.0.0.1"
+    const val PROPERTY_AZURITE_BLOB_PORT = "AzureAzuriteBlobPort"
+    const val VALUE_AZURITE_BLOB_PORT_DEFAULT = "10000"
+
+    const val PROPERTY_AZURITE_QUEUE_HOST = "AzureAzuriteQueueHost"
+    const val VALUE_AZURITE_QUEUE_HOST_DEFAULT = "127.0.0.1"
+    const val PROPERTY_AZURITE_QUEUE_PORT = "AzureAzuriteQueuePort"
+    const val VALUE_AZURITE_QUEUE_PORT_DEFAULT = "10001"
+
+    const val PROPERTY_AZURITE_LOCATION_MODE = "AzureAzuriteLocationMode"
+    const val PROPERTY_AZURITE_LOCATION = "AzureAzuriteLocation"
+
+    enum class AzuriteLocationMode(val description: String) {
+        Managed(RiderAzureBundle.message("settings.azurite.row.general.workspace.use_managed")),
+        Project(RiderAzureBundle.message("settings.azurite.row.general.workspace.use_project")),
+        Custom(RiderAzureBundle.message("settings.azurite.row.general.workspace.use_custom"))
+    }
+
+    const val PROPERTY_AZURITE_LOOSE_MODE = "AzureAzuriteLooseMode"
+
+    const val PROPERTY_AZURITE_CERT_PATH = "AzureAzuriteCertPath"
+    const val PROPERTY_AZURITE_CERT_KEY_PATH = "AzureAzuriteCertKeyPath"
+    const val PROPERTY_AZURITE_CERT_PASSWORD = "AzureAzuriteCertPassword"
+
+    fun getAzuriteWorkspaceMode(properties: PropertiesComponent): AzuriteLocationMode {
+        val mode = properties.getValue(PROPERTY_AZURITE_LOCATION_MODE)
+                ?: return AzuriteLocationMode.Managed
+
+        return AzuriteLocationMode.valueOf(mode)
+    }
+
+    fun getAzuriteWorkspacePath(properties: PropertiesComponent, project: Project): File =
+        when(getAzuriteWorkspaceMode(properties)) {
+            AzuriteLocationMode.Managed -> {
+                val workspace = File(PathManager.getConfigPath(), Azurite.ManagedPathSuffix)
+                workspace.mkdir()
+                workspace
+            }
+            AzuriteLocationMode.Project -> {
+                val workspace = File(project.basePath, Azurite.ProjectPathSuffix)
+                workspace.mkdir()
+                workspace
+            }
+            AzuriteLocationMode.Custom -> {
+                val customPath = properties.getValue(PROPERTY_AZURITE_LOCATION)
+                if (customPath.isNullOrEmpty()) {
+                    val workspace = File(customPath)
+                    workspace
+                } else {
+                    val workspace = File(PathManager.getConfigPath(), Azurite.ManagedPathSuffix)
+                    workspace.mkdir()
+                    workspace
+                }
+            }
+        }
 }

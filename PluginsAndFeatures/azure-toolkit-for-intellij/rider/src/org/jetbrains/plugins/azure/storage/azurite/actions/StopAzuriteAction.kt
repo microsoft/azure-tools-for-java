@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,14 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.storage.azurite.actions
 
-import com.intellij.openapi.options.ConfigurableProvider
-import com.intellij.openapi.project.Project
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.components.service
+import org.jetbrains.plugins.azure.RiderAzureBundle
+import org.jetbrains.plugins.azure.storage.azurite.AzuriteService
 
-class AzureRiderConfigurableProvider(private val project: Project) : ConfigurableProvider() {
+class StopAzuriteAction
+    : AnAction(
+        RiderAzureBundle.message("action.azurite.stop.name"),
+        RiderAzureBundle.message("action.azurite.stop.description"),
+        AllIcons.Actions.Suspend) {
 
-    override fun canCreateConfigurable() = true
+    private val azuriteService = service<AzuriteService>()
 
-    override fun createConfigurable() = AzureRiderConfigurable(project)
+    override fun update(e: AnActionEvent) {
+        e.presentation.isEnabled = azuriteService.isRunning
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        if (azuriteService.isRunning) {
+            azuriteService.stop()
+        }
+    }
+
 }

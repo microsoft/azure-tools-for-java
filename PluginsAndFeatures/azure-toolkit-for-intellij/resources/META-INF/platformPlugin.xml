@@ -10,6 +10,7 @@
       </ul>
       <h4>Improvements:</h4>
       <ul>
+        <li>Integrate Azurite Storage Emulator - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/312">#312</a></li>
         <li>Autodetect installed Function App core tools path - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/293">#293</a></li>
         <li>Improve running Function Apps from gutter mark logic - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/234">#234</a></li>
         <li>Add Function Apps Timer Trigger completion options and Cron expression inspections - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/296">#296</a></li>
