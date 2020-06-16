@@ -1,0 +1,178 @@
+#!/bin/bash
+
+tc_open() {
+    set +x
+    echo "##teamcity[blockOpened name='$1' description='$1']"
+    set -x
+}
+
+tc_close() {
+    set +x
+    echo "##teamcity[blockClosed name='$1']"
+    set -x
+}
+
+set -e
+
+# echo shell commands when they are executed.
+set -x
+
+tc_open "Initializing build script"
+{
+    BUILD_COUNTER="9999"
+
+    SCRIPTPATH=$(pwd -P)
+    echo "Script path: $SCRIPTPATH"
+    cd "$SCRIPTPATH"
+
+    MAVEN_QUIET=""
+
+    # Eclipse
+    BUILD_ECLIPSE=true
+
+    #IntelliJ
+    BUILD_INTELLIJ=true
+    INJECT_INTELLIJ_VERSION=false
+
+    IJ_VERSION_MAJOR_BUILD=201
+    IJ_VERSION_MAJOR=2020.1
+    IJ_VERSION_MINOR=
+    IJ_VERSION_LATEST=$IJ_VERSION_MAJOR.$IJ_VERSION_MINOR \
+                      && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
+    IJ_SCALA_VERSION_LATEST=2020.1.10
+
+    while getopts ":hqvBC:e:" option; do
+        case $option in
+            h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter] [-e eclipse/intellij]"; exit ;;
+            q) MAVEN_QUIET="-q" ;;
+            v) INJECT_INTELLIJ_VERSION=true ;;
+            B) MAVEN_QUIET="--batch-mode" ;;
+            C) BUILD_COUNTER="$OPTARG" ;;
+            e)
+              shopt -s nocasematch
+              case $OPTARG in
+                eclipse) BUILD_ECLIPSE=false ;;
+                intellij) BUILD_INTELLIJ=false ;;
+              esac ;;
+            ?) echo "error: option -$OPTARG is not implemented"; exit ;;
+        esac
+    done
+
+    MAVEN_LOCAL_DIR="$SCRIPTPATH"/.repository
+    if [ -d "$MAVEN_LOCAL_DIR" ]; then
+        echo "Found existing Maven local repository in '$MAVEN_LOCAL_DIR'. Deleting..."
+        rm -rf "$MAVEN_LOCAL_DIR"
+    fi
+    echo "Creating maven local directory $MAVEN_LOCAL_DIR"
+    mkdir -p "$MAVEN_LOCAL_DIR"
+
+    # Plugin Artifacts
+    ARTIFACTS_DIR="$SCRIPTPATH/artifacts"
+    if [ ! -d "$ARTIFACTS_DIR" ]; then
+        echo "Creating artifacts directory $ARTIFACTS_DIR"
+        mkdir -p "$ARTIFACTS_DIR"
+    fi
+
+    # Utils Artifacts
+    UTILS_ARTIFACTS_DIR="$SCRIPTPATH/utilsArtifacts"
+    if [ ! -d "$UTILS_ARTIFACTS_DIR" ]; then
+        echo "Unable to find Utils artifacts directory: '$UTILS_ARTIFACTS_DIR'"
+        exit 1
+    fi
+
+    UTILS_ARTIFACTS_COMMON_DIR="$UTILS_ARTIFACTS_DIR"/common
+    if [ ! -d "$UTILS_ARTIFACTS_COMMON_DIR" ]; then
+        echo "Unable to find Utils artifacts common directory: '$UTILS_ARTIFACTS_COMMON_DIR'"
+        exit 1
+    fi
+
+    df -h
+}
+tc_close "Initializing build script"
+
+prepare_maven_repository() {
+    set +x
+    cp -r "$UTILS_ARTIFACTS_COMMON_DIR"/maven_local/.repository "$SCRIPTPATH"
+    set -x
+}
+
+prepare_spark_jars() {
+    set +x
+    local sparkResourceDir="$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/
+    cp "$UTILS_ARTIFACTS_COMMON_DIR"/spark/spark-tools-*.jar "$sparkResourceDir"
+    set -x
+}
+
+prepare_applicationinsights_management_jars() {
+    set +x
+    local azureSdkDir="$SCRIPTPATH"/PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies
+    cp "$UTILS_ARTIFACTS_COMMON_DIR"/applicationinsights/applicationinsights-management-*.jar "$azureSdkDir"
+    set -x
+}
+
+tc_open "Prepare JAR dependencies"
+{
+    prepare_maven_repository
+    prepare_spark_jars
+    prepare_applicationinsights_management_jars
+
+    echo "Deleting Utils artifacts folder"
+    rm -rf "$UTILS_ARTIFACTS_DIR"
+}
+tc_close "Prepare JAR dependencies"
+
+if $BUILD_ECLIPSE; then
+    tc_open "Building Eclipse plugin"
+    {
+        mvn clean install -B -f "$SCRIPTPATH"/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local="$MAVEN_LOCAL_DIR" $MAVEN_QUIET
+        mvn clean install -B -f "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
+        rm -rf "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-eclipse/
+        df -h
+    }
+    tc_close "Building Eclipse plugin"
+fi
+
+# Build IntelliJ plugin
+if $BUILD_INTELLIJ; then
+    tc_open "Building IDEA plugin"
+    {
+        PATCH_PLUGIN_XML_ARGS="" \
+          && [ $INJECT_INTELLIJ_VERSION == "true" ] && \
+            PATCH_PLUGIN_XML_ARGS="-PpatchPluginXmlSinceBuild=$IJ_VERSION_MAJOR_BUILD"
+
+        GRADLE_TASKS="clean buildPlugin bundleBuildIdeaZip"
+        GRADLE_ARGS="-s -Pintellij_version=IC-$IJ_VERSION_LATEST -Pdep_plugins=org.intellij.scala:$IJ_SCALA_VERSION_LATEST $PATCH_PLUGIN_XML_ARGS"
+
+        (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew $GRADLE_TASKS $GRADLE_ARGS)
+
+        (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean --console=plain)
+        (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :idea:buildPlugin -s -Pbuild_common_code_with=idea --console=plain)
+        rm -rf "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/idea/build/
+        df -h
+    }
+    tc_close "Building IDEA plugin"
+fi
+
+BUILD_NUMBER="3.35.0.$BUILD_COUNTER-2020.2"
+
+tc_open "Run Rider tests"
+{
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:test -s --console=plain)
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:clean -s --console=plain)
+    rm -rf "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/
+    df -h
+}
+tc_close "Run Rider tests"
+
+tc_open "Building Rider plugin"
+{
+    # :rider:test task depends on :buildPlugin that prepare the plugin package.
+    # When we run then :rider:buildPlugin Gradle task, some tasks (including a task that get outputs from backend compilation) are skipped.
+    # TODO: Fix --rerun-tasks: split tests execution step from the build process.
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info --rerun-tasks :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain)
+    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-"$BUILD_NUMBER".zip "$ARTIFACTS_DIR"/azure-toolkit-for-rider-"$BUILD_NUMBER".zip
+    df -h
+}
+tc_close "Building Rider plugin"
+
+echo "ALL BUILD SUCCESSFUL"

@@ -1,0 +1,116 @@
+#!/bin/bash
+
+tc_open() {
+    set +x
+    echo "##teamcity[blockOpened name='$1' description='$1']"
+    set -x
+}
+
+tc_close() {
+    set +x
+    echo "##teamcity[blockClosed name='$1']"
+    set -x
+}
+
+set -e
+
+# echo shell commands when they are executed.
+set -x
+
+tc_open "Initializing build script"
+{
+    SCRIPTPATH=$(pwd -P)
+    cd "$SCRIPTPATH"
+
+    MAVEN_QUIET=""
+
+    SKIP_CHECKSTYLE=$TRAVIS
+
+    while getopts ":hqB" option; do
+        case $option in
+            h) echo "usage: $0 [-h] [-q] [-B]"; exit ;;
+            q) MAVEN_QUIET="-q" ;;
+            B) MAVEN_QUIET="--batch-mode" ;;
+            ?) echo "error: option -$OPTARG is not implemented"; exit ;;
+        esac
+    done
+
+    SPARK_OUT_DIR="$SCRIPTPATH/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/"
+    if [ ! -d "$SPARK_OUT_DIR" ]; then
+      echo "Creating spark output directories $SPARK_OUT_DIR"
+      mkdir -p "$SPARK_OUT_DIR"
+    fi
+
+    ARTIFACTS_DIR="$SCRIPTPATH"/artifacts
+    if [ -d  "$ARTIFACTS_DIR" ]; then
+        echo "Artifacts dir already exists. Deleting..."
+        rm -rf "$ARTIFACTS_DIR"
+    fi
+    echo "Creating artifacts directory $ARTIFACTS_DIR"
+    mkdir -p "$ARTIFACTS_DIR"
+
+    ARTIFACTS_COMMON_DIR="$ARTIFACTS_DIR"/common
+    mkdir -p "$ARTIFACTS_COMMON_DIR"
+
+    MAVEN_LOCAL_DIR="$SCRIPTPATH"/.repository
+    if [ -d "$MAVEN_LOCAL_DIR" ]; then
+        echo "Found existing Maven local repository in '$MAVEN_LOCAL_DIR'. Deleting..."
+        rm -rf "$MAVEN_LOCAL_DIR"
+    fi
+    echo "Creating Maven local repository '$MAVEN_LOCAL_DIR'"
+    mkdir -p "$MAVEN_LOCAL_DIR"
+
+    df -h
+}
+tc_close "Initializing build script"
+
+tc_open "Building Utils"
+{
+    mvn install -B -f "$SCRIPTPATH"/Utils/pom.xml -Dmaven.repo.local="$MAVEN_LOCAL_DIR" -Dcheckstyle.skip="$SKIP_CHECKSTYLE" $MAVEN_QUIET
+    df -h
+}
+tc_close "Building Utils"
+
+collect_maven_local_repository_artifacts() {
+    set +x
+
+    local artifactsMavenLocalDir="$ARTIFACTS_COMMON_DIR"/maven_local
+    mkdir -p "$artifactsMavenLocalDir"
+    cp -r "$MAVEN_LOCAL_DIR" "$artifactsMavenLocalDir"
+
+    set -x
+}
+
+collect_spark_artifacts() {
+    set +x
+
+    local sparkToolsDir="$ARTIFACTS_COMMON_DIR"/spark
+    mkdir -p "$sparkToolsDir"
+    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.1_2.1.jar "$sparkToolsDir"
+    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.1_2.3.0.jar "$sparkToolsDir"
+    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/spark-tools-0.1.1_2.3.2.jar "$sparkToolsDir"
+
+    set -x
+}
+
+collect_applicationinsights_artifacts() {
+    set +x
+
+    local applicationInsightsDir="$ARTIFACTS_COMMON_DIR"/applicationinsights
+    mkdir -p "$applicationInsightsDir"
+    cp "$SCRIPTPATH"/Utils/lib/applicationinsights-management-1.0.3.jar "$applicationInsightsDir"
+
+    set -x
+}
+
+tc_open "Collect Utils artifacts"
+{
+    collect_maven_local_repository_artifacts
+    collect_spark_artifacts
+    collect_applicationinsights_artifacts
+
+    df -h
+}
+tc_close "Publish Utils artifacts"
+
+echo "ALL BUILD SUCCESSFUL"
