@@ -43,6 +43,7 @@ import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -222,6 +223,9 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     public void validate() throws ConfigurationException {
         if (!AuthMethodManager.getInstance().isSignedIn()) {
             throw new ConfigurationException(CommonConst.NEED_SIGN_IN);
+        }
+        if (CollectionUtils.isEmpty(AzureMvpModel.getInstance().getSelectedSubscriptions())) {
+            throw new ConfigurationException(CommonConst.NEED_SELECT_SUBSCRIPTION);
         }
         if (StringUtils.isEmpty(getProjectName())) {
             throw new ConfigurationException(NEED_SPECIFY_PROJECT);

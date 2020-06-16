@@ -118,9 +118,9 @@ public class SubscriptionManager {
 
     private synchronized void doSetSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws IOException {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.doSetSubscriptionDetails()");
-        if (subscriptionDetails.isEmpty()) {
-            throw new AuthException("No subscription found in the account");
-        }
+//        if (subscriptionDetails.isEmpty()) {
+//            throw new AuthException("No subscription found in the account");
+//        }
 
         this.subscriptionDetails = subscriptionDetails;
         updateMapAccordingToList(); // WORKAROUND: Update SubscriptionId->SubscriptionDetail Map

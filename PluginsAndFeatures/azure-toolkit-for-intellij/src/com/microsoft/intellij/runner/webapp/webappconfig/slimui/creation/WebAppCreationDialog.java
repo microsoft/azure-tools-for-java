@@ -36,6 +36,7 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -49,6 +50,7 @@ import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -297,6 +299,13 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
         // Validate azure status
         if (!AuthMethodManager.getInstance().isSignedIn()) {
             res.add(new ValidationInfo("Please sign in with your Azure account.", cbSubscription));
+            return res;
+        }
+        // Validate selected subscription count
+        final List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        if (CollectionUtils.isEmpty(subscriptions)) {
+            res.add(new ValidationInfo("Please select subscription in azure explorer first.", cbSubscription));
+            return res;
         }
         try {
             ValidationUtils.validateAppServiceName(webAppConfiguration.getSubscriptionId(),

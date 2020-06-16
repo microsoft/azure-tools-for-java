@@ -33,7 +33,9 @@ import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -53,6 +55,7 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -174,6 +177,13 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         // Validate azure status
         if (!AuthMethodManager.getInstance().isSignedIn()) {
             res.add(new ValidationInfo("Please sign in with your Azure account.", subscriptionPanel.getComboComponent()));
+            return res;
+        }
+        final List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        if (CollectionUtils.isEmpty(subscriptions)) {
+            res.add(new ValidationInfo("Please select subscription in azure explorer first.",
+                                       subscriptionPanel.getComboComponent()));
+            return res;
         }
         try {
             ValidationUtils.validateAppServiceName(functionConfiguration.getSubscription(),
