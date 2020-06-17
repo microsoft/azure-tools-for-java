@@ -23,7 +23,6 @@
 package com.microsoft.intellij.serviceexplorer.azure.vmarm;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -35,9 +34,6 @@ import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
-import org.apache.commons.collections4.CollectionUtils;
-
-import java.util.List;
 
 import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
 
@@ -57,8 +53,7 @@ public class CreateVMAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            final List<Subscription> subscriptionList = AzureMvpModel.getInstance().getSelectedSubscriptions();
-            if (CollectionUtils.isEmpty(subscriptionList)) {
+            if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
                 PluginUtil.displayErrorDialog(ERROR_CREATING_VIRTUAL_MACHINE, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
                 return;
             }

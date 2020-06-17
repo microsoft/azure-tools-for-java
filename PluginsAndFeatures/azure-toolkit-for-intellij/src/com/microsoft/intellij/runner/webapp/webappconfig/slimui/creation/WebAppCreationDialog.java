@@ -50,7 +50,6 @@ import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -302,8 +301,7 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
             return res;
         }
         // Validate selected subscription count
-        final List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        if (CollectionUtils.isEmpty(subscriptions)) {
+        if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
             res.add(new ValidationInfo("Please select subscription in azure explorer first.", cbSubscription));
             return res;
         }
