@@ -35,108 +35,103 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 public class DockerHostModule extends AzureRefreshableNode {
-  private static final String DOCKER_HOST_MODULE_ID = DockerHostModule.class.getName();
-  private static final String DOCKER_HOST_ICON = "DockerContainer_16.png";
-  private static final String BASE_MODULE_NAME = "Docker Hosts";
+    private static final String DOCKER_HOST_MODULE_ID = DockerHostModule.class.getName();
+    private static final String DOCKER_HOST_ICON = "DockerContainer_16.png";
+    private static final String BASE_MODULE_NAME = "Docker Hosts(Deprecating)";
 
-  private AzureDockerHostsManager dockerManager;
+    private AzureDockerHostsManager dockerManager;
 
-  public DockerHostModule(Node parent) {
-    super(DOCKER_HOST_MODULE_ID, BASE_MODULE_NAME, parent, DOCKER_HOST_ICON);
-    dockerManager = null;
+    public DockerHostModule(Node parent) {
+        super(DOCKER_HOST_MODULE_ID, BASE_MODULE_NAME, parent, DOCKER_HOST_ICON);
+        dockerManager = null;
 
-    createListener();
-  }
+        createListener();
+    }
 
-  private void createListener() {
-    String id = "DockerHostModule";
-    AzureUIRefreshListener listener = new AzureUIRefreshListener() {
-      @Override
-      public void run() {
-        if (event.opsType == AzureUIRefreshEvent.EventType.SIGNIN || event.opsType == AzureUIRefreshEvent.EventType.SIGNOUT) {
-          removeAllChildNodes();
-        } else if (event.object == null &&
-            (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event.opsType == AzureUIRefreshEvent.EventType.REMOVE)) {
-          if (hasChildNodes()) {
-            load(true);
-          }
-        } else if (event.object != null && event.object.getClass().toString().equals(DockerHost.class.toString())) {
-          DockerHost dockerHost = (DockerHost) event.object;
-          switch (event.opsType) {
-            case ADD:
-              DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                  try {
-                      addChildNode(new DockerHostNode(DockerHostModule.this, dockerManager, dockerHost));
-                  } catch (Exception ex) {
-                    DefaultLoader.getUIHelper().logError("DockerHostModule::createListener ADD", ex);
-                    ex.printStackTrace();
-                  }
+    private void createListener() {
+        String id = "DockerHostModule";
+        AzureUIRefreshListener listener = new AzureUIRefreshListener() {
+            @Override
+            public void run() {
+                if (event.opsType == AzureUIRefreshEvent.EventType.SIGNIN || event.opsType == AzureUIRefreshEvent.EventType.SIGNOUT) {
+                    removeAllChildNodes();
+                } else if (event.object == null &&
+                        (event.opsType == AzureUIRefreshEvent.EventType.UPDATE || event.opsType == AzureUIRefreshEvent.EventType.REMOVE)) {
+                    if (hasChildNodes()) {
+                        load(true);
+                    }
+                } else if (event.object != null && event.object.getClass().toString().equals(DockerHost.class.toString())) {
+                    DockerHost dockerHost = (DockerHost) event.object;
+                    switch (event.opsType) {
+                        case ADD:
+                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        addChildNode(new DockerHostNode(DockerHostModule.this, dockerManager, dockerHost));
+                                    } catch (Exception ex) {
+                                        DefaultLoader.getUIHelper().logError("DockerHostModule::createListener ADD", ex);
+                                        ex.printStackTrace();
+                                    }
+                                }
+                            });
+                            break;
+                        case UPDATE:
+                            break;
+                        case REMOVE:
+                            break;
+                        default:
+                            break;
+                    }
                 }
-              });
-              break;
-            case UPDATE:
-              break;
-            case REMOVE:
-              break;
-            default:
-              break;
-          }
+            }
+        };
+        AzureUIRefreshCore.addListener(id, listener);
+
+    }
+
+    @Override
+    protected void refreshFromAzure() throws Exception {
+        try {
+            AzureManager azureAuthManager = AuthMethodManager.getInstance().getAzureManager();
+            // not signed in
+            if (azureAuthManager == null) {
+                return;
+            }
+
+            dockerManager = AzureDockerHostsManager.getAzureDockerHostsManager(azureAuthManager);
+
+            dockerManager.forceRefreshSubscriptions();
+            dockerManager = AzureDockerHostsManager.getAzureDockerHostsManagerEmpty(null);
+
+        } catch (Exception ex) {
+            DefaultLoader.getUIHelper().showException("An error occurred while attempting to load the Docker virtual machines from Azure", ex,
+                    "Azure Services Explorer - Error Refreshing Docker Hosts", false, true);
         }
-      }
-    };
-    AzureUIRefreshCore.addListener(id, listener);
-
-  }
-
-//  @Override
-//  protected void onNodeClick(NodeActionEvent e) {
-//    super.onNodeClick(e);
-//  }
-
-  @Override
-  protected void refreshFromAzure() throws Exception {
-    try {
-      AzureManager azureAuthManager = AuthMethodManager.getInstance().getAzureManager();
-      // not signed in
-      if (azureAuthManager == null) {
-        return;
-      }
-
-      dockerManager = AzureDockerHostsManager.getAzureDockerHostsManager(azureAuthManager);
-
-      dockerManager.forceRefreshSubscriptions();
-      dockerManager = AzureDockerHostsManager.getAzureDockerHostsManagerEmpty(null);
-
-    } catch (Exception ex) {
-      DefaultLoader.getUIHelper().showException("An error occurred while attempting to load the Docker virtual machines from Azure", ex,
-          "Azure Services Explorer - Error Refreshing Docker Hosts", false, true);
     }
-  }
 
-  @Override
-  protected void refreshItems() throws AzureCmdException {
-    try {
-      AzureManager azureAuthManager = AuthMethodManager.getInstance().getAzureManager();
-      // not signed in
-      if (azureAuthManager == null) {
-        return;
-      }
+    @Override
+    protected void refreshItems() throws AzureCmdException {
+        try {
+            AzureManager azureAuthManager = AuthMethodManager.getInstance().getAzureManager();
+            // not signed in
+            if (azureAuthManager == null) {
+                return;
+            }
 
-      dockerManager = AzureDockerHostsManager.getAzureDockerHostsManager(azureAuthManager);
+            dockerManager = AzureDockerHostsManager.getAzureDockerHostsManager(azureAuthManager);
 
-      if (!dockerManager.isInitialized()) {
-        dockerManager.forceRefreshSubscriptions();
-        dockerManager = AzureDockerHostsManager.getAzureDockerHostsManagerEmpty(null);
-      }
+            if (!dockerManager.isInitialized()) {
+                dockerManager.forceRefreshSubscriptions();
+                dockerManager = AzureDockerHostsManager.getAzureDockerHostsManagerEmpty(null);
+            }
 
-      for (DockerHost host : dockerManager.getDockerHostsList()) {
-        addChildNode(new DockerHostNode(this, dockerManager, host));
-      }
-    } catch (Exception ex) {
-      DefaultLoader.getUIHelper().showException("An error occurred while attempting to load the Docker virtual machines from Azure", ex,
-          "Azure Services Explorer - Error Refreshing Docker Hosts", false, true);
+            for (DockerHost host : dockerManager.getDockerHostsList()) {
+                addChildNode(new DockerHostNode(this, dockerManager, host));
+            }
+        } catch (Exception ex) {
+            DefaultLoader.getUIHelper().showException("An error occurred while attempting to load the Docker virtual machines from Azure", ex,
+                    "Azure Services Explorer - Error Refreshing Docker Hosts", false, true);
+        }
     }
-  }
 }

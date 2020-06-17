@@ -1,12 +1,12 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.37.0</version>
+  <version>3.38.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
       <html>
-        <p>These plugins allow Java developers, Azure HDInsight developers and Apache Spark on SQL Server users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
+        <p>The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and submit Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.</p>
         <ul>
           <li>Azure Web App Workflow: Run your web applications on Azure Web App and view logs.</li>
           <li>Azure Functions Workflow: Scaffold, run, debug your Functions App locally and deploy it on Azure.</li>
@@ -14,6 +14,7 @@
           <li>Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux) via Azure Container Registry.</li>
           <li>Azure Explorer: View and manage your cloud resources on Azure with embedded Azure Explorer.</li>
           <li>Azure Resource Management template: Create and update your Azure resource deployments with ARM template support.</li>
+          <li>Azure Synapse: List workspaces and Apache Spark Pools, compose an Apache Spark project, author and submit Apache Spark jobs to Azure Synapse Spark pools.</li>
           <li>Azure HDInsight: Create an Apache Spark project, author and submit Apache Spark jobs to HDInsight cluster; Monitor and debug Apache Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.</li>
           <li>SQL Server Big Data Cluster: Link to SQL Server Big Data Cluster; Create an Apache Spark project, author and submit Apache Spark jobs to cluster; Monitor and debug Apache Spark jobs easily.</li>
         </ul>
@@ -23,29 +24,29 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.37.0</h3>
+    <h3>3.38.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Add what's new document in Azure menu</li>
-        <li>Filter unsupported regions when creating new app service plan</li>
+        <li>Support create application insights connection while creating new function app</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Sort Spark on Cosmos Serverless jobs in descending order by job submission time</li>
+        <li>Deprecate Docker Host(will be removed in v3.39.0)</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li>Fixed Spark batch job submission skipped after uploading artifact to SQL Server big data cluster issue</li>
-        <li>Fixed no permission issue after submitting Spark batch job to ESP HDInsight cluster with ADLS Gen2 as default
-            storage account type</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4370">#4370</a> Fixes NPE while loading
-            Function deployment panel</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4347">#4347</a> Fixes NPE while getting action
-            status</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4380">#4380</a> Fixes validation may freeze UI
-            in spring cloud deployment panel</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4350">#4350</a> Fixes null value in spring
-            cloud property view</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4423">#4423</a> Spark local run mockfs issue
+            with Hive support enabled</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4410">#4410</a> The context menu
+            <code>Submit Spark Application</code> action regression issue at IDEA 2020.1</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4419">#4419</a> The run configuration Spark
+            config table changes didn't take effects regression</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4413">#4413</a> The regression issue of Spark
+            local console with Scala plugin 2020.1.36</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4422">#4422</a> Fixes
+            <code>ConcurrentModificationException</code> while refreshing spring cloud clusters</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4438">#4438</a> Fixes modality state issue
+            when open what's new document</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

@@ -1,10 +1,34 @@
-<!-- Version: 3.37.0 -->
+<!-- Version: 3.38.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
 > Scroll down to checkout our newly added support for **Azure Functions**, **Azure Spring Cloud** and
  **log streaming for Azure App Service**.
 
-## 3.37.0(Current Release)
+## 3.38.0(Current Release)
+We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! The following features are waiting to be discovered.
+ - List Azure Synapse workspaces and Apache Spark pools
+
+![list-workspaces-pools-blur](https://user-images.githubusercontent.com/32627233/84378742-3dd7ce80-ac17-11ea-871f-d85e9bedf99f.gif)
+
+ - Submit Apache Spark batch jobs to Apache Spark pools
+
+![synapse-submit-middle-quick](https://user-images.githubusercontent.com/32627233/84487331-2f4ded80-acd1-11ea-8fe1-b6cc15b9371b.gif)
+
+### Added
+- Support create application insights connection while creating new function app
+
+### Changed
+- Deprecate Docker Host(will be removed in v3.39.0)
+
+### Fixed
+- [#4423](https://github.com/microsoft/azure-tools-for-java/issues/4423) Spark local run mockfs issue with Hive support enabled
+- [#4410](https://github.com/microsoft/azure-tools-for-java/issues/4410) The context menu <code>Submit Spark Application</code> action regression issue at IDEA 2020.1
+- [#4419](https://github.com/microsoft/azure-tools-for-java/issues/4419) The run configuration Spark config table changes didn't take effects regression
+- [#4413](https://github.com/microsoft/azure-tools-for-java/issues/4413) The regression issue of Spark local console with Scala plugin 2020.1.36
+- [#4422](https://github.com/microsoft/azure-tools-for-java/issues/4422) Fixes <code>ConcurrentModificationException</code> while refreshing spring cloud clusters
+- [#4438](https://github.com/microsoft/azure-tools-for-java/issues/4438) Fixes modality state issue when open what's new document
+
+## 3.37.0
 
 ### Added
 - Add what's new document in Azure menu
@@ -98,7 +122,7 @@ Full Azure Function experience are enabled in IntelliJ Toolkit now, which includ
 
 ## Summary
 
-These plugins allow Java developers, Azure HDInsight developers and SQL Server Spark users to easily create, develop, configure, test, and deploy highly available and scalable Java web apps and Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
+The plugin allows Java developers to easily develop, configure, test, and deploy highly available and scalable Java web apps. It also supports Azure Synapse data engineers, Azure HDInsight developers and Apache Spark on SQL Server users to create, test and submit Apache Spark/Hadoop jobs to Azure from IntelliJ on all supported platforms.
 
 #### Features
 - Azure Web App Workflow: Run your web applications on Azure Web App and view logs.
@@ -107,5 +131,6 @@ These plugins allow Java developers, Azure HDInsight developers and SQL Server S
 - Azure Container Workflow: You can dockerize and run your web application on Azure Web App (Linux)- via Azure Container Registry.
 - Azure Explorer: View and manage your cloud resources on Azure with embedded Azure Explorer.
 - Azure Resource Management template: Create and update your Azure resource deployments with ARM- template support.
-- Azure HDInsight: Create a Spark project, author and submit Spark jobs to HDInsight cluster; Monitor- and debug Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.
-- Link to SQL Server Big Data Cluster; Create a Spark project, author and submit Spark jobs to cluster; Monitor and debug Spark jobs easily.
+- Azure Synapse: List workspaces and Apache Spark Pools, compose an Apache Spark project, author and submit Apache Spark jobs to Azure Synapse Spark pools.
+- Azure HDInsight: Create an Apache Spark project, author and submit Apache Spark jobs to HDInsight cluster; Monitor and debug Apache Spark jobs easily; Support HDInsight ESP cluster MFA Authentication.
+- Link to SQL Server Big Data Cluster; Create an Apache Spark project, author and submit Apache Spark jobs to cluster; Monitor and debug Apache Spark jobs easily.
