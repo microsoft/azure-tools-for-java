@@ -104,7 +104,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     @NotNull
     @Override
     protected Action[] createActions() {
-        return new Action[]{this.getOKAction()};
+        return new Action[]{this.getOKAction(), this.getCancelAction()};
     }
 
     private void refreshSubscriptions() {
