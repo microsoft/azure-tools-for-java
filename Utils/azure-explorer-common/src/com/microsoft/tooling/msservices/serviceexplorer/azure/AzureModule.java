@@ -125,9 +125,9 @@ public class AzureModule extends AzureRefreshableNode {
                 case 0:
                     return String.format("%s %s", BASE_MODULE_NAME, MODULE_NAME_NO_SUBSCRIPTION);
                 case 1:
-                    return String.format("%s (%d subscriptions)", BASE_MODULE_NAME, selectedSubscriptions.size());
+                    return String.format("%s (%s)", BASE_MODULE_NAME, selectedSubscriptions.get(0).getSubscriptionName());
                 default:
-                    return String.format("%s %s", BASE_MODULE_NAME, selectedSubscriptions.get(0).getSubscriptionName());
+                    return String.format("%s (%d subscriptions)", BASE_MODULE_NAME, selectedSubscriptions.size());
             }
         } catch (Exception e) {
             String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
