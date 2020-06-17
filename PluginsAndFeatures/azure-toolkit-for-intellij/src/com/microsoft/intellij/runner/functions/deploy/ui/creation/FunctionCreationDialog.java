@@ -251,7 +251,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         pack();
     }
 
-    private boolean isEnableApplicationInsights() {
+    private boolean isApplicationInsightsEnabled() {
         return rdoEnableAI.isSelected();
     }
 
@@ -292,7 +292,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     }
 
     private void bindingApplicationInsights(IntelliJFunctionContext functionConfiguration) throws IOException {
-        if (!isEnableApplicationInsights()) {
+        if (!isApplicationInsightsEnabled()) {
             return;
         }
         String instrumentationKey = applicationInsightsPanel.getApplicationInsightsInstrumentKey();
@@ -316,7 +316,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         telemetryMap.put("CreateNewSP", String.valueOf(appServicePlanPanel.isNewAppServicePlan()));
         telemetryMap.put("CreateNewRGP", String.valueOf(resourceGroupPanel.isNewResourceGroup()));
         telemetryMap.put("Success", String.valueOf(success));
-        telemetryMap.put("EnableApplicationInsights", String.valueOf(isEnableApplicationInsights()));
+        telemetryMap.put("EnableApplicationInsights", String.valueOf(isApplicationInsightsEnabled()));
         telemetryMap.put("CreateNewApplicationInsights", String.valueOf(isCreateApplicationInsights()));
         if (!success) {
             telemetryMap.put("ErrorMsg", errorMsg);
