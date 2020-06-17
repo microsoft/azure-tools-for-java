@@ -34,6 +34,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.azuretools.utils.CanceledByUserException;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
@@ -123,6 +124,11 @@ public class AzureMvpModel {
         }
         Collections.sort(ret, getComparator(Subscription::displayName));
         return ret;
+    }
+
+    public boolean isSubscriptionSelected() {
+        final List<Subscription> subscriptionList = getSelectedSubscriptions();
+        return CollectionUtils.isEmpty(subscriptionList);
     }
 
     /**

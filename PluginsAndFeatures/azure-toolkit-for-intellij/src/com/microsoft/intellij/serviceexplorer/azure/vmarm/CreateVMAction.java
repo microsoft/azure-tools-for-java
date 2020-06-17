@@ -23,18 +23,27 @@
 package com.microsoft.intellij.serviceexplorer.azure.vmarm;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.wizards.createarmvm.CreateVMWizard;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import org.apache.commons.collections4.CollectionUtils;
+
+import java.util.List;
+
+import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
 
 @Name("Create VM")
 public class CreateVMAction extends NodeActionListener {
+    private static final String ERROR_CREATING_VIRTUAL_MACHINE = "Error creating virtual machine";
     private VMArmModule vmModule;
 
     public CreateVMAction(VMArmModule vmModule) {
@@ -45,12 +54,19 @@ public class CreateVMAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) vmModule.getProject();
         try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                return;
+            }
+            final List<Subscription> subscriptionList = AzureMvpModel.getInstance().getSelectedSubscriptions();
+            if (CollectionUtils.isEmpty(subscriptionList)) {
+                PluginUtil.displayErrorDialog(ERROR_CREATING_VIRTUAL_MACHINE, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+                return;
+            }
             CreateVMWizard createVMWizard = new CreateVMWizard((VMArmModule) e.getAction().getNode());
             createVMWizard.show();
         } catch (Exception ex) {
-            AzurePlugin.log("Error creating virtual machine", ex);
-            DefaultLoader.getUIHelper().showException("Error creating virtual machine", ex, "Error Creating Virtual Machine", false, true);
+            AzurePlugin.log(ERROR_CREATING_VIRTUAL_MACHINE, ex);
+            DefaultLoader.getUIHelper().showException(ERROR_CREATING_VIRTUAL_MACHINE, ex, "Error Creating Virtual Machine", false, true);
         }
     }
 }

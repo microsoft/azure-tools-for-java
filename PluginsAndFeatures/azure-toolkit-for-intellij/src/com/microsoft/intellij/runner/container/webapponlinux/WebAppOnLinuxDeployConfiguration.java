@@ -31,22 +31,15 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
-
-import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-
-import org.apache.commons.collections.CollectionUtils;
+import com.microsoft.intellij.util.ValidationUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Paths;
-
-import static com.microsoft.intellij.common.CommonConst.NEED_SIGN_IN;
 
 public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> {
 
@@ -111,12 +104,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
      */
     @Override
     public void validate() throws ConfigurationException {
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException(NEED_SIGN_IN);
-        }
-        if (CollectionUtils.isEmpty(AzureMvpModel.getInstance().getSelectedSubscriptions())) {
-            throw new ConfigurationException(CommonConst.NEED_SELECT_SUBSCRIPTION);
-        }
+        ValidationUtils.validateAuthentication();
         if (Utils.isEmptyString(deployModel.getDockerFilePath())
                 || !Paths.get(deployModel.getDockerFilePath()).toFile().exists()) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);

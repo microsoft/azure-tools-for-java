@@ -24,18 +24,23 @@ package com.microsoft.intellij.serviceexplorer.azure.storagearm;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 
+import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
+
 @Name("Create Storage Account...")
 public class CreateStorageAccountAction extends NodeActionListener {
 
+    public static final String ERROR_CREATING_STORAGE_ACCOUNT = "Error creating storage account";
     private StorageModule storageModule;
 
     public CreateStorageAccountAction(StorageModule storageModule) {
@@ -46,7 +51,13 @@ public class CreateStorageAccountAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) storageModule.getProject();
         try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                return;
+            }
+            if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
+                PluginUtil.displayErrorDialog(ERROR_CREATING_STORAGE_ACCOUNT, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+                return;
+            }
             CreateArmStorageAccountForm createStorageAccountForm = new CreateArmStorageAccountForm((Project) storageModule.getProject());
             createStorageAccountForm.fillFields(null, null);
 
@@ -58,8 +69,8 @@ public class CreateStorageAccountAction extends NodeActionListener {
             });
             createStorageAccountForm.show();
         } catch (Exception ex) {
-            AzurePlugin.log("Error creating storage account", ex);
-            DefaultLoader.getUIHelper().showException("Error creating storage account", ex, "Error Creating Storage Account", false, true);
+            AzurePlugin.log(ERROR_CREATING_STORAGE_ACCOUNT, ex);
+            DefaultLoader.getUIHelper().showException(ERROR_CREATING_STORAGE_ACCOUNT, ex, "Error Creating Storage Account", false, true);
         }
     }
 }

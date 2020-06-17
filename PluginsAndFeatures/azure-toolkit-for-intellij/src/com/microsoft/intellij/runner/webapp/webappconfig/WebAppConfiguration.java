@@ -36,19 +36,14 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
-import org.apache.commons.collections.CollectionUtils;
+import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import static com.microsoft.intellij.common.CommonConst.NEED_SIGN_IN;
 
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel> {
 
@@ -111,12 +106,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     @Override
     public void validate() throws ConfigurationException {
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException(NEED_SIGN_IN);
-        }
-        if (CollectionUtils.isEmpty(AzureMvpModel.getInstance().getSelectedSubscriptions())) {
-            throw new ConfigurationException(CommonConst.NEED_SELECT_SUBSCRIPTION);
-        }
+        ValidationUtils.validateAuthentication();
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);

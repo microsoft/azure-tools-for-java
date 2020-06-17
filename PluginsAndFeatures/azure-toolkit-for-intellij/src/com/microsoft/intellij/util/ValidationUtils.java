@@ -22,11 +22,15 @@
 
 package com.microsoft.intellij.util;
 
+import com.intellij.openapi.options.ConfigurationException;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.CheckNameResourceTypes;
 import com.microsoft.azure.management.appservice.implementation.ResourceNameAvailabilityInner;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.rest.RestException;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -34,6 +38,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.microsoft.intellij.common.CommonConst.NEED_SIGN_IN;
 
 public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
@@ -124,6 +130,15 @@ public class ValidationUtils {
             throw new IllegalArgumentException("App Service Plan name is required");
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
             throw new IllegalArgumentException(String.format("App Service Plan Name should match %s", APP_SERVICE_PLAN_NAME_PATTERN));
+        }
+    }
+
+    public static void validateAuthentication() throws ConfigurationException {
+        if (!AuthMethodManager.getInstance().isSignedIn()) {
+            throw new ConfigurationException(NEED_SIGN_IN);
+        }
+        if (CollectionUtils.isEmpty(AzureMvpModel.getInstance().getSelectedSubscriptions())) {
+            throw new ConfigurationException(CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
         }
     }
 

@@ -40,7 +40,9 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -81,6 +83,11 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
      * Open select-subscription dialog.
      */
     public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) {
+        if (CollectionUtils.isEmpty(sdl)) {
+            PluginUtil.displayInfoDialog("No subscription", "No subscription in current account, you may get a free "
+                    + "one from https://azure.microsoft.com/en-us/free/");
+            return null;
+        }
         SubscriptionsDialog d = new SubscriptionsDialog(sdl, project);
         d.show();
         if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
@@ -97,7 +104,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
     @NotNull
     @Override
     protected Action[] createActions() {
-        return new Action[]{this.getOKAction(), this.getCancelAction()};
+        return new Action[]{this.getOKAction()};
     }
 
     private void refreshSubscriptions() {
@@ -207,7 +214,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             }
         }
 
-        if (unselectedCount == rc) {
+        if (rc != 0 && unselectedCount == rc) {
             DefaultLoader.getUIHelper().showMessageDialog(
                     contentPane, "Please select at least one subscription",
                     "Subscription dialog info", Messages.getInformationIcon());

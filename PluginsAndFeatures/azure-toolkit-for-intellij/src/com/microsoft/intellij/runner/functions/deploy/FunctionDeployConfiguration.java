@@ -36,20 +36,15 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
-import org.apache.commons.collections.CollectionUtils;
+import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-
-import static com.microsoft.intellij.common.CommonConst.NEED_SIGN_IN;
 
 public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
     implements RunProfileWithCompileBeforeLaunchOption {
@@ -190,13 +185,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     @Override
     public void validate() throws ConfigurationException {
-        // Todo: implement validation
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException(NEED_SIGN_IN);
-        }
-        if (CollectionUtils.isEmpty(AzureMvpModel.getInstance().getSelectedSubscriptions())) {
-            throw new ConfigurationException(CommonConst.NEED_SELECT_SUBSCRIPTION);
-        }
+        ValidationUtils.validateAuthentication();
         if (this.module == null) {
             throw new ConfigurationException(NEED_SPECIFY_MODULE);
         }

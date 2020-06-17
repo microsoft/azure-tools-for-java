@@ -110,6 +110,10 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
 
     private void populateValues() {
         try {
+            if (azureManager == null || azureManager.getSubscriptionManager() == null) {
+                // Didn't sign in
+                return;
+            }
             List<SubscriptionDetail> subList = azureManager.getSubscriptionManager().getSubscriptionDetails()
                     .stream().filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
             // check at least single subscription is associated with the account

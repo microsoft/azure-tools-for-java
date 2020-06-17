@@ -27,10 +27,12 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.arm.CreateDeploymentForm;
 import com.microsoft.intellij.ui.util.UIUtils;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -38,8 +40,11 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 
+import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
+
 @Name("Create Deployment")
 public class CreateDeploymentAction extends NodeActionListener {
+    public static final String ERROR_CREATING_DEPLOYMENT = "Error creating Deployment";
     private final Project project;
     private final Node node;
     public static final String NOTIFY_CREATE_DEPLOYMENT_SUCCESS = "Create deployment successfully";
@@ -60,6 +65,10 @@ public class CreateDeploymentAction extends NodeActionListener {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
+                    PluginUtil.displayErrorDialog(ERROR_CREATING_DEPLOYMENT, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+                    return;
+                }
                 CreateDeploymentForm createDeploymentForm = new CreateDeploymentForm(project);
                 if (node instanceof ResourceManagementNode) {
                     ResourceManagementNode rmNode = (ResourceManagementNode) node;
@@ -68,9 +77,9 @@ public class CreateDeploymentAction extends NodeActionListener {
                 createDeploymentForm.show();
             }
         } catch (Exception ex) {
-            AzurePlugin.log("Error creating Deployment", ex);
+            AzurePlugin.log(ERROR_CREATING_DEPLOYMENT, ex);
             UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
-                MessageType.ERROR);
+                                     MessageType.ERROR);
         }
     }
 }

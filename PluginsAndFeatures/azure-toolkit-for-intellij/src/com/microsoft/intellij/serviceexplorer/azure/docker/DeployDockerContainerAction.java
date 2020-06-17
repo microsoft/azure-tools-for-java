@@ -38,51 +38,57 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 
+import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
 @Name("Publish")
 public class DeployDockerContainerAction extends NodeActionListener {
-  private static final Logger LOGGER = Logger.getInstance(DeployDockerContainerAction.class);
-  DockerHost dockerHost;
-  AzureDockerHostsManager dockerManager;
-  Project project;
-  DockerHostNode dockerHostNode;
+    private static final Logger LOGGER = Logger.getInstance(DeployDockerContainerAction.class);
+    DockerHost dockerHost;
+    AzureDockerHostsManager dockerManager;
+    Project project;
+    DockerHostNode dockerHostNode;
 
-  public DeployDockerContainerAction(DockerHostNode dockerHostNode) {
-    this.dockerManager = dockerHostNode.getDockerManager();
-    this.dockerHost = dockerHostNode.getDockerHost();
-    this.project = (Project) dockerHostNode.getProject();
-    this.dockerHostNode = dockerHostNode;
-  }
-
-  @Override
-  public void actionPerformed(NodeActionEvent e) {
-    try {
-      if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
-      if (dockerManager.getSubscriptionsMap().isEmpty()) {
-        PluginUtil.displayErrorDialog("Publish Docker Container", "Must select an Azure subscription first");
-        return;
-      }
-
-      AzureDockerImageInstance dockerImageDescription = dockerManager.getDefaultDockerImageDescription(project.getName(), dockerHost);
-
-      AzureSelectDockerWizardModel model = new AzureSelectDockerWizardModel(project, dockerManager, dockerImageDescription);
-      AzureSelectDockerWizardDialog wizard = new AzureSelectDockerWizardDialog(model);
-      model.selectDefaultDockerHost(dockerHost, false);
-      wizard.show();
-
-      if (wizard.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-        try {
-          String url = wizard.deploy();
-          System.out.println("Container published at: " + url);
-        } catch (Exception ex) {
-          PluginUtil.displayErrorDialogAndLog(message("webAppDplyErr"), ex.getMessage(), ex);
-        }
-      }
-    } catch(Exception ex1) {
-      LOGGER.error("actionPerformed", ex1);
-      ex1.printStackTrace();
+    public DeployDockerContainerAction(DockerHostNode dockerHostNode) {
+        this.dockerManager = dockerHostNode.getDockerManager();
+        this.dockerHost = dockerHostNode.getDockerHost();
+        this.project = (Project) dockerHostNode.getProject();
+        this.dockerHostNode = dockerHostNode;
     }
-  }
+
+    @Override
+    public void actionPerformed(NodeActionEvent e) {
+        try {
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                return;
+            }
+            if (dockerManager.getSubscriptionsMap().isEmpty()) {
+                PluginUtil.displayErrorDialog("Publish Docker Container", MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+                return;
+            }
+
+            AzureDockerImageInstance dockerImageDescription =
+                    dockerManager.getDefaultDockerImageDescription(project.getName(), dockerHost);
+
+            AzureSelectDockerWizardModel model = new AzureSelectDockerWizardModel(project,
+                                                                                  dockerManager,
+                                                                                  dockerImageDescription);
+            AzureSelectDockerWizardDialog wizard = new AzureSelectDockerWizardDialog(model);
+            model.selectDefaultDockerHost(dockerHost, false);
+            wizard.show();
+
+            if (wizard.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+                try {
+                    String url = wizard.deploy();
+                    System.out.println("Container published at: " + url);
+                } catch (Exception ex) {
+                    PluginUtil.displayErrorDialogAndLog(message("webAppDplyErr"), ex.getMessage(), ex);
+                }
+            }
+        } catch (Exception ex1) {
+            LOGGER.error("actionPerformed", ex1);
+            ex1.printStackTrace();
+        }
+    }
 }

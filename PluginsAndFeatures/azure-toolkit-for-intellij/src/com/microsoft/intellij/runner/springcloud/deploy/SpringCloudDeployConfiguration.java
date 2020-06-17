@@ -36,14 +36,12 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ProvisioningState;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVersion;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceResource;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
-import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
-import org.apache.commons.collections.CollectionUtils;
+import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -221,12 +219,7 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
 
     @Override
     public void validate() throws ConfigurationException {
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException(CommonConst.NEED_SIGN_IN);
-        }
-        if (CollectionUtils.isEmpty(AzureMvpModel.getInstance().getSelectedSubscriptions())) {
-            throw new ConfigurationException(CommonConst.NEED_SELECT_SUBSCRIPTION);
-        }
+        ValidationUtils.validateAuthentication();
         if (StringUtils.isEmpty(getProjectName())) {
             throw new ConfigurationException(NEED_SPECIFY_PROJECT);
         }
