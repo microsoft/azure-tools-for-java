@@ -96,7 +96,7 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
         return myModule;
     }
 
-    protected void checkAzureOperationPreconditions() throws ConfigurationException {
+    protected void checkAzurePreconditions() throws ConfigurationException {
         try {
             AzureUtils.checkAzurePreconditions();
         } catch (AzureExecutionException e) {

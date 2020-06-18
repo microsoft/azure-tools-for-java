@@ -218,7 +218,7 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
 
     @Override
     public void validate() throws ConfigurationException {
-        checkAzureOperationPreconditions();
+        checkAzurePreconditions();
         if (StringUtils.isEmpty(getProjectName())) {
             throw new ConfigurationException(NEED_SPECIFY_PROJECT);
         }

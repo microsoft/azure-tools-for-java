@@ -171,7 +171,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     protected List<ValidationInfo> doValidateAll() {
         applyToConfiguration();
         final List<ValidationInfo> res = new ArrayList<>();
-        final ValidationInfo info = checkAzureOperationPreconditions(subscriptionPanel.getComboComponent());
+        final ValidationInfo info = checkAzurePreconditions(subscriptionPanel.getComboComponent());
         if (info != null) {
             res.add(info);
             return res;

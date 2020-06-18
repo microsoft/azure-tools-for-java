@@ -105,7 +105,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     @Override
     public void validate() throws ConfigurationException {
-        checkAzureOperationPreconditions();
+        checkAzurePreconditions();
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);

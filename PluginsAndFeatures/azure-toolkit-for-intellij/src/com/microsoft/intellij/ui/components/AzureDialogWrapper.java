@@ -228,7 +228,7 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
         return properties;
     }
 
-    protected ValidationInfo checkAzureOperationPreconditions(JComponent component) {
+    protected ValidationInfo checkAzurePreconditions(JComponent component) {
         try {
             AzureUtils.checkAzurePreconditions();
             return null;

@@ -120,15 +120,8 @@ public class AzureModule extends AzureRefreshableNode {
             List<SubscriptionDetail> subscriptionDetails = subscriptionManager.getSubscriptionDetails();
             List<SubscriptionDetail> selectedSubscriptions = subscriptionDetails.stream()
                     .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
-            final int subsCount = selectedSubscriptions.size();
-            switch (subsCount) {
-                case 0:
-                    return String.format("%s %s", BASE_MODULE_NAME, MODULE_NAME_NO_SUBSCRIPTION);
-                case 1:
-                    return String.format("%s (%s)", BASE_MODULE_NAME, selectedSubscriptions.get(0).getSubscriptionName());
-                default:
-                    return String.format("%s (%d subscriptions)", BASE_MODULE_NAME, selectedSubscriptions.size());
-            }
+            return String.format("%s (%s)", getAccountDescription(selectedSubscriptions));
+
         } catch (Exception e) {
             String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
                     .getMessage() + ")";
@@ -270,6 +263,18 @@ public class AzureModule extends AzureRefreshableNode {
         public void run() {
             handleSubscriptionChange();
             addSubscriptionSelectionListener();
+        }
+    }
+
+    private static String getAccountDescription(List<SubscriptionDetail> selectedSubscriptions) {
+        final int subsCount = selectedSubscriptions.size();
+        switch (subsCount) {
+            case 0:
+                return MODULE_NAME_NO_SUBSCRIPTION;
+            case 1:
+                return selectedSubscriptions.get(0).getSubscriptionName();
+            default:
+                return String.valueOf(selectedSubscriptions.size());
         }
     }
 

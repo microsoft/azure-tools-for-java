@@ -103,7 +103,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
      */
     @Override
     public void validate() throws ConfigurationException {
-        checkAzureOperationPreconditions();
+        checkAzurePreconditions();
         if (Utils.isEmptyString(deployModel.getDockerFilePath())
                 || !Paths.get(deployModel.getDockerFilePath()).toFile().exists()) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);

@@ -184,7 +184,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     @Override
     public void validate() throws ConfigurationException {
-        checkAzureOperationPreconditions();
+        checkAzurePreconditions();
         if (this.module == null) {
             throw new ConfigurationException(NEED_SPECIFY_MODULE);
         }
