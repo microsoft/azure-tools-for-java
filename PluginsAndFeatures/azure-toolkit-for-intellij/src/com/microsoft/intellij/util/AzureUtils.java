@@ -36,7 +36,7 @@ public class AzureUtils {
     public static final String NO_SUBSCRIPTION = "No subscription in current account, you may get a free one from "
             + "https://azure.microsoft.com/en-us/free/";
     public static final String MUST_SELECT_SUBSCRIPTION =
-            "Please select at least one subscription first (Tools->Azure->Select Subscriptions)";
+            "Please select at least one subscription first (Tools -> Azure -> Select Subscriptions)";
 
     public static void checkAzurePreconditions() throws AzureExecutionException {
         if (!AuthMethodManager.getInstance().isSignedIn()) {
