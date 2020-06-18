@@ -39,7 +39,6 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
-import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -185,7 +184,7 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     @Override
     public void validate() throws ConfigurationException {
-        ValidationUtils.validateAuthentication();
+        checkAzureOperationPreconditions();
         if (this.module == null) {
             throw new ConfigurationException(NEED_SPECIFY_MODULE);
         }

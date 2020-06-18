@@ -38,7 +38,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 
-import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
+import static com.microsoft.intellij.util.AzureUtils.MUST_SELECT_SUBSCRIPTION;
 
 @Name("New Host")
 public class CreateNewDockerHostAction extends NodeActionListener {
@@ -78,7 +78,7 @@ public class CreateNewDockerHostAction extends NodeActionListener {
             }
 
             if (manager.getSubscriptionsMap().isEmpty()) {
-                PluginUtil.displayErrorDialog("Create Docker Host", MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+                PluginUtil.displayErrorDialog("Create Docker Host", MUST_SELECT_SUBSCRIPTION);
                 return;
             }
 

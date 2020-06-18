@@ -39,7 +39,6 @@ import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
-import com.microsoft.intellij.util.ValidationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -106,7 +105,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     @Override
     public void validate() throws ConfigurationException {
-        ValidationUtils.validateAuthentication();
+        checkAzureOperationPreconditions();
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);

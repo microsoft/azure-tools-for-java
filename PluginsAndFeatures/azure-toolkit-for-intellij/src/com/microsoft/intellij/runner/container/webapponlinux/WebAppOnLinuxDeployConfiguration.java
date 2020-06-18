@@ -35,7 +35,6 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-import com.microsoft.intellij.util.ValidationUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -104,7 +103,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
      */
     @Override
     public void validate() throws ConfigurationException {
-        ValidationUtils.validateAuthentication();
+        checkAzureOperationPreconditions();
         if (Utils.isEmptyString(deployModel.getDockerFilePath())
                 || !Paths.get(deployModel.getDockerFilePath()).toFile().exists()) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);

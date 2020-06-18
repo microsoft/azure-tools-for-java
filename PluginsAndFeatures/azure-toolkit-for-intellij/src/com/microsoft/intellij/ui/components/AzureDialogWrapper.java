@@ -24,13 +24,16 @@ package com.microsoft.intellij.ui.components;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.adauth.StringUtils;
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
+import com.microsoft.intellij.util.AzureUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,11 +55,16 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
         super(project, canBeParent);
     }
 
-    protected AzureDialogWrapper(@Nullable Project project, boolean canBeParent, @NotNull IdeModalityType ideModalityType) {
+    protected AzureDialogWrapper(@Nullable Project project,
+                                 boolean canBeParent,
+                                 @NotNull IdeModalityType ideModalityType) {
         super(project, canBeParent, ideModalityType);
     }
 
-    protected AzureDialogWrapper(@Nullable Project project, @Nullable Component parentComponent, boolean canBeParent, @NotNull IdeModalityType ideModalityType) {
+    protected AzureDialogWrapper(@Nullable Project project,
+                                 @Nullable Component parentComponent,
+                                 boolean canBeParent,
+                                 @NotNull IdeModalityType ideModalityType) {
         super(project, parentComponent, canBeParent, ideModalityType);
     }
 
@@ -88,17 +96,22 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
     protected void addOKTelemetryProperties(final Map<String, String> properties) {
         final JComponent centerPanel = this.createCenterPanel();
         for (final Component component : getAllComponents(this.getContentPane())) {
-            if (!component.isEnabled() || !component.isVisible())
+            if (!component.isEnabled() || !component.isVisible()) {
                 continue;
+            }
 
             if (component instanceof JRadioButton) {
-                JRadioButton jRadioButton = (JRadioButton) component;
-                String name = jRadioButton.getName() == null ? jRadioButton.getText().replaceAll("[\\s+.]", "") : jRadioButton.getName();
-                properties.put("JRadioButton." + name + ".Selected", String.valueOf(jRadioButton.isSelected()));
+                JRadioButton radioButton = (JRadioButton) component;
+                String name = radioButton.getName() == null
+                              ? radioButton.getText().replaceAll("[\\s+.]", "")
+                              : radioButton.getName();
+                properties.put("JRadioButton." + name + ".Selected", String.valueOf(radioButton.isSelected()));
             } else if (component instanceof JCheckBox) {
-                JCheckBox jCheckBox = (JCheckBox) component;
-                String name = jCheckBox.getName() == null ? jCheckBox.getText().replaceAll("[\\s+.]", "") : jCheckBox.getName();
-                properties.put("JCheckBox." + name + ".Selected", String.valueOf(jCheckBox.isSelected()));
+                JCheckBox checkBox = (JCheckBox) component;
+                String name = checkBox.getName() == null
+                              ? checkBox.getText().replaceAll("[\\s+.]", "")
+                              : checkBox.getName();
+                properties.put("JCheckBox." + name + ".Selected", String.valueOf(checkBox.isSelected()));
             } else if (component instanceof JComboBox) {
                 JComboBox comboBox = (JComboBox) component;
                 StringBuilder stringBuilder = new StringBuilder();
@@ -106,7 +119,7 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
                 for (final Object object : comboBox.getSelectedObjects()) {
                     stringBuilder.append(object.toString());
                     stringBuilder.append(";");
-                    if(StringUtils.isNullOrEmpty(name)){
+                    if (StringUtils.isNullOrEmpty(name)) {
                         name = object.getClass().getSimpleName();
                     }
                 }
@@ -123,8 +136,9 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
         Component[] comps = c.getComponents();
         for (Component comp : comps) {
             compList.add(comp);
-            if (comp instanceof Container)
+            if (comp instanceof Container) {
                 compList.addAll(getAllComponents((Container) comp));
+            }
         }
         return compList;
     }
@@ -133,8 +147,9 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
         final Map<String, String> properties = new HashMap<>();
         String action = "OK";
         properties.put("Window", this.getClass().getSimpleName());
-        if(!StringUtils.isNullOrEmpty(this.getTitle()))
+        if (!StringUtils.isNullOrEmpty(this.getTitle())) {
             properties.put("Title", this.getTitle());
+        }
         if (this instanceof TelemetryProperties) {
             properties.putAll(((TelemetryProperties) this).toProperties());
         }
@@ -154,7 +169,10 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
                 return;
         }
 
-        AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog, this.getClass().getSimpleName(), action, properties);
+        AppInsightsClient.createByType(AppInsightsClient.EventType.Dialog,
+                                       this.getClass().getSimpleName(),
+                                       action,
+                                       properties);
         EventUtil.logEvent(EventType.info, TelemetryConstants.DIALOG, action, properties);
     }
 
@@ -195,10 +213,27 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
         final Map<String, String> properties = new HashMap<>();
 
         if (this.getSubscription() != null) {
-            if (this.getSubscription().getSubscriptionName() != null) properties.put("SubscriptionName", this.getSubscription().getSubscriptionName());
-            if (this.getSubscription().getSubscriptionId() != null) properties.put("SubscriptionId", this.getSubscription().getSubscriptionId());
+            if (this.getSubscription().getSubscriptionName() != null) {
+                properties.put("SubscriptionName",
+                               this.getSubscription()
+                                   .getSubscriptionName());
+            }
+            if (this.getSubscription().getSubscriptionId() != null) {
+                properties.put("SubscriptionId",
+                               this.getSubscription()
+                                   .getSubscriptionId());
+            }
         }
 
         return properties;
+    }
+
+    protected ValidationInfo checkAzureOperationPreconditions(JComponent component) {
+        try {
+            AzureUtils.checkAzurePreconditions();
+            return null;
+        } catch (AzureExecutionException e) {
+            return new ValidationInfo(e.getMessage(), component);
+        }
     }
 }

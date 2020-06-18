@@ -24,18 +24,15 @@ package com.microsoft.intellij.serviceexplorer.azure.rediscache;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateRedisCacheForm;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.util.AzureUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-
-import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
 
 @Name("Create Redis Cache")
 public class CreateRedisCacheAction extends NodeActionListener {
@@ -53,8 +50,7 @@ public class CreateRedisCacheAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
-                PluginUtil.displayErrorDialog(ERROR_CREATING_REDIS_CACHE, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+            if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_CREATING_REDIS_CACHE)) {
                 return;
             }
             CreateRedisCacheForm createRedisCacheForm = new CreateRedisCacheForm(project);

@@ -31,6 +31,8 @@ import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.Accessor;
 import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.intellij.util.AzureUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,5 +94,13 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
 
     public JavaRunConfigurationModule getConfigurationModule() {
         return myModule;
+    }
+
+    protected void checkAzureOperationPreconditions() throws ConfigurationException {
+        try {
+            AzureUtils.checkAzurePreconditions();
+        } catch (AzureExecutionException e) {
+            throw new ConfigurationException(e.getMessage());
+        }
     }
 }

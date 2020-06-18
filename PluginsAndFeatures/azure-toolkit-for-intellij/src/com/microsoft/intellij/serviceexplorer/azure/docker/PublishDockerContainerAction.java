@@ -25,16 +25,13 @@ package com.microsoft.intellij.serviceexplorer.azure.docker;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.util.AzureUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
-
-import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
 
 @Name("Publish")
 public class PublishDockerContainerAction extends NodeActionListener {
@@ -53,8 +50,7 @@ public class PublishDockerContainerAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
-                PluginUtil.displayErrorDialog(ERROR_PUBLISHING_DOCKER_CONTAINER, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+            if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_PUBLISHING_DOCKER_CONTAINER)) {
                 return;
             }
             AzureDockerUIResources.publish2DockerHostContainer(project);

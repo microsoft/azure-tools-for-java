@@ -27,20 +27,17 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.arm.CreateDeploymentForm;
 import com.microsoft.intellij.ui.util.UIUtils;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.util.AzureUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
-
-import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
 
 @Name("Create Deployment")
 public class CreateDeploymentAction extends NodeActionListener {
@@ -65,8 +62,7 @@ public class CreateDeploymentAction extends NodeActionListener {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-                if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
-                    PluginUtil.displayErrorDialog(ERROR_CREATING_DEPLOYMENT, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+                if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_CREATING_DEPLOYMENT)) {
                     return;
                 }
                 CreateDeploymentForm createDeploymentForm = new CreateDeploymentForm(project);

@@ -34,12 +34,9 @@ public class CommonConst {
     public static final String PLUGIN_VERISON = PluginManager.getPlugin(PluginId.getId(PLUGIN_ID)).getVersion();
     public static final String SPARK_APPLICATION_TYPE = "com.microsoft.azure.hdinsight.DefaultSparkApplicationType";
 
-    public static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     public static final String LOADING_TEXT = "Loading...";
     public static final String EMPTY_TEXT = "Empty";
     public static final String REFRESH_TEXT = "Refreshing...";
     public static final String RESOURCE_WITH_RESOURCE_GROUP = "%s (Resource Group: %s)";
     public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
-    public static final String MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST = "Must select an Azure subscription in azure "
-            + "explorer first";
 }

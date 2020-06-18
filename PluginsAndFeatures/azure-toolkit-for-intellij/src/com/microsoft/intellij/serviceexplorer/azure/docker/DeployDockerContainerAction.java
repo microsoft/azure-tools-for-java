@@ -38,7 +38,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 
-import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
+import static com.microsoft.intellij.util.AzureUtils.MUST_SELECT_SUBSCRIPTION;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -64,7 +64,7 @@ public class DeployDockerContainerAction extends NodeActionListener {
                 return;
             }
             if (dockerManager.getSubscriptionsMap().isEmpty()) {
-                PluginUtil.displayErrorDialog("Publish Docker Container", MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+                PluginUtil.displayErrorDialog("Publish Docker Container", MUST_SELECT_SUBSCRIPTION);
                 return;
             }
 

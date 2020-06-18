@@ -24,18 +24,15 @@ package com.microsoft.intellij.serviceexplorer.azure.storagearm;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.util.AzureUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
-
-import static com.microsoft.intellij.common.CommonConst.MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST;
 
 @Name("Create Storage Account...")
 public class CreateStorageAccountAction extends NodeActionListener {
@@ -54,8 +51,7 @@ public class CreateStorageAccountAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            if (AzureMvpModel.getInstance().isSubscriptionSelected()) {
-                PluginUtil.displayErrorDialog(ERROR_CREATING_STORAGE_ACCOUNT, MUST_SELECT_AN_AZURE_SUBSCRIPTION_FIRST);
+            if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_CREATING_STORAGE_ACCOUNT)) {
                 return;
             }
             CreateArmStorageAccountForm createStorageAccountForm = new CreateArmStorageAccountForm((Project) storageModule.getProject());
