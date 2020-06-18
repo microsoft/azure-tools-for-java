@@ -77,7 +77,8 @@ import java.util.Map;
 public class FunctionUtils {
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
 
-    private static final String AZURE_FUNCTION_ANNOTATION_CLASS = "com.microsoft.azure.functions.annotation.FunctionName";
+    private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
+            "com.microsoft.azure.functions.annotation.FunctionName";
     private static final String FUNCTION_JSON = "function.json";
     private static final String HTTP_OUTPUT_DEFAULT_NAME = "$return";
     private static final String DEFAULT_HOST_JSON = "{\"version\":\"2.0\",\"extensionBundle\":" +
@@ -103,10 +104,15 @@ public class FunctionUtils {
     }
 
     public static Module[] listFunctionModules(Project project) {
+        MavenProjectsManager mpm = MavenProjectsManager.getInstance(project);
         final Module[] modules = ModuleManager.getInstance(project).getModules();
         return Arrays.stream(modules).filter(m -> {
+            if (mpm.findProject(m) == null) {
+                return false;
+            }
             final GlobalSearchScope scope = GlobalSearchScope.moduleWithLibrariesScope(m);
-            final PsiClass ecClass = JavaPsiFacade.getInstance(project).findClass(AZURE_FUNCTION_ANNOTATION_CLASS, scope);
+            final PsiClass ecClass = JavaPsiFacade.getInstance(project).findClass(AZURE_FUNCTION_ANNOTATION_CLASS,
+                                                                                  scope);
             return ecClass != null;
         }).toArray(Module[]::new);
     }
@@ -114,8 +120,8 @@ public class FunctionUtils {
     public static Module getFunctionModuleByName(Project project, String name) {
         final Module[] modules = listFunctionModules(project);
         return Arrays.stream(modules)
-                .filter(module -> StringUtils.equals(name, module.getName()))
-                .findFirst().orElse(null);
+                     .filter(module -> StringUtils.equals(name, module.getName()))
+                     .findFirst().orElse(null);
     }
 
     public static boolean isFunctionProject(Project project) {
@@ -134,9 +140,12 @@ public class FunctionUtils {
 
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
         final PsiClass functionNameClass = JavaPsiFacade.getInstance(module.getProject())
-                .findClass(AZURE_FUNCTION_ANNOTATION_CLASS, GlobalSearchScope.moduleWithLibrariesScope(module));
+                                                        .findClass(AZURE_FUNCTION_ANNOTATION_CLASS,
+                                                                   GlobalSearchScope.moduleWithLibrariesScope(module));
         final List<PsiMethod> methods = new ArrayList<>(AnnotatedElementsSearch
-                .searchPsiMethods(functionNameClass, GlobalSearchScope.moduleScope(module)).findAll());
+                                                                .searchPsiMethods(functionNameClass,
+                                                                                  GlobalSearchScope.moduleScope(module))
+                                                                .findAll());
         return methods.toArray(new PsiMethod[0]);
     }
 
@@ -145,7 +154,8 @@ public class FunctionUtils {
     }
 
     public static boolean isFunctionClassAnnotated(final PsiMethod method) {
-        return MetaAnnotationUtil.isMetaAnnotated(method, ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
+        return MetaAnnotationUtil.isMetaAnnotated(method,
+                                                  ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
     }
 
     public static final Path createTempleHostJson() {
@@ -158,7 +168,8 @@ public class FunctionUtils {
         }
     }
 
-    private static void copyFilesWithDefaultContent(Path sourcePath, File dest, String defaultContent) throws IOException {
+    private static void copyFilesWithDefaultContent(Path sourcePath, File dest, String defaultContent)
+            throws IOException {
         final File src = sourcePath == null ? null : sourcePath.toFile();
         if (src != null && src.exists()) {
             FileUtils.copyFile(src, dest);
@@ -175,7 +186,9 @@ public class FunctionUtils {
         JsonUtils.writeJsonToFile(target, jsonObject);
     }
 
-    public static void copyLocalSettingsToStagingFolder(Path stagingFolder, Path localSettingJson, Map<String, String> appSettings) throws IOException {
+    public static void copyLocalSettingsToStagingFolder(Path stagingFolder,
+                                                        Path localSettingJson,
+                                                        Map<String, String> appSettings) throws IOException {
         final File localSettingsFile = new File(stagingFolder.toFile(), "local.settings.json");
         copyFilesWithDefaultContent(localSettingJson, localSettingsFile, DEFAULT_LOCAL_SETTINGS_JSON);
         if (MapUtils.isNotEmpty(appSettings)) {
@@ -183,7 +196,8 @@ public class FunctionUtils {
         }
     }
 
-    public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods) throws AzureExecutionException, IOException {
+    public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
+            throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
         if (stagingFolder.toFile().isDirectory()) {
             FileUtils.cleanDirectory(stagingFolder.toFile());
@@ -195,7 +209,7 @@ public class FunctionUtils {
         for (final Map.Entry<String, FunctionConfiguration> config : configMap.entrySet()) {
             if (StringUtils.isNotBlank(config.getKey())) {
                 final File functionJsonFile = Paths.get(stagingFolder.toString(), config.getKey(), FUNCTION_JSON)
-                        .toFile();
+                                                   .toFile();
                 writeFunctionJsonFile(functionJsonFile, config.getValue());
             }
         }
@@ -231,7 +245,11 @@ public class FunctionUtils {
         }
         final Project project = module.getProject();
         final MavenProject mavenProject = MavenProjectsManager.getInstance(project).findProject(module);
-        final String functionAppName = mavenProject == null ? null : mavenProject.getProperties().getProperty("functionAppName");
+        if (mavenProject == null) {
+            return StringUtils.EMPTY;
+        }
+        final String functionAppName = mavenProject == null ? null : mavenProject.getProperties().getProperty(
+                "functionAppName");
         final String stagingFolderName = StringUtils.isEmpty(functionAppName) ? module.getName() : functionAppName;
         return Paths.get(project.getBasePath(), "target", "azure-functions", stagingFolderName).toString();
     }
@@ -278,7 +296,7 @@ public class FunctionUtils {
         final Map<String, FunctionConfiguration> configMap = new HashMap<>();
         for (final PsiMethod method : methods) {
             final PsiAnnotation annotation = AnnotationUtil.findAnnotation(method,
-                    FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS);
+                                                                           FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS);
             final PsiNameValuePair[] attributes = annotation.getParameterList().getAttributes();
             String functionName = null;
             for (final PsiNameValuePair attribute : attributes) {
@@ -330,10 +348,11 @@ public class FunctionUtils {
     private static Binding getBinding(JvmAnnotation annotation) throws AzureExecutionException {
         final BindingEnum annotationEnum = Arrays.stream(BindingEnum.values()).filter((bindingEnum) -> {
             return bindingEnum.name().toLowerCase(Locale.ENGLISH)
-                    .equals(FilenameUtils.getExtension(annotation.getQualifiedName()).toLowerCase(Locale.ENGLISH));
+                              .equals(FilenameUtils.getExtension(annotation.getQualifiedName())
+                                                   .toLowerCase(Locale.ENGLISH));
         }).findFirst().orElse(null);
         return annotationEnum == null ? getUserDefinedBinding(annotation)
-                : createBinding(annotationEnum, (PsiAnnotation) annotation);
+                                      : createBinding(annotationEnum, (PsiAnnotation) annotation);
     }
 
     private static Binding getUserDefinedBinding(JvmAnnotation annotation) {
@@ -361,14 +380,15 @@ public class FunctionUtils {
 
     private static void patchStorageBinding(final PsiMethod method, final List<Binding> bindings) {
         final PsiAnnotation storageAccount = AnnotationUtil.findAnnotation(method,
-                StorageAccount.class.getCanonicalName());
+                                                                           StorageAccount.class.getCanonicalName());
 
         if (storageAccount != null) {
             System.out.println("StorageAccount annotation found.");
             storageAccount.getAttributes().forEach(t -> {
                 if (t.getAttributeName().equals("value")) {
                     try {
-                        final String connectionString = AnnotationHelper.getJvmAnnotationAttributeValue(t.getAttributeValue());
+                        final String connectionString =
+                                AnnotationHelper.getJvmAnnotationAttributeValue(t.getAttributeValue());
                         bindings.stream().filter(binding -> binding.getBindingEnum().isStorage())
                                 .filter(binding -> StringUtils.isEmpty((String) binding.getAttribute("connection")))
                                 .forEach(binding -> binding.setAttribute("connection", connectionString));
@@ -385,7 +405,8 @@ public class FunctionUtils {
         }
     }
 
-    private static Binding createBinding(BindingEnum bindingEnum, PsiAnnotation annotation) throws AzureExecutionException {
+    private static Binding createBinding(BindingEnum bindingEnum, PsiAnnotation annotation)
+            throws AzureExecutionException {
         final Binding binding = new Binding(bindingEnum);
         final PsiNameValuePair[] attributes = annotation.getParameterList().getAttributes();
         for (final PsiNameValuePair attribute : attributes) {
