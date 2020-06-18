@@ -25,21 +25,16 @@ package com.microsoft.intellij.wizards.functions.module;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.ui.CheckBoxList;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.FormBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.components.BorderLayoutPanel;
 import com.microsoft.intellij.wizards.functions.AzureFunctionsConstants;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
+import javax.swing.*;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
@@ -47,9 +42,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FunctionTriggerChooserStep extends ModuleWizardStep {
-    private final WizardContext wizardContext;
-    private JTable table;
     public static final List<String> SUPPORTED_TRIGGERS = Arrays.asList("HttpTrigger", "BlobTrigger", "QueueTrigger", "TimerTrigger", "EventHubTrigger");
+    private final WizardContext wizardContext;
+    private CheckBoxList<String> triggerList;
     private static final List<String> INITIAL_SELECTED_TRIGGERS = Arrays.asList("HttpTrigger");
 
     FunctionTriggerChooserStep(final WizardContext wizardContext) {
@@ -61,46 +56,16 @@ public class FunctionTriggerChooserStep extends ModuleWizardStep {
         final FormBuilder builder = new FormBuilder();
         builder.addComponent(new JBLabel("Choose Functions Triggers:"));
 
-        table = new JBTable();
-        final DefaultTableModel model = new DefaultTableModel() {
-            final Class<?>[] columnClass = new Class[] { Boolean.class, String.class };
-
-            @Override
-            public boolean isCellEditable(final int row, final int col) {
-                return col == 0;
-            }
-
-            @Override
-            public Class<?> getColumnClass(final int columnIndex) {
-                return columnClass[columnIndex];
-            }
-        };
-        model.addColumn("Selected");
-        model.addColumn("Trigger name");
-        table.setModel(model);
+        triggerList = new CheckBoxList<>();
         setupFunctionTriggers();
 
         final BorderLayoutPanel customPanel = JBUI.Panels.simplePanel(10, 0);
-        customPanel.addToTop(table);
+        customPanel.addToTop(triggerList);
         builder.addComponent(customPanel);
-
-        final TableColumn column = table.getColumnModel().getColumn(0);
-        column.setHeaderValue(""); // Don't show title text
-        column.setMinWidth(23);
-        column.setMaxWidth(23);
-        table.getTableHeader().setReorderingAllowed(false);
 
         final JPanel panel = new JPanel(new BorderLayout());
         panel.add(builder.getPanel(), "North");
         return panel;
-    }
-
-    private void setupFunctionTriggers() {
-        final DefaultTableModel model = (DefaultTableModel) table.getModel();
-        for (final String trigger : SUPPORTED_TRIGGERS) {
-            model.addRow(new Object[] { INITIAL_SELECTED_TRIGGERS.contains(trigger), trigger });
-        }
-        model.fireTableDataChanged();
     }
 
     @Override
@@ -110,12 +75,13 @@ public class FunctionTriggerChooserStep extends ModuleWizardStep {
 
     @NotNull
     private List<String> getSelectedTriggers() {
-        final DefaultTableModel model = (DefaultTableModel) table.getModel();
-        final int rc = model.getRowCount();
+        final DefaultListModel model = (DefaultListModel) triggerList.getModel();
+        final int rc = model.getSize();
         final List<String> selectedTriggers = new ArrayList<>();
         for (int ri = 0; ri < rc; ++ri) {
-            if (BooleanUtils.isTrue((Boolean) model.getValueAt(ri, 0))) {
-                selectedTriggers.add((String) model.getValueAt(ri, 1));
+            final JCheckBox checkBox = (JCheckBox) model.getElementAt(ri);
+            if (checkBox != null && checkBox.isSelected()) {
+                selectedTriggers.add(checkBox.getText());
             }
         }
         return selectedTriggers;
@@ -127,5 +93,12 @@ public class FunctionTriggerChooserStep extends ModuleWizardStep {
             throw new ConfigurationException("Must select at least one trigger.");
         }
         return true;
+    }
+
+    private void setupFunctionTriggers() {
+        final DefaultListModel model = (DefaultListModel) triggerList.getModel();
+        for (final String trigger : SUPPORTED_TRIGGERS) {
+            model.addElement(new JCheckBox(trigger, INITIAL_SELECTED_TRIGGERS.contains(trigger)));
+        }
     }
 }
