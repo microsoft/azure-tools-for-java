@@ -1,0 +1,101 @@
+#!/bin/bash
+
+tc_open() {
+    set +x
+    echo "##teamcity[blockOpened name='$1' description='$1']"
+    set -x
+}
+
+tc_close() {
+    set +x
+    echo "##teamcity[blockClosed name='$1']"
+    set -x
+}
+
+set -e
+
+# echo shell commands when they are executed.
+set -x
+
+tc_open "Initializing build script"
+{
+    SCRIPTPATH=$(pwd -P)
+    echo "Script path: $SCRIPTPATH"
+    cd "$SCRIPTPATH"
+
+    MAVEN_LOCAL_DIR="$SCRIPTPATH"/.repository
+    if [ -d "$MAVEN_LOCAL_DIR" ]; then
+        echo "Found existing Maven local repository in '$MAVEN_LOCAL_DIR'. Deleting..."
+        rm -rf "$MAVEN_LOCAL_DIR"
+    fi
+    echo "Creating maven local directory $MAVEN_LOCAL_DIR"
+    mkdir -p "$MAVEN_LOCAL_DIR"
+
+    # Artifacts
+    ARTIFACTS_DIR="$SCRIPTPATH/artifacts"
+    if [ ! -d "$ARTIFACTS_DIR" ]; then
+        echo "Creating artifacts directory $ARTIFACTS_DIR"
+        mkdir -p "$ARTIFACTS_DIR"
+    fi
+
+    # Utils Artifacts
+    UTILS_ARTIFACTS_DIR="$SCRIPTPATH/utilsArtifacts"
+    if [ ! -d "$UTILS_ARTIFACTS_DIR" ]; then
+        echo "Unable to find Utils artifacts directory: '$UTILS_ARTIFACTS_DIR'"
+        exit 1
+    fi
+
+    UTILS_ARTIFACTS_COMMON_DIR="$UTILS_ARTIFACTS_DIR"/common
+    if [ ! -d "$UTILS_ARTIFACTS_COMMON_DIR" ]; then
+        echo "Unable to find Utils artifacts common directory: '$UTILS_ARTIFACTS_COMMON_DIR'"
+        exit 1
+    fi
+
+    df -h
+}
+tc_close "Initializing build script"
+
+prepare_maven_repository() {
+    set +x
+    cp -r "$UTILS_ARTIFACTS_COMMON_DIR"/maven_local/.repository "$SCRIPTPATH"
+    set -x
+}
+
+prepare_spark_jars() {
+    set +x
+    local sparkResourceDir="$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/
+    cp "$UTILS_ARTIFACTS_COMMON_DIR"/spark/spark-tools-*.jar "$sparkResourceDir"
+    set -x
+}
+
+prepare_applicationinsights_management_jars() {
+    set +x
+    local azureSdkDir="$SCRIPTPATH"/PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies
+    cp "$UTILS_ARTIFACTS_COMMON_DIR"/applicationinsights/applicationinsights-management-*.jar "$azureSdkDir"
+    set -x
+}
+
+tc_open "Prepare JAR dependencies"
+{
+    prepare_maven_repository
+    prepare_spark_jars
+    prepare_applicationinsights_management_jars
+
+    echo "Deleting Utils artifacts folder"
+    rm -rf "$UTILS_ARTIFACTS_DIR"
+}
+tc_close "Prepare JAR dependencies"
+
+tc_open "Run Rider tests"
+{
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean --console=plain)
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:test -s --console=plain)
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:integrationTest -s --console=plain)
+
+    cp -r "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/idea-sandbox/system-test/log/ "$ARTIFACTS_DIR"/
+
+    df -h
+}
+tc_close "Run Rider tests"
+
+echo "ALL BUILD SUCCESSFUL"

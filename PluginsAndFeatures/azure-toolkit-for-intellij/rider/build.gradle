@@ -1,9 +1,26 @@
+import org.jetbrains.intellij.tasks.PrepareSandboxTask
+
+sourceSets {
+    integrationTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+
+        kotlin.srcDirs = ['test-integration']
+        resources.srcDirs = ['test-integration/resources']
+    }
+}
+
 dependencies {
     compile rootProject
     compile "org.java-websocket:Java-WebSocket:$web_socket_version"
     compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
-    testCompile rootProject
+    testImplementation rootProject
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 ext.resharperPluginPath = new File(projectDir, 'ReSharper.Azure')
@@ -24,10 +41,14 @@ intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version
 
-    plugins 'JavaScriptLanguage', 'terminal', 'restClient', dep_plugins_rider
+    // Workaround for https://youtrack.jetbrains.com/issue/IDEA-179607
+    def extraPlugins = [ "rider-plugins-appender" ]
+    plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient'] + extraPlugins
+
+    downloadSources = Boolean.valueOf(sources)
 }
 
-tasks.withType(prepareSandbox.class).configureEach {
+tasks.withType(PrepareSandboxTask).configureEach {
     dependsOn buildReSharperPlugin
 
     from(extensionsFrom, { into "${intellij.pluginName}/dotnet" })
@@ -41,8 +62,32 @@ patchPluginXml {
 }
 
 test {
+    description = "Rider unit tests."
     dependsOn ':rider:buildPlugin'
+
     useTestNG()
+}
+
+task integrationTest(type: Test) {
+    description = "Rider Azure integration tests based on Rider Test Framework."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    dependsOn ':rider:buildPlugin'
+
+    environment("LOCAL_ENV_RUN", rider_test_local_env_run)
+    environment("NO_FS_ROOTS_ACCESS_CHECK", true)
+    useTestNG()
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat "full"
+    }
+
+    doFirst {
+        println "LOCAL_ENV_RUN = $rider_test_local_env_run"
+    }
 }
 
 clean {

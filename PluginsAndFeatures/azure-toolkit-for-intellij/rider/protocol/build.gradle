@@ -38,6 +38,9 @@ ext.csDaemonGeneratedOutput = new File(resharperPluginPath, 'src/Azure.Daemon/Pr
 ext.ktGeneratedOutput = new File(projectDir, '../src/org/jetbrains/protocol')
 ext.modelDir = new File(projectDir, 'src/model')
 
+ext.rdgenDir = file("${project.buildDir}/rdgen/")
+rdgenDir.mkdirs()
+
 task generateModel(type: tasks.getByName('rdgen').class) {
     group = protocolGroup
     description = 'Generates protocol models'
@@ -46,7 +49,7 @@ task generateModel(type: tasks.getByName('rdgen').class) {
     // intellij SDK, which is extracted in afterEvaluate
     params {
         verbose = true
-        hashFolder = 'build/rdgen'
+        hashFolder = rdgenDir
 
         logger.info('Configuring rdgen params')
         classpath {

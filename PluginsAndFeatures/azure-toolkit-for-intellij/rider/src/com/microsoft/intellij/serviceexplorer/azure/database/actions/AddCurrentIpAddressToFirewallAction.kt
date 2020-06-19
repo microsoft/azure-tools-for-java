@@ -35,6 +35,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.icons.CommonIcons
+import com.microsoft.intellij.helpers.validator.IpAddressInputValidator
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
@@ -43,7 +44,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.util.PublicIpAddressProvider
-import sun.net.util.IPAddressUtil
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -93,7 +93,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
                 message("dialog.cloud_shell.app_firewall_rule.title"),
                 firewallIcon,
                 publicIpAddressResult.ipv4address,
-                IpAddressInputValidator.INSTANCE)
+                IpAddressInputValidator.instance)
 
         if (ipAddressInput.isNullOrEmpty()) return
 
@@ -124,19 +124,5 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
                         NotificationType.INFORMATION)
             }
         })
-    }
-
-    private class IpAddressInputValidator : InputValidator {
-        companion object {
-            val INSTANCE = IpAddressInputValidator()
-        }
-
-        override fun checkInput(input: String?): Boolean {
-            return !input.isNullOrEmpty() && IPAddressUtil.isIPv4LiteralAddress(input)
-        }
-
-        override fun canClose(input: String?): Boolean {
-            return checkInput(input)
-        }
     }
 }

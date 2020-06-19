@@ -42,9 +42,9 @@ import com.intellij.util.ui.SwingHelper
 import com.intellij.webcore.ui.PathShortener
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
+import com.microsoft.intellij.helpers.validator.IpAddressInputValidator
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.orWhenNullOrEmpty
-import sun.net.util.IPAddressUtil
 import java.io.File
 import javax.swing.*
 
@@ -239,7 +239,7 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
             }
 
     private fun validationForIpAddress(textField: JBTextField) =
-            if (textField.text.isNullOrEmpty() || !IPAddressUtil.isIPv4LiteralAddress(textField.text)) {
+            if (textField.text.isNullOrEmpty() || !IpAddressInputValidator.instance.validateIpV4Address(textField.text)) {
                 ValidationInfo(RiderAzureBundle.message("settings.azurite.validation.invalid.ip"), textField)
             } else {
                 null

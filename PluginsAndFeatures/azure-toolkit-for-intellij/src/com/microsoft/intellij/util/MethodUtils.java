@@ -1,5 +1,6 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -21,7 +22,9 @@
  */
 package com.microsoft.intellij.util;
 
-import com.intellij.openapi.module.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleTypeId;
 import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
