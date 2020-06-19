@@ -27,9 +27,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
@@ -49,11 +46,13 @@ public class CerPfxUtil {
         X509Certificate cert = null;
         try {
             url = getCertificatePath(url);
-            if (url == null || url.isEmpty())
+            if (url == null || url.isEmpty()) {
                 return null;
+            }
             File file = new File(url);
-            if (!file.exists())
+            if (!file.exists()) {
                 return null;
+            }
             inputStream = new FileInputStream(url);
             if (url.endsWith(".cer") || url.endsWith(".CER")) {
                 CertificateFactory certificateFactory = CertificateFactory
@@ -71,8 +70,9 @@ public class CerPfxUtil {
             return null;
         } finally {
             try {
-                if (inputStream != null)
+                if (inputStream != null) {
                     inputStream.close();
+                }
             } catch (Exception e) {
                 // Die silently,no need to throw any error
             }
@@ -110,36 +110,9 @@ public class CerPfxUtil {
         return certPath;
     }
 
-    /**
-     * Returns thunbprint associated with the certificate
-     *
-     * @param cert
-     * @return thumbprint of the certificate. returns null if cert is null
-     * @throws NoSuchAlgorithmException
-     * @throws CertificateEncodingException
-     */
-    public static String getThumbPrint(X509Certificate cert)
-            throws NoSuchAlgorithmException, CertificateEncodingException {
-
-        if (cert == null) {
-            return null;
-        }
-
-        MessageDigest mdigest = MessageDigest.getInstance("SHA-1");
-        byte[] der = cert.getEncoded();
-        mdigest.update(der);
-        byte[] digest = mdigest.digest();
-        return hexify(digest).toUpperCase();
-    }
-
-    public static String getThumbPrint(String cerCertPath)
-            throws NoSuchAlgorithmException, CertificateEncodingException {
-        return getThumbPrint(getCert(cerCertPath, null)).toUpperCase();
-    }
-
-    public static String hexify(byte bytes[]) {
+    public static String hexify(byte[] bytes) {
         char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                'a', 'b', 'c', 'd', 'e', 'f' };
+            'a', 'b', 'c', 'd', 'e', 'f' };
         StringBuffer buf = new StringBuffer(bytes.length * 2);
         for (int i = 0; i < bytes.length; ++i) {
             buf.append(hexDigits[(bytes[i] & 0xf0) >> 4]);
@@ -181,7 +154,7 @@ public class CerPfxUtil {
      * @throws IOException
      */
     public static void createCertificate(String certPath, String pfxPath,
-            String alias, String password, String cnName, String jdkPath) throws Exception,
+            String alias, String password, String cnName, String jdkPathArg) throws Exception,
             IOException {
 
         String validityInDays = "3650";
@@ -189,6 +162,7 @@ public class CerPfxUtil {
         String keySize = "2048";
         String storeType = "pkcs12";
         String command = "keytool";
+        String jdkPath = jdkPathArg;
         if (jdkPath != null && !jdkPath.isEmpty()) {
             jdkPath = jdkPath.concat("\\bin");
         }
@@ -198,17 +172,17 @@ public class CerPfxUtil {
 
         // Create Pfx file
         String[] commandArgs = { command, "-genkey", "-alias", alias,
-                "-keystore", pfxPath, "-storepass", password, "-validity",
-                validityInDays, "-keyalg", keyAlg, "-keysize", keySize,
-                "-storetype", storeType, "-dname", "CN="+cnName };
+            "-keystore", pfxPath, "-storepass", password, "-validity",
+            validityInDays, "-keyalg", keyAlg, "-keysize", keySize,
+            "-storetype", storeType, "-dname", "CN=" + cnName };
         Utils.cmdInvocation(commandArgs, false);
 
         // Create cer file i.e. extract public key from pfx
         File pfxFile = new File(pfxPath);
         if (pfxFile.exists()) {
             String[] certCommandArgs = { command, "-export", "-alias", alias,
-                    "-storetype", storeType, "-keystore", pfxPath,
-                    "-storepass", password, "-rfc", "-file", certPath };
+                "-storetype", storeType, "-keystore", pfxPath,
+                "-storepass", password, "-rfc", "-file", certPath };
             // output of keytool export command is going to error stream
             // although command is
             // executed successfully, hence ignoring error stream in this case
