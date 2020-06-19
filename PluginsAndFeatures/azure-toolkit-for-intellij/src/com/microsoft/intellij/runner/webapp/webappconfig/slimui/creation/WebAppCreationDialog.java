@@ -293,7 +293,7 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
     protected List<ValidationInfo> doValidateAll() {
         updateConfiguration();
         List<ValidationInfo> res = new ArrayList<>();
-        final ValidationInfo info = checkAzurePreconditions(cbSubscription);
+        final ValidationInfo info = validateAzureSubs(cbSubscription);
         if (info != null) {
             res.add(info);
             return res;

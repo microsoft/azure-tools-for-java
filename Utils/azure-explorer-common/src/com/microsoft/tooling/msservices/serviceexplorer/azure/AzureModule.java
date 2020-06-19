@@ -51,7 +51,10 @@ public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
     private static final String ICON_PATH = "AzureExplorer_16.png";
     private static final String BASE_MODULE_NAME = "Azure";
-    private static final String MODULE_NAME_NO_SUBSCRIPTION = "(No subscription)";
+    private static final String MODULE_NAME_NO_SUBSCRIPTION = "No subscription";
+    private static final String ERROR_GETTING_SUBSCRIPTIONS_TITLE = "MS Services - Error Getting Subscriptions";
+    private static final String ERROR_GETTING_SUBSCRIPTIONS_MESSAGE = "An error occurred while getting the subscription" +
+            " list.\n(Message from Azure:%s)";
 
     @Nullable
     private Object project;
@@ -120,13 +123,11 @@ public class AzureModule extends AzureRefreshableNode {
             List<SubscriptionDetail> subscriptionDetails = subscriptionManager.getSubscriptionDetails();
             List<SubscriptionDetail> selectedSubscriptions = subscriptionDetails.stream()
                     .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
-            return String.format("%s (%s)", getAccountDescription(selectedSubscriptions));
+            return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
 
         } catch (Exception e) {
-            String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
-                    .getMessage() + ")";
-            DefaultLoader.getUIHelper().showException(msg, e,
-                    "MS Services - Error Getting Subscriptions", false, true);
+            final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
+            DefaultLoader.getUIHelper().showException(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
         }
         return BASE_MODULE_NAME;
     }
@@ -274,7 +275,7 @@ public class AzureModule extends AzureRefreshableNode {
             case 1:
                 return selectedSubscriptions.get(0).getSubscriptionName();
             default:
-                return String.valueOf(selectedSubscriptions.size());
+                return String.format("%d subscriptions", selectedSubscriptions.size());
         }
     }
 

@@ -32,7 +32,7 @@ import com.intellij.util.xmlb.Accessor;
 import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.intellij.util.AzureUtils;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -98,7 +98,7 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
 
     protected void checkAzurePreconditions() throws ConfigurationException {
         try {
-            AzureUtils.checkAzurePreconditions();
+            AzureLoginHelper.ensureAzureSubsAvailable();
         } catch (AzureExecutionException e) {
             throw new ConfigurationException(e.getMessage());
         }

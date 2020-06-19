@@ -33,7 +33,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.intellij.util.AzureUtils;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -228,9 +228,9 @@ public abstract class AzureDialogWrapper extends DialogWrapper implements Teleme
         return properties;
     }
 
-    protected ValidationInfo checkAzurePreconditions(JComponent component) {
+    protected ValidationInfo validateAzureSubs(JComponent component) {
         try {
-            AzureUtils.checkAzurePreconditions();
+            AzureLoginHelper.ensureAzureSubsAvailable();
             return null;
         } catch (AzureExecutionException e) {
             return new ValidationInfo(e.getMessage(), component);

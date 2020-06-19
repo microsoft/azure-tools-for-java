@@ -27,7 +27,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateRedisCacheForm;
-import com.microsoft.intellij.util.AzureUtils;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -50,7 +50,7 @@ public class CreateRedisCacheAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_CREATING_REDIS_CACHE)) {
+            if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_REDIS_CACHE)) {
                 return;
             }
             CreateRedisCacheForm createRedisCacheForm = new CreateRedisCacheForm(project);

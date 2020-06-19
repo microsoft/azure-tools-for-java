@@ -26,7 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.util.AzureUtils;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.intellij.wizards.createarmvm.CreateVMWizard;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -50,7 +50,7 @@ public class CreateVMAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_CREATING_VIRTUAL_MACHINE)) {
+            if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_VIRTUAL_MACHINE)) {
                 return;
             }
             CreateVMWizard createVMWizard = new CreateVMWizard((VMArmModule) e.getAction().getNode());

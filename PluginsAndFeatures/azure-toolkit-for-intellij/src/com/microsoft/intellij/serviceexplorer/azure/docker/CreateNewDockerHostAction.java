@@ -38,7 +38,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 
-import static com.microsoft.intellij.util.AzureUtils.MUST_SELECT_SUBSCRIPTION;
+import static com.microsoft.intellij.util.AzureLoginHelper.MUST_SELECT_SUBSCRIPTION;
 
 @Name("New Host")
 public class CreateNewDockerHostAction extends NodeActionListener {

@@ -27,7 +27,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
-import com.microsoft.intellij.util.AzureUtils;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -51,7 +51,7 @@ public class CreateStorageAccountAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_CREATING_STORAGE_ACCOUNT)) {
+            if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_STORAGE_ACCOUNT)) {
                 return;
             }
             CreateArmStorageAccountForm createStorageAccountForm = new CreateArmStorageAccountForm((Project) storageModule.getProject());

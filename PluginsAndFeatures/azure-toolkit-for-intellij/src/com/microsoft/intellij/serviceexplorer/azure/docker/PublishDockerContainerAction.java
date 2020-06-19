@@ -27,7 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
-import com.microsoft.intellij.util.AzureUtils;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -50,7 +50,7 @@ public class PublishDockerContainerAction extends NodeActionListener {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
                 return;
             }
-            if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_PUBLISHING_DOCKER_CONTAINER)) {
+            if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_PUBLISHING_DOCKER_CONTAINER)) {
                 return;
             }
             AzureDockerUIResources.publish2DockerHostContainer(project);

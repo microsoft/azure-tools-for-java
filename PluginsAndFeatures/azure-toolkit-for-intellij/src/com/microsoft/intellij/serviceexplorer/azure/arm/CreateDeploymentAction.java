@@ -31,7 +31,7 @@ import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.arm.CreateDeploymentForm;
 import com.microsoft.intellij.ui.util.UIUtils;
-import com.microsoft.intellij.util.AzureUtils;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -62,7 +62,7 @@ public class CreateDeploymentAction extends NodeActionListener {
         StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-                if (!AzureUtils.checkAzurePreconditionsAndPrompt(ERROR_CREATING_DEPLOYMENT)) {
+                if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_DEPLOYMENT)) {
                     return;
                 }
                 CreateDeploymentForm createDeploymentForm = new CreateDeploymentForm(project);

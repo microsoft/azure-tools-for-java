@@ -30,15 +30,15 @@ import org.apache.commons.collections.CollectionUtils;
 import java.io.IOException;
 import java.util.List;
 
-public class AzureUtils {
+public class AzureLoginHelper {
 
-    public static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
-    public static final String NO_SUBSCRIPTION = "No subscription in current account, you may get a free one from "
+    private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
+    private static final String NO_SUBSCRIPTION = "No subscription in current account, you may get a free one from "
             + "https://azure.microsoft.com/en-us/free/";
     public static final String MUST_SELECT_SUBSCRIPTION =
             "Please select at least one subscription first (Tools -> Azure -> Select Subscriptions)";
 
-    public static void checkAzurePreconditions() throws AzureExecutionException {
+    public static void ensureAzureSubsAvailable() throws AzureExecutionException {
         if (!AuthMethodManager.getInstance().isSignedIn()) {
             throw new AzureExecutionException(NEED_SIGN_IN);
         }
@@ -59,9 +59,9 @@ public class AzureUtils {
         }
     }
 
-    public static boolean checkAzurePreconditionsAndPrompt(String dialogTitle) {
+    public static boolean isAzureSubsAvailableOrReportError(String dialogTitle) {
         try {
-            AzureUtils.checkAzurePreconditions();
+            AzureLoginHelper.ensureAzureSubsAvailable();
             return true;
         } catch (AzureExecutionException e) {
             PluginUtil.displayErrorDialog(dialogTitle, e.getMessage());
