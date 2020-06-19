@@ -151,7 +151,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
         return false;
     }
 
-    public void setProcessTerminatedHandlerForSetText(Runnable runnable) {
-        this.processTerminatedHandler = runnable;
+    public void setProcessTerminatedHandler(Runnable runnable) {
+        this.processTerminatedHandler = runnable == null ? DO_NOTHING : runnable;
     }
 }

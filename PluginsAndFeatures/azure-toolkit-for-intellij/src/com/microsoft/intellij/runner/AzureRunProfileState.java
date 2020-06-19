@@ -71,7 +71,7 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
                     return this.executeSteps(processHandler, telemetryMap);
                 } finally {
                     // Once the operation done, whether success or not, `setText` should not throw new exception
-                    processHandler.setProcessTerminatedHandlerForSetText(RunProcessHandler.DO_NOTHING);
+                    processHandler.setProcessTerminatedHandler(RunProcessHandler.DO_NOTHING);
                 }
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
                 (res) -> {
