@@ -28,7 +28,6 @@ import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.utils.IProgressIndicator;
-
 import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
@@ -36,6 +35,14 @@ import java.io.OutputStream;
 public class RunProcessHandler extends ProcessHandler implements IProgressIndicator {
 
     private static final String PROCESS_TERMINATED = "The process has been terminated";
+
+    public static final Runnable THROW_TERMINATED_EXCEPTION = () -> {
+        throw new RuntimeException(PROCESS_TERMINATED);
+    };
+    public static final Runnable DO_NOTHING = () -> {
+    };
+
+    private Runnable processTerminatedHandler;
 
     @Override
     protected void destroyProcessImpl() {
@@ -75,7 +82,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
         if (isProcessRunning()) {
             this.notifyTextAvailable(message, type);
         } else {
-            throw new Error(PROCESS_TERMINATED);
+            processTerminatedHandler.run();
         }
     }
 
@@ -88,7 +95,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
         if (isProcessRunning()) {
             this.notifyTextAvailable(message + "\n", type);
         } else {
-            throw new Error(PROCESS_TERMINATED);
+            processTerminatedHandler.run();
         }
     }
 
@@ -96,6 +103,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
      * Process handler to show the progress message.
      */
     public RunProcessHandler() {
+        processTerminatedHandler = THROW_TERMINATED_EXCEPTION;
     }
 
     public void addDefaultListener() {
@@ -141,5 +149,9 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
     @Override
     public boolean isCanceled() {
         return false;
+    }
+
+    public void setProcessTerminatedHandlerForSetText(Runnable runnable) {
+        this.processTerminatedHandler = runnable;
     }
 }

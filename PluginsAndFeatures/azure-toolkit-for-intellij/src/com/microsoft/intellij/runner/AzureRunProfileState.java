@@ -63,29 +63,34 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         final Operation operation = createOperation();
         Observable.fromCallable(
             () -> {
-                if (operation != null) {
-                    operation.start();
-                    EventUtil.logEvent(EventType.info, operation, telemetryMap);
+                try {
+                    if (operation != null) {
+                        operation.start();
+                        EventUtil.logEvent(EventType.info, operation, telemetryMap);
+                    }
+                    return this.executeSteps(processHandler, telemetryMap);
+                } finally {
+                    // Once the operation done, whether success or not, `setText` should not throw new exception
+                    processHandler.setProcessTerminatedHandlerForSetText(RunProcessHandler.DO_NOTHING);
                 }
-                return this.executeSteps(processHandler, telemetryMap);
             }).subscribeOn(SchedulerProviderFactory.getInstance().getSchedulerProvider().io()).subscribe(
-            (res) -> {
-                if (operation != null) {
-                    operation.complete();
-                }
-                this.sendTelemetry(telemetryMap, true, null);
-                this.onSuccess(res, processHandler);
-            },
-            (err) -> {
-                err.printStackTrace();
-                if (operation != null) {
-                    EventUtil.logError(operation, ErrorType.userError, new Exception(err.getMessage(), err),
-                        telemetryMap, null);
-                    operation.complete();
-                }
-                this.onFail(err, processHandler);
-                this.sendTelemetry(telemetryMap, false, err.getMessage());
-            });
+                (res) -> {
+                    if (operation != null) {
+                        operation.complete();
+                    }
+                    this.sendTelemetry(telemetryMap, true, null);
+                    this.onSuccess(res, processHandler);
+                },
+                (err) -> {
+                    err.printStackTrace();
+                    if (operation != null) {
+                        EventUtil.logError(operation, ErrorType.userError, new Exception(err.getMessage(), err),
+                                           telemetryMap, null);
+                        operation.complete();
+                    }
+                    this.onFail(err, processHandler);
+                    this.sendTelemetry(telemetryMap, false, err.getMessage());
+                });
         return new DefaultExecutionResult(consoleView, processHandler);
     }
 
@@ -107,7 +112,8 @@ public abstract class AzureRunProfileState<T> implements RunProfileState {
         }
     }
 
-    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap){}
+    protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
+    }
 
     private void sendTelemetry(@NotNull Map<String, String> telemetryMap, boolean success, @Nullable String errorMsg) {
         updateTelemetryMap(telemetryMap);
