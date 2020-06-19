@@ -110,33 +110,6 @@ public class CerPfxUtil {
         return certPath;
     }
 
-    /**
-     * Returns thunbprint associated with the certificate
-     *
-     * @param cert
-     * @return thumbprint of the certificate. returns null if cert is null
-     * @throws NoSuchAlgorithmException
-     * @throws CertificateEncodingException
-     */
-    public static String getThumbPrint(X509Certificate cert)
-            throws NoSuchAlgorithmException, CertificateEncodingException {
-
-        if (cert == null) {
-            return null;
-        }
-
-        MessageDigest mdigest = MessageDigest.getInstance("SHA-1");
-        byte[] der = cert.getEncoded();
-        mdigest.update(der);
-        byte[] digest = mdigest.digest();
-        return hexify(digest).toUpperCase();
-    }
-
-    public static String getThumbPrint(String cerCertPath)
-            throws NoSuchAlgorithmException, CertificateEncodingException {
-        return getThumbPrint(getCert(cerCertPath, null)).toUpperCase();
-    }
-
     public static String hexify(byte bytes[]) {
         char[] hexDigits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 'a', 'b', 'c', 'd', 'e', 'f' };
