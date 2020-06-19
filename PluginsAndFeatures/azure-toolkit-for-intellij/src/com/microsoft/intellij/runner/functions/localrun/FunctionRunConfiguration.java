@@ -212,12 +212,14 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
 
     @Override
     public void validate() throws ConfigurationException {
-        if (getModel() == null) {
-            throw new ConfigurationException("Please specify module");
+        if (getModule() == null) {
+            throw new ConfigurationException("Please specify module or add Maven support to the project.");
         }
+
         if (StringUtils.isEmpty(getFuncPath())) {
             throw new ConfigurationException("Please specify function cli path");
         }
+
         final File func = new File(getFuncPath());
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException("Please specify correct function cli path");
