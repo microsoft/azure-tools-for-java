@@ -89,16 +89,16 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.1.0</version>
                 <dependencies>
-	                <dependency>
-	                    <groupId>com.microsoft.azuretools</groupId>
-	                    <artifactId>check-tools</artifactId>
-	                    <version>1.0.0</version>
-	                </dependency>
-	                <dependency>
-	                    <groupId>com.puppycrawl.tools</groupId>
-	                    <artifactId>checkstyle</artifactId>
-	                    <version>8.30</version>
-	                </dependency>
+                    <dependency>
+                        <groupId>com.microsoft.azuretools</groupId>
+                        <artifactId>check-tools</artifactId>
+                        <version>1.0.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>8.30</version>
+                    </dependency>
                 </dependencies>
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
