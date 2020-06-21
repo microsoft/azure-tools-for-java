@@ -62,7 +62,7 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
 
     @Override
     public boolean isFeatureEnabled() {
-        return AzureSparkCosmosClusterManager.getInstance().isFeatureEnabled().toBlocking().singleOrDefault(false);
+        return true;
     }
 
     @Override
