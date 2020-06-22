@@ -44,6 +44,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
+import static com.microsoft.azuretools.authmanage.AuthMethod.AZ;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNOUT;
 
@@ -107,11 +108,16 @@ public class AzureSignInAction extends AzureAnAction {
             case DC:
                 warningMessage = String.format("Signed in as %s", authMethodDetails.getAccountEmail());
                 break;
+            case AZ:
+                warningMessage = "Signed in with Azure CLI";
+                break;
             default:
                 warningMessage = "Signed in by unknown authentication method.";
                 break;
         }
-        return String.format("%s\n Do you really want to sign out?", warningMessage);
+        return authMethod == AZ ? String.format("%s\nDo you really want to sign out? (This will not sign you "
+                                                        + "out from Azure CLI)", warningMessage) :
+               String.format("%s\nDo you really want to sign out?", warningMessage);
     }
 
     public static void onAzureSignIn(Project project) {

@@ -35,12 +35,16 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.auth.AzureAuthHelper;
+import com.microsoft.azure.auth.AzureTokenWrapper;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
@@ -52,6 +56,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -75,6 +80,9 @@ public class SignInWindow extends AzureDialogWrapper {
     private JButton createNewAuthenticationFileButton;
     private JLabel automatedCommentLabel;
     private JLabel deviceLoginCommentLabel;
+    private JRadioButton azureCliRadioButton;
+    private JPanel azureCliPanel;
+    private JLabel azureCliCommentLabel;
 
     private AuthMethodDetails authMethodDetails;
     private AuthMethodDetails authMethodDetailsResult;
@@ -82,24 +90,6 @@ public class SignInWindow extends AzureDialogWrapper {
     private String accountEmail;
 
     private Project project;
-
-    public AuthMethodDetails getAuthMethodDetails() {
-        return authMethodDetailsResult;
-    }
-
-    public static SignInWindow go(AuthMethodDetails authMethodDetails, Project project) {
-        SignInWindow d = new SignInWindow(authMethodDetails, project);
-        d.show();
-        if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-            return d;
-        }
-
-        return null;
-    }
-
-    private AuthMethodManager getAuthMethodManager() {
-        return AuthMethodManager.getInstance();
-    }
 
     private SignInWindow(AuthMethodDetails authMethodDetails, Project project) {
         super(project, true, IdeModalityType.PROJECT);
@@ -124,6 +114,8 @@ public class SignInWindow extends AzureDialogWrapper {
             }
         });
 
+        azureCliRadioButton.addActionListener(e -> refreshAuthControlElements());
+
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doSelectCredFilepath();
@@ -139,15 +131,121 @@ public class SignInWindow extends AzureDialogWrapper {
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(deviceLoginRadioButton);
         buttonGroup.add(automatedRadioButton);
+        buttonGroup.add(azureCliRadioButton);
         deviceLoginRadioButton.setSelected(true);
-        refreshAuthControlElements();
 
         init();
+    }
+
+    public AuthMethodDetails getAuthMethodDetails() {
+        return authMethodDetailsResult;
+    }
+
+    public static SignInWindow go(AuthMethodDetails authMethodDetails, Project project) {
+        SignInWindow d = new SignInWindow(authMethodDetails, project);
+        d.show();
+        if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            return d;
+        }
+
+        return null;
+    }
+
+    @Override
+    public void doCancelAction() {
+        authMethodDetailsResult = authMethodDetails;
+        super.doCancelAction();
+    }
+
+    @Override
+    public void doHelpAction() {
+        JXHyperlink helpLink = new JXHyperlink();
+        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
+        helpLink.doClick();
+    }
+
+    @Nullable
+    @Override
+    protected String getDimensionServiceKey() {
+        return "SignInWindow";
+    }
+
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return contentPane;
+    }
+
+    @Override
+    protected void doOKAction() {
+        authMethodDetailsResult = new AuthMethodDetails();
+        if (automatedRadioButton.isSelected()) { // automated
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
+            String authPath = authFileTextField.getText();
+            if (StringUtils.isNullOrWhiteSpace(authPath)) {
+                DefaultLoader.getUIHelper().showMessageDialog(contentPane,
+                                                              "Select authentication file",
+                                                              "Sign in dialog info",
+                                                              Messages.getInformationIcon());
+                return;
+            }
+
+            authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
+            // TODO: check field is empty, check file is valid
+            authMethodDetailsResult.setCredFilePath(authPath);
+        } else if (deviceLoginRadioButton.isSelected()) {
+            doDeviceLogin();
+            if (StringUtils.isNullOrEmpty(accountEmail)) {
+                System.out.println("Canceled by the user.");
+                return;
+            }
+            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
+            authMethodDetailsResult.setAccountEmail(accountEmail);
+            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
+        } else if (azureCliRadioButton.isSelected()) {
+            doAzureCliLogin();
+            if (AzureCliAzureManager.getInstance().isSignedIn()) {
+                authMethodDetailsResult.setAuthMethod(AuthMethod.AZ);
+            } else {
+                return;
+            }
+        }
+
+        super.doOKAction();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        AzureTokenWrapper tokenWrapper = null;
+        try {
+            tokenWrapper = AzureAuthHelper.getAzureCLICredential();
+        } catch (IOException e) {
+            // swallow exception while getting azure cli credential
+        }
+        if (tokenWrapper != null) {
+            azureCliPanel.setEnabled(true);
+            azureCliPanel.setVisible(true);
+            azureCliRadioButton.setEnabled(true);
+            azureCliRadioButton.setVisible(true);
+            azureCliRadioButton.setSelected(true);
+        } else {
+            azureCliPanel.setEnabled(false);
+            azureCliPanel.setVisible(false);
+            azureCliRadioButton.setEnabled(false);
+            azureCliRadioButton.setVisible(false);
+        }
+        refreshAuthControlElements();
+    }
+
+    private AuthMethodManager getAuthMethodManager() {
+        return AuthMethodManager.getInstance();
     }
 
     private void refreshAuthControlElements() {
         refreshAutomateLoginElements();
         refreshDeviceLoginElements();
+        refreshAzureCliElements();
     }
 
     private void refreshAutomateLoginElements() {
@@ -160,6 +258,10 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void refreshDeviceLoginElements() {
         deviceLoginCommentLabel.setEnabled(deviceLoginRadioButton.isSelected());
+    }
+
+    private void refreshAzureCliElements() {
+        azureCliCommentLabel.setEnabled(azureCliRadioButton.isSelected());
     }
 
     private void doSelectCredFilepath() {
@@ -192,6 +294,20 @@ public class SignInWindow extends AzureDialogWrapper {
         }
 
         return null;
+    }
+
+    private void doAzureCliLogin() {
+        ProgressManager.getInstance().run(new Task.Modal(null, "Logging with Azure Cli...", true) {
+            @Override
+            public void run(ProgressIndicator progressIndicator) {
+                try {
+                    AzureCliAzureManager.getInstance().signIn();
+                } catch (AzureExecutionException e) {
+                    DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
+                            "Failed to auth with Azure Cli", e.getMessage()));
+                }
+            }
+        });
     }
 
     private void deviceLoginAsync(@NotNull final BaseADAuthManager dcAuthManager) {
@@ -325,61 +441,5 @@ public class SignInWindow extends AzureDialogWrapper {
                 }
             }
         }
-    }
-
-    @Nullable
-    @Override
-    protected JComponent createCenterPanel() {
-        return contentPane;
-    }
-
-    @Override
-    protected void doOKAction() {
-        authMethodDetailsResult = new AuthMethodDetails();
-        if (automatedRadioButton.isSelected()) { // automated
-            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
-            String authPath = authFileTextField.getText();
-            if (StringUtils.isNullOrWhiteSpace(authPath)) {
-                DefaultLoader.getUIHelper().showMessageDialog(contentPane,
-                                                              "Select authentication file",
-                                                              "Sign in dialog info",
-                                                              Messages.getInformationIcon());
-                return;
-            }
-
-            authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
-            // TODO: check field is empty, check file is valid
-            authMethodDetailsResult.setCredFilePath(authPath);
-        } else if (deviceLoginRadioButton.isSelected()) {
-            doDeviceLogin();
-            if (StringUtils.isNullOrEmpty(accountEmail)) {
-                System.out.println("Canceled by the user.");
-                return;
-            }
-            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
-            authMethodDetailsResult.setAccountEmail(accountEmail);
-            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
-        }
-
-        super.doOKAction();
-    }
-
-    @Override
-    public void doCancelAction() {
-        authMethodDetailsResult = authMethodDetails;
-        super.doCancelAction();
-    }
-
-    @Override
-    public void doHelpAction() {
-        JXHyperlink helpLink = new JXHyperlink();
-        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
-        helpLink.doClick();
-    }
-
-    @Nullable
-    @Override
-    protected String getDimensionServiceKey() {
-        return "SignInWindow";
     }
 }

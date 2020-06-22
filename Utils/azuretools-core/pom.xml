@@ -97,6 +97,10 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-auth-helper</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
             <artifactId>azure-mgmt-insights</artifactId>
         </dependency>

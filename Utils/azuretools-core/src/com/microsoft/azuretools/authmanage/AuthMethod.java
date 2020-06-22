@@ -24,6 +24,7 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.sdkmanage.ServicePrincipalAzureManager;
 
@@ -31,7 +32,7 @@ public enum AuthMethod {
     AD(new AccessTokenAzureManager.AccessTokenAzureManagerFactory(AdAuthManager.getInstance())),
     DC(new AccessTokenAzureManager.AccessTokenAzureManagerFactory(DCAuthManager.getInstance())),
     SP(new ServicePrincipalAzureManager.ServicePrincipalAzureManagerFactory()),
-    ;
+    AZ(new AzureCliAzureManager.AzureCliAzureManagerFactory());
 
     private final AzureManagerFactory azureManagerFactory;
 

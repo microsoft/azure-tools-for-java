@@ -120,6 +120,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.microsoft.azure</groupId>
+                <artifactId>azure-auth-helper</artifactId>
+                <version>0.4.0</version>
+            </dependency>
+            <dependency>
                 <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
                 <artifactId>azure-mgmt-insights</artifactId>
                 <version>1.0.0-beta</version>

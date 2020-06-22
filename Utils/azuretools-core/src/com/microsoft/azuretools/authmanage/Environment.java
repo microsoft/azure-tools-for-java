@@ -22,9 +22,11 @@
 
 package com.microsoft.azuretools.authmanage;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.AzureEnvironment;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class Environment {
@@ -55,6 +57,8 @@ public abstract class Environment {
             return AzureEnvironment.AZURE_US_GOVERNMENT;
         }
     };
+
+    public static final List<Environment> ENVIRONMENT_LIST = ImmutableList.of(GLOBAL, CHINA, GERMAN, US_GOVERNMENT);
 
     private final String envName;
 

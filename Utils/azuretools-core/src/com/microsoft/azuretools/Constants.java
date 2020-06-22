@@ -33,7 +33,8 @@ public class Constants {
     public static final String FILE_NAME_AAD_PROVIDER = "AadProvider.json";
     public static final String FILE_NAME_AUTH_METHOD_DETAILS = "AuthMethodDetails.json";
     public static final String FILE_NAME_CORE_LIB_LOG = "corelibs.log";
-    public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_AT ="subscriptionsDetails-at.json";
+    public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_AT = "subscriptionsDetails-at.json";
     public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_SP = "subscriptionsDetails-sp.json";
+    public static final String FILE_NAME_SUBSCRIPTIONS_DETAILS_AZ = "subscriptionsDetails-az.json";
     public static final String FILE_NAME_SURVEY_CONFIG = "SurveyConfig.json";
 }
