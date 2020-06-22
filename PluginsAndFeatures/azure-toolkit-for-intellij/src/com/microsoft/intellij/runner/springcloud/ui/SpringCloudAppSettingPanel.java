@@ -90,6 +90,9 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private String lastSelectedSubsId;
     private String lastSelectedClusterId;
 
+    private boolean isAppInitialized = false;
+    private boolean isClusterInitialized = false;
+
     public SpringCloudAppSettingPanel(@NotNull Project project, @NotNull SpringCloudDeployConfiguration configuration) {
         super(project);
         this.configuration = configuration;
@@ -179,35 +182,41 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         cbSubscription.addItem(CommonConst.REFRESH_TEXT);
     }
 
-    private void initCluster(String initialValue) {
-        cbClusters.removeAllItems();
-        if (StringUtils.isNotEmpty(initialValue)) {
-            cbClusters.addItem(initialValue + " ...");
-        } else {
-            cbClusters.addItem(CommonConst.REFRESH_TEXT);
-            cbClusters.setSelectedItem(CommonConst.REFRESH_TEXT);
+    private synchronized void initCluster(String initialValue) {
+        if (!isClusterInitialized) {
+            cbClusters.removeAllItems();
+            if (StringUtils.isNotEmpty(initialValue)) {
+                cbClusters.addItem(initialValue + " ...");
+            } else {
+                cbClusters.addItem(CommonConst.REFRESH_TEXT);
+                cbClusters.setSelectedItem(CommonConst.REFRESH_TEXT);
+            }
+            cbClusters.setEnabled(false);
+            isClusterInitialized = true;
         }
-        cbClusters.setEnabled(false);
     }
 
-    private void initApp(String initialValue, boolean isCreate) {
-        cbSpringApps.removeAllItems();
-        cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
+    private synchronized void initApp(String initialValue, boolean isCreate) {
+        if(!isAppInitialized){
+            cbSpringApps.removeAllItems();
+            cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
 
-        if (StringUtils.isNotEmpty(initialValue)) {
-            AzureResourceWrapper cacheOne = new AzureResourceWrapper(initialValue, false, isCreate);
-            cbSpringApps.addItem(cacheOne);
-            cbSpringApps.setSelectedItem(cacheOne);
-        } else {
-            cbSpringApps.setSelectedIndex(-1);
-        }
-        cbSpringApps.addPopupMenuListener(new PopupMenuListenerAdapter() {
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                onSelectApp();
+            if (StringUtils.isNotEmpty(initialValue)) {
+                AzureResourceWrapper cacheOne = new AzureResourceWrapper(initialValue, false, isCreate);
+                cbSpringApps.addItem(cacheOne);
+                cbSpringApps.setSelectedItem(cacheOne);
+            } else {
+                cbSpringApps.setSelectedIndex(-1);
             }
-        });
-        cbSpringApps.setEnabled(false);
+            cbSpringApps.addPopupMenuListener(new PopupMenuListenerAdapter() {
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    onSelectApp();
+                }
+            });
+            cbSpringApps.setEnabled(false);
+            isAppInitialized = true;
+        }
     }
 
     private void onSelectApp() {
