@@ -27,6 +27,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -36,6 +37,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageMod
 @Name("Create Storage Account...")
 public class CreateStorageAccountAction extends NodeActionListener {
 
+    public static final String ERROR_CREATING_STORAGE_ACCOUNT = "Error creating storage account";
     private StorageModule storageModule;
 
     public CreateStorageAccountAction(StorageModule storageModule) {
@@ -46,7 +48,12 @@ public class CreateStorageAccountAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) storageModule.getProject();
         try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                return;
+            }
+            if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_STORAGE_ACCOUNT)) {
+                return;
+            }
             CreateArmStorageAccountForm createStorageAccountForm = new CreateArmStorageAccountForm((Project) storageModule.getProject());
             createStorageAccountForm.fillFields(null, null);
 
@@ -58,8 +65,8 @@ public class CreateStorageAccountAction extends NodeActionListener {
             });
             createStorageAccountForm.show();
         } catch (Exception ex) {
-            AzurePlugin.log("Error creating storage account", ex);
-            DefaultLoader.getUIHelper().showException("Error creating storage account", ex, "Error Creating Storage Account", false, true);
+            AzurePlugin.log(ERROR_CREATING_STORAGE_ACCOUNT, ex);
+            DefaultLoader.getUIHelper().showException(ERROR_CREATING_STORAGE_ACCOUNT, ex, "Error Creating Storage Account", false, true);
         }
     }
 }

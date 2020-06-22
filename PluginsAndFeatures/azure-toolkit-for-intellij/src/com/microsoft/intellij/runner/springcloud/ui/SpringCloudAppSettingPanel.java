@@ -136,6 +136,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
             }
             String selectedSid = subscription.subscriptionId();
             if (!Comparing.equal(lastSelectedSubsId, selectedSid)) {
+                initCluster(SpringCloudIdHelper.getClusterName(configuration.getClusterId()));
                 cbClusters.setEnabled(false);
                 presenter.onLoadClusters(selectedSid);
                 lastSelectedSubsId = selectedSid;
@@ -152,6 +153,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
             }
             String selectedCid = cluster.id();
             if (!Comparing.equal(lastSelectedClusterId, selectedCid)) {
+                initApp(configuration.getAppName(), configuration.isCreateNewApp());
                 cbSpringApps.setEnabled(false);
                 presenter.onLoadApps(selectedCid);
                 lastSelectedClusterId = selectedCid;
@@ -170,8 +172,6 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         publicButtonGroup.add(radioNonPublic);
 
         init();
-        initCluster(SpringCloudIdHelper.getClusterName(configuration.getClusterId()));
-        initApp(configuration.getAppName(), configuration.isCreateNewApp());
     }
 
     private void init() {

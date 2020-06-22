@@ -27,6 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -34,21 +35,28 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostM
 
 @Name("Publish")
 public class PublishDockerContainerAction extends NodeActionListener {
-  private static final Logger LOGGER = Logger.getInstance(PublishDockerContainerAction.class);
-  Project project;
+    private static final Logger LOGGER = Logger.getInstance(PublishDockerContainerAction.class);
+    private static final String ERROR_PUBLISHING_DOCKER_CONTAINER = "Error publishing docker container";
 
-  public PublishDockerContainerAction(DockerHostModule dockerHostModule) {
-    this.project = (Project) dockerHostModule.getProject();
-  }
+    private Project project;
 
-  @Override
-  public void actionPerformed(NodeActionEvent e) {
-    try {
-      if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
-      AzureDockerUIResources.publish2DockerHostContainer(project);
-    } catch(Exception ex1) {
-      LOGGER.error("actionPerformed", ex1);
-      ex1.printStackTrace();
+    public PublishDockerContainerAction(DockerHostModule dockerHostModule) {
+        this.project = (Project) dockerHostModule.getProject();
     }
-  }
+
+    @Override
+    public void actionPerformed(NodeActionEvent e) {
+        try {
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                return;
+            }
+            if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_PUBLISHING_DOCKER_CONTAINER)) {
+                return;
+            }
+            AzureDockerUIResources.publish2DockerHostContainer(project);
+        } catch (Exception ex1) {
+            LOGGER.error("actionPerformed", ex1);
+            ex1.printStackTrace();
+        }
+    }
 }

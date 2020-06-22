@@ -170,10 +170,11 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     @Override
     protected List<ValidationInfo> doValidateAll() {
         applyToConfiguration();
-        List<ValidationInfo> res = new ArrayList<>();
-        // Validate azure status
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            res.add(new ValidationInfo("Please sign in with your Azure account.", subscriptionPanel.getComboComponent()));
+        final List<ValidationInfo> res = new ArrayList<>();
+        final ValidationInfo info = validateAzureSubs(subscriptionPanel.getComboComponent());
+        if (info != null) {
+            res.add(info);
+            return res;
         }
         try {
             ValidationUtils.validateAppServiceName(functionConfiguration.getSubscription(),
