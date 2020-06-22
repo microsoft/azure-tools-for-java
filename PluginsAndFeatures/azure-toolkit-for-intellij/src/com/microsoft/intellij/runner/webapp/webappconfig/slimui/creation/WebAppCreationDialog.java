@@ -35,7 +35,6 @@ import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -294,9 +293,10 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
     protected List<ValidationInfo> doValidateAll() {
         updateConfiguration();
         List<ValidationInfo> res = new ArrayList<>();
-        // Validate azure status
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            res.add(new ValidationInfo("Please sign in with your Azure account.", cbSubscription));
+        final ValidationInfo info = validateAzureSubs(cbSubscription);
+        if (info != null) {
+            res.add(info);
+            return res;
         }
         try {
             ValidationUtils.validateAppServiceName(webAppConfiguration.getSubscriptionId(),
@@ -311,17 +311,19 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
             JComponent component = webAppConfiguration.isCreatingResGrp() ? txtNewResGrp : cbExistResGrp;
             res.add(new ValidationInfo("Please select resource group", component));
         }
-        if (StringUtils.isEmpty(webAppConfiguration.getAppServicePlanName())) {
-            JComponent component =
-                    webAppConfiguration.isCreatingAppServicePlan() ? txtCreateAppServicePlan : cbExistAppServicePlan;
-            res.add(new ValidationInfo("Please select app service plan", component));
-        }
         if (webAppConfiguration.isCreatingAppServicePlan()) {
+            if (StringUtils.isEmpty(webAppConfiguration.getAppServicePlanName())) {
+                res.add(new ValidationInfo("Please set app service plan name", txtCreateAppServicePlan));
+            }
             if (StringUtils.isEmpty(webAppConfiguration.getPricing())) {
                 res.add(new ValidationInfo("Please select app service plan pricing tier", cbPricing));
             }
             if (StringUtils.isEmpty(webAppConfiguration.getRegion())) {
                 res.add(new ValidationInfo("Please select app service plan region", cbRegion));
+            }
+        } else {
+            if (StringUtils.isEmpty(webAppConfiguration.getAppServicePlanId())) {
+                res.add(new ValidationInfo("Please select app service plan", cbExistAppServicePlan));
             }
         }
         if (webAppConfiguration.getOS() == OperatingSystem.LINUX) {

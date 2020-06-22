@@ -27,6 +27,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateRedisCacheForm;
+import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -35,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCa
 
 @Name("Create Redis Cache")
 public class CreateRedisCacheAction extends NodeActionListener {
+    private static final String ERROR_CREATING_REDIS_CACHE = "Error creating Redis cache";
     private RedisCacheModule redisCacheModule;
 
     public CreateRedisCacheAction(RedisCacheModule redisModule) {
@@ -45,7 +47,12 @@ public class CreateRedisCacheAction extends NodeActionListener {
     public void actionPerformed(NodeActionEvent e) {
         Project project = (Project) redisCacheModule.getProject();
         try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return;
+            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                return;
+            }
+            if (!AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_REDIS_CACHE)) {
+                return;
+            }
             CreateRedisCacheForm createRedisCacheForm = new CreateRedisCacheForm(project);
             createRedisCacheForm.setOnCreate(new Runnable() {
                 @Override
@@ -57,8 +64,8 @@ public class CreateRedisCacheAction extends NodeActionListener {
             });
             createRedisCacheForm.show();
         } catch (Exception ex) {
-            AzurePlugin.log("Error creating Redis cache", ex);
-            DefaultLoader.getUIHelper().showException("Error creating Redis Cache", ex, "Error creating Redis Cache", false, true);
+            AzurePlugin.log(ERROR_CREATING_REDIS_CACHE, ex);
+            DefaultLoader.getUIHelper().showException(ERROR_CREATING_REDIS_CACHE, ex, "Error creating Redis Cache", false, true);
         }
     }
 }

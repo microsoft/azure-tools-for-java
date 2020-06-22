@@ -31,6 +31,7 @@ import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
@@ -104,10 +105,9 @@ public class FunctionUtils {
     }
 
     public static Module[] listFunctionModules(Project project) {
-        MavenProjectsManager mpm = MavenProjectsManager.getInstance(project);
         final Module[] modules = ModuleManager.getInstance(project).getModules();
         return Arrays.stream(modules).filter(m -> {
-            if (mpm.findProject(m) == null) {
+            if (isModuleInTestScope(m)) {
                 return false;
             }
             final GlobalSearchScope scope = GlobalSearchScope.moduleWithLibrariesScope(m);
@@ -166,24 +166,6 @@ public class FunctionUtils {
         } catch (IOException e) {
             return null;
         }
-    }
-
-    private static void copyFilesWithDefaultContent(Path sourcePath, File dest, String defaultContent)
-            throws IOException {
-        final File src = sourcePath == null ? null : sourcePath.toFile();
-        if (src != null && src.exists()) {
-            FileUtils.copyFile(src, dest);
-        } else {
-            FileUtils.write(src, defaultContent, Charset.defaultCharset());
-        }
-    }
-
-    private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
-        final JsonObject jsonObject = JsonUtils.readJsonFile(target);
-        final JsonObject valueObject = new JsonObject();
-        appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
-        jsonObject.add("Values", valueObject);
-        JsonUtils.writeJsonToFile(target, jsonObject);
     }
 
     public static void copyLocalSettingsToStagingFolder(Path stagingFolder,
@@ -245,9 +227,6 @@ public class FunctionUtils {
         }
         final Project project = module.getProject();
         final MavenProject mavenProject = MavenProjectsManager.getInstance(project).findProject(module);
-        if (mavenProject == null) {
-            return StringUtils.EMPTY;
-        }
         final String functionAppName = mavenProject == null ? null : mavenProject.getProperties().getProperty(
                 "functionAppName");
         final String stagingFolderName = StringUtils.isEmpty(functionAppName) ? module.getName() : functionAppName;
@@ -427,5 +406,34 @@ public class FunctionUtils {
             }
         }
         return binding;
+    }
+
+    private static void copyFilesWithDefaultContent(Path sourcePath, File dest, String defaultContent)
+            throws IOException {
+        final File src = sourcePath == null ? null : sourcePath.toFile();
+        if (src != null && src.exists()) {
+            FileUtils.copyFile(src, dest);
+        } else {
+            FileUtils.write(src, defaultContent, Charset.defaultCharset());
+        }
+    }
+
+    private static void updateLocalSettingValues(File target, Map<String, String> appSettings) throws IOException {
+        final JsonObject jsonObject = JsonUtils.readJsonFile(target);
+        final JsonObject valueObject = new JsonObject();
+        appSettings.entrySet().forEach(entry -> valueObject.addProperty(entry.getKey(), entry.getValue()));
+        jsonObject.add("Values", valueObject);
+        JsonUtils.writeJsonToFile(target, jsonObject);
+    }
+
+    private static boolean isModuleInTestScope(Module module) {
+        if (module == null) {
+            return false;
+        }
+        CompilerModuleExtension cme = CompilerModuleExtension.getInstance(module);
+        if (cme == null) {
+            return false;
+        }
+        return cme.getCompilerOutputUrl() == null && cme.getCompilerOutputUrlForTests() != null;
     }
 }

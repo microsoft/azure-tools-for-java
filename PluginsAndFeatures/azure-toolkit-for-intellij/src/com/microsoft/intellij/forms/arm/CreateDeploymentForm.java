@@ -183,10 +183,10 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
                     UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
                     updateUI();
                 }), (ex) -> {
-                    UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
-                        MessageType.ERROR);
-                    updateUI();
-                });
+                        UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
+                            MessageType.ERROR);
+                        updateUI();
+                    });
             }
         });
         close(DialogWrapper.OK_EXIT_CODE, true);
@@ -219,16 +219,15 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
             subscriptionCb.setSelectedIndex(0);
         }
 
-        fillRegion();
-        fillResourceGroup();
         deploymentNameTextField.setText("deployment" + System.currentTimeMillis());
         rgNameTextFiled.setText("resouregroup" + System.currentTimeMillis());
     }
 
     private void initCache() {
-        Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
+        Map<SubscriptionDetail, List<Location>> subscription2Location =
+                AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null) {
-            ProgressManager.getInstance().run(new Task.Modal(project,"Loading Available Locations...", false) {
+            ProgressManager.getInstance().run(new Task.Modal(project, "Loading Available Locations...", false) {
                 @Override
                 public void run(ProgressIndicator indicator) {
                     try {
@@ -288,7 +287,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
 
     private void selectSubs(String targetSid) {
         for (int i = 0; i < subscriptionCb.getItemCount(); i++) {
-            if (((SubscriptionDetail)subscriptionCb.getItemAt(i)).getSubscriptionId().equals(targetSid)) {
+            if (((SubscriptionDetail) subscriptionCb.getItemAt(i)).getSubscriptionId().equals(targetSid)) {
                 subscriptionCb.setSelectedIndex(i);
                 break;
             }

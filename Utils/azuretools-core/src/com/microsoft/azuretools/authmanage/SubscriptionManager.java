@@ -24,7 +24,6 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
-import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -118,10 +117,6 @@ public class SubscriptionManager {
 
     private synchronized void doSetSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws IOException {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.doSetSubscriptionDetails()");
-        if (subscriptionDetails.isEmpty()) {
-            throw new AuthException("No subscription found in the account");
-        }
-
         this.subscriptionDetails = subscriptionDetails;
         updateMapAccordingToList(); // WORKAROUND: Update SubscriptionId->SubscriptionDetail Map
         updateSidToTidMap();
