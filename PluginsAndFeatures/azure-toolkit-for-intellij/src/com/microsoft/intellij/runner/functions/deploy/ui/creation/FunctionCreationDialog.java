@@ -252,6 +252,14 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         pack();
     }
 
+    private boolean isApplicationInsightsEnabled() {
+        return rdoEnableAI.isSelected();
+    }
+
+    private boolean isCreateApplicationInsights() {
+        return applicationInsightsPanel.isCreateNewInsights();
+    }
+
     private void createFunctionApp() {
         ProgressManager.getInstance().run(new Task.Modal(null, "Creating New Function App...", true) {
             @Override
@@ -285,8 +293,11 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     }
 
     private void bindingApplicationInsights(IntelliJFunctionContext functionConfiguration) throws IOException {
+        if (!isApplicationInsightsEnabled()) {
+            return;
+        }
         String instrumentationKey = applicationInsightsPanel.getApplicationInsightsInstrumentKey();
-        if (applicationInsightsPanel.isCreateNewInsights()) {
+        if (isCreateApplicationInsights()) {
             final String region = appServicePlanPanel.getAppServicePlanRegion();
             final String insightsName = applicationInsightsPanel.getNewApplicationInsightsName();
             final ApplicationInsightsComponent insights =
@@ -306,6 +317,8 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         telemetryMap.put("CreateNewSP", String.valueOf(appServicePlanPanel.isNewAppServicePlan()));
         telemetryMap.put("CreateNewRGP", String.valueOf(resourceGroupPanel.isNewResourceGroup()));
         telemetryMap.put("Success", String.valueOf(success));
+        telemetryMap.put("EnableApplicationInsights", String.valueOf(isApplicationInsightsEnabled()));
+        telemetryMap.put("CreateNewApplicationInsights", String.valueOf(isCreateApplicationInsights()));
         if (!success) {
             telemetryMap.put("ErrorMsg", errorMsg);
         }
