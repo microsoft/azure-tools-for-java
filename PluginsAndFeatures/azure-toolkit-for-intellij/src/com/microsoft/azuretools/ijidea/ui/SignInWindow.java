@@ -140,6 +140,7 @@ public class SignInWindow extends AzureDialogWrapper {
         return authMethodDetailsResult;
     }
 
+    @Nullable
     public static SignInWindow go(AuthMethodDetails authMethodDetails, Project project) {
         SignInWindow d = new SignInWindow(authMethodDetails, project);
         d.show();

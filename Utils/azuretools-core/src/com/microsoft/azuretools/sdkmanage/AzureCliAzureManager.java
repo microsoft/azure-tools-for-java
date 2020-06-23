@@ -51,6 +51,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_AZ;
@@ -86,7 +87,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
         public AuthMethodDetails restore(final AuthMethodDetails authMethodDetails) {
             try {
                 getInstance().signIn();
-            } catch (AzureExecutionException e) {
+            } catch (AzureExecutionException ignore) {
                 // Catch the exception when restore
             } finally {
                 return authMethodDetails;
@@ -100,6 +101,9 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public Azure getAzure(String sid) throws IOException {
+        if (!isSignedIn()) {
+            return null;
+        }
         if (sidToAzureMap.containsKey(sid)) {
             return sidToAzureMap.get(sid);
         }
@@ -112,23 +116,26 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public AppPlatformManager getAzureSpringCloudClient(String sid) {
-        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s ->
-                buildAzureManager(AppPlatformManager.configure()).authenticate(azureCliCredentials, s));
+        return isSignedIn() ? sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s ->
+                buildAzureManager(AppPlatformManager.configure()).authenticate(azureCliCredentials, s)) : null;
     }
 
     @Override
     public InsightsManager getInsightsManager(String sid) {
-        return sidToInsightsManagerMap.computeIfAbsent(sid, s ->
-                buildAzureManager(InsightsManager.configure()).authenticate(azureCliCredentials, s));
+        return isSignedIn() ? sidToInsightsManagerMap.computeIfAbsent(sid, s ->
+                buildAzureManager(InsightsManager.configure()).authenticate(azureCliCredentials, s)) : null;
     }
 
     @Override
     public List<Subscription> getSubscriptions() {
-        return authenticated.subscriptions().list();
+        return isSignedIn() ? authenticated.subscriptions().list() : Collections.EMPTY_LIST;
     }
 
     @Override
     public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
+        if (!isSignedIn()) {
+            return Collections.EMPTY_LIST;
+        }
         final Tenant subscriptionTenant = authenticated.tenants().list().stream()
                 .filter(tenant -> StringUtils.equals(tenant.tenantId(), authenticated.tenantId()))
                 .findFirst().orElse(null);
@@ -158,6 +165,9 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public KeyVaultClient getKeyVaultClient(String tid) {
+        if (!isSignedIn()) {
+            return null;
+        }
         final ServiceClientCredentials credentials = new KeyVaultCredentials() {
             @Override
             public String doAuthenticate(String authorization, String resource, String scope) {
@@ -173,26 +183,29 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public String getCurrentUserId() {
-        return azureCliCredentials.clientId();
+        return isSignedIn() ? azureCliCredentials.clientId() : null;
     }
 
     @Override
     public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
-        return azureCliCredentials.getToken(resource);
+        return isSignedIn() ? azureCliCredentials.getToken(resource) : null;
     }
 
     @Override
     public String getManagementURI() {
-        return azureCliCredentials.environment().managementEndpoint();
+        return isSignedIn() ? azureCliCredentials.environment().managementEndpoint() : null;
     }
 
     @Override
     public String getStorageEndpointSuffix() {
-        return getEnvironment().getAzureEnvironment().storageEndpointSuffix();
+        return isSignedIn() ? getEnvironment().getAzureEnvironment().storageEndpointSuffix() : null;
     }
 
     @Override
     public Environment getEnvironment() {
+        if (!isSignedIn()) {
+            return null;
+        }
         final AzureEnvironment azureEnvironment = azureCliCredentials.environment();
         return ENVIRONMENT_LIST.stream()
                 .filter(environment -> azureEnvironment == environment.getAzureEnvironment())
@@ -221,17 +234,17 @@ public class AzureCliAzureManager extends AzureManagerBase {
         } catch (IOException e) {
             try {
                 drop();
-            } catch (IOException ex) {
+            } catch (IOException ignore) {
                 // swallow exception while clean up
             }
             throw new AzureExecutionException(FAILED_TO_AUTH_WITH_AZURE_CLI, e);
         }
     }
 
-    private Azure.Authenticated auth() throws IOException {
+    private Azure.Authenticated auth() {
         return Azure.configure()
                 .withInterceptor(new TelemetryInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
-                .authenticate(AzureCliCredentials.create());
+                .authenticate(azureCliCredentials);
     }
 }
