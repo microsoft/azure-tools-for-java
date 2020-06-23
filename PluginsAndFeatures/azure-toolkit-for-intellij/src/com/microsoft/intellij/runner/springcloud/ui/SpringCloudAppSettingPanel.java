@@ -197,7 +197,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     }
 
     private synchronized void initApp(String initialValue, boolean isCreate) {
-        if(!isAppInitialized){
+        if (!isAppInitialized) {
             cbSpringApps.removeAllItems();
             cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
 
