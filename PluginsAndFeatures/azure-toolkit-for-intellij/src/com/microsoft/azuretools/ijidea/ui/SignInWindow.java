@@ -37,7 +37,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
@@ -302,7 +301,7 @@ public class SignInWindow extends AzureDialogWrapper {
             public void run(ProgressIndicator progressIndicator) {
                 try {
                     AzureCliAzureManager.getInstance().signIn();
-                } catch (AzureExecutionException e) {
+                } catch (Exception e) {
                     DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                             "Failed to auth with Azure Cli", e.getMessage()));
                 }

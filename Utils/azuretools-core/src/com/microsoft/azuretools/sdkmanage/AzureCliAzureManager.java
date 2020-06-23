@@ -40,6 +40,7 @@ import com.microsoft.azuretools.authmanage.AzureManagerFactory;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
@@ -211,7 +212,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
             }
             azureCliCredentials = (AzureCliCredentials) azureTokenWrapper.getAzureTokenCredentials();
             authenticated = Azure.configure().authenticate(azureCliCredentials);
-            subscriptionManager = new SubscriptionManager(this);
+            subscriptionManager = new SubscriptionManagerPersist(this);
 
             final AuthMethodDetails authResult = new AuthMethodDetails();
             authResult.setAuthMethod(AuthMethod.AZ);
