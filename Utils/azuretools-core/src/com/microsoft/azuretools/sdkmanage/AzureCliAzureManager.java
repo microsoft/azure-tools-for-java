@@ -139,6 +139,9 @@ public class AzureCliAzureManager extends AzureManagerBase {
         final Tenant subscriptionTenant = authenticated.tenants().list().stream()
                 .filter(tenant -> StringUtils.equals(tenant.tenantId(), authenticated.tenantId()))
                 .findFirst().orElse(null);
+        if (subscriptionTenant == null) {
+            return Collections.EMPTY_LIST;
+        }
         final List<Pair<Subscription, Tenant>> result = new ArrayList<>();
         for (Subscription subscription : getSubscriptions()) {
             result.add(new Pair<>(subscription, subscriptionTenant));

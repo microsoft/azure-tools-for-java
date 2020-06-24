@@ -142,10 +142,10 @@ public class SignInWindow extends AzureDialogWrapper {
 
     @Nullable
     public static SignInWindow go(AuthMethodDetails authMethodDetails, Project project) {
-        SignInWindow d = new SignInWindow(authMethodDetails, project);
-        d.show();
-        if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-            return d;
+        SignInWindow signInWindow = new SignInWindow(authMethodDetails, project);
+        signInWindow.show();
+        if (signInWindow.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            return signInWindow;
         }
 
         return null;

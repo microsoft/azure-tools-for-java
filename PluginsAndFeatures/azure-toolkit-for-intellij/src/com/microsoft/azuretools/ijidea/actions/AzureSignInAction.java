@@ -115,9 +115,8 @@ public class AzureSignInAction extends AzureAnAction {
                 warningMessage = "Signed in by unknown authentication method.";
                 break;
         }
-        return authMethod == AZ ? String.format("%s\nDo you really want to sign out? (This will not sign you "
-                                                        + "out from Azure CLI)", warningMessage) :
-               String.format("%s\nDo you really want to sign out?", warningMessage);
+        return String.format("%s\nDo you really want to sign out? %s",
+                             warningMessage, authMethod == AZ ? "(This will not sign you out from Azure CLI)" : "");
     }
 
     public static void onAzureSignIn(Project project) {
