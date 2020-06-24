@@ -167,6 +167,7 @@ public class TelemetryConstants {
     public static final String ACR_READPROP = "readprop-acr";
     public static final String SIGNIN_DC = "dc";
     public static final String SIGNIN_SP = "sp";
+    public static final String SIGNIN_AZ = "az";
     public static final String CHOOSE_REFERENCE_JAR_GEN2 = "choose-reference-jar-gen2";
     public static final String CREATE_DEPLOYMENT = "create-deployment";
     public static final String UPDATE_DEPLOYMENT = "update-deployment";
@@ -208,9 +209,11 @@ public class TelemetryConstants {
 
     public static final Map<String, String> signInSPProp = new HashMap<>();
     public static final Map<String, String> signInDCProp = new HashMap<>();
+    public static final Map<String, String> signInAZProp = new HashMap<>();
 
     static {
         signInSPProp.put(SIGNIN_METHOD, SIGNIN_SP);
         signInDCProp.put(SIGNIN_METHOD, SIGNIN_DC);
+        signInAZProp.put(SIGNIN_METHOD, SIGNIN_AZ);
     }
 }

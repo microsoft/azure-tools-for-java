@@ -72,10 +72,6 @@ public class AzureCliAzureManager extends AzureManagerBase {
         settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_AZ);
     }
 
-    private static class LazyLoader {
-        static final AzureCliAzureManager INSTANCE = new AzureCliAzureManager();
-    }
-
     public static class AzureCliAzureManagerFactory implements AzureManagerFactory {
 
         @Override
@@ -196,7 +192,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public String getManagementURI() {
-        return isSignedIn() ? azureCliCredentials.environment().managementEndpoint() : null;
+        return isSignedIn() ? getEnvironment().getAzureEnvironment().managementEndpoint() : null;
     }
 
     @Override
@@ -249,5 +245,9 @@ public class AzureCliAzureManager extends AzureManagerBase {
                 .withInterceptor(new TelemetryInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
                 .authenticate(azureCliCredentials);
+    }
+
+    private static class LazyLoader {
+        static final AzureCliAzureManager INSTANCE = new AzureCliAzureManager();
     }
 }

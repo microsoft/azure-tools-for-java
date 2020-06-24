@@ -49,7 +49,6 @@ import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXHyperlink;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -61,6 +60,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
@@ -203,7 +203,7 @@ public class SignInWindow extends AzureDialogWrapper {
             authMethodDetailsResult.setAccountEmail(accountEmail);
             authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
         } else if (azureCliRadioButton.isSelected()) {
-            doAzureCliLogin();
+            doLogin(() -> AzureCliAzureManager.getInstance().signIn(), signInAZProp);
             if (AzureCliAzureManager.getInstance().isSignedIn()) {
                 authMethodDetailsResult.setAuthMethod(AuthMethod.AZ);
             } else {
@@ -225,15 +225,13 @@ public class SignInWindow extends AzureDialogWrapper {
         }
         if (tokenWrapper != null) {
             azureCliPanel.setEnabled(true);
-            azureCliPanel.setVisible(true);
+            azureCliRadioButton.setText("Azure CLI");
             azureCliRadioButton.setEnabled(true);
-            azureCliRadioButton.setVisible(true);
             azureCliRadioButton.setSelected(true);
         } else {
             azureCliPanel.setEnabled(false);
-            azureCliPanel.setVisible(false);
+            azureCliRadioButton.setText("Azure CLI (Not login)");
             azureCliRadioButton.setEnabled(false);
-            azureCliRadioButton.setVisible(false);
         }
         refreshAuthControlElements();
     }
@@ -284,7 +282,7 @@ public class SignInWindow extends AzureDialogWrapper {
             if (dcAuthManager.isSignedIn()) {
                 doSignOut();
             }
-            deviceLoginAsync(dcAuthManager);
+            doLogin(() -> dcAuthManager.signIn(null), signInDCProp);
             accountEmail = dcAuthManager.getAccountEmail();
 
             return dcAuthManager;
@@ -296,42 +294,28 @@ public class SignInWindow extends AzureDialogWrapper {
         return null;
     }
 
-    private void doAzureCliLogin() {
-        ProgressManager.getInstance().run(new Task.Modal(null, "Logging with Azure Cli...", true) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                try {
-                    AzureCliAzureManager.getInstance().signIn();
-                } catch (Exception e) {
-                    DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
-                            "Failed to auth with Azure Cli", e.getMessage()));
-                }
-            }
-        });
-    }
-
-    private void deviceLoginAsync(@NotNull final BaseADAuthManager dcAuthManager) {
+    private void doLogin(Callable loginCallable, Map<String, String> properties) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         ProgressManager.getInstance().run(
-            new Task.Modal(project, "Sign In Progress", false) {
-                @Override
-                public void run(ProgressIndicator indicator) {
-                    try {
-                        EventUtil.logEvent(EventType.info, operation, signInDCProp);
-                        operation.start();
-                        dcAuthManager.signIn(null);
-                    } catch (AuthCanceledException ex) {
-                        EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
-                        System.out.println(ex.getMessage());
-                    } catch (Exception ex) {
-                        EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
-                        ApplicationManager.getApplication().invokeLater(
-                            () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
-                    } finally {
-                        operation.complete();
+                new Task.Modal(project, "Sign In Progress", false) {
+                    @Override
+                    public void run(ProgressIndicator indicator) {
+                        try {
+                            EventUtil.logEvent(EventType.info, operation, properties);
+                            operation.start();
+                            loginCallable.call();
+                        } catch (AuthCanceledException ex) {
+                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
+                            System.out.println(ex.getMessage());
+                        } catch (Exception ex) {
+                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
+                            ApplicationManager.getApplication().invokeLater(
+                                () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                        } finally {
+                            operation.complete();
+                        }
                     }
-                }
-            });
+                });
     }
 
     private void doSignOut() {
