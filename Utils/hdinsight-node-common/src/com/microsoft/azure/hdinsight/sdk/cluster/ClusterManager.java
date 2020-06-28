@@ -46,15 +46,10 @@ public class ClusterManager implements ILogger {
     // Singleton Instance
     private static ClusterManager instance = null;
 
-    public static ClusterManager getInstance() {
+    public static synchronized ClusterManager getInstance() {
         if (instance == null) {
-            synchronized (ClusterManager.class) {
-                if (instance == null) {
-                    instance = new ClusterManager();
-                }
-            }
+            instance = new ClusterManager();
         }
-
         return instance;
     }
 
