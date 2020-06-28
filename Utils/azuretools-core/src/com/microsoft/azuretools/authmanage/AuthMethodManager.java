@@ -165,6 +165,7 @@ public class AuthMethodManager {
         ServicePrincipalAzureManager.cleanPersist();
         authMethodDetails.setAccountEmail(null);
         authMethodDetails.setAzureEnv(null);
+        authMethodDetails.setAuthMethod(null);
         authMethodDetails.setCredFilePath(null);
         saveSettings();
     }
