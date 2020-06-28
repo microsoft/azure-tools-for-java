@@ -54,8 +54,9 @@ public class AuthMethodManager {
     private Set<Runnable> signOutEventListeners = new HashSet<>();
 
     private AuthMethodManager() {
-        AuthMethodDetails savedAuthMethodDetails = loadSettings();
-        authMethodDetails = savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
+        final AuthMethodDetails savedAuthMethodDetails = loadSettings();
+        authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ? new AuthMethodDetails() :
+                savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
     }
 
     private static class LazyHolder {
