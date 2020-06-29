@@ -36,13 +36,7 @@ import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiAnnotationMemberValue;
-import com.intellij.psi.PsiArrayInitializerMemberValue;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiNameValuePair;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
 import com.intellij.util.containers.ContainerUtil;
@@ -50,10 +44,9 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
-import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.common.utils.SneakyThrowUtils;
+import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.sun.tools.sjavac.Log;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -67,13 +60,7 @@ import java.nio.charset.Charset;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class FunctionUtils {
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
@@ -325,11 +312,15 @@ public class FunctionUtils {
     }
 
     private static Binding getBinding(JvmAnnotation annotation) throws AzureExecutionException {
-        final BindingEnum annotationEnum = Arrays.stream(BindingEnum.values()).filter((bindingEnum) -> {
-            return bindingEnum.name().toLowerCase(Locale.ENGLISH)
-                              .equals(FilenameUtils.getExtension(annotation.getQualifiedName())
-                                                   .toLowerCase(Locale.ENGLISH));
-        }).findFirst().orElse(null);
+        if (annotation == null) {
+            return null;
+        }
+        final BindingEnum annotationEnum =
+                Arrays.stream(BindingEnum.values())
+                      .filter(bindingEnum -> StringUtils.equalsIgnoreCase(bindingEnum.name(),
+                                                                          FilenameUtils.getExtension(annotation.getQualifiedName())))
+                      .findFirst()
+                      .orElse(null);
         return annotationEnum == null ? getUserDefinedBinding(annotation)
                                       : createBinding(annotationEnum, (PsiAnnotation) annotation);
     }
