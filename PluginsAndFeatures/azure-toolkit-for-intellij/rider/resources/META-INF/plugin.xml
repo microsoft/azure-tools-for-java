@@ -138,7 +138,7 @@
   <xi:include href="/META-INF/platformPlugin.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="201" until-build="202.*"/>
+  <idea-version since-build="202" until-build="202.*"/>
 
   <resource-bundle>messages.RiderAzureMessages</resource-bundle>
 
@@ -190,22 +190,12 @@
                      groupName="Azure"
                      implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.msbuild.AzureFunctionsVersionInspection"/>
 
-    <completion.contributor language="C#"
-                            implementationClass="org.jetbrains.plugins.azure.functions.completion.csharp.AzureFunctionsTimerTriggerCompletionContributor"/>
-
-    <localInspection language="C#"
-                     enabledByDefault="true"
-                     shortName="AzureFunctionsTimerTriggerCron"
-                     displayName="Validates schedule expression for timer trigger"
-                     groupName="Azure"
-                     implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.csharp.AzureFunctionsTimerTriggerCronInspection"/>
-
     <internalFileTemplate name="Trigger Azure Function"/>
 
     <completion.contributor language="C#"
                             implementationClass="org.jetbrains.plugins.azure.functions.completion.csharp.TimerTriggerCompletionContributor" />
 
-    <serviceViewContributor implementation="org.jetbrains.plugins.azure.storage.azurite.AzuriteServiceViewContributor"/>
+    <serviceViewContributor implementation="org.jetbrains.plugins.azure.storage.azurite.AzuriteServiceViewContributor" />
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
