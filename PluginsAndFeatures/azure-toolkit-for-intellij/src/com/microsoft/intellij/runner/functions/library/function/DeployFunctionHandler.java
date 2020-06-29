@@ -41,7 +41,6 @@ import com.microsoft.azure.common.handlers.artifact.ZIPArtifactHandlerImpl;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
 import com.microsoft.intellij.runner.functions.library.IPrompter;
 import org.apache.commons.lang3.StringUtils;
@@ -49,9 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.microsoft.azure.common.appservice.DeploymentType.DOCKER;
-import static com.microsoft.azure.common.appservice.DeploymentType.RUN_FROM_BLOB;
-import static com.microsoft.azure.common.appservice.DeploymentType.RUN_FROM_ZIP;
+import static com.microsoft.azure.common.appservice.DeploymentType.*;
 
 /**
  * Deploy artifacts to target Azure Functions in Azure. If target Azure
@@ -67,18 +64,10 @@ public class DeployFunctionHandler {
     private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
     private static final String SET_FUNCTIONS_EXTENSION_VERSION = "Functions extension version " +
             "isn't configured, setting up the default value";
-    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8_NEWEST;
-    private static final String VALID_JAVA_VERSION_PATTERN = "^1\\.8.*"; // For now we only support function with java 8
-
     private static final String DEPLOY_START = "Trying to deploy the function app...";
     private static final String DEPLOY_FINISH = "Successfully deployed the function app at https://%s.azurewebsites.net";
     private static final String FUNCTION_APP_UPDATE = "Updating the specified function app...";
     private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app %s.";
-    private static final String HOST_JAVA_VERSION = "Java version of function host : %s";
-    private static final String HOST_JAVA_VERSION_OFF = "Java version of function host is not initiated," +
-            " set it to Java 8";
-    private static final String HOST_JAVA_VERSION_INCORRECT = "Java version of function host %s does not" +
-            " meet the requirement of Azure Functions, set it to Java 8";
     private static final String UNKNOW_DEPLOYMENT_TYPE = "The value of <deploymentType> is unknown, supported values are: " +
             "ftp, zip, msdeploy, run_from_blob and run_from_zip.";
 
@@ -110,23 +99,9 @@ public class DeployFunctionHandler {
         prompt(FUNCTION_APP_UPDATE);
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         final Update update = app.update();
-        checkHostJavaVersion(app, update); // Check Java Version of Server
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
         prompt(String.format(FUNCTION_APP_UPDATE_DONE, ctx.getAppName()));
-    }
-
-    private void checkHostJavaVersion(final FunctionApp app, final Update update) {
-        final JavaVersion serverJavaVersion = app.javaVersion();
-        if (serverJavaVersion.toString().matches(VALID_JAVA_VERSION_PATTERN)) {
-            prompt(String.format(HOST_JAVA_VERSION, serverJavaVersion));
-        } else if (serverJavaVersion.equals(JavaVersion.OFF)) {
-            prompt(HOST_JAVA_VERSION_OFF);
-            update.withJavaVersion(DEFAULT_JAVA_VERSION);
-        } else {
-            prompt(HOST_JAVA_VERSION_INCORRECT);
-            update.withJavaVersion(DEFAULT_JAVA_VERSION);
-        }
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {

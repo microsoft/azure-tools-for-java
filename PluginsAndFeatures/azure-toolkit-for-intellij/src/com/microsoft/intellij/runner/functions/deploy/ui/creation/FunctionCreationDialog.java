@@ -90,6 +90,8 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     private JRadioButton rdoEnableAI;
     private JLabel lblApplicationInsights;
     private JPanel pnlApplicationInsightsHolder;
+    private JRadioButton rdoJava8;
+    private JRadioButton rdoJava11;
     private AppSettingsTable appSettingsTable;
 
     private IntelliJFunctionContext functionConfiguration;
@@ -119,6 +121,10 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         final ButtonGroup insightsGroup = new ButtonGroup();
         insightsGroup.add(rdoDisableAI);
         insightsGroup.add(rdoEnableAI);
+
+        final ButtonGroup javaVersionGroup = new ButtonGroup();
+        osButtonGroup.add(rdoJava8);
+        osButtonGroup.add(rdoJava11);
 
         subscriptionPanel.addItemListener(e -> {
             final String subscriptionId = subscriptionPanel.getSubscriptionId();
@@ -231,6 +237,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         // runtime
         final IntelliJFunctionRuntimeConfiguration runtimeConfiguration = new IntelliJFunctionRuntimeConfiguration();
         runtimeConfiguration.setOs(getSelectedOperationSystemEnum() == OperatingSystem.WINDOWS ? "windows" : "linux");
+        runtimeConfiguration.setJavaVersion(rdoJava8.isSelected() ? "8" : "11");
         functionConfiguration.setRuntime(runtimeConfiguration);
 
         functionConfiguration.setAppSettings(getFixedAppSettings());

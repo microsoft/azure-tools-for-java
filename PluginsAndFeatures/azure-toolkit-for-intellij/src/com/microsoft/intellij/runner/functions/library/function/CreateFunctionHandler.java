@@ -37,8 +37,6 @@ import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
-import com.microsoft.azure.management.appservice.FunctionApp.Update;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
@@ -64,22 +62,15 @@ public class CreateFunctionHandler {
     private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
     private static final String SET_FUNCTIONS_EXTENSION_VERSION = "Functions extension version " +
             "isn't configured, setting up the default value";
-    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8_NEWEST;
-    private static final String VALID_JAVA_VERSION_PATTERN = "^1\\.8.*"; // For now we only support function with java 8
-
     private static final String FUNCTION_APP_CREATE_START = "The specified function app does not exist. " +
             "Creating a new function app...";
     private static final String FUNCTION_APP_CREATED = "Successfully created the function app: %s";
     private static final String FUNCTION_APP_UPDATE = "Updating the specified function app...";
     private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app.";
 
-    private static final String HOST_JAVA_VERSION = "Java version of function host : %s";
-    private static final String HOST_JAVA_VERSION_OFF = "Java version of function host is not initiated," +
-            " set it to Java 8";
-    private static final String HOST_JAVA_VERSION_INCORRECT = "Java version of function host %s does not" +
-            " meet the requirement of Azure Functions, set it to Java 8";
-
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
+    public static final String TARGET_FUNCTION_APP_ALREADY_EXISTS =
+            "Failed to create function app %s, target function app already exists.";
     private IAppServiceContext ctx;
 
 
@@ -89,17 +80,9 @@ public class CreateFunctionHandler {
     }
 
     public void execute() throws Exception {
-        checkJavaVersion();
         createOrUpdateFunctionApp();
     }
     // endregion
-
-    private static void checkJavaVersion() {
-        final String javaVersion = System.getProperty("java.version");
-        if (!javaVersion.startsWith("1.8")) {
-            Log.warn(String.format(JDK_VERSION_ERROR, javaVersion));
-        }
-    }
 
     // region Create or update Azure Functions
 
@@ -108,7 +91,7 @@ public class CreateFunctionHandler {
         if (app == null) {
             createFunctionApp();
         } else {
-            updateFunctionApp(app);
+            throw new AzureExecutionException(TARGET_FUNCTION_APP_ALREADY_EXISTS);
         }
     }
 
@@ -117,34 +100,8 @@ public class CreateFunctionHandler {
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
         final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
         configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
-        withCreate.withJavaVersion(DEFAULT_JAVA_VERSION).withWebContainer(null).create();
+        withCreate.create();
         Log.prompt(String.format(FUNCTION_APP_CREATED, ctx.getAppName()));
-    }
-
-    private void updateFunctionApp(final FunctionApp app) throws IOException, AzureExecutionException {
-        Log.prompt(FUNCTION_APP_UPDATE);
-        // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
-        app.inner().withTags(null);
-        final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
-        runtimeHandler.updateAppServicePlan(app);
-        final Update update = runtimeHandler.updateAppRuntime(app);
-        checkHostJavaVersion(app, update); // Check Java Version of Server
-        configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
-        update.apply();
-        Log.prompt(FUNCTION_APP_UPDATE_DONE + ctx.getAppName());
-    }
-
-    private void checkHostJavaVersion(final FunctionApp app, final Update update) {
-        final JavaVersion serverJavaVersion = app.javaVersion();
-        if (serverJavaVersion.toString().matches(VALID_JAVA_VERSION_PATTERN)) {
-            Log.prompt(String.format(HOST_JAVA_VERSION, serverJavaVersion));
-        } else if (serverJavaVersion.equals(JavaVersion.OFF)) {
-            Log.prompt(HOST_JAVA_VERSION_OFF);
-            update.withJavaVersion(DEFAULT_JAVA_VERSION);
-        } else {
-            Log.warn(HOST_JAVA_VERSION_INCORRECT);
-            update.withJavaVersion(DEFAULT_JAVA_VERSION);
-        }
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
