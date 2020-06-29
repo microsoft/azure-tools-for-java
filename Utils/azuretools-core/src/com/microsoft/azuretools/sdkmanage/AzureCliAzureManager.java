@@ -192,7 +192,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public String getManagementURI() {
-        return isSignedIn() ? getEnvironment().getAzureEnvironment().managementEndpoint() : null;
+        return isSignedIn() ? getEnvironment().getAzureEnvironment().resourceManagerEndpoint() : null;
     }
 
     @Override
