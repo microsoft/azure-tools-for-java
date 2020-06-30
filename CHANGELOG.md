@@ -59,7 +59,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 - Support authentication with Azure CLI credentials
 
 ### Changed
-- Show Apache Spark on Cosmos node by default no matter if there is SoC clusters under user's subscription
+- Show Apache Spark on Cosmos node by default no matter whether there are SoC clusters under user's subscription or not
 - Remove Docker Host in Azure Explorer
 
 ### Fixed

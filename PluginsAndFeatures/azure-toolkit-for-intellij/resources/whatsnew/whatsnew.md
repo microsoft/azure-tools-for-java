@@ -10,7 +10,7 @@
 
 ![azure-cli-auth](https://user-images.githubusercontent.com/12445236/86110888-b1734a00-baf8-11ea-9d12-6bffef0d6823.gif)
 
-For HDInsights, Azure toolkit add new support on [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) now! The following features are waiting to be discovered.
+Besides, Azure toolkit add new support on [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) now! The following features are waiting to be discovered.
  - Monitor Spark batch job on Spark history server UI and Spark job details UI
 
  ![monitor-spark-batch-job](https://user-images.githubusercontent.com/32627233/86082318-0ba8e680-baca-11ea-97db-bfdb21c33310.gif)
@@ -24,7 +24,7 @@ For HDInsights, Azure toolkit add new support on [Azure Synapse](https://docs.mi
 - Support authentication with Azure CLI credentials
 
 ### Changed
-- Show Apache Spark on Cosmos node by default no matter if there is SoC clusters under user's subscription
+- Show Apache Spark on Cosmos node by default no matter whether there are SoC clusters under user's subscription or not
 - Remove Docker Host in Azure Explorer
 
 ### Fixed

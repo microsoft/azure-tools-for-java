@@ -32,7 +32,7 @@
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Show Apache Spark on Cosmos node by default no matter if there is SoC clusters under user's subscription</li>
+        <li>Show Apache Spark on Cosmos node by default no matter whether there are SoC clusters under user's subscription or not</li>
         <li>Remove Docker Host in Azure Explorer</li>
     </ul>
     <h4>Fixed</h4>
