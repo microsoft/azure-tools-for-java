@@ -92,9 +92,6 @@ public class DeployFunctionHandler {
         return (FunctionApp) deployTarget.getApp();
     }
 
-    // endregion
-
-    // region Create or update Azure Functions
     private void updateFunctionAppSettings(final FunctionApp app) throws AzureExecutionException {
         prompt(FUNCTION_APP_UPDATE);
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
@@ -109,8 +106,6 @@ public class DeployFunctionHandler {
             withAppSettings.accept(appSettings);
         }
     }
-
-    // endregion
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
         final RuntimeConfiguration runtime = ctx.getRuntime();
