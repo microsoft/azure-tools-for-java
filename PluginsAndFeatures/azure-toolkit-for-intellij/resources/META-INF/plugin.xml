@@ -24,29 +24,44 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.38.0</h3>
+    <h3>3.39.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Support create application insights connection while creating new function app</li>
+        <li>Support Azure Functions with Java 11 runtime(Preview)</li>
+        <li>Support authentication with Azure CLI credentials</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Deprecate Docker Host(will be removed in v3.39.0)</li>
+        <li>Show Apache Spark on Cosmos node by default no matter if there is SoC clusters under user's subscription</li>
+        <li>Remove Docker Host in Azure Explorer</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4423">#4423</a> Spark local run mockfs issue
-            with Hive support enabled</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4410">#4410</a> The context menu
-            <code>Submit Spark Application</code> action regression issue at IDEA 2020.1</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4419">#4419</a> The run configuration Spark
-            config table changes didn't take effects regression</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4413">#4413</a> The regression issue of Spark
-            local console with Scala plugin 2020.1.36</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4422">#4422</a> Fixes
-            <code>ConcurrentModificationException</code> while refreshing spring cloud clusters</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4438">#4438</a> Fixes modality state issue
-            when open what's new document</li>
+        <li>Fix Spark history server link broken for Azure Synapse issue</li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/issues/3712">#3712</a>
+            Fixes NPE while refreshing Azure node
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4449">#4449</a>
+            Fixes NPE while parsing Function bindings
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/issues/2226">#2226</a>
+            Fixes AuthException for no subscrition account
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4102">#4102</a>
+            Fixes Exception when app service run process is terminated
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4389">#4389</a>
+            Fixes check box UI issue when create function project
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/issues/4307">#4307</a>
+            Selecting wrong module automatically when adding function run configuration for gradle function project
+        </li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

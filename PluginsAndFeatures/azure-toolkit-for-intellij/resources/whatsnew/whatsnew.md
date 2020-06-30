@@ -5,8 +5,12 @@
  **log streaming for Azure App Service**.
 
 ## 3.39.0(Current Release)
-Azure toolkit add new support on [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij
--tool-synapse) now! The following features are waiting to be discovered.
+
+[Azure CLI](https://docs.microsoft.com/cli/azure/) is supported as a sign in option. You can now sign in with single click if you have already signed in with Azure CLI.
+
+![azure-cli-auth](https://user-images.githubusercontent.com/12445236/86110888-b1734a00-baf8-11ea-9d12-6bffef0d6823.gif)
+
+For HDInsights, Azure toolkit add new support on [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) now! The following features are waiting to be discovered.
  - Monitor Spark batch job on Spark history server UI and Spark job details UI
 
  ![monitor-spark-batch-job](https://user-images.githubusercontent.com/32627233/86082318-0ba8e680-baca-11ea-97db-bfdb21c33310.gif)
@@ -14,6 +18,24 @@ Azure toolkit add new support on [Azure Synapse](https://docs.microsoft.com/en-u
  - Run Apache Spark Livy interactive console on Azure Synapse
 
 ![spark-interactive-console](https://user-images.githubusercontent.com/32627233/84374160-319c4300-ac10-11ea-902a-f98dec9d6f99.gif)
+
+### Added
+- Support Azure Functions with Java 11 runtime(Preview)
+- Support authentication with Azure CLI credentials
+
+### Changed
+- Show Apache Spark on Cosmos node by default no matter if there is SoC clusters under user's subscription
+- Remove Docker Host in Azure Explorer
+
+### Fixed
+- Fix Spark history server link broken for Azure Synapse issue
+- [#3712](https://github.com/microsoft/azure-tools-for-java/issues/3712) Fixes NPE while refreshing Azure node
+- [#4449](https://github.com/microsoft/azure-tools-for-java/issues/4449) Fixes NPE while parsing Function bindings
+- [#2226](https://github.com/microsoft/azure-tools-for-java/issues/2226) Fixes AuthException for no subscrition account
+- [#4102](https://github.com/microsoft/azure-tools-for-java/issues/4102) Fixes Exception when app service run process is terminated
+- [#4389](https://github.com/microsoft/azure-tools-for-java/issues/4389) Fixes check box UI issue when create function project
+- [#4307](https://github.com/microsoft/azure-tools-for-java/issues/4307) Selecting wrong module automatically when adding function run configuration for gradle function project
+
 
 ## 3.38.0
 We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! The following features are waiting to be discovered.

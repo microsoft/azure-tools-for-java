@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.39.0](#3390)
   - [3.38.0](#3380)
   - [3.37.0](#3370)
   - [3.36.0](#3360)
@@ -50,6 +51,25 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.39.0
+
+### Added
+- Support Azure Functions with Java 11 runtime(Preview)
+- Support authentication with Azure CLI credentials
+
+### Changed
+- Show Apache Spark on Cosmos node by default no matter if there is SoC clusters under user's subscription
+- Remove Docker Host in Azure Explorer
+
+### Fixed
+- Fix Spark history server link broken for Azure Synapse issue
+- [#3712](https://github.com/microsoft/azure-tools-for-java/issues/3712) Fixes NPE while refreshing Azure node
+- [#4449](https://github.com/microsoft/azure-tools-for-java/issues/4449) Fixes NPE while parsing Function bindings
+- [#2226](https://github.com/microsoft/azure-tools-for-java/issues/2226) Fixes AuthException for no subscrition account
+- [#4102](https://github.com/microsoft/azure-tools-for-java/issues/4102) Fixes Exception when app service run process is terminated
+- [#4389](https://github.com/microsoft/azure-tools-for-java/issues/4389) Fixes check box UI issue when create function project
+- [#4307](https://github.com/microsoft/azure-tools-for-java/issues/4307) Selecting wrong module automatically when adding function run configuration for gradle function project
 
 ## 3.38.0
 
