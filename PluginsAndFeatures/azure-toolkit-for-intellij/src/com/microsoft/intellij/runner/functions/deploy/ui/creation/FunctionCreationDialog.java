@@ -88,7 +88,6 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     private ApplicationInsightsPanel applicationInsightsPanel;
     private JRadioButton rdoDisableAI;
     private JRadioButton rdoEnableAI;
-    private JLabel lblApplicationInsights;
     private JPanel pnlApplicationInsightsHolder;
     private JRadioButton rdoJava8;
     private JRadioButton rdoJava11;
@@ -123,8 +122,8 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         insightsGroup.add(rdoEnableAI);
 
         final ButtonGroup javaVersionGroup = new ButtonGroup();
-        osButtonGroup.add(rdoJava8);
-        osButtonGroup.add(rdoJava11);
+        javaVersionGroup.add(rdoJava8);
+        javaVersionGroup.add(rdoJava11);
 
         subscriptionPanel.addItemListener(e -> {
             final String subscriptionId = subscriptionPanel.getSubscriptionId();
@@ -254,7 +253,6 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     }
 
     private void toggleApplicationInsights(boolean enable) {
-        lblApplicationInsights.setVisible(enable);
         pnlApplicationInsightsHolder.setVisible(enable);
         pack();
     }
