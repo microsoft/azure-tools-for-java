@@ -91,7 +91,7 @@ public class CreateFunctionHandler {
         if (app == null) {
             createFunctionApp();
         } else {
-            throw new AzureExecutionException(TARGET_FUNCTION_APP_ALREADY_EXISTS);
+            throw new AzureExecutionException(String.format(TARGET_FUNCTION_APP_ALREADY_EXISTS, ctx.getAppName()));
         }
     }
 
