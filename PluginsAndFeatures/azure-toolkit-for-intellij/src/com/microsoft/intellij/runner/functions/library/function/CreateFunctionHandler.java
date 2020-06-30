@@ -79,14 +79,7 @@ public class CreateFunctionHandler {
         this.ctx = ctx;
     }
 
-    public void execute() throws Exception {
-        createOrUpdateFunctionApp();
-    }
-    // endregion
-
-    // region Create or update Azure Functions
-
-    private void createOrUpdateFunctionApp() throws IOException, AzureExecutionException {
+    public void execute() throws IOException, AzureExecutionException {
         final FunctionApp app = getFunctionApp();
         if (app == null) {
             createFunctionApp();
@@ -94,6 +87,9 @@ public class CreateFunctionHandler {
             throw new AzureExecutionException(String.format(TARGET_FUNCTION_APP_ALREADY_EXISTS, ctx.getAppName()));
         }
     }
+    // endregion
+
+    // region Create or update Azure Functions
 
     private void createFunctionApp() throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_CREATE_START);
