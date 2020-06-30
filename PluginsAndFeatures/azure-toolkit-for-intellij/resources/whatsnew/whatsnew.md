@@ -1,10 +1,21 @@
-<!-- Version: 3.38.0 -->
+<!-- Version: 3.39.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
 > Scroll down to checkout our newly added support for **Azure Functions**, **Azure Spring Cloud** and
  **log streaming for Azure App Service**.
 
-## 3.38.0(Current Release)
+## 3.39.0(Current Release)
+Azure toolkit add new support on [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij
+-tool-synapse) now! The following features are waiting to be discovered.
+ - Monitor Spark batch job on Spark history server UI and Spark job details UI
+
+ ![monitor-spark-batch-job](https://user-images.githubusercontent.com/32627233/86082318-0ba8e680-baca-11ea-97db-bfdb21c33310.gif)
+
+ - Run Apache Spark Livy interactive console on Azure Synapse
+
+![spark-interactive-console](https://user-images.githubusercontent.com/32627233/84374160-319c4300-ac10-11ea-902a-f98dec9d6f99.gif)
+
+## 3.38.0
 We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! The following features are waiting to be discovered.
  - List Azure Synapse workspaces and Apache Spark pools
 
