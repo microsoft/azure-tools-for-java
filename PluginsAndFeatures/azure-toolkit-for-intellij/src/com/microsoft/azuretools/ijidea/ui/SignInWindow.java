@@ -230,7 +230,7 @@ public class SignInWindow extends AzureDialogWrapper {
             azureCliRadioButton.setSelected(true);
         } else {
             azureCliPanel.setEnabled(false);
-            azureCliRadioButton.setText("Azure CLI (Not login)");
+            azureCliRadioButton.setText("Azure CLI (Not logged in)");
             azureCliRadioButton.setEnabled(false);
         }
         refreshAuthControlElements();
