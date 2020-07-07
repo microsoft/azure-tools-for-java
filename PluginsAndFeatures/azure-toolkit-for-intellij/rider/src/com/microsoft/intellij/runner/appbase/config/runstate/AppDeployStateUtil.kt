@@ -142,7 +142,7 @@ object AppDeployStateUtil {
             }
 
             if (publishableProject.isDotNetCore) {
-                publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, onFinish)
+                publishService.invokeMsBuild(publishableProject, listOf(targetProperties), false, true, true, onFinish)
             } else {
                 publishService.webPublishToFileSystem(publishableProject.projectFilePath, outPath, false, true, onFinish)
             }
