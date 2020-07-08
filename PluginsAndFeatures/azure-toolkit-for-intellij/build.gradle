@@ -3,6 +3,7 @@ plugins {
     id "org.jetbrains.kotlin.jvm" version "1.3.41"
     id "de.undercouch.download" version "4.0.4"
     id "com.github.ben-manes.versions" version "0.28.0"
+    id 'java-gradle-plugin'
 }
 
 import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin

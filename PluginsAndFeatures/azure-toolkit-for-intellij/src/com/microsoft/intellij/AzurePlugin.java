@@ -277,7 +277,9 @@ public class AzurePlugin extends AbstractProjectComponent {
     }
 
     private void setValues(final String dataFile) throws Exception {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
             final Document doc = ParserXMLUtility.parseXMLFile(dataFile);
             String recordedVersion = DataOperations.getProperty(dataFile, message("pluginVersion"));
             if (Utils.whetherUpdateTelemetryPref(recordedVersion)) {
@@ -290,6 +292,8 @@ public class AzurePlugin extends AbstractProjectComponent {
             ParserXMLUtility.saveXMLFile(dataFile, doc);
         } catch (Exception ex) {
             LOG.error(message("error"), ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
         }
     }
 

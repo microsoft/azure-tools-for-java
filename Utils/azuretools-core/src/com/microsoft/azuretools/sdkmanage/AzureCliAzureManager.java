@@ -22,11 +22,12 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.azure.core.credential.TokenCredential;
+import com.azure.identity.AzureCliCredentialBuilder;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.auth.AzureAuthHelper;
-import com.microsoft.azure.auth.AzureTokenWrapper;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.credentials.AzureCliCredentials;
+import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
@@ -58,13 +59,16 @@ import static com.microsoft.azuretools.Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS
 import static com.microsoft.azuretools.authmanage.Environment.ENVIRONMENT_LIST;
 
 public class AzureCliAzureManager extends AzureManagerBase {
-    private static final String FAILED_TO_AUTH_WITH_AZURE_CLI = "Failed to auth with Azure CLI";
     private static final String UNABLE_TO_GET_AZURE_CLI_CREDENTIALS = "Unable to get Azure CLI credentials, " +
             "please ensure you have installed Azure CLI and signed in.";
 
     private static Settings settings;
+
+    private String tenantId;
+    private String userName;
+    private String environment;
     private Azure.Authenticated authenticated;
-    private AzureCliCredentials azureCliCredentials;
+    private AzureTokenCredentials credentials;
     private SubscriptionManager subscriptionManager;
 
     static {
@@ -113,13 +117,13 @@ public class AzureCliAzureManager extends AzureManagerBase {
     @Override
     public AppPlatformManager getAzureSpringCloudClient(String sid) {
         return isSignedIn() ? sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s ->
-                buildAzureManager(AppPlatformManager.configure()).authenticate(azureCliCredentials, s)) : null;
+                buildAzureManager(AppPlatformManager.configure()).authenticate(credentials, s)) : null;
     }
 
     @Override
     public InsightsManager getInsightsManager(String sid) {
         return isSignedIn() ? sidToInsightsManagerMap.computeIfAbsent(sid, s ->
-                buildAzureManager(InsightsManager.configure()).authenticate(azureCliCredentials, s)) : null;
+                buildAzureManager(InsightsManager.configure()).authenticate(credentials, s)) : null;
     }
 
     @Override
@@ -158,7 +162,10 @@ public class AzureCliAzureManager extends AzureManagerBase {
     @Override
     public void drop() throws IOException {
         authenticated = null;
-        azureCliCredentials = null;
+        credentials = null;
+        tenantId = null;
+        environment = null;
+        userName = null;
         subscriptionManager.cleanSubscriptions();
     }
 
@@ -167,27 +174,27 @@ public class AzureCliAzureManager extends AzureManagerBase {
         if (!isSignedIn()) {
             return null;
         }
-        final ServiceClientCredentials credentials = new KeyVaultCredentials() {
+        final ServiceClientCredentials serviceClientCredentials = new KeyVaultCredentials() {
             @Override
             public String doAuthenticate(String authorization, String resource, String scope) {
                 try {
-                    return azureCliCredentials.getToken(resource);
+                    return AzureCliAzureManager.this.credentials.getToken(resource);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
             }
         };
-        return new KeyVaultClient(credentials);
+        return new KeyVaultClient(serviceClientCredentials);
     }
 
     @Override
     public String getCurrentUserId() {
-        return isSignedIn() ? azureCliCredentials.clientId() : null;
+        return isSignedIn() ? userName : null;
     }
 
     @Override
     public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
-        return isSignedIn() ? azureCliCredentials.getToken(resource) : null;
+        return isSignedIn() ? credentials.getToken(resource) : null;
     }
 
     @Override
@@ -205,7 +212,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
         if (!isSignedIn()) {
             return null;
         }
-        final AzureEnvironment azureEnvironment = azureCliCredentials.environment();
+        final AzureEnvironment azureEnvironment = AzureAuthHelper.getAzureEnvironment(environment);
         return ENVIRONMENT_LIST.stream()
                 .filter(environment -> azureEnvironment == environment.getAzureEnvironment())
                 .findAny()
@@ -213,38 +220,35 @@ public class AzureCliAzureManager extends AzureManagerBase {
     }
 
     public boolean isSignedIn() {
-        return authenticated != null && azureCliCredentials != null;
+        return authenticated != null && credentials != null;
     }
 
     public AuthMethodDetails signIn() throws AzureExecutionException {
-        try {
-            AzureTokenWrapper azureTokenWrapper = AzureAuthHelper.getAzureCLICredential();
-            if (azureTokenWrapper == null) {
-                throw new AzureExecutionException(UNABLE_TO_GET_AZURE_CLI_CREDENTIALS);
-            }
-            azureCliCredentials = (AzureCliCredentials) azureTokenWrapper.getAzureTokenCredentials();
-            authenticated = Azure.configure().authenticate(azureCliCredentials);
-            subscriptionManager = new SubscriptionManagerPersist(this);
-
-            final AuthMethodDetails authResult = new AuthMethodDetails();
-            authResult.setAuthMethod(AuthMethod.AZ);
-            authResult.setAzureEnv(azureCliCredentials.environment().toString());
-            return authResult;
-        } catch (IOException e) {
-            try {
-                drop();
-            } catch (IOException ignore) {
-                // swallow exception while clean up
-            }
-            throw new AzureExecutionException(FAILED_TO_AUTH_WITH_AZURE_CLI, e);
+        final TokenCredential azureCliCredential = new AzureCliCredentialBuilder().build();
+        final AzureCliUtils.AzureCliAccountInfo cliAccountInfo = AzureCliUtils.getAzureCliAccount();
+        if (cliAccountInfo == null || !IdentityUtils.validateIdentityCredential(azureCliCredential, cliAccountInfo.getEnvironment())) {
+            throw new AzureExecutionException(UNABLE_TO_GET_AZURE_CLI_CREDENTIALS);
         }
+
+        tenantId = cliAccountInfo.getTenantId();
+        environment = cliAccountInfo.getEnvironment();
+        userName = cliAccountInfo.getUserName();
+        credentials = new AzureIdentityCredentialAdapter(AzureAuthHelper.getAzureEnvironment(environment), tenantId,
+                azureCliCredential);
+        authenticated = Azure.configure().authenticate(credentials);
+        subscriptionManager = new SubscriptionManagerPersist(this);
+
+        final AuthMethodDetails authResult = new AuthMethodDetails();
+        authResult.setAuthMethod(AuthMethod.AZ);
+        authResult.setAzureEnv(credentials.environment().toString());
+        return authResult;
     }
 
     private Azure.Authenticated auth() {
         return Azure.configure()
                 .withInterceptor(new TelemetryInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
-                .authenticate(azureCliCredentials);
+                .authenticate(credentials);
     }
 
     private static class LazyLoader {

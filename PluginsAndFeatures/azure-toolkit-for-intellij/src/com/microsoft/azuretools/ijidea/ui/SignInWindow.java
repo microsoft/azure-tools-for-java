@@ -35,8 +35,6 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.auth.AzureAuthHelper;
-import com.microsoft.azure.auth.AzureTokenWrapper;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
@@ -44,17 +42,18 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
+import com.microsoft.azuretools.sdkmanage.AzureCliUtils;
 import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXHyperlink;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -210,30 +209,31 @@ public class SignInWindow extends AzureDialogWrapper {
                 return;
             }
         }
-
         super.doOKAction();
     }
 
     @Override
     protected void init() {
         super.init();
-        AzureTokenWrapper tokenWrapper = null;
-        try {
-            tokenWrapper = AzureAuthHelper.getAzureCLICredential();
-        } catch (IOException e) {
-            // swallow exception while getting azure cli credential
-        }
-        if (tokenWrapper != null) {
-            azureCliPanel.setEnabled(true);
-            azureCliRadioButton.setText("Azure CLI");
-            azureCliRadioButton.setEnabled(true);
-            azureCliRadioButton.setSelected(true);
-        } else {
-            azureCliPanel.setEnabled(false);
-            azureCliRadioButton.setText("Azure CLI (Not login)");
-            azureCliRadioButton.setEnabled(false);
-        }
-        refreshAuthControlElements();
+        ProgressManager.getInstance().run(
+                new Task.Modal(project, "Sign In Progress", false) {
+                    @Override
+                    public void run(@NotNull final ProgressIndicator progressIndicator) {
+                        final AzureCliUtils.AzureCliAccountInfo azureCliAccountInfo =
+                                AzureCliUtils.getAzureCliAccount();
+                        if (azureCliAccountInfo != null) {
+                            azureCliPanel.setEnabled(true);
+                            azureCliRadioButton.setText("Azure CLI");
+                            azureCliRadioButton.setEnabled(true);
+                            azureCliRadioButton.setSelected(true);
+                        } else {
+                            azureCliPanel.setEnabled(false);
+                            azureCliRadioButton.setText("Azure CLI (Not login)");
+                            azureCliRadioButton.setEnabled(false);
+                        }
+                        refreshAuthControlElements();
+                    }
+                });
     }
 
     private AuthMethodManager getAuthMethodManager() {
