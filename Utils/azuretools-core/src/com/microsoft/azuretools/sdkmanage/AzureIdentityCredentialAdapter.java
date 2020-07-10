@@ -45,7 +45,7 @@ public class AzureIdentityCredentialAdapter extends AzureTokenCredentials {
     }
 
     public AzureIdentityCredentialAdapter(AzureEnvironment environment, String tenantId, TokenCredential tokenCredential) {
-        this(environment, tenantId, tokenCredential, new String[]{environment.resourceManagerEndpoint()});
+        this(environment, tenantId, tokenCredential, new String[]{environment.resourceManagerEndpoint() + ".default"});
     }
 
     public AzureIdentityCredentialAdapter(AzureEnvironment environment, String tenantId,

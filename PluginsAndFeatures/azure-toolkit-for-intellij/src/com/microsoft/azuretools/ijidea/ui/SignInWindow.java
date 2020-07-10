@@ -35,6 +35,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
@@ -43,6 +44,7 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
 import com.microsoft.azuretools.sdkmanage.AzureCliUtils;
+import com.microsoft.azuretools.sdkmanage.identity.AzureIdentityDeviceCodeAzureManager;
 import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
@@ -54,11 +56,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -198,7 +198,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 System.out.println("Canceled by the user.");
                 return;
             }
-            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
+            authMethodDetailsResult.setAuthMethod(AuthMethod.AI_DC);
             authMethodDetailsResult.setAccountEmail(accountEmail);
             authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
         } else if (azureCliRadioButton.isSelected()) {
@@ -276,22 +276,35 @@ public class SignInWindow extends AzureDialogWrapper {
     }
 
     @Nullable
-    private synchronized BaseADAuthManager doDeviceLogin() {
+    private synchronized void doDeviceLogin() {
         try {
-            BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
-            if (dcAuthManager.isSignedIn()) {
-                doSignOut();
-            }
-            doLogin(() -> dcAuthManager.signIn(null), signInDCProp);
-            accountEmail = dcAuthManager.getAccountEmail();
+//            BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
+//            if (dcAuthManager.isSignedIn()) {
+//                doSignOut();
+//            }
+//
+//            doLogin(() -> dcAuthManager.signIn(null), signInDCProp);
+//            accountEmail = dcAuthManager.getAccountEmail();
 
-            return dcAuthManager;
+//            return dcAuthManager;
+            doLogin(() -> {
+                AzureIdentityDeviceCodeAzureManager azureManager = AzureIdentityDeviceCodeAzureManager.getInstance();
+                azureManager.auth(deviceCodeInfo -> {
+                    DefaultLoader.getIdeHelper().invokeLater(() -> {
+                        DeviceLoginWindow deviceLoginWindow = new DeviceLoginWindow(deviceCodeInfo);
+                        deviceLoginWindow.show();
+                    });
+                });
+                accountEmail = azureManager.pullAuthenticationAccount().block();
+                if(StringUtils.isNullOrEmpty(accountEmail)){
+                    throw new AzureExecutionException("Device login failed or was cancelled.");
+                }
+                return null;
+            }, Collections.EMPTY_MAP);
         } catch (Exception ex) {
             ex.printStackTrace();
             ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR);
         }
-
-        return null;
     }
 
     private void doLogin(Callable loginCallable, Map<String, String> properties) {
@@ -336,7 +349,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 getAuthMethodManager().signOut();
             }
 
-            dcAuthManager = doDeviceLogin();
+//            dcAuthManager = doDeviceLogin();
             if (dcAuthManager == null || !dcAuthManager.isSignedIn()) {
                 // canceled by the user
                 System.out.println(">> Canceled by the user");

@@ -45,6 +45,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.swing.event.EventListenerList;
 
+import com.azure.core.implementation.http.HttpClientProviders;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginInstaller;
 import com.intellij.ide.plugins.PluginStateListener;
@@ -129,6 +130,18 @@ public class AzurePlugin extends AbstractProjectComponent {
         this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
         CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
             TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
+        initAzureIdentityLibrary();
+    }
+
+    private void initAzureIdentityLibrary() {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            HttpClientProviders.getAllHttpClients();
+            HttpClientProviders.createInstance();
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
+        }
     }
 
     public void projectOpened() {

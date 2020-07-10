@@ -106,6 +106,7 @@ public class AzureSignInAction extends AzureAnAction {
                 break;
             case AD:
             case DC:
+            case AI_DC:
                 warningMessage = String.format("Signed in as %s", authMethodDetails.getAccountEmail());
                 break;
             case AZ:

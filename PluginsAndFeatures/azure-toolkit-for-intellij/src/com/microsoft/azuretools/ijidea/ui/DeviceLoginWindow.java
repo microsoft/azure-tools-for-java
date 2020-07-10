@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
+import com.azure.identity.DeviceCodeInfo;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -31,10 +32,12 @@ import com.microsoft.aad.adal4j.AuthenticationContext;
 import com.microsoft.aad.adal4j.AuthenticationException;
 import com.microsoft.aad.adal4j.AuthenticationResult;
 import com.microsoft.aad.adal4j.DeviceCode;
+import com.microsoft.azuretools.sdkmanage.identity.AzureIdentityDeviceCodeAzureManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import reactor.core.publisher.Mono;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -60,19 +63,42 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     private JEditorPane editorPanel;
     private AuthenticationResult authenticationResult = null;
     private Future<?> authExecutor;
-    private final DeviceCode deviceCode;
+    private String userCode;
+    private String verificationUrl;
+    private String message;
 
     public AuthenticationResult getAuthenticationResult() {
         return authenticationResult;
     }
 
+    public DeviceLoginWindow(DeviceCodeInfo deviceCodeInfo) {
+        this(deviceCodeInfo.getMessage(), deviceCodeInfo.getUserCode(), deviceCodeInfo.getVerificationUrl());
+        authExecutor = ApplicationManager
+                .getApplication()
+                .executeOnPooledThread(() -> {
+                    AzureIdentityDeviceCodeAzureManager
+                            .getInstance()
+                            .pullAuthenticationAccount().block();
+                    closeDialog();
+                });
+    }
+
     public DeviceLoginWindow(final AuthenticationContext ctx, final DeviceCode deviceCode,
                              final AuthenticationCallback<AuthenticationResult> callBack) {
+        this(deviceCode.getMessage(), deviceCode.getUserCode(), deviceCode.getVerificationUrl());
+        authExecutor = ApplicationManager
+                .getApplication()
+                .executeOnPooledThread(() -> pullAuthenticationResult(ctx, deviceCode, callBack));
+    }
+
+    private DeviceLoginWindow(String message, String userCode, String verificationUrl) {
         super(null, false, IdeModalityType.PROJECT);
         super.setOKButtonText("Copy&&Open");
-        this.deviceCode = deviceCode;
         setModal(true);
         setTitle(TITLE);
+        this.userCode = userCode;
+        this.verificationUrl = verificationUrl;
+        this.message = message;
         editorPanel.setBackground(jPanel.getBackground());
         editorPanel.setText(createHtmlFormatMessage());
         editorPanel.addHyperlinkListener(e -> {
@@ -94,8 +120,6 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
             editorPanel.setForeground(foregroundColor);
         }
 
-        authExecutor = ApplicationManager.getApplication()
-            .executeOnPooledThread(() -> pullAuthenticationResult(ctx, deviceCode, callBack));
         init();
     }
 
@@ -116,7 +140,8 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                     authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
                 } catch (ExecutionException | InterruptedException e) {
                     if (e.getCause() instanceof AuthenticationException &&
-                        ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
+                            ((AuthenticationException) e.getCause()).getErrorCode()
+                                    == AdalErrorCode.AUTHORIZATION_PENDING) {
                         // swallow the pending exception
                     } else {
                         e.printStackTrace();
@@ -131,25 +156,25 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     }
 
     private String createHtmlFormatMessage() {
-        final String verificationUrl = deviceCode.getVerificationUrl();
         return "<p>"
-            + deviceCode.getMessage().replace(verificationUrl, String.format("<a href=\"%s\">%s</a>", verificationUrl,
-            verificationUrl))
-            + "</p><p>Waiting for signing in with the code ...</p>";
+                + message.replace(verificationUrl,
+                                  String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
+                + "</p><p>Waiting for signing in with the code ...</p>";
     }
 
     @Override
     public void doCancelAction() {
         authExecutor.cancel(true);
+        AzureIdentityDeviceCodeAzureManager.getInstance().stopAuthentication();
         super.doCancelAction();
     }
 
     @Override
     protected void doOKAction() {
-        final StringSelection selection = new StringSelection(deviceCode.getUserCode());
+        final StringSelection selection = new StringSelection(userCode);
         final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
-        BrowserUtil.open(deviceCode.getVerificationUrl());
+        BrowserUtil.open(verificationUrl);
     }
 
     private void closeDialog() {
