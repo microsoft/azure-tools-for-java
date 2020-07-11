@@ -35,11 +35,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.SimpleListCellRenderer;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
@@ -59,6 +54,10 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -134,7 +133,8 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
         // Make error message widget hideable
         authErrorDetailsPanel.setBorder(BorderFactory.createEmptyBorder());
-        authErrorDetailsDecorator = new HideableDecorator(authErrorDetailsPanelHolder, "Authenticaton Error Details:", true);
+        authErrorDetailsDecorator = new HideableDecorator(authErrorDetailsPanelHolder,
+                                                          "Authentication Error Details:", true);
         authErrorDetailsDecorator.setContentComponent(authErrorDetailsPanel);
         authErrorDetailsDecorator.setOn(false);
 
