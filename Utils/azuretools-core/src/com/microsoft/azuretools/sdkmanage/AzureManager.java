@@ -75,4 +75,8 @@ public interface AzureManager {
     default String getAccessToken(String tid) throws IOException {
         return getAccessToken(tid, CommonSettings.getAdEnvironment().resourceManagerEndpoint(), PromptBehavior.Auto);
     }
+
+    default com.azure.resourcemanager.Azure getTrack2AzureClient(String subscriptionId) {
+        return null;
+    }
 }

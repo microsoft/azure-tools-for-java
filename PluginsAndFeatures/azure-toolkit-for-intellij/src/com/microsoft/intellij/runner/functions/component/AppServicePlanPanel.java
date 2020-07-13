@@ -22,13 +22,13 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
+import com.azure.resourcemanager.appservice.models.AppServicePlan;
+import com.azure.resourcemanager.appservice.models.OperatingSystem;
+import com.azure.resourcemanager.appservice.models.PricingTier;
+import com.azure.resourcemanager.resources.fluentcore.arm.Region;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import io.reactivex.rxjava3.disposables.Disposable;

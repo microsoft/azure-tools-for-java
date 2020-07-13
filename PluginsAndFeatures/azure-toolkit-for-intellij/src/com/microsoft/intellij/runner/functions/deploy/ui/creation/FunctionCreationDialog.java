@@ -23,6 +23,8 @@
 package com.microsoft.intellij.runner.functions.deploy.ui.creation;
 
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
+import com.azure.resourcemanager.appservice.models.OperatingSystem;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -31,8 +33,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -276,8 +276,11 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
                     bindingApplicationInsights(functionConfiguration);
                     final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionConfiguration);
                     createFunctionHandler.execute();
-                    result = AuthMethodManager.getInstance().getAzureClient(functionConfiguration.getSubscription()).appServices().functionApps()
-                            .getByResourceGroup(functionConfiguration.getResourceGroup(), functionConfiguration.getAppName());
+                    result = AuthMethodManager.getInstance()
+                                              .getTrack2AzureClient(functionConfiguration.getSubscription())
+                                              .functionApps()
+                                              .getByResourceGroup(functionConfiguration.getResourceGroup(),
+                                                                  functionConfiguration.getAppName());
                     ApplicationManager.getApplication().invokeLater(() -> {
                         sendTelemetry(true, null);
                         if (AzureUIRefreshCore.listeners != null) {

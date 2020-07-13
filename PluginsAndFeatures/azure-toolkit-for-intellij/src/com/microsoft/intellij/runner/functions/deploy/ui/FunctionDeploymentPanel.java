@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.deploy.ui;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -33,7 +34,6 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.functions.component.FunctionAppCombineBoxEditor;
@@ -149,8 +149,8 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             functionList.forEach(functionAppResourceEx -> cbxFunctionApp.addItem(functionAppResourceEx));
             // Find function which id equals to configuration, or use the first available one.
             final ResourceEx<FunctionApp> selectedFunction = functionList.stream()
-                    .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(functionDeployConfiguration.getFunctionId()))
-                    .findFirst().orElse(functionList.get(0));
+                                                                         .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(functionDeployConfiguration.getFunctionId()))
+                                                                         .findFirst().orElse(functionList.get(0));
             cbxFunctionApp.setSelectedItem(selectedFunction);
             selectedFunctionApp = selectedFunction;
             if (fillAppSettings || appSettingsTable.isDefaultAppSettings()) {

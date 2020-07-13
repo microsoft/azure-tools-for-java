@@ -22,8 +22,8 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import org.apache.commons.lang3.StringUtils;
 

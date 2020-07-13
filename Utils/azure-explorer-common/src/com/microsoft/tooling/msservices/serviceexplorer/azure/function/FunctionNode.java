@@ -22,10 +22,10 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
+import com.azure.resourcemanager.appservice.models.FunctionEnvelope;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -77,7 +77,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
      */
     public FunctionNode(AzureRefreshableNode parent, String subscriptionId, FunctionApp functionApp) {
         super(functionApp.id(), functionApp.name(), FUNCTION_LABEL, parent, subscriptionId,
-                functionApp.defaultHostName(), functionApp.operatingSystem().toString(), functionApp.state());
+                functionApp.defaultHostname(), functionApp.operatingSystem().toString(), functionApp.state());
         this.functionApp = functionApp;
         this.functionAppId = functionApp.id();
         this.functionAppName = functionApp.name();

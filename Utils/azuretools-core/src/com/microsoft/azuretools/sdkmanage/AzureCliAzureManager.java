@@ -23,7 +23,9 @@
 package com.microsoft.azuretools.sdkmanage;
 
 import com.azure.core.credential.TokenCredential;
+import com.azure.identity.AzureCliCredential;
 import com.azure.identity.AzureCliCredentialBuilder;
+import com.azure.resourcemanager.resources.fluentcore.profile.AzureProfile;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
@@ -67,6 +69,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
     private String tenantId;
     private String userName;
     private String environment;
+    private AzureCliCredential azureCliCredential;
     private Azure.Authenticated authenticated;
     private AzureTokenCredentials credentials;
     private SubscriptionManager subscriptionManager;
@@ -161,6 +164,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     @Override
     public void drop() throws IOException {
+        azureCliCredential = null;
         authenticated = null;
         credentials = null;
         tenantId = null;
@@ -219,12 +223,20 @@ public class AzureCliAzureManager extends AzureManagerBase {
                 .orElse(Environment.GLOBAL);
     }
 
+    @Override
+    public com.azure.resourcemanager.Azure getTrack2AzureClient(String subscriptionId) {
+        return !isSignedIn() ? null :
+                com.azure.resourcemanager.Azure.configure()
+                        .authenticate(azureCliCredential, new AzureProfile(IdentityUtils.parseAzureEnvironment(getEnvironment().getName())))
+                        .withSubscription(subscriptionId);
+    }
+
     public boolean isSignedIn() {
         return authenticated != null && credentials != null;
     }
 
     public AuthMethodDetails signIn() throws AzureExecutionException {
-        final TokenCredential azureCliCredential = new AzureCliCredentialBuilder().build();
+        azureCliCredential = new AzureCliCredentialBuilder().build();
         final AzureCliUtils.AzureCliAccountInfo cliAccountInfo = AzureCliUtils.getAzureCliAccount();
         if (cliAccountInfo == null || !IdentityUtils.validateIdentityCredential(azureCliCredential, cliAccountInfo.getEnvironment())) {
             throw new AzureExecutionException(UNABLE_TO_GET_AZURE_CLI_CREDENTIALS);

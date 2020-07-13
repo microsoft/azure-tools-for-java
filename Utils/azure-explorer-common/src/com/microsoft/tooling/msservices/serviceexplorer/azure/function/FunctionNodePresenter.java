@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;

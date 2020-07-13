@@ -22,7 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
-import com.microsoft.azure.management.appservice.FunctionEnvelope;
+import com.azure.resourcemanager.appservice.models.FunctionEnvelope;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView;
 
 import java.util.List;

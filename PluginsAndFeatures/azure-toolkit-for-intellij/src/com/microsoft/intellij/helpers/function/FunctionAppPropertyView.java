@@ -58,7 +58,7 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
         return new WebAppBasePropertyViewPresenter() {
             @Override
             protected WebAppBase getWebAppBase(String subscriptionId, String functionAppId, String name) throws IOException {
-                return AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionAppId);
+                final FunctionApp function = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionAppId);
             }
 
             @Override

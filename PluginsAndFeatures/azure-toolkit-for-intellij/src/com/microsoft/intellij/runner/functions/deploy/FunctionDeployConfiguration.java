@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.deploy;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -35,7 +36,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;

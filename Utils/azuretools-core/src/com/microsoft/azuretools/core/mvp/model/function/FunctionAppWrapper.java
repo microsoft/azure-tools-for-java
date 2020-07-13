@@ -138,10 +138,11 @@ public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp
     }
 
     private FunctionApp getFunctionApp() {
-        try {
-            return AzureFunctionMvpModel.getInstance().getFunctionById(getSubscriptionId(), inner().id());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to get function instance");
-        }
+//        try {
+//            return AzureFunctionMvpModel.getInstance().getFunctionById(getSubscriptionId(), inner().id());
+//        } catch (IOException e) {
+//            throw new RuntimeException("Failed to get function instance");
+//        }
+        return null;
     }
 }

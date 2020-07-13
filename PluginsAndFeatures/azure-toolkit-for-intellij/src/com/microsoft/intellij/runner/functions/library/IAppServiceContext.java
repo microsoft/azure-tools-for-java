@@ -22,9 +22,9 @@
 
 package com.microsoft.intellij.runner.functions.library;
 
+import com.azure.resourcemanager.Azure;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.project.IProject;
-import com.microsoft.azure.management.Azure;
 
 import java.io.IOException;
 import java.util.Map;

@@ -51,4 +51,23 @@ public class AppServiceUtils {
             return false;
         }
     }
+
+    public static boolean getPublishingProfileXmlWithSecretsForTrack2(com.azure.resourcemanager.appservice.models.WebAppBase webAppBase, String filePath) throws IOException {
+        final File file = new File(Paths.get(filePath, String.format("%s_%s.PublishSettings",
+                webAppBase.name(), System.currentTimeMillis())).toString());
+        file.createNewFile();
+        // this.manager()).inner()).getWebApps().listPublishingProfileXmlWithSecretsAsync
+        try (InputStream inputStream = webAppBase.manager().inner().getWebApps()
+                .listPublishingProfileXmlWithSecrets(webAppBase.resourceGroupName(), webAppBase.name(),
+                        new com.azure.resourcemanager.appservice.models.CsmPublishingProfileOptions().withFormat(
+                                com.azure.resourcemanager.appservice.models.PublishingProfileFormat.FTP));
+             OutputStream outputStream = new FileOutputStream(file);
+        ) {
+            IOUtils.copy(inputStream, outputStream);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

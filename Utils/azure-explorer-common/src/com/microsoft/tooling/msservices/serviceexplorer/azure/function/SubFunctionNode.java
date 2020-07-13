@@ -22,10 +22,10 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
+import com.azure.resourcemanager.appservice.models.FunctionEnvelope;
+import com.azure.resourcemanager.appservice.models.OperatingSystem;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.FunctionEnvelope;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -154,7 +154,7 @@ public class SubFunctionNode extends Node {
     }
 
     private String getAnonymousHttpTriggerUrl() {
-        return String.format(HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
+        return String.format(HTTP_TRIGGER_URL, functionApp.defaultHostname(), this.name);
     }
 
     private String getFunctionHttpTriggerUrl() throws IOException {
@@ -165,17 +165,17 @@ public class SubFunctionNode extends Node {
         final Map<String, String> keyMap = functionApp.listFunctionKeys(this.name);
         final String key = keyMap.values().stream().filter(StringUtils::isNotBlank)
                 .findFirst().orElse(functionNode.getFunctionMasterKey());
-        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name, key);
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostname(), this.name, key);
     }
 
     private String getAdminHttpTriggerUrl() throws IOException {
-        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostName(), this.name,
+        return String.format(HTTP_TRIGGER_URL_WITH_CODE, functionApp.defaultHostname(), this.name,
                 functionNode.getFunctionMasterKey());
     }
 
     private HttpPost getFunctionTriggerRequest() throws IOException {
         final String masterKey = functionNode.getFunctionMasterKey();
-        final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostName(), this.name);
+        final String targetUrl = String.format(NONE_HTTP_TRIGGER_URL, functionApp.defaultHostname(), this.name);
         final HttpPost request = new HttpPost(targetUrl);
         request.setHeader("x-functions-key", masterKey);
         request.setHeader("Content-Type", "application/json");

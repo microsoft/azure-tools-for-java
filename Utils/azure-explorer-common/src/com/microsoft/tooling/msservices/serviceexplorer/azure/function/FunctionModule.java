@@ -22,8 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.microsoft.azure.CloudException;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;

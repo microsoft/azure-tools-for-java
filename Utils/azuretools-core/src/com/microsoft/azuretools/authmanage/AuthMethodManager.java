@@ -78,6 +78,17 @@ public class AuthMethodManager {
         return azure;
     }
 
+    public com.azure.resourcemanager.Azure getTrack2AzureClient(String sid) throws IOException {
+        if (getAzureManager() == null) {
+            throw new IOException(CANNOT_GET_AZURE_MANAGER);
+        }
+        com.azure.resourcemanager.Azure azure = getAzureManager().getTrack2AzureClient(sid);
+        if (azure == null) {
+            throw new IOException(String.format(CANNOT_GET_AZURE_BY_SID, sid));
+        }
+        return azure;
+    }
+
     public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
         if (getAzureManager() == null) {
             throw new IOException(CANNOT_GET_AZURE_MANAGER);

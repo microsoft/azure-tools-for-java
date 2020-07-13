@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.library.function;
 
+import com.azure.resourcemanager.resources.fluentcore.arm.Region;
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.appservice.OperatingSystemEnum;
@@ -35,10 +36,9 @@ import com.microsoft.azure.common.function.handlers.runtime.WindowsFunctionRunti
 import com.microsoft.azure.common.function.utils.FunctionUtils;
 import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.AppServiceUtils;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.azure.resourcemanager.appservice.models.FunctionApp;
+import com.azure.resourcemanager.appservice.models.FunctionApp.DefinitionStages.WithCreate;
+import com.azure.resourcemanager.appservice.models.PricingTier;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
 import org.apache.commons.lang3.StringUtils;
 
@@ -124,10 +124,10 @@ public class CreateFunctionHandler {
                 throw new AzureExecutionException(String.format("Unsupported runtime %s", os));
         }
         return builder.appName(ctx.getAppName()).resourceGroup(ctx.getResourceGroup()).runtime(ctx.getRuntime())
-                .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
-                .servicePlanName(ctx.getAppServicePlanName())
-                .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
-                .functionExtensionVersion(getFunctionExtensionVersion()).azure(this.ctx.getAzureClient()).build();
+                      .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
+                      .servicePlanName(ctx.getAppServicePlanName())
+                      .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
+                      .functionExtensionVersion(getFunctionExtensionVersion()).azure(this.ctx.getAzureClient()).build();
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
@@ -172,7 +172,7 @@ public class CreateFunctionHandler {
 
     private FunctionApp getFunctionApp() {
         try {
-            return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(),
+            return ctx.getAzureClient().functionApps().getByResourceGroup(ctx.getResourceGroup(),
                     ctx.getAppName());
         } catch (Exception ex) {
         }

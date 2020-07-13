@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.component.table;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 

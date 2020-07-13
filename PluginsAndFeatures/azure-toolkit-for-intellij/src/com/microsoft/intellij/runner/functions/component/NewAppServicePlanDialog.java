@@ -22,13 +22,12 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
+import com.azure.resourcemanager.appservice.models.PricingTier;
+import com.azure.resourcemanager.appservice.models.SkuName;
+import com.azure.resourcemanager.resources.fluentcore.arm.Region;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.SkuName;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -143,7 +142,7 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
 
     private void onLoadRegion() {
         cbRegion.removeAllItems();
-        Observable.fromCallable(() -> AzureWebAppMvpModel
+        Observable.fromCallable(() -> AzureFunctionMvpModel
                 .getInstance().getAvailableRegions(subscriptionId, (PricingTier) cbPricing.getSelectedItem()))
                   .subscribeOn(Schedulers.newThread())
                   .subscribe(locations -> DefaultLoader.getIdeHelper().invokeLater(() -> fillRegion(locations)));

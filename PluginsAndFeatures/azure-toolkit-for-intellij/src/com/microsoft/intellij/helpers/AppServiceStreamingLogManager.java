@@ -21,10 +21,14 @@
  */
 package com.microsoft.intellij.helpers;
 
+import com.azure.resourcemanager.appservice.models.AppSetting;
+import com.azure.resourcemanager.appservice.models.FunctionApp;
+import com.azure.resourcemanager.appservice.models.OperatingSystem;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.management.appservice.DeploymentSlot;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -35,6 +39,8 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.util.BlockingArrayQueue;
+import reactor.adapter.rxjava.RxJava2Adapter;
 import rx.Observable;
 
 import java.io.IOException;
@@ -43,6 +49,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 
 public enum AppServiceStreamingLogManager {
@@ -184,7 +191,9 @@ public enum AppServiceStreamingLogManager {
                 openLiveMetricsStream();
                 return null;
             }
-            return getFunctionApp().streamAllLogsAsync();
+            final BlockingQueue queue = new BlockingArrayQueue();
+            getFunctionApp().streamAllLogsAsync().subscribe(string-> queue.offer(string));
+            return Observable.from(queue);
         }
 
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/

@@ -159,12 +159,13 @@ public abstract class AzureIdentityAzureManager extends AzureManagerBase {
         return CommonSettings.getEnvironment();
     }
 
-    public boolean isSignedIn() {
-        return getTokenCredential() != null;
-    }
-
+    @Override
     public com.azure.resourcemanager.Azure getTrack2AzureClient(String subscriptionId) {
         return getTrack2AzureAuthenticated().withSubscription(subscriptionId);
+    }
+
+    public boolean isSignedIn() {
+        return getTokenCredential() != null;
     }
 
     public com.azure.resourcemanager.Azure.Authenticated getTrack2AzureAuthenticated() {

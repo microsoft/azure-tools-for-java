@@ -22,11 +22,11 @@
 
 package com.microsoft.intellij.runner.functions;
 
+import com.azure.resourcemanager.Azure;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.project.IProject;
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.runner.functions.library.IFunctionContext;
 
@@ -125,7 +125,7 @@ public class IntelliJFunctionContext implements IFunctionContext {
 
     @Override
     public Azure getAzureClient() throws IOException {
-        return AuthMethodManager.getInstance().getAzureManager().getAzure(subscription);
+        return AuthMethodManager.getInstance().getTrack2AzureClient(subscription);
     }
 
     @Override

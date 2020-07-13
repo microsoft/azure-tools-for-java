@@ -22,11 +22,11 @@
 
 package com.microsoft.intellij.runner.functions.component.table;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.UIHelperImpl;

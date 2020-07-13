@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import com.microsoft.azure.management.appservice.FunctionApp;
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 
 import javax.swing.ComboBoxEditor;

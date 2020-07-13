@@ -39,8 +39,8 @@ import com.microsoft.azure.common.handlers.artifact.ArtifactHandlerBase;
 import com.microsoft.azure.common.handlers.artifact.FTPArtifactHandlerImpl;
 import com.microsoft.azure.common.handlers.artifact.ZIPArtifactHandlerImpl;
 import com.microsoft.azure.common.utils.AppServiceUtils;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azure.management.appservice.FunctionApp.Update;
+import com.azure.resourcemanager.appservice.models.FunctionApp;
+import com.azure.resourcemanager.appservice.models.FunctionApp.Update;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
 import com.microsoft.intellij.runner.functions.library.IPrompter;
 import org.apache.commons.lang3.StringUtils;
@@ -138,7 +138,7 @@ public class DeployFunctionHandler {
 
     private FunctionApp getFunctionApp() {
         try {
-            return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(),
+            return ctx.getAzureClient().functionApps().getByResourceGroup(ctx.getResourceGroup(),
                     ctx.getAppName());
         } catch (Exception ex) {
             // Swallow exception for non-existing Azure Functions

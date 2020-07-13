@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.localrun;
 
+import com.azure.resourcemanager.appservice.models.FunctionApp;
 import com.intellij.execution.Executor;
 import com.intellij.execution.ExecutorRegistry;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -42,7 +43,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
