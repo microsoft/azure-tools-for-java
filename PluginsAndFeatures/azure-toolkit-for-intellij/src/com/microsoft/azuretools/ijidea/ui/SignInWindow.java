@@ -56,7 +56,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -278,15 +277,6 @@ public class SignInWindow extends AzureDialogWrapper {
     @Nullable
     private synchronized void doDeviceLogin() {
         try {
-//            BaseADAuthManager dcAuthManager = AuthMethod.DC.getAdAuthManager();
-//            if (dcAuthManager.isSignedIn()) {
-//                doSignOut();
-//            }
-//
-//            doLogin(() -> dcAuthManager.signIn(null), signInDCProp);
-//            accountEmail = dcAuthManager.getAccountEmail();
-
-//            return dcAuthManager;
             doLogin(() -> {
                 AzureIdentityDeviceCodeAzureManager azureManager = AzureIdentityDeviceCodeAzureManager.getInstance();
                 azureManager.auth(deviceCodeInfo -> {
@@ -296,7 +286,7 @@ public class SignInWindow extends AzureDialogWrapper {
                     });
                 });
                 accountEmail = azureManager.pullAuthenticationAccount().block();
-                if(StringUtils.isNullOrEmpty(accountEmail)){
+                if (StringUtils.isNullOrEmpty(accountEmail)) {
                     throw new AzureExecutionException("Device login failed or was cancelled.");
                 }
                 return null;
@@ -349,7 +339,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 getAuthMethodManager().signOut();
             }
 
-//            dcAuthManager = doDeviceLogin();
+            // dcAuthManager = doDeviceLogin();
             if (dcAuthManager == null || !dcAuthManager.isSignedIn()) {
                 // canceled by the user
                 System.out.println(">> Canceled by the user");
