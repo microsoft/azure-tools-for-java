@@ -26,29 +26,16 @@ import com.azure.identity.DeviceCodeInfo;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.microsoft.aad.adal4j.AdalErrorCode;
-import com.microsoft.aad.adal4j.AuthenticationCallback;
-import com.microsoft.aad.adal4j.AuthenticationContext;
-import com.microsoft.aad.adal4j.AuthenticationException;
-import com.microsoft.aad.adal4j.AuthenticationResult;
-import com.microsoft.aad.adal4j.DeviceCode;
+import com.microsoft.aad.adal4j.*;
 import com.microsoft.azuretools.sdkmanage.identity.AzureIdentityDeviceCodeAzureManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import reactor.core.publisher.Mono;
 
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.Toolkit;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowEvent;
@@ -59,7 +46,7 @@ import java.util.concurrent.Future;
 
 public class DeviceLoginWindow extends AzureDialogWrapper {
     private static final String TITLE = "Azure Device Login";
-    private JPanel jPanel;
+    private JPanel panel;
     private JEditorPane editorPanel;
     private AuthenticationResult authenticationResult = null;
     private Future<?> authExecutor;
@@ -99,7 +86,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         this.userCode = userCode;
         this.verificationUrl = verificationUrl;
         this.message = message;
-        editorPanel.setBackground(jPanel.getBackground());
+        editorPanel.setBackground(panel.getBackground());
         editorPanel.setText(createHtmlFormatMessage());
         editorPanel.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -140,8 +127,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
                     authenticationResult = ctx.acquireTokenByDeviceCode(deviceCode, callback).get();
                 } catch (ExecutionException | InterruptedException e) {
                     if (e.getCause() instanceof AuthenticationException &&
-                            ((AuthenticationException) e.getCause()).getErrorCode()
-                                    == AdalErrorCode.AUTHORIZATION_PENDING) {
+                            ((AuthenticationException) e.getCause()).getErrorCode() == AdalErrorCode.AUTHORIZATION_PENDING) {
                         // swallow the pending exception
                     } else {
                         e.printStackTrace();
@@ -156,10 +142,9 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
     }
 
     private String createHtmlFormatMessage() {
-        return "<p>"
-                + message.replace(verificationUrl,
-                                  String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl))
-                + "</p><p>Waiting for signing in with the code ...</p>";
+        return String.format("<p>%s</p><p>Waiting for signing in with the code ...</p>",
+                             message.replace(verificationUrl,
+                                             String.format("<a href=\"%s\">%s</a>", verificationUrl, verificationUrl)));
     }
 
     @Override
@@ -181,12 +166,12 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Window w = getWindow();
             w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
-        }, ModalityState.stateForComponent(jPanel));
+        }, ModalityState.stateForComponent(panel));
     }
 
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return jPanel;
+        return panel;
     }
 }
