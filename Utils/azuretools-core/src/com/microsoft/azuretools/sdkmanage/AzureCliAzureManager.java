@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.azure.core.credential.TokenCredential;
 import com.azure.identity.AzureCliCredential;
 import com.azure.identity.AzureCliCredentialBuilder;
 import com.azure.resourcemanager.resources.fluentcore.profile.AzureProfile;

@@ -148,9 +148,12 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             cbxFunctionApp.addItem(CREATE_NEW_FUNCTION_APP);
             functionList.forEach(functionAppResourceEx -> cbxFunctionApp.addItem(functionAppResourceEx));
             // Find function which id equals to configuration, or use the first available one.
-            final ResourceEx<FunctionApp> selectedFunction = functionList.stream()
-                                                                         .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(functionDeployConfiguration.getFunctionId()))
-                                                                         .findFirst().orElse(functionList.get(0));
+            final ResourceEx<FunctionApp> selectedFunction =
+                    functionList.stream()
+                                .filter(webAppResourceEx -> webAppResourceEx.getResource()
+                                                                            .id()
+                                                                            .equals(functionDeployConfiguration.getFunctionId()))
+                                .findFirst().orElse(functionList.get(0));
             cbxFunctionApp.setSelectedItem(selectedFunction);
             selectedFunctionApp = selectedFunction;
             if (fillAppSettings || appSettingsTable.isDefaultAppSettings()) {

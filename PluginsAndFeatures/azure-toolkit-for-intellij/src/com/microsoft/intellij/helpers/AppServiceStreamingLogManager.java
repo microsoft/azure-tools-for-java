@@ -40,12 +40,9 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import hu.akarnokd.rxjava3.interop.RxJavaInterop;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.util.BlockingArrayQueue;
-import reactor.adapter.rxjava.RxJava2Adapter;
 import reactor.adapter.rxjava.RxJava3Adapter;
 import reactor.core.publisher.Flux;
 import rx.Observable;
-import rx.Subscriber;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -53,7 +50,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 
 
 public enum AppServiceStreamingLogManager {
