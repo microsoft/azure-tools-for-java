@@ -22,11 +22,12 @@
 
 package com.microsoft.intellij.helpers.function;
 
+import com.azure.resourcemanager.appservice.models.WebAppBase;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewTrack2Presenter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -43,7 +44,6 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
         return view;
     }
 
-
     protected FunctionAppPropertyView(@NotNull Project project, @NotNull String sid, @NotNull String resId) {
         super(project, sid, resId, null);
     }
@@ -55,10 +55,17 @@ public class FunctionAppPropertyView extends WebAppBasePropertyView {
 
     @Override
     protected WebAppBasePropertyViewPresenter createPresenter() {
-        return new WebAppBasePropertyViewPresenter() {
+        return new WebAppBasePropertyViewTrack2Presenter() {
             @Override
-            protected WebAppBase getWebAppBase(String subscriptionId, String functionAppId, String name) throws IOException {
-                final FunctionApp function = AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionAppId);
+            protected com.microsoft.azure.management.appservice.WebAppBase getWebAppBase(
+                    final String s, final String s1, final String s2) {
+                return null;
+            }
+
+            @Override
+            protected WebAppBase getTrack2WebAppBase(String subscriptionId, String functionAppId, String name)
+                    throws Exception {
+                return AzureFunctionMvpModel.getInstance().getFunctionById(subscriptionId, functionAppId);
             }
 
             @Override

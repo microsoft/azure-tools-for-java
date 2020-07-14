@@ -38,10 +38,14 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import hu.akarnokd.rxjava3.interop.RxJavaInterop;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.util.BlockingArrayQueue;
 import reactor.adapter.rxjava.RxJava2Adapter;
+import reactor.adapter.rxjava.RxJava3Adapter;
+import reactor.core.publisher.Flux;
 import rx.Observable;
+import rx.Subscriber;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -191,9 +195,8 @@ public enum AppServiceStreamingLogManager {
                 openLiveMetricsStream();
                 return null;
             }
-            final BlockingQueue queue = new BlockingArrayQueue();
-            getFunctionApp().streamAllLogsAsync().subscribe(string-> queue.offer(string));
-            return Observable.from(queue);
+            final Flux<String> logStreaming = getFunctionApp().streamAllLogsAsync();
+            return RxJavaInterop.toV1Observable(RxJava3Adapter.fluxToFlowable(logStreaming));
         }
 
         // Refers https://github.com/microsoft/vscode-azurefunctions/blob/v0.22.0/src/

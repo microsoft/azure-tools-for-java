@@ -60,6 +60,7 @@ public abstract class AzureIdentityAzureManager extends AzureManagerBase {
     protected SubscriptionManager subscriptionManager;
     protected AzureTokenCredentials credentials;
     protected Azure.Authenticated authenticated;
+    protected com.azure.resourcemanager.Azure.Authenticated track2Authenticated;
 
     @Override
     public Azure getAzure(String sid) throws IOException {
@@ -169,10 +170,16 @@ public abstract class AzureIdentityAzureManager extends AzureManagerBase {
     }
 
     public com.azure.resourcemanager.Azure.Authenticated getTrack2AzureAuthenticated() {
-        return com.azure.resourcemanager.Azure.configure()
-                .authenticate(getTokenCredential(), new AzureProfile(
-                        IdentityUtils.parseAzureEnvironment(CommonSettings.getEnvironment().getName())
-                ));
+        if (track2Authenticated == null) {
+            final TokenCredential tokenCredential = getTokenCredential();
+            track2Authenticated = tokenCredential == null ? null :
+                    com.azure.resourcemanager.Azure.configure()
+                            .authenticate(getTokenCredential(), new AzureProfile(
+                                    IdentityUtils.parseAzureEnvironment(CommonSettings.getEnvironment().getName())
+                            ));
+        }
+        return track2Authenticated;
+
     }
 
     private Map<String, String> getSubs2TenantMap() {
