@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *   <p/>
  *  All rights reserved.
  *   <p/>
@@ -24,33 +25,22 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.ui.jcef.JBCefBrowser;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
+import org.cef.browser.CefBrowser;
+import org.cef.browser.CefFrame;
+import org.cef.handler.CefDisplayHandlerAdapter;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.Dimension;
-import java.awt.Window;
-import java.awt.event.WindowEvent;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 class LoginWindow extends AzureDialogWrapper {
     public final String redirectUri;
     public final String requestUri;
     private String res = null;
 
-    private JFXPanel fxPanel;
+    private final JBCefBrowser myJBCefBrowser;
 
     private void setResult(String res) {
         this.res = res;
@@ -62,86 +52,55 @@ class LoginWindow extends AzureDialogWrapper {
 
     public LoginWindow(String requestUri, String redirectUri) {
         super(null, false, IdeModalityType.IDE);
-        this.redirectUri =  redirectUri;
-        this.requestUri =  requestUri;
-        setModal(true);
+        this.redirectUri = redirectUri;
+        this.requestUri = requestUri;
+
         setTitle("Azure Login Dialog");
 
-        // Set timeout to initialize JavaFX panel, as a workaround to prevent potential deadlock.
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<JFXPanel> future = executor.submit(new Callable<JFXPanel>() {
+        myJBCefBrowser = new JBCefBrowser(requestUri);
+
+        myJBCefBrowser.getJBCefClient().addDisplayHandler(new CefDisplayHandlerAdapter() {
             @Override
-            public JFXPanel call() {
-                return new JFXPanel();
+            public void onAddressChange(CefBrowser browser, CefFrame frame, String url) {
+                if (url.startsWith(redirectUri)) {
+                    setResult(url);
+                    closeDlg();
+                }
+            }
+        }, myJBCefBrowser.getCefBrowser());
+
+        JComponent browser = myJBCefBrowser.getComponent();
+        browser.setPreferredSize(new Dimension(500, 750));
+        browser.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                myJBCefBrowser.getCefBrowser().loadURL(requestUri);
             }
         });
 
-        try {
-            fxPanel = future.get(5, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            // do nothing.
-        }
-
-        if (fxPanel == null) {
-            init();
-            return;
-        }
-
-        fxPanel.setPreferredSize(new Dimension(500, 750));
-        Platform.setImplicitExit(false);
-        Runnable fxWorker = new Runnable() {
-            @Override
-            public void run() {
-                //Group root = new Group();
-                final WebView browser = new WebView();
-                final WebEngine webEngine = browser.getEngine();
-                webEngine.locationProperty().addListener(new ChangeListener<String>(){
-                    @Override
-                    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-
-                        if(newValue.startsWith(redirectUri)) {
-                            setResult(newValue);
-                            closeDlg();
-                        }
-                    }
-                });
-
-                Scene scene = new Scene(browser);
-
-                fxPanel.setScene(scene);
-                webEngine.load(requestUri);
-            }
-        };
-        Platform.runLater(fxWorker);
         init();
     }
 
     @Override
     protected JComponent createCenterPanel() {
-        if (fxPanel != null) {
-            return fxPanel;
-        }
-
-        JPanel panel = new JPanel();
-        panel.add(new JLabel("Fail to initialize JavaFX panel."));
-        panel.setPreferredSize(new Dimension(500, 750));
-        return panel;
+        return myJBCefBrowser.getComponent();
     }
 
     private void closeDlg() {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-                Window w = getWindow();
-                w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
+                boolean closeResult = myJBCefBrowser.getCefBrowser().doClose();
+                if (!closeResult) {
+                    throw new IllegalStateException("Unable to properly close the browser");
+                }
             }
-        }, ModalityState.stateForComponent(fxPanel));
+        }, ModalityState.stateForComponent(myJBCefBrowser.getComponent()));
     }
 
     @Override
     public void doCancelAction() {
         super.doCancelAction();
-
     }
 
     @Override
