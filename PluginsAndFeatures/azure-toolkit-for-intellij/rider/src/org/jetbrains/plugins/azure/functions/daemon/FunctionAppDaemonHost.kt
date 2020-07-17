@@ -34,7 +34,7 @@ import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.project.Project
 import com.intellij.util.execution.ParametersListUtil
-import com.jetbrains.rdclient.ui.bindableUi.extensions.valueOrEmpty
+import com.jetbrains.rd.platform.ui.bedsl.extensions.valueOrEmpty
 import com.jetbrains.rdclient.util.idea.LifetimedProjectComponent
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.functionAppDaemonModel

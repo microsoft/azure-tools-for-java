@@ -33,6 +33,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.JDOMExternalizerUtil
 import com.intellij.util.execution.ParametersListUtil
+import com.jetbrains.rd.platform.util.getComponent
 import com.jetbrains.rider.model.ProjectOutput
 import com.jetbrains.rider.model.RunnableProject
 import com.jetbrains.rider.model.RunnableProjectKind
@@ -44,7 +45,6 @@ import com.jetbrains.rider.run.configurations.dotNetExe.DotNetExeConfigurationPa
 import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParameters
 import com.jetbrains.rider.runtime.DotNetExecutable
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
-import com.jetbrains.rider.util.idea.getComponent
 import org.jdom.Element
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo

@@ -33,12 +33,12 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.jetbrains.rd.platform.util.getComponent
 import com.jetbrains.rider.nuget.RiderNuGetHost
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
 import com.jetbrains.rider.projectView.nodes.ProjectModelNodeVisitor
 import com.jetbrains.rider.projectView.nodes.containingProject
-import com.jetbrains.rider.util.idea.getComponent
 
 class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
     companion object {
