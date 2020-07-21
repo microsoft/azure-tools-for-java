@@ -40,6 +40,7 @@ class SparkJobDebugAction
         StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobDebugIcon_13x_Path)?: AllIcons.Toolwindows.ToolWindowDebugger) {
     override val runExecutor: Executor
         get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
+            ?: throw RuntimeException("Can't find executor $EXECUTOR_ID from executor registry")
 
     override fun getServiceName(event: AnActionEvent): String {
         val project = event.project ?: return super.getServiceName(event)

@@ -47,7 +47,7 @@ public class SparkBatchJobDebugExecutor extends Executor {
     public Icon getToolWindowIcon() {
         return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_13x_Path))
                 .map(Icon.class::cast)
-                .orElse(AllIcons.General.Debug);
+                .orElse(AllIcons.RunConfigurations.RemoteDebug);
     }
 
     @NotNull
@@ -55,7 +55,7 @@ public class SparkBatchJobDebugExecutor extends Executor {
     public Icon getIcon() {
         return Optional.ofNullable(StreamUtil.getImageResourceFile(com.microsoft.azure.hdinsight.common.CommonConst.ToolWindowSparkJobDebugIcon_16x_Path))
                 .map(Icon.class::cast)
-                .orElse(AllIcons.General.Debug);
+                .orElse(AllIcons.RunConfigurations.RemoteDebug);
     }
 
     @Override

@@ -47,12 +47,12 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
 
         val arcadiaData = data as? ArcadiaSparkSubmitModel ?: return
         val cluster = viewModel.clusterSelection.let {
-            it.findClusterById(it.clusterListModelBehavior.value, it.toSelectClusterByIdBehavior.value) as? ArcadiaSparkCompute
+            it.findClusterById(it.clusterListModelBehavior.value, it.toSelectClusterByIdBehavior.value)
         }
 
         if (cluster != null) {
             arcadiaData.tenantId = cluster.subscription.tenantId
-            arcadiaData.sparkWorkspace = cluster.workSpace.name
+            arcadiaData.sparkWorkspace = (cluster as? ArcadiaSparkCompute)?.workSpace?.name
             arcadiaData.sparkCompute = cluster.name
             arcadiaData.livyUri = cluster.connectionUrl
                     ?: throw RuntimeConfigurationWarning("Can't get Apache Spark Pool for Azure Synapse connection URL")

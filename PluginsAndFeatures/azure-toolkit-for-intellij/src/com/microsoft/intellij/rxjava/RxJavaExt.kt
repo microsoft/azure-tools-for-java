@@ -20,15 +20,21 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.activitylog;
+package com.microsoft.intellij.rxjava
 
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
-import com.microsoft.intellij.AzurePlugin;
+import rx.Observable
 
-public class ActivityLogToolWindowFactoryCondition implements Condition<Project> {
-    @Override
-    public boolean value(Project project) {
-        return !AzurePlugin.IS_ANDROID_STUDIO;
+/**
+ * A rx.Observable extension function to convert the observable into [org.jetbrains.concurrency.Promise] instance
+ */
+fun <T> toIdeaPromise(observable: Observable<T>): org.jetbrains.concurrency.Promise<T> {
+    val ideaPromise = org.jetbrains.concurrency.AsyncPromise<T>()
+
+    observable.subscribe( { result -> ideaPromise.setResult(result) }, { err -> ideaPromise.setError(err) } ) {
+        if (!ideaPromise.isDone) {
+            ideaPromise.cancel()
+        }
     }
+
+    return ideaPromise
 }

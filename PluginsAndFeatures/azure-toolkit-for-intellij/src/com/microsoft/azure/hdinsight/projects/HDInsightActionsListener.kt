@@ -20,27 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.jobs;
+package com.microsoft.azure.hdinsight.projects
 
-import com.intellij.openapi.components.ApplicationComponent;
-import com.microsoft.azure.hdinsight.spark.jobs.JobViewHttpServer;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.ide.AppLifecycleListener
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.project.Project
 
-public class JobViewApplicationComponent implements ApplicationComponent {
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return JobViewApplicationComponent.class.getName();
-    }
-
-    @Override
-    public void initComponent() {
-        JobViewHttpServer.initialize();
-    }
-
-    @Override
-    public void disposeComponent() {
-        JobViewHttpServer.close();
+class HDInsightActionsListener: AppLifecycleListener {
+    override fun appStarting(projectFromCommandLine: Project?) {
+        val actionManager = ActionManager.getInstance()
+        val projectPopupGroup = actionManager.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP) as DefaultActionGroup
+        projectPopupGroup.add(actionManager.getAction("Actions.SubmitSparkApplicationAction"))
     }
 }

@@ -42,7 +42,7 @@ class SparkFailureTaskDebugProfileState(name: String,
         get() {
             return super.additionalVmParameters + arrayOf(
                     // JDB parameters for debugging
-                    "-agentlib:jdwp=transport=dt_socket,server=n,address=127.0.0.1:${remoteConnection.address},suspend=y"
+                    "-agentlib:jdwp=transport=dt_socket,server=n,address=127.0.0.1:${remoteConnection.applicationAddress},suspend=y"
             )
         }
 }
