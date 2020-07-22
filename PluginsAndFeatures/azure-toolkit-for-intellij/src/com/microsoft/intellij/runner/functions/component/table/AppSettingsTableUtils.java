@@ -102,7 +102,7 @@ public class AppSettingsTableUtils {
             }
         };
 
-        final AnActionButton importButton = new AnActionButton("Import", AllIcons.General.ImportProject) {
+        final AnActionButton importButton = new AnActionButton("Import", AllIcons.ToolbarDecorator.Import) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 final ImportAppSettingsDialog importAppSettingsDialog = new ImportAppSettingsDialog(appSettingsTable.getLocalSettingsPath());
@@ -125,7 +125,7 @@ public class AppSettingsTableUtils {
             }
         };
 
-        final AnActionButton exportButton = new AnActionButton(EXPORT_LOCAL_SETTINGS_TITLE, AllIcons.General.ExportSettings) {
+        final AnActionButton exportButton = new AnActionButton(EXPORT_LOCAL_SETTINGS_TITLE, AllIcons.ToolbarDecorator.Export) {
             @Override
             public void actionPerformed(AnActionEvent anActionEvent) {
                 try {

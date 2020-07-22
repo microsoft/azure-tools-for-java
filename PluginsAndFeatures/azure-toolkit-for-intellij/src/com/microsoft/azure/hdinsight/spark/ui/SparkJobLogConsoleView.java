@@ -85,7 +85,7 @@ public class SparkJobLogConsoleView extends ConsoleViewImpl {
         this.setFocusTraversalPolicy(new LayoutFocusTraversalPolicy() {
             @Override
             public Component getComponentAfter(Container aContainer, Component aComponent) {
-                if (aComponent == getEditor().getContentComponent()) {
+                if (getEditor() != null && aComponent == getEditor().getContentComponent()) {
                     return secondaryConsoleView.getPreferredFocusableComponent();
                 }
 
@@ -94,7 +94,8 @@ public class SparkJobLogConsoleView extends ConsoleViewImpl {
 
             @Override
             public Component getComponentBefore(Container aContainer, Component aComponent) {
-                if (aComponent == secondaryConsoleView.getPreferredFocusableComponent()) {
+                if (secondaryConsoleView != null
+                        && aComponent == secondaryConsoleView.getPreferredFocusableComponent()) {
                     return getEditor().getContentComponent();
                 }
 
@@ -103,12 +104,12 @@ public class SparkJobLogConsoleView extends ConsoleViewImpl {
 
             @Override
             public Component getFirstComponent(Container aContainer) {
-                return getEditor().getContentComponent();
+                return getEditor() != null ? getEditor().getContentComponent() : null;
             }
 
             @Override
             public Component getLastComponent(Container aContainer) {
-                return secondaryConsoleView.getPreferredFocusableComponent();
+                return secondaryConsoleView != null ? secondaryConsoleView.getPreferredFocusableComponent() : null;
             }
         });
 

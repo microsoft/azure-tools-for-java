@@ -65,6 +65,11 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
     private Project project;
 
     @Override
+    public boolean isApplicable(@NotNull Project project) {
+        return !AzurePlugin.IS_ANDROID_STUDIO;
+    }
+
+    @Override
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         this.project = project;
         table = new TableView<DeploymentTableItem>(new ListTableModel<DeploymentTableItem>(DESC, PROGRESS, STATUS, START_TIME));
