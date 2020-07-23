@@ -76,7 +76,7 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
 
         allConfigurations.size.shouldBe(1)
         allConfigurations[0].javaClass.shouldBe(AzureFunctionsHostConfiguration::class.java)
-        allConfigurations[0].name.shouldBe("Default")
+        allConfigurations[0].name.shouldBe("FunctionApp")
     }
 
     //endregion Configuration

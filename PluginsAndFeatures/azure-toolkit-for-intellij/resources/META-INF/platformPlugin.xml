@@ -6,18 +6,12 @@
     <html>
       <h4>Compatibility:</h4>
       <ul>
-        <li>Plugin build compatible with Rider 2020.2 EAP</li>
+        <li>Fix Plugin compatible with Rider 2020.2 EAP7</li>
+        <li>Remove JavaFX dependency that is not bundled with platform SDK - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/329">#329</a></li>
       </ul>
-      <h4>Improvements:</h4>
+      <h4>Bug fixes:</h4>
       <ul>
-        <li>Integrate Azurite Storage Emulator - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/312">#312</a></li>
-        <li>Autodetect installed Function App core tools path - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/293">#293</a></li>
-        <li>Improve running Function Apps from gutter mark logic - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/234">#234</a></li>
-        <li>Add Function Apps Timer Trigger completion options and Cron expression inspections - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/296">#296</a></li>
-      </ul>
-      <h4>Fixed bugs:</h4>
-      <ul>
-		<li>Persists launch browser settings for launch Function Apps run configuration - <a href="https://youtrack.jetbrains.com/issue/RIDER-45405">RIDER-45405</a></li>
+        <li>Fix highlighting and analysis initialization when plugin is enabled - <a href="https://youtrack.jetbrains.com/issue/RIDER-47182">RIDER-47182</a></li>
       </ul>
     </html>
     ]]>

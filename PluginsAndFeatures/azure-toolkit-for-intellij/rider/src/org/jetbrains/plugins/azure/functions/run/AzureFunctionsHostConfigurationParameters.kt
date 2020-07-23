@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -163,10 +163,10 @@ open class AzureFunctionsHostConfigurationParameters(
             logger.warn("Multiple applicable runnable projects detected for .NET Project configuration ($projectFilePath): ${applicableProjects.joinToString("; ")}")
         }
 
-        val runnableProject = applicableProjects.singleOrNull()
-        if (runnableProject != null) {
-            return AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(runnableProject)
-        }
+        val applicableProject = applicableProjects.firstOrNull()
+
+        if (applicableProject != null)
+            return AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(applicableProject)
 
         return null
     }

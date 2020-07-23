@@ -88,7 +88,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Project is not specified\\.")
     fun testValidate_RunnableProjects_MultipleRunnableProjectsMatch() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
         val parameters = createParameters(project = project, projectFilePath = projectFilePath)
 
         project.solution.runnableProjectsModel.projects.set(listOf(
@@ -100,7 +100,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Function App is not loaded properly\\.")
     fun testValidate_RunnableProjects_ProjectWithProblems() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
         val parameters = createParameters(project = project, projectFilePath = projectFilePath)
         project.solution.runnableProjectsModel.projects.set(listOf(
                 createRunnableProject(
@@ -114,7 +114,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Invalid exe path: '/not/existing/path'\\.")
     fun testValidate_TrackProjectExePath_NotExists() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters =
                 createParameters(project = project, projectFilePath = projectFilePath, trackProjectExePath = false, exePath = "/not/existing/path")
@@ -131,7 +131,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Invalid exe path: '<empty>'\\.")
     fun testValidate_TrackProjectExePath_EmptyExePath() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters =
                 createParameters(project = project, projectFilePath = projectFilePath, trackProjectExePath = false, exePath = "")
@@ -148,7 +148,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Invalid exe path:\\s.+\\.")
     fun testValidate_TrackProjectExePath_NotAFile() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters = createParameters(
                 project = project,
@@ -169,7 +169,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Invalid working directory: '/not/existing/path'\\.")
     fun testValidate_TrackProjectWorkingDirectory_NotExists() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters = createParameters(
                 project = project,
@@ -191,7 +191,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Invalid working directory: '<empty>'\\.")
     fun testValidate_TrackProjectWorkingDirectory_EmptyDirectory() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters = createParameters(
                 project = project,
@@ -213,7 +213,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Invalid working directory:\\s.+\\.")
     fun testValidate_TrackProjectWorkingDirectory_NotADirectory() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val workingDirectoryFile = tempTestDirectory.resolve("FunctionApp.dll")
         workingDirectoryFile.createNewFile()
@@ -238,7 +238,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Path to Azure Functions core tools has not been configured\\. This can be done in the settings under Tools \\| Azure \\| Functions\\.")
     fun testValidate_FunctionCoreTools_NotInstalled() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters = createParameters(
                 project = project,
@@ -261,7 +261,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test(expectedExceptions = [RuntimeConfigurationError::class], expectedExceptionsMessageRegExp = "Mono runtime not found\\. Please setup Mono path in settings \\(File \\| Settings \\| Build, Execution, Deployment \\| Toolset and Build\\)")
     fun testValidate_MonoRuntime_MissingMonoConfig() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters = createParameters(
                 project = project,
@@ -289,7 +289,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test
     fun testValidate_Valid_UseMonoRuntime() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters = createParameters(
                 project = project,
@@ -313,7 +313,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
 
     @Test
     fun testValidate_Valid_NetCoreRuntime() {
-        val projectFilePath = File("project/file/path").path
+        val projectFilePath = File("/project/file/path").absolutePath
 
         val parameters = createParameters(
                 project = project,
@@ -341,7 +341,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
             project: Project = this.project,
             exePath: String = "",
             programParameters: String = "host start --port 7071 --pause-on-error",
-            workingDirectory: String = File("working/path").path,
+            workingDirectory: String = File("/working/path").absolutePath,
             envs: Map<String, String> = emptyMap(),
             isPassParentEnvs: Boolean = true,
             useExternalConsole: Boolean = false,
@@ -382,7 +382,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
     fun createRunnableProject(
             name: String = "TestName",
             fullName: String = "TestFullName",
-            projectFilePath: String = "",
+            projectFilePath: String = File("/project/file/path").absolutePath,
             kind: RunnableProjectKind = RunnableProjectKind.AzureFunctions,
             projectOutputs: List<ProjectOutput> = emptyList(),
             environmentVariables: List<EnvironmentVariable> = emptyList(),

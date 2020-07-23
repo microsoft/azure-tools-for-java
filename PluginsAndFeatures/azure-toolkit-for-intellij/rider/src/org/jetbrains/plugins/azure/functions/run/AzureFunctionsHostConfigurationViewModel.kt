@@ -88,7 +88,13 @@ class AzureFunctionsHostConfigurationViewModel(
     init {
         disable()
 
-        projectSelector.bindTo(runnableProjectsModel, lifetime, { p -> type.isApplicable(p.kind) }, ::enable, ::handleProjectSelection)
+        projectSelector.bindTo(
+                runnableProjectsModel = runnableProjectsModel,
+                lifetime = lifetime,
+                projectFilter = { p: RunnableProject -> type.isApplicable(p.kind) },
+                onLoad = ::enable,
+                onSelect = ::handleProjectSelection
+        )
 
         tfmSelector.string.advise(lifetime) { handleChangeTfmSelection() }
         exePathSelector.path.advise(lifetime) { recalculateTrackProjectOutput() }
@@ -271,19 +277,30 @@ class AzureFunctionsHostConfigurationViewModel(
                     it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
                 }?.let { project ->
                     projectSelector.project.set(project)
-                    reloadTfmSelector(project)
 
+                    // Set TFM
+                    reloadTfmSelector(project)
                     val projectTfmExists = project.projectOutputs.any { it.tfm == projectTfm }
                     val selectedTfm = if (projectTfmExists) projectTfm else project.projectOutputs.firstOrNull()?.tfm ?: ""
                     tfmSelector.string.set(selectedTfm)
+
+                    // Set Project Output
                     val projectOutput = project.projectOutputs.singleOrNull { it.tfm == selectedTfm }
                     val effectiveExePath = if (trackProjectExePath && projectOutput != null) projectOutput.exePath else exePath
                     val effectiveProgramParameters =
                             if (trackProjectArguments && projectOutput != null && projectOutput.defaultArguments.isNotEmpty())
-                                ParametersListUtil.join(projectOutput.defaultArguments).replace("\\\"", "\"") else programParameters
+                                ParametersListUtil.join(projectOutput.defaultArguments).replace("\\\"", "\"")
+                            else if (programParameters.isNotEmpty())
+                                programParameters
+                            else
+                                // Handle the case when program parameters were set by changing TFM above and make sure it is not reset to empty.
+                                programParametersEditor.defaultValue.value
+
                     programParametersEditor.defaultValue.set(effectiveProgramParameters)
+
                     val effectiveWorkingDirectory = if (trackProjectWorkingDirectory && projectOutput != null)
                         projectOutput.workingDirectory else workingDirectory
+
                     resetProperties(effectiveExePath, effectiveProgramParameters, effectiveWorkingDirectory)
                 }
             }

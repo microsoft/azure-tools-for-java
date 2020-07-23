@@ -62,23 +62,32 @@ class AzureFunctionsHostConfigurationType : ConfigurationTypeBase(
 
     override fun isApplicable(kind: RunnableProjectKind) = isTypeApplicable(kind)
 
-    override fun tryCreateDefault(project: Project, lifetime: Lifetime, projects: List<RunnableProject>, runManager: RunManager): Promise<List<RunnerAndConfigurationSettings>>? =
-            if (runManager.allConfigurationsList.all { it !is DotNetProjectConfiguration && it !is AzureFunctionsHostConfiguration && it !is LaunchSettingsConfiguration }
-                    && projects.any { isApplicable(it.kind) }
-                    && !projects.any {
-                        // Don't create "default" config if launchSettings.json is available for any project
-                        it.kind == RunnableProjectKind.LaunchSettings && LaunchSettingsJsonService.getLaunchSettingsFileForProject(it)?.exists() == true
-                    }) {
+    override fun tryCreateDefault(
+            project: Project,
+            lifetime: Lifetime,
+            projects: List<RunnableProject>,
+            runManager: RunManager
+    ): Promise<List<RunnerAndConfigurationSettings>>? {
 
-                val defaultSettings =
-                        runManager.createConfiguration(
-                                name = message("run_config.run_function_app.form.function_app.type_default_name"),
-                                factory = factory
-                        )
+        val defaultSettingsList = mutableListOf<RunnerAndConfigurationSettings>()
 
-                runManager.addConfiguration(defaultSettings)
-                resolvedPromise(listOf(defaultSettings))
-            } else {
-                null
-            }
+        val applicableProjects = projects.filter {
+            isApplicable(it.kind)
+                    // Don't create "default" config if launchSettings.json is available for any project
+                    && !(it.kind == RunnableProjectKind.LaunchSettings && LaunchSettingsJsonService.getLaunchSettingsFileForProject(it)?.exists() == true)
+        }
+
+        applicableProjects.forEach { applicableProject ->
+            val defaultSettings =
+                    runManager.createConfiguration(name = applicableProject.name, factory = factory)
+
+            val configuration = defaultSettings.configuration as AzureFunctionsHostConfiguration
+            configuration.parameters.projectFilePath = applicableProject.projectFilePath
+
+            runManager.addConfiguration(defaultSettings)
+            defaultSettingsList.add(defaultSettings)
+        }
+
+        return resolvedPromise(defaultSettingsList.toList())
+    }
 }
