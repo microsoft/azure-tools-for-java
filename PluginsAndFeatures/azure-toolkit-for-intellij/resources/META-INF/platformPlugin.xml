@@ -6,7 +6,7 @@
     <html>
       <h4>Compatibility:</h4>
       <ul>
-        <li>Fix Plugin compatible with Rider 2020.2 EAP7</li>
+        <li>Fix Plugin compatible with Rider 2020.2 EAP8</li>
         <li>Remove JavaFX dependency that is not bundled with platform SDK - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/329">#329</a></li>
       </ul>
       <h4>Bug fixes:</h4>
