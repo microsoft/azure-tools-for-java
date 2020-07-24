@@ -311,7 +311,7 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
       }
     });
 
-    AnActionButton viewDockerHostsAction = new ToolbarDecorator.ElementActionButton("Details", AllIcons.Actions.Export) {
+    AnActionButton viewDockerHostsAction = new ToolbarDecorator.ElementActionButton("Details", AllIcons.ToolbarDecorator.Export) {
       @Override
       public void actionPerformed(AnActionEvent anActionEvent) {
         onViewDockerHostAction();

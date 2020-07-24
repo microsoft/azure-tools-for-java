@@ -338,7 +338,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         final SparkSubmissionJobUploadStorageWithUploadPathPanel storageConfigPanels =
                 new SparkSubmissionJobUploadStorageWithUploadPathPanel();
         try {
-            storageConfigPanels.checkConfigurationBeforeRun(runner, getSubmitModel().getJobUploadStorageModel());
+            storageConfigPanels.checkConfigurationBeforeRun(getSubmitModel().getJobUploadStorageModel());
         } finally {
             Disposer.dispose(storageConfigPanels);
         }

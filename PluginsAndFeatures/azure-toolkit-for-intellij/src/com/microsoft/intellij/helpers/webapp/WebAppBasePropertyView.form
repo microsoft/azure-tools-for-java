@@ -54,7 +54,8 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
-                      <icon value="runConfigurations/saveTempConfig.png"/>
+                      <hideActionText value="true"/>
+                      <icon value="actions/menu-saveall.png"/>
                       <text value="Save"/>
                     </properties>
                   </component>
