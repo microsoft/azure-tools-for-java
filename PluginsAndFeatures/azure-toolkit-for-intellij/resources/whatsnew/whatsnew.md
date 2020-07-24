@@ -1,10 +1,15 @@
-<!-- Version: 3.39.0 -->
+<!-- Version: 3.40.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
-> Scroll down to checkout our newly added support for **Azure Functions**, **Azure Spring Cloud** and
- **log streaming for Azure App Service**.
+## 3.40.0
 
-## 3.39.0(Current Release)
+### Added
+- Support IntelliJ 2020.2 EAP
+
+### Changed
+- Show non-anonymous HTTP trigger urls after function deployment
+
+## 3.39.0
 
 [Azure CLI](https://docs.microsoft.com/cli/azure/) is supported as a sign in option. You can now sign in with single click if you have already signed in with Azure CLI.
 
@@ -129,29 +134,6 @@ You could have full Azure Spring Cloud experience in IntelliJ Toolkit, which clu
 - [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fixed NPE caused Spark job submission failure in 201EAP
 - [#4213](https://github.com/microsoft/azure-tools-for-java/issues/4213) Unhandled error when creating function app
 - [#4215](https://github.com/microsoft/azure-tools-for-java/issues/4215) App settings not loaded when openning the deploy wizard
-
-## 3.34.0
-
-We are proud to announce the support for [Azure Functions](https://azure.microsoft.com/en-us/services/functions/) in Azure Toolkit!
-
-Full Azure Function experience are enabled in IntelliJ Toolkit now, which includes create Function projects, running function app locally and deploy your function app to Azure. Please refer  [quick start](https://docs.microsoft.com/azure/developer/java/toolkit-for-intellij/quickstart-functions?source=intellijwhatsnew) to try Azure Functions with IntelliJ.
-
-![Azure Functions](https://user-images.githubusercontent.com/12445236/82418602-c26b7d00-9aaf-11ea-8864-af8d43be713d.jpg)
-
-### Added
-- Add Azure Function support in Azure Toolkits
-    * Scaffold functions project
-    * Create new functions class by trigger type
-    * Local run/debug functions
-    * Create/deploy Function apps on Azure
-    * List/view existing Function apps on Azure
-    * Stop/start/restart Function apps on Azure
-    * Trigger azure functions
-- Support project artifact dependencies in Spark interactive console
-- Add more debug log when creating Spark Livy interactive console
-
-### Changed
-- Enable Spark on Synapse feature by default
 
 ## Summary
 

@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.40.0](#3400)
   - [3.39.0](#3390)
   - [3.38.0](#3380)
   - [3.37.0](#3370)
@@ -51,6 +52,13 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.40.0
+### Added
+- Support IntelliJ 2020.2 EAP
+
+### Changed
+- Show non-anonymous HTTP trigger urls after function deployment
 
 ## 3.39.0
 
