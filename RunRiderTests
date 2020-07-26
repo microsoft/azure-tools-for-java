@@ -86,11 +86,12 @@ tc_open "Prepare JAR dependencies"
 }
 tc_close "Prepare JAR dependencies"
 
+BUILD_CONFIGURATION=Release
+
 tc_open "Run Rider tests"
 {
-    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info clean --console=plain)
-    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:test -s --console=plain)
-    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:integrationTest -s --console=plain)
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:test -s -PBuildConfiguration=$BUILD_CONFIGURATION --console=plain)
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info :rider:integrationTest -s -PBuildConfiguration=$BUILD_CONFIGURATION --console=plain)
 
     cp -r "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/idea-sandbox/system-test/log/ "$ARTIFACTS_DIR"/
 

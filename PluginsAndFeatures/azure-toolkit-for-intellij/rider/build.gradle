@@ -28,6 +28,7 @@ ext.resharperPluginPath = new File(projectDir, 'ReSharper.Azure')
 apply plugin: 'org.jetbrains.intellij'
 apply from: 'backend.gradle'
 
+// Plugin version
 if (!ext.has('BuildNumber'))
     ext.BuildNumber = buildNumber
 

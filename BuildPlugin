@@ -154,10 +154,11 @@ if $BUILD_INTELLIJ; then
 fi
 
 BUILD_NUMBER="3.35.0.$BUILD_COUNTER-2020.2"
+BUILD_CONFIGURATION=Release
 
 tc_open "Building Rider plugin"
 {
-    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info --rerun-tasks :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER --console=plain)
+    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info --rerun-tasks :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER -PBuildConfiguration=$BUILD_CONFIGURATION --console=plain)
     cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-"$BUILD_NUMBER".zip "$ARTIFACTS_DIR"/azure-toolkit-for-rider-"$BUILD_NUMBER".zip
     df -h
 }

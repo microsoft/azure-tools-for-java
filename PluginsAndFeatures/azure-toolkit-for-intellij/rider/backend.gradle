@@ -8,6 +8,9 @@ ext.riderSdkVersionPropsPath = new File(resharperPluginPath, 'RiderSdkPackageVer
 // https://www.nuget.org/packages/JetBrains.Rider.SDK/
 ext.riderNugetSdkVersion = rider_nuget_sdk_version
 
+if (!ext.has('BuildConfiguration'))
+    ext.BuildConfiguration = rider_backend_build_configuration
+
 task prepareBuildProps {
     group = backendGroup
 
@@ -113,18 +116,18 @@ task buildReSharperPlugin {
     dependsOn restoreReSharperPluginPackages, ':rider:protocol:generateModel'
 
     def libFiles = [
-            "**/bin/$rider_backend_build_configuration/net461/JetBrains.ReSharper.Azure*.dll",
-            "**/bin/$rider_backend_build_configuration/net461/JetBrains.ReSharper.Azure*.pdb",
-            "Azure.Daemon/bin/$rider_backend_build_configuration/net461/NCrontab.Signed.dll",
+            "**/bin/$BuildConfiguration/net461/JetBrains.ReSharper.Azure*.dll",
+            "**/bin/$BuildConfiguration/net461/JetBrains.ReSharper.Azure*.pdb",
+            "Azure.Daemon/bin/$BuildConfiguration/net461/NCrontab.Signed.dll",
     ]
 
     def srcPath = "${resharperPluginPath.absolutePath}/src"
 
     doLast {
         def executableName = 'dotnet'
-        def arguments = [ 'build', "${resharperPluginPath.canonicalPath}/ReSharper.Azure.sln" ]
+        def arguments = [ 'build', "${resharperPluginPath.canonicalPath}/ReSharper.Azure.sln", "-c", BuildConfiguration ]
 
-        println("Building ReSharper.Azure solution...")
+        println("Building ReSharper.Azure solution [$BuildConfiguration]...")
         exec {
             executable = executableName
             args = arguments
