@@ -31,22 +31,17 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppOnLinuxDeployModel;
-
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
 public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<WebAppOnLinuxDeployModel> {
 
-    private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String MISSING_SERVER_URL = "Please specify a valid Server URL.";
     private static final String MISSING_USERNAME = "Please specify Username.";
     private static final String MISSING_PASSWORD = "Please specify Password.";
@@ -85,7 +80,6 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
         deployModel = new WebAppOnLinuxDeployModel();
     }
 
-
     @Override
     public WebAppOnLinuxDeployModel getModel() {
         return this.deployModel;
@@ -109,9 +103,7 @@ public class WebAppOnLinuxDeployConfiguration extends AzureRunConfigurationBase<
      */
     @Override
     public void validate() throws ConfigurationException {
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException(NEED_SIGN_IN);
-        }
+        checkAzurePreconditions();
         if (Utils.isEmptyString(deployModel.getDockerFilePath())
                 || !Paths.get(deployModel.getDockerFilePath()).toFile().exists()) {
             throw new ConfigurationException(INVALID_DOCKER_FILE);

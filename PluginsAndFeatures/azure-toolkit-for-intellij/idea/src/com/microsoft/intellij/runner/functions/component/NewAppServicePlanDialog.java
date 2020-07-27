@@ -25,21 +25,20 @@ package com.microsoft.intellij.runner.functions.component;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.Location;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azure.management.appservice.SkuName;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.ValidationUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,11 +46,15 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
 
     public static final String CONSUMPTION = "Consumption";
     public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
+    private static final String DEFAULT_REGION = "eastus";
+    private static final String RECOMMEND_SUFFIX = " (Recommended)";
+    private static final String MISSING_PRICING_TIER_PROMPT = "Please set pricing tier for app service plan";
+    private static final String MISSING_REGION_PROMPT = "Please set region for app service plan";
 
     private JPanel contentPane;
     private JPanel pnlNewAppServicePlan;
     private JComboBox cbPricing;
-    private JComboBox cbLocation;
+    private JComboBox cbRegion;
     private JTextField txtAppServicePlanName;
 
     private String subscriptionId;
@@ -66,11 +69,11 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
 
         this.subscriptionId = subscriptionId;
 
-        cbLocation.setRenderer(new ListCellRendererWrapper() {
+        cbRegion.setRenderer(new ListCellRendererWrapper() {
             @Override
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
-                if (object instanceof Location) {
-                    setText(((Location) object).name());
+                if (object instanceof Region) {
+                    setText(((Region) object).label());
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
@@ -82,16 +85,17 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
             public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof PricingTier) {
                     final PricingTier pricingTier = (PricingTier) object;
-                    setText(pricingTier == CONSUMPTION_PRICING_TIER ? CONSUMPTION : pricingTier.toString());
+                    final String text = pricingTier == CONSUMPTION_PRICING_TIER ? CONSUMPTION : pricingTier.toString();
+                    setText(isRecommendPricingTier(pricingTier) ? text + RECOMMEND_SUFFIX : text);
                 } else if (object instanceof String) {
                     setText(object.toString());
                 }
             }
         });
 
-        onLoadPricingTier();
-        onLoadLocation(subscriptionId);
+        cbPricing.addItemListener(e -> onLoadRegion());
 
+        onLoadPricingTier();
         init();
     }
 
@@ -113,13 +117,21 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
         } catch (IllegalArgumentException iae) {
             res.add(new ValidationInfo(iae.getMessage(), txtAppServicePlanName));
         }
+        if (cbPricing.getSelectedItem() == null) {
+            res.add(new ValidationInfo(MISSING_PRICING_TIER_PROMPT, cbPricing));
+        }
+        if (cbRegion.getSelectedItem() == null) {
+            res.add(new ValidationInfo(MISSING_REGION_PROMPT, cbRegion));
+        }
         return res;
     }
 
     @Override
     protected void doOKAction() {
-        appServicePlan = new AppServicePlanPanel.AppServicePlanWrapper(txtAppServicePlanName.getText(),
-                (Location) cbLocation.getSelectedItem(), (PricingTier) cbPricing.getSelectedItem());
+        appServicePlan = new AppServicePlanPanel.AppServicePlanWrapper(
+                txtAppServicePlanName.getText(),
+                (Region) cbRegion.getSelectedItem(),
+                (PricingTier) cbPricing.getSelectedItem());
         super.doOKAction();
     }
 
@@ -129,13 +141,24 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
         super.doCancelAction();
     }
 
-    private void onLoadLocation(String sid) {
-        cbLocation.removeAllItems();
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().listLocationsBySubscriptionId(sid))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(locations -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    locations.stream().forEach(location -> cbLocation.addItem(location));
-                }));
+    private void onLoadRegion() {
+        cbRegion.removeAllItems();
+        Observable.fromCallable(() -> AzureWebAppMvpModel
+                .getInstance().getAvailableRegions(subscriptionId, (PricingTier) cbPricing.getSelectedItem()))
+                  .subscribeOn(Schedulers.newThread())
+                  .subscribe(locations -> DefaultLoader.getIdeHelper().invokeLater(() -> fillRegion(locations)));
+    }
+
+    private void fillRegion(List<Region> regionList) {
+        if (CollectionUtils.isEmpty(regionList)) {
+            return;
+        }
+        regionList.stream().forEach(region -> cbRegion.addItem(region));
+        final Region defaultLocation =
+                regionList.stream()
+                          .filter(region -> StringUtils.equalsAnyIgnoreCase(region.name(), DEFAULT_REGION))
+                          .findFirst().orElse(regionList.get(0));
+        cbRegion.setSelectedItem(defaultLocation);
     }
 
     /**
@@ -151,5 +174,11 @@ public class NewAppServicePlanDialog extends AzureDialogWrapper {
         } catch (IllegalAccessException e) {
             DefaultLoader.getUIHelper().logError("Failed to load pricing tier", e);
         }
+    }
+
+    // We will mark function only pricing tier as recommend
+    private static boolean isRecommendPricingTier(PricingTier pricingTier) {
+        final String tier = pricingTier.toSkuDescription().tier();
+        return pricingTier == CONSUMPTION_PRICING_TIER || StringUtils.equals(SkuName.ELASTIC_PREMIUM.toString(), tier);
     }
 }

@@ -1,10 +1,31 @@
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeTooltipManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HideableDecorator;
@@ -30,30 +51,18 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
-import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxEditor;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -217,15 +226,15 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
             @Override
-            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+            public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
                 if (mavenProject != null) {
                     setIcon(MavenIcons.MavenProject);
                     setText(mavenProject.toString());
                 }
             }
         });
-        cbArtifact.addItemListener((itemEvent)->updateArtifactConfiguration());
-        cbMavenProject.addItemListener((itemEvent)->updateArtifactConfiguration());
+        cbArtifact.addItemListener((itemEvent) -> updateArtifactConfiguration());
+        cbMavenProject.addItemListener((itemEvent) -> updateArtifactConfiguration());
 
         JLabel labelForNewSlotName = new JLabel("Slot Name");
         labelForNewSlotName.setLabelFor(txtNewSlotName);
@@ -250,22 +259,28 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     @Override
     public synchronized void fillWebApps(List<ResourceEx<WebApp>> webAppLists) {
         cbxWebApp.removeAllItems();
-        webAppLists = webAppLists.stream()
+        List<ResourceEx<WebApp>> sortedWebAppLists = webAppLists
+                .stream()
                 .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
                 .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
                 .collect(Collectors.toList());
-        if (webAppLists.size() == 0) {
+        if (sortedWebAppLists.size() == 0) {
             lblCreateWebApp.setVisible(true);
             cbxWebApp.setVisible(false);
         } else {
             lblCreateWebApp.setVisible(false);
             cbxWebApp.setVisible(true);
             cbxWebApp.addItem(CREATE_NEW_WEBAPP);
-            webAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
-            // Find webapp which id equals to configuration, or use the first available one.
-            final ResourceEx<WebApp> selectWebApp = webAppLists.stream()
-                    .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(webAppConfiguration.getWebAppId()))
-                    .findFirst().orElse(webAppLists.get(0));
+            // Need calculated target id first or fill combo box will trigger event to change selectedWebApp
+            final String configurationWebAppId = webAppConfiguration.getWebAppId();
+            final String targetId = (StringUtils.isEmpty(configurationWebAppId) && selectedWebApp != null) ?
+                                    selectedWebApp.getResource().id() : configurationWebAppId;
+            sortedWebAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
+            final ResourceEx<WebApp> selectWebApp = sortedWebAppLists
+                    .stream()
+                    .filter(webAppResourceEx -> StringUtils.equals(webAppResourceEx.getResource().id(), targetId))
+                    .findFirst()
+                    .orElse(sortedWebAppLists.get(0));
             cbxWebApp.setSelectedItem(selectWebApp);
         }
         selectWebApp();
@@ -386,7 +401,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         } else if (Comparing.equal(CREATE_NEW_WEBAPP, value)) {
             // Create new web app
             cbxWebApp.setSelectedItem(null);
-            ApplicationManager.getApplication().invokeLater(()->createNewWebApp());
+            ApplicationManager.getApplication().invokeLater(() -> createNewWebApp());
         }
     }
 
@@ -402,27 +417,23 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     private void createNewWebApp() {
-        final WebAppCreationDialog dialog = new WebAppCreationDialog(this.webAppConfiguration);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this.getMainPanel());
-        dialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                super.windowClosed(e);
-                WebApp newWebApp = dialog.getCreatedWebApp();
-                if (newWebApp != null) {
-                    webAppConfiguration.setWebAppId(newWebApp.id());
-                    refreshWebApps(true);
-                } else {
-                    refreshWebApps(false);
-                }
+        final WebAppCreationDialog dialog = new WebAppCreationDialog(this.project, this.webAppConfiguration);
+        if (dialog.showAndGet()) {
+            final WebApp webApp = dialog.getCreatedWebApp();
+            if (webApp != null) {
+                webAppConfiguration.setWebAppId(webApp.id());
+                refreshWebApps(true);
+            } else {
+                // In case created failed
+                refreshWebApps(false);
             }
-        });
-        dialog.setVisible(true);
+        } else {
+            refreshWebApps(false);
+        }
     }
 
-    private void toggleSlotPanel(boolean isDeployToSlot) {
-        isDeployToSlot &= (selectedWebApp != null);
+    private void toggleSlotPanel(boolean slot) {
+        boolean isDeployToSlot = slot && (selectedWebApp != null);
         rbtNewSlot.setEnabled(isDeployToSlot);
         rbtExistingSlot.setEnabled(isDeployToSlot);
         lblSlotName.setEnabled(isDeployToSlot);
@@ -466,7 +477,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         private final JComboBox comboBox;
         private final int cellHeight;
-        private final String TEMPLATE_STRING = "<html><div>TEMPLATE</div><small>TEMPLATE</small></html>";
+        private static final String TEMPLATE_STRING = "<html><div>TEMPLATE</div><small>TEMPLATE</small></html>";
 
         public WebAppCombineBoxRender(JComboBox comboBox) {
             this.comboBox = comboBox;
@@ -476,7 +487,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         }
 
         @Override
-        public void customize(JList jList, Object value, int i, boolean b, boolean b1) {
+        public void customize(JList list, Object value, int i, boolean b, boolean b1) {
             if (value == null) {
                 return;
             } else if (value instanceof String) {
@@ -484,10 +495,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             } else {
                 final ResourceEx<WebApp> webApp = (ResourceEx<WebApp>) value;
                 // For label in combobox textfield, just show webapp name
-                final String text = i>=0 ? getWebAppLabelText(webApp.getResource()) : webApp.getResource().name();
+                final String text = i >= 0 ? getWebAppLabelText(webApp.getResource()) : webApp.getResource().name();
                 setText(text);
             }
-            jList.setFixedCellHeight(cellHeight);
+            list.setFixedCellHeight(cellHeight);
         }
 
         private String getStringLabelText(String message) {

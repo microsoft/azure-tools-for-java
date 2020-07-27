@@ -53,7 +53,6 @@ public class PushImageAction extends AzureAnAction {
     private static final String DIALOG_TITLE = "Push Image";
     private final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
 
-
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
 

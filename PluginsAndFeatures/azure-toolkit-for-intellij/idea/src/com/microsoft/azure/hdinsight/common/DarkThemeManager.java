@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.common;
 
 import com.intellij.util.ui.UIUtil;
@@ -26,7 +27,8 @@ import com.intellij.util.ui.UIUtil;
 import java.awt.*;
 
 public class DarkThemeManager {
-    private DarkThemeManager(){}
+    private DarkThemeManager() {
+    }
 
     private static DarkThemeManager instance = null;
 
@@ -42,10 +44,10 @@ public class DarkThemeManager {
     private static final String Blue = "blue";
     private static final String LightBlue = "#5394EC";
 
-    public static DarkThemeManager getInstance(){
-        if(instance == null){
-            synchronized (DarkThemeManager.class){
-                if(instance == null){
+    public static DarkThemeManager getInstance() {
+        if (instance == null) {
+            synchronized (DarkThemeManager.class) {
+                if (instance == null) {
                     instance = new DarkThemeManager();
                 }
             }
@@ -54,8 +56,8 @@ public class DarkThemeManager {
         return instance;
     }
 
-    public String getWarningColor(){
-        if(UIUtil.isUnderDarcula()){
+    public String getWarningColor() {
+        if (UIUtil.isUnderDarcula()) {
             return LightOrange;
         }
 
@@ -63,6 +65,7 @@ public class DarkThemeManager {
     }
 
     public Color getErrorMessageColor() {
+        // TODO: fix the Color with JBColor
         if (UIUtil.isUnderDarcula()) {
             return new Color(255, 80, 80);
         }
@@ -78,23 +81,23 @@ public class DarkThemeManager {
         return new Color(255, 165, 0);
     }
 
-    public String getErrorColor(){
-        if(UIUtil.isUnderDarcula()){
+    public String getErrorColor() {
+        if (UIUtil.isUnderDarcula()) {
             return Rose;
         }
 
         return ColorRed;
     }
 
-    public String getInfoColor(){
-        if(UIUtil.isUnderDarcula()){
+    public String getInfoColor() {
+        if (UIUtil.isUnderDarcula()) {
             return Gray;
         }
 
         return Black;
     }
 
-    public String getHyperLinkColor(){
+    public String getHyperLinkColor() {
         if (UIUtil.isUnderDarcula()) {
             return LightBlue;
         }

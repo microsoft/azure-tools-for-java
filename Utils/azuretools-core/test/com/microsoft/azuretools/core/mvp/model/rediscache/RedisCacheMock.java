@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -191,15 +191,15 @@ public class RedisCacheMock implements RedisCache{
         return new RedisAccessKeysMock();
     }
 
-	@Override
-	public TlsVersion minimumTlsVersion() {
-		return null;
-	}
+    @Override
+    public TlsVersion minimumTlsVersion() {
+        return null;
+    }
 
-	@Override
-	public Map<String, RedisFirewallRule> firewallRules() {
-		return null;
-	}
+    @Override
+    public Map<String, RedisFirewallRule> firewallRules() {
+        return null;
+    }
 
     @Override
     public void forceReboot(RebootType arg0) {

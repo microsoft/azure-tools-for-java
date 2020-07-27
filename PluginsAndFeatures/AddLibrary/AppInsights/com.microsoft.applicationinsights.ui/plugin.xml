@@ -12,13 +12,13 @@
    
    
    <extension point="org.eclipse.ui.commands">
-	  <command
-	  		description="Configure Application Insights"
-	        id="com.microsoft.ui.ai.config"
-	        name="Configure Application Insights...">
-	  </command>
-	</extension>
-	
+      <command
+              description="Configure Application Insights"
+            id="com.microsoft.ui.ai.config"
+            name="Configure Application Insights...">
+      </command>
+    </extension>
+    
     <extension point="org.eclipse.ui.menus">
         <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <menu label="Azure" icon="icons/small/windowsAzure.png" id="com.microsoft.azuretools.webprojmenu">
@@ -41,27 +41,27 @@
         </menuContribution>
     </extension>
   <extension point="org.eclipse.ui.handlers">
-	  <handler
-	        class="com.microsoft.applicationinsights.ui.config.AIConfigCommandHandler"
-	        commandId="com.microsoft.ui.ai.config">
-		<enabledWhen>
-			<with
-				variable="selection">
-				<count value="1"/>
-				<iterate
-					operator="or">
-            		<adapt type="org.eclipse.core.resources.IProject">
-        				<test property="com.microsoft.ui.ai.property.isWebProj"/>
-            		</adapt>
-				</iterate>
-		    </with>
-		</enabledWhen>
-	  </handler>
-	  </extension>
+      <handler
+            class="com.microsoft.applicationinsights.ui.config.AIConfigCommandHandler"
+            commandId="com.microsoft.ui.ai.config">
+        <enabledWhen>
+            <with
+                variable="selection">
+                <count value="1"/>
+                <iterate
+                    operator="or">
+                    <adapt type="org.eclipse.core.resources.IProject">
+                        <test property="com.microsoft.ui.ai.property.isWebProj"/>
+                    </adapt>
+                </iterate>
+            </with>
+        </enabledWhen>
+      </handler>
+      </extension>
   
    <!-- Property testers -->
   <extension point="org.eclipse.core.expressions.propertyTesters">
-  	<propertyTester
+      <propertyTester
       id="com.microsoft.ui.ai.property.testWebProj"
       type="org.eclipse.core.resources.IProject"
       namespace="com.microsoft.ui.ai.property"
@@ -73,10 +73,10 @@
   <!-- Application Insights preference page -->
   <extension point = "org.eclipse.ui.preferencePages">
      <page
-       	id="com.microsoft.ui.preferencepage.applicationinsights"
-       	class="com.microsoft.applicationinsights.preference.ApplicationInsightsPreferencePage"
-       	name="Application Insights"
-       	category="com.persistent.ui.preferencepage.windowsazure">
+           id="com.microsoft.ui.preferencepage.applicationinsights"
+           class="com.microsoft.applicationinsights.preference.ApplicationInsightsPreferencePage"
+           name="Application Insights"
+           category="com.persistent.ui.preferencepage.windowsazure">
      </page>
  </extension>
  </plugin>

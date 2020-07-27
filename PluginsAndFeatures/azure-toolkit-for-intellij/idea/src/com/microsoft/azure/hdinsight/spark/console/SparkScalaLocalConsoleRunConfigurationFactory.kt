@@ -27,12 +27,13 @@ import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.hdinsight.spark.run.SparkLocalRun
 import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfiguration
+import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfiguration
 import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfigurationFactory
 
 class SparkScalaLocalConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaLocalConsoleConfigurationType)
     : ScalaConsoleRunConfigurationFactory(sparkConsoleType) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return SparkScalaLocalConsoleRunConfiguration(project, this, "")
+        return SparkScalaLocalConsoleRunConfiguration(ScalaConsoleRunConfiguration(project, this, ""))
     }
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {

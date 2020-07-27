@@ -45,13 +45,13 @@ class SparkScalaLivyConsoleRunConfigurationFactory(sparkConsoleType: SparkScalaL
                             template.project,
                             this,
                             template,
-                            "${template.name} >> Synapse Spark Livy Interactive Session Console(Scala)")
+                            "${template.name} >> Apache Spark on Azure Synapse Livy Interactive Session Console(Scala)")
                 is CosmosSparkRunConfiguration ->
                     CosmosSparkScalaLivyConsoleRunConfiguration(
                             template.project,
                             this,
                             template,
-                            "${template.name} >> Azure Data Lake Spark Livy Interactive Session Console(Scala)")
+                            "${template.name} >> Apache Spark on Cosmos Livy Interactive Session Console(Scala)")
                 is LivySparkBatchJobRunConfiguration ->
                     SparkScalaLivyConsoleRunConfiguration(
                             template.project,

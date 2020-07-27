@@ -1,30 +1,29 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
-import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -118,16 +117,12 @@ public class SubscriptionManager {
 
     private synchronized void doSetSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws IOException {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.doSetSubscriptionDetails()");
-        if (subscriptionDetails.isEmpty()) {
-            throw new AuthException("No subscription found in the account");
-        }
-
         this.subscriptionDetails = subscriptionDetails;
         updateMapAccordingToList(); // WORKAROUND: Update SubscriptionId->SubscriptionDetail Map
         updateSidToTidMap();
     }
 
-    // WORKAROUND: private helper to construct SubscriptionId->SubscriptionDetail map 
+    // WORKAROUND: private helper to construct SubscriptionId->SubscriptionDetail map
     private void updateMapAccordingToList() throws IOException {
         Map<String, SubscriptionDetail> sid2sd = new ConcurrentHashMap<>();
         for (SubscriptionDetail sd : this.subscriptionDetails) {

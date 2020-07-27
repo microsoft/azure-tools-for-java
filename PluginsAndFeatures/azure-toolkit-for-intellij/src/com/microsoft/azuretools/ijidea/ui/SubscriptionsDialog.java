@@ -1,23 +1,23 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.ijidea.ui;
@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
@@ -39,6 +40,9 @@ import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,6 +83,11 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
      * Open select-subscription dialog.
      */
     public static SubscriptionsDialog go(List<SubscriptionDetail> sdl, Project project) {
+        if (CollectionUtils.isEmpty(sdl)) {
+            PluginUtil.displayInfoDialog("No subscription", "No subscription in current account, you may get a free "
+                    + "one from https://azure.microsoft.com/en-us/free/");
+            return null;
+        }
         SubscriptionsDialog d = new SubscriptionsDialog(sdl, project);
         d.show();
         if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
@@ -120,10 +129,10 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             subscriptionManager.setSubscriptionDetails(sdl);
 
         }, (ex) -> {
-            ex.printStackTrace();
-            //LOGGER.error("refreshSubscriptions", ex);
-            ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
-        });
+                ex.printStackTrace();
+                //LOGGER.error("refreshSubscriptions", ex);
+                ErrorWindow.show(project, ex.getMessage(), "Refresh Subscriptions Error");
+            });
     }
 
     private void setSubscriptions() {
@@ -205,11 +214,10 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
             }
         }
 
-        if (unselectedCount == rc) {
-            JOptionPane.showMessageDialog(contentPane,
-                    "Please select at least one subscription",
-                    "Subscription dialog info",
-                    JOptionPane.INFORMATION_MESSAGE);
+        if (rc != 0 && unselectedCount == rc) {
+            DefaultLoader.getUIHelper().showMessageDialog(
+                    contentPane, "Please select at least one subscription",
+                    "Subscription dialog info", Messages.getInformationIcon());
             return;
         }
 
@@ -228,7 +236,7 @@ public class SubscriptionsDialog extends AzureDialogWrapper {
 
     private class SubscriptionTableModel extends DefaultTableModel {
         final Class[] columnClass = new Class[]{
-                Boolean.class, String.class, String.class
+            Boolean.class, String.class, String.class
         };
 
         @Override

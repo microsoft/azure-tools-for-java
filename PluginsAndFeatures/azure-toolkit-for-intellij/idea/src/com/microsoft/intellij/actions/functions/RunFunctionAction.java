@@ -40,7 +40,6 @@ import com.microsoft.intellij.actions.RunConfigurationUtils;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

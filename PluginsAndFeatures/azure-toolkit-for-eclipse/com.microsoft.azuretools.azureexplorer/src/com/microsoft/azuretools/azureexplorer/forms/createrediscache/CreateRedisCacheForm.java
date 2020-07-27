@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -496,7 +496,7 @@ public class CreateRedisCacheForm extends AzureTitleAreaDialogWrapper {
                         LOG.log("Error occurred while notifyCompletion in RedisCache.", ex);
                     }
                 }
-            });
+            }, MoreExecutors.directExecutor());
         } catch (Exception ex) {
             EventUtil.logError(operation, ErrorType.userError, ex, null, null);
             operation.complete();

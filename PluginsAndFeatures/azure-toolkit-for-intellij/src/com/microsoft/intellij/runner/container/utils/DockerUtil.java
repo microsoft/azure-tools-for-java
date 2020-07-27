@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.container.utils;
 
-import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificates;

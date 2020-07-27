@@ -26,12 +26,12 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterStatesCtrlProvider;
 import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterStatesModel;
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
-import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
@@ -63,12 +63,12 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
     @Nullable
     private Subscription refreshSub;
     @NotNull
-    private CosmosSparkClusterStatesCtrlProvider ctrlProvider;
+    private final CosmosSparkClusterStatesCtrlProvider ctrlProvider;
 
     private static final int REFRESH_INTERVAL = 2;
 
-    public CosmosSparkClusterMonitorDialog(@NotNull CosmosSparkClusterNode clusterNode,
-                                           @NotNull AzureSparkCosmosCluster cluster) {
+    public CosmosSparkClusterMonitorDialog(@NotNull final CosmosSparkClusterNode clusterNode,
+                                           @NotNull final AzureSparkCosmosCluster cluster) {
         super((Project) clusterNode.getProject(), true);
         this.ctrlProvider = new CosmosSparkClusterStatesCtrlProvider(
                 this, new IdeaSchedulers((Project) clusterNode.getProject()), cluster);
@@ -78,16 +78,16 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
         this.setModal(true);
         this.getWindow().addWindowListener(new WindowAdapter() {
             @Override
-            public void windowOpened(WindowEvent e) {
+            public void windowOpened(final WindowEvent e) {
                 refreshSub = ctrlProvider.updateAll()
-                        .retryWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
-                        .repeatWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
-                        .subscribe();
+                                         .retryWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
+                                         .repeatWhen(ob -> ob.delay(REFRESH_INTERVAL, TimeUnit.SECONDS))
+                                         .subscribe();
                 super.windowOpened(e);
             }
 
             @Override
-            public void windowClosing(WindowEvent e) {
+            public void windowClosing(final WindowEvent e) {
                 if (refreshSub != null) {
                     refreshSub.unsubscribe();
                 }
@@ -104,7 +104,7 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
 
     // Data -> Components
     @Override
-    public void setData(@NotNull CosmosSparkClusterStatesModel data) {
+    public void setData(@NotNull final CosmosSparkClusterStatesModel data) {
         ApplicationManager.getApplication().invokeAndWait(() -> {
             masterStateLabel.setText(data.getMasterState());
             workerStateLabel.setText(data.getWorkerState());
@@ -132,7 +132,7 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
 
     // Components -> Data
     @Override
-    public void getData(@NotNull CosmosSparkClusterStatesModel data) {
+    public void getData(@NotNull final CosmosSparkClusterStatesModel data) {
     }
 
     @NotNull

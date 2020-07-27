@@ -35,11 +35,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.SimpleListCellRenderer;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.cluster.SparkClusterType;
@@ -59,6 +54,10 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.hdinsight.messages.HDInsightBundle;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -134,7 +133,8 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
 
         // Make error message widget hideable
         authErrorDetailsPanel.setBorder(BorderFactory.createEmptyBorder());
-        authErrorDetailsDecorator = new HideableDecorator(authErrorDetailsPanelHolder, "Authenticaton Error Details:", true);
+        authErrorDetailsDecorator = new HideableDecorator(authErrorDetailsPanelHolder,
+                                                          "Authentication Error Details:", true);
         authErrorDetailsDecorator.setContentComponent(authErrorDetailsPanel);
         authErrorDetailsDecorator.setOn(false);
 
@@ -182,7 +182,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
             CardLayout layout = (CardLayout) (authCardsPanel.getLayout());
             layout.show(authCardsPanel, ((AuthType) e.getItem()).getTypeName());
         });
-        
+
         // field validation check
         Arrays.asList(clusterComboBox, authComboBox).forEach(comp -> comp.addActionListener(event -> validateBasicInputs()));
 
@@ -204,7 +204,6 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected void printLogLine(@NotNull ConsoleViewContentType logLevel, @NotNull String log) {
         consoleViewPanel.print(DateTime.now().toString() + " " + logLevel.toString().toUpperCase() + " " + log + "\n", logLevel);
     }
-
 
     @Nullable
     @Override
@@ -354,7 +353,7 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     }
 
     protected boolean isBasicAuthSelected() {
-        return  authComboBox.getSelectedItem() == AuthType.BasicAuth;
+        return authComboBox.getSelectedItem() == AuthType.BasicAuth;
     }
 
     protected void validateBasicInputs() {
@@ -441,7 +440,6 @@ public class AddNewClusterForm extends DialogWrapper implements SettableControl<
     protected Action[] createLeftSideActions() {
         return new Action[0];
     }
-
 
     @Nullable
     @Override

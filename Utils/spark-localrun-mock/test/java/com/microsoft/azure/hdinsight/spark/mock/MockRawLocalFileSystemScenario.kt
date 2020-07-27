@@ -24,9 +24,11 @@ package com.microsoft.azure.hdinsight.spark.mock
 
 import cucumber.api.java.en.Given
 import cucumber.api.java.en.Then
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.assertj.core.api.Assertions.assertThat
 import java.io.File
+import kotlin.test.assertNotNull
 
 class MockRawLocalFileSystemScenario {
     private var workDir = ""
@@ -41,5 +43,12 @@ class MockRawLocalFileSystemScenario {
     fun verifyPathToFile(path: String, expected: String) {
         assertThat(MockRawLocalFileSystem().pathToFile(Path(path)).toURI())
                 .isEqualTo(File(expected).toURI())
+    }
+
+    @Then("^mocked file '(.*)' should exists$")
+    fun verifyFileExist(path: String) {
+        val fs = MockRawLocalFileSystem()
+        fs.conf = Configuration()
+        assertNotNull(fs.getFileStatus(Path(path)))
     }
 }

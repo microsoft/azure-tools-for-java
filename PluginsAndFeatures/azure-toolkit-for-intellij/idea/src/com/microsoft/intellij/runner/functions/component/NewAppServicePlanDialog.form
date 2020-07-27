@@ -26,26 +26,9 @@
             </properties>
             <border type="none"/>
             <children>
-              <component id="b31ac" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <labelFor value="72d80"/>
-                  <text value="Pricing Tier:"/>
-                </properties>
-              </component>
-              <component id="38ad" class="javax.swing.JComboBox" binding="cbPricing">
+              <component id="6370b" class="javax.swing.JComboBox" binding="cbRegion">
                 <constraints>
                   <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <enabled value="true"/>
-                </properties>
-              </component>
-              <component id="6370b" class="javax.swing.JComboBox" binding="cbLocation">
-                <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <editable value="false"/>
@@ -64,7 +47,7 @@
               </component>
               <component id="b10e8" class="javax.swing.JLabel">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <labelFor value="8a6b9"/>
@@ -78,6 +61,23 @@
                 <properties>
                   <labelFor value="bc0d5"/>
                   <text value="Name:"/>
+                </properties>
+              </component>
+              <component id="b31ac" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="72d80"/>
+                  <text value="Pricing Tier:"/>
+                </properties>
+              </component>
+              <component id="38ad" class="javax.swing.JComboBox" binding="cbPricing">
+                <constraints>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <enabled value="true"/>
                 </properties>
               </component>
             </children>

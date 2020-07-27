@@ -86,6 +86,7 @@ open class SparkSubmitJobAction : AzureAnAction() {
                        mainClassName: String?,
                        operation: Operation?) {
         val executor = ExecutorRegistry.getInstance().getExecutorById(SparkBatchJobRunExecutor.EXECUTOR_ID)
+            ?: throw RuntimeException("Can't find ${SparkBatchJobRunExecutor.EXECUTOR_ID} from executor registry")
 
         runConfigurationSetting.isEditBeforeRun = true
 

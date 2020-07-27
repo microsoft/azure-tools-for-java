@@ -30,6 +30,7 @@ public class TelemetryConstants {
     // production name
     public static final String WEBAPP = "webapp";
     public static final String FUNCTION = "function";
+    public static final String SPRING_CLOUD = "springcloud";
     public static final String ACR = "acr";
     public static final String ARM = "arm";
     public static final String DOCKER = "docker";
@@ -67,6 +68,8 @@ public class TelemetryConstants {
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
+    public static final String START_STREAMING_LOG_WEBAPP = "start-streaming-log-webapp";
+    public static final String STOP_STREAMING_LOG_WEBAPP = "stop-streaming-log-webapp";
     public static final String TRIGGER_FUNCTION = "trigger-function";
     public static final String ENABLE_FUNCTION = "enable-function";
     public static final String DISABLE_FUNCTION = "disable-function";
@@ -80,7 +83,25 @@ public class TelemetryConstants {
     public static final String STOP_FUNCTION_APP = "stop-function-app";
     public static final String RESTART_FUNCTION_APP = "restart-function-app";
     public static final String SHOWPROP_FUNCTION_APP = "showprop-function-app";
+    public static final String START_STREAMING_LOG_FUNCTION_APP = "start-streaming-log-function-app";
+    public static final String STOP_STREAMING_LOG_FUNCTION_APP = "stop-streaming-log-function-app";
     public static final String OPEN_INBROWSER_FUNCTION_APP = "open-inbrowser-function-app";
+
+    public static final String START_STREAMING_LOG_SPRING_CLOUD_APP = "start-streaming-log-springcloud-app";
+    public static final String STOP_STREAMING_LOG_SPRING_CLOUD_APP = "stop-streaming-log-springcloud-app";
+    public static final String ADD_DEPENDENCY_SPRING_CLOUD_APP = "add-dependency-springcloud-app";
+    public static final String CREATE_SPRING_CLOUD_APP = "create-springcloud-app";
+    public static final String DEPLOY_SPRING_CLOUD_APP = "deploy-springcloud-app";
+    public static final String DELETE_SPRING_CLOUD_APP = "delete-springcloud-app";
+    public static final String START_SPRING_CLOUD_APP = "start-springcloud-app";
+    public static final String STOP_SPRING_CLOUD_APP = "stop-springcloud-app";
+    public static final String RESTART_SPRING_CLOUD_APP = "restart-springcloud-app";
+    public static final String SAVE_SPRING_CLOUD_APP = "save-springcloud-app";
+    public static final String REFRESH_SPRING_CLOUD_APP = "refresh-springcloud-app";
+    public static final String SHOWPROP_SPRING_CLOUD_APP = "showprop-springcloud-app";
+    public static final String OPEN_IN_BROWSER_SPRING_CLOUD_APP = "open-inbrowser-springcloud-app";
+    public static final String OPEN_IN_PORTAL_SPRING_CLOUD_APP = "open-inportal-springcloud-app";
+
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
     public static final String CREATE_DOCKER_HOST = "create-docker-host";
     public static final String DEPLOY_DOCKER_HOST = "deploy-docker-host";
@@ -105,6 +126,8 @@ public class TelemetryConstants {
     public static final String SWAP_WEBAPP_SLOT = "swap-webapp-slot";
     public static final String SHOW_WEBAPP_SLOT_PROP = "show-webapp-slot-prop";
     public static final String OPERN_WEBAPP_SLOT_BROWSER = "open-webappslot-inbrowser";
+    public static final String START_STREAMING_LOG_WEBAPP_SLOT = "start-streaming-log-webapp-slot";
+    public static final String STOP_STREAMING_LOG_WEBAPP_SLOT = "stop-streaming-log-webapp-slot";
     public static final String OPEN_CREATEWEBAPP_DIALOG = "open-create-webapp-dialog";
     public static final String REFRESH_METADATA = "refresh";
     public static final String SIGNIN = "signin";
@@ -144,6 +167,7 @@ public class TelemetryConstants {
     public static final String ACR_READPROP = "readprop-acr";
     public static final String SIGNIN_DC = "dc";
     public static final String SIGNIN_SP = "sp";
+    public static final String SIGNIN_AZ = "az";
     public static final String CHOOSE_REFERENCE_JAR_GEN2 = "choose-reference-jar-gen2";
     public static final String CREATE_DEPLOYMENT = "create-deployment";
     public static final String UPDATE_DEPLOYMENT = "update-deployment";
@@ -185,9 +209,11 @@ public class TelemetryConstants {
 
     public static final Map<String, String> signInSPProp = new HashMap<>();
     public static final Map<String, String> signInDCProp = new HashMap<>();
+    public static final Map<String, String> signInAZProp = new HashMap<>();
 
     static {
         signInSPProp.put(SIGNIN_METHOD, SIGNIN_SP);
         signInDCProp.put(SIGNIN_METHOD, SIGNIN_DC);
+        signInAZProp.put(SIGNIN_METHOD, SIGNIN_AZ);
     }
 }

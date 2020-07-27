@@ -2,8 +2,8 @@
 <!DOCTYPE ApplicationInsights>
 <ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" schemaVersion="2014-05-30">
   <!--
-	Please do not modify below instrumentation key.
-	Use of this instrumentation key by any application other than Azure Toolkit for Eclipse is strictly prohibited.
+  Please do not modify below instrumentation key.
+  Use of this instrumentation key by any application other than Azure Toolkit for Eclipse is strictly prohibited.
   -->
   <InstrumentationKey>${instrkey}</InstrumentationKey>
   <ContextInitializers>
@@ -11,9 +11,9 @@
   <TelemetryInitializers>
     <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer"/>
     <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer"/>
-	<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer"/>
-	<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer"/>
-	<Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer"/>
+  <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer"/>
+  <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer"/>
+  <Add type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer"/>
   </TelemetryInitializers>
   <TelemetryModules>
     <Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule"/>

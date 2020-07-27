@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.wizards.createarmvm;
 
 import com.intellij.openapi.application.ApplicationManager;
@@ -82,13 +83,13 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
     private Azure azure;
 
-    public MachineSettingsStep(VMWizardModel mModel, Project project) {
+    public MachineSettingsStep(VMWizardModel model, Project project) {
         super("Virtual Machine Basic Settings", null, null);
 
         this.project = project;
-        this.model = mModel;
+        this.model = model;
 
-        model.configStepList(createVmStepsList, 2);
+        this.model.configStepList(createVmStepsList, 2);
 
         DocumentListener documentListener = new DocumentListener() {
             @Override
@@ -216,7 +217,8 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
                 public void run(@NotNull ProgressIndicator progressIndicator) {
                     progressIndicator.setIndeterminate(true);
 
-                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes = azure.virtualMachines().sizes().listByRegion(model.getRegion().name());
+                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes =
+                            azure.virtualMachines().sizes().listByRegion(model.getRegion().name());
                     Collections.sort(sizes, new Comparator<VirtualMachineSize>() {
                         @Override
                         public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
@@ -257,19 +259,20 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
 
     @Override
     public WizardStep onNext(VMWizardModel model) {
-        WizardStep wizardStep = super.onNext(model);
 
         String name = vmNameTextField.getText();
 
         if (name.length() > 15 || name.length() < 3) {
-            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must be between 3 and 15 character long.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            DefaultLoader.getUIHelper().showError("Invalid virtual machine name. The name must be between 3 and 15 "
+                                                          + "character long.", "Error creating the virtual machine");
             return this;
         }
 
         if (!name.matches("^[A-Za-z][A-Za-z0-9-]+[A-Za-z0-9]$")) {
-            JOptionPane.showMessageDialog(null, "Invalid virtual machine name. The name must start with a letter, \n" +
-                    "contain only letters, numbers, and hyphens, " +
-                    "and end with a letter or number.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            DefaultLoader.getUIHelper().showError(
+                    "Invalid virtual machine name. The name must start with a letter, \ncontain only letters, " +
+                            "numbers, and hyphens, and end with a letter or number.",
+                    "Error creating the virtual machine");
             return this;
         }
 
@@ -279,13 +282,18 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
             String conf = new String(confirmPasswordField.getPassword());
 
             if (!password.equals(conf)) {
-                JOptionPane.showMessageDialog(null, "Password confirmation should match password", "Error creating the service", JOptionPane.ERROR_MESSAGE);
+                DefaultLoader.getUIHelper().showError("Password confirmation should match password", "Error creating "
+                        + "the service");
                 return this;
             }
 
-            if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
-                JOptionPane.showMessageDialog(null, "The password does not conform to complexity requirements.\n" +
-                        "It should be at least eight characters long and contain a mixture of upper case, lower case, digits and symbols.", "Error creating the virtual machine", JOptionPane.ERROR_MESSAGE);
+            if (!password.matches("(?=^.{8,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])"
+                                          + "(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|"
+                                          + "(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*")) {
+                DefaultLoader.getUIHelper().showError(
+                        "The password does not conform to complexity requirements.\nIt should be at least eight "
+                                + "characters long and contain a mixture of upper case, lower case, digits and "
+                                + "symbols.", "Error creating the virtual machine");
                 return this;
             }
         }
@@ -293,11 +301,12 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         String certificate = certificateCheckBox.isSelected() ? certificateField.getText() : "";
 
         model.setName(name);
-        model.setSize((String)vmSizeComboBox.getSelectedItem());
+        model.setSize((String) vmSizeComboBox.getSelectedItem());
         model.setUserName(vmUserTextField.getText());
         model.setPassword(password);
         model.setCertificate(certificate);
 
+        WizardStep wizardStep = super.onNext(model);
         return wizardStep;
     }
 
@@ -305,17 +314,17 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         ApplicationManager.getApplication().invokeAndWait(new Runnable() {
             @Override
             public void run() {
-//                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
-//                        ? "Small"
-//                        : model.getVirtualMachineImage().getRecommendedVMSize();
-//
-//                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
-//                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
-//                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
-//                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
-//                        break;
-//                    }
-//                }
+            //                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
+            //                        ? "Small"
+            //                        : model.getVirtualMachineImage().getRecommendedVMSize();
+            //
+            //                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
+            //                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
+            //                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
+            //                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
+            //                        break;
+            //                    }
+            //                }
             }
         }, ModalityState.any());
     }

@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azuretools.core.ui;
 
 import java.lang.reflect.InvocationTargetException;
@@ -32,7 +33,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -60,27 +60,28 @@ import org.eclipse.swt.events.SelectionEvent;
 
 
 public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
+    private static final String SERVICE_PRINCIPAL_CREATION_STATUS = "Service Principal Creation Status";
     private static ILog LOG = Activator.getDefault().getLog();
     private Table table;
     org.eclipse.swt.widgets.List listCreatedFiles;
-    
+
     private String destinationFolder;
-    private Map<String, List<String> > tidSidsMap;
+    private Map<String, List<String>> tidSidsMap;
     private final AccessTokenAzureManager preAccessTokenAzureManager;
 
     private String selectedAuthFilePath;
-    
+
     public String getSelectedAuthFilePath() {
         return selectedAuthFilePath;
     }
-    
+
     public static SrvPriCreationStatusDialog go(AccessTokenAzureManager preAccessTokenAzureManager,
                                                 Shell parentShell,
-                                                Map<String, List<String> > tidSidsMap,
+                                                Map<String, List<String>> tidSidsMap,
                                                 String destinationFolder) {
-    	SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(preAccessTokenAzureManager, parentShell);
-    	d.tidSidsMap = tidSidsMap;
-    	d.destinationFolder = destinationFolder;
+        SrvPriCreationStatusDialog d = new SrvPriCreationStatusDialog(preAccessTokenAzureManager, parentShell);
+        d.tidSidsMap = tidSidsMap;
+        d.destinationFolder = destinationFolder;
         d.create();
         if (d.open() == Window.OK) {
             return d;
@@ -105,51 +106,52 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setMessage("Service Principal Creation Status");
-        setTitle("Service Principal Creation Status");
+        setMessage(SERVICE_PRINCIPAL_CREATION_STATUS);
+        setTitle(SERVICE_PRINCIPAL_CREATION_STATUS);
+        getShell().setText(SERVICE_PRINCIPAL_CREATION_STATUS);
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
+
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 300;
-        table.setLayoutData(gd_table);
+        GridData gdTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdTable.heightHint = 300;
+        table.setLayoutData(gdTable);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-        
+
         TableColumn tblclmnStep = new TableColumn(table, SWT.NONE);
         tblclmnStep.setWidth(250);
         tblclmnStep.setText("Step");
-        
+
         TableColumn tblclmnResult = new TableColumn(table, SWT.NONE);
         tblclmnResult.setWidth(100);
         tblclmnResult.setText("Result");
-        
+
         TableColumn tblclmnDetails = new TableColumn(table, SWT.NONE);
         tblclmnDetails.setWidth(250);
         tblclmnDetails.setText("Details");
-        
+
         Label lblCreatedAuthenticationFiles = new Label(container, SWT.NONE);
         lblCreatedAuthenticationFiles.setText("Created authentication file(s) (One per Active Directory instance/tenant):");
-        
+
         listCreatedFiles = new org.eclipse.swt.widgets.List(container, SWT.BORDER);
         listCreatedFiles.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        
+
         return area;
     }
-    
+
     @Override
     public void create() {
         super.create();
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-              System.out.println("Starting createServicePrincipalAsync()...");
-              createServicePrincipalAsync();
+                System.out.println("Starting createServicePrincipalAsync()...");
+                createServicePrincipalAsync();
             }
-          });
-    } 
+        });
+    }
 
     /**
      * Create contents of the button bar.
@@ -166,12 +168,12 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
         });
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
-    
+
     private void onOk() {
         if (listCreatedFiles.getItemCount() > 0) {
             // select the first in the list
             selectedAuthFilePath = listCreatedFiles.getItem(0);
-            // select the first selected 
+            // select the first selected
             for (String path : listCreatedFiles.getSelection()) {
                 selectedAuthFilePath = path;
                 break;
@@ -183,8 +185,8 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
     private void createServicePrincipalAsync() {
         try {
             class StatusTask implements IRunnableWithProgress, IListener<Status> {
-            	IProgressMonitor progressIndicator = null;
-            	
+                IProgressMonitor progressIndicator = null;
+
                 @Override
                 public void listen(Status status) {
                     Display.getDefault().asyncExec(new Runnable() {
@@ -204,7 +206,7 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
 
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                	progressIndicator = monitor;
+                    progressIndicator = monitor;
                     monitor.beginTask("Creating Service Principal...", IProgressMonitor.UNKNOWN);
                     for (String tid : tidSidsMap.keySet()) {
                         if (monitor.isCanceled()) {
@@ -217,7 +219,7 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
                             });
                             return;
                         }
-                        List <String> sidList = tidSidsMap.get(tid);
+                        List<String> sidList = tidSidsMap.get(tid);
                         if (!sidList.isEmpty()) {
                             try {
                                 Display.getDefault().asyncExec(new Runnable() {
@@ -230,7 +232,7 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
                                 Date now = new Date();
                                 String suffix = new SimpleDateFormat("yyyyMMddHHmmss").format(now);;
                                 String authFilepath = SrvPriManager.createSp(
-                                		preAccessTokenAzureManager, tid, sidList, suffix, this, destinationFolder);
+                                        preAccessTokenAzureManager, tid, sidList, suffix, this, destinationFolder);
                                 if (authFilepath != null) {
                                     Display.getDefault().asyncExec(new Runnable() {
                                         @Override
@@ -242,8 +244,9 @@ public class SrvPriCreationStatusDialog extends AzureTitleAreaDialogWrapper {
                                 }
                             } catch (Exception ex) {
                                 ex.printStackTrace();
-                                LOG.log(new org.eclipse.core.runtime.Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@createServicePrincipalAsync@SrvPriCreationStatusDialog", ex));
-                                
+                                LOG.log(new org.eclipse.core.runtime.Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                                        "run@ProgressDialog@createServicePrincipalAsync@SrvPriCreationStatusDialog", ex));
+
                             }
                         }
                     }

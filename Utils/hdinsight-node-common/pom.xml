@@ -4,7 +4,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.35.0</version>
+        <version>3.41.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>hdinsight-node-common</artifactId>
@@ -379,7 +379,7 @@
         <dependency>
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>spark-localrun-mock</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1</version>
         </dependency>
     </dependencies>
 </project>

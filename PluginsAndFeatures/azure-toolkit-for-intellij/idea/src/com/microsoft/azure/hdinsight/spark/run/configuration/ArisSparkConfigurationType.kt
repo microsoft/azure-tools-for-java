@@ -46,7 +46,7 @@ object ArisSparkConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark on SQL Server Big Data Cluster Run Configuration"
+        return "Apache Spark on SQL Server Big Data Cluster Run Configuration"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

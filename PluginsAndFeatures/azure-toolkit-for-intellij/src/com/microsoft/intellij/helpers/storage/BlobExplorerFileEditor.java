@@ -1,34 +1,32 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileChooser.FileChooserFactory;
-import com.intellij.openapi.fileChooser.FileSaverDescriptor;
-import com.intellij.openapi.fileChooser.FileSaverDialog;
+import com.intellij.openapi.fileChooser.*;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -45,7 +43,6 @@ import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.forms.UploadBlobFileForm;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.util.PluginUtil;
@@ -58,9 +55,9 @@ import com.microsoft.tooling.msservices.model.storage.BlobFile;
 import com.microsoft.tooling.msservices.model.storage.BlobItem;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.apache.commons.io.IOUtils;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -77,8 +74,8 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -144,8 +141,6 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         blobListTable.getColumnModel().getColumn(2).setPreferredWidth(10);
         blobListTable.getColumnModel().getColumn(3).setPreferredWidth(15);
         blobListTable.getColumnModel().getColumn(4).setPreferredWidth(40);
-        blobListTable.setRowMargin(3);
-        blobListTable.setRowHeight(blobListTable.getRowHeight() + blobListTable.getRowMargin());
 
         JTableHeader tableHeader = blobListTable.getTableHeader();
         Dimension headerSize = tableHeader.getPreferredSize();
@@ -171,16 +166,18 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
 
         sorter.setComparator(2, new Comparator<String>() {
             @Override
-            public int compare(String s, String t1) {
-                if (s == null || s.isEmpty()) {
-                    s = "0";
+            public int compare(String f, String s) {
+                String first = f;
+                String second = s;
+                if (first == null || first.isEmpty()) {
+                    first = "0";
                 }
 
-                if (t1 == null || t1.isEmpty()) {
-                    t1 = "0";
+                if (second == null || second.isEmpty()) {
+                    second = "0";
                 }
 
-                return getValue(s).compareTo(getValue(t1));
+                return getValue(first).compareTo(getValue(second));
             }
 
             private Long getValue(String strValue) {
@@ -200,7 +197,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                     String value = strValue.substring(0, strValue.length() - 1);
 
                     if (value.isEmpty()) {
-                        return 0l;
+                        return 0L;
                     }
 
                     double l = Double.parseDouble(value);
@@ -217,7 +214,6 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         sorter.setSortKeys(sortKeys);
         sorter.sort();
 
-        backButton.setIcon(CommonIcons.INSTANCE.getOpenParent());
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -284,13 +280,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         };
 
-        refreshButton.setIcon(CommonIcons.INSTANCE.getRefresh());
         refreshButton.addActionListener(queryAction);
-
-        queryButton.setIcon(CommonIcons.INSTANCE.getSearch());
         queryButton.addActionListener(queryAction);
 
-        deleteButton.setIcon(CommonIcons.INSTANCE.getDiscard());
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -298,7 +290,6 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        saveAsButton.setIcon(CommonIcons.INSTANCE.getSaveChanges());
         saveAsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -306,7 +297,6 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        openButton.setIcon(CommonIcons.INSTANCE.getOpen());
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -314,7 +304,6 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        uploadButton.setIcon(CommonIcons.INSTANCE.getUpload());
         uploadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -364,23 +353,23 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                             for (BlobItem blobItem : blobItems) {
                                 if (blobItem instanceof BlobDirectory) {
                                     model.addRow(new Object[]{
-                                            AllIcons.Nodes.Folder,
-                                            blobItem.getName(),
-                                            "",
-                                            "",
-                                            "",
-                                            blobItem.getUri()
+                                        UIHelperImpl.loadIcon("storagefolder.png"),
+                                        blobItem.getName(),
+                                        "",
+                                        "",
+                                        "",
+                                        blobItem.getUri()
                                     });
                                 } else {
                                     BlobFile blobFile = (BlobFile) blobItem;
 
-                                    model.addRow(new Object[]{
-                                            AllIcons.FileTypes.Any_type,
-                                            blobFile.getName(),
-                                            UIHelperImpl.readableFileSize(blobFile.getSize()),
-                                            new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
-                                            blobFile.getContentType(),
-                                            blobFile.getUri()
+                                    model.addRow(new String[]{
+                                        "",
+                                        blobFile.getName(),
+                                        UIHelperImpl.readableFileSize(blobFile.getSize()),
+                                        new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
+                                        blobFile.getContentType(),
+                                        blobFile.getUri()
                                     });
                                 }
                             }
@@ -532,7 +521,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         final BlobFile blobItem = getFileSelection();
 
         if (blobItem != null) {
-            if (JOptionPane.showConfirmDialog(mainPanel, "Are you sure you want to delete this blob?", "Delete Blob", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION) {
+            boolean isConfirm = DefaultLoader.getUIHelper().showYesNoDialog(mainPanel, "Are you sure you want to "
+                    + "delete this blob?", "Delete Blob", null);
+            if (isConfirm) {
                 setUIState(true);
 
                 ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting blob...", false) {
@@ -582,9 +573,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
 
         FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(SAVE_AS, "Select location to save blob file.");
         final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, this.project);
-        final VirtualFileWrapper save = dialog.save(
-                LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")),
-                fileSelection.getName());
+        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), "");
 
         if (save != null) {
             downloadSelectedFile(save.getFile(), false);
@@ -645,7 +634,8 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                                         Throwable connectionFault = e.getCause().getCause();
 
                                         progressIndicator.setText("Error downloading Blob");
-                                        progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ? "Connection timed out" : connectionFault.getMessage());
+                                        progressIndicator.setText2((connectionFault instanceof SocketTimeoutException) ?
+                                                                   "Connection timed out" : connectionFault.getMessage());
                                     } catch (IOException ex) {
                                         try {
                                             final Process p;
@@ -695,8 +685,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                 String path = form.getFolder();
                 File selectedFile = form.getSelectedFile();
 
-                if (!path.endsWith("/"))
+                if (!path.endsWith("/")) {
                     path = path + "/";
+                }
 
                 if (path.startsWith("/")) {
                     path = path.substring(1);

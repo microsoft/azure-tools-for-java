@@ -1,33 +1,33 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.hdinsight.common;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
+package com.microsoft.azure.hdinsight.common;
 
 import com.intellij.ide.ui.UISettings;
 import com.intellij.ide.ui.UISettingsListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.hdinsight.sdk.cluster.EmulatorClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.LivyCluster;
@@ -43,10 +43,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -56,6 +53,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.HDINSIGHT;
 
 public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor {
 
@@ -67,28 +66,29 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
     private JButton openSparkUIButton;
 
     private String fontFace;
-    private final List<IHtmlElement> cachedInfo = new ArrayList<IHtmlElement>();
+    private final List<IHtmlElement> cachedInfo = new ArrayList<>();
     private String toolWindowText;
 
     private PropertyChangeSupport changeSupport;
-    private ToolWindow toolWindow;
+    private final ToolWindow toolWindow;
 
     private IClusterDetail clusterDetail;
     private int batchId;
 
-    public SparkSubmissionToolWindowProcessor(ToolWindow toolWindow) {
+    public SparkSubmissionToolWindowProcessor(final ToolWindow toolWindow) {
         this.toolWindow = toolWindow;
     }
 
     public void initialize() {
         ApplicationManager.getApplication().assertIsDispatchThread();
-        
+
+        // TODO: Fix deprecated API "addUISettingsListener"
         UISettings.getInstance().addUISettingsListener(new UISettingsListener() {
             @Override
-            public void uiSettingsChanged(UISettings uiSettings) {
+            public void uiSettingsChanged(final UISettings uiSettings) {
                 synchronized (this) {
-                    for (IHtmlElement htmlElement : cachedInfo) {
-                        htmlElement.ChangeTheme();
+                    for (final IHtmlElement htmlElement : cachedInfo) {
+                        htmlElement.changeTheme();
                     }
 
                     setToolWindowText(parserHtmlElementList(cachedInfo));
@@ -99,86 +99,89 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
 
         fontFace = jEditorPanel.getFont().getFamily();
 
-        JPanel jPanel = new JPanel();
+        final JPanel jPanel = new JPanel();
         jPanel.setLayout(new GridBagLayout());
 
-        jEditorPanel.setMargin(new Insets(0, 10, 0, 0));
-        JBScrollPane scrollPane = new JBScrollPane(jEditorPanel);
+        jEditorPanel.setMargin(JBUI.insetsLeft(10));
+        final JBScrollPane scrollPane = new JBScrollPane(jEditorPanel);
 
         stopButton = new JButton(PluginUtil.getIcon(CommonConst.StopIconPath));
         stopButton.setDisabledIcon(PluginUtil.getIcon(CommonConst.StopDisableIconPath));
         stopButton.setEnabled(false);
         stopButton.setToolTipText("stop execution of current application");
-        stopButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                DefaultLoader.getIdeHelper().executeOnPooledThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (clusterDetail != null) {
-                            AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
-                            EventUtil.logEvent(EventType.info, HDINSIGHT,
-                                HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
-                            try {
-                                String livyUrl = clusterDetail instanceof LivyCluster ? ((LivyCluster) clusterDetail).getLivyBatchUrl() : null;
-                                HttpResponse deleteResponse = SparkBatchSubmission.getInstance().killBatchJob(livyUrl, batchId);
-                                if (deleteResponse.getCode() == 201 || deleteResponse.getCode() == 200) {
-                                    jobStatusManager.setJobKilled();
-                                    setInfo("========================Stop application successfully=======================");
-                                } else {
-                                    setError(String.format("Error : Failed to stop spark application. error code : %d, reason :  %s.", deleteResponse.getCode(), deleteResponse.getContent()));
-                                }
-                            } catch (IOException exception) {
-                                setError("Error : Failed to stop spark application. exception : " + exception.toString());
-                            }
-                        }
+        stopButton.addActionListener(e -> DefaultLoader.getIdeHelper().executeOnPooledThread(() -> {
+            if (clusterDetail != null) {
+                AppInsightsClient.create(HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"),
+                                         null);
+                EventUtil.logEvent(EventType.info, HDINSIGHT,
+                                   HDInsightBundle.message("SparkSubmissionStopButtionClickEvent"), null);
+                try {
+                    final String livyUrl = clusterDetail instanceof LivyCluster
+                                           ? ((LivyCluster) clusterDetail).getLivyBatchUrl()
+                                           : null;
+                    final HttpResponse deleteResponse =
+                            SparkBatchSubmission.getInstance().killBatchJob(livyUrl, batchId);
+                    if (deleteResponse.getCode() == 201 || deleteResponse.getCode() == 200) {
+                        jobStatusManager.setJobKilled();
+                        setInfo("========================Stop application successfully"
+                                        + "=======================");
+                    } else {
+                        setError(String.format(
+                                "Error : Failed to stop spark application. error code : %d, reason :  %s.",
+                                deleteResponse.getCode(),
+                                deleteResponse.getContent()));
                     }
-                });
+                } catch (final IOException exception) {
+                    setError("Error : Failed to stop spark application. exception : "
+                                     + exception.toString());
+                }
             }
-        });
-
+        }));
 
         openSparkUIButton = new JButton(
                 PluginUtil.getIcon(IconPathBuilder
-                        .custom(CommonConst.OpenSparkUIIconName)
-                        .build()));
+                                           .custom(CommonConst.OpenSparkUIIconName)
+                                           .build()));
         openSparkUIButton.setDisabledIcon(PluginUtil.getIcon(CommonConst.OpenSparkUIDisableIconPath));
         openSparkUIButton.setEnabled(false);
         openSparkUIButton.setToolTipText("open the corresponding Spark UI page");
-        openSparkUIButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (Desktop.isDesktopSupported()) {
-                    try {
-                        if(jobStatusManager.isApplicationGenerated()){
-                            String connectionURL = clusterDetail.getConnectionUrl();
-                            String sparkApplicationUrl = clusterDetail.isEmulator() ?
-                                    String.format(yarnRunningUIEmulatorUrlFormat, ((EmulatorClusterDetail)clusterDetail).getSparkHistoryEndpoint(), jobStatusManager.getApplicationId()):
-                                    String.format(yarnRunningUIUrlFormat, connectionURL, jobStatusManager.getApplicationId());
-                            Desktop.getDesktop().browse(new URI(sparkApplicationUrl));
-                        }
-
-                    } catch (Exception browseException) {
-                        DefaultLoader.getUIHelper().showError("Failed to browse spark application yarn url", "Spark Submission");
+        openSparkUIButton.addActionListener(e -> {
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    if (jobStatusManager.isApplicationGenerated()) {
+                        final String connectionURL = clusterDetail.getConnectionUrl();
+                        final String sparkApplicationUrl =
+                                clusterDetail.isEmulator()
+                                ? String.format(yarnRunningUIEmulatorUrlFormat,
+                                                ((EmulatorClusterDetail) clusterDetail).getSparkHistoryEndpoint(),
+                                                jobStatusManager.getApplicationId())
+                                : String.format(yarnRunningUIUrlFormat,
+                                                connectionURL,
+                                                jobStatusManager.getApplicationId());
+                        Desktop.getDesktop().browse(new URI(sparkApplicationUrl));
                     }
+
+                } catch (final Exception browseException) {
+                    DefaultLoader.getUIHelper().showError("Failed to browse spark application yarn url",
+                                                          "Spark Submission");
                 }
             }
         });
 
-        JPanel buttonPanel = new JPanel();
+        final JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 
         buttonPanel.add(stopButton);
         buttonPanel.add(openSparkUIButton);
 
-        GridBagConstraints c00 = new GridBagConstraints();
+        final GridBagConstraints c00 = new GridBagConstraints();
         c00.fill = GridBagConstraints.VERTICAL;
         c00.weighty = 1;
         c00.gridx = 0;
         c00.gridy = 0;
         jPanel.add(buttonPanel, c00);
 
-        GridBagConstraints c10 = new GridBagConstraints();
+        final GridBagConstraints c10 = new GridBagConstraints();
         c10.fill = GridBagConstraints.BOTH;
         c10.weightx = 1;
         c10.weighty = 1;
@@ -191,33 +194,29 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         jEditorPanel.setOpaque(false);
         jEditorPanel.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
 
-        jEditorPanel.addHyperlinkListener(new HyperlinkListener() {
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    if (Desktop.isDesktopSupported()) {
-                        try {
-                            String protocol = e.getURL().getProtocol();
-                            if(protocol.equals("https") || protocol.equals("http")) {
-                                Desktop.getDesktop().browse(e.getURL().toURI());
-                            } else if (protocol.equals("file")) {
-                                String path = e.getURL().getFile();
-                                File localFile = new File(path);
-                                File parentFile = localFile.getParentFile();
-                                if(parentFile.exists() && parentFile.isDirectory()) {
-                                    Desktop.getDesktop().open(parentFile);
-                                }
+        jEditorPanel.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                if (Desktop.isDesktopSupported()) {
+                    try {
+                        final String protocol = e.getURL().getProtocol();
+                        if ("https".equals(protocol) || "http".equals(protocol)) {
+                            Desktop.getDesktop().browse(e.getURL().toURI());
+                        } else if ("file".equals(protocol)) {
+                            final String path = e.getURL().getFile();
+                            final File localFile = new File(path);
+                            final File parentFile = localFile.getParentFile();
+                            if (parentFile.exists() && parentFile.isDirectory()) {
+                                Desktop.getDesktop().open(parentFile);
                             }
-                        } catch (Exception exception) {
-                            DefaultLoader.getUIHelper().showError(exception.getMessage(), "Open Local Folder Error");
                         }
+                    } catch (final Exception exception) {
+                        DefaultLoader.getUIHelper().showError(exception.getMessage(), "Open Local Folder Error");
                     }
                 }
             }
         });
 
-        PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
+        final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
                 if (ApplicationManager.getApplication().isDispatchThread()) {
@@ -225,26 +224,20 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
 
                 } else {
                     try {
-                        SwingUtilities.invokeAndWait(new Runnable() {
-                                                         @Override
-                                                         public void run() {
-                                                             changeSupportHandler(evt);
-                                                         }
-                                                     }
-                        );
-                    } catch (InterruptedException ignore) {
-                    } catch (InvocationTargetException e) {
+                        SwingUtilities.invokeAndWait(() -> changeSupportHandler(evt));
+                    } catch (final InterruptedException ignore) {
+                    } catch (final InvocationTargetException e) {
                         e.printStackTrace();
                     }
                 }
             }
 
-            private void changeSupportHandler(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("toolWindowText")) {
+            private void changeSupportHandler(final PropertyChangeEvent evt) {
+                if ("toolWindowText".equals(evt.getPropertyName())) {
                     jEditorPanel.setText(evt.getNewValue().toString());
-                } else if (evt.getPropertyName().equals("isStopButtonEnable")) {
+                } else if ("isStopButtonEnable".equals(evt.getPropertyName())) {
                     stopButton.setEnabled(Boolean.parseBoolean(evt.getNewValue().toString()));
-                } else if (evt.getPropertyName().equals("isBrowserButtonEnable")) {
+                } else if ("isBrowserButtonEnable".equals(evt.getPropertyName())) {
                     openSparkUIButton.setEnabled(Boolean.parseBoolean(evt.getNewValue().toString()));
                 }
             }
@@ -255,43 +248,68 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         changeSupport.addPropertyChangeListener(propertyChangeListener);
     }
 
-    private JobStatusManager jobStatusManager = new JobStatusManager();
+    private final JobStatusManager jobStatusManager = new JobStatusManager();
 
     public JobStatusManager getJobStatusManager() {
         return jobStatusManager;
     }
 
-    public synchronized void setSparkApplicationStopInfo(IClusterDetail clusterDetail, int batchId) {
+    public synchronized void setSparkApplicationStopInfo(final IClusterDetail clusterDetail, final int batchId) {
         this.clusterDetail = clusterDetail;
         this.batchId = batchId;
     }
 
-    public synchronized void setHyperlink(String hyperlinkUrl, String anchorText) {
-        cachedInfo.add(new HyperLinkElement(fontFace, DarkThemeManager.getInstance().getInfoColor(), DarkThemeManager.getInstance().getHyperLinkColor(), "", hyperlinkUrl, anchorText));
+    public synchronized void setHyperlink(final String hyperlinkUrl, final String anchorText) {
+        cachedInfo.add(new HyperLinkElement(fontFace,
+                                            DarkThemeManager.getInstance().getInfoColor(),
+                                            DarkThemeManager.getInstance().getHyperLinkColor(),
+                                            "",
+                                            hyperlinkUrl,
+                                            anchorText));
         setToolWindowText(parserHtmlElementList(cachedInfo));
     }
 
-    public synchronized void setHyperLinkWithText(String text, String hyperlinkUrl, String anchorText) {
-        cachedInfo.add(new HyperLinkElement(fontFace, DarkThemeManager.getInstance().getInfoColor(), DarkThemeManager.getInstance().getHyperLinkColor(), text, hyperlinkUrl, anchorText));
+    public synchronized void setHyperLinkWithText(final String text,
+                                                  final String hyperlinkUrl,
+                                                  final String anchorText) {
+        cachedInfo.add(new HyperLinkElement(fontFace,
+                                            DarkThemeManager.getInstance().getInfoColor(),
+                                            DarkThemeManager.getInstance().getHyperLinkColor(),
+                                            text,
+                                            hyperlinkUrl,
+                                            anchorText));
         setToolWindowText(parserHtmlElementList(cachedInfo));
     }
 
-    public synchronized void setError(String errorInfo) {
-        cachedInfo.add(new TextElement(fontFace, DarkThemeManager.getInstance().getErrorColor(), errorInfo, MessageInfoType.Error));
+    public synchronized void setError(final String errorInfo) {
+        cachedInfo.add(new TextElement(fontFace,
+                                       DarkThemeManager.getInstance().getErrorColor(),
+                                       errorInfo,
+                                       MessageInfoType.Error));
         setToolWindowText(parserHtmlElementList(cachedInfo));
     }
 
-    public synchronized void setWarning(String warningInfo) {
-        cachedInfo.add(new TextElement(fontFace, DarkThemeManager.getInstance().getWarningColor(), warningInfo, MessageInfoType.Warning));
+    public synchronized void setWarning(final String warningInfo) {
+        cachedInfo.add(new TextElement(fontFace,
+                                       DarkThemeManager.getInstance().getWarningColor(),
+                                       warningInfo,
+                                       MessageInfoType.Warning));
         setToolWindowText(parserHtmlElementList(cachedInfo));
     }
 
-    public synchronized void setInfo(String info, boolean isCleanable) {
+    public synchronized void setInfo(final String info, final boolean isCleanable) {
 
-        TextElement element = isCleanable ? new CleanableTextElement(fontFace, DarkThemeManager.getInstance().getInfoColor(), info, MessageInfoType.Info) :
-                new TextElement(fontFace, DarkThemeManager.getInstance().getInfoColor(), info, MessageInfoType.Info);
+        final TextElement element = isCleanable
+                                    ? new CleanableTextElement(fontFace,
+                                                               DarkThemeManager.getInstance().getInfoColor(),
+                                                               info,
+                                                               MessageInfoType.Info)
+                                    : new TextElement(fontFace,
+                                                      DarkThemeManager.getInstance().getInfoColor(),
+                                                      info,
+                                                      MessageInfoType.Info);
 
-        if(isCleanable) {
+        if (isCleanable) {
             ++cleanableMessageCounter;
             adjustCleanableMessage();
         }
@@ -301,7 +319,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         setToolWindowText(parserHtmlElementList(cachedInfo));
     }
 
-    public void setInfo(String info) {
+    public void setInfo(final String info) {
         setInfo(info, false);
     }
 
@@ -311,7 +329,8 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
 
     private void adjustCleanableMessage() {
         if (cleanableMessageCounter >= MAX_CLEANABLE_SIZE) {
-            int i = 0, deleteMessageCounter = 0;
+            int i = 0;
+            int deleteMessageCounter = 0;
             while (deleteMessageCounter < DELETE_SIZE && i < cachedInfo.size()) {
                 if (cachedInfo.get(i) instanceof CleanableTextElement) {
                     cachedInfo.remove(i);
@@ -329,24 +348,24 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         cleanableMessageCounter = 0;
     }
 
-    private void setToolWindowText(String toolWindowText) {
+    private void setToolWindowText(final String toolWindowText) {
         changeSupport.firePropertyChange("toolWindowText", this.toolWindowText, toolWindowText);
         this.toolWindowText = toolWindowText;
     }
 
-    public synchronized void setStopButtonState(Boolean newState) {
-        Boolean oldState = stopButton.isEnabled();
+    public synchronized void setStopButtonState(final Boolean newState) {
+        final Boolean oldState = stopButton.isEnabled();
         changeSupport.firePropertyChange("isStopButtonEnable", oldState, newState);
     }
 
-    public synchronized void setBrowserButtonState(Boolean newState) {
-        Boolean oldState = openSparkUIButton.isEnabled();
+    public synchronized void setBrowserButtonState(final Boolean newState) {
+        final Boolean oldState = openSparkUIButton.isEnabled();
         changeSupport.firePropertyChange("isBrowserButtonEnable", oldState, newState);
     }
 
-    private String parserHtmlElementList(List<IHtmlElement> htmlElements) {
-        StringBuilder builder = new StringBuilder();
-        for (IHtmlElement e : htmlElements) {
+    private String parserHtmlElementList(final List<? extends IHtmlElement> htmlElements) {
+        final StringBuilder builder = new StringBuilder();
+        for (final IHtmlElement e : htmlElements) {
             builder.append(e.getHtmlString());
         }
 
@@ -356,16 +375,19 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
     interface IHtmlElement {
         String getHtmlString();
 
-        void ChangeTheme();
+        void changeTheme();
     }
 
-    class TextElement implements IHtmlElement {
-        private String fontFace;
+    static class TextElement implements IHtmlElement {
+        private final String fontFace;
         private String fontColor;
-        private MessageInfoType messageInfoType;
-        private String text;
+        private final MessageInfoType messageInfoType;
+        private final String text;
 
-        public TextElement(String fontFace, String fontColor, String text, MessageInfoType messageInfoType) {
+        public TextElement(final String fontFace,
+                           final String fontColor,
+                           final String text,
+                           final MessageInfoType messageInfoType) {
             this.fontFace = fontFace;
             this.fontColor = fontColor;
             this.text = text;
@@ -378,7 +400,7 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         }
 
         @Override
-        public void ChangeTheme() {
+        public void changeTheme() {
             if (messageInfoType == MessageInfoType.Info) {
                 this.fontColor = DarkThemeManager.getInstance().getInfoColor();
             } else if (messageInfoType == MessageInfoType.Error) {
@@ -389,21 +411,29 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
         }
     }
 
-    class CleanableTextElement extends TextElement {
-        public CleanableTextElement(String fontFace, String fontColor, String text, MessageInfoType messageInfoType) {
+    static class CleanableTextElement extends TextElement {
+        public CleanableTextElement(final String fontFace,
+                                    final String fontColor,
+                                    final String text,
+                                    final MessageInfoType messageInfoType) {
             super(fontFace, fontColor, text, messageInfoType);
         }
     }
 
-    class HyperLinkElement implements IHtmlElement {
-        private String fontFace;
-        private String fontColor;
+    static class HyperLinkElement implements IHtmlElement {
+        private final String fontFace;
+        private final String fontColor;
         private String hyperLinkColor;
-        private String text;
-        private String hyperlinkUrl;
-        private String anchorText;
+        private final String text;
+        private final String hyperlinkUrl;
+        private final String anchorText;
 
-        public HyperLinkElement(String fontFace, String fontColor, String hyperLinkColor, String text, String hyperlinkUrl, String anchorText) {
+        public HyperLinkElement(final String fontFace,
+                                final String fontColor,
+                                final String hyperLinkColor,
+                                final String text,
+                                final String hyperlinkUrl,
+                                final String anchorText) {
             this.fontFace = fontFace;
             this.fontColor = fontColor;
             this.hyperLinkColor = hyperLinkColor;
@@ -414,12 +444,20 @@ public class SparkSubmissionToolWindowProcessor implements IToolWindowProcessor 
 
         @Override
         public String getHtmlString() {
-            return String.format("<font color=\"%s\" face=\"%s\">%s</font><a href=\"%s\"><font color=\"%s\" face=\"%s\">%s</font></a><br />",
-                    fontColor, fontFace, text, hyperlinkUrl, hyperLinkColor, fontFace, anchorText);
+            return String.format(
+                    "<font color=\"%s\" face=\"%s\">%s</font><a href=\"%s\">"
+                            + "<font color=\"%s\" face=\"%s\">%s</font></a><br />",
+                    fontColor,
+                    fontFace,
+                    text,
+                    hyperlinkUrl,
+                    hyperLinkColor,
+                    fontFace,
+                    anchorText);
         }
 
         @Override
-        public void ChangeTheme() {
+        public void changeTheme() {
             this.hyperLinkColor = DarkThemeManager.getInstance().getHyperLinkColor();
         }
     }

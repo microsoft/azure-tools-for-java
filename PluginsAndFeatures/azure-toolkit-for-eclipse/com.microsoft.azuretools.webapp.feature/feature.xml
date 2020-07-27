@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.webapp.feature"
       label="WebApp Plugin for Eclipse"
-      version="3.22.0.qualifier"
+      version="3.23.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>

@@ -27,29 +27,29 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
-import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ItemListener;
+import java.util.Collections;
 import java.util.List;
 
-import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEW_CREATED_RESOURCE;
+import static com.microsoft.intellij.common.CommonConst.NEW_CREATED_RESOURCE;
 
 public class ResourceGroupPanel extends JPanel {
     public static final String CREATE_RESOURCE_GROUP = "Create resource group...";
     private JComboBox cbResourceGroup;
-    private JPanel panel1;
+    private JPanel pnlRoot;
 
     private Window window;
     private String subscriptionId;
     private ResourceGroupWrapper selectedResourceGroup;
+
+    private Disposable rxDisposable;
 
     public ResourceGroupPanel(Window window) {
         this();
@@ -91,15 +91,30 @@ public class ResourceGroupPanel extends JPanel {
     }
 
     public void loadResourceGroup(String subscriptionId) {
-        this.subscriptionId = subscriptionId;
-        beforeLoadSubscription();
-        Observable.fromCallable(() -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId))
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(this::fillResourceGroup);
+        if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
+            this.subscriptionId = subscriptionId;
+            beforeLoadSubscription();
+            if (rxDisposable != null && !rxDisposable.isDisposed()) {
+                rxDisposable.dispose();
+            }
+            rxDisposable =
+                    ComponentUtils.loadResourcesAsync(
+                        () -> AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(subscriptionId),
+                        resourceGroups -> fillResourceGroup(resourceGroups),
+                        exception -> {
+                            DefaultLoader.getUIHelper().showError(
+                                    "Failed to load resource groups", exception.getMessage());
+                            fillResourceGroup(Collections.emptyList());
+                        });
+        }
     }
 
     public void addItemListener(ItemListener actionListener) {
         cbResourceGroup.addItemListener(actionListener);
+    }
+
+    public JComponent getComboComponent() {
+        return cbResourceGroup;
     }
 
     private void createResourceGroup() {
@@ -124,7 +139,7 @@ public class ResourceGroupPanel extends JPanel {
     private ResourceGroupWrapper getResourceGroupWrapperWithName(String name) {
         for (int i = 0; i < cbResourceGroup.getItemCount(); i++) {
             final Object selectedItem = cbResourceGroup.getItemAt(i);
-            if (selectedItem instanceof ResourceGroupWrapper &&  StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
+            if (selectedItem instanceof ResourceGroupWrapper && StringUtils.equals(((ResourceGroupWrapper) selectedItem).resourceGroup, name)) {
                 return (ResourceGroupWrapper) cbResourceGroup.getItemAt(i);
             }
         }

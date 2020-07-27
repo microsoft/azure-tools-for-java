@@ -30,6 +30,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 
 public class WebAppPropertyView extends WebAppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView";
+
     /**
      * Initialize the Web App Property View and return it.
      */

@@ -18,21 +18,16 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.runner.functions;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.auth.configuration.AuthConfiguration;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.functions.library.IFunctionContext;
 
 import java.io.IOException;
@@ -58,8 +53,6 @@ public class IntelliJFunctionContext implements IFunctionContext {
     private String appServicePlanName;
 
     private String deploymentStagingDirectoryPath;
-
-    private AuthConfiguration authentication;
 
     private String deployment;
 
@@ -126,22 +119,13 @@ public class IntelliJFunctionContext implements IFunctionContext {
     }
 
     @Override
-    public AuthConfiguration getAuth() {
-        return null;
-    }
-
-    @Override
     public String getDeploymentType() {
         return "";
     }
 
     @Override
-    public Azure getAzureClient() throws AzureExecutionException {
-        try {
-            return AuthMethodManager.getInstance().getAzureManager().getAzure(subscription);
-        } catch (IOException e) {
-            throw new AzureExecutionException(e.getMessage(), e);
-        }
+    public Azure getAzureClient() throws IOException {
+        return AuthMethodManager.getInstance().getAzureManager().getAzure(subscription);
     }
 
     @Override
@@ -179,10 +163,6 @@ public class IntelliJFunctionContext implements IFunctionContext {
 
     public void setAppServicePlanResourceGroup(String appServicePlanResourceGroup) {
         this.appServicePlanResourceGroup = appServicePlanResourceGroup;
-    }
-
-    public void setAuthentication(AuthConfiguration authentication) {
-        this.authentication = authentication;
     }
 
     public void setDeployment(String deployment) {

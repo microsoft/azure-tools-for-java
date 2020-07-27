@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -28,7 +28,6 @@ import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.utils.IProgressIndicator;
-
 import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
@@ -36,6 +35,15 @@ import java.io.OutputStream;
 public class RunProcessHandler extends ProcessHandler implements IProgressIndicator {
 
     private static final String PROCESS_TERMINATED = "The process has been terminated";
+
+    public static final Runnable THROW_TERMINATED_EXCEPTION = () -> {
+        throw new RuntimeException(PROCESS_TERMINATED);
+    };
+    public static final Runnable DO_NOTHING = () -> {
+    };
+
+    private Runnable processTerminatedHandler;
+
     @Override
     protected void destroyProcessImpl() {
     }
@@ -74,7 +82,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
         if (isProcessRunning()) {
             this.notifyTextAvailable(message, type);
         } else {
-            throw new Error(PROCESS_TERMINATED);
+            processTerminatedHandler.run();
         }
     }
 
@@ -87,7 +95,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
         if (isProcessRunning()) {
             this.notifyTextAvailable(message + "\n", type);
         } else {
-            throw new Error(PROCESS_TERMINATED);
+            processTerminatedHandler.run();
         }
     }
 
@@ -95,6 +103,7 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
      * Process handler to show the progress message.
      */
     public RunProcessHandler() {
+        processTerminatedHandler = THROW_TERMINATED_EXCEPTION;
     }
 
     public void addDefaultListener() {
@@ -140,5 +149,9 @@ public class RunProcessHandler extends ProcessHandler implements IProgressIndica
     @Override
     public boolean isCanceled() {
         return false;
+    }
+
+    public void setProcessTerminatedHandler(Runnable runnable) {
+        this.processTerminatedHandler = runnable == null ? DO_NOTHING : runnable;
     }
 }

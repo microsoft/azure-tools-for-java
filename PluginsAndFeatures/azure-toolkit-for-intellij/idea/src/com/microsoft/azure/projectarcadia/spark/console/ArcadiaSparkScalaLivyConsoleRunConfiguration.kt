@@ -47,7 +47,7 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
 
     override fun createSession(sparkCluster: IClusterDetail): SparkSession {
         val livyUrl = sparkCluster.connectionUrl ?: throw RuntimeConfigurationError(
-                "Can't prepare Synapse Spark interactive session since Livy URL is empty")
+                "Can't prepare Apache Spark for Azure Synapse interactive session since Livy URL is empty")
 
         return ArcadiaSparkSession(name, URI.create(livyUrl), sparkCluster.subscription.tenantId)
     }
@@ -55,9 +55,9 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
     override fun findCluster(clusterName: String): ArcadiaSparkCompute {
         val arcadiaModel = (submitModel as? ArcadiaSparkSubmitModel)?.apply {
             if (sparkCompute == null || tenantId == null || sparkWorkspace == null) {
-                log().warn("Synapse Spark pool is not selected. " +
+                log().warn("Apache Spark Pool for Azure Synapse is not selected. " +
                         "Spark pool: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
-                throw RuntimeConfigurationError("Synapse Spark pool is not selected")
+                throw RuntimeConfigurationError("Apache Spark Pool for Azure Synapse is not selected")
             }
         } ?: throw RuntimeConfigurationError("Can't cast submitModel to ArcadiaSparkSubmitModel")
 
@@ -68,7 +68,7 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
                     .first()
         } catch (ex: NoSuchElementException) {
             throw RuntimeConfigurationError(
-                    "Can't find Synapse Spark pool (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
+                    "Can't find Apache Spark Pool for Azure Synapse (${arcadiaModel.sparkWorkspace}:${arcadiaModel.sparkCompute})"
                             + " at tenant ${arcadiaModel.tenantId}.")
         }
     }

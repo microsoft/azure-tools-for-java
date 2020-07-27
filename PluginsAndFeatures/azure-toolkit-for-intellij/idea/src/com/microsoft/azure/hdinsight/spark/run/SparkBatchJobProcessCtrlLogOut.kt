@@ -23,12 +23,11 @@
 package com.microsoft.azure.hdinsight.spark.run
 
 import com.intellij.openapi.util.UserDataHolder
-import com.microsoft.azure.hdinsight.common.MessageInfoType
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
 import rx.subjects.PublishSubject
-import java.util.*
 
 interface SparkBatchJobProcessCtrlLogOut: UserDataHolder {
-    fun getCtrlSubject() : PublishSubject<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>>
+    fun getCtrlSubject() : PublishSubject<SparkLogLine>
 
     fun getEventSubject(): PublishSubject<SparkBatchJobSubmissionEvent>
 }

@@ -22,21 +22,20 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import rx.Observable;
 import rx.Observer;
 
 import java.io.File;
-import java.util.AbstractMap;
 
 public interface Deployable {
     /**
      * Deploy the job artifact into cluster
      *
-     * @param src the artifact to deploy
+     * @param src        the artifact to deploy
      * @param logSubject the subject to help print logs during deploying
      * @return Observable: upload path
-     *         Observable Error: IOException;
+     * Observable Error: IOException;
      */
-    Observable<String> deploy(File src, Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> logSubject);
+    Observable<String> deploy(File src, Observer<SparkLogLine> logSubject);
 }

@@ -28,9 +28,8 @@ import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessOutputTypes.STDERR
 import com.intellij.execution.process.ProcessOutputTypes.STDOUT
 import com.intellij.openapi.project.Project
-import com.microsoft.azure.hdinsight.common.MessageInfoType
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
 import rx.subjects.PublishSubject
-import java.util.AbstractMap.SimpleImmutableEntry
 
 class SparkBatchJobDebugProcessHandler(project: Project,
                                        val remoteDebugProcess: SparkBatchJobRemoteProcess,
@@ -75,7 +74,7 @@ class SparkBatchJobDebugProcessHandler(project: Project,
     // True for the Stop button will be disabled, and Remote Debug button will be enabled
     override fun isProcessTerminated(): Boolean = isKilled || remoteDebugProcess.isDestroyed || super.isProcessTerminated()
 
-    override fun getCtrlSubject(): PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> {
+    override fun getCtrlSubject(): PublishSubject<SparkLogLine> {
         return remoteDebugProcess.ctrlSubject
     }
 

@@ -1,22 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * 
- * All rights reserved. 
- * 
+ *
+ * All rights reserved.
+ *
  * MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files 
- * (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, 
- * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
- * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
+
 package com.microsoft.azuretools.azureexplorer;
 
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -30,17 +33,17 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
-public class AzureModuleImpl extends AzureModule {	
+public class AzureModuleImpl extends AzureModule {
 
-	public AzureModuleImpl() {
-		super(null);
-	}
-	
+    public AzureModuleImpl() {
+        super(null);
+    }
+
     @Override
     protected void loadActions() {
-    	super.loadActions();
-    	addAction(new SignInOutAction(this));
-    	addAction(new SelectSubscriptionsAction(this));
+        super.loadActions();
+        addAction(new SignInOutAction(this));
+        addAction(new SelectSubscriptionsAction(this));
     }
 
     public static class SignInOutAction extends NodeAction {
@@ -54,17 +57,17 @@ public class AzureModuleImpl extends AzureModule {
             addListener(new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                	try {
-                		AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
-                		boolean isSignedIn = authMethodManager.isSignedIn();
-                		if (isSignedIn) {
-                			SignOutCommandHandler.doSignOut(PluginUtil.getParentShell());
-                		} else {
-                			SignInCommandHandler.doSignIn(PluginUtil.getParentShell());
-                		}
-                	} catch (Exception ex) {
-                		Activator.getDefault().log(ex.getMessage(), ex);
-                	}
+                    try {
+                        AuthMethodManager authMethodManager = AuthMethodManager.getInstance();
+                        boolean isSignedIn = authMethodManager.isSignedIn();
+                        if (isSignedIn) {
+                            SignOutCommandHandler.doSignOut(PluginUtil.getParentShell());
+                        } else {
+                            SignInCommandHandler.doSignIn(PluginUtil.getParentShell());
+                        }
+                    } catch (Exception ex) {
+                        Activator.getDefault().log(ex.getMessage(), ex);
+                    }
                 }
             });
         }
@@ -74,7 +77,7 @@ public class AzureModuleImpl extends AzureModule {
             try {
                 return AuthMethodManager.getInstance().isSignedIn() ? "Sign Out" : "Sign In";
             } catch (Exception ex) {
-            	Activator.getDefault().log(ex.getMessage(), ex);
+                Activator.getDefault().log(ex.getMessage(), ex);
                 return "";
             }
         }
@@ -92,7 +95,7 @@ public class AzureModuleImpl extends AzureModule {
             return isSignedIn ? ICON_SIGNOUT : ICON_SIGNIN;
         }
     }
-    
+
     public static class SelectSubscriptionsAction extends NodeAction {
         private static final String ICON = "ConnectAccountsLight_16.png";
 
@@ -102,7 +105,7 @@ public class AzureModuleImpl extends AzureModule {
             addListener(new NodeActionListener() {
                 @Override
                 protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                	SelectSubsriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
+                    SelectSubsriptionsCommandHandler.onSelectSubscriptions(PluginUtil.getParentShell());
                     azureModule.load(false);
                 }
             });
@@ -113,9 +116,9 @@ public class AzureModuleImpl extends AzureModule {
             try {
                 return super.isEnabled() && AuthMethodManager.getInstance().isSignedIn();
             } catch (Exception ex) {
-            	Activator.getDefault().log(ex.getMessage(), ex);
+                Activator.getDefault().log(ex.getMessage(), ex);
                 return false;
             }
         }
-    }    
+    }
 }

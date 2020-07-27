@@ -28,26 +28,22 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
-import rx.Subscription;
-import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.microsoft.intellij.runner.functions.AzureFunctionsConstants.NEW_CREATED_RESOURCE;
+import static com.microsoft.intellij.common.CommonConst.NEW_CREATED_RESOURCE;
 import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION;
 import static com.microsoft.intellij.runner.functions.component.NewAppServicePlanDialog.CONSUMPTION_PRICING_TIER;
 
@@ -59,7 +55,7 @@ public class AppServicePlanPanel extends JPanel {
     private JPanel pnlRoot;
 
     private Window window;
-    private Subscription subscription;
+    private Disposable rxDisposable;
 
     private String subscriptionId;
     private OperatingSystem operatingSystem;
@@ -119,22 +115,35 @@ public class AppServicePlanPanel extends JPanel {
     }
 
     public void loadAppServicePlan(String subscriptionId, OperatingSystem operatingSystem) {
-        this.subscriptionId = subscriptionId;
-        this.operatingSystem = operatingSystem;
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
+        if (!StringUtils.equalsIgnoreCase(subscriptionId, this.subscriptionId)) {
+            this.subscriptionId = subscriptionId;
+            this.operatingSystem = operatingSystem;
+            beforeLoadAppServicePlan();
+            if (rxDisposable != null && !rxDisposable.isDisposed()) {
+                rxDisposable.dispose();
+            }
+            rxDisposable =
+                    ComponentUtils.loadResourcesAsync(
+                        () -> AzureFunctionMvpModel.getInstance()
+                                                   .listAppServicePlanBySubscriptionId(subscriptionId).stream()
+                                                   .sorted((first, second) ->
+                                                                   StringUtils.compare(first.name(), second.name()))
+                                                   .collect(Collectors.toList()),
+                        appServicePlans -> fillAppServicePlan(appServicePlans),
+                        exception -> {
+                            DefaultLoader.getUIHelper().showError(
+                                    "Failed to load app service plans", exception.getMessage());
+                            fillAppServicePlan(Collections.emptyList());
+                        });
         }
-        beforeLoadAppServicePlan();
-        subscription = Observable.fromCallable(() -> {
-            return AzureFunctionMvpModel.getInstance()
-                    .listAppServicePlanBySubscriptionId(subscriptionId).stream()
-                    .sorted((first, second) -> StringUtils.compare(first.name(), second.name()))
-                    .collect(Collectors.toList());
-        }).subscribeOn(Schedulers.newThread()).subscribe(this::fillAppServicePlan);
     }
 
     public void addItemListener(ItemListener actionListener) {
         cbAppServicePlan.addItemListener(actionListener);
+    }
+
+    public JComponent getComboComponent() {
+        return cbAppServicePlan;
     }
 
     private void onSelectAppServicePlan() {
@@ -144,6 +153,9 @@ public class AppServicePlanPanel extends JPanel {
             showAppServicePlan(selectedAppServicePlan);
         } else if (CREATE_APP_SERVICE_PLAN.equals(selectedObject)) {
             ApplicationManager.getApplication().invokeLater(this::createAppServicePlan);
+        } else {
+            selectedAppServicePlan = null;
+            showAppServicePlan(null);
         }
     }
 
@@ -224,10 +236,10 @@ public class AppServicePlanPanel extends JPanel {
             this.resourceGroup = appServicePlan.resourceGroupName();
         }
 
-        public AppServicePlanWrapper(String name, Location location, PricingTier pricingTier) {
+        public AppServicePlanWrapper(String name, Region region, PricingTier pricingTier) {
             this.isNewCreate = true;
             this.name = name;
-            this.region = location.region();
+            this.region = region;
             this.pricingTier = pricingTier;
         }
 

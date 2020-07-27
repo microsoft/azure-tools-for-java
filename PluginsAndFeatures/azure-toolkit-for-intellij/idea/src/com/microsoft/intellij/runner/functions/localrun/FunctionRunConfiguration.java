@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.runner.functions.localrun;
@@ -214,12 +213,14 @@ public class FunctionRunConfiguration extends JavaAzureRunConfigurationBase<Func
 
     @Override
     public void validate() throws ConfigurationException {
-        if (getModel() == null) {
+        if (getModule() == null) {
             throw new ConfigurationException("Please specify module");
         }
+
         if (StringUtils.isEmpty(getFuncPath())) {
             throw new ConfigurationException("Please specify function cli path");
         }
+
         final File func = new File(getFuncPath());
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException("Please specify correct function cli path");

@@ -18,9 +18,9 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
-package com.microsoft.intellij.wizard.functions.module;
+
+package com.microsoft.intellij.wizards.functions.module;
 
 import com.intellij.ide.util.projectWizard.JavaModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleNameLocationSettings;
@@ -49,7 +49,7 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.util.AzureFunctionsUtils;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.intellij.wizard.functions.AzureFunctionsConstants;
+import com.microsoft.intellij.wizards.functions.AzureFunctionsConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;

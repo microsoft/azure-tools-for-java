@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -24,7 +24,6 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
-import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -43,10 +42,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureData
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,7 +54,10 @@ public class AzureModule extends AzureRefreshableNode {
     private static final String AZURE_SERVICE_MODULE_ID = AzureModule.class.getName();
     private static final String ICON_PATH = "AzureExplorer.svg";
     private static final String BASE_MODULE_NAME = "Azure";
-    private static final String MODULE_NAME_NO_SUBSCRIPTION = "(No subscription)";
+    private static final String MODULE_NAME_NO_SUBSCRIPTION = "No subscription";
+    private static final String ERROR_GETTING_SUBSCRIPTIONS_TITLE = "MS Services - Error Getting Subscriptions";
+    private static final String ERROR_GETTING_SUBSCRIPTIONS_MESSAGE = "An error occurred while getting the subscription" +
+            " list.\n(Message from Azure:%s)";
 
     @Nullable
     private Object project;
@@ -65,14 +67,14 @@ public class AzureModule extends AzureRefreshableNode {
     private RedisCacheModule redisCacheModule;
     @NotNull
     private StorageModule storageModule;
+    @NotNull
+    private WebAppModule webAppModule;
     @Nullable
     private HDInsightRootModule hdInsightModule;
     @Nullable
     private HDInsightRootModule sparkServerlessClusterRootModule;
     @Nullable
     private HDInsightRootModule arcadiaModule;
-    @NotNull
-    private DockerHostModule dockerHostModule;
     @NotNull
     private ContainerRegistryModule containerRegistryModule;
     @NotNull
@@ -83,6 +85,8 @@ public class AzureModule extends AzureRefreshableNode {
     private ResourceManagementModule resourceManagementModule;
     @NotNull
     private FunctionModule functionModule;
+    @NotNull
+    private SpringCloudModule springCloudModule;
 
     /**
      * Constructor.
@@ -93,15 +97,16 @@ public class AzureModule extends AzureRefreshableNode {
         super(AZURE_SERVICE_MODULE_ID, composeName(), null, ICON_PATH);
         this.project = project;
         storageModule = new StorageModule(this);
+        webAppModule = new WebAppModule(this);
         //hdInsightModule = new HDInsightRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
-        dockerHostModule = new DockerHostModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
         azureDatabaseModule = new AzureDatabaseModule(this);
         azureAppServiceModule = new AzureAppServiceModule(this);
         resourceManagementModule = new ResourceManagementModule(this);
         functionModule = new FunctionModule(this);
+        springCloudModule = new SpringCloudModule(this);
         try {
             SignInOutListener signInOutListener = new SignInOutListener();
             AuthMethodManager.getInstance().addSignInEventListener(signInOutListener);
@@ -124,20 +129,11 @@ public class AzureModule extends AzureRefreshableNode {
             List<SubscriptionDetail> subscriptionDetails = subscriptionManager.getSubscriptionDetails();
             List<SubscriptionDetail> selectedSubscriptions = subscriptionDetails.stream()
                     .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
-            if (selectedSubscriptions.size() > 0) {
-                return String.format("%s (%s)", BASE_MODULE_NAME, selectedSubscriptions.size() > 1
-                        ? String.format("%s subscriptions", selectedSubscriptions.size())
-                        : selectedSubscriptions.get(0).getSubscriptionName());
-            }
+            return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
+
         } catch (Throwable e) {
-            if (e instanceof AuthException &&
-                    StringUtils.equalsIgnoreCase(e.getMessage(), "No subscription found in the account")) {
-                return String.format("%s %s", BASE_MODULE_NAME, MODULE_NAME_NO_SUBSCRIPTION);
-            } else {
-                String msg = "An error occurred while getting the subscription list." + "\n" + "(Message from Azure:" + e
-                        .getMessage() + ")";
-                DefaultLoader.getUIHelper().logError(msg, e);
-            }
+            final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
+            DefaultLoader.getUIHelper().logError(msg, e);
         }
         return BASE_MODULE_NAME;
     }
@@ -169,11 +165,17 @@ public class AzureModule extends AzureRefreshableNode {
         if (!isDirectChild(storageModule)) {
             addChildNode(storageModule);
         }
+//        if (!isDirectChild(webAppModule)) {
+//            addChildNode(webAppModule);
+//        }
         if (!isDirectChild(resourceManagementModule)) {
             addChildNode(resourceManagementModule);
         }
-//        if(!isDirectChild(functionModule)){
+//        if (!isDirectChild(functionModule)) {
 //            addChildNode(functionModule);
+//        }
+//        if (!isDirectChild(springCloudModule)) {
+//            addChildNode(springCloudModule);
 //        }
         if (hdInsightModule != null && !isDirectChild(hdInsightModule)) {
             addChildNode(hdInsightModule);
@@ -189,9 +191,6 @@ public class AzureModule extends AzureRefreshableNode {
 //            addChildNode(arcadiaModule);
 //        }
 
-        if (!isDirectChild(dockerHostModule)) {
-            addChildNode(dockerHostModule);
-        }
         if (!isDirectChild(containerRegistryModule)) {
             addChildNode(containerRegistryModule);
         }
@@ -215,6 +214,7 @@ public class AzureModule extends AzureRefreshableNode {
                 vmArmServiceModule.load(true);
                 redisCacheModule.load(true);
                 storageModule.load(true);
+//                webAppModule.load(true);
                 resourceManagementModule.load(true);
                 functionModule.load(true);
 
@@ -230,7 +230,6 @@ public class AzureModule extends AzureRefreshableNode {
                     arcadiaModule.load(true);
                 }
 
-                dockerHostModule.load(true);
                 containerRegistryModule.load(true);
 
                 azureDatabaseModule.load(true);
@@ -276,6 +275,18 @@ public class AzureModule extends AzureRefreshableNode {
         public void run() {
             handleSubscriptionChange();
             addSubscriptionSelectionListener();
+        }
+    }
+
+    private static String getAccountDescription(List<SubscriptionDetail> selectedSubscriptions) {
+        final int subsCount = selectedSubscriptions.size();
+        switch (subsCount) {
+            case 0:
+                return MODULE_NAME_NO_SUBSCRIPTION;
+            case 1:
+                return selectedSubscriptions.get(0).getSubscriptionName();
+            default:
+                return String.format("%d subscriptions", selectedSubscriptions.size());
         }
     }
 

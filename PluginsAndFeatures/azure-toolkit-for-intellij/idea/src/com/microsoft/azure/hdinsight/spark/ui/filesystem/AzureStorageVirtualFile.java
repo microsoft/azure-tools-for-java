@@ -35,7 +35,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public abstract class AzureStorageVirtualFile extends HttpVirtualFile implements ILogger {
-    abstract public void setParent(VirtualFile parent);
+    public abstract void setParent(VirtualFile parent);
+
     @Nullable
     @Override
     public RemoteFileInfo getFileInfo() {

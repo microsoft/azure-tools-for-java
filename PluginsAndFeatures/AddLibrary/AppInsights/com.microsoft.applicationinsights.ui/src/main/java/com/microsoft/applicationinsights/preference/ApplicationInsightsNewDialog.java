@@ -44,10 +44,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.microsoft.applicationinsights.management.rest.model.Resource;
 import com.microsoft.applicationinsights.ui.activator.Activator;
 import com.microsoft.applicationinsights.util.AILibraryUtil;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -138,7 +138,7 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
 
                 populateResourceGroupValues(currentSub.getSubscriptionId(), "");
 
-                List<String> regionList = AzureSDKManager.getLocationsForApplicationInsights(currentSub);
+                List<String> regionList = AzureSDKManager.getLocationsForInsights(currentSub);
                 String[] regionArray = regionList.toArray(new String[regionList.size()]);
                 region.setItems(regionArray);
                 region.setText(regionArray[0]);
@@ -348,11 +348,9 @@ public class ApplicationInsightsNewDialog extends TitleAreaDialog {
                     @Override
                     public void run() {
                         try {
-                            Resource resource = AzureSDKManager.createApplicationInsightsResource(currentSub,
+                            ApplicationInsightsComponent resource = AzureSDKManager.createInsightsResource(currentSub,
                                     resourceGroup, isNewGroup, name, location);
-                            resourceToAdd = new ApplicationInsightsResource(resource.getName(),
-                                    resource.getInstrumentationKey(), currentSub.getSubscriptionName(), subId,
-                                    resource.getLocation(), resource.getResourceGroup(), true);
+                            resourceToAdd = new ApplicationInsightsResource(resource, currentSub, true);
                             if (onCreate != null) {
                                 onCreate.run();
                             }

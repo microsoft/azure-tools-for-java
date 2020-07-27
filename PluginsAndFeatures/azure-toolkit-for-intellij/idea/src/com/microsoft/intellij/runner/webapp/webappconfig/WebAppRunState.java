@@ -1,19 +1,19 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -27,11 +27,8 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -43,21 +40,14 @@ import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.Map;
 
 public class WebAppRunState extends AzureRunProfileState<WebAppBase> {

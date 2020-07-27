@@ -1,7 +1,23 @@
-/**
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for
- * license information.
+/*
+ * Copyright (c) Microsoft Corporation
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.intellij.runner.functions.library.function;
@@ -9,12 +25,10 @@ package com.microsoft.intellij.runner.functions.library.function;
 import com.google.common.base.Preconditions;
 import com.microsoft.azure.common.Utils;
 import com.microsoft.azure.common.appservice.OperatingSystemEnum;
-import com.microsoft.azure.common.docker.IDockerCredentialProvider;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.configurations.ElasticPremiumPricingTier;
 import com.microsoft.azure.common.function.configurations.FunctionExtensionVersion;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
-import com.microsoft.azure.common.function.handlers.runtime.DockerFunctionRuntimeHandler;
 import com.microsoft.azure.common.function.handlers.runtime.FunctionRuntimeHandler;
 import com.microsoft.azure.common.function.handlers.runtime.LinuxFunctionRuntimeHandler;
 import com.microsoft.azure.common.function.handlers.runtime.WindowsFunctionRuntimeHandler;
@@ -23,13 +37,12 @@ import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
-import com.microsoft.azure.management.appservice.FunctionApp.Update;
-import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -49,22 +62,15 @@ public class CreateFunctionHandler {
     private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
     private static final String SET_FUNCTIONS_EXTENSION_VERSION = "Functions extension version " +
             "isn't configured, setting up the default value";
-    private static final JavaVersion DEFAULT_JAVA_VERSION = JavaVersion.JAVA_8_NEWEST;
-    private static final String VALID_JAVA_VERSION_PATTERN = "^1\\.8.*"; // For now we only support function with java 8
-
     private static final String FUNCTION_APP_CREATE_START = "The specified function app does not exist. " +
             "Creating a new function app...";
     private static final String FUNCTION_APP_CREATED = "Successfully created the function app: %s";
     private static final String FUNCTION_APP_UPDATE = "Updating the specified function app...";
     private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app.";
 
-    private static final String HOST_JAVA_VERSION = "Java version of function host : %s";
-    private static final String HOST_JAVA_VERSION_OFF = "Java version of function host is not initiated," +
-            " set it to Java 8";
-    private static final String HOST_JAVA_VERSION_INCORRECT = "Java version of function host %s does not" +
-            " meet the requirement of Azure Functions, set it to Java 8";
-
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
+    public static final String TARGET_FUNCTION_APP_ALREADY_EXISTS =
+            "Failed to create function app %s, target function app already exists.";
     private IAppServiceContext ctx;
 
 
@@ -73,63 +79,25 @@ public class CreateFunctionHandler {
         this.ctx = ctx;
     }
 
-    public void execute() throws Exception {
-        checkJavaVersion();
-        createOrUpdateFunctionApp();
-    }
-    // endregion
-
-    private static void checkJavaVersion() {
-        final String javaVersion = System.getProperty("java.version");
-        if (!javaVersion.startsWith("1.8")) {
-            Log.warn(String.format(JDK_VERSION_ERROR, javaVersion));
-        }
-    }
-
-    // region Create or update Azure Functions
-
-    private void createOrUpdateFunctionApp() throws AzureExecutionException {
+    public void execute() throws IOException, AzureExecutionException {
         final FunctionApp app = getFunctionApp();
         if (app == null) {
             createFunctionApp();
         } else {
-            updateFunctionApp(app);
+            throw new AzureExecutionException(String.format(TARGET_FUNCTION_APP_ALREADY_EXISTS, ctx.getAppName()));
         }
     }
+    // endregion
 
-    private void createFunctionApp() throws AzureExecutionException {
+    // region Create or update Azure Functions
+
+    private void createFunctionApp() throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_CREATE_START);
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
         final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
         configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
-        withCreate.withJavaVersion(DEFAULT_JAVA_VERSION).withWebContainer(null).create();
+        withCreate.create();
         Log.prompt(String.format(FUNCTION_APP_CREATED, ctx.getAppName()));
-    }
-
-    private void updateFunctionApp(final FunctionApp app) throws AzureExecutionException {
-        Log.prompt(FUNCTION_APP_UPDATE);
-        // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
-        app.inner().withTags(null);
-        final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
-        runtimeHandler.updateAppServicePlan(app);
-        final Update update = runtimeHandler.updateAppRuntime(app);
-        checkHostJavaVersion(app, update); // Check Java Version of Server
-        configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
-        update.apply();
-        Log.prompt(FUNCTION_APP_UPDATE_DONE + ctx.getAppName());
-    }
-
-    private void checkHostJavaVersion(final FunctionApp app, final Update update) {
-        final JavaVersion serverJavaVersion = app.javaVersion();
-        if (serverJavaVersion.toString().matches(VALID_JAVA_VERSION_PATTERN)) {
-            Log.prompt(String.format(HOST_JAVA_VERSION, serverJavaVersion));
-        } else if (serverJavaVersion.equals(JavaVersion.OFF)) {
-            Log.prompt(HOST_JAVA_VERSION_OFF);
-            update.withJavaVersion(DEFAULT_JAVA_VERSION);
-        } else {
-            Log.warn(HOST_JAVA_VERSION_INCORRECT);
-            update.withJavaVersion(DEFAULT_JAVA_VERSION);
-        }
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -140,7 +108,7 @@ public class CreateFunctionHandler {
 
     // endregion
 
-    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws AzureExecutionException {
+    private FunctionRuntimeHandler getFunctionRuntimeHandler() throws IOException, AzureExecutionException {
         final FunctionRuntimeHandler.Builder<?> builder;
         final OperatingSystemEnum os = getOsEnum();
         switch (os) {

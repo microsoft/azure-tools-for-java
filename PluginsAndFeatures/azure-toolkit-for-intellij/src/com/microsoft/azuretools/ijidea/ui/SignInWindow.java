@@ -1,31 +1,26 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.ijidea.ui;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInDCProp;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.signInSPProp;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -37,36 +32,37 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.microsoft.azure.auth.AzureAuthHelper;
+import com.microsoft.azure.auth.AzureTokenWrapper;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.BaseADAuthManager;
-import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.AuthMethod;
+import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AccessTokenAzureManager;
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXHyperlink;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class SignInWindow extends AzureDialogWrapper {
     private static final Logger LOGGER = Logger.getInstance(SignInWindow.class);
@@ -83,6 +79,9 @@ public class SignInWindow extends AzureDialogWrapper {
     private JButton createNewAuthenticationFileButton;
     private JLabel automatedCommentLabel;
     private JLabel deviceLoginCommentLabel;
+    private JRadioButton azureCliRadioButton;
+    private JPanel azureCliPanel;
+    private JLabel azureCliCommentLabel;
 
     private AuthMethodDetails authMethodDetails;
     private AuthMethodDetails authMethodDetailsResult;
@@ -90,24 +89,6 @@ public class SignInWindow extends AzureDialogWrapper {
     private String accountEmail;
 
     private Project project;
-
-    public AuthMethodDetails getAuthMethodDetails() {
-        return authMethodDetailsResult;
-    }
-
-    public static SignInWindow go(AuthMethodDetails authMethodDetails, Project project) {
-        SignInWindow d = new SignInWindow(authMethodDetails, project);
-        d.show();
-        if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
-            return d;
-        }
-
-        return null;
-    }
-
-    private AuthMethodManager getAuthMethodManager() {
-        return AuthMethodManager.getInstance();
-    }
 
     private SignInWindow(AuthMethodDetails authMethodDetails, Project project) {
         super(project, true, IdeModalityType.PROJECT);
@@ -132,6 +113,8 @@ public class SignInWindow extends AzureDialogWrapper {
             }
         });
 
+        azureCliRadioButton.addActionListener(e -> refreshAuthControlElements());
+
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 doSelectCredFilepath();
@@ -147,15 +130,120 @@ public class SignInWindow extends AzureDialogWrapper {
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(deviceLoginRadioButton);
         buttonGroup.add(automatedRadioButton);
+        buttonGroup.add(azureCliRadioButton);
         deviceLoginRadioButton.setSelected(true);
-        refreshAuthControlElements();
 
         init();
+    }
+
+    public AuthMethodDetails getAuthMethodDetails() {
+        return authMethodDetailsResult;
+    }
+
+    @Nullable
+    public static SignInWindow go(AuthMethodDetails authMethodDetails, Project project) {
+        SignInWindow signInWindow = new SignInWindow(authMethodDetails, project);
+        signInWindow.show();
+        if (signInWindow.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+            return signInWindow;
+        }
+
+        return null;
+    }
+
+    @Override
+    public void doCancelAction() {
+        authMethodDetailsResult = authMethodDetails;
+        super.doCancelAction();
+    }
+
+    @Override
+    public void doHelpAction() {
+        JXHyperlink helpLink = new JXHyperlink();
+        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
+        helpLink.doClick();
+    }
+
+    @Nullable
+    @Override
+    protected String getDimensionServiceKey() {
+        return "SignInWindow";
+    }
+
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+        return contentPane;
+    }
+
+    @Override
+    protected void doOKAction() {
+        authMethodDetailsResult = new AuthMethodDetails();
+        if (automatedRadioButton.isSelected()) { // automated
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
+            String authPath = authFileTextField.getText();
+            if (StringUtils.isNullOrWhiteSpace(authPath)) {
+                DefaultLoader.getUIHelper().showMessageDialog(contentPane,
+                                                              "Select authentication file",
+                                                              "Sign in dialog info",
+                                                              Messages.getInformationIcon());
+                return;
+            }
+
+            authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
+            // TODO: check field is empty, check file is valid
+            authMethodDetailsResult.setCredFilePath(authPath);
+        } else if (deviceLoginRadioButton.isSelected()) {
+            doDeviceLogin();
+            if (StringUtils.isNullOrEmpty(accountEmail)) {
+                System.out.println("Canceled by the user.");
+                return;
+            }
+            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
+            authMethodDetailsResult.setAccountEmail(accountEmail);
+            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
+        } else if (azureCliRadioButton.isSelected()) {
+            doLogin(() -> AzureCliAzureManager.getInstance().signIn(), signInAZProp);
+            if (AzureCliAzureManager.getInstance().isSignedIn()) {
+                authMethodDetailsResult.setAuthMethod(AuthMethod.AZ);
+            } else {
+                return;
+            }
+        }
+
+        super.doOKAction();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        AzureTokenWrapper tokenWrapper = null;
+        try {
+            tokenWrapper = AzureAuthHelper.getAzureCLICredential();
+        } catch (IOException e) {
+            // swallow exception while getting azure cli credential
+        }
+        if (tokenWrapper != null) {
+            azureCliPanel.setEnabled(true);
+            azureCliRadioButton.setText("Azure CLI");
+            azureCliRadioButton.setEnabled(true);
+            azureCliRadioButton.setSelected(true);
+        } else {
+            azureCliPanel.setEnabled(false);
+            azureCliRadioButton.setText("Azure CLI (Not logged in)");
+            azureCliRadioButton.setEnabled(false);
+        }
+        refreshAuthControlElements();
+    }
+
+    private AuthMethodManager getAuthMethodManager() {
+        return AuthMethodManager.getInstance();
     }
 
     private void refreshAuthControlElements() {
         refreshAutomateLoginElements();
         refreshDeviceLoginElements();
+        refreshAzureCliElements();
     }
 
     private void refreshAutomateLoginElements() {
@@ -168,6 +256,10 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void refreshDeviceLoginElements() {
         deviceLoginCommentLabel.setEnabled(deviceLoginRadioButton.isSelected());
+    }
+
+    private void refreshAzureCliElements() {
+        azureCliCommentLabel.setEnabled(azureCliRadioButton.isSelected());
     }
 
     private void doSelectCredFilepath() {
@@ -190,7 +282,7 @@ public class SignInWindow extends AzureDialogWrapper {
             if (dcAuthManager.isSignedIn()) {
                 doSignOut();
             }
-            deviceLoginAsync(dcAuthManager);
+            doLogin(() -> dcAuthManager.signIn(null), signInDCProp);
             accountEmail = dcAuthManager.getAccountEmail();
 
             return dcAuthManager;
@@ -202,28 +294,28 @@ public class SignInWindow extends AzureDialogWrapper {
         return null;
     }
 
-    private void deviceLoginAsync(@NotNull final BaseADAuthManager dcAuthManager) {
+    private void doLogin(Callable loginCallable, Map<String, String> properties) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
         ProgressManager.getInstance().run(
-            new Task.Modal(project, "Sign In Progress", false) {
-                @Override
-                public void run(ProgressIndicator indicator) {
-                    try {
-                        EventUtil.logEvent(EventType.info, operation, signInDCProp);
-                        operation.start();
-                        dcAuthManager.signIn(null);
-                    } catch (AuthCanceledException ex) {
-                        EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
-                        System.out.println(ex.getMessage());
-                    } catch (Exception ex) {
-                        EventUtil.logError(operation, ErrorType.userError, ex, signInDCProp, null);
-                        ApplicationManager.getApplication().invokeLater(
-                            () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
-                    } finally {
-                        operation.complete();
+                new Task.Modal(project, "Sign In Progress", false) {
+                    @Override
+                    public void run(ProgressIndicator indicator) {
+                        try {
+                            EventUtil.logEvent(EventType.info, operation, properties);
+                            operation.start();
+                            loginCallable.call();
+                        } catch (AuthCanceledException ex) {
+                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
+                            System.out.println(ex.getMessage());
+                        } catch (Exception ex) {
+                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
+                            ApplicationManager.getApplication().invokeLater(
+                                () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                        } finally {
+                            operation.complete();
+                        }
                     }
-                }
-            });
+                });
     }
 
     private void doSignOut() {
@@ -316,7 +408,8 @@ public class SignInWindow extends AzureDialogWrapper {
             }
 
             authFileTextField.setText(path);
-
+            PluginUtil.displayInfoDialog("Authentication File Created", String.format(
+                    "Your credentials have been exported to %s, please keep the authentication file safe", path));
         } catch (Exception ex) {
             ex.printStackTrace();
             //LOGGER.error("doCreateServicePrincipal", ex);
@@ -332,62 +425,5 @@ public class SignInWindow extends AzureDialogWrapper {
                 }
             }
         }
-    }
-
-    @Nullable
-    @Override
-    protected JComponent createCenterPanel() {
-        return contentPane;
-    }
-
-    @Override
-    protected void doOKAction() {
-        authMethodDetailsResult = new AuthMethodDetails();
-        if (automatedRadioButton.isSelected()) { // automated
-            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
-            String authPath = authFileTextField.getText();
-            if (StringUtils.isNullOrWhiteSpace(authPath)) {
-                JOptionPane.showMessageDialog(
-                    contentPane,
-                    "Select authentication file",
-                    "Sign in dialog info",
-                    JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-
-            authMethodDetailsResult.setAuthMethod(AuthMethod.SP);
-            // TODO: check field is empty, check file is valid
-            authMethodDetailsResult.setCredFilePath(authPath);
-        } else if (deviceLoginRadioButton.isSelected()) {
-            doDeviceLogin();
-            if (StringUtils.isNullOrEmpty(accountEmail)) {
-                System.out.println("Canceled by the user.");
-                return;
-            }
-            authMethodDetailsResult.setAuthMethod(AuthMethod.DC);
-            authMethodDetailsResult.setAccountEmail(accountEmail);
-            authMethodDetailsResult.setAzureEnv(CommonSettings.getEnvironment().getName());
-        }
-
-        super.doOKAction();
-    }
-
-    @Override
-    public void doCancelAction() {
-        authMethodDetailsResult = authMethodDetails;
-        super.doCancelAction();
-    }
-
-    @Override
-    public void doHelpAction() {
-        JXHyperlink helpLink = new JXHyperlink();
-        helpLink.setURI(URI.create("https://docs.microsoft.com/en-us/azure/azure-toolkit-for-intellij-sign-in-instructions"));
-        helpLink.doClick();
-    }
-
-    @Nullable
-    @Override
-    protected String getDimensionServiceKey() {
-        return "SignInWindow";
     }
 }

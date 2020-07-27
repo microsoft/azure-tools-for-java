@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.azuretools.core.mvp.model.function;
@@ -26,12 +25,15 @@ package com.microsoft.azuretools.core.mvp.model.function;
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.ApplicationLogsConfig;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApps;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.SkuName;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -164,6 +166,29 @@ public class AzureFunctionMvpModel {
         pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP2"));
         pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP3"));
         return pricingTiers;
+    }
+
+    public static boolean isApplicationLogEnabled(WebAppBase webAppBase) {
+        final WebAppDiagnosticLogs config = webAppBase.diagnosticLogsConfig();
+        if (config == null || config.inner() == null || config.inner().applicationLogs() == null) {
+            return false;
+        }
+        final ApplicationLogsConfig applicationLogsConfig = config.inner().applicationLogs();
+        return (applicationLogsConfig.fileSystem() != null
+                && applicationLogsConfig.fileSystem().level() != LogLevel.OFF) ||
+                (applicationLogsConfig.azureBlobStorage() != null
+                        && applicationLogsConfig.azureBlobStorage().level() != LogLevel.OFF) ||
+                (applicationLogsConfig.azureTableStorage() != null
+                        && applicationLogsConfig.azureTableStorage().level() != LogLevel.OFF);
+    }
+
+    public static void enableApplicationLog(FunctionApp functionApp) {
+        functionApp.update().updateDiagnosticLogsConfiguration()
+                .withApplicationLogging()
+                .withLogLevel(LogLevel.INFORMATION)
+                .withApplicationLogsStoredOnFileSystem()
+                .parent()
+                .apply();
     }
 
     /**

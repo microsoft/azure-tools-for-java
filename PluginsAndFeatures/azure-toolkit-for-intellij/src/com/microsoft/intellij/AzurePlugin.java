@@ -1,19 +1,19 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -23,29 +23,6 @@
 
 package com.microsoft.intellij;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_INSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_LOAD;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UNINSTALL;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.PLUGIN_UPGRADE;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SYSTEM;
-import static com.microsoft.intellij.ui.messages.AzureBundle.message;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.swing.event.EventListenerList;
-
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginInstaller;
 import com.intellij.ide.plugins.PluginStateListener;
@@ -54,25 +31,23 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.PermanentInstallationID;
-import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleTypeId;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
+import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.ParserXMLUtility;
-import com.microsoft.azuretools.azurecommons.util.Utils;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -81,26 +56,23 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.TelemetryUtils;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.CustomerSurveyHelper;
+import com.microsoft.intellij.helpers.WhatsNewManager;
 import com.microsoft.intellij.ui.libraries.AILibraryHandler;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 
 import javax.swing.event.EventListenerList;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -108,8 +80,8 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
-public class AzurePlugin extends AbstractProjectComponent {
-    protected static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
+public class AzurePlugin implements StartupActivity.DumbAware {
+    private static final Logger LOG = Logger.getInstance("#com.microsoft.intellij.AzurePlugin");
     public static final String PLUGIN_VERSION = CommonConst.PLUGIN_VERISON;
     public static final String AZURE_LIBRARIES_VERSION = "1.0.0";
     public static final String JDBC_LIBRARIES_VERSION = "6.1.0.jre8";
@@ -130,55 +102,55 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     protected final String dataFile = PluginHelper.getTemplateFile(message("dataFileName"));
 
-    private final AzureSettings azureSettings;
+    private AzureSettings azureSettings;
 
     private String installationID;
 
     private Boolean firstInstallationByVersion;
 
-    public AzurePlugin(Project project) {
-        super(project);
+    @Override
+    public void runActivity(@NotNull Project project) {
         this.azureSettings = AzureSettings.getSafeInstance(project);
         String hasMac = GetHashMac.getHashMac();
         this.installationID = StringUtils.isNotEmpty(hasMac) ? hasMac : GetHashMac.hash(PermanentInstallationID.get());
 //        CommonSettings.setUserAgent(String.format(USER_AGENT, PLUGIN_VERSION,
 //                TelemetryUtils.getMachieId(dataFile, message("prefVal"), message("instID"))));
-    }
 
+        initializeAIRegistry(project);
+        // Showing dialog needs to be run in UI thread
+        initializeFeedbackNotification(project);
+        initializeWhatsNew(project);
 
-    public void projectOpened() {
-        if (IS_RIDER) return;
-        initializeAIRegistry();
-        initializeFeedbackNotification();
-    }
-
-    private void initializeFeedbackNotification() {
-        CustomerSurveyHelper.INSTANCE.showFeedbackNotification(myProject);
-    }
-
-    public void projectClosed() {
-    }
-
-    /**
-     * Method is called after plugin is already created and configured. Plugin can start to communicate with
-     * other plugins only in this method.
-     */
-    public void initComponent() {
-        if (IS_ANDROID_STUDIO || IS_RIDER) return;
-
-        LOG.info("Starting Azure Plugin");
-        firstInstallationByVersion = new Boolean(isFirstInstallationByVersion());
-		try {
-            //this code is for copying componentset.xml in plugins folder
-            copyPluginComponents();
-            initializeTelemetry();
-            clearTempDirectory();
-            loadWebappsSettings();
-        } catch (Exception e) {
-        /* This is not a user initiated task
-           So user should not get any exception prompt.*/
-            LOG.error(AzureBundle.message("expErlStrtUp"), e);
+        if (!IS_ANDROID_STUDIO && !IS_RIDER) {
+            LOG.info("Starting Azure Plugin");
+            firstInstallationByVersion = new Boolean(isFirstInstallationByVersion());
+            try {
+                //this code is for copying componentset.xml in plugins folder
+                copyPluginComponents();
+                initializeTelemetry();
+                clearTempDirectory();
+                loadWebappsSettings(project);
+            } catch (ProcessCanceledException e) {
+                throw e;
+            } catch (Exception e) {
+                /* This is not a user initiated task
+                   So user should not get any exception prompt.*/
+                LOG.error(AzureBundle.message("expErlStrtUp"), e);
+            }
         }
+    }
+
+    private void initializeWhatsNew(Project project) {
+        try {
+            WhatsNewManager.INSTANCE.showWhatsNew(false, project);
+        } catch (IOException e) {
+            // swallow this exception as shown whats new in startup should not block users
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    private void initializeFeedbackNotification(Project myProject) {
+        CustomerSurveyHelper.INSTANCE.showFeedbackNotification(myProject);
     }
 
     private synchronized void initializeTelemetry() throws Exception {
@@ -250,7 +222,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void initializeAIRegistry() {
+    private void initializeAIRegistry(Project myProject) {
         try {
             AzureSettings.getSafeInstance(myProject).loadAppInsights();
             Module[] modules = ModuleManager.getInstance(myProject).getModules();
@@ -314,7 +286,7 @@ public class AzurePlugin extends AbstractProjectComponent {
         }
     }
 
-    private void loadWebappsSettings() {
+    private void loadWebappsSettings(Project myProject) {
         StartupManager.getInstance(myProject).runWhenProjectIsInitialized(
                 new Runnable() {
                     @Override
@@ -339,7 +311,7 @@ public class AzurePlugin extends AbstractProjectComponent {
                 });
     }
 
-    private void telemetryAI() {
+    private void telemetryAI(Project myProject) {
         ModuleManager.getInstance(myProject).getModules();
     }
 
@@ -349,7 +321,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     // currently we didn't have a better way to know if it is in debug model.
     // the code suppose we are under debug model if the plugin root path contains 'sandbox' for Gradle default debug path
-    protected boolean isDebugModel() {
+    private boolean isDebugModel() {
         return PluginUtil.getPluginRootDirectory().contains("sandbox");
     }
 
@@ -357,14 +329,26 @@ public class AzurePlugin extends AbstractProjectComponent {
      * Copies Azure Toolkit for IntelliJ
      * related files in azure-toolkit-for-intellij plugin folder at startup.
      */
-    protected void copyPluginComponents() {
+    private void copyPluginComponents() {
+        try {
+            extractJobViewResource();
+        } catch (ExtractHdiJobViewException e) {
+            Notification hdiSparkJobListNaNotification = new Notification(
+                    "Azure Toolkit plugin",
+                    e.getMessage(),
+                    "The HDInsight cluster Spark Job list feature is not available since " + e.getCause().toString() +
+                    " Reinstall the plugin to fix that.",
+                    NotificationType.WARNING);
 
+            Notifications.Bus.notify(hdiSparkJobListNaNotification);
+        }
 
         try {
             for (AzureLibrary azureLibrary : AzureLibrary.LIBRARIES) {
                 if (azureLibrary.getLocation() != null) {
                     if (!new File(pluginFolder + File.separator + azureLibrary.getLocation()).exists()) {
-                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator + CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
+                        for (String entryName : Utils.getJarEntries(pluginFolder + File.separator + "lib" + File.separator +
+                                CommonConst.PLUGIN_NAME + ".jar", azureLibrary.getLocation())) {
                             new File(pluginFolder + File.separator + entryName).getParentFile().mkdirs();
                             copyResourceFile(entryName, pluginFolder + File.separator + entryName);
                         }
@@ -430,7 +414,7 @@ public class AzurePlugin extends AbstractProjectComponent {
 
     private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
-    synchronized private boolean isFirstInstallationByVersion() {
+    private synchronized boolean isFirstInstallationByVersion() {
         if (firstInstallationByVersion != null) {
             return firstInstallationByVersion.booleanValue();
         }
@@ -442,5 +426,89 @@ public class AzurePlugin extends AbstractProjectComponent {
             }
         }
         return true;
+    }
+
+    static class ExtractHdiJobViewException extends IOException {
+        ExtractHdiJobViewException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    private synchronized void extractJobViewResource() throws ExtractHdiJobViewException {
+        File indexRootFile = new File(PluginUtil.getPluginRootDirectory() + File.separator + "com.microsoft.hdinsight");
+
+        if (isFirstInstallationByVersion() || isDebugModel()) {
+            if (indexRootFile.exists()) {
+                try {
+                    FileUtils.deleteDirectory(indexRootFile);
+                } catch (IOException e) {
+                    throw new ExtractHdiJobViewException("Delete HDInsight job view folder error", e);
+                }
+            }
+        }
+
+        URL url = AzurePlugin.class.getResource(HTML_ZIP_FILE_NAME);
+        if (url != null) {
+            File toFile = new File(indexRootFile.getAbsolutePath(), HTML_ZIP_FILE_NAME);
+            try {
+                FileUtils.copyURLToFile(url, toFile);
+
+                // Need to wait for OS native process finished, otherwise, may get the following exception:
+                // message=Extract Job View Folder, throwable=java.io.FileNotFoundException: xxx.zip
+                // (The process cannot access the file because it is being used by another process)
+                int retryCount = 60;
+                while (!toFile.renameTo(toFile) && retryCount-- > 0) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                        break;
+                    }
+                }
+
+                if (!toFile.renameTo(toFile)) {
+                    throw new ExtractHdiJobViewException("Copying Job view zip file are not finished",
+                            new IOException("The native file system has not finished the file copy for " +
+                            toFile.getPath() + " in 1 minute"));
+                }
+
+                unzip(toFile.getAbsolutePath(), toFile.getParent());
+            } catch (IOException e) {
+                throw new ExtractHdiJobViewException("Extract Job View Folder error", e);
+            }
+        } else {
+            throw new ExtractHdiJobViewException("Can't find HDInsight job view zip package",
+                    new FileNotFoundException("The HDInsight Job view zip file " + HTML_ZIP_FILE_NAME + " is not found"));
+        }
+    }
+
+    private static void unzip(String zipFilePath, String destDirectory) throws IOException {
+        File destDir = new File(destDirectory);
+        if (!destDir.exists()) {
+            destDir.mkdir();
+        }
+        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath));
+        ZipEntry entry = zipIn.getNextEntry();
+        while (entry != null) {
+            String filePath = destDirectory + File.separator + entry.getName();
+            if (!entry.isDirectory()) {
+                extractFile(zipIn, filePath);
+            } else {
+                File dir = new File(filePath);
+                dir.mkdir();
+            }
+            zipIn.closeEntry();
+            entry = zipIn.getNextEntry();
+        }
+        zipIn.close();
+    }
+
+    private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+        BufferedOutputStream bos = new BufferedOutputStream(new java.io.FileOutputStream(filePath));
+        byte[] bytesIn = new byte[1024 * 10];
+        int read = 0;
+        while ((read = zipIn.read(bytesIn)) != -1) {
+            bos.write(bytesIn, 0, read);
+        }
+        bos.close();
     }
 }

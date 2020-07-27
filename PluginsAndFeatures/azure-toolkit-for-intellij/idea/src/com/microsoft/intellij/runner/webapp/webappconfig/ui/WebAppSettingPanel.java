@@ -159,6 +159,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     private JPanel pnlSlotHolder;
     private JBTable table;
     private AnActionButton btnRefresh;
+
     /**
      * The setting panel for web app deployment run configuration.
      */
@@ -328,7 +329,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     @Override
     @NotNull
     public String getPanelName() {
-        return  "Run On Web App";
+        return "Run On Web App";
     }
 
     @Override

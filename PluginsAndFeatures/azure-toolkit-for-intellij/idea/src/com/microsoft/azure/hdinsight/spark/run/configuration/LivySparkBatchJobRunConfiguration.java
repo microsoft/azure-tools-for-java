@@ -1,27 +1,29 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.compiler.options.CompileStepBeforeRun;
+import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaExecutionUtil;
@@ -72,11 +74,7 @@ import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.
 import static com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType.BLOB;
 
 public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule, Element>
-        implements RunProfileStatePrepare<ISparkBatchJob>, ILogger
-{
-    @Nullable
-    private ISparkBatchJob sparkRemoteBatch = null;
-
+        implements RunProfileStatePrepare<ISparkBatchJob>, ILogger {
     enum RunMode {
         LOCAL,
         REMOTE,
@@ -87,32 +85,40 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         return SparkApplicationType.HDInsight;
     }
 
+    @Nullable
+    private ISparkBatchJob sparkRemoteBatch = null;
+
     @NotNull
     private RunMode mode = RunMode.LOCAL;
 
     // The prop to store the action trigger source if it can be got, such as Run Context
-    final public static String ACTION_TRIGGER_PROP = "ActionTrigger";
+    public static final String ACTION_TRIGGER_PROP = "ActionTrigger";
 
-    private @Nullable SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
+    @Nullable
+    private final SecureStore secureStore = ServiceManager.getServiceProvider(SecureStore.class);
 
     @NotNull
-    private SparkBatchJobConfigurableModel jobModel;
+    private final SparkBatchJobConfigurableModel jobModel;
     @NotNull
-    final private Properties actionProperties = new Properties();
+    private final Properties actionProperties = new Properties();
 
-    public LivySparkBatchJobRunConfiguration(@NotNull Project project,
-                                             @NotNull SparkBatchJobConfigurableModel jobModel,
-                                             @NotNull ConfigurationFactory factory,
-                                             @NotNull String name) {
+    public LivySparkBatchJobRunConfiguration(@NotNull final Project project,
+                                             @NotNull final SparkBatchJobConfigurableModel jobModel,
+                                             @NotNull final ConfigurationFactory factory,
+                                             @NotNull final String name) {
         super(name, new JavaRunConfigurationModule(project, true), factory);
 
         this.jobModel = jobModel;
         // FIXME: Too many telemetries will be sent if we uncomment the following code
-        // EventUtil.logEvent(EventType.info, getSparkApplicationType().getValue(), TelemetryConstants.CREATE_NEW_RUN_CONFIG, null, null);
+        // EventUtil.logEvent(EventType.info,
+        //                    getSparkApplicationType().getValue(),
+        //                    TelemetryConstants.CREATE_NEW_RUN_CONFIG,
+        //                    null,
+        //                    null);
     }
 
     @Override
-    public void readExternal(@NotNull Element rootElement) throws InvalidDataException {
+    public void readExternal(@NotNull final Element rootElement) throws InvalidDataException {
         super.readExternal(rootElement);
 
         jobModel.applyFromElement(rootElement);
@@ -122,10 +128,10 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
     }
 
     @Override
-    public void writeExternal(@NotNull Element rootElement) throws WriteExternalException {
+    public void writeExternal(@NotNull final Element rootElement) throws WriteExternalException {
         super.writeExternal(rootElement);
 
-        Element jobConfigElement = jobModel.exportToElement();
+        final Element jobConfigElement = jobModel.exportToElement();
         rootElement.addContent(jobConfigElement);
     }
 
@@ -143,7 +149,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
                 advModel.setClusterName(toSubmitModel.getClusterName());
                 advModel.setSshPassword(
                         secureStore.loadPassword(advModel.getCredentialStoreAccount(), advModel.getSshUserName()));
-            } catch (Throwable ex) {
+            } catch (final Throwable ex) {
                 log().warn("Can't load SSH ${advModel.sshUserName}'s password from Secure Store", ex);
             }
         }
@@ -159,7 +165,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             if (blobSecService != null) {
                 try {
                     storeModel.setStorageKey(secureStore.loadPassword(blobSecService, blobSecAccount));
-                } catch (Throwable ex) {
+                } catch (final Throwable ex) {
                     log().warn("Can't load Blob access key $storageAccount from Secure Store", ex);
                 }
             }
@@ -173,7 +179,7 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             if (gen2SecService != null) {
                 try {
                     storeModel.setAccessKey(secureStore.loadPassword(gen2SecService, gen2SecAccount));
-                } catch (Throwable ex){
+                } catch (final Throwable ex) {
                     log().warn("Can't load ADLS Gen2 access key $gen2Account from Secure Store", ex);
                 }
             }
@@ -247,10 +253,13 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
     }
 
     @Override
-    public void checkRunnerSettings(@NotNull ProgramRunner runner, @Nullable RunnerSettings runnerSettings, @Nullable ConfigurationPerRunnerSettings configurationPerRunnerSettings) throws RuntimeConfigurationException {
+    public void checkRunnerSettings(@NotNull final ProgramRunner runner,
+                                    @Nullable final RunnerSettings runnerSettings,
+                                    @Nullable final ConfigurationPerRunnerSettings configurationPerRunnerSettings)
+            throws RuntimeConfigurationException {
         if (runner instanceof SparkSubmissionRunner) {
             // Focus on the submission tab
-            SparkSubmissionRunner submissionRunner = (SparkSubmissionRunner) runner;
+            final SparkSubmissionRunner submissionRunner = (SparkSubmissionRunner) runner;
             submissionRunner.setFocus(this);
 
             // Check remote submission
@@ -271,23 +280,33 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
             return Observable.empty();
         }
 
+        // To fix issue https://github.com/microsoft/azure-tools-for-java/issues/4419
+        // When we updated the job configurations table and clicked cancel, the new table config actually takes
+        // effect. However, the new table config doesn't apply to submission parameter. So we need to manually update
+        // the submission parameter with the new table here.
+        getSubmitModel().getSubmissionParameter().applyFlattedJobConf(
+                getSubmitModel().getTableModel().getJobConfigMap());
+
         return ((SparkSubmissionRunner) runner).buildSparkBatchJob(getSubmitModel())
-                .doOnNext(batch -> sparkRemoteBatch = batch);
+                                               .doOnNext(batch -> sparkRemoteBatch = batch);
     }
 
     protected String getErrorMessageClusterNull() {
         return "The cluster should be selected as the target for Spark application submission";
     }
 
-    protected void checkSubmissionConfigurationBeforeRun(@NotNull SparkSubmissionRunner runner) throws RuntimeConfigurationException {
-        SparkSubmissionParameter parameter = getSubmitModel().getSubmissionParameter();
+    protected void checkSubmissionConfigurationBeforeRun(@NotNull final SparkSubmissionRunner runner)
+            throws RuntimeConfigurationException {
+        final SparkSubmissionParameter parameter = getSubmitModel().getSubmissionParameter();
         if (StringUtils.isBlank(parameter.getClusterName())) {
             throw new RuntimeConfigurationError(this.getErrorMessageClusterNull());
         }
 
         if (!parameter.isLocalArtifact()) {
             if (StringUtils.isBlank(parameter.getArtifactName())) {
-                throw new RuntimeConfigurationError("Couldn't find the artifact to submit, please create one and select it, or select a local artifact");
+                throw new RuntimeConfigurationError(
+                        "Couldn't find the artifact to submit, please create one and select it, "
+                                + "or select a local artifact");
             }
 
             if (!getSubmitModel().getArtifactPath().isPresent()) {
@@ -310,15 +329,16 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         }
 
         if (getSubmitModel().getTableModel().getFirstCheckResults() != null) {
-            throw new RuntimeConfigurationError("There are Spark job configuration issues, fix it before continue, please: " +
-                    getSubmitModel().getTableModel().getFirstCheckResults().getMessaqge());
+            throw new RuntimeConfigurationError(
+                    "There are Spark job configuration issues, fix it before continue, please: " +
+                            getSubmitModel().getTableModel().getFirstCheckResults().getMessaqge());
         }
 
         // Validate Storage Configurations
-        SparkSubmissionJobUploadStorageWithUploadPathPanel storageConfigPanels =
+        final SparkSubmissionJobUploadStorageWithUploadPathPanel storageConfigPanels =
                 new SparkSubmissionJobUploadStorageWithUploadPathPanel();
         try {
-            storageConfigPanels.checkConfigurationBeforeRun(runner, getSubmitModel().getJobUploadStorageModel());
+            storageConfigPanels.checkConfigurationBeforeRun(getSubmitModel().getJobUploadStorageModel());
         } finally {
             Disposer.dispose(storageConfigPanels);
         }
@@ -330,35 +350,37 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         }
     }
 
-    public void setSparkRemoteBatch(ISparkBatchJob sparkRemoteBatch) {
+    public void setSparkRemoteBatch(final ISparkBatchJob sparkRemoteBatch) {
         this.sparkRemoteBatch = sparkRemoteBatch;
     }
 
-    public void setRunMode(@NotNull RunMode mode) {
+    public void setRunMode(@NotNull final RunMode mode) {
         this.mode = mode;
     }
 
     @NotNull
     @Override
-    public List getBeforeRunTasks() {
-        Stream compileTask = super.getBeforeRunTasks().stream()
-                .filter(task -> task instanceof CompileStepBeforeRun.MakeBeforeRunTask);
-        Stream buildArtifactTask = super.getBeforeRunTasks().stream()
-                .filter(task -> task instanceof BuildArtifactsBeforeRunTask);
+    public List<BeforeRunTask<?>> getBeforeRunTasks() {
+        final Stream<BeforeRunTask<?>> compileTask =
+                super.getBeforeRunTasks().stream()
+                     .filter(task -> task instanceof CompileStepBeforeRun.MakeBeforeRunTask);
+        final Stream<BeforeRunTask<?>> buildArtifactTask =
+                super.getBeforeRunTasks().stream()
+                     .filter(task -> task instanceof BuildArtifactsBeforeRunTask);
 
         switch (mode) {
-        case LOCAL:
-            compileTask.forEach(task -> ((CompileStepBeforeRun.MakeBeforeRunTask) task).setEnabled(true));
-            buildArtifactTask.forEach(task -> ((BuildArtifactsBeforeRunTask) task).setEnabled(false));
-            break;
-        case REMOTE:
-            compileTask.forEach(task -> ((CompileStepBeforeRun.MakeBeforeRunTask) task).setEnabled(false));
-            buildArtifactTask.forEach(task -> ((BuildArtifactsBeforeRunTask) task).setEnabled(true));
-            break;
-        case REMOTE_DEBUG_EXECUTOR:
-            compileTask.forEach(task -> ((CompileStepBeforeRun.MakeBeforeRunTask) task).setEnabled(false));
-            buildArtifactTask.forEach(task -> ((BuildArtifactsBeforeRunTask) task).setEnabled(false));
-            break;
+            case LOCAL:
+                compileTask.forEach(task -> task.setEnabled(true));
+                buildArtifactTask.forEach(task -> task.setEnabled(false));
+                break;
+            case REMOTE:
+                compileTask.forEach(task -> task.setEnabled(false));
+                buildArtifactTask.forEach(task -> task.setEnabled(true));
+                break;
+            case REMOTE_DEBUG_EXECUTOR:
+                compileTask.forEach(task -> task.setEnabled(false));
+                buildArtifactTask.forEach(task -> task.setEnabled(false));
+                break;
         }
 
         return super.getBeforeRunTasks();
@@ -366,14 +388,18 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
 
     @Nullable
     @Override
-    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
+    public RunProfileState getState(@NotNull final Executor executor, @NotNull
+    final ExecutionEnvironment executionEnvironment)
+            throws ExecutionException {
         Operation operation = executionEnvironment.getUserData(TelemetryKeys.OPERATION);
-        final String debugTarget = executionEnvironment.getUserData(SparkBatchJobDebuggerRunner.DebugTargetKey);
-        final boolean isExecutor = StringUtils.equals(debugTarget, SparkBatchJobDebuggerRunner.DebugExecutor);
+        final String debugTarget = executionEnvironment.getUserData(SparkBatchJobDebuggerRunner.DEBUG_TARGET_KEY);
+        final boolean isExecutor = StringUtils.equals(debugTarget, SparkBatchJobDebuggerRunner.DEBUG_EXECUTOR);
         RunProfileStateWithAppInsightsEvent state = null;
-        final Artifact selectedArtifact = ArtifactUtil.getArtifactWithOutputPaths(getProject()).stream()
+        final Artifact selectedArtifact = ArtifactUtil
+                .getArtifactWithOutputPaths(getProject()).stream()
                 .filter(artifact -> artifact.getName().equals(getSubmitModel().getArtifactName()))
-                .findFirst().orElse(null);
+                .findFirst()
+                .orElse(null);
 
         if (executor instanceof SparkBatchJobDebugExecutor) {
             final ISparkBatchJob remoteDebugBatch = sparkRemoteBatch;
@@ -383,7 +409,9 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
 
             if (isExecutor) {
                 setRunMode(RunMode.REMOTE_DEBUG_EXECUTOR);
-                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel(), operation, remoteDebugBatch);
+                state = new SparkBatchRemoteDebugExecutorState(getModel().getSubmitModel(),
+                                                               operation,
+                                                               remoteDebugBatch);
             } else {
                 if (selectedArtifact != null) {
                     BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(getProject(), this, selectedArtifact);
@@ -407,24 +435,26 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
         } else if (executor instanceof DefaultDebugExecutor) {
             setRunMode(RunMode.LOCAL);
             if (operation == null) {
-                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT, TelemetryConstants.DEBUG_LOCAL_SPARK_JOB);
+                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT,
+                                                             TelemetryConstants.DEBUG_LOCAL_SPARK_JOB);
                 operation.start();
             }
             state = new SparkBatchLocalDebugState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         } else if (executor instanceof DefaultRunExecutor) {
             setRunMode(RunMode.LOCAL);
             if (operation == null) {
-                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT, TelemetryConstants.RUN_LOCAL_SPARK_JOB);
+                operation = TelemetryManager.createOperation(TelemetryConstants.HDINSIGHT,
+                                                             TelemetryConstants.RUN_LOCAL_SPARK_JOB);
                 operation.start();
             }
             state = new SparkBatchLocalRunState(getProject(), getModel().getLocalRunConfigurableModel(), operation);
         }
 
         if (state != null) {
-            Map<String, String> props = getActionProperties().entrySet().stream().collect(Collectors.toMap(
+            final Map<String, String> props = getActionProperties().entrySet().stream().collect(Collectors.toMap(
                     (Map.Entry<Object, Object> entry) -> entry.getKey() == null ? null : entry.getKey().toString(),
                     (Map.Entry<Object, Object> entry) -> entry.getValue() == null ? "" : entry.getValue().toString()));
-            String configurationId =
+            final String configurationId =
                     Optional.ofNullable(executionEnvironment.getRunnerAndConfigurationSettings())
                             .map(settings -> settings.getType().getId())
                             .orElse("");
@@ -453,13 +483,13 @@ public class LivySparkBatchJobRunConfiguration extends ModuleBasedConfiguration<
     @Override
     public String suggestedName() {
         return Optional.ofNullable(getModel().getLocalRunConfigurableModel().getRunClass())
-                .map(JavaExecutionUtil::getPresentableClassName)
-                .map(className -> getSuggestedNamePrefix() + " " + className)
-                .orElse(null);
+                       .map(JavaExecutionUtil::getPresentableClassName)
+                       .map(className -> getSuggestedNamePrefix() + " " + className)
+                       .orElse(null);
     }
 
     public String getSuggestedNamePrefix() {
-        return "[Spark on HDInsight]";
+        return "[Apache Spark on HDInsight]";
     }
 
     @Nullable
