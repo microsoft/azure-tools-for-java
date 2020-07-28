@@ -266,7 +266,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     }
 
     private void createFunctionApp() {
-        ProgressManager.getInstance().run(new Task.Modal(null, "Creating New Function App...", true) {
+        ProgressManager.getInstance().run(new Task.Modal(project, "Creating New Function App...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 final Map<String, String> properties = functionConfiguration.getTelemetryProperties(null);

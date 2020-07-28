@@ -107,10 +107,12 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     private WebAppConfiguration webAppConfiguration;
     private WebApp result = null;
+    private Project project;
 
     public WebAppCreationDialog(Project project, WebAppConfiguration configuration) {
         super(project, true);
         setModal(true);
+        this.project = project;
 
         this.setTitle(DIALOG_TITLE);
         this.webAppConfiguration = configuration;
@@ -446,7 +448,7 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     private void createWebApp() {
         updateConfiguration();
-        ProgressManager.getInstance().run(new Task.Modal(null, "Creating New WebApp...", true) {
+        ProgressManager.getInstance().run(new Task.Modal(project, "Creating New WebApp...", true) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
