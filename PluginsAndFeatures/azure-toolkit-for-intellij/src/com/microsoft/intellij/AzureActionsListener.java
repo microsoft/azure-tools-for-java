@@ -29,15 +29,7 @@ import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.IdeActions;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.microsoft.azure.cosmosspark.CosmosSparkClusterOpsCtrl;
-import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterOps;
-import com.microsoft.azure.hdinsight.common.HDInsightHelperImpl;
-import com.microsoft.azure.hdinsight.common.HDInsightLoader;
-import com.intellij.openapi.extensions.Extensions;
-import com.intellij.util.containers.hash.HashMap;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
@@ -60,7 +52,6 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.components.PluginComponent;
 import com.microsoft.tooling.msservices.components.PluginSettings;
-import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -72,6 +63,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.FileHandler;
@@ -97,10 +89,8 @@ public abstract class AzureActionsListener implements AppLifecycleListener, Plug
         SchedulerProviderFactory.getInstance().init(new AppSchedulerProvider());
         MvpUIHelperFactory.getInstance().init(new MvpUIHelperImpl());
 
-        HDInsightLoader.setHHDInsightHelper(new HDInsightHelperImpl());
-
         Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions = new HashMap<>();
-        for (NodeActionsMap nodeActionsMap : Extensions.getExtensions(NodeActionsMap.EXTENSION_POINT_NAME)) {
+        for (NodeActionsMap nodeActionsMap : NodeActionsMap.EXTENSION_POINT_NAME.getExtensions()) {
             node2Actions.putAll(nodeActionsMap.getMap());
         }
         Node.setNode2Actions(node2Actions);
@@ -114,17 +104,16 @@ public abstract class AzureActionsListener implements AppLifecycleListener, Plug
 
         if (!AzurePlugin.IS_ANDROID_STUDIO) {
             ServiceManager.setServiceProvider(SecureStore.class, IdeaSecureStore.getInstance());
-            // enable spark serverless node subscribe actions
-            ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
-                    new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
-
+//            // enable spark serverless node subscribe actions
+//            ServiceManager.setServiceProvider(CosmosSparkClusterOpsCtrl.class,
+//                                              new CosmosSparkClusterOpsCtrl(CosmosSparkClusterOps.getInstance()));
             ServiceManager.setServiceProvider(TrustStrategy.class, IdeaTrustStrategy.INSTANCE);
             initAuthManage();
             ActionManager am = ActionManager.getInstance();
             DefaultActionGroup toolbarGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_MAIN_TOOLBAR);
             toolbarGroup.addAll((DefaultActionGroup) am.getAction("AzureToolbarGroup"));
-            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
-            popupGroup.add(am.getAction("AzurePopupGroup"));
+//            DefaultActionGroup popupGroup = (DefaultActionGroup) am.getAction(IdeActions.GROUP_PROJECT_VIEW_POPUP);
+//            popupGroup.add(am.getAction("AzurePopupGroup"));
             loadWebApps();
         }
         try {

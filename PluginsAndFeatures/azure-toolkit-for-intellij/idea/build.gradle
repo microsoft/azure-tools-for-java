@@ -1,8 +1,39 @@
 import com.microsoft.azuretools.plugins.BundleBuildIDEAPlugin
-import org.apache.tools.ant.filters.ReplaceTokens
+import org.apache.tools.ant.filters.*
 
 plugins {
-    id "com.github.spotbugs" version "4.2.3"
+    id "com.github.ben-manes.versions" version "0.28.0"
+}
+
+processResources {
+    filesMatching('**/ApplicationInsights.xml') {
+        filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
+    }
+}
+
+apply plugin: 'checkstyle'
+// Disable plugin because it is not compatible with Java 11 that we use for building pliugin now.
+//apply plugin: 'findbugs'
+apply plugin: BundleBuildIDEAPlugin
+
+checkstyle {
+    toolVersion = '8.30'
+    // Get the right path since Java/IDEA-related logic is moved to a separate "idea" module.
+    configFile = new File("${rootProject.projectDir.absolutePath}/config/checkstyle/checkstyle.xml")
+    showViolations = false
+}
+
+//findbugs {
+//    toolVersion = "3.0.1"
+//    ignoreFailures = true
+//}
+
+intellij {
+    pluginName = 'azure-toolkit-for-intellij'
+    version = intellij_version
+    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
+    plugins = ['java', 'maven', dep_plugins, "properties", 'markdown']
+    downloadSources = Boolean.valueOf(sources)
 }
 
 configurations {
@@ -14,43 +45,20 @@ configurations {
 dependencies {
     compile rootProject
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'info.cukes:cucumber-junit:1.2.5'
-    testCompile 'info.cukes:cucumber-java:1.2.5'
+    testCompile 'junit:junit:4.13'
+    testCompile 'info.cukes:cucumber-junit:1.2.6'
+    testCompile 'info.cukes:cucumber-java:1.2.6'
     testCompile 'org.mockito:mockito-core:2.7.22'
-    testCompile 'org.assertj:assertj-swing-junit:3.5.0'
+    testCompile 'org.assertj:assertj-swing-junit:3.9.2'
 
-    testCompile 'com.github.tomakehurst:wiremock:2.8.0'
+    testCompile 'com.github.tomakehurst:wiremock:2.26.3'
     testCompile 'org.powermock:powermock-module-junit4:1.7.0RC4'
     testCompile 'org.powermock:powermock-api-mockito2:1.7.0RC4'
     testCompile 'javax.servlet:javax.servlet-api:3.1.0'
 
-    testCompile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib"
     testCompile "org.jetbrains.kotlin:kotlin-test"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit"
-}
-
-apply plugin: 'checkstyle'
-apply plugin: BundleBuildIDEAPlugin
-
-processResources {
-    filesMatching('**/ApplicationInsights.xml') {
-        filter(ReplaceTokens, tokens: ["applicationinsights.key": project.property("applicationinsights.key")])
-    }
-}
-
-intellij {
-    pluginName = 'azure-toolkit-for-intellij'
-    version = idea_version
-    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = idea_version == "IC-2019.1" ? ['maven', dep_plugins, "properties"] : ['java', 'maven', dep_plugins, "properties"]
-    downloadSources = Boolean.valueOf(sources)
-}
-
-checkstyle {
-    toolVersion = '7.7'
-    configFile = new File(rootProject.projectDir, 'config/checkstyle/checkstyle.xml')
-    showViolations = false
 }
 
 test {
@@ -91,7 +99,16 @@ buildSearchableOptions.onlyIf { false }
 
 test.dependsOn cucumber
 
+defaultTasks 'buildPlugin'
+
+//wrapper() {
+//    gradleVersion = '5.0'
+//    distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+//}
+
 installIdea.dependsOn buildPlugin
+// Disable check style as it is failed with existing rules that require copyright, etc.
+//installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild

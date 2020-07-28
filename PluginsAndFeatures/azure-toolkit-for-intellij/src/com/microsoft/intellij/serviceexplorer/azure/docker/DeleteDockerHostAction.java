@@ -67,7 +67,7 @@ public class DeleteDockerHostAction extends NodeActionListener {
         promise.onSuccess(isDeletingSafe ->
         {
             try {
-                int option = AzureDockerUIResources.deleteAzureDockerHostConfirmationDialog(dockerHost, isDeletingSafe);
+                int option = AzureDockerUIResources.deleteAzureDockerHostConfirmationDialog(azureClient, dockerHost);
 
                 if (option != 1 && option != 2) {
                     if (AzureDockerUtils.DEBUG) System.out.format("User canceled delete Docker host op: %d\n", option);

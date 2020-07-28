@@ -36,8 +36,8 @@ import com.microsoft.azure.hdinsight.common.StreamUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.intellij.plugins.markdown.ui.preview.MarkdownSplitEditor;
-import org.intellij.plugins.markdown.ui.split.SplitFileEditor;
+//import org.intellij.plugins.markdown.ui.preview.MarkdownSplitEditor;
+//import org.intellij.plugins.markdown.ui.split.SplitFileEditor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -86,11 +86,11 @@ public enum WhatsNewManager {
         ApplicationManager.getApplication().invokeLater(() -> {
             final FileEditor[] fileEditors = fileEditorManager.openFile(virtualFile, true, true);
             for (FileEditor fileEditor : fileEditors) {
-                if (fileEditor instanceof MarkdownSplitEditor) {
-                    // Switch to markdown preview panel
-                    ((MarkdownSplitEditor) fileEditor).triggerLayoutChange(SplitFileEditor.SplitEditorLayout.SECOND,
-                                                                           true);
-                }
+//                if (fileEditor instanceof MarkdownSplitEditor) {
+//                    // Switch to markdown preview panel
+//                    ((MarkdownSplitEditor) fileEditor).triggerLayoutChange(SplitFileEditor.SplitEditorLayout.SECOND,
+//                                                                           true);
+//                }
             }
         }, ModalityState.defaultModalityState());
     }

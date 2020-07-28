@@ -1,25 +1,3 @@
-/**
- * Copyright (c) 2018 JetBrains s.r.o.
- * <p/>
- * All rights reserved.
- * <p/>
- * MIT License
- * <p/>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- * <p/>
- * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 package com.microsoft.intellij.helpers;
 
 import com.google.common.util.concurrent.*;
@@ -35,6 +13,7 @@ import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.helpers.IDEHelper;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -42,27 +21,27 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-public class IDEHelperJavaImpl extends IDEHelperImpl {
+public class JavaIDEHelper extends IDEHelperImpl {
 
-    @NotNull
     @Override
-    public List<ArtifactDescriptor> getArtifacts(@NotNull ProjectDescriptor projectDescriptor)
-            throws AzureCmdException {
+    public List<IDEHelper.ArtifactDescriptor> getArtifacts(
+            @NotNull final IDEHelper.ProjectDescriptor projectDescriptor) throws AzureCmdException {
+
         Project project = findOpenProject(projectDescriptor);
 
-        List<ArtifactDescriptor> artifactDescriptors = new ArrayList<ArtifactDescriptor>();
+        List<IDEHelper.ArtifactDescriptor> artifactDescriptors = new ArrayList<IDEHelper.ArtifactDescriptor>();
 
         for (Artifact artifact : ArtifactUtil.getArtifactWithOutputPaths(project)) {
-            artifactDescriptors.add(new ArtifactDescriptor(artifact.getName(), artifact.getArtifactType().getId()));
+            artifactDescriptors.add(new IDEHelper.ArtifactDescriptor(artifact.getName(), artifact.getArtifactType().getId()));
         }
 
         return artifactDescriptors;
     }
 
-    @NotNull
     @Override
-    public ListenableFuture<String> buildArtifact(@NotNull ProjectDescriptor projectDescriptor,
-                                                  @NotNull ArtifactDescriptor artifactDescriptor) {
+    public ListenableFuture<String> buildArtifact(@NotNull final IDEHelper.ProjectDescriptor projectDescriptor,
+                                                  @NotNull final IDEHelper.ArtifactDescriptor artifactDescriptor) {
+
         try {
             Project project = findOpenProject(projectDescriptor);
 
@@ -84,10 +63,10 @@ public class IDEHelperJavaImpl extends IDEHelperImpl {
                 public void onFailure(Throwable throwable) {
                     if (throwable instanceof ExecutionException) {
                         future.setException(new AzureCmdException("An error occurred while building the artifact",
-                                throwable.getCause()));
+                                                                  throwable.getCause()));
                     } else {
                         future.setException(new AzureCmdException("An error occurred while building the artifact",
-                                throwable));
+                                                                  throwable));
                     }
                 }
             }, MoreExecutors.directExecutor());
@@ -117,7 +96,8 @@ public class IDEHelperJavaImpl extends IDEHelperImpl {
     }
 
     @NotNull
-    private static Artifact findProjectArtifact(@NotNull Project project, @NotNull ArtifactDescriptor artifactDescriptor)
+    private static Artifact findProjectArtifact(@NotNull Project project, @NotNull
+            IDEHelper.ArtifactDescriptor artifactDescriptor)
             throws AzureCmdException {
         Artifact artifact = null;
 

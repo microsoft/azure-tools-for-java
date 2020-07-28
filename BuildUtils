@@ -93,21 +93,10 @@ collect_spark_artifacts() {
     set -x
 }
 
-collect_applicationinsights_artifacts() {
-    set +x
-
-    local applicationInsightsDir="$ARTIFACTS_COMMON_DIR"/applicationinsights
-    mkdir -p "$applicationInsightsDir"
-    cp "$SCRIPTPATH"/Utils/lib/applicationinsights-management-1.0.3.jar "$applicationInsightsDir"
-
-    set -x
-}
-
 tc_open "Collect Utils artifacts"
 {
     collect_maven_local_repository_artifacts
     collect_spark_artifacts
-    collect_applicationinsights_artifacts
 
     df -h
 }

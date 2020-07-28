@@ -369,6 +369,10 @@ class FunctionAppMock(
         TODO("Not yet implemented")
     }
 
+    override fun triggerFunction(p0: String?, p1: Any?) {
+        TODO("Not yet implemented")
+    }
+
     override fun storageAccount(): StorageAccount {
         TODO("Not yet implemented")
     }
@@ -462,6 +466,10 @@ class FunctionAppMock(
     }
 
     override fun appServicePlanId(): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun triggerFunctionAsync(p0: String?, p1: Any?): Completable {
         TODO("Not yet implemented")
     }
 

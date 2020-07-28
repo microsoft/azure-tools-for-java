@@ -45,7 +45,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.util.AzureFunctionsUtils;
 import com.microsoft.intellij.util.ValidationUtils;
-import com.microsoft.intellij.wizard.functions.module.FunctionTriggerChooserStep;
+import com.microsoft.intellij.wizards.functions.module.FunctionTriggerChooserStep;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;

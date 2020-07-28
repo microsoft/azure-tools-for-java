@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,29 +25,21 @@ package com.microsoft.intellij.serviceexplorer;
 import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
-import com.microsoft.azure.hdinsight.serverexplore.action.AddNewEmulatorAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
-import com.microsoft.intellij.serviceexplorer.azure.arm.*;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.container.PushToContainerRegistryAction;
-import com.microsoft.intellij.serviceexplorer.azure.docker.*;
-import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
-import com.microsoft.intellij.serviceexplorer.azure.storage.*;
-import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
-import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
+import com.microsoft.intellij.serviceexplorer.azure.springcloud.SpringCloudStreamingLogsAction;
 import com.microsoft.intellij.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.functions.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NodeJavaActionsMap extends NodeActionsMap {
 
@@ -58,20 +50,22 @@ public class NodeJavaActionsMap extends NodeActionsMap {
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
 
-        //noinspection unchecked
         node2Actions.put(HDInsightRootModuleImpl.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(AddNewClusterAction.class, AddNewEmulatorAction.class).build());
+                         new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                                 .add(AddNewClusterAction.class).build());
 
-        //noinspection unchecked
-        node2Actions.put(DockerHostNode.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(ViewDockerHostAction.class, DeployDockerContainerAction.class,
-                                DeleteDockerHostAction.class).build());
-        //noinspection unchecked
-        node2Actions.put(DockerHostModule.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
+        node2Actions.put(SqlBigDataClusterModule.class,
+                         new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                                 .add(LinkSqlServerBigDataClusterAction.class).build());
+
+        node2Actions.put(SpringCloudAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(SpringCloudStreamingLogsAction.class).build());
+
+        node2Actions.put(FunctionNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+
+        node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
     }
 
     @Override

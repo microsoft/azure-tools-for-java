@@ -76,6 +76,8 @@ public class AzureModule extends AzureRefreshableNode {
     @Nullable
     private HDInsightRootModule arcadiaModule;
     @NotNull
+    private DockerHostModule dockerHostModule;
+    @NotNull
     private ContainerRegistryModule containerRegistryModule;
     @NotNull
     private AzureDatabaseModule azureDatabaseModule;
@@ -101,6 +103,7 @@ public class AzureModule extends AzureRefreshableNode {
         //hdInsightModule = new HDInsightRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
+        dockerHostModule = new DockerHostModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
         azureDatabaseModule = new AzureDatabaseModule(this);
         azureAppServiceModule = new AzureAppServiceModule(this);
@@ -191,6 +194,10 @@ public class AzureModule extends AzureRefreshableNode {
 //            addChildNode(arcadiaModule);
 //        }
 
+        if (!isDirectChild(dockerHostModule)) {
+            addChildNode(dockerHostModule);
+        }
+
         if (!isDirectChild(containerRegistryModule)) {
             addChildNode(containerRegistryModule);
         }
@@ -230,6 +237,7 @@ public class AzureModule extends AzureRefreshableNode {
                     arcadiaModule.load(true);
                 }
 
+                dockerHostModule.load(true);
                 containerRegistryModule.load(true);
 
                 azureDatabaseModule.load(true);

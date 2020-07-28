@@ -51,7 +51,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.intellij.projectImport.ProjectImportBuilder.getCurrentProject;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
@@ -60,7 +59,7 @@ public class AzureDockerHostDeployAction extends AzureAnAction {
 
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
     try {
-        Project project = getCurrentProject();
+        Project project = PluginUtil.getSelectedProject();
         if (!AzureSignInAction.doSignIn( AuthMethodManager.getInstance(), project)) return true;
         AzureDockerUIResources.CANCELED = false;
 

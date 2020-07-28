@@ -38,9 +38,8 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase implements LocatableConfiguration {
+public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase<T> implements LocatableConfiguration {
     private boolean firstTimeCreated = true;
-    protected JavaRunConfigurationModule myModule;
 
     protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -48,6 +47,7 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
 
     protected AzureRunConfigurationBase(@NotNull AzureRunConfigurationBase source) {
         super(source.getProject(), source.getFactory(), source.getName());
+        firstTimeCreated = source.firstTimeCreated;
     }
 
     public abstract T getModel();
@@ -91,10 +91,6 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
-    }
-
-    public JavaRunConfigurationModule getConfigurationModule() {
-        return myModule;
     }
 
     protected void checkAzurePreconditions() throws ConfigurationException {

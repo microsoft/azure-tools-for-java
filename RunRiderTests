@@ -68,18 +68,10 @@ prepare_spark_jars() {
     set -x
 }
 
-prepare_applicationinsights_management_jars() {
-    set +x
-    local azureSdkDir="$SCRIPTPATH"/PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies
-    cp "$UTILS_ARTIFACTS_COMMON_DIR"/applicationinsights/applicationinsights-management-*.jar "$azureSdkDir"
-    set -x
-}
-
 tc_open "Prepare JAR dependencies"
 {
     prepare_maven_repository
     prepare_spark_jars
-    prepare_applicationinsights_management_jars
 
     echo "Deleting Utils artifacts folder"
     rm -rf "$UTILS_ARTIFACTS_DIR"

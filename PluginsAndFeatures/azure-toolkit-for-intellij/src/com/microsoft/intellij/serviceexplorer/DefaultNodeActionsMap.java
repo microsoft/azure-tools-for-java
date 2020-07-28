@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -24,6 +24,8 @@
 package com.microsoft.intellij.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.arm.*;
 import com.microsoft.intellij.serviceexplorer.azure.docker.*;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
@@ -35,13 +37,13 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
 import java.util.*;
 
@@ -59,13 +61,17 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
 
         node2Actions.put(TableModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateTableAction.class).build());
+
         node2Actions.put(BlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
 
         node2Actions.put(StorageModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(CreateStorageAccountAction.class, AttachExternalStorageAccountAction.class).build());
+                .add(CreateStorageAccountAction.class)
+                .add(AttachExternalStorageAccountAction.class).build());
+
         node2Actions.put(ClientBlobModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
+
         node2Actions.put(StorageNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateBlobContainer.class).build());
 
@@ -80,22 +86,20 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
 
         //noinspection unchecked
         node2Actions.put(DockerHostNode.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(ViewDockerHostAction.class, DeleteDockerHostAction.class).build());
+                         new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                                 .add(ViewDockerHostAction.class, DeployDockerContainerAction.class,
+                                      DeleteDockerHostAction.class).build());
 
         //noinspection unchecked
         node2Actions.put(DockerHostModule.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(CreateNewDockerHostAction.class).build());
+                         new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                                 .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
 
-        //noinspection unchecked
-        node2Actions.put(DockerHostModule.class,
-                new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                        .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
-
-        List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>();
-        deploymentNodeList.addAll(Arrays.asList(ExportTemplateAction.class, ExportParameterAction.class,
-                UpdateDeploymentAction.class, EditDeploymentAction.class));
+        final List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>(Arrays.asList(
+                ExportTemplateAction.class,
+                ExportParameterAction.class,
+                UpdateDeploymentAction.class,
+                EditDeploymentAction.class));
 
         node2Actions.put(DeploymentNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
@@ -108,6 +112,11 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
         node2Actions.put(ResourceManagementNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(CreateDeploymentAction.class).build());
+
+        node2Actions.put(DeploymentSlotNode.class,
+               new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                       .add(StartStreamingLogsAction.class)
+                       .add(StopStreamingLogsAction.class).build());
     }
 
     @Override

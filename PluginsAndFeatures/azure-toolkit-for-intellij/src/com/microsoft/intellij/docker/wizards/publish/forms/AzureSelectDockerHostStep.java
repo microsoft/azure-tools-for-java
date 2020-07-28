@@ -27,14 +27,15 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.artifacts.ArtifactUtil;
 import com.intellij.ui.*;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.wizard.WizardNavigationState;
@@ -49,6 +50,7 @@ import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.intellij.docker.DockerArtifactProvider;
 import com.microsoft.intellij.docker.dialogs.AzureViewDockerDialog;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardDialog;
@@ -56,6 +58,7 @@ import com.microsoft.intellij.docker.wizards.createhost.AzureNewDockerWizardMode
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardModel;
 import com.microsoft.intellij.docker.wizards.publish.AzureSelectDockerWizardStep;
 import com.microsoft.intellij.util.PluginUtil;
+import org.jetbrains.concurrency.AsyncPromise;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -65,9 +68,7 @@ import javax.swing.table.TableColumn;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep implements TelemetryProperties {
   private static final Logger LOGGER = Logger.getInstance(AzureSelectDockerHostStep.class);
@@ -209,13 +210,20 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
         setDialogButtonsState(doValidate(false) == null);
       }
     });
-    for (Artifact item : ArtifactUtil.getArtifactWithOutputPaths(model.getProject())) {
-      String path = item.getOutputFilePath();
-      if (path != null && (path.toLowerCase().endsWith(".war") || path.toLowerCase().endsWith(".jar")) &&
-          AzureDockerValidationUtils.validateDockerArtifactPath(path)) {
-        dockerArtifactComboboxWithBrowse.getComboBox().addItem(path);
+
+    Set<String> artifactPaths = new HashSet<>();
+    for (DockerArtifactProvider provider : Extensions.getExtensions(DockerArtifactProvider.EXTENSION_POINT_NAME)) {
+      for (File file: provider.getPaths(model.getProject())) {
+        artifactPaths.add(file.getPath());
       }
     }
+
+    final List<String> artifactPathStrings = new ArrayList<>(artifactPaths);
+    Collections.sort(artifactPathStrings);
+    for (String path: artifactPathStrings) {
+      dockerArtifactComboboxWithBrowse.getComboBox().addItem(path);
+    }
+
     if (dockerArtifactComboboxWithBrowse.getComboBox().getItemCount() > 0) {
       dockerArtifactComboboxWithBrowse.getComboBox().setSelectedIndex(0);
       String artifactFileName = new File((String) dockerArtifactComboboxWithBrowse.getComboBox().getItemAt(0)).getName();
@@ -488,38 +496,45 @@ public class AzureSelectDockerHostStep extends AzureSelectDockerWizardStep imple
   private void onRemoveDockerHostAction() {
     DefaultTableModel tableModel = (DefaultTableModel) dockerHostsTable.getModel();
     String apiURL = (String) tableModel.getValueAt(dockerHostsTable.getSelectedRow(), 4);
-    DockerHost deleteHost = dockerManager.getDockerHostForURL(apiURL);
-    Azure azureClient = dockerManager.getSubscriptionsMap().get(deleteHost.sid).azureClient;
+    DockerHost dockerHost = dockerManager.getDockerHostForURL(apiURL);
 
-    int option = AzureDockerUIResources.deleteAzureDockerHostConfirmationDialog(azureClient, deleteHost);
+    Azure azureClient = dockerManager.getSubscriptionsMap().get(dockerHost.sid).azureClient;
+    AsyncPromise<Boolean> promise = new AsyncPromise<>();
 
-    if (option !=1 && option != 2) {
-      if (AzureDockerUtils.DEBUG) System.out.format("User canceled delete Docker host op: %d\n", option);
-      return;
-    }
-    AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, "", "Remove");
-    int currentRow = dockerHostsTable.getSelectedRow();
-    tableModel.removeRow(currentRow);
-    tableModel.fireTableDataChanged();
-    if (dockerHostsTableSelection.row == currentRow) {
-      dockerHostsTableSelection = null;
-    }
+    Task task = new CalculateDockerDeletionSafenessBackgroundTask(promise, azureClient, dockerHost);
+    promise.onSuccess(isDeletingSafe -> {
+      int option = AzureDockerUIResources.deleteAzureDockerHostConfirmationDialog(azureClient, dockerHost);
 
-    AzureDockerUIResources.deleteDockerHost(model.getProject(), azureClient, deleteHost, option, new Runnable() {
-      @Override
-      public void run() {
-        dockerManager.refreshDockerHostDetails();
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-          @Override
-          public void run() {
-            refreshDockerHostsTable();
-          }
-        });
+      if (option != 1 && option != 2) {
+        if (AzureDockerUtils.DEBUG) System.out.format("User canceled delete Docker host op: %d\n", option);
+        return;
       }
+      AppInsightsClient.createByType(AppInsightsClient.EventType.DockerHost, "", "Remove");
+      int currentRow = dockerHostsTable.getSelectedRow();
+      tableModel.removeRow(currentRow);
+      tableModel.fireTableDataChanged();
+      if (dockerHostsTableSelection.row == currentRow) {
+        dockerHostsTableSelection = null;
+      }
+
+      AzureDockerUIResources.deleteDockerHost(model.getProject(), azureClient, dockerHost, option, new Runnable() {
+        @Override
+        public void run() {
+          dockerManager.refreshDockerHostDetails();
+          ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+              refreshDockerHostsTable();
+            }
+          });
+        }
+      });
+
+      setFinishButtonState(doValidate(false) == null);
+      setNextButtonState(doValidate(false) == null);
     });
 
-    setFinishButtonState(doValidate(false) == null);
-    setNextButtonState(doValidate(false) == null);
+    ProgressManager.getInstance().run(task);
   }
 
   /* Force a refresh of the docker hosts entries in the select host table

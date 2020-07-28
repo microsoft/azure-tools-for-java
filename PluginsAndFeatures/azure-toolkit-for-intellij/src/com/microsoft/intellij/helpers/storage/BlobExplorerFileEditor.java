@@ -24,9 +24,12 @@
 package com.microsoft.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileChooser.*;
+import com.intellij.openapi.fileChooser.FileChooserFactory;
+import com.intellij.openapi.fileChooser.FileSaverDescriptor;
+import com.intellij.openapi.fileChooser.FileSaverDialog;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
@@ -43,6 +46,7 @@ import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
+import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.forms.UploadBlobFileForm;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.util.PluginUtil;
@@ -141,6 +145,8 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         blobListTable.getColumnModel().getColumn(2).setPreferredWidth(10);
         blobListTable.getColumnModel().getColumn(3).setPreferredWidth(15);
         blobListTable.getColumnModel().getColumn(4).setPreferredWidth(40);
+        blobListTable.setRowMargin(3);
+        blobListTable.setRowHeight(blobListTable.getRowHeight() + blobListTable.getRowMargin());
 
         JTableHeader tableHeader = blobListTable.getTableHeader();
         Dimension headerSize = tableHeader.getPreferredSize();
@@ -214,6 +220,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         sorter.setSortKeys(sortKeys);
         sorter.sort();
 
+        backButton.setIcon(CommonIcons.INSTANCE.getOpenParent());
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -280,9 +287,13 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         };
 
+        refreshButton.setIcon(CommonIcons.INSTANCE.getRefresh());
         refreshButton.addActionListener(queryAction);
+
+        queryButton.setIcon(CommonIcons.INSTANCE.getSearch());
         queryButton.addActionListener(queryAction);
 
+        deleteButton.setIcon(CommonIcons.INSTANCE.getDiscard());
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -290,6 +301,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
+        saveAsButton.setIcon(CommonIcons.INSTANCE.getSaveChanges());
         saveAsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -297,6 +309,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
+        openButton.setIcon(CommonIcons.INSTANCE.getOpen());
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -304,6 +317,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
+        uploadButton.setIcon(CommonIcons.INSTANCE.getUpload());
         uploadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -353,20 +367,19 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                             for (BlobItem blobItem : blobItems) {
                                 if (blobItem instanceof BlobDirectory) {
                                     model.addRow(new Object[]{
-                                        UIHelperImpl.loadIcon("storagefolder.png"),
-                                        blobItem.getName(),
-                                        "",
-                                        "",
-                                        "",
-                                        blobItem.getUri()
+                                            AllIcons.Nodes.Folder,
+                                            blobItem.getName(),
+                                            "",
+                                            "",
+                                            "",
+                                            blobItem.getUri()
                                     });
                                 } else {
                                     BlobFile blobFile = (BlobFile) blobItem;
 
-                                    model.addRow(new String[]{
-                                        "",
+                                    model.addRow(new Object[]{
+                                        AllIcons.FileTypes.Any_type,
                                         blobFile.getName(),
-                                        UIHelperImpl.readableFileSize(blobFile.getSize()),
                                         new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
                                         blobFile.getContentType(),
                                         blobFile.getUri()
@@ -573,7 +586,9 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
 
         FileSaverDescriptor fileDescriptor = new FileSaverDescriptor(SAVE_AS, "Select location to save blob file.");
         final FileSaverDialog dialog = FileChooserFactory.getInstance().createSaveFileDialog(fileDescriptor, this.project);
-        final VirtualFileWrapper save = dialog.save(LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")), "");
+        final VirtualFileWrapper save = dialog.save(
+                LocalFileSystem.getInstance().findFileByPath(System.getProperty("user.home")),
+                fileSelection.getName());
 
         if (save != null) {
             downloadSelectedFile(save.getFile(), false);

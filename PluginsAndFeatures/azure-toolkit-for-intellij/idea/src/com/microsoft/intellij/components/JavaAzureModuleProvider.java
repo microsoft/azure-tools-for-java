@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,16 +20,25 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.wizard.functions;
+package com.microsoft.intellij.components;
 
-import com.intellij.openapi.util.Key;
+import com.intellij.openapi.project.Project;
+import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleImpl;
+import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
+import com.microsoft.azure.hdinsight.common.HDInsightUtil;
+import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
 
-public class AzureFunctionsConstants {
-    public static final Key<String> WIZARD_TOOL_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".tool");
-    public static final Key<String> WIZARD_GROUPID_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".groupId");
-    public static final Key<String> WIZARD_ARTIFACTID_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".artifactId");
-    public static final Key<String> WIZARD_VERSION_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".version");
-    public static final Key<String> WIZARD_PACKAGE_NAME_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".packageName");
-    public static final Key<String[]> WIZARD_TRIGGERS_KEY = Key.create(AzureFunctionsConstants.class.getPackage().getName() + ".triggers");
+public class JavaAzureModuleProvider implements AzureModuleProvider {
 
+    @Override
+    public void initAzureModule(final Project project, final AzureModule azureModule) {
+        HDInsightUtil.setHDInsightRootModule(azureModule);
+
+        azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
+        azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
+
+        // initialize aris service module
+        SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
+    }
 }
