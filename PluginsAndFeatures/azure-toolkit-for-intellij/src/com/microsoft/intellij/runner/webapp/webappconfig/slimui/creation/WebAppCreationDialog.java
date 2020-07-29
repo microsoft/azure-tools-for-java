@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -448,7 +447,7 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     private void createWebApp() {
         updateConfiguration();
-        ProgressManager.getInstance().run(new Task.Modal(project, "Creating New WebApp...", true) {
+        ProgressManager.getInstance().run(new Task.Modal(project, "Creating New WebApp...", false) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
@@ -456,14 +455,14 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
                     progressIndicator.setIndeterminate(true);
                     EventUtil.logEvent(EventType.info, operation, properties);
                     result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
-                    ApplicationManager.getApplication().invokeLater(() -> {
+                    DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                         sendTelemetry(true, null);
                         if (AzureUIRefreshCore.listeners != null) {
                             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                null));
+                                                                               null));
                         }
+                        WebAppCreationDialog.super.doOKAction();
                     });
-                    DefaultLoader.getIdeHelper().invokeLater(() -> WebAppCreationDialog.super.doOKAction());
                 }, (ex) -> {
                         DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
                                                               "Create WebApp Failed");

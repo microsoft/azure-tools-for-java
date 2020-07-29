@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.functions.deploy.ui.creation;
 
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -33,7 +32,6 @@ import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -266,7 +264,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
     }
 
     private void createFunctionApp() {
-        ProgressManager.getInstance().run(new Task.Modal(project, "Creating New Function App...", true) {
+        ProgressManager.getInstance().run(new Task.Modal(project, "Creating New Function App...", false) {
             @Override
             public void run(ProgressIndicator progressIndicator) {
                 final Map<String, String> properties = functionConfiguration.getTelemetryProperties(null);
@@ -275,19 +273,17 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
                     EventUtil.logEvent(EventType.info, operation, properties);
                     bindingApplicationInsights(functionConfiguration);
                     final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionConfiguration);
-                    createFunctionHandler.execute();
-                    result = AuthMethodManager.getInstance().getAzureClient(functionConfiguration.getSubscription()).appServices().functionApps()
-                            .getByResourceGroup(functionConfiguration.getResourceGroup(), functionConfiguration.getAppName());
-                    ApplicationManager.getApplication().invokeLater(() -> {
+                    result = createFunctionHandler.execute();
+                    DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                         sendTelemetry(true, null);
                         if (AzureUIRefreshCore.listeners != null) {
                             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
                                     null));
                         }
+                        FunctionCreationDialog.super.doOKAction();
                     });
-                    DefaultLoader.getIdeHelper().invokeLater(() -> FunctionCreationDialog.super.doOKAction());
                 }, (ex) -> {
-                        ApplicationManager.getApplication().invokeLater(() -> {
+                        DefaultLoader.getIdeHelper().invokeLater(() -> {
                             PluginUtil.displayErrorDialog("Create Function App Failed",
                                                           "Create Function Failed : " + ex.getMessage());
                             sendTelemetry(false, ex.getMessage());
