@@ -1,6 +1,5 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2019 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,7 +22,6 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
-import com.microsoft.intellij.helpers.base.AppBasePropertyViewProvider;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -31,7 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 
-public class DeploymentSlotPropertyViewProvider extends AppBasePropertyViewProvider {
+public class DeploymentSlotPropertyViewProvider extends WebAppBasePropertyViewProvider {
     public static final String TYPE ="DEPLOYMENT_SLOT_PROPERTY";
 
     @NotNull

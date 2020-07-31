@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -34,6 +35,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseStreamingLogs;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
@@ -49,13 +51,13 @@ public enum AppServiceStreamingLogManager {
     INSTANCE;
 
     private static final String STREAMING_LOG_NOT_STARTED = "Streaming log is not started.";
-    private static final String ENABLE_FILE_LOGGING_PROMPT = "Do you want to enable file logging for %s";
+    private static final String ENABLE_FILE_LOGGING_PROMPT = "Do you want to enable file logging for '%s'?";
     private static final String ENABLE_LOGGING = "Enable logging";
     private static final String[] YES_NO = {"Yes", "No"};
     private static final String STARTING_STREAMING_LOG = "Starting Streaming Log...";
     private static final String NOT_SUPPORTED = "Not supported";
     private static final String LOG_STREAMING_IS_NOT_SUPPORTED =
-            "Log streaming for %s is not supported in current version.";
+            "Log streaming for '%s' is not supported in current version.";
     private static final String FAILED_TO_START_STREAMING_LOG = "Failed to start streaming log";
     private static final String FAILED_TO_CLOSE_STREAMING_LOG = "Failed to close streaming log";
     private static final String CLOSING_STREAMING_LOG = "Closing Streaming Log...";
@@ -81,6 +83,7 @@ public enum AppServiceStreamingLogManager {
         DefaultLoader.getIdeHelper().runInBackground(project, CLOSING_STREAMING_LOG, false, true, null, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 consoleViewMap.get(appId).closeStreamingLog();
+                WebAppBaseStreamingLogs.INSTANCE.setStreamingLogsStarted(appId, false);
             } else {
                 DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                         FAILED_TO_CLOSE_STREAMING_LOG, STREAMING_LOG_NOT_STARTED));
@@ -114,6 +117,7 @@ public enum AppServiceStreamingLogManager {
                         return;
                     }
                     consoleView.startStreamingLog(log);
+                    WebAppBaseStreamingLogs.INSTANCE.setStreamingLogsStarted(resourceId, true);
                 }
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(
                         project, resourceId, logStreaming.getTitle(), consoleView);

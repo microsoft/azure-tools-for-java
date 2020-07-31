@@ -33,7 +33,8 @@ import org.jetbrains.annotations.NotNull;
 public class StreamingLogsToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        toolWindow.setIcon(
-                PluginUtil.getIcon(IconPathBuilder.custom(CommonConst.CosmosServerlessToolWindowIconName).build()));
+        // Set static icon in platformPlugin.xml instead to avoid showing/hiding icon when IDE is just started.
+//        toolWindow.setIcon(
+//                PluginUtil.getIcon(IconPathBuilder.custom(CommonConst.CosmosServerlessToolWindowIconName).build()));
     }
 }

@@ -111,7 +111,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public List<NodeAction> getNodeActions() {
-        boolean isRunning = WebAppBaseState.fromString(state.name()) == WebAppBaseState.RUNNING;
+        boolean isRunning = state == WebAppBaseState.RUNNING;
 
         NodeAction stopAction = getNodeActionByName(ACTION_STOP);
         NodeAction startAction = getNodeActionByName(ACTION_START);

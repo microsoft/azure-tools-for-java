@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -24,12 +25,14 @@ package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.AppServiceStreamingLogManager;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
@@ -68,6 +71,14 @@ public class StopStreamingLogsAction extends NodeActionListener {
         this.operation = STOP_STREAMING_LOG_FUNCTION_APP;
     }
 
+    public StopStreamingLogsAction(FunctionAppNode functionNode) {
+        super();
+        this.project = (Project) functionNode.getProject();
+        this.resourceId = functionNode.getId();
+        this.service = FUNCTION;
+        this.operation = STOP_STREAMING_LOG_FUNCTION_APP;
+    }
+
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) {
         EventUtil.executeWithLog(service, operation,
@@ -75,5 +86,10 @@ public class StopStreamingLogsAction extends NodeActionListener {
                 AppServiceStreamingLogManager.INSTANCE.closeStreamingLog(project, resourceId);
             },
             (err) -> UIUtils.showNotification(project, err.getMessage(), MessageType.ERROR));
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "StopStreamingLog.svg";
     }
 }

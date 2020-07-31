@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -50,9 +50,13 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected final String label;
     protected WebAppBaseState state;
 
+    private NodeAction startStreamingLogsAction;
+    private NodeAction stopStreamingLogsAction;
+
     public WebAppBaseNode(final String id, final String name, final String label, final AzureRefreshableNode parent,
                           final String subscriptionId, final String hostName, final String os, final String state) {
-        super(id, name, parent, getIcon(os, label, WebAppBaseState.fromString(state)), true);
+        super(id, name, parent, null, true);
+        this.iconPath = getIcon(os, label, WebAppBaseState.fromString(state));
         this.state = WebAppBaseState.fromString(state);
         this.label = label;
         this.subscriptionId = subscriptionId;
@@ -60,7 +64,8 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         this.hostName = hostName;
     }
 
-    protected static String getIcon(final String os, final String label, final WebAppBaseState state) {
+    // Remove static to provide ability to override IconPath logic for [FunctionAppNode].
+    protected String getIcon(final String os, final String label, final WebAppBaseState state) {
         return StringUtils.capitalize(os.toLowerCase())
             + label + (state == WebAppBaseState.RUNNING ? ICON_RUNNING_POSTFIX : ICON_STOPPED_POSTFIX);
     }
@@ -80,6 +85,24 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         NodeAction restartAction = getNodeActionByName(ACTION_RESTART);
         if (restartAction != null)
             restartAction.setEnabled(running);
+
+        // Hack for Azure Streaming Logs frontend actions to hide unnecessary actions
+        if (startStreamingLogsAction == null)
+            startStreamingLogsAction = getNodeActionByName("Start Streaming Logs");
+
+        if (stopStreamingLogsAction == null)
+            stopStreamingLogsAction = getNodeActionByName("Stop Streaming Logs");
+
+        if (isStreamingLogStarted()) {
+            nodeActions.remove(startStreamingLogsAction);
+            if (!nodeActions.contains(stopStreamingLogsAction))
+                nodeActions.add(stopStreamingLogsAction);
+
+        } else {
+            nodeActions.remove(stopStreamingLogsAction);
+            if (!nodeActions.contains(startStreamingLogsAction))
+                nodeActions.add(startStreamingLogsAction);
+        }
 
         return super.getNodeActions();
     }
@@ -120,5 +143,13 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
 
     public String getSubscriptionId() {
         return this.subscriptionId;
+    }
+
+    public boolean isStreamingLogStarted() {
+        return WebAppBaseStreamingLogs.INSTANCE.isStreamingLogsStarted(this.id);
+    }
+
+    public void setStreamingLogStarted(boolean value) {
+        WebAppBaseStreamingLogs.INSTANCE.setStreamingLogsStarted(this.id, value);
     }
 }

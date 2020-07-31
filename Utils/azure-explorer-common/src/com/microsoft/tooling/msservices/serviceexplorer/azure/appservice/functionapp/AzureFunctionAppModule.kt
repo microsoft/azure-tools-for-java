@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,10 +25,10 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functi
 import com.microsoft.azuretools.utils.AzureUIRefreshCore
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent
 import com.microsoft.azuretools.utils.AzureUIRefreshListener
+import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode
 import com.microsoft.tooling.msservices.serviceexplorer.Node
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
 
-class AzureFunctionAppModule(parent: Node) : RefreshableNode(MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH) {
+class AzureFunctionAppModule(parent: Node) : AzureRefreshableNode(MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH) {
 
     companion object {
 

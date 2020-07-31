@@ -37,12 +37,8 @@ import com.microsoft.azuretools.core.mvp.model.functionapp.functions.FunctionImp
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.FunctionAppService
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
 import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
-import org.apache.commons.io.IOUtils
 import org.jetbrains.annotations.TestOnly
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 
@@ -271,29 +267,6 @@ object AzureFunctionAppMvpModel {
         }
 
         return functions
-    }
-
-    fun getPublishableProfileXmlWithSecrets(subscriptionId: String, appId: String, filePath: String): Boolean {
-        val app = getFunctionAppById(subscriptionId, appId)
-        val file = File(Paths.get(filePath, "${app.name()}_${System.currentTimeMillis()}.PublishSettings").toString())
-        file.createNewFile()
-        try {
-            app.manager().inner().webApps()
-                    .listPublishingProfileXmlWithSecrets(
-                            app.resourceGroupName(),
-                            app.name(),
-                            CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP)
-                    )
-                    .use { inputStream ->
-                        FileOutputStream(file).use { outputStream ->
-                            IOUtils.copy(inputStream, outputStream)
-                            return true
-                        }
-                    }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return false
-        }
     }
 
     fun updateFunctionAppSettings(subscriptionId: String,

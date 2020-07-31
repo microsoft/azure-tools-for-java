@@ -25,30 +25,33 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functi
 import com.microsoft.azure.CommonIcons
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
-import com.microsoft.tooling.msservices.serviceexplorer.*
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.base.FunctionAppBaseNodeView
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.base.FunctionAppState
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.functions.FunctionNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
 import java.util.logging.Logger
 
 class FunctionAppNode(parent: AzureFunctionAppModule,
-                      override val subscriptionId: String,
-                      override val functionAppId: String,
-                      override val functionAppName: String,
-                      override var state: String,
-                      private val hostName: String) :
-        RefreshableNode(functionAppId, functionAppName, parent, getFunctionAppIcon(state), true),
-        FunctionAppVirtualInterface,
-        FunctionAppBaseNodeView {
+                      subscriptionId: String,
+                      val functionAppId: String,
+                      val functionAppName: String,
+                      state: String,
+                      hostName: String,
+                      os: String)
+    : WebAppBaseNode(functionAppId, functionAppName, FUNCTION_LABEL, parent, subscriptionId, hostName, os, state) {
 
     companion object {
+        private const val FUNCTION_LABEL = "Function"
+
         private const val ACTION_START = "Start"
         private const val ACTION_STOP = "Stop"
         private const val ACTION_RESTART = "Restart"
         private const val ACTION_DELETE = "Delete"
         private const val ACTION_OPEN_IN_BROWSER = "Open In Browser"
-        private const val ACTION_OPEN_PROPERTIES = "Open Properties"
+        private const val ACTION_SHOW_PROPERTIES = "Show Properties"
 
         private const val PROGRESS_MESSAGE_DELETE_FUNCTION_APP = "Deleting Function App '%s'"
         private const val PROMPT_MESSAGE_DELETE_FUNCTION_APP =
@@ -56,10 +59,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
 
         private const val ICON_FUNCTION_APP_RUNNING = "FunctionAppRunning.svg"
         private const val ICON_FUNCTION_APP_STOPPED = "FunctionAppStopped.svg"
-
-        private fun getFunctionAppIcon(state: String) =
-                if (FunctionAppState.fromString(state) == FunctionAppState.RUNNING) ICON_FUNCTION_APP_RUNNING
-                else ICON_FUNCTION_APP_STOPPED
     }
 
     private val logger = Logger.getLogger(FunctionAppNode::class.java.name)
@@ -81,6 +80,10 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         presenter.onAttachView(this@FunctionAppNode)
     }
 
+    override fun getIcon(os: String?, label: String?, state: WebAppBaseState?): String =
+            if (state == WebAppBaseState.STOPPED) ICON_FUNCTION_APP_STOPPED
+            else ICON_FUNCTION_APP_RUNNING
+
     override fun onError(message: String) {
     }
 
@@ -91,7 +94,7 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, createBackgroundActionListener("Restarting Function App") { restartFunctionApp() })
         addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteFunctionAppAction())
         addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, OpenInBrowserAction())
-        addAction(ACTION_OPEN_PROPERTIES, CommonIcons.ACTION_OPEN_PREFERENCES, OpenProperties())
+        addAction(ACTION_SHOW_PROPERTIES, CommonIcons.ACTION_OPEN_PREFERENCES, OpenProperties())
         super.loadActions()
     }
 
@@ -107,21 +110,21 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         }
     }
 
-    override fun renderNode(state: FunctionAppState) {
-        when (state) {
-            FunctionAppState.RUNNING -> {
-                this.state = state.name
+    override fun renderNode(nodeState: WebAppBaseState) {
+        when (nodeState) {
+            WebAppBaseState.RUNNING -> {
+                state = nodeState
                 setIconPath(ICON_FUNCTION_APP_RUNNING)
             }
-            FunctionAppState.STOPPED -> {
-                this.state = state.name
+            WebAppBaseState.STOPPED -> {
+                state = nodeState
                 setIconPath(ICON_FUNCTION_APP_STOPPED)
             }
         }
     }
 
     override fun getNodeActions(): MutableList<NodeAction> {
-        val isRunning = FunctionAppState.fromString(state) == FunctionAppState.RUNNING
+        val isRunning = state == WebAppBaseState.RUNNING
 
         val stopAction = getNodeActionByName(ACTION_STOP)
         val startAction = getNodeActionByName(ACTION_START)

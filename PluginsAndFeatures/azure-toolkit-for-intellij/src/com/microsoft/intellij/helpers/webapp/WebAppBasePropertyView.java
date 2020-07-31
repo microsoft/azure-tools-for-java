@@ -22,22 +22,6 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
-import java.awt.event.ActionEvent;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -56,12 +40,21 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty;
+import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppPropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class WebAppBasePropertyView extends BaseEditor implements WebAppBasePropertyMvpView {
     public final String id;
@@ -175,6 +168,10 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
 
         lnkUrl.setHyperlinkText("<Loading...>");
         setTextFieldStyle();
+
+        btnGetPublishFile.setIcon(AllIcons.Actions.Download);
+        btnSave.setIcon(CommonIcons.INSTANCE.getSaveChanges());
+        btnDiscard.setIcon(CommonIcons.INSTANCE.getDiscard());
     }
 
     protected abstract String getId();

@@ -24,6 +24,7 @@ package com.microsoft.intellij.helpers;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseStreamingLogs;
 import org.jetbrains.annotations.NotNull;
 import rx.Observable;
 import rx.Subscription;
@@ -81,5 +82,6 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
         super.dispose();
         this.isDisposed = true;
         closeStreamingLog();
+        WebAppBaseStreamingLogs.INSTANCE.clearStartedStreamingLogMap();
     }
 }

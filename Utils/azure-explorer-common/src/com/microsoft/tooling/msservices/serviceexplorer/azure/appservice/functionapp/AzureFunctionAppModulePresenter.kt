@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -23,6 +23,7 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
 
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
+import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
 
 class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
@@ -32,14 +33,17 @@ class AzureFunctionAppModulePresenter : MvpPresenter<AzureFunctionAppModule>() {
 
         val azureFunctionsList = AzureFunctionAppMvpModel.listAllFunctionApps(true)
 
-        for (functionApp in azureFunctionsList) {
-            val subscriptionId    = functionApp.subscriptionId
-            val appId             = functionApp.resource.id()
-            val appName           = functionApp.resource.name()
-            val state             = functionApp.resource.state()
-            val hostName          = functionApp.resource.defaultHostName()
+        for (functionAppResource in azureFunctionsList) {
+            val subscriptionId = functionAppResource.subscriptionId
+            val functionApp = functionAppResource.resource
+            val appId          = functionApp.id()
+            val appName        = functionApp.name()
+            val state          = functionApp.state()
+            val hostName       = functionApp.defaultHostName()
+            val os             = functionApp.operatingSystem().name
 
-            mvpView.addChildNode(FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName))
+            mvpView.addChildNode(
+                    FunctionAppNode(mvpView, subscriptionId, appId, appName, state, hostName, os))
         }
     }
 }

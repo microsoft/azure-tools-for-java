@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -27,12 +28,14 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.AppServiceStreamingLogManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
@@ -72,6 +75,14 @@ public class StartStreamingLogsAction extends NodeActionListener {
         this.operation = START_STREAMING_LOG_FUNCTION_APP;
     }
 
+    public StartStreamingLogsAction(FunctionAppNode functionNode) {
+        super();
+        this.project = (Project) functionNode.getProject();
+        this.resourceId = functionNode.getId();
+        this.service = FUNCTION;
+        this.operation = START_STREAMING_LOG_FUNCTION_APP;
+    }
+
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(service, operation, op -> {
@@ -96,5 +107,10 @@ public class StartStreamingLogsAction extends NodeActionListener {
                 }
             });
         });
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "StartStreamingLog.svg";
     }
 }

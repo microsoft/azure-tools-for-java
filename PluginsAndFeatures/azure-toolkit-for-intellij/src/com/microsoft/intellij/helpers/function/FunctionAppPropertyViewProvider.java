@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -41,7 +42,13 @@ public class FunctionAppPropertyViewProvider extends WebAppBasePropertyViewProvi
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         final String subscriptionId = virtualFile.getUserData(UIHelperImpl.SUBSCRIPTION_ID);
+        if (subscriptionId == null)
+            throw new IllegalStateException("Unable to get SubscriptionID from User Data.");
+
         final String functionAppId = virtualFile.getUserData(UIHelperImpl.RESOURCE_ID);
+        if (functionAppId == null)
+            throw new IllegalStateException("Unable to get ResourceID from User Data.");
+
         return FunctionAppPropertyView.create(project, subscriptionId, functionAppId);
     }
 }

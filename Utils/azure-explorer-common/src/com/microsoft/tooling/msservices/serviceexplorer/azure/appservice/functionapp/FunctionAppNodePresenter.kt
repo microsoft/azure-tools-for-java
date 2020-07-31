@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -25,23 +25,23 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functi
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter
 import com.microsoft.tooling.msservices.components.DefaultLoader
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.base.FunctionAppBaseNodeView
-import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.base.FunctionAppState
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNodeView
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState
 
-class FunctionAppNodePresenter<V : FunctionAppBaseNodeView> : MvpPresenter<V>() {
+class FunctionAppNodePresenter<V : WebAppBaseNodeView> : MvpPresenter<V>() {
 
     fun onStartFunctionApp(subscriptionId: String, functionAppId: String) {
         AzureFunctionAppMvpModel.startFunctionApp(subscriptionId, functionAppId)
-        DefaultLoader.getIdeHelper().executeOnPooledThread { mvpView?.renderNode(FunctionAppState.RUNNING) }
+        DefaultLoader.getIdeHelper().executeOnPooledThread { mvpView?.renderNode(WebAppBaseState.RUNNING) }
     }
 
     fun onRestartFunctionApp(subscriptionId: String, functionAppId: String) {
         AzureFunctionAppMvpModel.restartFunctionApp(subscriptionId, functionAppId)
-        DefaultLoader.getIdeHelper().executeOnPooledThread { mvpView?.renderNode(FunctionAppState.RUNNING) }
+        DefaultLoader.getIdeHelper().executeOnPooledThread { mvpView?.renderNode(WebAppBaseState.RUNNING) }
     }
 
     fun onStopFunctionApp(subscriptionId: String, functionAppId: String) {
         AzureFunctionAppMvpModel.stopFunctionApp(subscriptionId, functionAppId)
-        DefaultLoader.getIdeHelper().executeOnPooledThread { mvpView?.renderNode(FunctionAppState.STOPPED) }
+        DefaultLoader.getIdeHelper().executeOnPooledThread { mvpView?.renderNode(WebAppBaseState.STOPPED) }
     }
 }

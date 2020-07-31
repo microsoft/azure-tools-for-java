@@ -49,7 +49,7 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.functionapp.FunctionAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
@@ -75,6 +75,7 @@
             anchor="bottom"
             factoryClass="com.microsoft.intellij.helpers.StreamingLogsToolWindowFactory"
             id="Azure Streaming Log"
+            icon="/icons/toolWindowAzureStreamingLog.svg"
             canCloseContents="true"/>
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -23,12 +23,16 @@
 package com.microsoft.intellij.serviceexplorer
 
 import com.google.common.collect.ImmutableList
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction
+import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction
 import com.microsoft.intellij.serviceexplorer.azure.database.actions.*
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode
 import java.util.*
 
 class RiderNodeActionsMap : NodeActionsMap() {
@@ -56,6 +60,16 @@ class RiderNodeActionsMap : NodeActionsMap() {
                     .add(SqlDatabaseOpenInBrowserAction::class.java)
                     .add(SqlDatabaseAddCurrentIpAddressToFirewallAction::class.java)
                     .add(SqlDatabaseConnectDataSourceAction::class.java)
+                    .build()
+
+            node2Actions[WebAppNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
+                    .add(StartStreamingLogsAction::class.java)
+                    .add(StopStreamingLogsAction::class.java)
+                    .build()
+
+            node2Actions[FunctionAppNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
+                    .add(StartStreamingLogsAction::class.java)
+                    .add(StopStreamingLogsAction::class.java)
                     .build()
         }
     }
