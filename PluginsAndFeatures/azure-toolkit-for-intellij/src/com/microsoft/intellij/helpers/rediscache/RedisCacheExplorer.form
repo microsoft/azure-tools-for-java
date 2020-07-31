@@ -89,7 +89,8 @@
                         <properties>
                           <enabled value="false"/>
                           <font size="18"/>
-                          <icon value="icons/search.png"/>
+                          <!-- Remove button icon as there will be IllegalArgumentException for disabled icons in IntelliJ 2020.2 -->
+                          <!-- <icon value="icons/search.png"/> -->
                           <text value=""/>
                         </properties>
                       </component>

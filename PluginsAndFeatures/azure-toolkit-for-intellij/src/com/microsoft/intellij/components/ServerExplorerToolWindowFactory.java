@@ -210,6 +210,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         JPopupMenu menu = new JPopupMenu();
 
         for (final NodeAction nodeAction : node.getNodeActions()) {
+            if (!nodeAction.isEnabled()) {
+                continue;
+            }
             JMenuItem menuItem = new JMenuItem(nodeAction.getName());
             menuItem.setEnabled(nodeAction.isEnabled());
             if (nodeAction.getIconPath() != null) {

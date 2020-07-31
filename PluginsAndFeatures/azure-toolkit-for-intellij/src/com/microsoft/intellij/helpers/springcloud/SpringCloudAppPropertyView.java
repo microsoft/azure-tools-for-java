@@ -46,7 +46,6 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.ConsoleViewStatus;
-import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.runner.springcloud.ui.EnvironmentVariablesTextFieldWithBrowseButton;
 import com.microsoft.intellij.util.PluginUtil;
@@ -188,14 +187,15 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             });
 
         });
-        this.saveButton.setIcon(UIHelperImpl.loadIcon("storagesaveas.png"));
+        // Remove button icon as there will be IllegalArgumentException for disabled icons in IntelliJ 2020.2
+        // this.saveButton.setIcon(UIHelperImpl.loadIcon("storagesaveas.png"));
 
         this.refreshButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.REFRESH_SPRING_CLOUD_APP, "Refreshing", project, (changes) -> {
                 // DO nothing
             });
         });
-        this.refreshButton.setIcon(UIHelperImpl.loadIcon("refresh.png"));
+        // this.refreshButton.setIcon(UIHelperImpl.loadIcon("refresh.png"));
 
         this.deleteButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.DELETE_SPRING_CLOUD_APP, DELETING_ACTION, project, (changes) -> {
@@ -208,7 +208,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                 }
             });
         });
-        this.deleteButton.setIcon(UIHelperImpl.loadIcon("Delete.png"));
+        // this.deleteButton.setIcon(UIHelperImpl.loadIcon("Delete.png"));
 
         this.startButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.START_SPRING_CLOUD_APP, "Starting", project, (changes) -> {
@@ -220,7 +220,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                 }
             });
         });
-        this.startButton.setIcon(UIHelperImpl.loadIcon("Start.png"));
+        // this.startButton.setIcon(UIHelperImpl.loadIcon("Start.png"));
 
         this.stopButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.STOP_SPRING_CLOUD_APP, "Stopping", project, (changes) -> {
@@ -232,7 +232,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                 }
             });
         });
-        this.stopButton.setIcon(UIHelperImpl.loadIcon("Stop.png"));
+        // this.stopButton.setIcon(UIHelperImpl.loadIcon("Stop.png"));
 
         this.restartButton.addActionListener(e -> {
             wrapperOperations(TelemetryConstants.RESTART_SPRING_CLOUD_APP, "Restarting", project, (changes) -> {
@@ -244,7 +244,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                 }
             });
         });
-        this.restartButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-restart.png"));
+        // this.restartButton.setIcon(UIHelperImpl.loadIcon("azure-springcloud-app-restart.png"));
         jvmOpsTextField.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent documentEvent) {
