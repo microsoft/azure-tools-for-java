@@ -29,6 +29,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_B
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_OPEN_EXPLORER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.REDIS_READPROP;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -154,13 +155,13 @@ public class RedisCacheNode extends Node implements TelemetryProperties {
     @Override
     protected void loadActions() {
         if (!CREATING_STATE.equals(this.provisionState)) {
-            addAction(DELETE_ACTION, null, new DeleteRedisCacheAction());
-            addAction(SHOW_PROPERTY_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_READPROP,
+            addAction(DELETE_ACTION, CommonIcons.ACTION_DISCARD, new DeleteRedisCacheAction());
+            addAction(SHOW_PROPERTY_ACTION, CommonIcons.ACTION_OPEN_PREFERENCES, new WrappedTelemetryNodeActionListener(REDIS, REDIS_READPROP,
                 new ShowRedisCachePropertyAction()));
             addAction(OPEN_EXPLORER, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_EXPLORER,
                 new OpenRedisExplorerAction()));
         }
-        addAction(OPEN_IN_BROWSER_ACTION, null, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_BROWSER,
+        addAction(OPEN_IN_BROWSER_ACTION, CommonIcons.ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(REDIS, REDIS_OPEN_BROWSER,
             new OpenInBrowserAction()));
         super.loadActions();
     }

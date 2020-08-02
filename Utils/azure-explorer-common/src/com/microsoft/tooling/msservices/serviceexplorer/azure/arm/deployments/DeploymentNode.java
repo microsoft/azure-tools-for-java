@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2019 JetBrains s.r.o.
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,6 +23,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -51,9 +52,6 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
     private final DeploymentNodePresenter deploymentNodePresenter;
     private final String subscriptionId;
 
-    private static final String ICON_ACTION_DELETE = "Discard.svg";
-    private static final String ICON_ACTION_SHOW_PROPERTIES = "gearPlain.svg";
-
     public DeploymentNode(ResourceManagementNode parent, String subscriptionId, Deployment deployment) {
         super(deployment.id(), deployment.name(), parent, ICON_PATH, true);
         this.deployment = deployment;
@@ -74,8 +72,8 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
 
     @Override
     protected void loadActions() {
-        addAction(SHOW_PROPERTY_ACTION, ICON_ACTION_SHOW_PROPERTIES, new ShowDeploymentPropertyAction());
-        addAction(DELETE_ACTION, ICON_ACTION_DELETE, new DeleteDeploymentAction());
+        addAction(SHOW_PROPERTY_ACTION, CommonIcons.ACTION_OPEN_PREFERENCES, new ShowDeploymentPropertyAction());
+        addAction(DELETE_ACTION, CommonIcons.ACTION_DISCARD, new DeleteDeploymentAction());
         super.loadActions();
     }
 

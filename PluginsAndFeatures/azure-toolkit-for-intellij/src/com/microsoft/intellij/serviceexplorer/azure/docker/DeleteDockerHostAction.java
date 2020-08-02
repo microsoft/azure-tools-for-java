@@ -31,6 +31,7 @@ import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.ops.utils.AzureDockerUtils;
 import com.microsoft.azure.management.Azure;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.intellij.docker.wizards.publish.forms.CalculateDockerDeletionSafenessBackgroundTask;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -39,7 +40,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import org.jetbrains.concurrency.AsyncPromise;
-
 
 @Name("Delete")
 public class DeleteDockerHostAction extends NodeActionListener {
@@ -94,6 +94,11 @@ public class DeleteDockerHostAction extends NodeActionListener {
         });
 
         ProgressManager.getInstance().run(task);
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "Discard.svg";
     }
 }
 

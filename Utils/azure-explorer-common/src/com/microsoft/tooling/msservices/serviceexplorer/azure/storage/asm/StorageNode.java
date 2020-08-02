@@ -26,6 +26,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_ACCOUNT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -111,7 +112,7 @@ public class StorageNode extends ClientStorageNode implements TelemetryPropertie
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        addAction("Delete", new DeleteStorageAccountAction());
+        addAction("Delete", CommonIcons.ACTION_DISCARD, new DeleteStorageAccountAction());
         return super.initActions();
     }
 }

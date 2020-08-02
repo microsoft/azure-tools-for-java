@@ -1,18 +1,18 @@
 /**
- * Copyright (c) 2019 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2019-2020 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
 
+import com.microsoft.azure.CommonIcons
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.serviceexplorer.*
@@ -55,12 +56,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
 
         private const val ICON_FUNCTION_APP_RUNNING = "FunctionAppRunning.svg"
         private const val ICON_FUNCTION_APP_STOPPED = "FunctionAppStopped.svg"
-        private const val ICON_ACTION_START = "AzureStart.svg"
-        private const val ICON_ACTION_STOP = "AzureStop.svg"
-        private const val ICON_ACTION_RESTART = "AzureRestart.svg"
-        private const val ICON_ACTION_OPEN_IN_BROWSER = "OpenInBrowser.svg"
-        private const val ICON_ACTION_DELETE = "Discard.svg"
-        private const val ICON_ACTION_SHOW_PROPERTIES = "gearPlain.svg"
 
         private fun getFunctionAppIcon(state: String) =
                 if (FunctionAppState.fromString(state) == FunctionAppState.RUNNING) ICON_FUNCTION_APP_RUNNING
@@ -75,11 +70,11 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
 
     init {
         startAction = NodeAction(this, ACTION_START)
-        startAction.iconPath = ICON_ACTION_START
+        startAction.iconPath = CommonIcons.ACTION_START
         startAction.addListener(createBackgroundActionListener("Starting Function App") { startFunctionApp() })
 
         stopAction = NodeAction(this, ACTION_STOP)
-        stopAction.iconPath = ICON_ACTION_STOP
+        stopAction.iconPath = CommonIcons.ACTION_STOP
         stopAction.addListener(createBackgroundActionListener("Stopping Function App") { stopFunctionApp() })
 
         loadActions()
@@ -93,10 +88,10 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
     }
 
     override fun loadActions() {
-        addAction(ACTION_RESTART, ICON_ACTION_RESTART, createBackgroundActionListener("Restarting Function App") { restartFunctionApp() })
-        addAction(ACTION_DELETE, ICON_ACTION_DELETE, DeleteFunctionAppAction())
-        addAction(ACTION_OPEN_IN_BROWSER, ICON_ACTION_OPEN_IN_BROWSER, OpenInBrowserAction())
-        addAction(ACTION_OPEN_PROPERTIES, ICON_ACTION_SHOW_PROPERTIES, OpenProperties())
+        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, createBackgroundActionListener("Restarting Function App") { restartFunctionApp() })
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteFunctionAppAction())
+        addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, OpenInBrowserAction())
+        addAction(ACTION_OPEN_PROPERTIES, CommonIcons.ACTION_OPEN_PREFERENCES, OpenProperties())
         super.loadActions()
     }
 

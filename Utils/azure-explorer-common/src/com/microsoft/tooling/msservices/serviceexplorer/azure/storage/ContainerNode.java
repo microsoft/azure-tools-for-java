@@ -24,9 +24,11 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
 import com.google.common.collect.ImmutableMap;
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -120,6 +122,11 @@ public class ContainerNode extends Node implements TelemetryProperties{
         @Override
         protected void onSubscriptionsChanged(NodeActionEvent e)
                 throws AzureCmdException {
+        }
+
+        @Override
+        protected @Nullable String getIconPath() {
+            return CommonIcons.ACTION_DISCARD;
         }
     }
 

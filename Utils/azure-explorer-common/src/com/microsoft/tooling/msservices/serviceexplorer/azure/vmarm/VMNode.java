@@ -30,6 +30,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_VM;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.VM;
 
 import com.microsoft.azure.CloudException;
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.compute.InstanceViewStatus;
 import com.microsoft.azure.management.compute.VirtualMachine;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
@@ -251,10 +252,10 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     @Override
     protected void loadActions() {
         super.loadActions();
-        addAction(ACTION_START, ACTION_START_ICON, new StartVMAction());
+        addAction(ACTION_START, CommonIcons.ACTION_START, new StartVMAction());
         addAction(ACTION_RESTART, new RestartVMAction());
-        addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new ShutdownVMAction());
-        addAction(ACTION_DELETE, ACTION_DELETE_ICON, new DeleteVMAction());
+        addAction(ACTION_SHUTDOWN, CommonIcons.ACTION_STOP, new ShutdownVMAction());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteVMAction());
     }
 
     @Override

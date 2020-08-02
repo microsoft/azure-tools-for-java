@@ -23,6 +23,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.docker;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerContainer;
 import com.microsoft.azure.docker.model.DockerHost;
@@ -62,8 +63,8 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
   public static final String ACTION_SHUTDOWN = "Shutdown";
   public static final String ACTION_VIEW = "Details";
   public static final String ACTION_DEPLOY = "Publish";
-  private static final String ACTION_SHUTDOWN_ICON = "AzureStop.svg";
-  private static final String ACTION_START_ICON = "AzureStart.svg";
+  private static final String ACTION_SHUTDOWN_ICON = "Stop.png";
+  private static final String ACTION_START_ICON = "Start.png";
 
   DockerHost dockerHost;
   AzureDockerHostsManager dockerManager;
@@ -167,7 +168,7 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
 
   @Override
   protected void loadActions() {
-    addAction(ACTION_START, ACTION_START_ICON, new WrappedTelemetryNodeActionListener(DOCKER, START_DOCKER_HOST,
+    addAction(ACTION_START, CommonIcons.ACTION_START, new WrappedTelemetryNodeActionListener(DOCKER, START_DOCKER_HOST,
         new NodeActionListener() {
       @Override
       public void actionPerformed(NodeActionEvent e) {
@@ -191,8 +192,8 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
         });
       }
     }));
-    addAction(ACTION_RESTART, ACTION_START_ICON, new RestartDockerHostAction());
-    addAction(ACTION_SHUTDOWN, ACTION_SHUTDOWN_ICON, new ShutdownDockerHostAction());
+    addAction(ACTION_RESTART, CommonIcons.ACTION_START, new RestartDockerHostAction());
+    addAction(ACTION_SHUTDOWN, CommonIcons.ACTION_STOP, new ShutdownDockerHostAction());
     super.loadActions();
   }
 

@@ -23,6 +23,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.docker;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerContainer;
 import com.microsoft.azure.docker.model.DockerHost;
@@ -52,10 +53,6 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
   private static final String DOCKER_CONTAINER_ICON_PATH = "DockerInstance2.svg";
   private static final String DOCKER_CONTAINER_WEB_RUN_ICON = "DockerInstanceRunning2.svg";
   private static final String DOCKER_CONTAINER_WEB_STOP_ICON = "DockerInstanceStopped2.svg";
-
-  private static final String ACTION_STOP_ICON = "AzureStop.svg";
-  private static final String ACTION_START_ICON = "AzureStart.svg";
-  private static final String ACTION_DELETE_ICON = "Discard.svg";
 
   public static final String ACTION_START = "Start";
   public static final String ACTION_DELETE = "Delete";
@@ -156,7 +153,7 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
         });
       }
     }));
-    addAction(ACTION_STOP, ACTION_STOP_ICON, new WrappedTelemetryNodeActionListener(DOCKER, STOP_DOCKER_CONTAINER,
+    addAction(ACTION_STOP, CommonIcons.ACTION_STOP, new WrappedTelemetryNodeActionListener(DOCKER, STOP_DOCKER_CONTAINER,
         new NodeActionListener() {
       @Override
       public void actionPerformed(NodeActionEvent e) {
@@ -170,7 +167,7 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
         });
       }
     }));
-    addAction(ACTION_START, ACTION_START_ICON, new WrappedTelemetryNodeActionListener(DOCKER, START_DOCKER_CONTAINER,
+    addAction(ACTION_START, CommonIcons.ACTION_START, new WrappedTelemetryNodeActionListener(DOCKER, START_DOCKER_CONTAINER,
         new NodeActionListener() {
       @Override
       public void actionPerformed(NodeActionEvent e) {
@@ -200,7 +197,7 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
         });
       }
     }));
-    addAction(ACTION_RESTART, ACTION_START_ICON, new WrappedTelemetryNodeActionListener(DOCKER, RESTART_DOCKER_CONTAINER,
+    addAction(ACTION_RESTART, CommonIcons.ACTION_START, new WrappedTelemetryNodeActionListener(DOCKER, RESTART_DOCKER_CONTAINER,
         new NodeActionListener() {
       @Override
       public void actionPerformed(NodeActionEvent e) {
@@ -215,7 +212,7 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
         });
       }
     }));
-    addAction(ACTION_DELETE, ACTION_DELETE_ICON, new DeleteDockerContainerAction());
+    addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteDockerContainerAction());
     super.loadActions();
   }
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -25,6 +26,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -35,6 +37,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class NodeActionListener implements EventListener {
+
+    @Nullable
+    private String iconPath;
+
     public NodeActionListener() {
         // need a nullary constructor defined in order for
         // Class.newInstance to work on sub-classes
@@ -85,6 +91,15 @@ public abstract class NodeActionListener implements EventListener {
         } finally {
             operation.complete();
         }
+    }
+
+    public void setIconPath(String path) {
+        iconPath = path;
+    }
+
+    @Nullable
+    protected String getIconPath() {
+        return iconPath;
     }
 
     /**

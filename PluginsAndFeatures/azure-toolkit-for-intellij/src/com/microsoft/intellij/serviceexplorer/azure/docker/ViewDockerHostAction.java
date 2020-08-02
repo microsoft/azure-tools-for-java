@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -27,6 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azure.docker.model.EditableDockerHost;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.docker.dialogs.AzureViewDockerDialog;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -59,5 +61,10 @@ public class ViewDockerHostAction extends NodeActionListener {
     if (viewDockerDialog.getInternalExitCode() == AzureViewDockerDialog.UPDATE_EXIT_CODE) {
       AzureDockerUIResources.updateDockerHost(project, new EditableDockerHost(dockerHost), dockerManager, true);
     }
+  }
+
+  @Override
+  protected @Nullable String getIconPath() {
+    return "gearPlain.svg";
   }
 }

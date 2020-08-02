@@ -275,9 +275,12 @@ public class Node implements MvpView, BasicTelemetryProperty {
             try {
                 for (Class<? extends NodeActionListener> actionListener : actions) {
                     Name nameAnnotation = actionListener.getAnnotation(Name.class);
-                    if (nameAnnotation != null) {
-                        addAction(nameAnnotation.value(), createNodeActionListener(actionListener));
-                    }
+                    if (nameAnnotation == null) continue;
+
+                    NodeActionListener actionInstance = createNodeActionListener(actionListener);
+                    if (actionInstance == null) continue;
+
+                    addAction(nameAnnotation.value(), actionInstance.getIconPath(), actionInstance);
                 }
             } catch (Throwable e) {
                 throw new RuntimeException("MS Services - Error", e);

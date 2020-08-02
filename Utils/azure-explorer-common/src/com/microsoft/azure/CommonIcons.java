@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+/*
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,11 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer.azure.database.actions
+package com.microsoft.azure;
 
-import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
+public class CommonIcons {
 
-@Name("Open in browser")
-class SqlDatabaseOpenInBrowserAction(sqlDatabaseNode: SqlDatabaseNode)
-    : OpenInBrowserAction(sqlDatabaseNode.subscriptionId, sqlDatabaseNode)
+    public static final String ACTION_OPEN_PREFERENCES = "gearPlain.svg";
+    public static final String ACTION_DISCARD = "Discard.svg";
+    public static final String ACTION_OPEN_IN_BROWSER = "OpenInBrowser.svg";
+
+    public static final String ACTION_START = "AzureStart.svg";
+    public static final String ACTION_STOP = "AzureStop.svg";
+    public static final String ACTION_RESTART = "AzureRestart.svg";
+}
