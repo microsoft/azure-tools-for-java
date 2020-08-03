@@ -4,7 +4,7 @@
 ## 3.40.0
 
 ### Added
-- Support IntelliJ 2020.2 EAP
+- Support IntelliJ 2020.2
 
 ### Changed
 - Show non-anonymous HTTP trigger urls after function deployment
