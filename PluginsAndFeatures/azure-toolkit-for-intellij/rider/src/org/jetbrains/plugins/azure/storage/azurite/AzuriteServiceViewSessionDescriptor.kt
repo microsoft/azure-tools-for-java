@@ -28,11 +28,14 @@ import com.intellij.execution.services.SimpleServiceViewDescriptor
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBPanelWithEmptyText
 import com.microsoft.icons.CommonIcons
+import org.jetbrains.annotations.NotNull
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.storage.azurite.actions.CleanAzuriteAction
 import org.jetbrains.plugins.azure.storage.azurite.actions.ShowAzuriteSettingsAction
@@ -43,8 +46,8 @@ import javax.swing.BorderFactory
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-open class AzuriteServiceViewSessionDescriptor(private val project: Project)
-    : SimpleServiceViewDescriptor(RiderAzureBundle.message("service.azurite.name"), CommonIcons.Azurite) {
+class AzuriteServiceViewSessionDescriptor(private val project: Project)
+    : SimpleServiceViewDescriptor(RiderAzureBundle.message("service.azurite.name"), CommonIcons.Azurite), @NotNull Disposable {
 
     companion object {
         val defaultToolbarActions = DefaultActionGroup(
@@ -61,6 +64,10 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
 
     private val consoleView: ConsoleView = TextConsoleBuilderFactory.getInstance()
             .createBuilder(project).apply { setViewer(true) }.console
+
+    init {
+        Disposer.register(project, this)
+    }
 
     protected val panel = createEmptyComponent()
 
@@ -107,5 +114,9 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
                 .withBorder(BorderFactory.createEmptyBorder())
         panel.isFocusable = true
         return panel
+    }
+
+    override fun dispose() {
+        Disposer.dispose(consoleView)
     }
 }
