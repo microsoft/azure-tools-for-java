@@ -27,6 +27,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.ExternalStorageHelper;
@@ -39,6 +40,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -51,11 +53,16 @@ public class StorageModule extends AzureRefreshableNode {
 
     public StorageModule(Node parent) {
         super(STORAGE_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
+
+        // Add Storage Emulator persistent node when initialize the Storage module.
+        addChildNode(new EmulatorStorageNode(this));
     }
 
     @Override
-    protected void refreshItems()
-            throws AzureCmdException {
+    protected void refreshItems() throws AzureCmdException {
+        // Add Storage Emulator node to the top when refreshing items.
+        addChildNode(new EmulatorStorageNode(this));
+
         List<Pair<String, String>> failedSubscriptions = new ArrayList<>();
 
         try {
@@ -106,7 +113,6 @@ public class StorageModule extends AzureRefreshableNode {
 //            }
         //TODO
         // load External Accounts
-        addChildNode(new EmulatorStorageNode(this));
         for (ClientStorageAccount clientStorageAccount : ExternalStorageHelper.getList(getProject())) {
             ClientStorageAccount storageAccount = StorageClientSDKManager.getManager().getStorageAccount(clientStorageAccount.getConnectionString());
 
@@ -120,5 +126,16 @@ public class StorageModule extends AzureRefreshableNode {
             }
             DefaultLoader.getUIHelper().logError("An error occurred when trying to load Storage Accounts\n\n" + errorMessage.toString(), null);
         }
+    }
+
+    @Override
+    @Nullable
+    public Comparator<Node> getNodeComparator() {
+        return (node1, node2) -> {
+            if (node1 instanceof EmulatorStorageNode) return -1;
+            if (node2 instanceof EmulatorStorageNode) return 1;
+
+            return node1.getName().compareTo(node2.getName());
+        };
     }
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,6 +23,9 @@
 
 package com.microsoft.intellij.components;
 
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.tooling.msservices.serviceexplorer.Node;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.util.Comparator;
@@ -34,6 +38,15 @@ public class SortableTreeNode extends DefaultMutableTreeNode {
 
     public SortableTreeNode(Object userObject, boolean allowsChildren) {
         super(userObject, allowsChildren);
+    }
+
+    public SortableTreeNode(Object userObject, boolean allowsChildren, @Nullable Comparator<Node> comparator) {
+        super(userObject, allowsChildren);
+        if (comparator != null) {
+            // Cast Comparator<Node> to Comparator<SortableTreeNode> instance to be able to sort presentation nodes.
+            this.nodeComparator =
+                    (Comparator<SortableTreeNode>) (node1, node2) -> comparator.compare((Node)node1.userObject, (Node)node2.userObject);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -50,6 +63,6 @@ public class SortableTreeNode extends DefaultMutableTreeNode {
         this.children.sort(nodeComparator);
     }
 
-    private static final Comparator nodeComparator =
+    private Comparator nodeComparator =
             (Comparator<SortableTreeNode>) (node1, node2) -> node1.toString().compareToIgnoreCase(node2.toString());
 }

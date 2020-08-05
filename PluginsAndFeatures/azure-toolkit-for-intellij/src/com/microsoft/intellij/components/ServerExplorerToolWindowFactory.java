@@ -222,7 +222,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private SortableTreeNode createTreeNode(Node node, Project project) {
-        SortableTreeNode treeNode = new SortableTreeNode(node, true);
+        SortableTreeNode treeNode = new SortableTreeNode(node, true, node.getNodeComparator());
 
         // associate the DefaultMutableTreeNode with the Node via it's "viewData"
         // property; this allows us to quickly retrieve the DefaultMutableTreeNode

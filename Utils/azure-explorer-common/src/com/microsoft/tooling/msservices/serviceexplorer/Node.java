@@ -29,6 +29,7 @@ import com.google.common.collect.Iterators;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -46,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -402,5 +404,10 @@ public class Node implements MvpView, BasicTelemetryProperty {
         } catch (IOException e) {
             throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, e);
         }
+    }
+
+    @Nullable
+    public Comparator<Node> getNodeComparator() {
+        return null;
     }
 }
