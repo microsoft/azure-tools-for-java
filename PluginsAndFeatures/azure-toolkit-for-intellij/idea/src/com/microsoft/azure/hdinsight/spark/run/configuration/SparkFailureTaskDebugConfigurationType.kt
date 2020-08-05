@@ -40,7 +40,7 @@ class SparkFailureTaskDebugConfigurationType : ConfigurationType {
     }
 
     override fun getConfigurationTypeDescription(): String {
-        return "Spark Failure Local Debugging"
+        return "Apache Spark Failure Local Debugging"
     }
 
     override fun getId(): String {
@@ -48,7 +48,7 @@ class SparkFailureTaskDebugConfigurationType : ConfigurationType {
     }
 
     override fun getDisplayName(): String {
-        return "Spark Failure Debug"
+        return "Apache Spark Failure Debug"
     }
 
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {

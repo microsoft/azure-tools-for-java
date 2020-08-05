@@ -4,11 +4,11 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.35.0</version>
+        <version>3.41.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>spark-localrun-mock</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <properties>
         <artifact.name>${project.artifactId}-${project.version}.jar</artifact.name>
         <hdinsight.htmlcopy.enabled>false</hdinsight.htmlcopy.enabled>
@@ -20,8 +20,8 @@
         <checkstyle.skip>true</checkstyle.skip>
     </properties>
     <build>
-        <sourceDirectory>src/main</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>test/java</testSourceDirectory>
         <testResources>
             <testResource>
                 <directory>test/resources</directory>
@@ -32,9 +32,19 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>4.4.0</version>
                 <executions>
                     <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-test-resources</phase>
                         <goals>
                             <goal>testCompile</goal>
                         </goals>

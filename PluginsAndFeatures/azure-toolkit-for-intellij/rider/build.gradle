@@ -25,7 +25,6 @@ configurations {
 
 ext.resharperPluginPath = new File(projectDir, 'ReSharper.Azure')
 
-apply plugin: 'org.jetbrains.intellij'
 apply from: 'backend.gradle'
 
 // Plugin version
@@ -44,7 +43,7 @@ intellij {
 
     // Workaround for https://youtrack.jetbrains.com/issue/IDEA-179607
     def extraPlugins = [ "rider-plugins-appender" ]
-    plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient'] + extraPlugins
+    plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient', 'markdown'] + extraPlugins
 
     downloadSources = Boolean.valueOf(sources)
 }

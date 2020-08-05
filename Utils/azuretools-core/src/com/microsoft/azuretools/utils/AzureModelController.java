@@ -1,23 +1,23 @@
 /*
  * Copyright (c) Microsoft Corporation
- *   <p/>
- *  All rights reserved.
- *   <p/>
- *  MIT License
- *   <p/>
- *  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- *  documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- *  the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- *  to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *  <p/>
- *  The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- *  the Software.
- *   <p/>
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- *  THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- *  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *  SOFTWARE.
+ *
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+ * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+ * the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+ * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 package com.microsoft.azuretools.utils;
@@ -36,6 +36,12 @@ import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.WebAppUtils.WebAppDetails;
+import rx.Observable;
+import rx.Subscriber;
+import rx.exceptions.Exceptions;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -49,18 +55,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.exceptions.Exceptions;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
-
 /**
  * Created by vlashch on 1/9/17.
  */
 public class AzureModelController {
-    private final static Logger LOGGER = Logger.getLogger(AzureModelController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AzureModelController.class.getName());
     private static ISubscriptionSelectionListener subscriptionSelectionListener = new ISubscriptionSelectionListener() {
         @Override
         public void update(boolean isRefresh) {
@@ -110,7 +109,6 @@ public class AzureModelController {
             return;
         }
 
-        SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
         AzureModel azureModel = AzureModel.getInstance();
 
         Map<SubscriptionDetail, List<ResourceGroup>> srgMap = azureModel.getSubscriptionToResourceGroupMap();
@@ -118,7 +116,7 @@ public class AzureModelController {
             System.out.println("AzureModelController.subscriptionSelectionChanged: srgMap == null -> return");
             return;
         }
-        Map <String, Subscription> sidToSubscriptionMap = azureModel.getSidToSubscriptionMap();
+        Map<String, Subscription> sidToSubscriptionMap = azureModel.getSidToSubscriptionMap();
         if (sidToSubscriptionMap == null) {
             System.out.println("AzureModelController.subscriptionSelectionChanged: sidToSubscriptionMap == null -> return");
             return;
@@ -128,6 +126,7 @@ public class AzureModelController {
         Map<ResourceGroup, List<AppServicePlan>> rgspMap = azureModel.getResourceGroupToAppServicePlanMap();
 
         System.out.println("AzureModelController.subscriptionSelectionChanged: getting subscription details...");
+        SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
         List<SubscriptionDetail> sdl = subscriptionManager.getSubscriptionDetails();
         if (sdl == null) {
             System.out.println("AzureModelController.subscriptionSelectionChanged: sdl == null -> return");
@@ -136,21 +135,24 @@ public class AzureModelController {
 
         for (SubscriptionDetail sd : sdl) {
             if (!srgMap.containsKey(sd)) {
-                if (!sd.isSelected()) continue;
+                if (!sd.isSelected()) {
+                    continue;
+                }
 
-                if(progressIndicator != null && progressIndicator.isCanceled()) {
+                if (progressIndicator != null && progressIndicator.isCanceled()) {
                     progressIndicator.setText("Cancelling...");
                     clearAll();
                     return;
-                    // FIXME: throw exception?
+                    // TODO: throw exception?
                 }
 
-                Azure azure = azureManager.getAzure(sd.getSubscriptionId());
                 // subscription locations
                 List<Subscription> sl = azureManager.getSubscriptions();
                 System.out.println("Updating subscription locations");
                 Subscription subscription = sidToSubscriptionMap.get(sd.getSubscriptionId());
-                if(progressIndicator != null) progressIndicator.setText(String.format("Updating subscription '%s' locations...", subscription.displayName()));
+                if (progressIndicator != null) {
+                    progressIndicator.setText(String.format("Updating subscription '%s' locations...", subscription.displayName()));
+                }
                 List<Location> locl = subscription.listLocations();
                 Collections.sort(locl, new Comparator<Location>() {
                     @Override
@@ -163,6 +165,7 @@ public class AzureModelController {
                 sdlocMap.put(sd, locl);
 
                 // resource group maps
+                Azure azure = azureManager.getAzure(sd.getSubscriptionId());
                 List<ResourceGroup> rgList = azure.resourceGroups().list();
                 srgMap.put(sd, rgList);
                 updateResGrDependency(azure, rgList, progressIndicator, rgwaMap, rgspMap);
@@ -190,14 +193,18 @@ public class AzureModelController {
     }
 
     private static void updateResGrDependency(Azure azure,
-            List<ResourceGroup> rgList,
-            IProgressIndicator progressIndicator,
-            Map<ResourceGroup, List<WebApp>> rgwaMap,
-            Map<ResourceGroup, List<AppServicePlan>> rgspMap) {
+                                              List<ResourceGroup> rgList,
+                                              IProgressIndicator progressIndicator,
+                                              Map<ResourceGroup, List<WebApp>> rgwaMap,
+                                              Map<ResourceGroup, List<AppServicePlan>> rgspMap) {
 
-        if (progressIndicator != null) progressIndicator.setText("Reading App Services...");
+        if (progressIndicator != null) {
+            progressIndicator.setText("Reading App Services...");
+        }
         int tasksSize = rgList.size();
-        if (tasksSize == 0) return;
+        if (tasksSize == 0) {
+            return;
+        }
         Observable.from(rgList).flatMap(new Func1<ResourceGroup, Observable<? extends RgDepParams>>() {
             @Override
             public Observable<? extends RgDepParams> call(ResourceGroup rg) {
@@ -213,38 +220,27 @@ public class AzureModelController {
                 }).subscribeOn(Schedulers.io());
             }
         }, tasksSize)
-        .subscribeOn(Schedulers.newThread())
-        .toBlocking()
-        .subscribe(new Action1<RgDepParams>() {
-            @Override
-            public void call(RgDepParams params) {
-                synchronized (rgwaMap) {
-                    synchronized (rgspMap) {
-                        rgwaMap.put(params.rg, params.wal);
-                        rgspMap.put(params.rg, params.aspl);
+                .subscribeOn(Schedulers.newThread())
+                .toBlocking()
+                .subscribe(new Action1<RgDepParams>() {
+                    @Override
+                    public void call(RgDepParams params) {
+                        synchronized (rgwaMap) {
+                            synchronized (rgspMap) {
+                                rgwaMap.put(params.rg, params.wal);
+                                rgspMap.put(params.rg, params.aspl);
+                            }
+                        }
                     }
-                }
-            }
-        });
-
-//        for (ResourceGroup rg : rgList) {
-//            if (progressIndicator != null && progressIndicator.isCanceled()) {
-//                clearAll();
-//                return;
-//            }
-//            //System.out.println("rg : " + rg);
-//            if (progressIndicator != null) progressIndicator.setText("Reading resource group '" + rg.name() + "'");
-//            List<WebApp> waList = azure.webApps().listByGroup(rg.name());
-//            rgwaMap.put(rg, waList);
-//            List<AppServicePlan> aspl = azure.appServices().appServicePlans().listByGroup(rg.name());
-//            rgspMap.put(rg, aspl);
-//        }
+                });
     }
 
     public static synchronized void updateSubscriptionMaps(IProgressIndicator progressIndicator) throws IOException, CanceledByUserException, AuthException {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
-        if (azureManager == null) { return; }
+        if (azureManager == null) {
+            return;
+        }
 
         if (progressIndicator != null && progressIndicator.isCanceled()) {
             clearAll();
@@ -253,10 +249,12 @@ public class AzureModelController {
         AzureModel azureModel = AzureModel.getInstance();
 
         // to get regions we nees subscription objects
-        if (progressIndicator != null) progressIndicator.setText("Reading subscription list...");
+        if (progressIndicator != null) {
+            progressIndicator.setText("Reading subscription list...");
+        }
         List<Subscription> sl = azureManager.getSubscriptions();
         // convert to map to easier find by sid
-        Map <String, Subscription> sidToSubscriptionMap = azureModel.createSidToSubscriptionMap();
+        Map<String, Subscription> sidToSubscriptionMap = azureModel.createSidToSubscriptionMap();
         for (Subscription s : sl) {
             sidToSubscriptionMap.put(s.subscriptionId(), s);
         }
@@ -270,30 +268,32 @@ public class AzureModelController {
         List<SubscriptionDetail> sdl = subscriptionManager.getSubscriptionDetails();
         if (sdl.size() > 0) {
             Observable.from(sdl).flatMap((sd) ->
-                Observable.create((subscriber) -> {
-                    try {
-                        if (progressIndicator != null && progressIndicator.isCanceled()) {
-                            clearAll();
-                            throw new CanceledByUserException();
-                        }
-                        if (sd.isSelected()) {
-                            if (progressIndicator != null) {
-                                progressIndicator.setText("Reading subscription");
+                    Observable.create((subscriber) -> {
+                        try {
+                            if (progressIndicator != null && progressIndicator.isCanceled()) {
+                                clearAll();
+                                throw new CanceledByUserException();
                             }
-                            Azure azure = azureManager.getAzure(sd.getSubscriptionId());
+                            if (sd.isSelected()) {
+                                if (progressIndicator != null) {
+                                    progressIndicator.setText("Reading subscription");
+                                }
+                                Azure azure = azureManager.getAzure(sd.getSubscriptionId());
 
-                            List<ResourceGroup> rgList = azure.resourceGroups().list();
-                            sdrgMap.put(sd, rgList);
+                                List<ResourceGroup> rgList = azure.resourceGroups().list();
+                                sdrgMap.put(sd, rgList);
 
-                            List<Location> locl = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
-                            Collections.sort(locl, Comparator.comparing(Location::displayName));
-                            sdlocMap.put(sd, locl);
+                                if (sidToSubscriptionMap.containsKey(sd.getSubscriptionId())) {
+                                    final List<Location> locations = sidToSubscriptionMap.get(sd.getSubscriptionId()).listLocations();
+                                    Collections.sort(locations, Comparator.comparing(Location::displayName));
+                                    sdlocMap.put(sd, locations);
+                                }
+                            }
+                            subscriber.onCompleted();
+                        } catch (Exception e) {
+                            Exceptions.propagate(e);
                         }
-                        subscriber.onCompleted();
-                    } catch (Exception e) {
-                        Exceptions.propagate(e);
-                    }
-                }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
+                    }).subscribeOn(Schedulers.io()), sdl.size()).subscribeOn(Schedulers.io()).toBlocking().subscribe();
         }
         azureModel.setSubscriptionToResourceGroupMap(sdrgMap);
         azureModel.setSubscriptionToLocationMap(sdlocMap);
@@ -302,7 +302,9 @@ public class AzureModelController {
     public static synchronized void updateResourceGroupMaps(IProgressIndicator progressIndicator) throws IOException, CanceledByUserException, AuthException {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
-        if (azureManager == null) { return;}
+        if (azureManager == null) {
+            return;
+        }
 
         updateSubscriptionMaps(progressIndicator);
         AzureModel azureModel = AzureModel.getInstance();
@@ -317,20 +319,20 @@ public class AzureModelController {
 
         CountDownLatch countDownLatch = new CountDownLatch(sdSet.size());
         Observable.from(sdSet).flatMap((sd) ->
-            Observable.create((subscriber) -> {
-                try {
-                    List<ResourceGroup> rgList = azureModel.getSubscriptionToResourceGroupMap().get(sd);
-                    if (rgList.size() > 0) {
-                        Azure azure = azureManager.getAzure(sd.getSubscriptionId());
-                        updateResGrDependency(azure, rgList, progressIndicator, rgwaMap, rgspMap);
+                Observable.create((subscriber) -> {
+                    try {
+                        List<ResourceGroup> rgList = azureModel.getSubscriptionToResourceGroupMap().get(sd);
+                        if (rgList.size() > 0) {
+                            Azure azure = azureManager.getAzure(sd.getSubscriptionId());
+                            updateResGrDependency(azure, rgList, progressIndicator, rgwaMap, rgspMap);
+                        }
+                        subscriber.onCompleted();
+                    } catch (Exception e) {
+                        Exceptions.propagate(e);
+                    } finally {
+                        countDownLatch.countDown();
                     }
-                    subscriber.onCompleted();
-                } catch (Exception e) {
-                    Exceptions.propagate(e);
-                } finally {
-                    countDownLatch.countDown();
-                }
-            }).subscribeOn(Schedulers.io()), sdSet.size()).subscribeOn(Schedulers.io()).subscribe();
+                }).subscribeOn(Schedulers.io()), sdSet.size()).subscribeOn(Schedulers.io()).subscribe();
 
         Thread cancelCheckThread = new Thread(() -> {
             try {

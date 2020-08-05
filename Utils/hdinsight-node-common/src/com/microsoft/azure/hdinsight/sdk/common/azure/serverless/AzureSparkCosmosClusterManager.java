@@ -167,7 +167,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
         try {
             return get().toBlocking().singleOrDefault(this);
         } catch (Exception ex) {
-            log().warn("Got exceptions when refresh Azure Data Lake Spark pool: " + ex);
+            log().warn("Got exceptions when refresh Apache Spark pool on Cosmos: " + ex);
 
             return this;
         }

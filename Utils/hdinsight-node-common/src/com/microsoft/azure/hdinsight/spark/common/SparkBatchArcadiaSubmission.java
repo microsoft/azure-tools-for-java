@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -23,9 +23,6 @@
 package com.microsoft.azure.hdinsight.spark.common;
 
 import com.microsoft.azure.hdinsight.common.UriUtil;
-import com.microsoft.azure.hdinsight.sdk.common.HttpResponse;
-import com.microsoft.azure.hdinsight.sdk.rest.ObjectConvertUtils;
-import com.microsoft.azure.hdinsight.sdk.rest.azure.synapse.models.GetSparkHistoryEndpointResponse;
 import com.microsoft.azure.projectarcadia.common.ArcadiaSparkComputeManager;
 import com.microsoft.azure.projectarcadia.common.ArcadiaWorkSpace;
 import com.microsoft.azuretools.adauth.AuthException;
@@ -41,20 +38,20 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.lang.Thread.sleep;
 
 public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
     public static final String ARCADIA_RESOURCE_ID = "https://dev.azuresynapse.net";
     public static final Pattern LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN = Pattern.compile(
-            "(?<baseUrl>https?://[^/]+)/livyApi/versions/(?<apiVersion>[^/]+)/sparkPools/(?<compute>[^/]+)/?",
+            "https?://[^.]+.(?<env>[^.]+).[^/]+/livyApi/versions/(?<apiVersion>[^/]+)/sparkPools/"
+                    + "(?<pool>[^/]+)/?",
             Pattern.CASE_INSENSITIVE);
     public static final String SYNAPSE_STUDIO_WEB_ROOT_URL = "https://web.azuresynapse.net";
 
@@ -124,60 +121,21 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
     }
 
     @Nullable
-    protected String getSparkHistoryEndpoint(@NotNull String baseUrl) {
-        final int MAX_RETRY_COUNT = 3;
-        final int DELAY_SECONDS = 10;
-        int retries = 0;
-
-        while (retries < MAX_RETRY_COUNT) {
-            try {
-                String requestUrl = baseUrl + "/sparkhistory/api/v1/historyServerProperties";
-                HttpResponse httpResponse = getHttpResponseViaGet(requestUrl);
-                if (httpResponse.getCode() >= 200 && httpResponse.getCode() < 300) {
-                    Optional<GetSparkHistoryEndpointResponse> historyEndpointResponse =
-                            ObjectConvertUtils.convertJsonToObject(httpResponse.getMessage(), GetSparkHistoryEndpointResponse.class);
-                    return historyEndpointResponse
-                            .orElseThrow(() -> new UnknownServiceException(
-                                    String.format("Bad response when getting from %s, response: %s",
-                                            requestUrl, httpResponse.getMessage())))
-                            .getWebProxyEndpoint();
-                }
-            } catch (IOException ex) {
-                log().warn("Got exception when getting Spark history endpoint, will retry.", ex);
-            }
-
-            try {
-                // Retry interval
-                sleep(TimeUnit.SECONDS.toMillis(DELAY_SECONDS));
-            } catch (InterruptedException ex) {
-                log().warn("Interrupted in retry attempting", ex);
-            }
-
-            retries++;
-        }
-
-        log().warn("Failed to get Spark history endpoint after retry " + MAX_RETRY_COUNT + " times.");
-        return null;
-    }
-
-    @Nullable
     public URL getHistoryServerUrl(int livyId) {
         Matcher matcher = LIVY_URL_NO_WORKSPACE_IN_HOSTNAME_PATTERN.matcher(getLivyUri().toString());
 
         if (matcher.matches()) {
-            String sparkHistoryEndpoint = getSparkHistoryEndpoint(matcher.group("baseUrl"));
-            if (sparkHistoryEndpoint == null) {
-                return null;
-            }
-
             try {
-                return new URL(String.format("%s/workspaces/%s/sparkcomputes/%s/livyid/%d/summary",
-                        sparkHistoryEndpoint,
+                return new URL(String.format("%s/sparkui/%s_%s.azuresynapse.net"
+                                                     + "/workspaces/%s/sparkpools/%s/livyid/%d/summary",
+                        SYNAPSE_STUDIO_WEB_ROOT_URL,
+                        getTenantId(),
+                        matcher.group("env"),
                         getWorkspaceName(),
-                        matcher.group("compute"),
+                        matcher.group("pool"),
                         livyId));
             } catch (MalformedURLException e) {
-                throw new IllegalArgumentException("Bad Synapse history server URL", e);
+                throw new IllegalArgumentException("Bad Spark history server URL", e);
             }
         }
 
@@ -204,7 +162,7 @@ public class SparkBatchArcadiaSubmission extends SparkBatchSubmission {
                         .setParameters(Arrays.asList(
                                 new BasicNameValuePair("workspace", workSpace.getId()),
                                 new BasicNameValuePair("livyId", String.valueOf(livyId)),
-                                new BasicNameValuePair("sparkPoolName", matcher.group("compute"))
+                                new BasicNameValuePair("sparkPoolName", matcher.group("pool"))
                         )).build().toURL();
             } catch (NoSuchElementException ex) {
                 log().warn(String.format("Can't find workspace %s under tenant %s", getWorkspaceName(), getTenantId()), ex);

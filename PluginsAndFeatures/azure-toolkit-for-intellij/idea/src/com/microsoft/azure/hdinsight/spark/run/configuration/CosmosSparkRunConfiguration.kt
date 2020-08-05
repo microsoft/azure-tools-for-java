@@ -43,5 +43,5 @@ open class CosmosSparkRunConfiguration (project: Project,
         return LivySparkRunConfigurationSettingsEditor(CosmosSparkConfigurable(project))
     }
 
-    override fun getSuggestedNamePrefix(): String = "[Spark on Cosmos]"
+    override fun getSuggestedNamePrefix(): String = "[Apache Spark on Cosmos]"
 }

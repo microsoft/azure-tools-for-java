@@ -1,25 +1,24 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.tooling;
@@ -58,8 +57,8 @@ public abstract class IntegrationTestBase {
     private static final String MOCK_HOST = "localhost";
     private static final String MOCK_PORT = String.format("3%03d", (int) (Math.random() * Math.random() * 1000));
     private static final String MOCK_URI = "http://" + MOCK_HOST + ":" + MOCK_PORT;
-    private final static String RECORD_FOLDER = "records/";
-    protected final static String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
+    private static final String RECORD_FOLDER = "records/";
+    protected static final String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
 
     public static Boolean IS_MOCKED = IsMocked();
     private static String azureAuthFile = getAuthFile();
@@ -72,7 +71,7 @@ public abstract class IntegrationTestBase {
     protected TestRecord testRecord;
 
     public Interceptor interceptor;
-    
+
     private RestClient restClient;
 
     @Rule
@@ -111,7 +110,7 @@ public abstract class IntegrationTestBase {
         interceptor = new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
-                if (IS_MOCKED) {                    
+                if (IS_MOCKED) {
                     return registerRecordedResponse(chain);
                 } else {
                     return chain.proceed(chain.request());
@@ -145,13 +144,13 @@ public abstract class IntegrationTestBase {
             restClient = new RestClient.Builder().withBaseUrl(MOCK_URI + "/")
                     .withSerializerAdapter(new AzureJacksonAdapter())
                     .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(credentials)
-                    .withLogLevel(LogLevel.NONE).withInterceptor(interceptor).build();
+                    .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
             return restClient;
         } else {
             restClient = new RestClient.Builder().withBaseUrl(GLOBAL_ENDPOINT)
                     .withSerializerAdapter(new AzureJacksonAdapter())
                     .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(credentials)
-                    .withLogLevel(LogLevel.NONE).withInterceptor(interceptor).build();
+                    .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
             return restClient;
         }
     }

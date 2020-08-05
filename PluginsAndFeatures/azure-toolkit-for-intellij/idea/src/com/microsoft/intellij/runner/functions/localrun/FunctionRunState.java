@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.runner.functions.localrun;
@@ -216,7 +215,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     protected Operation createOperation() {
         return TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.RUN_FUNCTION_APP);
     }
-
 
     @Override
     protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {

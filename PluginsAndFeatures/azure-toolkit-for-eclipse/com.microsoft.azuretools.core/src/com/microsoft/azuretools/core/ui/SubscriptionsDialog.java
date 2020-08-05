@@ -1,24 +1,25 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azuretools.core.ui;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
@@ -36,7 +37,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -60,10 +60,13 @@ import com.microsoft.azuretools.core.components.AzureTitleAreaDialogWrapper;
 import com.microsoft.azuretools.core.utils.ProgressDialog;
 
 public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
-	private static ILog LOG = Activator.getDefault().getLog();
-    
+    private static final String SUBSCRIPTION_MESSAGE = "Select subscription(s) you want to use.";
+    private static final String SUBSCRIPTION_TITLE = "Your Subscriptions";
+    private static final String DIALOG_TITLE = "Select Subscriptions";
+    private static ILog LOG = Activator.getDefault().getLog();
+
     private Table table;
-    
+
     private SubscriptionManager subscriptionManager;
     private List<SubscriptionDetail> sdl;
 
@@ -77,7 +80,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
         this.subscriptionManager = subscriptionManage;
     }
-    
+
     public static SubscriptionsDialog go(Shell parentShell, SubscriptionManager subscriptionManager) {
         SubscriptionsDialog d = new SubscriptionsDialog(parentShell, subscriptionManager);
         if (d.open() == Window.OK) {
@@ -92,27 +95,28 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
      */
     @Override
     protected Control createDialogArea(Composite parent) {
-        setMessage("Select subscription(s) you want to use.");
-        setTitle("Your Subscriptions");
+        setMessage(SUBSCRIPTION_MESSAGE);
+        setTitle(SUBSCRIPTION_TITLE);
+        getShell().setText(DIALOG_TITLE);
         Composite area = (Composite) super.createDialogArea(parent);
         Composite container = new Composite(area, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
+
         table = new Table(container, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-        gd_table.heightHint = 300;
-        table.setLayoutData(gd_table);
+        GridData gdTable = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gdTable.heightHint = 300;
+        table.setLayoutData(gdTable);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-        
+
         TableColumn tblclmnNewColumn = new TableColumn(table, SWT.NONE);
         tblclmnNewColumn.setWidth(300);
         tblclmnNewColumn.setText("Subscription Name");
-        
-        TableColumn tblclmnNewColumn_1 = new TableColumn(table, SWT.NONE);
-        tblclmnNewColumn_1.setWidth(270);
-        tblclmnNewColumn_1.setText("Subscription ID");
+
+        TableColumn tblclmnNewColumn1 = new TableColumn(table, SWT.NONE);
+        tblclmnNewColumn1.setWidth(270);
+        tblclmnNewColumn1.setText("Subscription ID");
 
         Button btnRefresh = new Button(container, SWT.NONE);
         btnRefresh.addSelectionListener(new SelectionAdapter() {
@@ -121,9 +125,9 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 refreshSubscriptions();
             }
         });
-        GridData gd_btnRefresh = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
-        gd_btnRefresh.widthHint = 78;
-        btnRefresh.setLayoutData(gd_btnRefresh);
+        GridData gdBtnRefresh = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
+        gdBtnRefresh.widthHint = 78;
+        btnRefresh.setLayoutData(gdBtnRefresh);
         btnRefresh.setText("Refresh");
 
         return area;
@@ -134,12 +138,12 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         super.create();
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-              System.out.println("refreshSubscriptionsAsync");
-              refreshSubscriptionsAsync();
-              setSubscriptionDetails();
+                System.out.println("refreshSubscriptionsAsync");
+                refreshSubscriptionsAsync();
+                setSubscriptionDetails();
             }
-          });
-    } 
+        });
+    }
 
     public void refreshSubscriptionsAsync() {
         try {
@@ -150,16 +154,16 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                     EventUtil.executeWithLog(TelemetryConstants.ACCOUNT, TelemetryConstants.GET_SUBSCRIPTIONS, (operation) -> {
                         subscriptionManager.getSubscriptionDetails();
                     }, (ex) -> {
-                    	ex.printStackTrace();
-                    	LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
-                    });
+                            ex.printStackTrace();
+                            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@ProgressDialog@efreshSubscriptionsAsync@SubscriptionDialog", ex));
+                        });
                     monitor.done();
                 }
             });
         } catch (InvocationTargetException | InterruptedException ex) {
-        	ex.printStackTrace();
+            ex.printStackTrace();
             //LOGGER.log(LogService.LOG_ERROR, "run@refreshSubscriptionsAsync@SubscriptionDialog", e);
-        	 LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@refreshSubscriptionsAsync@SubscriptionDialog", ex));
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "run@refreshSubscriptionsAsync@SubscriptionDialog", ex));
         }
     }
 
@@ -172,8 +176,8 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
                 item.setChecked(sd.isSelected());
             }
         } catch (IOException ex) {
-        	ex.printStackTrace();
-        	LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "setSubscriptionDetails@SubscriptionDialog", ex));
+            ex.printStackTrace();
+            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "setSubscriptionDetails@SubscriptionDialog", ex));
         }
     }
 
@@ -186,7 +190,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
             setSubscriptionDetails();
             subscriptionManager.setSubscriptionDetails(sdl);
         } catch (IOException ex) {
-        	ex.printStackTrace();
+            ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "refreshSubscriptions@SubscriptionDialog", ex));
         }
     }
@@ -216,7 +220,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         if (chekedCount == 0) {
             this.setErrorMessage("Select at least one subscription");
             return;
-        }        
+        }
 
         for (int i = 0; i < tia.length; ++i) {
             this.sdl.get(i).setSelected(tia[i].getChecked());
@@ -225,7 +229,7 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
         try {
             subscriptionManager.setSubscriptionDetails(sdl);
         } catch (Exception ex) {
-        	ex.printStackTrace();
+            ex.printStackTrace();
             LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "okPressed@SubscriptionDialog", ex));
         }
 

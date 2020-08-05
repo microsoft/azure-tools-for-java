@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.forms.function;
@@ -29,6 +28,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
@@ -45,7 +45,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.intellij.util.AzureFunctionsUtils;
 import com.microsoft.intellij.util.ValidationUtils;
-import com.microsoft.intellij.wizard.functions.module.FunctionTriggerChooserStep;
+import com.microsoft.intellij.wizards.functions.module.FunctionTriggerChooserStep;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -64,6 +64,9 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     public static final String HTTP_TRIGGER = "HttpTrigger";
     public static final String TIMER_TRIGGER = "TimerTrigger";
     public static final String EVENT_HUB_TRIGGER = "EventHubTrigger";
+    public static final String CUSTOMIZED_TIMER_CRON_MESSAGE =
+            "Enter a cron expression of the format '{second} {minute} {hour} {day} {month} {day of week}' to specify the schedule";
+    public static final String CUSTOMIZED_TIMER_CRON = "Customized Timer Cron";
 
     private Map<String, JComponent[]> triggerComponents;
     private boolean isSignedIn;
@@ -91,7 +94,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private Project project;
 
     public CreateFunctionForm(@Nullable Project project, String packageName) {
-        super(project, false);
+        super(project, true);
         setModal(true);
         setTitle("Create Function Class");
 
@@ -101,7 +104,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbFunctionModule.setRenderer(new SimpleListCellRenderer<Module>() {
             @Override
-            public void customize(JList jList, Module module, int i, boolean b, boolean b1) {
+            public void customize(JList list, Module module, int i, boolean b, boolean b1) {
                 if (module != null) {
                     setText(module.getName());
                     setIcon(AllIcons.Nodes.Module);
@@ -111,7 +114,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbEventHubNamespace.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object object, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object object, int i, boolean b, boolean b1) {
                 if (object instanceof EventHubNamespace) {
                     setText(((EventHubNamespace) object).name());
                 } else if (object instanceof String) {
@@ -122,7 +125,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbEventHubName.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof EventHub) {
                     setText(((EventHub) o).name());
                 } else if (o instanceof String) {
@@ -133,7 +136,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbConsumerGroup.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof EventHubConsumerGroup) {
                     setText(((EventHubConsumerGroup) o).name());
                 } else if (o instanceof String) {
@@ -144,7 +147,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
 
         cbCron.setRenderer(new SimpleListCellRenderer() {
             @Override
-            public void customize(JList jList, Object o, int i, boolean b, boolean b1) {
+            public void customize(JList list, Object o, int i, boolean b, boolean b1) {
                 if (o instanceof TimerCron) {
                     setText(((TimerCron) o).getDisplay());
                 } else if (o instanceof String) {
@@ -269,7 +272,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     protected List<ValidationInfo> doValidateAll() {
         List<ValidationInfo> res = new ArrayList<>();
         validateProperties(res, "Package name", txtPackageName, ValidationUtils::isValidJavaPackageName);
-        validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidFunctionName);
+        validateProperties(res, "Function name", txtFunctionName, ValidationUtils::isValidAppServiceName);
 
         final String trigger = (String) cbTriggerType.getSelectedItem();
         if (StringUtils.equals(trigger, EVENT_HUB_TRIGGER)) {
@@ -323,22 +326,22 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
         return result;
     }
 
-    private void fillJComboBox(JComboBox jComboBox, Supplier<List<?>> listFunction) {
-        fillJComboBox(jComboBox, listFunction, null);
+    private void fillJComboBox(JComboBox comboBox, Supplier<List<?>> listFunction) {
+        fillJComboBox(comboBox, listFunction, null);
     }
 
-    private void fillJComboBox(JComboBox jComboBox, Supplier<List<?>> listFunction, Runnable callback) {
-        jComboBox.removeAllItems();
-        jComboBox.addItem("Refreshing");
-        jComboBox.setEnabled(false);
+    private void fillJComboBox(JComboBox comboBox, Supplier<List<?>> listFunction, Runnable callback) {
+        comboBox.removeAllItems();
+        comboBox.addItem("Refreshing");
+        comboBox.setEnabled(false);
 
         Observable.fromCallable(() -> listFunction.get()).subscribeOn(Schedulers.newThread())
                 .subscribe(functionApps -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     final List list = listFunction.get();
-                    jComboBox.removeAllItems();
-                    jComboBox.setEnabled(true);
-                    jComboBox.setSelectedItem(null);
-                    list.forEach(item -> jComboBox.addItem(item));
+                    comboBox.removeAllItems();
+                    comboBox.setEnabled(true);
+                    comboBox.setSelectedItem(null);
+                    list.forEach(item -> comboBox.addItem(item));
                     if (callback != null) {
                         callback.run();
                     }
@@ -372,8 +375,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     }
 
     private void addTimer() {
-        String cron = JOptionPane.showInputDialog(this.cbCron, "Enter a cron expression of the format '{second} {minute} {hour} " +
-                "{day} {month} {day of week}' to specify the schedule");
+        String cron = Messages.showInputDialog(project, CUSTOMIZED_TIMER_CRON_MESSAGE, CUSTOMIZED_TIMER_CRON, null);
 
         if (StringUtils.isBlank(cron)) {
             return;

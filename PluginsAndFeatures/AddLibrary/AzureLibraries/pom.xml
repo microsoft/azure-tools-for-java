@@ -28,18 +28,18 @@
     <parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.35.0</version>
+    <version>3.41.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
-    <version>3.22.0-SNAPSHOT</version>
+    <version>3.23.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <name>Package for Microsoft Azure Libraries for Java Plugin</name>
     <organization><name>Microsoft Corp.</name></organization>
 
     <properties>
-        <azuretool.version>3.35.0</azuretool.version>
-        <azuretool.sdk.version>3.22.0.qualifier</azuretool.sdk.version>
+        <azuretool.version>3.41.0</azuretool.version>
+        <azuretool.sdk.version>3.23.0.qualifier</azuretool.sdk.version>
     </properties>
     <dependencies>
         <dependency>
@@ -56,7 +56,7 @@
             <groupId>com.microsoft.azuretools</groupId>
             <artifactId>hdinsight-node-common</artifactId>
             <version>${azuretool.version}</version>
-        </dependency>            
+        </dependency>
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
@@ -80,7 +80,7 @@
             <execution>
             <id>bundle-manifest</id>
             <phase>process-classes</phase>
-            <goals>    
+            <goals>
                 <goal>manifest</goal>
             </goals>
             </execution>
@@ -105,22 +105,22 @@
           </instructions>
         </configuration>
       </plugin>
-      <plugin>		
-        <artifactId>maven-antrun-plugin</artifactId>		
-          <version>1.8</version>		
-            <executions>		
-              <execution>			
-                <phase>package</phase>		
-                  <configuration>		
-                    <target>		
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.8</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                  <configuration>
+                    <target>
                       <copy file="${project.build.outputDirectory}/META-INF/MANIFEST.MF" tofile="${project.basedir}/com.microsoft.azuretools.sdk/META-INF/MANIFEST.MF" overwrite="true" />
-                    </target>		
-                  </configuration>		
-                <goals>		
-                  <goal>run</goal>		
-                </goals>		
-              </execution>		
-            </executions>		
+                    </target>
+                  </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
          </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

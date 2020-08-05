@@ -8,7 +8,7 @@ buildscript {
 plugins {
     id "org.jetbrains.intellij" version "${gradle_plugin_version}"
     id "org.jetbrains.kotlin.jvm" version "${kotlin_version}"
-    id "de.undercouch.download" version "4.0.1"
+    id "de.undercouch.download" version "${undercouch_version}"
 }
 
 configurations {
@@ -17,36 +17,35 @@ configurations {
 }
 
 dependencies {
-    compile fileTree(dir: '../AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies', include: ['applicationinsights-management-1.0.3.jar'])
-    compile 'com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8'
-    compile 'commons-io:commons-io:2.5'
+    compile 'com.microsoft.sqlserver:mssql-jdbc:6.4.0.jre8'
+    compile 'commons-io:commons-io:2.7'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
     compile 'net.minidev:json-smart:2.3'
-    compile 'com.microsoft.azure:azure-client-runtime:1.6.13', { force = true }
-    compile 'com.microsoft.azure:azure-client-authentication:1.6.13', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.35.0', {
+    compile 'com.microsoft.azure:azure-client-runtime:1.7.5', { force = true }
+    compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
+    compile 'com.microsoft.azuretools:azuretools-core:3.41.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.35.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.41.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.35.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.41.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azure:azure-tools-common:0.1.0', {
-        exclude group: "com.google.guava", module: "guava"
-        exclude group: "commons-io", module: "commons-io"
-    }
-    compile 'com.spotify:docker-client:8.11.7'
+    compile group: 'com.microsoft.azure', name: 'azure-auth-helper', version: '0.4.0'
+    compile 'com.microsoft.azure:azure-tools-common:0.5.0'
+    compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2'
+    compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+
     compile "org.jetbrains.kotlin:kotlin-reflect:${kotlin_version}"
-    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2'
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:${jackson_kotlin_version}"
 
     testImplementation "org.assertj:assertj-core:${assertj_version}"
 }
@@ -56,9 +55,12 @@ allprojects {
     apply plugin: 'java'
 
     repositories {
-        maven { url new File(rootProject.projectDir, '../../.repository').toURI() } // to snap to the private maven repo on Jenkins if any
         mavenLocal()
         mavenCentral()
+
+        // we use this repo to get libraries installed from building Utils libraries
+        maven { url new File(rootProject.projectDir, '../../.repository').toURI() }
+
         maven { url 'https://cache-redirector.jetbrains.com/intellij-repository/snapshots' }
         maven { url 'https://cache-redirector.jetbrains.com/maven-central' }
     }
@@ -106,8 +108,8 @@ configure(mainProjects) {
                 logger.lifecycle("COMMON_SDK=$rider_version")
                 break
             case 'idea':
-                version = idea_version
-                logger.lifecycle("COMMON_SDK=$idea_version")
+                version = intellij_version
+                logger.lifecycle("COMMON_SDK=$intellij_version")
                 break
             default:
                 throw new Exception("Unsupported value for build_common_code_with: " + build_common_code_with)
@@ -138,6 +140,6 @@ configure(mainProjects) {
     }
 }
 
-defaultTasks 'buildPlugin', 'test'
+defaultTasks 'buildPlugin'
 
 buildSearchableOptions.onlyIf { false }

@@ -17,6 +17,8 @@
     ]]>
   </change-notes>
 
+  <depends>org.intellij.plugins.markdown</depends>
+
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
 
   <extensionPoints>
@@ -26,6 +28,8 @@
                     interface="com.microsoft.intellij.components.ServerExplorerToolWindowListener" />
     <extensionPoint qualifiedName="com.microsoft.intellij.dockerArtifactProvider"
                     interface="com.microsoft.intellij.docker.DockerArtifactProvider" />
+    <extensionPoint qualifiedName="com.microsoft.intellij.azureModuleProvider"
+                    interface="com.microsoft.intellij.components.AzureModuleProvider" />
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -34,13 +38,10 @@
           factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
           id="Azure Activity Log"
           canCloseContents="true"
-          icon="/icons/toolWindowAzureLog.svg"
-          conditionClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactoryCondition"/>
+          icon="/icons/toolWindowAzureLog.svg" />
 
-    <projectService serviceInterface="com.microsoft.intellij.AzureSettings"
-                  serviceImplementation="com.microsoft.intellij.AzureSettings"/>
-    <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
-                      serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
+    <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
+    <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
 
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.QueueExplorerFileEditorProvider"/>
@@ -48,10 +49,9 @@
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCachePropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.rediscache.RedisCacheExplorerProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.containerregistry.ContainerRegistryPropertyViewProvider"/>
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.functionapp.FunctionAppPropertyViewProvider"/>
+    <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider"/>
-
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.DeploymentPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.arm.ResourceTemplateViewProvider"/>
 
@@ -70,6 +70,21 @@
           canCloseContents="false"
           icon="/icons/toolWindowAzure.svg"
           order="after Project" />
+
+    <toolWindow
+            anchor="bottom"
+            factoryClass="com.microsoft.intellij.helpers.StreamingLogsToolWindowFactory"
+            id="Azure Streaming Log"
+            canCloseContents="true"/>
+
+    <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
+    <lang.syntaxHighlighterFactory language="arm"
+                                   implementationClass="com.microsoft.intellij.language.arm.editor.ARMSyntaxHighlightFactory"/>
+    <lang.parserDefinition language="arm"
+                           implementationClass="com.microsoft.intellij.language.arm.parser.ARMParserDefinition"/>
+    <completion.contributor language="JSON" order="first"
+                            implementationClass="com.microsoft.intellij.language.arm.codeinsight.ARMCompletionContributor"/>
+
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">
@@ -83,6 +98,10 @@
             text="Show Azure Explorer"
             description="Show Azure Explorer"
             icon="/icons/AzureExplorer.svg" />
+
+    <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
+            text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
+            icon="/icons/PublishDockerContainer_16.png" />
 
     <action id="AzureToolkit.AzureSignIn"
             class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction"

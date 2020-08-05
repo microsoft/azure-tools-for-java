@@ -30,6 +30,10 @@ public class ODataParam extends BasicNameValuePair {
         return new ODataParam("$filter", value);
     }
 
+    public static ODataParam orderby(String value) {
+        return new ODataParam("$orderby", value);
+    }
+
     private ODataParam(@NotNull String name, @NotNull String value) {
         super(name, value);
     }

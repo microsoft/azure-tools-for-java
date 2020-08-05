@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.runner.functions;
@@ -29,14 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AzureFunctionsConstants {
-
-    public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
     public static final String DISPLAY_NAME = "Azure Functions";
     public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
-    public static final String LOADING_TEXT = "Loading...";
-    public static final String EMPTY_TEXT = "Empty";
-    public static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
-    public static final String NEW_CREATED_RESOURCE = "%s (New Created)";
 
     public static final Map<String, String> HINT = new HashMap<String, String>() {{
             put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +

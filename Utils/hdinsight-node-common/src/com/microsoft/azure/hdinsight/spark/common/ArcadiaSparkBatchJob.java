@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import rx.Observable;
@@ -32,8 +32,12 @@ import java.net.URI;
 import java.net.URL;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
+import static com.microsoft.azure.hdinsight.common.MessageInfoType.HtmlPersistentMessage;
+import static com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine.TOOL;
+
 public class ArcadiaSparkBatchJob extends SparkBatchJob {
-    private final @NotNull Deployable deployDelegate;
+    @NotNull
+    private final  Deployable deployDelegate;
 
     public ArcadiaSparkBatchJob(final @NotNull SparkSubmissionParameter submissionParameter,
                                 final @NotNull SparkBatchSubmission sparkBatchSubmission,
@@ -46,13 +50,13 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @Override
     public Observable<? extends ISparkBatchJob> deploy(@NotNull String artifactPath) {
         return deployDelegate.deploy(new File(artifactPath), getCtrlSubject())
-                .map(uploadedUri -> {
-                    ctrlInfo(String.format("File %s has been uploaded to %s.", artifactPath, uploadedUri));
+                             .map(uploadedUri -> {
+                                 ctrlInfo(String.format("File %s has been uploaded to %s.", artifactPath, uploadedUri));
 
-                    getSubmissionParameter().setFilePath(uploadedUri);
+                                 getSubmissionParameter().setFilePath(uploadedUri);
 
-                    return this;
-                });
+                                 return this;
+                             });
     }
 
     @NotNull
@@ -60,10 +64,11 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     public Observable<String> awaitStarted() {
         // No submission log and driver log fetching supports
         return Observable.just("no_waiting")
-                .doOnNext(state -> ctrlInfo("The Spark Batch job has been submitted to Synapse Spark pool"
-                        + getConnectUri().toString()
-                        + " with the following parameters: "
-                        + getSubmissionParameter().serializeToJson()));
+                         .doOnNext(state -> ctrlInfo("The Spark Batch job has been submitted to "
+                                                             + "Apache Spark Pool for Azure Synapse "
+                                                             + getConnectUri().toString()
+                                                             + " with the following parameters: "
+                                                             + getSubmissionParameter().serializeToJson()));
     }
 
     @NotNull
@@ -74,15 +79,15 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
 
     @NotNull
     @Override
-    public Observable<SimpleImmutableEntry<MessageInfoType, String>> getSubmissionLog() {
+    public Observable<SparkLogLine> getSubmissionLog() {
         // No batches/{id}/log API support yet
-        URL jobHistoryWebUrl = getJobHistoryWebUrl();
+        final URL jobHistoryWebUrl = getJobHistoryWebUrl();
         String trackingJobMsg = "Track the batch job by opening ";
         if (jobHistoryWebUrl != null) {
             trackingJobMsg += "<a href=\"" + jobHistoryWebUrl + "\">Spark Job History Server</a> and ";
         }
         trackingJobMsg += "<a href=\"" + getJobDetailsWebUrl() + "\">Spark Job Details UI</a> in Browser";
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.HtmlPersistentMessage, trackingJobMsg));
+        ctrlLog(TOOL, HtmlPersistentMessage, trackingJobMsg);
 
         return Observable.empty();
     }
@@ -94,7 +99,7 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
         return Observable.empty();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public URI getConnectUri() {
         return getArcadiaSubmission().getLivyUri().resolve("batches");
@@ -113,10 +118,6 @@ public class ArcadiaSparkBatchJob extends SparkBatchJob {
     @NotNull
     private URL getJobDetailsWebUrl() {
         return getArcadiaSubmission().getJobDetailsWebUrl(getBatchId());
-    }
-
-    private void ctrlInfo(@NotNull String message) {
-        getCtrlSubject().onNext(new SimpleImmutableEntry<>(MessageInfoType.Info, message));
     }
 
     @Override

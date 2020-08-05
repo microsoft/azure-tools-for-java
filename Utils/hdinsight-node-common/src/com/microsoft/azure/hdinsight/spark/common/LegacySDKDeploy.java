@@ -19,17 +19,17 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import rx.Observable;
 import rx.Observer;
 
 import java.io.File;
-import java.util.AbstractMap;
 
 // for cluster with blob/adls gen1 account to deploy using default storage account type
 // will be replaced by AdlsDeploy/ADLSGen1HDFSDeploy
@@ -41,8 +41,7 @@ public class LegacySDKDeploy implements Deployable, ILogger {
     }
 
     @Override
-    public Observable<String> deploy(File src,
-                                     Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+    public Observable<String> deploy(File src, Observer<SparkLogLine> logSubject) {
         return JobUtils.deployArtifact(src.getAbsolutePath(), storageAccount, logSubject);
     }
 }

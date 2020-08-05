@@ -1,25 +1,26 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.helpers;
 
 import com.google.common.util.concurrent.Futures;
@@ -46,12 +47,16 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class IDEHelperImpl implements IDEHelper {
+
     @Override
     public void setApplicationProperty(@NotNull String name, @NotNull String value) {
         ApplicationSettings.getInstance().setProperty(name, value);
@@ -254,13 +259,28 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public ListenableFuture<String> buildArtifact(@NotNull ProjectDescriptor projectDescriptor,
                                                   @NotNull ArtifactDescriptor artifactDescriptor) {
-
         return Futures.immediateFuture(null);
     }
 
     @Override
     public Object getCurrentProject() {
         return PluginUtil.getSelectedProject();
+    }
+
+    @NotNull
+    private static byte[] getArray(@NotNull InputStream is) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        int nRead;
+        byte[] data = new byte[16384];
+
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        buffer.flush();
+
+        return buffer.toByteArray();
     }
 
     @NotNull
@@ -283,7 +303,7 @@ public class IDEHelperImpl implements IDEHelper {
         return project;
     }
 
-    @NotNull
+    @org.jetbrains.annotations.NotNull
     private static Task.Backgroundable getCancellableBackgroundTask(final Project project,
                                                                     @NotNull final String name,
                                                                     @Nullable final String indicatorText,

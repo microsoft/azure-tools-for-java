@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Container
 Bundle-SymbolicName: com.microsoft.azuretools.container;singleton:=true
-Bundle-Version: 3.22.0.qualifier
+Bundle-Version: 3.23.0.qualifier
 Bundle-Activator: com.microsoft.azuretools.container.Activator
 Bundle-Vendor: MICROSOFT
 Require-Bundle: org.eclipse.ui,
@@ -11,8 +11,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jst.j2ee.web,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
- com.microsoft.azuretools.core;bundle-version="3.22.0",
- com.microsoft.azuretools.sdk;bundle-version="3.22.0",
+ com.microsoft.azuretools.core;bundle-version="3.23.0",
+ com.microsoft.azuretools.sdk;bundle-version="3.23.0",
  org.eclipse.swt,
  org.eclipse.ui.forms,
  org.eclipse.ui.views,
@@ -26,7 +26,7 @@ Bundle-ClassPath: .,
  swing2swt.jar,
  target/lib/bcpkix-jdk15on-1.52.jar,
  target/lib/commons-compress-1.9.jar,
- target/lib/docker-client-8.6.2-shaded.jar
+ target/lib/docker-client-8.16.0-shaded.jar
 Import-Package: com.microsoft.azuretools.core.actions,
  org.eclipse.core.expressions,
  org.eclipse.jface.text.hyperlink,

@@ -1,36 +1,32 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p>
- * <p>
+ *
  * All rights reserved.
- * <p>
- * <p>
+ *
  * MIT License
- * <p>
- * <p>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p>
- * <p>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p>
- * <p>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.common;
 
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
 import com.microsoft.azure.hdinsight.sdk.storage.webhdfs.WebHdfsParamsBuilder;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azure.hdinsight.spark.jobs.JobUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -53,7 +49,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownServiceException;
-import java.util.AbstractMap;
 import java.util.List;
 
 public class WebHDFSDeploy implements Deployable, ILogger {
@@ -61,13 +56,13 @@ public class WebHDFSDeploy implements Deployable, ILogger {
     IClusterDetail cluster;
 
     @NotNull
-    private HttpObservable http;
+    private final HttpObservable http;
 
     @NotNull
-    private List<NameValuePair> createDirReqParams;
+    private final List<NameValuePair> createDirReqParams;
 
     @NotNull
-    private List<NameValuePair> uploadReqParams;
+    private final List<NameValuePair> uploadReqParams;
 
     @NotNull
     public String destinationRootPath;
@@ -95,13 +90,13 @@ public class WebHDFSDeploy implements Deployable, ILogger {
 
     @Override
     public Observable<String> deploy(File src,
-                                     Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> logSubject) {
+                                     Observer<SparkLogLine> logSubject) {
         //three steps to upload via webhdfs
         // 1.put request to create new dir
         // 2.put request to get 307 redirect uri from response
         // 3.put redirect request with file content as setEntity
-        URI dest = getUploadDir();
-        HttpPut req = new HttpPut(dest.toString());
+        final URI dest = getUploadDir();
+        final HttpPut req = new HttpPut(dest.toString());
         return http.request(req, null, this.createDirReqParams, null)
                 .doOnNext(
                         resp -> {
@@ -118,7 +113,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                         Exceptions.propagate(new UnknownServiceException("Can not get valid redirect uri using webHDFS storage type"));
                     }
                 })
-                .map(redirectedUri -> new HttpPut(redirectedUri))
+                .map(HttpPut::new)
                 .flatMap(put -> {
                     try {
                         InputStreamEntity reqEntity = new InputStreamEntity(
@@ -135,7 +130,7 @@ public class WebHDFSDeploy implements Deployable, ILogger {
                 .map(ignored -> {
                     try {
                         return getArtifactUploadedPath(dest.resolve(src.getName()).toString());
-                    } catch (URISyntaxException ex) {
+                    } catch (final URISyntaxException ex) {
                         throw new RuntimeException(new IllegalArgumentException("Can not get valid artifact upload path" + ex.toString()));
                     }
                 });
@@ -143,8 +138,8 @@ public class WebHDFSDeploy implements Deployable, ILogger {
 
     @Nullable
     public String getArtifactUploadedPath(String rootPath) throws URISyntaxException {
-        List<NameValuePair> params = new WebHdfsParamsBuilder("OPEN").build();
-        URIBuilder uriBuilder = new URIBuilder(rootPath);
+        final List<NameValuePair> params = new WebHdfsParamsBuilder("OPEN").build();
+        final URIBuilder uriBuilder = new URIBuilder(rootPath);
         uriBuilder.addParameters(params);
         return uriBuilder.build().toString();
     }

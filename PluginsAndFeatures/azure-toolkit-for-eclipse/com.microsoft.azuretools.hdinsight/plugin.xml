@@ -1,66 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-	<extension
-      	point="org.eclipse.core.resources.natures"
-      	id="hdinsight.projectnature"
-      	name="hdinsight.projectnature">
-      	<runtime>
-        	<run class="com.microsoft.azuretools.hdinsight.projects.HDInsightProjectNature">
-         	</run>
-      	</runtime>
-	</extension>
-	
-	<extension
+    <extension
+          point="org.eclipse.core.resources.natures"
+          id="hdinsight.projectnature"
+          name="hdinsight.projectnature">
+          <runtime>
+            <run class="com.microsoft.azuretools.hdinsight.projects.HDInsightProjectNature">
+             </run>
+          </runtime>
+    </extension>
+    
+    <extension
         point="org.eclipse.ui.newWizards">
         <category
-        	name="HDInsight Project"
-        	id="com.microsoft.azure.hdinsight.projwizard.category">
+            name="HDInsight Project"
+            id="com.microsoft.azure.hdinsight.projwizard.category">
         </category>
         <wizard
-        	name="Spark on HDInsight (Scala)"
+            name="Spark on HDInsight (Scala)"
             category="com.microsoft.azure.hdinsight.projwizard.category"
             icon="icons/Spark-Scala.png"
             project="true"
             class="com.microsoft.azuretools.hdinsight.projects.HDInsightsScalaProjectWizard"
             id="com.microsoft.azure.hdinsight.scala.projwizard">
-        	<description>Spark on HDInsight (Scala)</description>
+            <description>Spark on HDInsight (Scala)</description>
          </wizard>
         <wizard
-        	name="Spark on HDInsight (Java)"
+            name="Spark on HDInsight (Java)"
             category="com.microsoft.azure.hdinsight.projwizard.category"
             icon="icons/Spark-Java.png"
             project="true"
             class="com.microsoft.azuretools.hdinsight.projects.HDInsightsJavaProjectWizard"
             id="com.microsoft.azure.hdinsight.java.projwizard">
-        	<description>Spark on HDInsight (Java)</description>
+            <description>Spark on HDInsight (Java)</description>
          </wizard>
          <wizard
-        	name="Spark on HDInsight Local Run Sample (Scala)"
+            name="Spark on HDInsight Local Run Sample (Scala)"
             category="com.microsoft.azure.hdinsight.projwizard.category"
             icon="icons/Spark-Scala.png"
             project="true"
             class="com.microsoft.azuretools.hdinsight.projects.HDInsightsScalaProjectWizard"
             id="com.microsoft.azure.hdinsight.local-scala.projwizard">
-        	<description>Spark on HDInsight Local Run Sample (Scala)</description>
+            <description>Spark on HDInsight Local Run Sample (Scala)</description>
          </wizard>
          <wizard
-        	name="Spark on HDInsight Local Run Sample (Java)"
+            name="Spark on HDInsight Local Run Sample (Java)"
             category="com.microsoft.azure.hdinsight.projwizard.category"
             icon="icons/Spark-Java.png"
             project="true"
             class="com.microsoft.azuretools.hdinsight.projects.HDInsightsJavaProjectWizard"
             id="com.microsoft.azure.hdinsight.local-java.projwizard">
-        	<description>Spark on HDInsight Local Run Sample (Java)</description>
+            <description>Spark on HDInsight Local Run Sample (Java)</description>
          </wizard>
          <wizard
-        	name="Spark on HDInsight Cluster Run Sample (Scala)"
+            name="Spark on HDInsight Cluster Run Sample (Scala)"
             category="com.microsoft.azure.hdinsight.projwizard.category"
             icon="icons/Spark-Scala.png"
             project="true"
             class="com.microsoft.azuretools.hdinsight.projects.HDInsightsScalaProjectWizard"
             id="com.microsoft.azure.hdinsight.cluster-scala.projwizard">
-        	<description>Spark on HDInsight Cluster Run Sample (Scala)</description>
+            <description>Spark on HDInsight Cluster Run Sample (Scala)</description>
          </wizard>
     </extension>
     
@@ -72,39 +72,39 @@
                id="com.microsoft.azure.hdinsight.projwizard">
          </newWizardShortcut>
       </perspectiveExtension>
-   	</extension>
+       </extension>
     
     <extension point="org.eclipse.ui.commands">
-	  <command
-	  		description="Submit Spark Application to HDInsight"
-	        id="com.microsoft.azure.hdinsight.submit"
-	        name="Submit Spark Application to HDInsight"
-	        icon="icons/Spark.png">
-	  </command>
-	</extension>  
+      <command
+              description="Submit Spark Application to HDInsight"
+            id="com.microsoft.azure.hdinsight.submit"
+            name="Submit Spark Application to HDInsight"
+            icon="icons/Spark.png">
+      </command>
+    </extension>  
     
     <extension point="org.eclipse.ui.handlers">
         <handler class="com.microsoft.azuretools.hdinsight.spark.actions.SubmitHandler"
             commandId="com.microsoft.azure.hdinsight.submit">
-      	</handler>
+          </handler>
     </extension>
     
     <extension point="org.eclipse.ui.menus">
-  		<menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-			<command commandId="com.microsoft.azure.hdinsight.submit" icon="icons/Spark.png" label="Submit Spark Application to HDInsight"/>
-			<visibleWhen>
-   				<with variable="selection"> 
-					<iterate operator="or"> 
-						<adapt type="org.eclipse.core.resources.IProject">
-        					<test property="org.eclipse.core.resources.projectNature" value="hdinsight.projectnature"/>
-            			</adapt>
-					</iterate> 
-		    	</with>
-		    </visibleWhen>
-    	</menuContribution>
-  	</extension>
-  	
-  	<extension point="org.eclipse.ui.views">
+          <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <command commandId="com.microsoft.azure.hdinsight.submit" icon="icons/Spark.png" label="Submit Spark Application to HDInsight"/>
+            <visibleWhen>
+                   <with variable="selection"> 
+                    <iterate operator="or"> 
+                        <adapt type="org.eclipse.core.resources.IProject">
+                            <test property="org.eclipse.core.resources.projectNature" value="hdinsight.projectnature"/>
+                        </adapt>
+                    </iterate> 
+                </with>
+            </visibleWhen>
+        </menuContribution>
+      </extension>
+      
+      <extension point="org.eclipse.ui.views">
       <view
             category="com.microsoft.azuretools"
             class="com.microsoft.azuretools.hdinsight.SparkSubmissionToolWindowView"
@@ -112,5 +112,5 @@
             name="Spark Submision"
             icon="icons/Spark.png">
       </view>
-	</extension>   
+    </extension>   
 </plugin>

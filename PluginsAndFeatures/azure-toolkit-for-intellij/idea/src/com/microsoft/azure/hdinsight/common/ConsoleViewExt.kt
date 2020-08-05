@@ -23,39 +23,31 @@
 package com.microsoft.azure.hdinsight.common
 
 import com.intellij.execution.ui.ConsoleView
-import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
-import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine
 import java.net.URI
-import java.util.AbstractMap.SimpleImmutableEntry
 
-fun ConsoleView.print(text: String, messageInfoType: MessageInfoType) {
+fun ConsoleView.print(typedMessage: SparkLogLine) {
     // Redirect the remote process control message to console view
-    when (messageInfoType) {
-        MessageInfoType.Debug ->
-            this.print("DEBUG: $text\n", ConsoleViewContentType.LOG_DEBUG_OUTPUT)
-        MessageInfoType.Info ->
-            this.print("INFO: $text\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-        MessageInfoType.Warning ->
-            this.print("WARN: $text\n", ConsoleViewContentType.LOG_WARNING_OUTPUT)
+    val consoleViewLogLine = ConsoleViewLogLine(typedMessage)
+    when (typedMessage.messageInfoType) {
+        MessageInfoType.Debug,
+        MessageInfoType.Info,
+        MessageInfoType.Warning,
+        MessageInfoType.HtmlPersistentMessage,
         MessageInfoType.Log ->
-            this.print("LOG: $text\n", ConsoleViewContentType.SYSTEM_OUTPUT)
+            this.print(consoleViewLogLine.formatText, consoleViewLogLine.contentType)
         MessageInfoType.Hyperlink ->
-            BrowserUtil.browse(URI.create(text))
-        MessageInfoType.HtmlPersistentMessage ->
-            this.print(text, ConsoleViewWithMessageBars.CONSOLE_VIEW_HTML_PERSISTENT_MESSAGE_TYPE)
+            BrowserUtil.browse(URI.create(typedMessage.rawLog))
         else -> {
-            this.print("ERROR: $text\n", ConsoleViewContentType.ERROR_OUTPUT)
+            this.print(consoleViewLogLine.formatText, consoleViewLogLine.contentType)
 
             val classifiedEx = ClassifiedExceptionFactory
-                    .createClassifiedException(YarnDiagnosticsException(text))
+                    .createClassifiedException(YarnDiagnosticsException(typedMessage.rawLog))
             classifiedEx.logStackTrace()
             classifiedEx.handleByUser()
         }
     }
 }
-
-fun ConsoleView.print(typedMessage: SimpleImmutableEntry<MessageInfoType, String>) =
-        this.print(typedMessage.value, typedMessage.key)

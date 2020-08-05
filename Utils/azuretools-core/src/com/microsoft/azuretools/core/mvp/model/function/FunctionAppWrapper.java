@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.azuretools.core.mvp.model.function;
@@ -91,6 +90,16 @@ public class FunctionAppWrapper extends WebAppBaseWrapper implements FunctionApp
     @Override
     public Completable removeFunctionKeyAsync(String s, String s1) {
         return getFunctionApp().removeFunctionKeyAsync(s, s1);
+    }
+
+    @Override
+    public void triggerFunction(String s, Object o) {
+        getFunctionApp().triggerFunction(s, o);
+    }
+
+    @Override
+    public Completable triggerFunctionAsync(String s, Object o) {
+        return getFunctionApp().triggerFunctionAsync(s, o);
     }
 
     @Override

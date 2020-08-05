@@ -1,24 +1,25 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.docker.forms;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -30,15 +31,13 @@ import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.AzureDockerCertVault;
 import com.microsoft.azure.docker.model.EditableDockerHost;
 import com.microsoft.azure.docker.ops.AzureDockerCertVaultOps;
+import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.intellij.docker.dialogs.AzureSelectKeyVault;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
-import com.microsoft.azure.docker.ops.utils.AzureDockerValidationUtils;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -58,7 +57,6 @@ public class AzureDockerHostUpdateLoginPanel {
   public JLabel dockerHostImportSSHBrowseLabel;
   public JLabel dockerHostSecondPwdLabel;
   private ButtonGroup authSelectionGroup;
-
 
   private Project project;
   private EditableDockerHost editableHost;
@@ -205,7 +203,6 @@ public class AzureDockerHostUpdateLoginPanel {
     PluginUtil.dialogShaker(info, dialogWrapperParent);
   }
 
-
   public ValidationInfo doValidate(boolean shakeOnError) {
     // User name
     String vmUsername = dockerHostUsernameTextField.getText();
@@ -226,7 +223,7 @@ public class AzureDockerHostUpdateLoginPanel {
     if (((dockerHostKeepSshRadioButton.isSelected() && editableHost.originalDockerHost.hasSSHLogIn) ||
         dockerHostFirstPwdField.getPassword().length > 0 ||
         dockerHostSecondPwdField.getPassword().length > 0) &&
-        (vmPwd1.isEmpty() || vmPwd2.isEmpty() || ! vmPwd1.equals(vmPwd2) ||
+        (vmPwd1.isEmpty() || vmPwd2.isEmpty() || !vmPwd1.equals(vmPwd2) ||
             (dockerHostSecondPwdField.isVisible() && !AzureDockerValidationUtils.validateDockerHostPassword(vmPwd1))))
     {
       ValidationInfo info = AzureDockerUIResources.validateComponent("Incorrect password", mainPanel, dockerHostFirstPwdField, dockerHostFirstPwdLabel);

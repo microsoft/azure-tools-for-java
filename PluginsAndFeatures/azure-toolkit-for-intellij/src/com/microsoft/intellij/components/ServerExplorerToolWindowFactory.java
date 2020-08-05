@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -39,7 +39,6 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.ui.JBUI;
-import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -79,10 +78,16 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow) {
         // initialize azure service module
         AzureModule azureModule = new AzureModuleImpl(project);
+
+        // Split this logic per Java and Rider module through AzureModuleProvider extension
+        for (AzureModuleProvider provider : AzureModuleProvider.EXTENSION_POINT_NAME.getExtensions()) {
+            provider.initAzureModule(project, azureModule);
+        }
+
 //        HDInsightUtil.setHDInsightRootModule(azureModule);
-        azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
+//        azureModule.setSparkServerlessModule(new CosmosSparkClusterRootModuleImpl(azureModule));
 //        azureModule.setArcadiaModule(new ArcadiaSparkClusterRootModuleImpl(azureModule));
-        // initialize aris service module
+//        // initialize aris service module
 //        SqlBigDataClusterModule arisModule = new SqlBigDataClusterModule(project);
 
         // initialize with all the service modules

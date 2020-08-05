@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -183,10 +183,10 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
                     UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
                     updateUI();
                 }), (ex) -> {
-                    UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
-                        MessageType.ERROR);
-                    updateUI();
-                });
+                        UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
+                            MessageType.ERROR);
+                        updateUI();
+                    });
             }
         });
         close(DialogWrapper.OK_EXIT_CODE, true);
@@ -219,16 +219,15 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
             subscriptionCb.setSelectedIndex(0);
         }
 
-        fillRegion();
-        fillResourceGroup();
         deploymentNameTextField.setText("deployment" + System.currentTimeMillis());
         rgNameTextFiled.setText("resouregroup" + System.currentTimeMillis());
     }
 
     private void initCache() {
-        Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
+        Map<SubscriptionDetail, List<Location>> subscription2Location =
+                AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null) {
-            ProgressManager.getInstance().run(new Task.Modal(project,"Loading Available Locations...", false) {
+            ProgressManager.getInstance().run(new Task.Modal(project, "Loading Available Locations...", false) {
                 @Override
                 public void run(ProgressIndicator indicator) {
                     try {
@@ -288,7 +287,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
 
     private void selectSubs(String targetSid) {
         for (int i = 0; i < subscriptionCb.getItemCount(); i++) {
-            if (((SubscriptionDetail)subscriptionCb.getItemAt(i)).getSubscriptionId().equals(targetSid)) {
+            if (((SubscriptionDetail) subscriptionCb.getItemAt(i)).getSubscriptionId().equals(targetSid)) {
                 subscriptionCb.setSelectedIndex(i);
                 break;
             }

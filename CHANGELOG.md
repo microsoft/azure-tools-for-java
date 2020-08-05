@@ -3,6 +3,12 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.40.0](#3400)
+  - [3.39.0](#3390)
+  - [3.38.0](#3380)
+  - [3.37.0](#3370)
+  - [3.36.0](#3360)
+  - [3.35.0](#3350)
   - [3.34.0](#3340)
   - [3.33.1](#3331)
   - [3.33.0](#3330)
@@ -46,6 +52,107 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.40.0
+### Added
+- Support IntelliJ 2020.2 EAP
+
+### Changed
+- Show non-anonymous HTTP trigger urls after function deployment
+
+## 3.39.0
+
+### Added
+- Support Azure Functions with Java 11 runtime(Preview)
+- Support authentication with Azure CLI credentials
+
+### Changed
+- Show Apache Spark on Cosmos node by default no matter whether there are SoC clusters under user's subscription or not
+- Remove Docker Host in Azure Explorer
+
+### Fixed
+- Fix Spark history server link broken for Azure Synapse issue
+- [#3712](https://github.com/microsoft/azure-tools-for-java/issues/3712) Fixes NPE while refreshing Azure node
+- [#4449](https://github.com/microsoft/azure-tools-for-java/issues/4449) Fixes NPE while parsing Function bindings
+- [#2226](https://github.com/microsoft/azure-tools-for-java/issues/2226) Fixes AuthException for no subscrition account
+- [#4102](https://github.com/microsoft/azure-tools-for-java/issues/4102) Fixes Exception when app service run process is terminated
+- [#4389](https://github.com/microsoft/azure-tools-for-java/issues/4389) Fixes check box UI issue when create function project
+- [#4307](https://github.com/microsoft/azure-tools-for-java/issues/4307) Selecting wrong module automatically when adding function run configuration for gradle function project
+
+## 3.38.0
+
+### Added
+- Support create application insights connection while creating new function app
+
+### Changed
+- Deprecate Docker Host(will be removed in v3.39.0)
+
+### Fixed
+- [#4423](https://github.com/microsoft/azure-tools-for-java/issues/4423) Spark local run mockfs issue with Hive support enabled
+- [#4410](https://github.com/microsoft/azure-tools-for-java/issues/4410) the context menu `Submit Spark Application` action regression issue at IDEA 2020.1
+- [#4419](https://github.com/microsoft/azure-tools-for-java/issues/4419) the run configuration Spark config table changes didn't take effects regression
+- [#4413](https://github.com/microsoft/azure-tools-for-java/issues/4413) the regression issue of Spark local console with Scala plugin 2020.1.36 
+- [#4422](https://github.com/microsoft/azure-tools-for-java/issues/4422) Fixes `ConcurrentModificationException` while refreshing spring cloud clusters
+- [#4438](https://github.com/microsoft/azure-tools-for-java/issues/4438) Fixes modality state issue when open what's new document
+
+## 3.37.0
+
+### Added
+- Add what's new document in Azure menu
+- Filter unsupported regions when creating new app service plan
+
+### Changed
+- Sort Spark on Cosmos Serverless jobs in descending order by job submission time
+
+### Fixed
+- Fixed Spark batch job submission skipped after uploading artifact to SQL Server big data cluster issue
+- Fixed no permission issue after submitting Spark batch job to ESP HDInsight cluster with ADLS Gen2 as default storage account type
+- [#4370](https://github.com/microsoft/azure-tools-for-java/issues/4370) Fixes NPE while loading Function deployment panel
+- [#4347](https://github.com/microsoft/azure-tools-for-java/issues/4347) Fixes NPE while getting action status
+- [#4380](https://github.com/microsoft/azure-tools-for-java/pull/4380) Fixes validation may freeze UI in spring cloud deployment panel
+- [#4350](https://github.com/microsoft/azure-tools-for-java/issues/4350) Fixes null value in spring cloud property view
+
+## 3.36.0
+
+### Added
+- Support log streaming for webapp
+- Support open portal Live Metrics Stream for linux function app 
+- Validate Azure dependencies version before deploying
+- Tag log line with log source(azuretool, livy, driver.stderr) for Spark batch job logs and interactive session logs
+
+### Changed
+- Remove version of Azure Spring Cloud dependencies when it is not necessary
+
+### Fixed
+- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fix NPE caused job submission failure issue
+- [#4204](https://github.com/microsoft/azure-tools-for-java/issues/4204) Deploy Azure Spring Cloud App dialog default value is apply
+- [#4231](https://github.com/microsoft/azure-tools-for-java/issues/4231) Cannot use Auth file for spring cloud authentication
+
+## 3.35.0
+
+### Added
+- Add Azure Spring Cloud support in Azure Toolkits
+  - Manage Azure Spring Cloud project dependencies
+  - Manage Azure Spring Cloud apps in Azure Explorer
+    * Create/Delete/Start/Stop/Restart
+    * Assign/un-assign public endpoint
+    * Update environment variables
+    * Update JVM options
+    * View app properties
+  - Deploying apps from current project
+  - Monitoring and troubleshooting apps
+    * Getting public url
+    * Getting test endpoint
+    * Instance status(shown in app properties view)
+- Support trigger function with timer trigger
+- Support log streaming for Windows functions
+
+### Fixed
+- [#4157](https://github.com/microsoft/azure-tools-for-java/issues/4157) Can't trigger function/admin http function when click 'Trigger Function' button
+- [#4160](https://github.com/microsoft/azure-tools-for-java/issues/4160) Nothing shown in function run mark
+- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fixed NPE caused Spark job submission failure in 201EAP
+- [#4213](https://github.com/microsoft/azure-tools-for-java/issues/4213) Unhandled error when creating function app
+- [#4215](https://github.com/microsoft/azure-tools-for-java/issues/4215) App settings not loaded when openning the deploy wizard
 
 ## 3.34.0
 

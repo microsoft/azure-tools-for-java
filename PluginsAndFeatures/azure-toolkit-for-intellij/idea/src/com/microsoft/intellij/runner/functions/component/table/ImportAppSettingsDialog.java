@@ -1,18 +1,18 @@
-/**
+/*
  * Copyright (c) Microsoft Corporation
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -28,6 +28,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.ToolbarDecorator;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.helpers.UIHelperImpl;
 import com.microsoft.intellij.runner.functions.AzureFunctionsConstants;
 
@@ -151,13 +152,13 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     public void fillFunctionAppSettings(Map<String, String> appSettings) {
         tblAppSettings.setAppSettings(appSettings);
         if (appSettings.size() == 0) {
-            tblAppSettings.getEmptyText().setText(AzureFunctionsConstants.EMPTY_TEXT);
+            tblAppSettings.getEmptyText().setText(CommonConst.EMPTY_TEXT);
         }
     }
 
     @Override
     public void beforeFillAppSettings() {
-        tblAppSettings.getEmptyText().setText(AzureFunctionsConstants.LOADING_TEXT);
+        tblAppSettings.getEmptyText().setText(CommonConst.LOADING_TEXT);
         tblAppSettings.clear();
     }
 
@@ -171,7 +172,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
 
     private void createUIComponents() {
         tblAppSettings = new AppSettingsTable("");
-        tblAppSettings.getEmptyText().setText(AzureFunctionsConstants.LOADING_TEXT);
+        tblAppSettings.getEmptyText().setText(CommonConst.LOADING_TEXT);
         pnlAppSettings = ToolbarDecorator.createDecorator(tblAppSettings).createPanel();
     }
 

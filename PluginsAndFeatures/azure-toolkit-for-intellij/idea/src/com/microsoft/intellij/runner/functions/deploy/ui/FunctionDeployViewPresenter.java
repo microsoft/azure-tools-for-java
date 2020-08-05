@@ -39,7 +39,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
 
     public void loadFunctionApps(boolean forceRefresh, boolean fillAppSettings) {
         Observable.fromCallable(() -> {
-            getMvpView().beforeFillFunctionApps();
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> getMvpView().beforeFillFunctionApps());
             return AzureFunctionMvpModel.getInstance().listAllFunctions(forceRefresh)
                     .stream()
                     .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
@@ -54,7 +54,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
 
     public void loadAppSettings(FunctionApp functionApp) {
         Observable.fromCallable(() -> {
-            getMvpView().beforeFillAppSettings();
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> getMvpView().beforeFillAppSettings());
             return functionApp.getAppSettings();
         }).subscribeOn(getSchedulerProvider().io())
                 .subscribe(appSettings -> DefaultLoader.getIdeHelper().invokeLater(() -> {

@@ -69,7 +69,7 @@ class SparkLivySessionProcessHandler(val process: SparkLivySessionProcess)
     }
 
     override fun startNotify() {
-        notifyTextAvailable("Start Spark Livy Interactive Session Console in cluster ${process.session.baseUrl.host}...\n", SYSTEM)
+        notifyTextAvailable("Start Apache Spark Livy Interactive Session Console in cluster ${process.session.baseUrl.host}...\n", SYSTEM)
         addProcessListener(object : ProcessAdapter() {
             override fun startNotified(event: ProcessEvent) {
                 val stdoutReader = SparkSimpleLogStreamReader(this@SparkLivySessionProcessHandler, process.inputStream, STDOUT)

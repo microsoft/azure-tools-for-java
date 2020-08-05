@@ -95,7 +95,7 @@ fun PsiElement.findJavaMainClass(): PsiClass? {
 }
 
 fun PsiElement.findScalaObjectMainClass(): PsiClass? {
-    val scalaMainMethodUtilDelegate = SparkScalaPluginDelegate("org.jetbrains.plugins.scala.runner.ScalaMainMethodUtil")
+    val scalaMainMethodUtilDelegate = SparkScalaPluginDelegate("org.jetbrains.plugins.scala.util.ScalaMainMethodUtil")
 
     if (!scalaMainMethodUtilDelegate.isEnabled) {
         return null

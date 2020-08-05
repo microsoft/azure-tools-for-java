@@ -49,9 +49,9 @@ class ArcadiaSparkBatchRunner : SparkBatchJobRunner() {
             : Observable<ISparkBatchJob> = Observable.fromCallable {
         (submitModel as ArcadiaSparkSubmitModel).apply {
             if (sparkCompute == null || tenantId == null || sparkWorkspace == null) {
-                log().warn("Synapse Spark pool is not selected. " +
+                log().warn("Apache Spark Pool for Azure Synapse is not selected. " +
                         "spark pool: $sparkCompute, tenant id: $tenantId, spark workspace: $sparkWorkspace")
-                throw ExecutionException("Synapse Spark pool is not selected")
+                throw ExecutionException("Apache Spark Pool for Azure Synapse is not selected")
             }
         }
     }.flatMap { arcadiaModel -> ArcadiaSparkComputeManager.getInstance()

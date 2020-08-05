@@ -18,7 +18,6 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.microsoft.intellij.util;
@@ -29,8 +28,15 @@ import com.microsoft.azure.management.appservice.implementation.ResourceNameAvai
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.rest.RestException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
@@ -38,6 +44,11 @@ public class ValidationUtils {
     private static final String VERSION_REGEX = "[0-9]([\\.a-zA-Z0-9\\-_])*";
     private static final String AZURE_FUNCTION_NAME_REGEX = "[a-zA-Z]([a-zA-Z0-9\\-_])*";
     private static final String APP_SERVICE_PLAN_NAME_PATTERN = "[a-zA-Z0-9\\-]{1,40}";
+    private static final String AZURE_SPRING_CLOUD_APP_NAME_REGEX = "[a-z]([a-z0-9\\-_])*[a-z0-9]";
+    private static final String APP_INSIGHTS_NAME_INVALID_CHARACTERS = "[*;/?:@&=+$,<>#%\\\"\\{}|^'`\\\\\\[\\]]";
+
+    private static Map<Pair<String, String>, String> appServiceNameValidationCache = new HashMap<>();
+    private static Map<String, String> resourceGroupValidationCache = new HashMap<>();
 
     public static boolean isValidJavaPackageName(String packageName) {
         return packageName != null && packageName.matches(PACKAGE_NAME_REGEX);
@@ -47,58 +58,112 @@ public class ValidationUtils {
         return name != null && name.matches(GROUP_ARTIFACT_ID_REGEX);
     }
 
-    public static boolean isValidFunctionName(String name) {
+    public static boolean isValidAppServiceName(String name) {
         return name != null && name.matches(AZURE_FUNCTION_NAME_REGEX);
+    }
+
+    public static boolean isValidSpringCloudAppName(String name) {
+        int len = name.trim().length();
+        return name != null && name.matches(AZURE_SPRING_CLOUD_APP_NAME_REGEX) && len >= 4 && len <= 32;
     }
 
     public static boolean isValidVersion(String version) {
         return version != null && version.matches(VERSION_REGEX);
     }
 
-    public static void validateFunctionAppName(String subscriptionId, String functionAppName) {
-        if (StringUtils.isEmpty(subscriptionId)) {
-            throw new IllegalArgumentException("Subscription can not be null");
+    public static void validateAppServiceName(String subscriptionId, String appServiceName) {
+        final Pair<String, String> cacheKey = Pair.of(subscriptionId, appServiceName);
+        if (appServiceNameValidationCache.containsKey(cacheKey)) {
+            throwCachedValidationResult(appServiceNameValidationCache.get(cacheKey));
+            return;
         }
-        if (!isValidFunctionName(functionAppName)) {
-            throw new IllegalArgumentException("Function App names only allow alphanumeric characters, periods, " +
-                    "underscores, hyphens and parenthesis and cannot end in a period.");
+        if (StringUtils.isEmpty(subscriptionId)) {
+            cacheAndThrow(appServiceNameValidationCache, cacheKey, "Subscription can not be null");
+        }
+        if (!isValidAppServiceName(appServiceName)) {
+            cacheAndThrow(appServiceNameValidationCache, cacheKey, "App service names only allow alphanumeric"
+                    + " characters, periods, underscores, hyphens and parenthesis and cannot end in a period.");
         }
         try {
             final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
             final ResourceNameAvailabilityInner result = azure.appServices().inner()
-                    .checkNameAvailability(functionAppName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
+                    .checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
             if (!result.nameAvailable()) {
-                throw new IllegalArgumentException(result.message());
+                cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
             }
         } catch (IOException e) {
             // swallow exception when get azure client
         }
+        appServiceNameValidationCache.put(cacheKey, null);
     }
 
     public static void validateResourceGroupName(String subscriptionId, String resourceGroup) {
+        if (resourceGroupValidationCache.containsKey(subscriptionId)) {
+            throwCachedValidationResult(appServiceNameValidationCache.get(subscriptionId));
+            return;
+        }
         if (StringUtils.isEmpty(subscriptionId)) {
-            throw new IllegalArgumentException("Subscription can not be null");
+            cacheAndThrow(resourceGroupValidationCache, subscriptionId, "Subscription can not be null");
         }
         if (StringUtils.isEmpty(resourceGroup)) {
-            throw new IllegalArgumentException("Resource group name can not be null");
+            cacheAndThrow(resourceGroupValidationCache, subscriptionId, "Resource group name can not be null");
         }
         try {
             final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
             if (azure.resourceGroups().getByName(resourceGroup) != null) {
-                throw new IllegalArgumentException("A resource group with the same name already exists in the selected subscription.");
+                cacheAndThrow(resourceGroupValidationCache, subscriptionId, "A resource group with the "
+                        + "same name already exists in the selected subscription.");
             }
         } catch (RestException e) {
             throw new IllegalArgumentException(e.getMessage());
         } catch (IOException e) {
             // swallow exception when get azure client
         }
+        resourceGroupValidationCache.put(subscriptionId, null);
     }
 
-    public static void validateAppServicePlanName(String appServicePlan){
+    public static void validateAppServicePlanName(String appServicePlan) {
         if (StringUtils.isEmpty(appServicePlan)) {
             throw new IllegalArgumentException("App Service Plan name is required");
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
             throw new IllegalArgumentException(String.format("App Service Plan Name should match %s", APP_SERVICE_PLAN_NAME_PATTERN));
+        }
+    }
+
+    public static void validateApplicationInsightsName(String applicationInsightsName) {
+        if (StringUtils.isEmpty(applicationInsightsName)) {
+            throw new IllegalArgumentException("Application Insights name is required");
+        }
+        if (applicationInsightsName.length() > 255) {
+            throw new IllegalArgumentException("Application insights name cannot be longer than 255 characters.");
+        }
+        if (applicationInsightsName.endsWith(".")) {
+            throw new IllegalArgumentException("Application insights name cannot end with '.'.");
+        }
+        if (applicationInsightsName.endsWith(" ") || applicationInsightsName.startsWith(" ")) {
+            throw new IllegalArgumentException("Application insights name cannot begin or end with space character.");
+        }
+        final Pattern pattern = Pattern.compile(APP_INSIGHTS_NAME_INVALID_CHARACTERS);
+        final Matcher matcher = pattern.matcher(applicationInsightsName);
+        final Set<String> invalidCharacters = new HashSet<>();
+        while (matcher.find()) {
+            invalidCharacters.add(matcher.group());
+        }
+        if (!invalidCharacters.isEmpty()) {
+            throw new IllegalArgumentException(String.format(
+                    "The following characters are not valid in an application insights name: %s",
+                    String.join(",", invalidCharacters)));
+        }
+    }
+
+    private static void cacheAndThrow(Map exceptionCache, Object key, String errorMessage) {
+        exceptionCache.put(key, errorMessage);
+        throw new IllegalArgumentException(errorMessage);
+    }
+
+    private static void throwCachedValidationResult(String errorMessage) {
+        if (StringUtils.isNotEmpty(errorMessage)) {
+            throw new IllegalArgumentException(errorMessage);
         }
     }
 }

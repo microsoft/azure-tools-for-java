@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.run.configuration;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -69,7 +70,7 @@ public class LivySparkBatchJobRunConfigurationType implements ConfigurationType 
 
     @Override
     public String getConfigurationTypeDescription() {
-        return "Spark on HDInsight Run Configuration";
+        return "Apache Spark on HDInsight Run Configuration";
     }
 
     @Override

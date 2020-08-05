@@ -44,6 +44,7 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
+                      <icon value="actions/cancel.png"/>
                       <text value="Discard"/>
                     </properties>
                   </component>
@@ -53,6 +54,8 @@
                     </constraints>
                     <properties>
                       <enabled value="false"/>
+                      <hideActionText value="true"/>
+                      <icon value="actions/menu-saveall.png"/>
                       <text value="Save"/>
                     </properties>
                   </component>

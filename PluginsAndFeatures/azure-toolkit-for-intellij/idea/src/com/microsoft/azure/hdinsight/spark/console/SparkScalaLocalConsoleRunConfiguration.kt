@@ -25,16 +25,14 @@ package com.microsoft.azure.hdinsight.spark.console
 import com.intellij.execution.CantRunException
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.JavaCommandLineState
-import com.intellij.execution.configurations.JavaParameters
-import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.jarRepository.JarRepositoryManager
 import com.intellij.jarRepository.RemoteRepositoriesConfiguration
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.util.DispatchThreadProgressWindow
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.JavaSdkType
 import com.intellij.openapi.projectRoots.JdkUtil
 import com.intellij.openapi.roots.ModuleRootManager
@@ -54,14 +52,32 @@ import com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRu
 import com.microsoft.azuretools.ijidea.ui.ErrorWindow
 import com.microsoft.intellij.util.runInWriteAction
 import org.jetbrains.plugins.scala.console.configuration.ScalaConsoleRunConfiguration
+import org.jdom.Element
 import java.nio.file.Paths
 import javax.swing.Action
 
-class SparkScalaLocalConsoleRunConfiguration(
-        project: Project,
-        configurationFactory: SparkScalaLocalConsoleRunConfigurationFactory,
-        name: String)
-    : ScalaConsoleRunConfiguration(project, configurationFactory, name) {
+class SparkScalaLocalConsoleRunConfiguration(private val scalaConsoleRunConfDelegate: ScalaConsoleRunConfiguration)
+    : ModuleBasedConfiguration<RunConfigurationModule, Element>(
+        scalaConsoleRunConfDelegate.name,
+        scalaConsoleRunConfDelegate.configurationModule,
+        scalaConsoleRunConfDelegate.factory!!)
+{
+
+    override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
+        return scalaConsoleRunConfDelegate.configurationEditor
+    }
+
+    override fun getValidModules(): MutableCollection<Module> {
+        return scalaConsoleRunConfDelegate.validModules
+    }
+
+    override fun readExternal(element: Element) {
+        scalaConsoleRunConfDelegate.readExternal(element)
+    }
+
+    override fun writeExternal(element: Element) {
+        scalaConsoleRunConfDelegate.writeExternal(element)
+    }
 
     private val sparkCoreCoodRegex = """.*\b(org.apache.spark:spark-)(core)(_.+:.+)""".toRegex()
     private val replMain = "org.apache.spark.repl.Main"
@@ -217,7 +233,7 @@ class SparkScalaLocalConsoleRunConfiguration(
             val newLibConf: NewLibraryConfiguration = JarRepositoryManager.resolveAndDownload(
                     project, libraryCoord, false, false, true, null, projectRepositories) ?: return@runInWriteAction
             val libraryType = newLibConf.libraryType
-            val library = LibraryTablesRegistrar.getInstance().getLibraryTable(project).createLibrary("Spark Console(auto-fix): $libraryCoord")
+            val library = LibraryTablesRegistrar.getInstance().getLibraryTable(project).createLibrary("Apache Spark Console(auto-fix): $libraryCoord")
 
             val editor = NewLibraryEditor(libraryType, newLibConf.properties)
             newLibConf.addRoots(editor)
@@ -235,7 +251,7 @@ class SparkScalaLocalConsoleRunConfiguration(
             override fun createJavaParameters() : JavaParameters {
                 val params = createJavaParams()
 
-                params.programParametersList.addParametersString(consoleArgs())
+                params.programParametersList.addParametersString(scalaConsoleRunConfDelegate.consoleArgs())
                 return params
             }
         }

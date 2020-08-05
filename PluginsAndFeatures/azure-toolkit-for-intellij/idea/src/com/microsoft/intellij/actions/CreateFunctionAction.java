@@ -18,8 +18,8 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
+
 package com.microsoft.intellij.actions;
 
 import com.intellij.ide.IdeView;
@@ -91,7 +91,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
     @Override
     protected PsiElement[] invokeDialog(Project project, PsiDirectory psiDirectory) {
         final Operation operation = TelemetryManager.createOperation(TelemetryConstants.FUNCTION, TelemetryConstants.CREATE_FUNCTION_TRIGGER);
-        try{
+        try {
             operation.start();
             PsiPackage pkg = JavaDirectoryService.getInstance().getPackage(psiDirectory);
             // get existing package from current directory
@@ -111,8 +111,8 @@ public class CreateFunctionAction extends CreateElementActionBase {
                     String newName = packageName.replace('.', '/');
                     bindingTemplate = AzureFunctionsUtils.getFunctionTemplate(triggerType);
                     EventUtil.logEvent(EventType.info, FUNCTION, CREATE_FUNCTION_TRIGGER, new HashMap<String, String>() {{
-                        put("triggerType", triggerType);
-                    }});
+                            put("triggerType", triggerType);
+                        }});
                     if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                         if (StringUtils.isBlank(connectionName)) {
                             throw new AzureExecutionException("Required property 'connection' is missing");
@@ -178,6 +178,9 @@ public class CreateFunctionAction extends CreateElementActionBase {
     @Override
     protected boolean isAvailable(final DataContext dataContext) {
         final Project project = CommonDataKeys.PROJECT.getData(dataContext);
+        if (project == null) {
+            return false;
+        }
         final IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
         ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         if (view != null) {

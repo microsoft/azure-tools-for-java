@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.intellij.runner.functions;
 
 import com.intellij.execution.Location;
@@ -36,16 +37,21 @@ import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfiguration;
+import com.microsoft.intellij.runner.functions.localrun.FunctionRunConfigurationFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jsoup.helper.StringUtil;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 public class FunctionRunConfigurationProducer extends LazyRunConfigurationProducer<AzureRunConfigurationBase> {
     @NotNull
     @Override
     public ConfigurationFactory getConfigurationFactory() {
-        return AzureFunctionSupportConfigurationType.getInstance().getConfigurationFactories()[0];
+        return Arrays.stream(AzureFunctionSupportConfigurationType.getInstance().getConfigurationFactories())
+                    .filter(configurationFactory -> configurationFactory instanceof FunctionRunConfigurationFactory)
+                    .findFirst()
+                    .get();
     }
 
     @Override
@@ -81,7 +87,7 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
                 runConfiguration.initializeDefaults(module);
             }
         }
-        if (StringUtil.isBlank(configuration.getName())) {
+        if (StringUtils.isBlank(configuration.getName())) {
             configuration.setName("Run Functions - " + runConfiguration.getModule().getName());
         }
         return true;

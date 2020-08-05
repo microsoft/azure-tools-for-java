@@ -23,42 +23,38 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.google.common.net.HostAndPort;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.spark.common.ISparkBatchJob;
 import com.microsoft.azure.hdinsight.spark.common.SparkJobUploadArtifactException;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogUtils;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.log4j.Level;
 import rx.Observable;
 import rx.Subscription;
 import rx.subjects.PublishSubject;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static com.microsoft.azure.hdinsight.common.MessageInfoType.*;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     @NotNull
-    private IdeSchedulers schedulers;
+    private final IdeSchedulers schedulers;
     @NotNull
-    private String artifactPath;
+    private final String artifactPath;
     @NotNull
     private final String title;
     @NotNull
-    private final PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject;
+    private final PublishSubject<SparkLogLine> ctrlSubject;
     @NotNull
-    private SparkJobLogInputStream jobStdoutLogInputSteam;
+    private final SparkJobLogInputStream jobStdoutLogInputSteam;
     @NotNull
-    private SparkJobLogInputStream jobStderrLogInputSteam;
+    private final SparkJobLogInputStream jobStderrLogInputSteam;
     @Nullable
     private Subscription jobSubscription;
     @NotNull
@@ -73,7 +69,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                                       @NotNull ISparkBatchJob sparkJob,
                                       @NotNull String artifactPath,
                                       @NotNull String title,
-                                      @NotNull PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+                                      @NotNull PublishSubject<SparkLogLine> ctrlSubject) {
         this.schedulers = schedulers;
         this.sparkJob = sparkJob;
         this.artifactPath = artifactPath;
@@ -169,27 +165,23 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
                 .flatMap(this::awaitForJobStarted)
                 .flatMap(this::attachInputStreams)
                 .flatMap(this::awaitForJobDone)
+                // Fetch remaining Livy logs if error happens at job submission stage
+                .doOnError(err -> startJobSubmissionLogReceiver(getSparkJob()))
                 .subscribe(sdPair -> {
                     if (sparkJob.isSuccess(sdPair.getKey())) {
-                        ctrlInfo("");
-                        ctrlInfo("========== RESULT ==========");
-                        ctrlInfo("Job run successfully.");
+                        sparkJob.ctrlInfo("");
+                        sparkJob.ctrlInfo("========== RESULT ==========");
+                        sparkJob.ctrlInfo("Job run successfully.");
                     } else {
-                        ctrlInfo("");
-                        ctrlInfo("========== RESULT ==========");
-                        ctrlError("Job state is " + sdPair.getKey());
-                        ctrlError("Diagnostics: " + sdPair.getValue());
+                        sparkJob.ctrlInfo("");
+                        sparkJob.ctrlInfo("========== RESULT ==========");
+                        sparkJob.ctrlError("Job state is " + sdPair.getKey());
+                        sparkJob.ctrlError("Diagnostics: " + sdPair.getValue());
                     }
                 }, err -> {
-                    // Receive the remaining Livy submission log if there be for errors
-                    startJobSubmissionLogReceiver(getSparkJob())
-                            .subscribe();
-
-                    ctrlSubject.onError(err);
+                    Arrays.stream(err.getMessage().split("\\n")).forEach(sparkJob::ctrlError);
                     destroy();
-                }, () -> {
-                    disconnect();
-                });
+                }, this::disconnect);
     }
 
     @NotNull
@@ -215,68 +207,20 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
         }
     }
 
-    protected void ctrlInfo(String message) {
-        ctrlSubject.onNext(new SimpleImmutableEntry<>(Info, message));
-    }
-
-    protected void ctrlError(String message) {
-        ctrlSubject.onNext(new SimpleImmutableEntry<>(MessageInfoType.Error, message));
-    }
-
     @NotNull
     public PublishSubject<SparkBatchJobSubmissionEvent> getEventSubject() {
         return eventSubject;
     }
 
-    private final List<Level> log4jAllLevels = Arrays.asList(
-            Level.FATAL,
-            Level.ERROR,
-            Level.WARN,
-            Level.INFO,
-            Level.DEBUG,
-            Level.TRACE);
-
-    private final Pattern log4jLevelRegex = Pattern.compile(
-            "\\b(?<level>"
-                    + log4jAllLevels.stream().map(Level::toString).collect(Collectors.joining("|")) + ")\\b");
-
-    private SimpleImmutableEntry<MessageInfoType, String> mapTypedMessageByLog4jLevels(
-            final SimpleImmutableEntry<MessageInfoType, String> previous,
-            final SimpleImmutableEntry<MessageInfoType, String> current) {
-        if (current.getKey() == Log) {
-            final String msg = current.getValue();
-            final Matcher matcher = log4jLevelRegex.matcher(msg);
-
-            if (matcher.find()) {
-                Level level = Level.toLevel(matcher.group("level"));
-                if (level.isGreaterOrEqual(Level.ERROR)) {
-                    return new SimpleImmutableEntry<>(Error, msg);
-                }
-
-                if (level == Level.WARN) {
-                    return new SimpleImmutableEntry<>(Warning, msg);
-                }
-
-                // Keep the current level
-                return current;
-            }
-
-            // No level keyword found, use the previous's level
-            return new SimpleImmutableEntry<>(previous.getKey(), msg);
-        }
-
-        return current;
-    }
-
     protected Observable<ISparkBatchJob> startJobSubmissionLogReceiver(ISparkBatchJob job) {
         return job.getSubmissionLog()
-                .scan(this::mapTypedMessageByLog4jLevels)
+                .scan(SparkLogUtils::mapTypedMessageByLog4jLevels)
                 .doOnNext(ctrlSubject::onNext)
-                // "ctrlSubject::onNext" lead to uncaught exception
+                // "ctrlSubject::onError" leads to uncaught exception
                 // while "ctrlError" only print error message in console view
-                .doOnError(err -> ctrlError(err.getMessage()))
+                .doOnError(err -> job.ctrlError(err.getMessage()))
                 .lastOrDefault(null)
-                .map((@Nullable SimpleImmutableEntry<MessageInfoType, String> messageTypeText) -> job);
+                .map((@Nullable SparkLogLine messageTypeText) -> job);
     }
 
     // Build and deploy artifact
@@ -334,7 +278,7 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     }
 
     @NotNull
-    public PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> getCtrlSubject() {
+    public PublishSubject<SparkLogLine> getCtrlSubject() {
         return ctrlSubject;
     }
 

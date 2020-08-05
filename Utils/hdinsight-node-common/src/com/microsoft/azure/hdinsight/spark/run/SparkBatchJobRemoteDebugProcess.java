@@ -23,9 +23,9 @@
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.jcraft.jsch.JSchException;
-import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
 import com.microsoft.azure.hdinsight.spark.common.*;
+import com.microsoft.azure.hdinsight.spark.common.log.SparkLogLine;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import rx.Observable;
 import rx.subjects.PublishSubject;
@@ -37,7 +37,7 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
     @NotNull
     private final SparkBatchDebugSession debugSession;
     @NotNull
-    private SparkBatchRemoteDebugJobSshAuth authData;
+    private final SparkBatchRemoteDebugJobSshAuth authData;
 
     public SparkBatchJobRemoteDebugProcess(@NotNull IdeSchedulers schedulers,
                                            @NotNull SparkBatchDebugSession debugSession,
@@ -45,7 +45,7 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
                                            @NotNull String artifactPath,
                                            @NotNull String title,
                                            @NotNull SparkBatchRemoteDebugJobSshAuth authData,
-                                           @NotNull PublishSubject<SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) {
+                                           @NotNull PublishSubject<SparkLogLine> ctrlSubject) {
         super(schedulers, sparkDebugJob, artifactPath, title, ctrlSubject);
         this.debugSession = debugSession;
         this.authData = authData;
@@ -69,10 +69,10 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
             SparkBatchRemoteDebugJob job) {
         return Observable.zip(job.getSparkDriverHost(), job.getSparkDriverDebuggingPort(), SimpleImmutableEntry::new)
                 .flatMap(remoteHostPortPair ->  {
-                    String remoteHost = remoteHostPortPair.getKey();
-                    int remotePort = remoteHostPortPair.getValue();
+                    final String remoteHost = remoteHostPortPair.getKey();
+                    final int remotePort = remoteHostPortPair.getValue();
 
-                    int localPort = 0;
+                    final int localPort;
                     try {
                         localPort = debugSession
                                 .forwardToRemotePort(remoteHost, remotePort)
@@ -80,7 +80,7 @@ public class SparkBatchJobRemoteDebugProcess extends SparkBatchJobRemoteProcess 
 
                         return Observable.just(new SparkBatchDebugJobJdbPortForwardedEvent(
                                 job, debugSession, remoteHost, remotePort, localPort, true));
-                    } catch (JSchException | UnknownServiceException e) {
+                    } catch (final JSchException | UnknownServiceException e) {
                         return Observable.error(e);
                     }
                 });

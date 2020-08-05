@@ -25,7 +25,6 @@ package com.microsoft.intellij.runner.container.dockerhost;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERLOCAL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
-import com.google.common.collect.ImmutableList;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
@@ -43,6 +42,7 @@ import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.Container;
 
+import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;

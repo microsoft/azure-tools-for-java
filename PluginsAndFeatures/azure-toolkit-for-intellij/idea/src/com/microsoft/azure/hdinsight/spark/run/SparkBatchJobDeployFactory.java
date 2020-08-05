@@ -19,6 +19,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.microsoft.azure.hdinsight.spark.run;
 
 import com.intellij.execution.ExecutionException;
@@ -52,7 +53,7 @@ import java.net.URI;
 import java.util.Optional;
 
 public class SparkBatchJobDeployFactory implements ILogger {
-    private static SparkBatchJobDeployFactory ourInstance = new SparkBatchJobDeployFactory();
+    private static final SparkBatchJobDeployFactory ourInstance = new SparkBatchJobDeployFactory();
 
     public static SparkBatchJobDeployFactory getInstance() {
         return ourInstance;
@@ -62,20 +63,25 @@ public class SparkBatchJobDeployFactory implements ILogger {
 
     }
 
-    public Deployable buildSparkBatchJobDeploy(@NotNull SparkSubmitModel submitModel,
-                                               @NotNull IClusterDetail clusterDetail) throws ExecutionException {
+    public Deployable buildSparkBatchJobDeploy(@NotNull final SparkSubmitModel submitModel,
+                                               @NotNull final IClusterDetail clusterDetail) throws ExecutionException {
 
         // get storage account and access token from submitModel
-        IHDIStorageAccount storageAccount = null;
-        String accessToken = null;
-        String accessKey = null;
-        String destinationRootPath = null;
+        final IHDIStorageAccount storageAccount;
+        final String accessToken;
+        final String accessKey;
+        final String destinationRootPath;
         HttpObservable httpObservable = null;
         Deployable jobDeploy = null;
-        String clusterName = submitModel.getSubmissionParameter().getClusterName();
+        final String clusterName = submitModel.getSubmissionParameter().getClusterName();
 
-        SparkSubmitStorageType storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
-        String subscription = submitModel.getJobUploadStorageModel().getSelectedSubscription();
+        final SparkSubmitStorageType storageAcccountType =
+                submitModel.getJobUploadStorageModel().getStorageAccountType();
+        if (storageAcccountType == null) {
+            throw new ExecutionException("Job upload storage account type is empty.");
+        }
+
+        final String subscription = submitModel.getJobUploadStorageModel().getSelectedSubscription();
 
         // For HDI Reader cluster, Ambari credential is necessary for job submission.
         if (ClusterManagerEx.getInstance().isHdiReaderCluster(clusterDetail)) {
@@ -83,7 +89,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 if (clusterDetail.getHttpUserName() == null || clusterDetail.getHttpPassword() == null) {
                     throw new ExecutionException("No Ambari permission to submit job to the selected cluster");
                 }
-            } catch (HDIException ex) {
+            } catch (final HDIException ex) {
                 log().warn("Error getting cluster credential. Cluster Name: " + clusterName);
                 log().warn(ExceptionUtils.getStackTrace(ex));
                 throw new ExecutionException("Error getting Ambari credential for this cluster");
@@ -92,14 +98,14 @@ public class SparkBatchJobDeployFactory implements ILogger {
 
         switch (storageAcccountType) {
             case BLOB:
-                String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
+                final String storageAccountName = submitModel.getJobUploadStorageModel().getStorageAccount();
                 if (StringUtils.isBlank(storageAccountName)) {
                     throw new ExecutionException("Can't get the valid storage account");
                 }
 
-                String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
-                String key = submitModel.getJobUploadStorageModel().getStorageKey();
-                String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
+                final String fullStorageBlobName = ClusterManagerEx.getInstance().getBlobFullName(storageAccountName);
+                final String key = submitModel.getJobUploadStorageModel().getStorageKey();
+                final String container = submitModel.getJobUploadStorageModel().getSelectedContainer();
                 if (StringUtils.isBlank(key) || StringUtils.isBlank(container)) {
                     throw new ExecutionException("Can't get the valid key or container name");
                 }
@@ -112,17 +118,25 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
                     if (storageAccount == null) {
-                        String errorMsg = "Cannot get storage account from cluster";
+                        final String errorMsg = "Cannot get storage account from cluster";
                         log().warn(String.format("%s. Cluster: %s.", errorMsg, clusterDetail.getName()));
                         throw new ExecutionException(errorMsg);
                     } else if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
-                        URI rawDestinationRootURI =
-                                UriUtil.normalizeWithSlashEnding(URI.create(clusterDetail.getDefaultStorageRootPath()))
-                                        .resolve(SparkSubmissionContentPanel.Constants.submissionFolder + "/");
+                        final String defaultStorageRootPath = clusterDetail.getDefaultStorageRootPath();
+                        if (defaultStorageRootPath == null) {
+                            throw new ExecutionException(
+                                    String.format("cluster %s's default storage root path is empty",
+                                                  clusterDetail.getName()));
+                        }
+                        final URI rawDestinationRootURI =
+                                UriUtil.normalizeWithSlashEnding(URI.create(defaultStorageRootPath))
+                                       .resolve(SparkSubmissionContentPanel.Constants.submissionFolder + "/");
                         destinationRootPath = AbfsUri.parse(rawDestinationRootURI.toString()).getUrl().toString();
 
                         if (clusterDetail instanceof AzureAdAccountDetail) {
-                            httpObservable = new ADLSGen2OAuthHttpObservable(((AzureAdAccountDetail)clusterDetail).getTenantId());
+                            httpObservable =
+                                    new ADLSGen2OAuthHttpObservable(
+                                            ((AzureAdAccountDetail) clusterDetail).getTenantId());
                         } else {
                             accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
                             httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
@@ -134,22 +148,25 @@ public class SparkBatchJobDeployFactory implements ILogger {
                         jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
                     } else if (storageAccount.getAccountType() == StorageAccountType.BLOB ||
                             storageAccount.getAccountType() == StorageAccountType.ADLS) {
-                        if (clusterDetail instanceof SynapseCosmosSparkPool || clusterDetail instanceof AzureSparkCosmosCluster) {
-                            AzureHttpObservable http =
+                        if (clusterDetail instanceof SynapseCosmosSparkPool
+                                || clusterDetail instanceof AzureSparkCosmosCluster) {
+                            final AzureHttpObservable http =
                                     clusterDetail instanceof SynapseCosmosSparkPool
-                                            ? ((SynapseCosmosSparkPool) clusterDetail).getHttp()
-                                            : ((AzureSparkCosmosCluster) clusterDetail).getHttp();
+                                    ? ((SynapseCosmosSparkPool) clusterDetail).getHttp()
+                                    : ((AzureSparkCosmosCluster) clusterDetail).getHttp();
                             if (http == null) {
-                                String errorMsg = "Error preparing access token for ADLS Gen1 storage account";
+                                final String errorMsg = "Error preparing access token for ADLS Gen1 storage account";
                                 log().warn(String.format("%s. Cluster: %s. Storage account: %s.",
-                                        errorMsg, clusterDetail.getName(), storageAccount.getName()));
-                                throw new ExecutionException("Error preparing access token for ADLS Gen1 storage account");
+                                                         errorMsg, clusterDetail.getName(), storageAccount.getName()));
+                                throw new ExecutionException(
+                                        "Error preparing access token for ADLS Gen1 storage account");
                             }
-                            String defaultStorageRootPath = clusterDetail.getDefaultStorageRootPath();
+                            final String defaultStorageRootPath = clusterDetail.getDefaultStorageRootPath();
                             if (StringUtils.isBlank(defaultStorageRootPath)) {
-                                String errorMsg = "Error getting default storage root path for ADLS Gen1 storage account";
+                                final String errorMsg =
+                                        "Error getting default storage root path for ADLS Gen1 storage account";
                                 log().warn(String.format("%s. Cluster: %s. Storage account: %s.",
-                                        errorMsg, clusterDetail.getName(), storageAccount.getName()));
+                                                         errorMsg, clusterDetail.getName(), storageAccount.getName()));
                                 throw new ExecutionException(errorMsg);
                             }
                             jobDeploy = new AdlsDeploy(defaultStorageRootPath, http.getAccessToken());
@@ -157,33 +174,34 @@ public class SparkBatchJobDeployFactory implements ILogger {
                             jobDeploy = new LegacySDKDeploy(storageAccount);
                         }
                     }
-                } catch (Exception ex) {
-                    log().warn("Error getting cluster storage configuration. Error: " + ExceptionUtils.getStackTrace(ex));
-                    storageAccount = null;
+                } catch (final Exception ex) {
+                    log().warn(
+                            "Error getting cluster storage configuration. Error: " + ExceptionUtils.getStackTrace(ex));
                 }
                 break;
             case SPARK_INTERACTIVE_SESSION:
                 jobDeploy = new LivySessionDeploy(clusterName);
                 break;
             case ADLS_GEN1:
-                String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
+                final String rawRootPath = submitModel.getJobUploadStorageModel().getAdlsRootPath();
                 if (StringUtils.isBlank(rawRootPath) || !AdlUri.isType(rawRootPath)) {
                     throw new ExecutionException("Invalid adls root path input");
                 }
 
                 destinationRootPath = rawRootPath.endsWith("/") ? rawRootPath : rawRootPath + "/";
                 // e.g. for adl://john.azuredatalakestore.net/root/path, adlsAccountName is john
-                String adlsAccountName = destinationRootPath.split("\\.")[0].split("//")[1];
+                final String adlsAccountName = destinationRootPath.split("\\.")[0].split("//")[1];
 
                 Optional<SubscriptionDetail> subscriptionDetail = Optional.empty();
                 try {
                     subscriptionDetail = AuthMethodManager.getInstance().getAzureManager().getSubscriptionManager()
-                            .getSelectedSubscriptionDetails()
-                            .stream()
-                            .filter((detail) -> detail.getSubscriptionName().equals(subscription))
-                            .findFirst();
+                                                          .getSelectedSubscriptionDetails()
+                                                          .stream()
+                                                          .filter((detail) -> detail.getSubscriptionName()
+                                                                                    .equals(subscription))
+                                                          .findFirst();
 
-                } catch (Exception ignore) {
+                } catch (final Exception ignore) {
                 }
 
                 if (!subscriptionDetail.isPresent()) {
@@ -191,9 +209,11 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 }
                 // get Access Token
                 try {
-                    accessToken = AzureSparkClusterManager.getInstance().getAccessToken(subscriptionDetail.get().getTenantId());
-                } catch (IOException ex) {
-                    log().warn("Error getting access token based on the given ADLS root path. " + ExceptionUtils.getStackTrace(ex));
+                    accessToken = AzureSparkClusterManager.getInstance().getAccessToken(
+                            subscriptionDetail.get().getTenantId());
+                } catch (final IOException ex) {
+                    log().warn("Error getting access token based on the given ADLS root path. "
+                                       + ExceptionUtils.getStackTrace(ex));
                     throw new ExecutionException("Error getting access token based on the given ADLS root path");
                 }
 
@@ -206,16 +226,17 @@ public class SparkBatchJobDeployFactory implements ILogger {
                     throw new ExecutionException("Invalid ADLS GEN2 root path: " + destinationRootPath);
                 }
 
-                AbfsUri destinationUri = AbfsUri.parse(destinationRootPath);
+                final AbfsUri destinationUri = AbfsUri.parse(destinationRootPath);
                 if (clusterDetail instanceof AzureAdAccountDetail) {
-                    httpObservable = new ADLSGen2OAuthHttpObservable(((AzureAdAccountDetail) clusterDetail).getTenantId());
+                    httpObservable =
+                            new ADLSGen2OAuthHttpObservable(((AzureAdAccountDetail) clusterDetail).getTenantId());
                 } else {
                     accessKey = submitModel.getJobUploadStorageModel().getAccessKey();
                     if (StringUtils.isBlank(accessKey)) {
                         throw new ExecutionException("Invalid access key input");
                     }
 
-                    String accountName = destinationUri.getAccountName();
+                    final String accountName = destinationUri.getAccountName();
                     httpObservable = new SharedKeyHttpObservable(accountName, accessKey);
                 }
 
@@ -223,22 +244,27 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 break;
             case WEBHDFS:
                 destinationRootPath = submitModel.getJobUploadStorageModel().getUploadPath();
-                if (StringUtils.isBlank(destinationRootPath) || !destinationRootPath.matches(SparkBatchJob.WebHDFSPathPattern)) {
+                if (StringUtils.isBlank(destinationRootPath)
+                        || !destinationRootPath.matches(SparkBatchJob.WebHDFSPathPattern)) {
                     throw new ExecutionException("Invalid webhdfs root path input");
                 }
 
                 //create httpobservable and jobDeploy
                 try {
                     if (clusterDetail instanceof ClusterDetail) {
-                        httpObservable = new AzureHttpObservable(clusterDetail.getSubscription().getTenantId(), ApiVersion.VERSION);
-                        jobDeploy = clusterDetail.getStorageAccount().getAccountType() == StorageAccountType.ADLS
+                        httpObservable = new AzureHttpObservable(clusterDetail.getSubscription().getTenantId(),
+                                                                 ApiVersion.VERSION);
+                        jobDeploy =
+                                clusterDetail.getStorageAccount() != null &&
+                                        clusterDetail.getStorageAccount().getAccountType() == StorageAccountType.ADLS
                                 ? new ADLSGen1HDFSDeploy(clusterDetail, httpObservable, destinationRootPath)
                                 : null;
                     } else if (clusterDetail instanceof SqlBigDataLivyLinkClusterDetail) {
-                        httpObservable = new HttpObservable(clusterDetail.getHttpUserName(), clusterDetail.getHttpPassword());
+                        httpObservable = new HttpObservable(clusterDetail.getHttpUserName(),
+                                                            clusterDetail.getHttpPassword());
                         jobDeploy = new WebHDFSDeploy(clusterDetail, httpObservable, destinationRootPath);
                     }
-                } catch (HDIException ignore) {
+                } catch (final HDIException ignore) {
                 }
 
                 if (httpObservable == null || jobDeploy == null) {
@@ -246,6 +272,8 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 }
 
                 break;
+            default:
+                throw new ExecutionException("Unsupported job upload storage type");
         }
 
         //TODO:use httpobservable to replace sparkbathsubmission and deprecate the old constructor.

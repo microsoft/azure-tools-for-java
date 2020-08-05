@@ -36,7 +36,6 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
@@ -45,12 +44,9 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-
 public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAppSettingModel> {
 
     // const string
-    private static final String NEED_SIGN_IN = "Please sign in with your Azure account.";
     private static final String NEED_CHOOSE_WEB_APP = "Choose a web app to deploy.";
     private static final String MISSING_WEB_APP_NAME = "Web App name not provided.";
     private static final String MISSING_SLOT_NAME = "The deployment slot name is not provided.";
@@ -109,9 +105,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     @Override
     public void validate() throws ConfigurationException {
-        if (!AuthMethodManager.getInstance().isSignedIn()) {
-            throw new ConfigurationException(NEED_SIGN_IN);
-        }
+        checkAzurePreconditions();
         if (webAppSettingModel.isCreatingNew()) {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppName())) {
                 throw new ConfigurationException(MISSING_WEB_APP_NAME);

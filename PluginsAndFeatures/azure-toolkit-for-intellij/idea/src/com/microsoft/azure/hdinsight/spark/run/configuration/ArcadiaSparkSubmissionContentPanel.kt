@@ -39,7 +39,7 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
     } }
 
     override val clusterHint: String
-        get() = "Spark pool"
+        get() = "Apache Spark Pool for Azure Synapse"
 
     override fun getData(data: SparkSubmitModel) {
         // Component -> Data
@@ -48,15 +48,15 @@ class ArcadiaSparkSubmissionContentPanel (project: Project) : SparkSubmissionCon
         val arcadiaData = data as? ArcadiaSparkSubmitModel
                 ?: return
         val cluster = viewModel.clusterSelection.let {
-            it.findClusterById(it.clusterListModelBehavior.value, it.toSelectClusterByIdBehavior.value) as? ArcadiaSparkCompute
+            it.findClusterById(it.clusterListModelBehavior.value, it.toSelectClusterByIdBehavior.value)
         }
 
         if (cluster != null) {
             arcadiaData.tenantId = cluster.subscription.tenantId
-            arcadiaData.sparkWorkspace = cluster.workSpace.name
+            arcadiaData.sparkWorkspace = (cluster as? ArcadiaSparkCompute)?.workSpace?.name
             arcadiaData.sparkCompute = cluster.name
             arcadiaData.livyUri = cluster.connectionUrl
-                    ?: throw RuntimeConfigurationWarning("Can't get Synapse Spark pool connection URL")
+                    ?: throw RuntimeConfigurationWarning("Can't get Apache Spark Pool for Azure Synapse connection URL")
             arcadiaData.sparkApplicationType = when (cluster) {
                 is SynapseCosmosSparkPool -> SparkApplicationType.CosmosSpark
                 is ArcadiaSparkCompute -> SparkApplicationType.ArcadiaSpark

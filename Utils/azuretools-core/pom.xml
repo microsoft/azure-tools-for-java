@@ -29,7 +29,7 @@
         <relativePath>../pom.xml</relativePath>
         <groupId>com.microsoft.azuretools</groupId>
         <artifactId>utils</artifactId>
-        <version>3.35.0</version>
+        <version>3.41.0</version>
     </parent>
     <artifactId>azuretools-core</artifactId>
     <properties>
@@ -123,6 +123,19 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-auth-helper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure.applicationinsights.v2015_05_01</groupId>
+            <artifactId>azure-mgmt-insights</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <classifier>shaded</classifier>
+        </dependency>
+        <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>retrofit</artifactId>
         </dependency>
@@ -197,11 +210,6 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
-            <artifactId>applicationinsights-management</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
             <artifactId>applicationinsights-web</artifactId>
         </dependency>
         <dependency>
@@ -211,7 +219,7 @@
         <dependency>
             <groupId>eu.infomas</groupId>
             <artifactId>annotation-detector</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.5</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
@@ -220,6 +228,16 @@
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure.appplatform.v2019_05_01_preview</groupId>
+            <artifactId>azure-mgmt-appplatform</artifactId>
+            <version>1.0.0-beta-2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-tools-common</artifactId>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

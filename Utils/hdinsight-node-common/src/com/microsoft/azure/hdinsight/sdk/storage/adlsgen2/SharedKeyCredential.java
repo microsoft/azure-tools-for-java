@@ -23,8 +23,6 @@
 package com.microsoft.azure.hdinsight.sdk.storage.adlsgen2;
 
 import com.microsoft.azure.storage.Constants;
-import com.microsoft.azure.storage.StorageCredentialsAccountAndKey;
-import com.microsoft.azure.storage.core.StorageCredentialsHelper;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpRequestBase;

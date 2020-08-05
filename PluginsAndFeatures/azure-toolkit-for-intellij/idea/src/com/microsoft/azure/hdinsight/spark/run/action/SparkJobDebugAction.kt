@@ -36,10 +36,11 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants
 class SparkJobDebugAction
     : SparkRunConfigurationAction(
         "SparkJobDebug",
-        "Submit Spark Application to remote cluster with debugging support",
+        "Submit Apache Spark Application to remote cluster with debugging support",
         StreamUtil.getImageResourceFile(CommonConst.ToolWindowSparkJobDebugIcon_13x_Path)?: AllIcons.Toolwindows.ToolWindowDebugger) {
     override val runExecutor: Executor
-        get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)!!
+        get() = ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID)
+            ?: throw RuntimeException("Can't find executor $EXECUTOR_ID from executor registry")
 
     override fun getServiceName(event: AnActionEvent): String {
         val project = event.project ?: return super.getServiceName(event)
