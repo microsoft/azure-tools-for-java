@@ -22,10 +22,9 @@
 
 package com.microsoft.azuretools.authmanage.models;
 
+import com.microsoft.azuretools.authmanage.AuthMethod;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
-
-import com.microsoft.azuretools.authmanage.AuthMethod;
 
 /**
  * Created by shch on 10/8/2016.
@@ -72,7 +71,6 @@ public class AuthMethodDetails {
     public void setCredFilePath(String credFilePath) {
         this.credFilePath = credFilePath;
     }
-
 
     public String getAzureEnv() {
         return azureEnv;

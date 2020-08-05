@@ -43,11 +43,12 @@ import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
 
 public class AuthMethodManager {
     private static final Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
-    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. "
-            + "Please check if you have already signed in.";
-    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure with Subscription ID: %s. "
-            + "Please check if you have already signed in with this Subscription.";
-    public static final String FAILED_TO_GET_AZURE_MANAGER_INSTANCE = "Failed to get an AzureManager instance for AuthMethodDetails: %s with error %s";
+    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. " +
+            "Please check if you have already signed in.";
+    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure with Subscription ID: %s. " +
+            "Please check if you have already signed in with this Subscription.";
+    private static final String FAILED_TO_GET_AZURE_MANAGER_INSTANCE = "Failed to get an AzureManager instance " +
+            "for AuthMethodDetails: %s with error %s";
 
     private AuthMethodDetails authMethodDetails;
     private volatile AzureManager azureManager;
