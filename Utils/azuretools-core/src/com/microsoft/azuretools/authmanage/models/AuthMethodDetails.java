@@ -47,7 +47,6 @@ public class AuthMethodDetails {
 
     // for jackson json
     public AuthMethodDetails() {
-        this.authMethod = AuthMethod.AD;
     }
 
     public AuthMethod getAuthMethod() {
