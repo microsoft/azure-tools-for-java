@@ -77,7 +77,8 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         functionDeployConfiguration.setRuntime(runtimeConfiguration);
         functionDeployConfiguration.setPricingTier(appServicePlan.pricingTier().toSkuDescription().size());
         // Deploy function to Azure
-        final File stagingFolder = new File(functionDeployConfiguration.getDeploymentStagingDirectory());
+        final File stagingFolder = FunctionUtils.getTempStagingFolder();
+        deployModel.setDeploymentStagingDirectoryPath(stagingFolder.getPath());
         prepareStagingFolder(stagingFolder, processHandler);
         final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, message -> {
             if (processHandler.isProcessRunning()) {
@@ -87,14 +88,15 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         return deployFunctionHandler.execute();
     }
 
-    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) {
+    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler)
+            throws AzureExecutionException {
         ReadAction.run(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
             try {
                 FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
             } catch (AzureExecutionException | IOException e) {
-                processHandler.println(String.format("Failed to prepare staging folder, %s", e.getMessage()), ProcessOutputTypes.STDERR);
+                throw new AzureExecutionException("Failed to prepare staging folder");
             }
         });
     }

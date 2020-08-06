@@ -106,7 +106,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Map<String, String> telemetryMap) throws Exception {
         // Prepare staging Folder
         updateTelemetryMap(telemetryMap);
-        final File stagingFolder = new File(functionRunConfiguration.getStagingFolder());
+        final File stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, processHandler);
         // Run Function Host
         runFunctionCli(processHandler, stagingFolder);
@@ -167,7 +167,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return processBuilder;
     }
 
-    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) {
+    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws AzureExecutionException {
         ReadAction.run(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
@@ -176,7 +176,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
                 FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(), localSettingsJson, functionRunConfiguration.getAppSettings());
             } catch (AzureExecutionException | IOException e) {
-                processHandler.println(String.format("Failed to prepare staging folder, %s", e.getMessage()), ProcessOutputTypes.STDERR);
+                throw new AzureExecutionException("Failed to prepare staging folder", e);
             }
         });
     }

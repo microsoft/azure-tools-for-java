@@ -57,7 +57,7 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.InvalidPathException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -73,22 +73,13 @@ public class FunctionUtils {
             "{\"id\":\"Microsoft.Azure.Functions.ExtensionBundle\",\"version\":\"[1.*, 2.0.0)\"}}\n";
     private static final String DEFAULT_LOCAL_SETTINGS_JSON = "{ \"IsEncrypted\": false, \"Values\": " +
             "{ \"FUNCTIONS_WORKER_RUNTIME\": \"java\" } }";
+    private static final String AZURE_FUNCTIONS = "azure-functions";
 
-    public static boolean isValidStagingFolderPath(String stagingFolderPath) {
-        if (StringUtils.isEmpty(stagingFolderPath)) {
-            return false;
-        }
-        final File target = new File(stagingFolderPath);
-        if (target.exists()) {
-            return target.isDirectory();
-        } else {
-            try {
-                Paths.get(stagingFolderPath);
-            } catch (InvalidPathException | NullPointerException ex) {
-                return false;
-            }
-            return true;
-        }
+    public static File getTempStagingFolder() throws IOException {
+        final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
+        final File file = path.toFile();
+        FileUtils.forceDeleteOnExit(file);
+        return file;
     }
 
     public static Module[] listFunctionModules(Project project) {
