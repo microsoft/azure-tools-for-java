@@ -28,6 +28,7 @@ import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterField
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.util.NodePackageField
 import com.intellij.javascript.nodejs.util.NodePackageRef
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -43,16 +44,21 @@ import com.intellij.webcore.ui.PathShortener
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
 import com.microsoft.intellij.helpers.validator.IpAddressInputValidator
+import org.jetbrains.annotations.NotNull
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.orWhenNullOrEmpty
 import java.io.File
 import javax.swing.*
 
 @Suppress("UNUSED_LAMBDA_EXPRESSION")
-class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstractConfigurablePanel {
+class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstractConfigurablePanel, @NotNull Disposable {
 
     private val disposable = Disposer.newDisposable()
     private val properties = PropertiesComponent.getInstance(project)
+
+    init {
+        Disposer.register(project, this)
+    }
 
     private fun createPanel(): DialogPanel =
             panel {
@@ -268,7 +274,10 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
 
     override fun doOKAction() {
         panel.apply()
+        Disposer.dispose(disposable)
+    }
 
+    override fun dispose() {
         Disposer.dispose(disposable)
     }
 }

@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project
 import com.microsoft.intellij.configuration.ui.AzureAppServicesConfigurationPanel
 import com.microsoft.intellij.configuration.ui.AzureFunctionsConfigurationPanel
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
+import org.jetbrains.plugins.azure.managedidentity.AzureManagedIdentityConfigurationPanel
 import org.jetbrains.plugins.azure.storage.azurite.AzuriteConfigurationPanel
 
 class AzureRiderConfigurable(private val project: Project) :
@@ -48,6 +49,7 @@ class AzureRiderConfigurable(private val project: Project) :
         val panels = listOf<Configurable>(
                 AzureRiderAbstractConfigurable(AzureAppServicesConfigurationPanel()),
                 AzureRiderAbstractConfigurable(AzureFunctionsConfigurationPanel()),
+                AzureRiderAbstractConfigurable(AzureManagedIdentityConfigurationPanel(project)),
                 AzureRiderAbstractConfigurable(AzuriteConfigurationPanel(project))
         )
         myPanels = panels
