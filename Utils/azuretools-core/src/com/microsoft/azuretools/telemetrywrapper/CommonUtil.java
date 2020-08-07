@@ -45,7 +45,7 @@ public class CommonUtil {
     public static final String SERVICE_NAME = "serviceName";
     public static final String TIMESTAMP = "timestamp";
     public static TelemetryClient client;
-    private static List<MutableTriple<String, Map, Map>> cachedEvents = new ArrayList<>();
+    private static List<MutableTriple<EventType, Map, Map>> cachedEvents = new ArrayList<>();
 
     public static Map<String, String> mergeProperties(Map<String, String> properties) {
         Map<String, String> commonProperties = TelemetryManager.getInstance().getCommonProperties();
@@ -64,25 +64,25 @@ public class CommonUtil {
         if (!StringUtils.isNullOrEmpty(serviceName)) {
             mutableProps.put(SERVICE_NAME, serviceName);
         }
-        final String eventName = getFullEventName(eventType);
         if (client != null) {
+            final String eventName = getFullEventName(eventType);
             client.trackEvent(eventName, mutableProps, metrics);
             client.flush();
         } else {
-            cacheEvents(eventName, mutableProps, metrics);
+            cacheEvents(eventType, mutableProps, metrics);
         }
     }
 
     public static void clearCachedEvents() {
         if (client != null) {
-            cachedEvents.forEach(triple -> client.trackEvent(triple.left, triple.middle, triple.right));
+            cachedEvents.forEach(triple -> client.trackEvent(getFullEventName(triple.left), triple.middle, triple.right));
             client.flush();
             cachedEvents.clear();
         }
     }
 
-    private static void cacheEvents(String eventName, Map<String, String> mutableProps, Map<String, Double> metrics) {
-        cachedEvents.add(MutableTriple.of(eventName, mutableProps, metrics));
+    private static void cacheEvents(EventType eventType, Map<String, String> mutableProps, Map<String, Double> metrics) {
+        cachedEvents.add(MutableTriple.of(eventType, mutableProps, metrics));
     }
 
     private static String getFullEventName(EventType eventType) {

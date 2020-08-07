@@ -200,7 +200,7 @@ public class AuthMethodManager {
                 final AuthMethodDetails savedAuthMethodDetails = loadSettings();
                 final AuthMethodDetails authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ?
                         new AuthMethodDetails() : savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
-                final String authMethod = authMethodDetails.getAuthMethod() == null ? null : authMethodDetails.getAuthMethod().name();
+                final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
                 EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(SIGNIN_METHOD, authMethod));
                 return new AuthMethodManager(authMethodDetails);
             } catch (RuntimeException ignore) {

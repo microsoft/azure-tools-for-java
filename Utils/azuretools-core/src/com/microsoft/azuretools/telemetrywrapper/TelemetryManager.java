@@ -46,7 +46,6 @@ public class TelemetryManager {
 
     public void setTelemetryClient(TelemetryClient telemetryClient) {
         CommonUtil.client = telemetryClient;
-        CommonUtil.clearCachedEvents();
     }
 
     public String getEventNamePrefix() {
@@ -55,6 +54,10 @@ public class TelemetryManager {
 
     public void setEventNamePrefix(String eventNamePrefix) {
         this.eventNamePrefix = eventNamePrefix;
+    }
+
+    public void sendCachedTelemetries() {
+        CommonUtil.clearCachedEvents();
     }
 
     public Map<String, String> getCommonProperties() {
