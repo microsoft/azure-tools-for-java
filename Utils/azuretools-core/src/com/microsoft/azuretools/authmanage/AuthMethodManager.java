@@ -30,16 +30,23 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.sdkmanage.ServicePrincipalAzureManager;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 
 public class AuthMethodManager {
     private static final Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
@@ -188,14 +195,19 @@ public class AuthMethodManager {
     }
 
     private static AuthMethodManager initAuthMethodManagerFromSettings() {
-        try {
-            final AuthMethodDetails savedAuthMethodDetails = loadSettings();
-            final AuthMethodDetails authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ?
-                    new AuthMethodDetails() : savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
-            return new AuthMethodManager(authMethodDetails);
-        } catch (RuntimeException ignore) {
-            return new AuthMethodManager(new AuthMethodDetails());
-        }
+        return EventUtil.executeWithLog(ACCOUNT, RESIGNIN, operation -> {
+            try {
+                final AuthMethodDetails savedAuthMethodDetails = loadSettings();
+                final AuthMethodDetails authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ?
+                        new AuthMethodDetails() : savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
+                final String authMethod = authMethodDetails.getAuthMethod() == null ? null : authMethodDetails.getAuthMethod().name();
+                EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(SIGNIN_METHOD, authMethod));
+                return new AuthMethodManager(authMethodDetails);
+            } catch (RuntimeException ignore) {
+                EventUtil.logError(operation, ErrorType.systemError, ignore, null, null);
+                return new AuthMethodManager(new AuthMethodDetails());
+            }
+        });
     }
 
     private static AuthMethodDetails loadSettings() {
@@ -208,7 +220,6 @@ public class AuthMethodManager {
                 System.out.println(FILE_NAME_AUTH_METHOD_DETAILS + " is empty");
                 return new AuthMethodDetails();
             }
-
             return JsonHelper.deserialize(AuthMethodDetails.class, json);
         } catch (IOException ignored) {
             System.out.println("Failed to loading authMethodDetails settings. Use defaults.");

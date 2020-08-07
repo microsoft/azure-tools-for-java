@@ -132,6 +132,7 @@ public class TelemetryConstants {
     public static final String REFRESH_METADATA = "refresh";
     public static final String SIGNIN = "signin";
     public static final String SIGNOUT = "signout";
+    public static final String RESIGNIN = "re-signin";
     public static final String SELECT_SUBSCRIPTIONS = "select-subscriptions";
     public static final String GET_SUBSCRIPTIONS = "get-subscriptions";
     public static final String REPORT_ISSUES = "report-issues";

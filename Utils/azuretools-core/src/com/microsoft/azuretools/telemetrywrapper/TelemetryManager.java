@@ -23,6 +23,7 @@
 package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.applicationinsights.TelemetryClient;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class TelemetryManager {
 
     public void setTelemetryClient(TelemetryClient telemetryClient) {
         CommonUtil.client = telemetryClient;
+        CommonUtil.clearCachedEvents();
     }
 
     public String getEventNamePrefix() {
