@@ -25,7 +25,7 @@ package com.microsoft.intellij.helpers.function;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
-import com.microsoft.intellij.helpers.webapp.WebAppBasePropertyView;
+import com.microsoft.intellij.helpers.base.AppBasePropertyView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-public class FunctionAppPropertyView extends WebAppBasePropertyView {
+public class FunctionAppPropertyView extends AppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.function.FunctionAppPropertyView";
 
-    public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                                @NotNull final String webAppId) {
+    public static AppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
+                                             @NotNull final String webAppId) {
         final FunctionAppPropertyView view = new FunctionAppPropertyView(project, sid, webAppId);
         view.onLoadWebAppProperty(sid, webAppId, null);
         return view;

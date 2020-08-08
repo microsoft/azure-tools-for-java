@@ -22,21 +22,22 @@
 
 package com.microsoft.intellij.helpers.webapp;
 
+import com.microsoft.intellij.helpers.base.AppBasePropertyView;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotPropertyViewPresenter;
 
-public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
+public class DeploymentSlotPropertyView extends AppBasePropertyView {
     private static final String ID = "com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyView";
 
     /**
      * Initialize the Web App Property View and return it.
      */
-    public static WebAppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
-                                                @NotNull final String resId, @NotNull final String slotName) {
-        DeploymentSlotPropertyView view = new DeploymentSlotPropertyView(project, sid, resId, slotName);
+    public static AppBasePropertyView create(@NotNull final Project project, @NotNull final String sid,
+                                             @NotNull final String resId, @NotNull final String slotName) {
+        final DeploymentSlotPropertyView view = new DeploymentSlotPropertyView(project, sid, resId, slotName);
         view.onLoadWebAppProperty(sid, resId, slotName);
         return view;
     }
@@ -48,7 +49,7 @@ public class DeploymentSlotPropertyView extends WebAppBasePropertyView {
 
     @Override
     protected String getId() {
-        return this.ID;
+        return ID;
     }
 
     @Override

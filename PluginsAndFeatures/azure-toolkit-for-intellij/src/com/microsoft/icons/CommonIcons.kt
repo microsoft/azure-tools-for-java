@@ -42,7 +42,6 @@ object CommonIcons {
     val SaveChanges by lazy { load("SaveChanges.svg") }
     val Open by lazy { load("AzureOpen.svg") }
     val Upload by lazy { load("AzureUpload.svg") }
-    val Download by lazy { load("download.svg") }
 
     val PublishAzure by lazy { load("publishAzure.svg") }
 

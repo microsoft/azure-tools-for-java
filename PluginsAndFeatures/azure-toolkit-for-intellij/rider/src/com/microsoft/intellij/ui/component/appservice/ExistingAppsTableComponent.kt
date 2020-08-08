@@ -230,23 +230,30 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
     /**
      * Get a user friendly text for net framework for an existing Azure web app base instance
      *
-     * Note: For .NET Framework there are two valid values for version (v4.7 and v3.5). Azure SDK
-     *       does not set the right values. They set the "v4.0" for "v4.7" and "v2.0" for "v3.5" instances
-     *       For .Net Core Framework we get the correct runtime value from the linux fx version that store
-     *       a instance name representation
+     * Note: Windows instances - there are two valid .NET Framework values for Windows instances (v4.7 and v3.5).
+     *       Azure SDK provides a CLR values set in "netFrameworkVersion" property. It has one of two CLR values:
+     *       - "v4.0" which refers to .Net Framework 4.7 version
+     *       - "v2.0" which refers to .Net Framework 3.5 version
+     *       We do mapping using this rules above to display it to a user.
      *
-     * Note: 2.0 and 4.0 are CLR versions most likely
+     *       Linux instances - we get the runtime value stored in "linuxFxVersion" property. Possible values can be
+     *       found by running "az webapp list-runtimes --linux" in Azure CLI.
+     *       Result example for dotnet containers: "DOTNETCORE|2.1", "DOTNETCORE|3.1"
+     *       Return the value as is.
      *
      * @param app web app base instance
      * @return [String] with a .Net Framework version for a web app base instance
      */
-    private fun mapAppFrameworkVersion(app: T): String {
-        return if (app.operatingSystem() == OperatingSystem.LINUX) {
-            "Core v${app.linuxFxVersion().split('|')[1]}"
-        } else {
-            val version = app.netFrameworkVersion().toString()
-            if (version.startsWith("v4")) "v4.7"
-            else "v3.5"
-        }
-    }
+    private fun mapAppFrameworkVersion(app: T): String =
+            when (app.operatingSystem()) {
+                OperatingSystem.WINDOWS -> {
+                    val version = app.netFrameworkVersion().toString()
+                    if (version.startsWith("v4")) "v4.7"
+                    else "v3.5"
+                }
+                OperatingSystem.LINUX -> {
+                    app.linuxFxVersion()
+                }
+                else -> ""
+            }
 }

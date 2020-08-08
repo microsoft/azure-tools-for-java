@@ -30,6 +30,7 @@ import java.util.Set;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.AppSetting;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -57,6 +58,8 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
     public static final String KEY_JAVA_CONTAINER_VERSION = "javaContainerVersion";
     public static final String KEY_OPERATING_SYS = "operatingSystem";
     public static final String KEY_APP_SETTING = "appSetting";
+    public static final String KEY_NET_FRAMEWORK_VERSION = "netFrameworkVersion";
+    public static final String KEY_LINUX_FX_VERSION = "linuxFxVersion";
 
     private static final String CANNOT_GET_WEB_APP_PROPERTY = "An exception occurred when getting the application settings.";
 
@@ -102,6 +105,8 @@ public abstract class WebAppBasePropertyViewPresenter<V extends WebAppBaseProper
         }
         propertyMap.put(KEY_OPERATING_SYS, webAppBase.operatingSystem());
         propertyMap.put(KEY_APP_SETTING, appSettingsMap);
+        propertyMap.put(KEY_NET_FRAMEWORK_VERSION, webAppBase.netFrameworkVersion().toString());
+        propertyMap.put(KEY_LINUX_FX_VERSION, webAppBase.linuxFxVersion());
 
         return new WebAppProperty(propertyMap);
     }
