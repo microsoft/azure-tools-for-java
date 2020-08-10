@@ -24,9 +24,12 @@ package com.microsoft.azuretools.telemetrywrapper;
 
 import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.joda.time.Instant;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CommonUtil {
@@ -42,6 +45,7 @@ public class CommonUtil {
     public static final String SERVICE_NAME = "serviceName";
     public static final String TIMESTAMP = "timestamp";
     public static TelemetryClient client;
+    private static List<MutableTriple<EventType, Map, Map>> cachedEvents = new ArrayList<>();
 
     public static Map<String, String> mergeProperties(Map<String, String> properties) {
         Map<String, String> commonProperties = TelemetryManager.getInstance().getCommonProperties();
@@ -52,18 +56,33 @@ public class CommonUtil {
         return merged;
     }
 
-    public synchronized static void sendTelemetry(EventType eventType, String serviceName, Map<String, String> properties,
+    public static synchronized void sendTelemetry(EventType eventType, String serviceName, Map<String, String> properties,
         Map<String, Double> metrics) {
         Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
         // Tag UTC time as timestamp
         mutableProps.put(TIMESTAMP, Instant.now().toString());
-        if (client != null) {
-            if (!StringUtils.isNullOrEmpty(serviceName)) {
-                mutableProps.put(SERVICE_NAME, serviceName);
-            }
-            client.trackEvent(getFullEventName(eventType), mutableProps, metrics);
-            client.flush();
+        if (!StringUtils.isNullOrEmpty(serviceName)) {
+            mutableProps.put(SERVICE_NAME, serviceName);
         }
+        if (client != null) {
+            final String eventName = getFullEventName(eventType);
+            client.trackEvent(eventName, mutableProps, metrics);
+            client.flush();
+        } else {
+            cacheEvents(eventType, mutableProps, metrics);
+        }
+    }
+
+    public static void clearCachedEvents() {
+        if (client != null) {
+            cachedEvents.forEach(triple -> client.trackEvent(getFullEventName(triple.left), triple.middle, triple.right));
+            client.flush();
+            cachedEvents.clear();
+        }
+    }
+
+    private static void cacheEvents(EventType eventType, Map<String, String> mutableProps, Map<String, Double> metrics) {
+        cachedEvents.add(MutableTriple.of(eventType, mutableProps, metrics));
     }
 
     private static String getFullEventName(EventType eventType) {
