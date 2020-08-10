@@ -82,6 +82,16 @@ public class FunctionUtils {
         return file;
     }
 
+    public static void cleanUpStagingFolder(File stagingFolder) {
+        try {
+            if (stagingFolder != null) {
+                FileUtils.deleteDirectory(stagingFolder);
+            }
+        } catch (IOException e) {
+            // swallow exceptions while clean up
+        }
+    }
+
     public static Module[] listFunctionModules(Project project) {
         final Module[] modules = ModuleManager.getInstance(project).getModules();
         return Arrays.stream(modules).filter(m -> {

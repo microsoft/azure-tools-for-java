@@ -53,6 +53,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     private FunctionDeployConfiguration functionDeployConfiguration;
     private final FunctionDeployModel deployModel;
+    private File stagingFolder;
 
     /**
      * Place to execute the Web App deployment task.
@@ -77,7 +78,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         functionDeployConfiguration.setRuntime(runtimeConfiguration);
         functionDeployConfiguration.setPricingTier(appServicePlan.pricingTier().toSkuDescription().size());
         // Deploy function to Azure
-        final File stagingFolder = FunctionUtils.getTempStagingFolder();
+        stagingFolder = FunctionUtils.getTempStagingFolder();
         deployModel.setDeploymentStagingDirectoryPath(stagingFolder.getPath());
         prepareStagingFolder(stagingFolder, processHandler);
         final DeployFunctionHandler deployFunctionHandler = new DeployFunctionHandler(deployModel, message -> {
@@ -110,12 +111,14 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText("Deploy succeed");
         processHandler.notifyComplete();
+        FunctionUtils.cleanUpStagingFolder(stagingFolder);
     }
 
     @Override
     protected void onFail(String errMsg, @NotNull RunProcessHandler processHandler) {
         processHandler.println(errMsg, ProcessOutputTypes.STDERR);
         processHandler.notifyComplete();
+        FunctionUtils.cleanUpStagingFolder(stagingFolder);
     }
 
     @Override

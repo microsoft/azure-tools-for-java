@@ -69,6 +69,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private static final int DEFAULT_DEBUG_PORT = 5005;
     private static final int MAX_PORT = 65535;
 
+    private File stagingFolder;
     private Process process;
     private Executor executor;
     private FunctionRunConfiguration functionRunConfiguration;
@@ -106,7 +107,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Map<String, String> telemetryMap) throws Exception {
         // Prepare staging Folder
         updateTelemetryMap(telemetryMap);
-        final File stagingFolder = FunctionUtils.getTempStagingFolder();
+        stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, processHandler);
         // Run Function Host
         runFunctionCli(processHandler, stagingFolder);
@@ -225,6 +226,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             processHandler.setText("Succeed!");
             processHandler.notifyComplete();
         }
+        FunctionUtils.cleanUpStagingFolder(stagingFolder);
     }
 
     @Override
@@ -236,5 +238,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             processHandler.setText("Fail!");
             processHandler.notifyComplete();
         }
+        FunctionUtils.cleanUpStagingFolder(stagingFolder);
     }
 }
