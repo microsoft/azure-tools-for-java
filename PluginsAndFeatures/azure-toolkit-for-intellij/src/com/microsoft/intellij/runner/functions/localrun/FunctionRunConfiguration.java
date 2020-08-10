@@ -224,9 +224,6 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException("Please specify correct function cli path");
         }
-        if (!FunctionUtils.isValidStagingFolderPath(getStagingFolder())) {
-            throw new ConfigurationException("Please specify correct staging folder path");
-        }
     }
 
     @Override

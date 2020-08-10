@@ -52,7 +52,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     private JPanel settings;
     private JPanel pnlMain;
-    private TextFieldWithBrowseButton txtStagingFolder;
     private TextFieldWithBrowseButton txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
@@ -73,15 +72,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
                 }
             }
         });
-
-        cbFunctionModule.addItemListener(itemEvent -> {
-            final String targetFolder = FunctionUtils.getTargetFolder((Module) cbFunctionModule.getSelectedItem());
-            txtStagingFolder.setText(targetFolder);
-        });
-
-        txtStagingFolder.addActionListener(
-                UIUtils.createFileChooserListenerWithTextPath(txtStagingFolder, project,
-                        FileChooserDescriptorFactory.createSingleFolderDescriptor()));
 
         txtFunc.addActionListener(
                 UIUtils.createFileChooserListenerWithTextPath(txtFunc, project,
@@ -126,7 +116,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     @Override
     protected void apply(@NotNull FunctionRunConfiguration configuration) {
         configuration.setFuncPath(txtFunc.getText());
-        configuration.setStagingFolder(txtStagingFolder.getText());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.saveModule((Module) cbFunctionModule.getSelectedItem());
     }

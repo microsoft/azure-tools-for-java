@@ -24,10 +24,8 @@ package com.microsoft.intellij.runner.functions.deploy.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
@@ -43,7 +41,6 @@ import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableU
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
 import com.microsoft.intellij.runner.functions.deploy.ui.creation.FunctionCreationDialog;
-import com.microsoft.intellij.ui.util.UIUtils;
 import org.apache.commons.collections.MapUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -72,7 +69,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JComboBox cbxFunctionApp;
     private HyperlinkLabel lblCreateFunctionApp;
     private JPanel pnlAppSettings;
-    private TextFieldWithBrowseButton txtStagingFolder;
     private JComboBox<Module> cbFunctionModule;
     private AppSettingsTable appSettingsTable;
 
@@ -106,15 +102,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 }
             }
         });
-
-        cbFunctionModule.addItemListener(itemEvent -> {
-            final String targetFolder = FunctionUtils.getTargetFolder((Module) cbFunctionModule.getSelectedItem());
-            txtStagingFolder.setText(targetFolder);
-        });
-
-        txtStagingFolder.addActionListener(
-                UIUtils.createFileChooserListenerWithTextPath(txtStagingFolder, project,
-                        FileChooserDescriptorFactory.createSingleFolderDescriptor()));
 
         fillModules();
     }
@@ -227,7 +214,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
         configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
-        configuration.setDeploymentStagingDirectory(txtStagingFolder.getText());
         if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
             // Use previous configuration when function is not loaded
             configuration.setSubscription(previousDeployConfiguration.getSubscriptionId());

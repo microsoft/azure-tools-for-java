@@ -191,9 +191,6 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         if (StringUtils.isEmpty(this.getFunctionId())) {
             throw new ConfigurationException(NEED_SPECIFY_TARGET_FUNCTION);
         }
-        if (!FunctionUtils.isValidStagingFolderPath(getDeploymentStagingDirectory())) {
-            throw new ConfigurationException(NEED_SPECIFY_VALID_STAGING_DIRECTORY_PATH);
-        }
     }
 
 }
