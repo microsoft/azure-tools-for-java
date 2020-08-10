@@ -4,14 +4,17 @@
   <change-notes>
     <![CDATA[
     <html>
-      <h4>Compatibility:</h4>
+      <h4>Features:</h4>
       <ul>
-        <li>Fix Plugin compatible with Rider 2020.2 EAP8</li>
-        <li>Remove JavaFX dependency that is not bundled with platform SDK - <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/329">#329</a></li>
+        <li>Add logs streaming for Web Apps <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/84">#84</a></li>
+        <li>Add logs streaming for Function Apps <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/90">#90</a></li>
+        <li>Managed identities support <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/204">#204</a></li>
       </ul>
       <h4>Bug fixes:</h4>
       <ul>
-        <li>Fix highlighting and analysis initialization when plugin is enabled - <a href="https://youtrack.jetbrains.com/issue/RIDER-47182">RIDER-47182</a></li>
+        <li>Memory leak running Rider 202 EAP8 with plugin <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/339">#339</a></li>
+        <li>Cloud Shell does not work when using Azure CLI for authentication <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/340">#340</a></li>
+        <li>Application Property view show relevant information about running Web App or Function App</li>
       </ul>
     </html>
     ]]>

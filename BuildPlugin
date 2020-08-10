@@ -34,12 +34,12 @@ tc_open "Initializing build script"
     BUILD_INTELLIJ=true
     INJECT_INTELLIJ_VERSION=false
 
-    IJ_VERSION_MAJOR_BUILD=201
-    IJ_VERSION_MAJOR=2020.1
+    IJ_VERSION_MAJOR_BUILD=202
+    IJ_VERSION_MAJOR=2020.2
     IJ_VERSION_MINOR=
     IJ_VERSION_LATEST=$IJ_VERSION_MAJOR.$IJ_VERSION_MINOR \
                       && [[ -z $IJ_VERSION_MINOR ]] && IJ_VERSION_LATEST=$IJ_VERSION_MAJOR
-    IJ_SCALA_VERSION_LATEST=2020.1.10
+    IJ_SCALA_VERSION_LATEST=2020.2.17
 
     while getopts ":hqvBC:e:" option; do
         case $option in
@@ -145,7 +145,7 @@ if $BUILD_INTELLIJ; then
     tc_close "Building IDEA plugin"
 fi
 
-BUILD_NUMBER="3.35.0.$BUILD_COUNTER-2020.2"
+BUILD_NUMBER="3.40.0.$BUILD_COUNTER-2020.2"
 BUILD_CONFIGURATION=Release
 
 tc_open "Building Rider plugin"
