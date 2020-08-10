@@ -50,7 +50,7 @@ import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
+import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionParameters
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionTerminalParameters
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
@@ -80,7 +80,7 @@ class StartAzureCloudShellAction : AnAction() {
         // TODO maartenba - Once https://github.com/JetBrains/azure-tools-for-intellij/issues/340 is resolved
         // with Microsoft, this check + warning can be removed.
         if (azureManager is AzureCliAzureManager) {
-            AzureCloudShellNotifications.notify(project,
+            AzureNotifications.notify(project,
                     RiderAzureBundle.message("common.azure"),
                     RiderAzureBundle.message("notification.cloud_shell.start.failed_azcli.subtitle"),
                     RiderAzureBundle.message("notification.cloud_shell.start.failed_azcli.message") +
@@ -100,7 +100,7 @@ class StartAzureCloudShellAction : AnAction() {
             return
         }
 
-        object : Task.Backgroundable(project, RiderAzureBundle.message("progress.cloud_shell.start.retrieving_subscription"), true, PerformInBackgroundOption.DEAF)
+        object : Task.Backgroundable(project, RiderAzureBundle.message("progress.common.start.retrieving_subscription"), true, PerformInBackgroundOption.DEAF)
         {
             override fun run(indicator: ProgressIndicator)
             {
@@ -163,7 +163,7 @@ class StartAzureCloudShellAction : AnAction() {
             // Failed to authenticate....
             logger.error("Failed to authenticate Azure Cloud Shell", e)
 
-            AzureCloudShellNotifications.notify(
+            AzureNotifications.notify(
                     project,
                     RiderAzureBundle.message("common.azure"),
                     RiderAzureBundle.message("notification.cloud_shell.start.failed_to_authenticate.subtitle"),
@@ -293,7 +293,7 @@ class StartAzureCloudShellAction : AnAction() {
         // No cloud shell configuration found...
         logger.warn("Azure Cloud Shell is not configured in any Azure subscription.")
 
-        AzureCloudShellNotifications.notify(project,
+        AzureNotifications.notify(project,
                 RiderAzureBundle.message("common.azure"),
                 RiderAzureBundle.message("notification.cloud_shell.start.failed_to_start.subtitle"),
                 RiderAzureBundle.message("notification.cloud_shell.start.failed_to_start.message") +

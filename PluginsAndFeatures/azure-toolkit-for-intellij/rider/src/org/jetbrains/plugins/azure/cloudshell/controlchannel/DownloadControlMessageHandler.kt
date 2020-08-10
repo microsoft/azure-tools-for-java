@@ -38,7 +38,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.PathUtil
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
+import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
 import java.io.File
 import java.io.IOException
@@ -94,7 +94,7 @@ class DownloadControlMessageHandler(
                                 downloadResult.body()!!.byteStream().copyTo(outputStream)
                                 outputStream.close()
 
-                                AzureCloudShellNotifications.notify(project,
+                                AzureNotifications.notify(project,
                                         RiderAzureBundle.message("common.azure"),
                                         RiderAzureBundle.message("notification.cloud_shell.download_file.subtitle", fileName),
                                         RiderAzureBundle.message("notification.cloud_shell.download_file.message", fileName) +

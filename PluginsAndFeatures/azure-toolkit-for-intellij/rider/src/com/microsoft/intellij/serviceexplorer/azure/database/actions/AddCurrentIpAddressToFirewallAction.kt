@@ -28,7 +28,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.InputValidator
 import com.intellij.openapi.ui.Messages
 import com.microsoft.azure.management.sql.SqlServer
 import com.microsoft.azuretools.authmanage.AuthMethodManager
@@ -42,7 +41,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
+import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.util.PublicIpAddressProvider
 import java.time.Clock
 import java.time.LocalDateTime
@@ -77,7 +76,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
                         requestAddFirewallRule(project, sqlServer, publicIpAddressResult)
                     }
                 } else {
-                    AzureCloudShellNotifications.notify(project,
+                    AzureNotifications.notify(project,
                             message("notification.cloud_shell.add_ip_to_firewall.title"),
                             message("notification.cloud_shell.add_ip_to_firewall.subtitle"),
                             message("notification.cloud_shell.add_ip_to_firewall.message"),
@@ -117,7 +116,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
                             .create()
                 }
 
-                AzureCloudShellNotifications.notify(project,
+                AzureNotifications.notify(project,
                         message("notification.cloud_shell.add_firewall_rule.title"),
                         message("notification.cloud_shell.add_firewall_rule.subtitle"),
                         message("notification.cloud_shell.add_firewall_rule.message"),

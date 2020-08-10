@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -19,25 +19,20 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package org.jetbrains.plugins.azure
 
-import org.apache.http.client.utils.URIUtils
-import java.net.URI
+import com.intellij.notification.*
+import com.intellij.openapi.project.Project
 
-fun String?.orWhenNullOrEmpty(another: String): String = if (this.isNullOrEmpty()) {
-    another
-} else {
-    this
-}
+class AzureNotifications {
+    companion object {
+        val notificationGroup = NotificationGroup("Azure", NotificationDisplayType.BALLOON, true, null, null)
 
-fun String?.isValidUrl(): Boolean {
-    if (this.isNullOrEmpty()) return false
+        fun notify(project: Project, title: String?, subtitle: String?, content: String?, type: NotificationType, listener: NotificationListener? = null) {
+            val notification = notificationGroup.createNotification(
+                    title, subtitle, content, type, listener)
 
-    return try {
-        val uri = URI.create(this)
-        URIUtils.extractHost(uri) != null
-    } catch (_: Exception) {
-        false
+            Notifications.Bus.notify(notification, project)
+        }
     }
 }
