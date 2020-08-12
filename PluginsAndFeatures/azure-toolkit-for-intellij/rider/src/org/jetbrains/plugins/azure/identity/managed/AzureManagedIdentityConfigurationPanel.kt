@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package org.jetbrains.plugins.azure.managedidentity
+package org.jetbrains.plugins.azure.identity.managed
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
