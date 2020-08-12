@@ -22,6 +22,10 @@
 
 package org.jetbrains.plugins.azure.identity.ad.actions
 
+import com.intellij.ide.BrowserUtil
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationListener
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -51,6 +55,7 @@ import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.azuretools.sdkmanage.AzureManager
+import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSection
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSectionManager
@@ -58,6 +63,7 @@ import org.jetbrains.plugins.azure.identity.ad.ui.RegisterApplicationInAzureAdDi
 import org.jetbrains.plugins.azure.isValidUUID
 import java.net.URI
 import java.util.*
+import javax.swing.event.HyperlinkEvent
 
 class RegisterApplicationInAzureAdAction
     : AnAction(
@@ -193,7 +199,17 @@ class RegisterApplicationInAzureAdAction
                 .readAzureAdSectionFrom(appSettingsJsonVirtualFile, project)
 
         // Build model
-        val domain = defaultDomainForTenant(graphClient)
+        val domain = try {
+            defaultDomainForTenant(graphClient)
+        } catch (e: GraphErrorException) {
+            logger.error("Failed to get default domain for tenant", e)
+
+            reportError(project,
+                    RiderAzureBundle.message("notification.identity.ad.register_app.failed.common.subtitle"),
+                    RiderAzureBundle.message("notification.identity.ad.register_app.failed.get_default_domain.message", selectedSubscription.tenantId))
+
+            return
+        }
         val model = if (azureAdSettings == null || azureAdSettings.isDefaultProjectTemplateContent()) {
             buildDefaultRegistrationModel(projectModelNode, domain)
         } else {
@@ -232,15 +248,39 @@ class RegisterApplicationInAzureAdAction
                         if (model.updatedIsMultiTenant != model.originalIsMultiTenant)
                             parameters = parameters.withAvailableToOtherTenants(model.updatedIsMultiTenant)
 
-                        graphClient.applications().patch(existingApplication.objectId(), parameters)
-                        graphClient.applications().get(existingApplication.objectId())
+                        try {
+                            graphClient.applications().patch(existingApplication.objectId(), parameters)
+                            graphClient.applications().get(existingApplication.objectId())
+                        } catch (e: GraphErrorException) {
+                            logger.error("Failed to update application", e)
+
+                            reportError(project,
+                                    RiderAzureBundle.message("notification.identity.ad.register_app.failed.common.subtitle"),
+                                    RiderAzureBundle.message("notification.identity.ad.register_app.failed.update.message", selectedSubscription.tenantId, e.body().message()))
+
+                            return
+                        }
                     } else if (existingApplication == null) {
                         // Create
-                        graphClient.applications().create(ApplicationCreateParametersInner()
-                                .withDisplayName(model.updatedDisplayName)
-                                .withIdentifierUris(listOf("https://" + domain + "/" + (model.updatedDisplayName + UUID.randomUUID().toString().substring(0, 6)).filter { it.isLetterOrDigit() }))
-                                .withReplyUrls(listOf(model.updatedCallbackUrl))
-                                .withAvailableToOtherTenants(model.updatedIsMultiTenant))
+                        try {
+                            graphClient.applications().create(ApplicationCreateParametersInner()
+                                    .withDisplayName(model.updatedDisplayName)
+                                    .withIdentifierUris(listOf("https://" + domain + "/" + (model.updatedDisplayName + UUID.randomUUID().toString().substring(0, 6)).filter { it.isLetterOrDigit() }))
+                                    .withReplyUrls(listOf(model.updatedCallbackUrl))
+                                    .withAvailableToOtherTenants(model.updatedIsMultiTenant))
+                        } catch (e: GraphErrorException) {
+                            logger.error("Failed to create application", e)
+
+                            reportError(project,
+                                    RiderAzureBundle.message("notification.identity.ad.register_app.failed.common.subtitle"),
+                                    if (e.body().code() == "403") {
+                                        RiderAzureBundle.message("notification.identity.ad.register_app.failed.create.permissions")
+                                    } else {
+                                        RiderAzureBundle.message("notification.identity.ad.register_app.failed.create.message", e.body().message())
+                                    })
+
+                            return
+                        }
                     } else null
 
                     // 2. Save changes to appsettings.json
@@ -351,5 +391,22 @@ class RegisterApplicationInAzureAdAction
                 originalIsMultiTenant = false,
                 allowOverwrite = false
         )
+    }
+
+    private fun reportError(project: Project, subtitle: String, message: String) {
+        AzureNotifications.notify(project,
+                RiderAzureBundle.message("common.azure"),
+                subtitle,
+                message,
+                NotificationType.ERROR,
+                object : NotificationListener.Adapter() {
+                    override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
+                        if (!project.isDisposed) {
+                            when (e.description) {
+                                "permissions" -> BrowserUtil.browse("https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-how-applications-are-added#who-has-permission-to-add-applications-to-my-azure-ad-instance")
+                            }
+                        }
+                    }
+                })
     }
 }

@@ -113,7 +113,7 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
             }
         }
 
-        titledRow(RiderAzureBundle.message("dialog.identity.ad.register_app.more_options")) {
+        hideableRow(RiderAzureBundle.message("dialog.identity.ad.register_app.more_options")) {
             row {
                 val label = JLabel(RiderAzureBundle.message("dialog.identity.ad.register_app.client_id"))
                 label()
