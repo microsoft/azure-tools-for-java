@@ -22,6 +22,7 @@
 
 package org.jetbrains.plugins.azure.identity.ad.notifications
 
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ex.ActionUtil
@@ -31,6 +32,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
+import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.identity.ad.actions.RegisterApplicationInAzureAdAction
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSectionManager
@@ -42,7 +44,9 @@ class DefaultAzureAdApplicationRegistrationNotificationProvider : EditorNotifica
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
     override fun createNotificationPanel(file: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel? {
-        if (file.name != RegisterApplicationInAzureAdAction.appSettingsJsonFileName) return null
+        if (PropertiesComponent.getInstance().getBoolean(AzureRiderSettings.DISMISS_NOTIFICATION_AZURE_AD_REGISTER)) return null
+
+        if (!RegisterApplicationInAzureAdAction.isAppSettingsJsonFileName(file.name)) return null
 
         val azureAdSettings = AppSettingsAzureAdSectionManager().readAzureAdSectionFrom(file, project) ?: return null
         if (!azureAdSettings.isDefaultProjectTemplateContent()) return null
@@ -57,6 +61,15 @@ class DefaultAzureAdApplicationRegistrationNotificationProvider : EditorNotifica
             }, true)
         }
 
+        panel.createActionLabel(RiderAzureBundle.message("notification.identity.ad.register_app.action.dismiss"), {
+            dismissNotification(file, project)
+        }, true)
+
         return panel
+    }
+
+    private fun dismissNotification(file: VirtualFile, project: Project) {
+        PropertiesComponent.getInstance(project).setValue(AzureRiderSettings.DISMISS_NOTIFICATION_AZURE_AD_REGISTER, true)
+        EditorNotifications.getInstance(project).updateNotifications(file)
     }
 }

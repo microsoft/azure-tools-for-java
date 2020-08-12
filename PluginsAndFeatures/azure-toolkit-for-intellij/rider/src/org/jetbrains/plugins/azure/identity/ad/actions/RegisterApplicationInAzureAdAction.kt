@@ -55,6 +55,7 @@ import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSection
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSectionManager
 import org.jetbrains.plugins.azure.identity.ad.ui.RegisterApplicationInAzureAdDialog
+import org.jetbrains.plugins.azure.isValidUUID
 import java.net.URI
 import java.util.*
 
@@ -65,31 +66,40 @@ class RegisterApplicationInAzureAdAction
         null) {
 
     companion object {
-        const val appSettingsJsonFileName = "appsettings.json"
 
-        val logger = Logger.getInstance(RegisterApplicationInAzureAdAction::class.java)
+        private const val appSettingsJsonFileName = "appsettings.json"
+
+        fun isAppSettingsJsonFileName(fileName: String?): Boolean {
+            if (fileName == null) return false
+
+            return fileName.equals(appSettingsJsonFileName, true)
+                    || (fileName.startsWith("appsettings.", true) && fileName.endsWith(".json", true))
+        }
+
+        private val logger = Logger.getInstance(RegisterApplicationInAzureAdAction::class.java)
     }
 
     override fun update(e: AnActionEvent) {
         val project = e.project ?: return
 
-        val projectNode = e.dataContext.getData(RiderProjectDataRule.RD_PROJECT_MODEL_NODE)
-                ?: tryGetProjectModelNodeFromFile(project, e.dataContext.PsiFile?.virtualFile)
+        val projectModelNode = tryGetProjectModelNodeFromFile(project, e.dataContext.PsiFile?.virtualFile)
+                ?: e.dataContext.getData(RiderProjectDataRule.RD_PROJECT_MODEL_NODE)
                 ?: tryGetProjectModelNodeFromLastFocusedTextControl(project)
 
-        e.presentation.isEnabledAndVisible = projectNode != null &&
-                tryGetAppSettingsJsonVirtualFile(projectNode) != null
+        e.presentation.isEnabledAndVisible = projectModelNode != null &&
+                tryGetAppSettingsJsonVirtualFile(projectModelNode) != null
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
 
-        val projectNode = e.dataContext.getData(RiderProjectDataRule.RD_PROJECT_MODEL_NODE)
-                ?: tryGetProjectModelNodeFromFile(project, e.dataContext.PsiFile?.virtualFile)
-                ?: tryGetProjectModelNodeFromLastFocusedTextControl(project) ?: return
+        val projectModelNode = tryGetProjectModelNodeFromFile(project, e.dataContext.PsiFile?.virtualFile)
+                ?: e.dataContext.getData(RiderProjectDataRule.RD_PROJECT_MODEL_NODE)
+                ?: tryGetProjectModelNodeFromLastFocusedTextControl(project)
+                ?: return
 
-        val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectNode) ?: return
+        val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectModelNode) ?: return
         if (appSettingsJsonVirtualFile.isDirectory || !appSettingsJsonVirtualFile.exists()) return
 
         val application = ApplicationManager.getApplication()
@@ -126,7 +136,7 @@ class RegisterApplicationInAzureAdAction
                     application.invokeLater {
                         if (project.isDisposed) return@invokeLater
 
-                        fetchDataAndShowDialog(projectNode, project, azureManager, bestMatchingSubscription)
+                        fetchDataAndShowDialog(projectModelNode, project, azureManager, bestMatchingSubscription)
                     }
                     return
                 }
@@ -146,7 +156,7 @@ class RegisterApplicationInAzureAdAction
 
                         override fun onChosen(selectedValue: SubscriptionDetail, finalChoice: Boolean): PopupStep<*>? {
                             doFinalStep {
-                                fetchDataAndShowDialog(projectNode, project, azureManager, selectedValue)
+                                fetchDataAndShowDialog(projectModelNode, project, azureManager, selectedValue)
                             }
                             return PopupStep.FINAL_CHOICE
                         }
@@ -161,12 +171,12 @@ class RegisterApplicationInAzureAdAction
         }.queue()
     }
 
-    private fun fetchDataAndShowDialog(projectNode: ProjectModelNode,
+    private fun fetchDataAndShowDialog(projectModelNode: ProjectModelNode,
                                        project: Project,
                                        azureManager: AzureManager,
                                        selectedSubscription: SubscriptionDetail) {
 
-        val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectNode) ?: return
+        val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectModelNode) ?: return
         if (appSettingsJsonVirtualFile.isDirectory || !appSettingsJsonVirtualFile.exists()) return
 
         val application = ApplicationManager.getApplication()
@@ -185,9 +195,9 @@ class RegisterApplicationInAzureAdAction
         // Build model
         val domain = defaultDomainForTenant(graphClient)
         val model = if (azureAdSettings == null || azureAdSettings.isDefaultProjectTemplateContent()) {
-            buildDefaultRegistrationModel(projectNode, domain)
+            buildDefaultRegistrationModel(projectModelNode, domain)
         } else {
-            buildRegistrationModelFrom(azureAdSettings, domain, graphClient, projectNode)
+            buildRegistrationModelFrom(azureAdSettings, domain, graphClient, projectModelNode)
         }
 
         // Show dialog
@@ -254,7 +264,7 @@ class RegisterApplicationInAzureAdAction
     private fun tryGetProjectModelNodeFromFile(project: Project, file: VirtualFile?): ProjectModelNode? {
         if (file == null) return null
 
-        return ProjectModelViewHost.getInstance(project).getItemsByVirtualFile(file).firstOrNull()?.containingProject()
+        return ProjectModelViewHost.getInstance(project).getItemsByVirtualFile(file).firstOrNull()
     }
 
     private fun tryGetProjectModelNodeFromLastFocusedTextControl(project: Project): ProjectModelNode? {
@@ -263,14 +273,19 @@ class RegisterApplicationInAzureAdAction
             val modelId = documentId as? EditableEntityModelId
             val projectModelId = modelId?.projectModelElementId
             if (projectModelId != null) {
-                return ProjectModelViewHost.getInstance(project).getItemById(projectModelId)?.containingProject()
+                return ProjectModelViewHost.getInstance(project).getItemById(projectModelId)
             }
         }
         return null
     }
 
-    private fun tryGetAppSettingsJsonVirtualFile(item: ProjectModelNode) =
-            item.containingProject()?.getVirtualFile()?.parent?.findChild(appSettingsJsonFileName)
+    private fun tryGetAppSettingsJsonVirtualFile(item: ProjectModelNode): VirtualFile? {
+        val itemVirtualFile = item.getVirtualFile()
+
+        if (isAppSettingsJsonFileName(itemVirtualFile?.name)) return itemVirtualFile
+
+        return item.containingProject()?.getVirtualFile()?.parent?.findChild(appSettingsJsonFileName)
+    }
 
     private fun defaultDomainForTenant(graphClient: GraphRbacManagementClientImpl) =
             graphClient.domains().list()
@@ -279,7 +294,7 @@ class RegisterApplicationInAzureAdAction
                     .firstOrNull() ?: ""
 
     private fun tryGetRegisteredApplication(clientId: String?, graphClient: GraphRbacManagementClientImpl): ApplicationInner? {
-        if (clientId == null) return null
+        if (clientId == null || !clientId.isValidUUID()) return null
 
         try {
             val matchingApplication = graphClient.applications()
@@ -295,9 +310,9 @@ class RegisterApplicationInAzureAdAction
         return null
     }
 
-    private fun buildDefaultRegistrationModel(projectNode: ProjectModelNode, domain: String) =
+    private fun buildDefaultRegistrationModel(projectModelNode: ProjectModelNode, domain: String) =
             RegisterApplicationInAzureAdDialog.RegistrationModel(
-                    originalDisplayName = projectNode.name,
+                    originalDisplayName = projectModelNode.containingProject()!!.name,
                     originalClientId = "",
                     originalDomain = domain,
                     originalCallbackUrl = "https://localhost:5001/signin-oidc", // IMPROVEMENT: can we get the URL from the current project?
@@ -308,7 +323,7 @@ class RegisterApplicationInAzureAdAction
     private fun buildRegistrationModelFrom(azureAdSettings: AppSettingsAzureAdSection,
                                            domain: String,
                                            graphClient: GraphRbacManagementClientImpl,
-                                           projectNode: ProjectModelNode): RegisterApplicationInAzureAdDialog.RegistrationModel {
+                                           projectModelNode: ProjectModelNode): RegisterApplicationInAzureAdDialog.RegistrationModel {
 
         // 1. If an application exists, use its data.
         val application = tryGetRegisteredApplication(azureAdSettings.clientId, graphClient)
@@ -320,9 +335,8 @@ class RegisterApplicationInAzureAdAction
                     originalDisplayName = application.displayName(),
                     originalClientId = application.appId(),
                     originalDomain = azureAdSettings.domain ?: domain,
-                    originalCallbackUrl = replyUrls.firstOrNull { it.contains(":5001") } // IMPROVEMENT: can we get the port from the current project?
-                            ?: replyUrls.firstOrNull()
-                            ?: application.replyUrls().first(),
+                    originalCallbackUrl = replyUrls.firstOrNull()
+                            ?: "https://localhost:5001/" + (azureAdSettings.callbackPath?.trimStart('/') ?: "signin-oidc"),
                     originalIsMultiTenant = application.availableToOtherTenants(),
                     allowOverwrite = false
             )
@@ -330,7 +344,7 @@ class RegisterApplicationInAzureAdAction
 
         // 2. If no application exists, use whatever we can recover from appsettings.json
         return RegisterApplicationInAzureAdDialog.RegistrationModel(
-                originalDisplayName = projectNode.name,
+                originalDisplayName = projectModelNode.containingProject()!!.name,
                 originalClientId = azureAdSettings.clientId ?: "",
                 originalDomain = azureAdSettings.domain ?: domain,
                 originalCallbackUrl = "https://localhost:5001/" + (azureAdSettings.callbackPath?.trimStart('/') ?: "signin-oidc"),

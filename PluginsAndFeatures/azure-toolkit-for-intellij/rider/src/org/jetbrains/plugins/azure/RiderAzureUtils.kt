@@ -24,6 +24,7 @@ package org.jetbrains.plugins.azure
 
 import org.apache.http.client.utils.URIUtils
 import java.net.URI
+import java.util.*
 
 fun String?.orWhenNullOrEmpty(another: String): String = if (this.isNullOrEmpty()) {
     another
@@ -37,6 +38,17 @@ fun String?.isValidUrl(): Boolean {
     return try {
         val uri = URI.create(this)
         URIUtils.extractHost(uri) != null
+    } catch (_: Exception) {
+        false
+    }
+}
+
+fun String?.isValidUUID(): Boolean {
+    if (this.isNullOrEmpty()) return false
+
+    return try {
+        UUID.fromString(this)
+        this.length == 36
     } catch (_: Exception) {
         false
     }

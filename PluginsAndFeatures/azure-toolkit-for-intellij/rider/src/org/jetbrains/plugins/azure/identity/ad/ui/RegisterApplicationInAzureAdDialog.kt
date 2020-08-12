@@ -22,7 +22,6 @@
 
 package org.jetbrains.plugins.azure.identity.ad.ui
 
-import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -31,6 +30,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.panel
 import org.jetbrains.plugins.azure.RiderAzureBundle
+import org.jetbrains.plugins.azure.isValidUUID
 import org.jetbrains.plugins.azure.isValidUrl
 import javax.swing.JLabel
 
@@ -56,9 +56,6 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
     private val panel = panel {
 
         noteRow(RiderAzureBundle.message("dialog.identity.ad.register_app.description"))
-        noteRow(RiderAzureBundle.message("dialog.identity.ad.register_app.learn_more")) {
-            BrowserUtil.browse(RiderAzureBundle.message("dialog.identity.ad.register_app.learn_more.link"))
-        }
 
         row {
             val label = JLabel(RiderAzureBundle.message("dialog.identity.ad.register_app.display_name"))
@@ -67,7 +64,7 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
             cell {
                 textField({ model.originalDisplayName },
                         {
-                            model.updatedDisplayName = it
+                            model.updatedDisplayName = it.trim()
                             model.hasChanges = true
                         })
                         .withValidationOnInput { validateNotEmpty(it) }
@@ -82,7 +79,7 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
             cell {
                 textField({ model.originalCallbackUrl },
                         {
-                            model.updatedCallbackUrl = it
+                            model.updatedCallbackUrl = it.trim()
                             model.hasChanges = true
                         })
                         .withValidationOnInput { validateNotEmpty(it) ?: validateUrl(it) }
@@ -97,7 +94,7 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
             cell {
                 textField({ model.originalDomain },
                         {
-                            model.updatedDomain = it
+                            model.updatedDomain = it.trim()
                             model.hasChanges = true
                         })
                         .withValidationOnInput { validateNotEmpty(it) }
@@ -116,7 +113,7 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
             }
         }
 
-        hideableRow(RiderAzureBundle.message("dialog.identity.ad.register_app.more_options")) {
+        titledRow(RiderAzureBundle.message("dialog.identity.ad.register_app.more_options")) {
             row {
                 val label = JLabel(RiderAzureBundle.message("dialog.identity.ad.register_app.client_id"))
                 label()
@@ -124,9 +121,11 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
                 cell {
                     textField({ model.originalClientId },
                             {
-                                model.updatedClientId = it
+                                model.updatedClientId = it.trim()
                                 model.hasChanges = true
                             })
+                            .withValidationOnInput { if (!it.text?.trim().isNullOrEmpty()) { validateUuid(it) } else
+                                null }
                             .component.apply { label.labelFor = this }
                 }
             }
@@ -145,15 +144,22 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
     }
 
     private fun validateNotEmpty(textField: JBTextField) =
-            if (textField.text.isNullOrEmpty()) {
+            if (textField.text?.trim().isNullOrEmpty()) {
                 ValidationInfo(RiderAzureBundle.message("dialog.identity.ad.register_app.validation.can_not_be_empty"), textField)
             } else {
                 null
             }
 
     private fun validateUrl(textField: JBTextField) =
-            if (!textField.text.isValidUrl()) {
+            if (!textField.text?.trim().isValidUrl()) {
                 ValidationInfo(RiderAzureBundle.message("dialog.identity.ad.register_app.validation.must_be_valid_url"), textField)
+            } else {
+                null
+            }
+
+    private fun validateUuid(textField: JBTextField) =
+            if (!textField.text?.trim().isValidUUID()) {
+                ValidationInfo(RiderAzureBundle.message("dialog.identity.ad.register_app.validation.must_be_valid_identifier"), textField)
             } else {
                 null
             }
@@ -161,6 +167,7 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
     init {
         Disposer.register(project, this)
         title = RiderAzureBundle.message("dialog.identity.ad.register_app.title")
+        setOKButtonText(RiderAzureBundle.message("dialog.identity.ad.register_app.register"))
         setSize(500, -1)
         super.init()
     }
