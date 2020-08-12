@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.applicationinsights.feature"
       label="Application Insights Plugin for Java"
-      version="3.23.0.qualifier"
+      version="3.24.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>
@@ -95,7 +95,7 @@ EFFET JURIDIQUE. Le présent contrat décrit certains droits juridiques. Vous p
 </license>
 
    <requires>
-      <import feature="com.microsoft.azuretools.sdk.feature" version="3.23.0.qualifier"/>
+      <import feature="com.microsoft.azuretools.sdk.feature" version="3.24.0.qualifier"/>
    </requires>
 
    <plugin
