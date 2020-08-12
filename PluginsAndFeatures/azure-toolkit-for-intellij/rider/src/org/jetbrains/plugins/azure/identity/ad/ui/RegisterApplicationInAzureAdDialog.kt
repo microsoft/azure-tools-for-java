@@ -22,6 +22,7 @@
 
 package org.jetbrains.plugins.azure.identity.ad.ui
 
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -55,6 +56,9 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
     private val panel = panel {
 
         noteRow(RiderAzureBundle.message("dialog.identity.ad.register_app.description"))
+        noteRow(RiderAzureBundle.message("dialog.identity.ad.register_app.learn_more")) {
+            BrowserUtil.browse(RiderAzureBundle.message("dialog.identity.ad.register_app.learn_more.link"))
+        }
 
         row {
             val label = JLabel(RiderAzureBundle.message("dialog.identity.ad.register_app.display_name"))
