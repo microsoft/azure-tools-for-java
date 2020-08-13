@@ -226,8 +226,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             return false;
         }
         try {
-            final Document doc = ParserXMLUtility.parseXMLFile(dataFile);
-            return true;
+            return ParserXMLUtility.parseXMLFile(dataFile) != null;
         } catch (Exception e) {
             return false;
         }
