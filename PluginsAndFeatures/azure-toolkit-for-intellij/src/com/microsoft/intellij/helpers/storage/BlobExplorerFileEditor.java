@@ -380,6 +380,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                                     model.addRow(new Object[]{
                                         AllIcons.FileTypes.Any_type,
                                         blobFile.getName(),
+                                        UIHelperImpl.readableFileSize(blobFile.getSize()),
                                         new SimpleDateFormat().format(blobFile.getLastModified().getTime()),
                                         blobFile.getContentType(),
                                         blobFile.getUri()
