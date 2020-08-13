@@ -162,13 +162,14 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 throw new AzureExecutionException(FUNCTION_CORE_TOOLS_OUT_OF_DATE);
             }
         } catch (IOException | InterruptedException e) {
-            processHandler.setText(String.format(FAILED_TO_VALIDATE_FUNCTION_RUNTIME, e.getMessage()));
+            throw new AzureExecutionException(String.format(FAILED_TO_VALIDATE_FUNCTION_RUNTIME, e.getMessage()));
         }
     }
 
     private ComparableVersion getFuncVersion() throws IOException, InterruptedException {
         final File func = new File(functionRunConfiguration.getFuncPath());
-        final String[] funcVersionResult = CommandUtils.executeMultipleLineOutput("func -v", func.getParentFile());
+        final String[] funcVersionResult = CommandUtils.executeMultipleLineOutput(
+                String.format("%s -v", func.getName()), func.getParentFile());
         if (Arrays.isNullOrEmpty(funcVersionResult)) {
             return null;
         }
