@@ -29,8 +29,8 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.services.ServiceEventListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.util.io.BaseOutputReader
 import java.io.File
 
 class AzuriteService {
@@ -61,7 +61,10 @@ class AzuriteService {
             return
         }
 
-        processHandler = ColoredProcessHandler(commandLine)
+        processHandler = object : ColoredProcessHandler(commandLine) {
+            // If it's a long-running mostly idle daemon process, 'BaseOutputReader.Options.forMostlySilentProcess()' helps to reduce CPU usage.
+            override fun readerOptions(): BaseOutputReader.Options = BaseOutputReader.Options.forMostlySilentProcess()
+        }
         workspace = workspaceLocation
         processHandler?.let {
             it.addProcessListener(object : ProcessListener {
