@@ -39,6 +39,8 @@ class RiderAzureUtilsTest {
                 arrayOf("https://localhost:5001/path/path?query=something", true),
                 arrayOf("ftp://localhost:5001/", true),
                 arrayOf("localhost:5001", false),
+                arrayOf("acmecorp", false),
+                arrayOf("acmecorp.onmicrosoft", false),
                 arrayOf("", false),
                 arrayOf(null, false),
                 arrayOf("banana apple", false)

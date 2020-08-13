@@ -22,7 +22,6 @@
 
 package org.jetbrains.plugins.azure
 
-import org.apache.http.client.utils.URIUtils
 import java.net.URI
 import java.util.*
 
@@ -37,7 +36,7 @@ fun String?.isValidUrl(): Boolean {
 
     return try {
         val uri = URI.create(this)
-        URIUtils.extractHost(uri) != null
+        uri.scheme.isNotEmpty() && uri.host.isNotEmpty()
     } catch (_: Exception) {
         false
     }
