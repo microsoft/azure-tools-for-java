@@ -166,8 +166,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     private ComparableVersion getFuncVersion() throws IOException, InterruptedException {
-        final String[] funcVersionResult = CommandUtils.executeMultipleLineOutput(
-                String.format("%s -v", functionRunConfiguration.getFuncPath()), null);
+        final File func = new File(functionRunConfiguration.getFuncPath());
+        final String[] funcVersionResult = CommandUtils.executeMultipleLineOutput("func -v", func.getParentFile());
         if (Arrays.isNullOrEmpty(funcVersionResult)) {
             return null;
         }
