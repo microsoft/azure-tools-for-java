@@ -98,7 +98,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
     init {
         title = message("dialog.create_sql_server.title")
-        setOKButtonText(message("dialog.create_sql_server.ok_button.labe"))
+        setOKButtonText(message("dialog.create_sql_server.ok_button.label"))
 
         updateAzureModelInBackground(project)
         initSubscriptionComboBox()

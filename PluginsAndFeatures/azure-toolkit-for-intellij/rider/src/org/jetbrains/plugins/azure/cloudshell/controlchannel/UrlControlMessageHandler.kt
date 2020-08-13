@@ -32,7 +32,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
+import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.util.WaitForUrl
 
 class UrlControlMessageHandler(
@@ -64,7 +64,7 @@ class UrlControlMessageHandler(
                     } catch (e: Exception) {
                         logger.error("Opening browser failed for URL: {message.url}", e)
 
-                        AzureCloudShellNotifications.notify(project,
+                        AzureNotifications.notify(project,
                                 RiderAzureBundle.message("notification.cloud_shell.error_browsing_url.title"),
                                 RiderAzureBundle.message("notification.cloud_shell.error_browsing_url.subtitle"),
                                 RiderAzureBundle.message("notification.cloud_shell.error_browsing_url.message", message.url, e.message.toString()),

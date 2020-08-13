@@ -31,6 +31,9 @@ import java.io.File
 
 object AzureRiderSettings {
 
+    // Dismiss notifications
+    const val DISMISS_NOTIFICATION_AZURE_AD_REGISTER = "DismissAzureAdRegistration"
+
     // Web Apps
     const val PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME = "AzureOpenWebAppInBrowser"
     const val OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE = false
