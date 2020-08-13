@@ -6,9 +6,12 @@
     <html>
       <h4>Features:</h4>
       <ul>
+        <li>Add Azurite storage emulator integration <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/312">#312</a></li>
         <li>Add logs streaming for Web Apps <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/84">#84</a></li>
         <li>Add logs streaming for Function Apps <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/90">#90</a></li>
+        <li>Completion for Azure Functions TimerTrigger schedule expression <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/296">#296</a></li>
         <li>Managed identities support <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/204">#204</a></li>
+        <li>Register application in Azure Active Directory <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/343">#343</a></li>
       </ul>
       <h4>Bug fixes:</h4>
       <ul>

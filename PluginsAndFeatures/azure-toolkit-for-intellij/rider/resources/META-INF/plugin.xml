@@ -22,6 +22,22 @@
   <change-notes>
     <![CDATA[
       <html>
+        <p>[3.40.0-2020.2]</p>
+        <ul>
+          <li>Compatibility with Rider 2020.2</li>
+          <li>Add Azurite storage emulator integration <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/312">#312</a></li>
+          <li>Add logs streaming for Web Apps <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/84">#84</a></li>
+          <li>Add logs streaming for Function Apps <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/90">#90</a></li>
+          <li>Completion for Azure Functions TimerTrigger schedule expression <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/296">#296</a></li>
+          <li>Managed identities support <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/204">#204</a></li>
+          <li>Register application in Azure Active Directory <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/343">#343</a></li>
+        </ul>
+        <h4>Fixed bugs:</h4>
+        <ul>
+          <li>Memory leak running Rider 202 EAP8 with plugin <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/339">#339</a></li>
+          <li>Cloud Shell does not work when using Azure CLI for authentication <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/340">#340</a></li>
+          <li>Application Property view show relevant information about running Web App or Function App</li>
+        </ul>
         <p>[3.26.0-2020.1]</p>
         <ul>
           <li>Compatibility with Rider 2020.1 EAP</li>
