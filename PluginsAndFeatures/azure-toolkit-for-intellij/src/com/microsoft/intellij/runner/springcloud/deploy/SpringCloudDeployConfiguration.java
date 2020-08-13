@@ -38,6 +38,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVer
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceResource;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
+import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
@@ -154,6 +155,16 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
 
     public String getProjectName() {
         return springCloudModel.getProjectName();
+    }
+
+    public String getResourceGroup() {
+        final String clusterId = getClusterId();
+        return StringUtils.isEmpty(clusterId) ? null : SpringCloudIdHelper.getResourceGroup(clusterId);
+    }
+
+    public String getClusterName() {
+        final String clusterId = getClusterId();
+        return StringUtils.isEmpty(clusterId) ? null : SpringCloudIdHelper.getClusterName(clusterId);
     }
 
     public boolean isEnablePersistentStorage() {
