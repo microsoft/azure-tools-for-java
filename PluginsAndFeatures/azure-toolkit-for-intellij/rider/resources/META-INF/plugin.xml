@@ -190,6 +190,8 @@
     <postStartupActivity implementation="org.jetbrains.icons.RiderIconsPatcherRegistrar"/>
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsNotification" order="last" />
 
+    <iconProvider implementation="org.jetbrains.icons.WorkaroundRider202CppFileIconProvider" order="first" />
+
     <projectTemplateProvider implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplatesProvider" order="first"/>
 
     <fileTypeStatisticProvider implementation="org.jetbrains.plugins.azure.statistics.AzureFileTypeStatisticsProvider"/>
