@@ -155,7 +155,7 @@ public class AzurePlugin implements StartupActivity.DumbAware {
         boolean install = false;
         boolean upgrade = false;
 
-        if (new File(dataFile).exists()) {
+        if (isDataFileValid()) {
             String version = DataOperations.getProperty(dataFile, message("pluginVersion"));
             if (version == null || version.isEmpty()) {
                 upgrade = true;
@@ -217,6 +217,18 @@ public class AzurePlugin implements StartupActivity.DumbAware {
                 }
             };
             PluginInstaller.addStateListener(pluginStateListener);
+        }
+    }
+
+    private boolean isDataFileValid() {
+        final File file = new File(dataFile);
+        if (!file.exists()) {
+            return false;
+        }
+        try {
+            return ParserXMLUtility.parseXMLFile(dataFile) != null;
+        } catch (Exception e) {
+            return false;
         }
     }
 
