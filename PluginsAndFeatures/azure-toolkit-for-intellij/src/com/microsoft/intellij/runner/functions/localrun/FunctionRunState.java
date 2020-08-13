@@ -89,6 +89,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION = new ComparableVersion("3.0.2630");
     private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION_V2 = new ComparableVersion("2.7.2628");
 
+    private boolean isDebuggerLaunched;
     private File stagingFolder;
     private Process process;
     private Executor executor;
@@ -189,7 +190,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     private void runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
-            throws IOException, InterruptedException, AzureExecutionException {
+            throws IOException, InterruptedException {
+        isDebuggerLaunched = false;
         final int debugPort = findFreePortForApi(DEFAULT_DEBUG_PORT);
         final int funcPort = findFreePortForApi(Math.max(DEFAULT_FUNC_PORT, debugPort + 1));
         processHandler.println(String.format("Using port : %s", funcPort), ProcessOutputTypes.SYSTEM);
@@ -198,8 +200,9 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         addProcessTerminatedListener(processHandler, process);
         // Redirect function cli output to console
         readInputStreamByLines(process.getInputStream(), inputLine -> {
-            if (isDebugMode() && StringUtils.containsIgnoreCase(inputLine, "Job host started")) {
+            if (isDebugMode() && StringUtils.containsIgnoreCase(inputLine, "Job host started") && !isDebuggerLaunched) {
                 // launch debugger when func ready
+                isDebuggerLaunched = true;
                 launchDebugger(project, debugPort);
             }
             if (processHandler.isProcessRunning()) {
