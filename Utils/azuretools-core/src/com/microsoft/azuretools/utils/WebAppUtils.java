@@ -46,6 +46,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -279,12 +280,16 @@ public class WebAppUtils {
     }
 
     public static boolean isUrlAccessible(String url) throws IOException {
+        return isUrlAccessible(url, new Integer[] { HttpURLConnection.HTTP_OK });
+    }
+
+    public static boolean isUrlAccessible(String url, Integer[] validResponseCodes) throws IOException {
         HttpURLConnection.setFollowRedirects(false);
         HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
         con.setRequestMethod("HEAD");
         con.setReadTimeout(Constants.connection_read_timeout_ms);
         try {
-            if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            if (!ArrayUtils.contains(validResponseCodes, con.getResponseCode())) {
                 return false;
             }
         } catch (IOException ex) {
