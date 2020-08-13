@@ -30,7 +30,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.panel
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.isValidUUID
+import org.jetbrains.plugins.azure.isValidGuid
 import org.jetbrains.plugins.azure.isValidUrl
 import javax.swing.JLabel
 
@@ -158,7 +158,7 @@ class RegisterApplicationInAzureAdDialog(project: Project, val model: Registrati
             }
 
     private fun validateUuid(textField: JBTextField) =
-            if (!textField.text?.trim().isValidUUID()) {
+            if (!textField.text?.trim().isValidGuid()) {
                 ValidationInfo(RiderAzureBundle.message("dialog.identity.ad.register_app.validation.must_be_valid_identifier"), textField)
             } else {
                 null

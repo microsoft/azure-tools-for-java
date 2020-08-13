@@ -43,7 +43,7 @@ fun String?.isValidUrl(): Boolean {
     }
 }
 
-fun String?.isValidUUID(): Boolean {
+fun String?.isValidGuid(): Boolean {
     if (this.isNullOrEmpty()) return false
 
     return try {

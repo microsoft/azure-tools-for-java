@@ -60,7 +60,7 @@ import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSection
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSectionManager
 import org.jetbrains.plugins.azure.identity.ad.ui.RegisterApplicationInAzureAdDialog
-import org.jetbrains.plugins.azure.isValidUUID
+import org.jetbrains.plugins.azure.isValidGuid
 import java.net.URI
 import java.util.*
 import javax.swing.event.HyperlinkEvent
@@ -334,7 +334,7 @@ class RegisterApplicationInAzureAdAction
                     .firstOrNull() ?: ""
 
     private fun tryGetRegisteredApplication(clientId: String?, graphClient: GraphRbacManagementClientImpl): ApplicationInner? {
-        if (clientId == null || !clientId.isValidUUID()) return null
+        if (clientId == null || !clientId.isValidGuid()) return null
 
         try {
             val matchingApplication = graphClient.applications()
