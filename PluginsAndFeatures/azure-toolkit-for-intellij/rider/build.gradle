@@ -57,6 +57,10 @@ tasks.withType(PrepareSandboxTask).configureEach {
 
 buildSearchableOptions.onlyIf { false }
 
+patchPluginXml {
+    sinceBuild = patchPluginXmlSinceBuild
+}
+
 test {
     description = "Rider unit tests."
     dependsOn ':rider:buildPlugin'
