@@ -22,8 +22,12 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
+import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.authmanage.Environment;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -76,26 +80,38 @@ public class DefaultOperation implements Operation {
             if (isComplete) {
                 return;
             }
-            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
-            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
-
             error = new Error();
             error.errorType = errorType == null ? ErrorType.systemError : errorType;
             error.errMsg = e == null ? "" : e.getMessage();
             error.className = e == null ? "" : e.getClass().getName();
             error.stackTrace = ExceptionUtils.getStackTrace(e);
 
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
             mutableProps.put(ERROR_CODE, "1");
-            mutableProps.put(ERROR_MSG, error.errMsg);
             mutableProps.put(ERROR_TYPE, error.errorType.name());
             mutableProps.put(ERROR_CLASSNAME, error.className);
-            mutableProps.put(ERROR_STACKTRACE, error.stackTrace);
+            if (isAbleToCollectErrorStacks()) {
+                mutableProps.put(ERROR_MSG, error.errMsg);
+                mutableProps.put(ERROR_STACKTRACE, error.stackTrace);
+            }
             mutableProps.put(OPERATION_ID, operationId);
             mutableProps.put(OPERATION_NAME, operationName);
 
+            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
             mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
             sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
         } catch (Exception ignore) {
+        }
+    }
+
+    // Will collect error stack traces only if user signed in with Azure account
+    private boolean isAbleToCollectErrorStacks() {
+        try {
+            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            return azureManager != null && azureManager.getEnvironment() != null &&
+                    azureManager.getEnvironment().getAzureEnvironment() == Environment.GLOBAL.getAzureEnvironment();
+        } catch (IOException e) {
+            return false;
         }
     }
 
