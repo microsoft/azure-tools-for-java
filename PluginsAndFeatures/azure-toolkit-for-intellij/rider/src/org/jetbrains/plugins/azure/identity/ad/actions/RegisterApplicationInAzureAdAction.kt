@@ -55,6 +55,7 @@ import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.azuretools.sdkmanage.AzureManager
+import com.microsoft.icons.CommonIcons
 import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSection
@@ -69,7 +70,7 @@ class RegisterApplicationInAzureAdAction
     : AnAction(
         RiderAzureBundle.message("action.identity.ad.register_app.name"),
         RiderAzureBundle.message("action.identity.ad.register_app.description"),
-        null) {
+        CommonIcons.AzureActiveDirectory) {
 
     companion object {
 

@@ -336,7 +336,8 @@
       <action id="AzureToolkit.AzureAd.RegisterApplication"
               class="org.jetbrains.plugins.azure.identity.ad.actions.RegisterApplicationInAzureAdAction"
               text="Register Azure AD application"
-              description="Register application in Azure Active Directory">
+              description="Register application in Azure Active Directory"
+              icon="/icons/AzureActiveDirectory.svg">
       </action>
 
       <separator />

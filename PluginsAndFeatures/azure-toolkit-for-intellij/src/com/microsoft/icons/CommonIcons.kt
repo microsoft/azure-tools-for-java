@@ -47,6 +47,8 @@ object CommonIcons {
 
     val Azurite by lazy { load("AzureStorageEmulator.svg") }
 
+    val AzureActiveDirectory by lazy { load("AzureActiveDirectory.svg") }
+
     object OS {
         val Windows by lazy { load("OSWindows.svg") }
         val Linux by lazy { load("OSLinux.svg") }
