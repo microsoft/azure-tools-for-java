@@ -28,8 +28,10 @@ import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class CommandUtils {
     public static List<File> resolvePathForCommandForCmdOnWindows(final String command) throws IOException, InterruptedException {
@@ -41,7 +43,7 @@ public class CommandUtils {
         return extractFileFromOutput(CommandUtils.executeMultipleLineOutput((CommandUtils.isWindows() ? "where " : "which ") + command, null));
     }
 
-    public static String[] executeMultipleLineOutput(final String cmd, File cwd)
+    public static String[] executeMultipleLineOutput(final String cmd, File cwd, Function<Process, InputStream> streamFunction)
             throws IOException, InterruptedException {
         final String[] cmds = isWindows() ? new String[]{"cmd.exe", "/c", cmd} : new String[]{"bash", "-c", cmd};
         final Process p = Runtime.getRuntime().exec(cmds, null, cwd);
@@ -49,7 +51,12 @@ public class CommandUtils {
         if (exitCode != 0) {
             return new String[0];
         }
-        return StringUtils.split(IOUtils.toString(p.getInputStream(), "utf8"), "\n");
+        return StringUtils.split(IOUtils.toString(streamFunction.apply(p), "utf8"), "\n");
+    }
+
+    public static String[] executeMultipleLineOutput(final String cmd, File cwd)
+            throws IOException, InterruptedException {
+        return executeMultipleLineOutput(cmd, cwd, Process::getInputStream);
     }
 
     public static List<File> extractFileFromOutput(final String[] outputStrings) {

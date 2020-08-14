@@ -49,9 +49,12 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import com.microsoft.intellij.util.CommandUtils;
 import com.microsoft.intellij.util.ReadStreamLineThread;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.fest.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -62,13 +65,31 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private static final int DEFAULT_FUNC_PORT = 7071;
     private static final int DEFAULT_DEBUG_PORT = 5005;
     private static final int MAX_PORT = 65535;
+    private static final String FAILED_TO_GET_JAVA_VERSION = "Failed to get java runtime version";
+    private static final String FAILED_TO_VALIDATE_FUNCTION_RUNTIME = "Failed to validate function runtime, %s";
+    private static final String DEBUG_PARAMETERS =
+            "\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"";
+    private static final String RUNTIME_NOT_FOUND = "Azure Functions Core Tools not found. " +
+            "Please go to https://aka.ms/azfunc-install to install Azure Functions Core Tools. \n"
+            + "If you have installed the core tools, please refer https://github.com/microsoft/azure-tools-for-java/wiki/FAQ to get the "
+            + "core tools path and set the value in function run configuration.";
+    private static final String FUNCTION_CORE_TOOLS_OUT_OF_DATE = "Local function core tools didn't support java 9 or higher runtime, " +
+            "to update it, see: https://aka.ms/azfunc-install.";
+    private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("version \"(.*)\"");
+    private static final ComparableVersion JAVA_9 = new ComparableVersion("9");
+    private static final ComparableVersion FUNC_3 = new ComparableVersion("3");
+    private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION = new ComparableVersion("3.0.2630");
+    private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION_V2 = new ComparableVersion("2.7.2628");
 
+    private boolean isDebuggerLaunched;
     private File stagingFolder;
     private Process process;
     private Executor executor;
@@ -107,6 +128,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Map<String, String> telemetryMap) throws Exception {
         // Prepare staging Folder
         updateTelemetryMap(telemetryMap);
+        validateFunctionRuntime(processHandler);
         stagingFolder = FunctionUtils.getTempStagingFolder();
         prepareStagingFolder(stagingFolder, processHandler);
         // Run Function Host
@@ -114,17 +136,74 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return null;
     }
 
-    private void runFunctionCli(RunProcessHandler processHandler, File stagingFolder) throws IOException, InterruptedException {
+    private void validateFunctionRuntime(RunProcessHandler processHandler) throws AzureExecutionException {
+        try {
+            final String funcPath = functionRunConfiguration.getFuncPath();
+            if (StringUtils.isEmpty(funcPath)) {
+                throw new AzureExecutionException(RUNTIME_NOT_FOUND);
+            }
+            final ComparableVersion funcVersion = getFuncVersion();
+            if (funcVersion == null) {
+                throw new AzureExecutionException(RUNTIME_NOT_FOUND);
+            }
+            final ComparableVersion javaVersion = getJavaVersion();
+            if (javaVersion == null) {
+                processHandler.setText(FAILED_TO_GET_JAVA_VERSION);
+                return;
+            }
+            if (javaVersion.compareTo(JAVA_9) < 0) {
+                // No need validate function host version within java 8 or earlier
+                return;
+            }
+            final ComparableVersion minimumVersion = funcVersion.compareTo(FUNC_3) >= 0
+                                                     ? MINIMUM_JAVA_9_SUPPORTED_VERSION
+                                                     : MINIMUM_JAVA_9_SUPPORTED_VERSION_V2;
+            if (funcVersion.compareTo(minimumVersion) < 0) {
+                throw new AzureExecutionException(FUNCTION_CORE_TOOLS_OUT_OF_DATE);
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new AzureExecutionException(String.format(FAILED_TO_VALIDATE_FUNCTION_RUNTIME, e.getMessage()));
+        }
+    }
+
+    private ComparableVersion getFuncVersion() throws IOException, InterruptedException {
+        final File func = new File(functionRunConfiguration.getFuncPath());
+        final String[] funcVersionResult = CommandUtils.executeMultipleLineOutput(
+                String.format("%s -v", func.getName()), func.getParentFile());
+        if (Arrays.isNullOrEmpty(funcVersionResult)) {
+            return null;
+        }
+        return new ComparableVersion(funcVersionResult[0].trim());
+    }
+
+    // Get java runtime version following the strategy of function core tools
+    // Get java version of JAVA_HOME first, fall back to use PATH if JAVA_HOME not exists
+    private ComparableVersion getJavaVersion() throws IOException, InterruptedException {
+        final String javaHome = System.getenv("JAVA_HOME");
+        final File executeFolder = StringUtils.isEmpty(javaHome) ? null : Paths.get(javaHome, "bin").toFile();
+        final String[] javaVersionResult = CommandUtils.executeMultipleLineOutput(
+                "java -version", executeFolder, Process::getErrorStream); // java -version will write to std error
+        if (Arrays.isNullOrEmpty(javaVersionResult)) {
+            return null;
+        }
+        final Matcher matcher = JAVA_VERSION_PATTERN.matcher(javaVersionResult[0].trim());
+        return matcher.find() ? new ComparableVersion(matcher.group(1)) : null;
+    }
+
+    private void runFunctionCli(RunProcessHandler processHandler, File stagingFolder)
+            throws IOException, InterruptedException {
+        isDebuggerLaunched = false;
         final int debugPort = findFreePortForApi(DEFAULT_DEBUG_PORT);
         final int funcPort = findFreePortForApi(Math.max(DEFAULT_FUNC_PORT, debugPort + 1));
-        processHandler.println(String.format("Func host start at port : %s", funcPort), ProcessOutputTypes.SYSTEM);
+        processHandler.println(String.format("Using port : %s", funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
         // Add listener to close func.exe
         addProcessTerminatedListener(processHandler, process);
         // Redirect function cli output to console
         readInputStreamByLines(process.getInputStream(), inputLine -> {
-            if (isDebugMode() && StringUtils.containsIgnoreCase(inputLine, "Job host started")) {
+            if (isDebugMode() && StringUtils.containsIgnoreCase(inputLine, "Job host started") && !isDebuggerLaunched) {
                 // launch debugger when func ready
+                isDebuggerLaunched = true;
                 launchDebugger(project, debugPort);
             }
             if (processHandler.isProcessRunning()) {
@@ -157,11 +236,11 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private ProcessBuilder getRunFunctionCliProcessBuilder(File stagingFolder, int funcPort, int debugPort) {
         final ProcessBuilder processBuilder = new ProcessBuilder();
-        final String funcPath = StringUtils.isEmpty(functionRunConfiguration.getFuncPath()) ? "func" : functionRunConfiguration.getFuncPath();
-        final String debugConfiguration = String.format("\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"", debugPort);
-        String[] command = {funcPath, "host", "start", "--port", String.valueOf(funcPort)};
+        final String funcPath = functionRunConfiguration.getFuncPath();
+        String[] command = new String[]{funcPath, "host", "start", "--port", String.valueOf(funcPort)};
         if (isDebugMode()) {
-            command = ArrayUtils.addAll(command, new String[] {"--language-worker", "--", debugConfiguration});
+            final String debugConfiguration = String.format(DEBUG_PARAMETERS, debugPort);
+            command = ArrayUtils.addAll(command, new String[]{"--language-worker", "--", debugConfiguration});
         }
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
@@ -219,11 +298,11 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @Override
     protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {
-        if (process.isAlive()) {
+        if (process != null && process.isAlive()) {
             process.destroy();
         }
         if (!processHandler.isProcessTerminated()) {
-            processHandler.setText("Succeed!");
+            processHandler.setText("Function execute succeed.");
             processHandler.notifyComplete();
         }
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
@@ -231,11 +310,11 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @Override
     protected void onFail(String errMsg, RunProcessHandler processHandler) {
-        if (process.isAlive()) {
+        if (process != null && process.isAlive()) {
             process.destroy();
         }
         if (!processHandler.isProcessTerminated()) {
-            processHandler.setText("Fail!");
+            processHandler.println(errMsg, ProcessOutputTypes.STDERR);
             processHandler.notifyComplete();
         }
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
