@@ -1,7 +1,3 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <title>Azure</title>
-  <g>
-    <rect width="16" height="16" fill="#ffdbff" opacity="0"/>
-    <path d="M7.628,7.894l3.415,3.44L5,13H15L9.333,3ZM8.715,2,4.2,12H1L4.545,5.624Z" fill="#40b6e0"/>
-  </g>
+  <path fill="#40b6e0" d="M7.628 7.894l3.415 3.44L5 13h10L9.333 3zM8.715 2L4.2 12H1l3.545-6.376z" opacity=".7"/>
 </svg>
