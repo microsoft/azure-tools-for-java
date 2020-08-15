@@ -246,7 +246,7 @@ public class CosmosSparkClusterOpsCtrl implements ILogger {
                                                             jobList -> {},
                                                             ex -> {
                                                                 log().warn(ExceptionUtils.getStackTrace(ex));
-                                                                EventUtil.logErrorWithComplete(operation, ErrorType.serviceError, ex,
+                                                                EventUtil.logErrorClassNameOnlyWithComplete(operation, ErrorType.serviceError, ex,
                                                                         ImmutableMap.of("isRefreshJobsTableSucceed", "false"), null);
                                                             },
                                                             () -> EventUtil.logEventWithComplete(EventType.info, operation,

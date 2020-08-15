@@ -51,7 +51,7 @@ public class CosmosSparkProvisionAction extends NodeActionListener {
     }
 
     @Override
-    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+    protected void actionPerformed(NodeActionEvent e) {
         provisionAction.onNext(Pair.of(adlAccount, adlAccountNode));
     }
 }

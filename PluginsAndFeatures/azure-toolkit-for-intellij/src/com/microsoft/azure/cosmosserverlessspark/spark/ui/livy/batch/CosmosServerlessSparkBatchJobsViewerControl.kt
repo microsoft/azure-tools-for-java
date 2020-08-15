@@ -58,7 +58,8 @@ class CosmosServerlessSparkBatchJobsViewerControl(private val view: CosmosServer
                     {},
                     { err ->
                         log().warn("Get Cosmos Serverless Spark batch job detail failed. " + ExceptionUtils.getStackTrace(err))
-                        EventUtil.logErrorWithComplete(operation, ErrorType.serviceError, err, mapOf("isGetJobDetailsSucceed" to "false"), null)
+                        EventUtil.logErrorClassNameOnlyWithComplete(operation, ErrorType.serviceError, err, mapOf
+                        ("isGetJobDetailsSucceed" to "false"), null)
                     },
                     { EventUtil.logEventWithComplete(EventType.info, operation, mapOf("isGetJobDetailsSucceed" to "true"), null) }
             )
