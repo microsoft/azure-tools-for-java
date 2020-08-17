@@ -887,8 +887,8 @@ public class AppServiceCreateDialog extends AppServiceBaseDialog {
         }
         final boolean isJarPacking = packaging.equals(WebAppUtils.TYPE_JAR);
         final JdkModel jdkModel = cbJavaVersion.getSelectionIndex() < 0 ? null : javaVersions.get(cbJavaVersion.getSelectionIndex());
-        final List<WebContainerMod> webContainers = isJarPacking ?
-                AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel) : AzureWebAppMvpModel.listWebContainersForWarFile();
+        final List<WebContainerMod> webContainers =
+                isJarPacking ? AzureWebAppMvpModel.listWebContainersForJarFile(jdkModel) : AzureWebAppMvpModel.listWebContainersForWarFile();
         comboWebContainer.removeAll();
         binderWebConteiners = new ArrayList<>();
         for (int i = 0; i < webContainers.size(); i++) {
