@@ -67,10 +67,10 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
     private static final String DIALOG_TITLE = "Create WebApp";
     private static final String NOT_APPLICABLE = "N/A";
 
-    public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_8_5_JRE8;
+    public static final RuntimeStack DEFAULT_LINUX_RUNTIME = RuntimeStack.TOMCAT_9_0_JRE8;
     public static final JdkModel DEFAULT_WINDOWS_JAVAVERSION = JdkModel.JAVA_8_NEWEST;
     public static final WebAppUtils.WebContainerMod DEFAULT_WINDOWS_CONTAINER =
-        WebAppUtils.WebContainerMod.Newest_Tomcat_85;
+        WebAppUtils.WebContainerMod.Newest_Tomcat_90;
     public static final PricingTier DEFAULT_PRICINGTIER = new PricingTier("Premium", "P1V2");
     public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
 
