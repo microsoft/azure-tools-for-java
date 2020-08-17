@@ -283,11 +283,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         cbxWebApp.setEnabled(true);
     }
 
-    private ResourceEx<WebApp> getSelectedWebApp() {
-        final Object selectedItem = cbxWebApp.getSelectedItem();
-        return selectedItem instanceof ResourceEx ? (ResourceEx<WebApp>) selectedItem : null;
-    }
-
     @Override
     public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList) {
         cbxSlotName.removeAllItems();
@@ -343,7 +338,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     protected void resetFromConfig(@NotNull WebAppConfiguration configuration) {
-        refreshWebApps(false, configuration.getWebAppId());
+        refreshWebApps(false);
         if (configuration.getWebAppId() != null && webAppConfiguration.isDeployToSlot()) {
             toggleSlotPanel(true);
             chkDeployToSlot.setSelected(true);
@@ -394,6 +389,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
     }
 
+    private ResourceEx<WebApp> getSelectedWebApp() {
+        final Object selectedItem = cbxWebApp.getSelectedItem();
+        return selectedItem instanceof ResourceEx ? (ResourceEx<WebApp>) selectedItem : null;
+    }
+
     private void selectWebApp() {
         Object value = cbxWebApp.getSelectedItem();
         if (value != null && value instanceof ResourceEx) {
@@ -430,10 +430,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
                 refreshWebApps(true, webApp.id());
             } else {
                 // In case created failed
-                refreshWebApps(false, webAppConfiguration.getId());
+                refreshWebApps(false);
             }
         } else {
-            refreshWebApps(false, webAppConfiguration.getId());
+            refreshWebApps(false);
         }
     }
 
@@ -464,6 +464,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         lblNewSlot = new HyperlinkLabel("No available deployment slot, click to create a new one");
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
+    }
+
+    private void refreshWebApps(boolean force) {
+        refreshWebApps(force, null);
     }
 
     private void refreshWebApps(boolean force, String targetId) {
