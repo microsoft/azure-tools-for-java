@@ -37,8 +37,8 @@ import com.intellij.openapi.ui.Messages.showYesNoDialog
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.spark.run.configuration.RunProfileStatePrepare
 import com.microsoft.azuretools.telemetrywrapper.ErrorType.userError
-import com.microsoft.azuretools.telemetrywrapper.EventUtil.logError
-import com.microsoft.azuretools.telemetrywrapper.EventUtil.logErrorWithComplete
+import com.microsoft.azuretools.telemetrywrapper.EventUtil.logErrorClassNameOnly
+import com.microsoft.azuretools.telemetrywrapper.EventUtil.logErrorClassNameOnlyWithComplete
 import com.microsoft.intellij.rxjava.IdeaSchedulers
 import com.microsoft.intellij.telemetry.TelemetryKeys
 import com.microsoft.intellij.ui.util.UIUtils.assertInDispatchThread
@@ -54,7 +54,7 @@ object RunConfigurationActionUtils: ILogger {
         val asyncOperation = environment.getUserData(TelemetryKeys.OPERATION)
 
         if (setting.isEditBeforeRun && !RunDialog.editConfiguration(environment, title)) {
-            logErrorWithComplete(asyncOperation, userError, ExecutionException("run config dialog closed"), null, null)
+            logErrorClassNameOnlyWithComplete(asyncOperation, userError, ExecutionException("run config dialog closed"), null, null)
             return
         }
 
@@ -64,7 +64,7 @@ object RunConfigurationActionUtils: ILogger {
                 .subscribeOn(ideaSchedulers.dispatchUIThread()) // Check Runner Settings in EDT
                 .flatMap { checkAndPrepareRunProfileState(it, runner, ideaSchedulers) }
                 .retryWhen { errOb -> errOb.observeOn(ideaSchedulers.dispatchUIThread() )
-                        .doOnNext { logError(asyncOperation, userError, ExecutionException(it), null, null) }
+                        .doOnNext { logErrorClassNameOnly(asyncOperation, userError, ExecutionException(it), null, null) }
                         .takeWhile { configError -> // Check when can retry
                             showFixOrNotDialogForError(environment.project, configError.message ?: "Unknown").apply {
                                 if (!this) {
@@ -81,12 +81,12 @@ object RunConfigurationActionUtils: ILogger {
                 } .subscribe({ }, { err ->
                     if (err is ProcessCanceledException) {
                         // User cancelled edit configuration dialog
-                        logErrorWithComplete(asyncOperation, userError, ExecutionException("run config dialog closed"), null, null)
+                        logErrorClassNameOnlyWithComplete(asyncOperation, userError, ExecutionException("run config dialog closed"), null, null)
 
                         return@subscribe
                     }
 
-                    logErrorWithComplete(asyncOperation, userError, err, null, null)
+                    logErrorClassNameOnlyWithComplete(asyncOperation, userError, err, null, null)
                     ProgramRunnerUtil.handleExecutionError(environment.project, environment, err, setting.configuration)
                 }, {
                     environment.assignNewExecutionId()

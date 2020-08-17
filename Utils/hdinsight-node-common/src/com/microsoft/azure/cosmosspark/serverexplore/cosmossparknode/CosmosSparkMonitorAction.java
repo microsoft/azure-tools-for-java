@@ -50,7 +50,7 @@ public class CosmosSparkMonitorAction extends NodeActionListener {
     }
 
     @Override
-    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+    protected void actionPerformed(NodeActionEvent e) {
         monitorAction.onNext(Pair.of(cluster, clusterNode));
     }
 }

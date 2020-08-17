@@ -30,11 +30,15 @@ import com.microsoft.azuretools.telemetrywrapper.Operation
 
 open class SeqActions(private vararg val actionIds: String): AzureAnAction(), ILogger {
     override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
-        for (actiondId: String in actionIds) {
-            val action = ActionManagerEx.getInstance().getAction(actiondId)
-            action?.actionPerformed(anActionEvent)
-                ?: log().error("Can't perform the action with id $actiondId")
+        try {
+            for (actiondId: String in actionIds) {
+                val action = ActionManagerEx.getInstance().getAction(actiondId)
+                action?.actionPerformed(anActionEvent)
+                        ?: log().error("Can't perform the action with id $actiondId")
+            }
+        } catch (ignored: RuntimeException) {
         }
+
         return true
     }
 }

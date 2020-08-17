@@ -67,56 +67,62 @@ class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
     }
 
     override fun onActionPerformed(actionEvent: AnActionEvent, operation: Operation?): Boolean {
-        val editor = actionEvent.getData(EDITOR) ?: return true
+        try {
+            val editor = actionEvent.getData(EDITOR) ?: return true
 
-        val consoleDetail = SparkConsoleManager.get(editor) ?: return true
-        val outputStream = consoleDetail.processHandler?.processInput ?: return true
+            val consoleDetail = SparkConsoleManager.get(editor) ?: return true
+            val outputStream = consoleDetail.processHandler?.processInput ?: return true
 
-        val document = consoleDetail.console.editorDocument
-        val text = document.text
-        val langConsole = consoleDetail.console as? LanguageConsoleImpl
+            val document = consoleDetail.console.editorDocument
+            val text = document.text
+            val langConsole = consoleDetail.console as? LanguageConsoleImpl
 
-        runInWriteAction {
-            val range = TextRange(0, document.textLength)
+            runInWriteAction {
+                val range = TextRange(0, document.textLength)
 
-            // Add prompt before input commands for Livy interactive console
-            // To address issue https://github.com/microsoft/azure-tools-for-java/issues/3806
-            if (consoleDetail.processHandler is SparkLivySessionProcessHandler) {
-                consoleDetail.console.print("scala> ", ConsoleViewContentType.NORMAL_OUTPUT)
+                // Add prompt before input commands for Livy interactive console
+                // To address issue https://github.com/microsoft/azure-tools-for-java/issues/3806
+                if (consoleDetail.processHandler is SparkLivySessionProcessHandler) {
+                    consoleDetail.console.print("scala> ", ConsoleViewContentType.NORMAL_OUTPUT)
+                }
+
+                editor.selectionModel.setSelection(range.startOffset, range.endOffset)
+                langConsole?.addToHistory(range, langConsole.consoleEditor, true)
+                consoleDetail.model.addToHistory(text)
+
+                editor.caretModel.moveToOffset(0)
+                editor.document.setText("")
             }
 
-            editor.selectionModel.setSelection(range.startOffset, range.endOffset)
-            langConsole?.addToHistory(range, langConsole.consoleEditor, true)
-            consoleDetail.model.addToHistory(text)
+            // Send to process as a whole codes block
+            val normalizedCodes = text.trimEnd() + "\n"
+            val codeHint = normalizedCodes.split("\n").first()
 
-            editor.caretModel.moveToOffset(0)
-            editor.document.setText("")
+            Observable.fromCallable {
+                outputStream.write(normalizedCodes.toByteArray(UTF_8))
+                outputStream.flush()
+
+                normalizedCodes
+            }
+                    .subscribeOn(IdeaSchedulers(actionEvent.project).processBarVisibleAsync("Run codes: $codeHint ..."))
+                    .subscribe(
+                            { codes ->
+                                runInReadAction {
+                                    consoleDetail.console.indexCodes(codes)
+                                }
+                            },
+                            { err ->
+                                consoleDetail.console.print(
+                                        """
+                                        |${ExceptionUtils.getMessage(err)}
+                                        |Caused by ${ExceptionUtils.getRootCauseMessage(err)}
+                                        """.trimMargin(),
+                                            ConsoleViewContentType.ERROR_OUTPUT)
+                            }
+                    )
+
+        } catch (ignored: RuntimeException) {
         }
-
-        // Send to process as a whole codes block
-        val normalizedCodes = text.trimEnd() + "\n"
-        val codeHint = normalizedCodes.split("\n").first()
-
-        Observable.fromCallable {
-            outputStream.write(normalizedCodes.toByteArray(UTF_8))
-            outputStream.flush()
-
-            normalizedCodes
-        }
-                .subscribeOn(IdeaSchedulers(actionEvent.project).processBarVisibleAsync("Run codes: $codeHint ..."))
-                .subscribe(
-                        { codes -> runInReadAction {
-                            consoleDetail.console.indexCodes(codes)
-                        }},
-                        { err ->
-                            consoleDetail.console.print(
-                                    """
-                                    |${ExceptionUtils.getMessage(err)}
-                                    |Caused by ${ExceptionUtils.getRootCauseMessage(err)}
-                                    """.trimMargin(),
-                                    ConsoleViewContentType.ERROR_OUTPUT)
-                        }
-                )
 
         return true
     }

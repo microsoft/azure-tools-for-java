@@ -104,58 +104,63 @@ abstract class SparkRunConfigurationAction : AzureAnAction, ILogger {
     }
 
     override fun onActionPerformed(actionEvent: AnActionEvent, operation: Operation?): Boolean {
-        val project = actionEvent.project ?: return true
-        val runManagerEx = RunManagerEx.getInstanceEx(project)
-        val selectedConfigSettings = runManagerEx.selectedConfiguration
+        try {
+            val project = actionEvent.project ?: return true
+            val runManagerEx = RunManagerEx.getInstanceEx(project)
+            val selectedConfigSettings = runManagerEx.selectedConfiguration
 
-        when {
-            actionEvent.isFromActionToolbar -> {
-                // Try current selected Configuration
-                selectedConfigSettings?.also {
-                    if (canRun(it)) {
-                        runExisting(it, operation)
+            when {
+                actionEvent.isFromActionToolbar -> {
+                    // Try current selected Configuration
+                    selectedConfigSettings?.also {
+                        if (canRun(it)) {
+                            runExisting(it, operation)
+                        } else {
+                            EventUtil.logErrorClassNameOnlyWithComplete(operation, ErrorType.userError, RuntimeConfigurationError("Not a runnable configuration"), null, null)
+                        }
+                    }
+                }
+                else -> {
+                    // From context menu or Line marker action menu
+                    if (!actionEvent.dataContext.isSparkContext()) {
+                        // No action for out of Spark Context
+                        EventUtil.logErrorClassNameOnlyWithComplete(operation, ErrorType.userError, RuntimeConfigurationError("Not in Spark context"), null, null)
+                        return false
+                    }
+
+                    // In Spark Context
+                    val className = actionEvent.dataContext.getSparkConfigurationContext()
+                            ?.getSparkMainClassWithElement()
+                            ?.getNormalizedClassNameForSpark()
+                            ?: ""
+
+                    if (selectedConfigSettings?.let { canRun(it) } == true) {
+                        val savedIsEditBeforeRun = selectedConfigSettings.isEditBeforeRun
+
+                        selectedConfigSettings.isEditBeforeRun = true
+
+                        // canRun() has checked configuration is LivySparkBatchJobRunConfiguration or not
+                        (selectedConfigSettings.configuration as LivySparkBatchJobRunConfiguration).submitModel.mainClassName =
+                                className
+
+                        runExisting(selectedConfigSettings, operation)
+
+                        selectedConfigSettings.isEditBeforeRun = savedIsEditBeforeRun
                     } else {
-                        EventUtil.logErrorWithComplete(operation, ErrorType.userError, RuntimeConfigurationError("Not a runnable configuration"), null, null)
+                        EventUtil.logErrorClassNameOnlyWithComplete(operation, ErrorType.userError, RuntimeConfigurationError("Not a runnable configuration"), null, null)
+
+                        /**
+                         * FIXME with [LivySparkBatchJobRunConfiguration.suggestedName]
+                         * to create a new run configuration to submit a Spark job for this main class
+                         */
                     }
                 }
             }
-            else -> {
-                // From context menu or Line marker action menu
-                if (!actionEvent.dataContext.isSparkContext()) {
-                    // No action for out of Spark Context
-                    EventUtil.logErrorWithComplete(operation, ErrorType.userError, RuntimeConfigurationError("Not in Spark context"), null, null)
-                    return false
-                }
-
-                // In Spark Context
-                val className = actionEvent.dataContext.getSparkConfigurationContext()
-                        ?.getSparkMainClassWithElement()
-                        ?.getNormalizedClassNameForSpark()
-                        ?: ""
-
-                if (selectedConfigSettings?.let { canRun(it) } == true) {
-                    val savedIsEditBeforeRun = selectedConfigSettings.isEditBeforeRun
-
-                    selectedConfigSettings.isEditBeforeRun = true
-
-                    // canRun() has checked configuration is LivySparkBatchJobRunConfiguration or not
-                    (selectedConfigSettings.configuration as LivySparkBatchJobRunConfiguration).submitModel.mainClassName =
-                            className
-
-                    runExisting(selectedConfigSettings, operation)
-
-                    selectedConfigSettings.isEditBeforeRun = savedIsEditBeforeRun
-                } else {
-                    EventUtil.logErrorWithComplete(operation, ErrorType.userError, RuntimeConfigurationError("Not a runnable configuration"), null, null)
-
-                    /**
-                     * FIXME with [LivySparkBatchJobRunConfiguration.suggestedName]
-                     * to create a new run configuration to submit a Spark job for this main class
-                     */
-                }
-            }
+            return false
+        } catch (ignored: RuntimeException) {
         }
-        return false
+
+        return true
     }
 
     private fun runExisting(setting: RunnerAndConfigurationSettings, operation: Operation?) {

@@ -99,6 +99,32 @@ public class DefaultOperation implements Operation {
         }
     }
 
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public synchronized void logErrorClassNameOnly(ErrorType errorType, Throwable e, Map<String, String> properties,
+                                      Map<String, Double> metrics) {
+        try {
+            if (isComplete) {
+                return;
+            }
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
+
+            error = new Error();
+            error.errorType = errorType == null ? ErrorType.systemError : errorType;
+            error.className = e == null ? "" : e.getClass().getName();
+
+            mutableProps.put(ERROR_CODE, "1");
+            mutableProps.put(ERROR_TYPE, error.errorType.name());
+            mutableProps.put(ERROR_CLASSNAME, error.className);
+            mutableProps.put(OPERATION_ID, operationId);
+            mutableProps.put(OPERATION_NAME, operationName);
+
+            mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
+            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
+        } catch (Exception ignore) {
+        }
+    }
+
     @Override
     public synchronized void start() {
         try {

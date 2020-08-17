@@ -76,7 +76,7 @@ public class CosmosSparkClusterRootModuleImpl extends HDInsightRootModule {
 
         addAction("Open Notebook", new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 try {
                     Desktop.getDesktop().browse(URI.create(SPARK_NOTEBOOK_LINK));
                 } catch (IOException ignore) {
