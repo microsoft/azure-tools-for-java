@@ -22,18 +22,23 @@
 
 package com.microsoft.azuretools.telemetrywrapper;
 
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.authmanage.Environment;
-import com.microsoft.azuretools.sdkmanage.AzureManager;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.*;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.DURATION;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CLASSNAME;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CODE;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_MSG;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_STACKTRACE;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_TYPE;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_ID;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_NAME;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.mergeProperties;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry;
+import static com.microsoft.azuretools.telemetrywrapper.EventUtil.isAbleToCollectErrorStacks;
 
 public class DefaultOperation implements Operation {
 
@@ -154,17 +159,6 @@ public class DefaultOperation implements Operation {
             mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
             sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
         } catch (Exception ignore) {
-        }
-    }
-
-    // Will collect error stack traces only if user signed in with Azure account
-    private boolean isAbleToCollectErrorStacks() {
-        try {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            return azureManager != null && azureManager.getEnvironment() != null &&
-                    ObjectUtils.equals(azureManager.getEnvironment().getAzureEnvironment(), Environment.GLOBAL.getAzureEnvironment());
-        } catch (IOException e) {
-            return false;
         }
     }
 
