@@ -58,7 +58,7 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
         onLoadDeploymentSlots(selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id());
     }
 
-    public void loadWebApps(boolean forceRefresh) {
+    public void loadWebApps(boolean forceRefresh, String defaultWebAppId) {
         Observable.fromCallable(() -> {
                 List<ResourceEx<WebApp>> result = AzureWebAppMvpModel.getInstance().listAllWebApps(forceRefresh);
                 return result;
@@ -69,7 +69,7 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
                 if (isViewDetached()) {
                     return;
                 }
-                getMvpView().fillWebApps(webAppList);
+                getMvpView().fillWebApps(webAppList, defaultWebAppId);
             }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 
