@@ -56,10 +56,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -180,7 +177,10 @@ public class SignInWindow extends AzureDialogWrapper {
     protected void doOKAction() {
         authMethodDetailsResult = new AuthMethodDetails();
         if (automatedRadioButton.isSelected()) { // automated
-            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, signInSPProp, null);
+            final Map<String, String> properties =
+                    Collections.singletonMap(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
+            properties.putAll(signInSPProp);
+            EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
             String authPath = authFileTextField.getText();
             if (StringUtils.isNullOrWhiteSpace(authPath)) {
                 DefaultLoader.getUIHelper().showMessageDialog(contentPane,
@@ -312,6 +312,8 @@ public class SignInWindow extends AzureDialogWrapper {
                             ApplicationManager.getApplication().invokeLater(
                                 () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
                         } finally {
+                            EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
+                                    AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
                             operation.complete();
                         }
                     }

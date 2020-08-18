@@ -38,13 +38,15 @@ import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 
@@ -201,7 +203,11 @@ public class AuthMethodManager {
                 final AuthMethodDetails authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ?
                         new AuthMethodDetails() : savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
                 final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
-                EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(SIGNIN_METHOD, authMethod));
+                final Map<String, String> telemetryProperties = new HashMap<String, String>() {{
+                        put(SIGNIN_METHOD, authMethod);
+                        put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
+                    }};
+                EventUtil.logEvent(EventType.info, operation, telemetryProperties);
                 return new AuthMethodManager(authMethodDetails);
             } catch (RuntimeException ignore) {
                 EventUtil.logError(operation, ErrorType.systemError, ignore, null, null);
