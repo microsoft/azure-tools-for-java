@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.40.0</version>
+  <version>3.41.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,14 +24,26 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.40.0</h3>
-    <h4>Added</h4>
-    <ul>
-        <li>Support IntelliJ 2020.2</li>
-    </ul>
+    <h3>3.41.0</h3>
     <h4>Changed</h4>
     <ul>
-        <li>Show non-anonymous HTTP trigger urls after function deployment</li>
+        <li>Changed default tomcat version for app service to tomcat 9.0</li>
+        <li>Scaling Spring Cloud deployment before deploy artifacts</li>
+    </ul>
+    <h4>Fixed</h4>
+    <ul>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4490">#4490</a> Fix plugin initialization
+            exceptions while parsing configuration</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4511">#4511</a> Fix
+            <code>AuthMethodManager</code> initialization issues</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4532">#4532</a> Fix NPE in FunctionRunState
+            and add validation for function run time</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4534">#4534</a> Create temp folder as function
+            run/deploy staging folder in case staging folder conflict</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4552">#4552</a> Fix thread issues while prompt
+            tooltips for deployment slot </li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4553">#4553</a> Fix deployment target selection
+            issue after create new webapp</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

@@ -42,14 +42,12 @@ import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation.WebAppCreationDialog;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import icons.MavenIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import rx.Observable;
-import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -63,7 +61,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
@@ -184,25 +181,12 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         btnSlotHover.setPreferredSize(new Dimension(informationIcon.getIconWidth(), informationIcon.getIconHeight()));
         btnSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         btnSlotHover.addFocusListener(new FocusListener() {
-
-            Subscription subscription;
-
             @Override
             public void focusGained(FocusEvent focusEvent) {
                 btnSlotHover.setBorderPainted(true);
-                MouseEvent phantom = new MouseEvent(btnSlotHover, MouseEvent.MOUSE_ENTERED, System.currentTimeMillis(),
-                                                    0, 10, 10, 0, false);
-                IdeTooltipManager.getInstance().eventDispatched(phantom);
-                if (subscription != null) {
-                    subscription.unsubscribe();
-                }
-                subscription = Observable.timer(2, TimeUnit.SECONDS)
-                                         .subscribeOn(Schedulers.newThread())
-                                         .subscribe(next -> {
-                                             if (KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == btnSlotHover) {
-                                                 focusGained(focusEvent);
-                                             }
-                                         });
+                final MouseEvent phantom = new MouseEvent(btnSlotHover, MouseEvent.MOUSE_ENTERED,
+                                                          System.currentTimeMillis(), 0, 10, 10, 0, false);
+                DefaultLoader.getIdeHelper().invokeLater(() -> IdeTooltipManager.getInstance().eventDispatched(phantom));
             }
 
             @Override
