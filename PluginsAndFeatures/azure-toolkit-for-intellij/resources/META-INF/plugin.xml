@@ -164,10 +164,6 @@
     <action id="Actions.ApplicationInsightsAction"
             class="com.microsoft.intellij.actions.ApplicatioInsightsAction" text="Configure Application Insights..."
             description="Configure Application Insights..." icon="/icons/ApplicationInsights_16.png"/>
-    <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
-            text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
-            icon="/icons/PublishDockerContainer_16.png">
-    </action>
     <action class="com.microsoft.intellij.actions.AzureExplorerOpenAction" id="Actions.AzureExplorerOpenAction"
             text="Show Azure Explorer" description="Show Azure Explorer" icon="/icons/AzureExplorer_16.png"/>
     <action id="Actions.AzureCodeSamples"
@@ -295,8 +291,6 @@
       <reference ref="Actions.PushImage"/>
       <reference ref="Actions.WebAppOnLinux"/>
       <separator/>
-      <reference ref="Actions.AzureDockerHostDeploy"/>
-      <separator/>
       <reference ref="Actions.ApplicationInsightsAction"/>
       <reference ref="Actions.LibraryConfigurationAction"/>
     </group>
@@ -305,7 +299,6 @@
       <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
         <reference ref="Actions.WebDeployAction"/>
         <reference ref="Actions.WebAppOnLinux"/>
-        <reference ref="Actions.AzureDockerHostDeploy"/>
       </group>
       <reference ref="Actions.AzureExplorerOpenAction"/>
       <reference ref="Actions.AzureCodeSamples"/>
