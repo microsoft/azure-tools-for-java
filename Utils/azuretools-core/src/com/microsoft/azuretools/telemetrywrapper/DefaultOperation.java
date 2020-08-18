@@ -75,6 +75,7 @@ public class DefaultOperation implements Operation {
         }
     }
 
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
     public synchronized void logErrorClassNameOnly(ErrorType errorType, Throwable e, Map<String, String> properties,
                                                    Map<String, Double> metrics) {
         logError(errorType, e, properties, metrics, false);
