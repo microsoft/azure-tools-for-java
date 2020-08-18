@@ -46,6 +46,7 @@ import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import com.microsoft.rest.credentials.ServiceClientCredentials;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -220,7 +221,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
             authenticated = Azure.configure().authenticate(azureCliCredentials);
             subscriptionManager = new SubscriptionManagerPersist(this);
             environment = ENVIRONMENT_LIST.stream()
-                    .filter(environment -> azureCliCredentials.environment() == environment.getAzureEnvironment())
+                    .filter(environment -> ObjectUtils.equals(azureCliCredentials.environment(), environment.getAzureEnvironment()))
                     .findAny()
                     .orElse(Environment.GLOBAL);
             CommonSettings.setUpEnvironment(environment);

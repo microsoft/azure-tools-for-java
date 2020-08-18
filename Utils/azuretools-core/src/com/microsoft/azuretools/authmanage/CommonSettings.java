@@ -63,14 +63,14 @@ public class CommonSettings {
 
     private static String settingsBaseDir = null;
     private static IUIFactory uiFactory;
-    private static Environment ENV = Environment.GLOBAL;
+    private static Environment env = Environment.GLOBAL;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
     }
 
     public static void setUpEnvironment(Environment environment) {
-        ENV = environment;
+        env = environment;
     }
 
     public static void setUpEnvironment(@NotNull String basePath, String deprecatedPath) throws IOException {
@@ -124,7 +124,7 @@ public class CommonSettings {
                     if (providedEnv == null) {
                         setEnvironment(envName, null);
                     } else {
-                        ENV = providedEnv;
+                        env = providedEnv;
                     }
                 }
             }
@@ -142,11 +142,11 @@ public class CommonSettings {
     }
 
     public static AzureEnvironment getAdEnvironment() {
-        return ENV.getAzureEnvironment();
+        return env.getAzureEnvironment();
     }
 
     public static Environment getEnvironment() {
-        return ENV;
+        return env;
     }
 
     public static String USER_AGENT = "Azure Toolkit";
@@ -161,9 +161,9 @@ public class CommonSettings {
     private static void setEnvironment(@NotNull String env, Map<String, String> endPointMap) {
         // TODO: endPointMap currently is not used. Leave it in the api in case there is later change.
         try {
-            ENV = Environment.valueOf(env.toUpperCase());
+            CommonSettings.env = Environment.valueOf(env.toUpperCase());
         } catch (Exception e) {
-            ENV = Environment.GLOBAL;
+            CommonSettings.env = Environment.GLOBAL;
         }
     }
 
