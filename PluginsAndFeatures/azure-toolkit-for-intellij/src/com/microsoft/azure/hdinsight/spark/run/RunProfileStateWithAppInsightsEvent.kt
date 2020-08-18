@@ -50,7 +50,7 @@ abstract class RunProfileStateWithAppInsightsEvent(val uuid: String,
 
     fun createErrorEventWithComplete(executor: Executor?, exp: Throwable, errorType: ErrorType, addedEventProps: Map<String, String>?) {
         val postEventProps = executor?.let { getPostEventProperties(it, addedEventProps) } ?: emptyMap()
-        EventUtil.logErrorWithComplete(operation, errorType, exp, postEventProps, null)
+        EventUtil.logErrorClassNameOnlyWithComplete(operation, errorType, exp, postEventProps, null)
     }
 
     fun createInfoEventWithComplete(executor: Executor?, addedEventProps: Map<String, String>?) {

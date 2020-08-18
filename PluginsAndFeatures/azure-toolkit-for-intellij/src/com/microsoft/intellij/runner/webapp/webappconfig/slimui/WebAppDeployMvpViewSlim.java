@@ -31,7 +31,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 import java.util.List;
 
 public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillWebApps(@NotNull List<ResourceEx<WebApp>> webAppLists);
+    void fillWebApps(@NotNull List<ResourceEx<WebApp>> webAppLists, final String defaultWebAppId);
 
     void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots);
 }

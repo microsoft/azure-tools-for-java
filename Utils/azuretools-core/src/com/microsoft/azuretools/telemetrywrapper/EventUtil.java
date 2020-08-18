@@ -67,6 +67,21 @@ public class EventUtil {
         }
     }
 
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public static void logErrorClassNameOnly(String serviceName, String operName, ErrorType errorType, Throwable e,
+                                Map<String, String> properties, Map<String, Double> metrics) {
+        try {
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+            mutableProps.put(CommonUtil.OPERATION_NAME, operName);
+            mutableProps.put(CommonUtil.OPERATION_ID, UUID.randomUUID().toString());
+            mutableProps.put(CommonUtil.ERROR_CODE, "1");
+            mutableProps.put(CommonUtil.ERROR_CLASSNAME, e != null ? e.getClass().getName() : "");
+            mutableProps.put(CommonUtil.ERROR_TYPE, errorType.name());
+            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), metrics);
+        } catch (Exception ignore) {
+        }
+    }
+
     public static void logEvent(EventType eventType, Operation operation, Map<String, String> properties,
         Map<String, Double> metrics) {
         if (operation == null) {
@@ -103,6 +118,16 @@ public class EventUtil {
         ((DefaultOperation) operation).logError(errorType, e, properties, metrics);
     }
 
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public static void logErrorClassNameOnly(Operation operation, ErrorType errorType, Throwable e,
+                                Map<String, String> properties, Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
+        ((DefaultOperation) operation).logErrorClassNameOnly(errorType, e, properties, metrics);
+    }
+
     public static void logErrorWithComplete(Operation operation, ErrorType errorType, Throwable e,
                                 Map<String, String> properties, Map<String, Double> metrics) {
         if (operation == null) {
@@ -110,6 +135,17 @@ public class EventUtil {
         }
 
         logError(operation, errorType, e, properties, metrics);
+        operation.complete();
+    }
+
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public static void logErrorClassNameOnlyWithComplete(Operation operation, ErrorType errorType, Throwable e,
+                                            Map<String, String> properties, Map<String, Double> metrics) {
+        if (operation == null) {
+            return;
+        }
+
+        logErrorClassNameOnly(operation, errorType, e, properties, metrics);
         operation.complete();
     }
 

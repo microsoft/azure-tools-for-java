@@ -62,10 +62,14 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
         if (clusterDetail instanceof ClusterDetail) {
             addAction("Open Storage in Azure Management Portal", new NodeActionListener() {
                 @Override
-                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                protected void actionPerformed(NodeActionEvent e) {
                     String subscriptionId = clusterDetail.getSubscription().getSubscriptionId();
                     String storageRelativePath = ((ClusterDetail) clusterDetail).getId() + REST_SEGMENT_STORAGE_ACCOUNT;
-                    openResourcesInPortal(subscriptionId, storageRelativePath);
+                    try {
+                        openResourcesInPortal(subscriptionId, storageRelativePath);
+                    } catch (AzureCmdException ex) {
+                        log().warn("Can't open Storage in Azure Management Portal", ex);
+                    }
                 }
             });
         }

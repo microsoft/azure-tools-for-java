@@ -74,45 +74,14 @@ public class DefaultOperation implements Operation {
         }
     }
 
-    public synchronized void logError(ErrorType errorType, Throwable e, Map<String, String> properties,
-        Map<String, Double> metrics) {
-        try {
-            if (isComplete) {
-                return;
-            }
-            error = new Error();
-            error.errorType = errorType == null ? ErrorType.systemError : errorType;
-            error.errMsg = e == null ? "" : e.getMessage();
-            error.className = e == null ? "" : e.getClass().getName();
-            error.stackTrace = ExceptionUtils.getStackTrace(e);
-
-            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
-            mutableProps.put(ERROR_CODE, "1");
-            mutableProps.put(ERROR_TYPE, error.errorType.name());
-            mutableProps.put(ERROR_CLASSNAME, error.className);
-            if (isAbleToCollectErrorStacks()) {
-                mutableProps.put(ERROR_MSG, error.errMsg);
-                mutableProps.put(ERROR_STACKTRACE, error.stackTrace);
-            }
-            mutableProps.put(OPERATION_ID, operationId);
-            mutableProps.put(OPERATION_NAME, operationName);
-
-            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
-            mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
-            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
-        } catch (Exception ignore) {
-        }
+    public synchronized void logErrorClassNameOnly(ErrorType errorType, Throwable e, Map<String, String> properties,
+                                                   Map<String, Double> metrics) {
+        logError(errorType, e, properties, metrics, false);
     }
 
-    // Will collect error stack traces only if user signed in with Azure account
-    private boolean isAbleToCollectErrorStacks() {
-        try {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            return azureManager != null && azureManager.getEnvironment() != null &&
-                    azureManager.getEnvironment().getAzureEnvironment() == Environment.GLOBAL.getAzureEnvironment();
-        } catch (IOException e) {
-            return false;
-        }
+    public synchronized void logError(ErrorType errorType, Throwable e, Map<String, String> properties,
+                                      Map<String, Double> metrics) {
+        logError(errorType, e, properties, metrics, true);
     }
 
     @Override
@@ -154,6 +123,47 @@ public class DefaultOperation implements Operation {
     @Override
     public void close() {
         complete();
+    }
+
+    private synchronized void logError(ErrorType errorType, Throwable e, Map<String, String> properties,
+                                       Map<String, Double> metrics, boolean logErrorTraces) {
+        try {
+            if (isComplete) {
+                return;
+            }
+            error = new Error();
+            error.errorType = errorType == null ? ErrorType.systemError : errorType;
+            error.errMsg = e == null ? "" : e.getMessage();
+            error.className = e == null ? "" : e.getClass().getName();
+            error.stackTrace = ExceptionUtils.getStackTrace(e);
+
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+            mutableProps.put(ERROR_CODE, "1");
+            mutableProps.put(ERROR_TYPE, error.errorType.name());
+            mutableProps.put(ERROR_CLASSNAME, error.className);
+            if (logErrorTraces && isAbleToCollectErrorStacks()) {
+                mutableProps.put(ERROR_MSG, error.errMsg);
+                mutableProps.put(ERROR_STACKTRACE, error.stackTrace);
+            }
+            mutableProps.put(OPERATION_ID, operationId);
+            mutableProps.put(OPERATION_NAME, operationName);
+
+            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
+            mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
+            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
+        } catch (Exception ignore) {
+        }
+    }
+
+    // Will collect error stack traces only if user signed in with Azure account
+    private boolean isAbleToCollectErrorStacks() {
+        try {
+            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+            return azureManager != null && azureManager.getEnvironment() != null &&
+                    azureManager.getEnvironment().getAzureEnvironment() == Environment.GLOBAL.getAzureEnvironment();
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private void clear() {

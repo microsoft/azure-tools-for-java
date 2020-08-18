@@ -42,14 +42,12 @@ import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation.WebAppCreationDialog;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import icons.MavenIcons;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import rx.Observable;
-import rx.Subscription;
-import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -63,7 +61,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
@@ -76,7 +73,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             " content and configurations elements can be swapped between two deployment slots, including the production " +
             "slot.";
 
-    private ResourceEx<WebApp> selectedWebApp = null;
     private WebAppDeployViewPresenterSlim presenter = null;
 
     private JPanel pnlSlotCheckBox;
@@ -185,25 +181,12 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         btnSlotHover.setPreferredSize(new Dimension(informationIcon.getIconWidth(), informationIcon.getIconHeight()));
         btnSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);
         btnSlotHover.addFocusListener(new FocusListener() {
-
-            Subscription subscription;
-
             @Override
             public void focusGained(FocusEvent focusEvent) {
                 btnSlotHover.setBorderPainted(true);
-                MouseEvent phantom = new MouseEvent(btnSlotHover, MouseEvent.MOUSE_ENTERED, System.currentTimeMillis(),
-                        0, 10, 10, 0, false);
-                IdeTooltipManager.getInstance().eventDispatched(phantom);
-                if (subscription != null) {
-                    subscription.unsubscribe();
-                }
-                subscription = Observable.timer(2, TimeUnit.SECONDS)
-                        .subscribeOn(Schedulers.newThread())
-                        .subscribe(next -> {
-                            if (KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == btnSlotHover) {
-                                focusGained(focusEvent);
-                            }
-                        });
+                final MouseEvent phantom = new MouseEvent(btnSlotHover, MouseEvent.MOUSE_ENTERED,
+                                                          System.currentTimeMillis(), 0, 10, 10, 0, false);
+                DefaultLoader.getIdeHelper().invokeLater(() -> IdeTooltipManager.getInstance().eventDispatched(phantom));
             }
 
             @Override
@@ -257,7 +240,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     @Override
-    public synchronized void fillWebApps(List<ResourceEx<WebApp>> webAppLists) {
+    public synchronized void fillWebApps(List<ResourceEx<WebApp>> webAppLists, final String defaultWebAppId) {
         cbxWebApp.removeAllItems();
         List<ResourceEx<WebApp>> sortedWebAppLists = webAppLists
                 .stream()
@@ -271,14 +254,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             lblCreateWebApp.setVisible(false);
             cbxWebApp.setVisible(true);
             cbxWebApp.addItem(CREATE_NEW_WEBAPP);
-            // Need calculated target id first or fill combo box will trigger event to change selectedWebApp
-            final String configurationWebAppId = webAppConfiguration.getWebAppId();
-            final String targetId = (StringUtils.isEmpty(configurationWebAppId) && selectedWebApp != null) ?
-                                    selectedWebApp.getResource().id() : configurationWebAppId;
+            final String selectItemId = StringUtils.isNotEmpty(defaultWebAppId) ? defaultWebAppId : webAppConfiguration.getWebAppId();
             sortedWebAppLists.forEach(webAppResourceEx -> cbxWebApp.addItem(webAppResourceEx));
             final ResourceEx<WebApp> selectWebApp = sortedWebAppLists
                     .stream()
-                    .filter(webAppResourceEx -> StringUtils.equals(webAppResourceEx.getResource().id(), targetId))
+                    .filter(webAppResourceEx -> StringUtils.equals(webAppResourceEx.getResource().id(), selectItemId))
                     .findFirst()
                     .orElse(sortedWebAppLists.get(0));
             cbxWebApp.setSelectedItem(selectWebApp);
@@ -293,7 +273,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         cbxSlotConfigurationSource.removeAllItems();
 
         cbxSlotConfigurationSource.addItem(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
-        cbxSlotConfigurationSource.addItem(selectedWebApp.getResource().name());
+        cbxSlotConfigurationSource.addItem(getSelectedWebApp().getResource().name());
         slotList.stream().filter(slot -> slot != null).forEach(slot -> {
             cbxSlotName.addItem(slot.name());
             cbxSlotConfigurationSource.addItem(slot.name());
@@ -347,7 +327,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             toggleSlotPanel(true);
             chkDeployToSlot.setSelected(true);
             final boolean useNewDeploymentSlot = Comparing.equal(configuration.getSlotName(),
-                    Constants.CREATE_NEW_SLOT);
+                                                                 Constants.CREATE_NEW_SLOT);
             rbtNewSlot.setSelected(useNewDeploymentSlot);
             rbtExistingSlot.setSelected(!useNewDeploymentSlot);
             toggleSlotType(!useNewDeploymentSlot);
@@ -366,12 +346,13 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     protected void apply(@NotNull WebAppConfiguration configuration) {
+        final ResourceEx<WebApp> selectedWebApp = getSelectedWebApp();
+        configuration.setWebAppId(selectedWebApp == null ? null : selectedWebApp.getResource().id());
+        configuration.setSubscriptionId(selectedWebApp == null ? null : selectedWebApp.getSubscriptionId());
         final String targetName = getTargetName();
         configuration.setTargetPath(getTargetPath());
         configuration.setTargetName(targetName);
         configuration.setCreatingNew(false);
-        configuration.setWebAppId(selectedWebApp == null ? null : selectedWebApp.getResource().id());
-        configuration.setSubscriptionId(selectedWebApp == null ? null : selectedWebApp.getSubscriptionId());
         configuration.setDeployToSlot(chkDeployToSlot.isSelected());
         configuration.setSlotPanelVisible(slotDecorator.isExpanded());
         chkToRoot.setVisible(isAbleToDeployToRoot(targetName));
@@ -379,7 +360,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
             configuration.setSlotName(cbxSlotName.getSelectedItem() == null ? "" :
-                    cbxSlotName.getSelectedItem().toString());
+                                      cbxSlotName.getSelectedItem().toString());
             if (rbtNewSlot.isSelected()) {
                 configuration.setSlotName(Constants.CREATE_NEW_SLOT);
                 configuration.setNewSlotName(txtNewSlotName.getText());
@@ -392,12 +373,18 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
     }
 
+    private ResourceEx<WebApp> getSelectedWebApp() {
+        final Object selectedItem = cbxWebApp.getSelectedItem();
+        return selectedItem instanceof ResourceEx ? (ResourceEx<WebApp>) selectedItem : null;
+    }
+
     private void selectWebApp() {
         Object value = cbxWebApp.getSelectedItem();
         if (value != null && value instanceof ResourceEx) {
             chkDeployToSlot.setEnabled(true);
-            selectedWebApp = (ResourceEx<WebApp>) cbxWebApp.getSelectedItem();
-            presenter.onLoadDeploymentSlots(selectedWebApp);
+            presenter.onLoadDeploymentSlots((ResourceEx<WebApp>) value);
+            // Save current selected web app id in webAppConfiguration
+            webAppConfiguration.setWebAppId(getSelectedWebApp().getResource().id());
         } else if (Comparing.equal(CREATE_NEW_WEBAPP, value)) {
             // Create new web app
             cbxWebApp.setSelectedItem(null);
@@ -406,6 +393,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     private boolean isAbleToDeployToRoot(final String targetName) {
+        final ResourceEx<WebApp> selectedWebApp = getSelectedWebApp();
         if (selectedWebApp == null) {
             return false;
         }
@@ -421,8 +409,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (dialog.showAndGet()) {
             final WebApp webApp = dialog.getCreatedWebApp();
             if (webApp != null) {
+                // Set selectedWebApp to null in case user deploy while refreshing web app list
                 webAppConfiguration.setWebAppId(webApp.id());
-                refreshWebApps(true);
+                refreshWebApps(true, webApp.id());
             } else {
                 // In case created failed
                 refreshWebApps(false);
@@ -433,7 +422,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     private void toggleSlotPanel(boolean slot) {
-        boolean isDeployToSlot = slot && (selectedWebApp != null);
+        boolean isDeployToSlot = slot && (getSelectedWebApp() != null);
         rbtNewSlot.setEnabled(isDeployToSlot);
         rbtExistingSlot.setEnabled(isDeployToSlot);
         lblSlotName.setEnabled(isDeployToSlot);
@@ -462,10 +451,14 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     private void refreshWebApps(boolean force) {
+        refreshWebApps(force, null);
+    }
+
+    private void refreshWebApps(boolean force, String targetId) {
         cbxWebApp.removeAllItems();
         cbxWebApp.setEnabled(false);
         cbxWebApp.addItem(REFRESHING_WEBAPP);
-        presenter.loadWebApps(force);
+        presenter.loadWebApps(force, targetId);
     }
 
     private void updateArtifactConfiguration() {
@@ -503,7 +496,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         private String getStringLabelText(String message) {
             return comboBox.isPopupVisible() ? String.format("<html><div>%s</div><small></small></html>",
-                    message) : message;
+                                                             message) : message;
         }
 
         private String getWebAppLabelText(WebApp webApp) {

@@ -48,7 +48,7 @@ public class CosmosSparkSubmitAction extends NodeActionListener {
     }
 
     @Override
-    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+    protected void actionPerformed(NodeActionEvent e) {
         submitAction.onNext(ImmutablePair.of(cluster, clusterNode));
     }
 }
