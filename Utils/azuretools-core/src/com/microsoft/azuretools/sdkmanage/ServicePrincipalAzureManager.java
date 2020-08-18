@@ -99,6 +99,8 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         this.credFile = null;
         this.atc = new ApplicationTokenCredentials(appId, tid, appKey, null);
         this.subscriptionManager = new SubscriptionManagerPersist(this);
+
+        initEnv();
     }
 
     public ServicePrincipalAzureManager(File credFile) {
