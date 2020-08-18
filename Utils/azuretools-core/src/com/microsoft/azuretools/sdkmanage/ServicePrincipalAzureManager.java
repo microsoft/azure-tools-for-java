@@ -104,6 +104,8 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     public ServicePrincipalAzureManager(File credFile) {
         this.credFile = credFile;
         this.subscriptionManager = new SubscriptionManagerPersist(this);
+
+        initEnv();
     }
 
     private Azure.Authenticated auth() throws IOException {
@@ -265,6 +267,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         } catch (Exception e) {
             env = Environment.GLOBAL;
         }
+        CommonSettings.setUpEnvironment(env);
     }
 
     private AppPlatformManager authSpringCloud(String sid) throws IOException {
