@@ -24,10 +24,10 @@ package org.jetbrains.plugins.azure.functions.projectTemplating
 
 import com.jetbrains.rider.projectView.actions.projectTemplating.backend.ReSharperProjectTemplateCustomizer
 import com.microsoft.icons.CommonIcons
-import org.jetbrains.plugins.azure.RiderAzureBundle.message
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import javax.swing.Icon
 
-class FunctionsCoreToolsV1TemplateCustomizer : ReSharperProjectTemplateCustomizer {
+class FunctionsCoreToolsTemplateCustomizer : ReSharperProjectTemplateCustomizer {
     override val categoryName: String
         get() = "Azure Functions"
 
@@ -35,6 +35,5 @@ class FunctionsCoreToolsV1TemplateCustomizer : ReSharperProjectTemplateCustomize
         get() = CommonIcons.AzureFunctions.TemplateAzureFunc
 
     override val newName: String
-        get() = message("template.project.function_app.name")
+        get() = RiderAzureBundle.message("template.project.function_app.name")
 }
-

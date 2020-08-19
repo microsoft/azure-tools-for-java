@@ -198,8 +198,7 @@
 
     <projectService serviceImplementation="org.jetbrains.plugins.azure.cloudshell.CloudShellService" />
 
-    <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV1TemplateCustomizer" />
-    <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsV2TemplateCustomizer" />
+    <rider.projectView.actions.projectTemplating.backend.reSharperProjectTemplateCustomizer implementation="org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplateCustomizer" />
 
     <localInspection language="MSBuild"
                      enabledByDefault="true"
