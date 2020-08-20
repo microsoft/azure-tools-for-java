@@ -125,8 +125,8 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
     private void setSubscriptions() {
         for (final SubscriptionDetail sd : sdl) {
             model.addRow(new Object[] {sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
-            model.fireTableDataChanged();
         }
+        model.fireTableDataChanged();
     }
 
     private void createUIComponents() {
