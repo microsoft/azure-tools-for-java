@@ -89,9 +89,7 @@
                         <properties>
                           <enabled value="false"/>
                           <font size="18"/>
-                          <!-- Remove button icon as there will be IllegalArgumentException for disabled icons in IntelliJ 2020.2 -->
-                          <!-- <icon value="icons/search.png"/> -->
-                          <text value=""/>
+                          <text value="Search"/>
                         </properties>
                       </component>
                       <component id="cb157" class="javax.swing.JButton" binding="btnScanMore">
