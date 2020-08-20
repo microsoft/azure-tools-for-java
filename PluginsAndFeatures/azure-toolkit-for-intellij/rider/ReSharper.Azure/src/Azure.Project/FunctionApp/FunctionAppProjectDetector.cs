@@ -75,10 +75,9 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
             var hasExpectedPackageReference =
                 project.GetPackagesReference(new NugetId("Microsoft.NET.Sdk.Functions"), targetFrameworkId) != null;
 
-            // 3) Check existence of host.json in the project folder
-            var hasHostJsonFile = project.ProjectFileLocation
-                .GetParent(FileSystemPathInternStrategy.TRY_GET_INTERNED_BUT_DO_NOT_INTERN)
-                .GetChildFiles("host.json")
+            // 3) Check existence of host.json in the project
+            var hasHostJsonFile = project
+                .GetSubItems("host.json")
                 .Any();
 
             // Build problem description

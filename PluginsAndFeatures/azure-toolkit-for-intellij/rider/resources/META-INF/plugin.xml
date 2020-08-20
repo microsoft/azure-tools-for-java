@@ -35,6 +35,7 @@
         <h4>Fixed bugs:</h4>
         <ul>
           <li>Memory leak running Rider 202 EAP8 with plugin <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/339">#339</a></li>
+          <li>Linked host.json file not recognized in configuration <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/355">#355</a></li>
           <li>Cloud Shell does not work when using Azure CLI for authentication <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/340">#340</a></li>
           <li>Application Property view show relevant information about running Web App or Function App</li>
         </ul>
