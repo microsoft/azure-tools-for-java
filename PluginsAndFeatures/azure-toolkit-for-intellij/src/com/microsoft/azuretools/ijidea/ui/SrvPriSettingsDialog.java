@@ -59,9 +59,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
     }
 
     DefaultTableModel model = new DefaultTableModel() {
-        final Class[] columnClass = new Class[]{
-                Boolean.class, String.class, String.class
-        };
+        final Class[] columnClass = new Class[]{Boolean.class, String.class, String.class};
 
         @Override
         public boolean isCellEditable(int row, int col) {
