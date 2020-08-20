@@ -29,6 +29,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.table.JBTable;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.ijidea.utility.JTableUtils;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
@@ -40,12 +41,14 @@ import java.awt.*;
 import java.util.List;
 
 public class SrvPriSettingsDialog extends AzureDialogWrapper {
+    private static final int CHECKBOX_COLUMN_INDEX = 0;
+
     private JPanel contentPane;
     private JTable table;
     private JTextPane selectSubscriptionCommentTextPane;
     private TextFieldWithBrowseButton destinationFolderTextField;
-    private List<SubscriptionDetail> sdl;
-    private Project project;
+    private final List<SubscriptionDetail> sdl;
+    private final Project project;
 
     public String getDestinationFolder() {
         return destinationFolderTextField.getText();
@@ -57,8 +60,9 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
 
     DefaultTableModel model = new DefaultTableModel() {
         final Class[] columnClass = new Class[]{
-            Boolean.class, String.class, String.class
+                Boolean.class, String.class, String.class
         };
+
         @Override
         public boolean isCellEditable(int row, int col) {
             return (col == 0);
@@ -71,7 +75,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
     };
 
     public static SrvPriSettingsDialog go(List<SubscriptionDetail> sdl, Project project) throws Exception {
-        SrvPriSettingsDialog d = new SrvPriSettingsDialog(sdl, project);
+        final SrvPriSettingsDialog d = new SrvPriSettingsDialog(sdl, project);
         d.show();
         if (d.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
             return d;
@@ -95,18 +99,19 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
 
         table.setModel(model);
 
-        TableColumn column = table.getColumnModel().getColumn(0);
+        final TableColumn column = table.getColumnModel().getColumn(CHECKBOX_COLUMN_INDEX);
         column.setMinWidth(23);
         column.setMaxWidth(23);
+        JTableUtils.enableBatchSelection(table, CHECKBOX_COLUMN_INDEX);
 
         table.setRowSelectionAllowed(false);
         table.setCellSelectionEnabled(false);
 
         destinationFolderTextField.setText(System.getProperty("user.home"));
         destinationFolderTextField.addBrowseFolderListener("Choose Destination Folder", "", null,
-                FileChooserDescriptorFactory.createSingleFolderDescriptor());
+                                                           FileChooserDescriptorFactory.createSingleFolderDescriptor());
 
-        Font labelFont = UIManager.getFont("Label.font");
+        final Font labelFont = UIManager.getFont("Label.font");
         selectSubscriptionCommentTextPane.setFont(labelFont);
 
         setSubscriptions();
@@ -120,7 +125,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
     }
 
     private void setSubscriptions() {
-        for (SubscriptionDetail sd : sdl) {
+        for (final SubscriptionDetail sd : sdl) {
             model.addRow(new Object[] {sd.isSelected(), sd.getSubscriptionName(), sd.getSubscriptionId()});
             model.fireTableDataChanged();
         }
@@ -138,10 +143,10 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-        int rc = model.getRowCount();
+        final int rc = model.getRowCount();
         int unselectedCount = 0;
         for (int ri = 0; ri < rc; ++ri) {
-            boolean selected = (boolean) model.getValueAt(ri, 0);
+            final boolean selected = (boolean) model.getValueAt(ri, 0);
             if (!selected) {
                 unselectedCount++;
             }
@@ -154,7 +159,7 @@ public class SrvPriSettingsDialog extends AzureDialogWrapper {
         }
 
         for (int ri = 0; ri < rc; ++ri) {
-            boolean selected = (boolean) model.getValueAt(ri, 0);
+            final boolean selected = (boolean) model.getValueAt(ri, 0);
             this.sdl.get(ri).setSelected(selected);
         }
 
