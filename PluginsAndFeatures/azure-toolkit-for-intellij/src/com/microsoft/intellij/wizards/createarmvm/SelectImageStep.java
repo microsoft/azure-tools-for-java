@@ -237,20 +237,6 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         knownImageBtn.setSelected(true);
     }
 
-    private void enableControls(boolean customImage) {
-        model.setKnownMachineImage(knownImageBtn.isSelected());
-        knownImageComboBox.setEnabled(!customImage);
-        model.getCurrentNavigationState().NEXT.setEnabled(!customImage || !imageLabelList.isSelectionEmpty());
-        imageLabelList.setEnabled(customImage);
-        publisherComboBox.setEnabled(customImage);
-        offerComboBox.setEnabled(customImage);
-        skuComboBox.setEnabled(customImage);
-        publisherLabel.setEnabled(customImage);
-        offerLabel.setEnabled(customImage);
-        skuLabel.setEnabled(customImage);
-        versionLabel.setEnabled(customImage);
-    }
-
     @Override
     public JComponent prepare(WizardNavigationState wizardNavigationState) {
         rootPanel.revalidate();
@@ -285,6 +271,25 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
             }
         }
         return rootPanel;
+    }
+
+    @Override
+    public Map<String, String> toProperties() {
+        return model.toProperties();
+    }
+
+    private void enableControls(boolean customImage) {
+        model.setKnownMachineImage(knownImageBtn.isSelected());
+        knownImageComboBox.setEnabled(!customImage);
+        model.getCurrentNavigationState().NEXT.setEnabled(!customImage || !imageLabelList.isSelectionEmpty());
+        imageLabelList.setEnabled(customImage);
+        publisherComboBox.setEnabled(customImage);
+        offerComboBox.setEnabled(customImage);
+        skuComboBox.setEnabled(customImage);
+        publisherLabel.setEnabled(customImage);
+        offerLabel.setEnabled(customImage);
+        skuLabel.setEnabled(customImage);
+        versionLabel.setEnabled(customImage);
     }
 
     private void fillRegions() {
@@ -436,10 +441,5 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
             return;
         }
         PluginUtil.displayErrorDialogInAWTAndLog(message("errTtl"), errorMessage, throwable);
-    }
-
-    @Override
-    public Map<String, String> toProperties() {
-        return model.toProperties();
     }
 }
