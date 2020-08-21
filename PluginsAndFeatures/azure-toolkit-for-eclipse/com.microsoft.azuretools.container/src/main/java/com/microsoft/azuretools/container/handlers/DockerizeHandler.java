@@ -35,6 +35,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -49,6 +50,8 @@ import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.spotify.docker.client.DefaultDockerClient;
 
 public class DockerizeHandler extends AzureAbstractHandler {
+
+	private static final String DEFAULT_TEXT_EDITOR = "org.eclipse.ui.DefaultTextEditor";
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
@@ -91,17 +94,21 @@ public class DockerizeHandler extends AzureAbstractHandler {
         return null;
     }
 
-    private void openFile(IFile file) {
-        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        IWorkbenchPage page = window.getActivePage();
-        IMarker marker;
-        try {
-            marker = file.createMarker(IMarker.TEXT);
-            IDE.openEditor(page, marker);
-            marker.delete();
+	private void openFile(IFile file) {
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		IWorkbenchPage page = window.getActivePage();
+		try {
+			if (isDefaultTextEditorExists(page)) {
+				IDE.openEditor(page, file, "org.eclipse.ui.DefaultTextEditor");
+			} else {
+				IDE.openEditor(page, file);
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	}
 
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
+    private boolean isDefaultTextEditorExists(IWorkbenchPage page) {
+		return page.getWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(DEFAULT_TEXT_EDITOR) != null;
     }
 }
