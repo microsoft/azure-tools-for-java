@@ -323,7 +323,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                     if (location == null) {
                         return;
                     }
-                    publisherComboBox.removeAllItems();
+                    clearSelection(publisherComboBox, offerComboBox, skuComboBox, imageLabelList);
                     unsubscribeSubscription(fillPublisherSubscription);
                     fillPublisherSubscription =
                             Observable.fromCallable(() -> azure.virtualMachineImages().publishers().listByRegion(location.name()))
@@ -350,7 +350,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
             public void run(@org.jetbrains.annotations.NotNull ProgressIndicator progressIndicator) {
                 progressIndicator.setIndeterminate(true);
                 unsubscribeSubscription(fillOfferSubscription);
-                offerComboBox.removeAllItems();
+                clearSelection(offerComboBox, skuComboBox, imageLabelList);
                 fillOfferSubscription =
                         Observable.fromCallable(() -> ((VirtualMachinePublisher) publisherComboBox.getSelectedItem()).offers().list())
                                   .subscribeOn(Schedulers.io())
@@ -376,7 +376,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 public void run(@org.jetbrains.annotations.NotNull ProgressIndicator progressIndicator) {
                     progressIndicator.setIndeterminate(true);
                     unsubscribeSubscription(fillSkuSubscription);
-                    skuComboBox.removeAllItems();
+                    clearSelection(skuComboBox, imageLabelList);
                     fillSkuSubscription =
                             Observable.fromCallable(() -> ((VirtualMachineOffer) offerComboBox.getSelectedItem()).skus().list())
                                       .subscribeOn(Schedulers.io())
@@ -407,7 +407,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 VirtualMachineSku sku = (VirtualMachineSku) skuComboBox.getSelectedItem();
                 if (sku != null) {
                     unsubscribeSubscription(fillImagesSubscription);
-                    imageLabelList.setListData(new Object[]{});
+                    clearSelection(imageLabelList);
                     fillImagesSubscription =
                             Observable.fromCallable(() -> sku.images().list())
                                       .subscribeOn(Schedulers.io())
@@ -420,6 +420,16 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 }
             }
         });
+    }
+
+    private void clearSelection(JComponent... components) {
+        for (JComponent component : components) {
+            if (component instanceof JComboBox) {
+                ((JComboBox) component).removeAllItems();
+            } else if (component instanceof JList) {
+                ((JList) component).setListData(new Object[]{});
+            }
+        }
     }
 
     private void disableNext() {
