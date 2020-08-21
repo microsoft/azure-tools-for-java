@@ -54,7 +54,6 @@ import com.microsoft.intellij.util.ReadStreamLineThread;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.fest.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -170,7 +169,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         final File func = new File(functionRunConfiguration.getFuncPath());
         final String[] funcVersionResult = CommandUtils.executeMultipleLineOutput(
                 String.format("%s -v", func.getName()), func.getParentFile());
-        if (Arrays.isNullOrEmpty(funcVersionResult)) {
+        if (ArrayUtils.isEmpty(funcVersionResult)) {
             return null;
         }
         return new ComparableVersion(funcVersionResult[0].trim());
@@ -183,7 +182,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         final File executeFolder = StringUtils.isEmpty(javaHome) ? null : Paths.get(javaHome, "bin").toFile();
         final String[] javaVersionResult = CommandUtils.executeMultipleLineOutput(
                 "java -version", executeFolder, Process::getErrorStream); // java -version will write to std error
-        if (Arrays.isNullOrEmpty(javaVersionResult)) {
+        if (ArrayUtils.isEmpty(javaVersionResult)) {
             return null;
         }
         final Matcher matcher = JAVA_VERSION_PATTERN.matcher(javaVersionResult[0].trim());
