@@ -35,37 +35,25 @@ public class JTableUtils {
     public static void enableBatchSelection(JTable table, int checkboxColumnIndex) {
         final Class<?> columnClass = table.getModel().getColumnClass(checkboxColumnIndex);
         if (columnClass != Boolean.class && columnClass != boolean.class) {
-            throw new AssertionError("value type of checkbox column must be Boolean/boolean!");
+            throw new IllegalArgumentException("value type of checkbox column must be Boolean/boolean!");
         }
+        final CheckboxHeaderMouseListener listener = new CheckboxHeaderMouseListener(table, checkboxColumnIndex);
+        table.getTableHeader().addMouseListener(listener);
         final TableColumn column = table.getColumnModel().getColumn(checkboxColumnIndex);
-        final BatchSelectableTableModelListener listener = new BatchSelectableTableModelListener(table, checkboxColumnIndex);
-        table.getModel().addTableModelListener(listener);
         column.setHeaderRenderer(new ThreeStateCheckBoxRenderer());
         column.setHeaderValue(false);
     }
 
-    private static class BatchSelectableTableModelListener extends MouseAdapter implements TableModelListener {
+    private static class CheckboxHeaderMouseListener extends MouseAdapter implements TableModelListener {
         private final JTable table;
         private final int colIndex;
         private boolean updatingHeaderValue = false;
 
-        public BatchSelectableTableModelListener(final JTable table, final int columnIndex) {
+        public CheckboxHeaderMouseListener(final JTable table, final int columnIndex) {
             super();
             this.table = table;
             this.colIndex = columnIndex;
-            final JTableHeader header = table.getTableHeader();
-            header.addMouseListener(this);
-        }
-
-        /**
-         * table model changed
-         */
-        @Override
-        public void tableChanged(final TableModelEvent e) {
-            if ((e.getColumn() == TableModelEvent.ALL_COLUMNS || e.getColumn() == this.colIndex) && !this.updatingHeaderValue) {
-                final TableModel model = this.table.getModel();
-                this.updateHeaderValue(model);
-            }
+            this.table.getModel().addTableModelListener(this);
         }
 
         /**
@@ -81,6 +69,27 @@ public class JTableUtils {
                 checkboxColumn.setHeaderValue(!checked);
                 this.updateTableModel(!checked);
                 this.table.getTableHeader().repaint();
+            }
+        }
+
+        private void updateTableModel(final boolean headerValue) {
+            final int rowCount = table.getModel().getRowCount();
+            this.updatingHeaderValue = true;
+            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+                table.getModel().setValueAt(headerValue, rowIndex, this.colIndex);
+            }
+            this.updatingHeaderValue = false;
+        }
+
+        /**
+         * table model changed
+         */
+        @Override
+        public void tableChanged(final TableModelEvent e) {
+            if ((e.getColumn() == TableModelEvent.ALL_COLUMNS || e.getColumn() == this.colIndex)
+                    && !this.updatingHeaderValue) {
+                final TableModel model = this.table.getModel();
+                this.updateHeaderValue(model);
             }
         }
 
@@ -100,15 +109,6 @@ public class JTableUtils {
                 column.setHeaderValue(null);
             }
             this.table.getTableHeader().repaint();
-        }
-
-        private void updateTableModel(final boolean headerValue) {
-            final int rowCount = table.getModel().getRowCount();
-            this.updatingHeaderValue = true;
-            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-                table.getModel().setValueAt(headerValue, rowIndex, this.colIndex);
-            }
-            this.updatingHeaderValue = false;
         }
     }
 }
