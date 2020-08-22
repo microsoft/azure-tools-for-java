@@ -31,11 +31,9 @@ import java.nio.file.Paths;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -51,17 +49,17 @@ import com.spotify.docker.client.DefaultDockerClient;
 
 public class DockerizeHandler extends AzureAbstractHandler {
 
-	private static final String DEFAULT_TEXT_EDITOR = "org.eclipse.ui.DefaultTextEditor";
+    private static final String DEFAULT_TEXT_EDITOR = "org.eclipse.ui.DefaultTextEditor";
 
     @Override
     public Object onExecute(ExecutionEvent event) throws ExecutionException {
-        IProject project = PluginUtil.getSelectedProject();
+        final IProject project = PluginUtil.getSelectedProject();
         ConsoleLogger.info(Constant.MESSAGE_ADDING_DOCKER_SUPPORT);
         EventUtil.executeWithLog(WEBAPP, CREATE_DOCKER_FILE, (operation) -> {
             if (project == null) {
                 throw new Exception(Constant.ERROR_NO_SELECTED_PROJECT);
             }
-            String basePath = project.getLocation().toString();
+            final String basePath = project.getLocation().toString();
             String dockerFileContent = Constant.DOCKERFILE_CONTENT_TOMCAT;
             String artifactRelativePath = Constant.DOCKERFILE_ARTIFACT_PLACEHOLDER;
             if (MavenUtils.isMavenProject(project)) {
@@ -94,21 +92,21 @@ public class DockerizeHandler extends AzureAbstractHandler {
         return null;
     }
 
-	private void openFile(IFile file) {
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		IWorkbenchPage page = window.getActivePage();
-		try {
-			if (isDefaultTextEditorExists(page)) {
-				IDE.openEditor(page, file, "org.eclipse.ui.DefaultTextEditor");
-			} else {
-				IDE.openEditor(page, file);
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
+    private void openFile(IFile file) {
+        final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        final IWorkbenchPage page = window.getActivePage();
+        try {
+            if (isDefaultTextEditorExists(page)) {
+                IDE.openEditor(page, file, "org.eclipse.ui.DefaultTextEditor");
+            } else {
+                IDE.openEditor(page, file);
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+    }
 
     private boolean isDefaultTextEditorExists(IWorkbenchPage page) {
-		return page.getWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(DEFAULT_TEXT_EDITOR) != null;
+        return page.getWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(DEFAULT_TEXT_EDITOR) != null;
     }
 }
