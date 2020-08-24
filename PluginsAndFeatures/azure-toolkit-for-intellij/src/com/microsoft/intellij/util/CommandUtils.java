@@ -22,10 +22,15 @@
 
 package com.microsoft.intellij.util;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +57,24 @@ public class CommandUtils {
             return new String[0];
         }
         return StringUtils.split(IOUtils.toString(streamFunction.apply(p), "utf8"), "\n");
+    }
+
+    public static String executeCommandAndGetOutput(final String command, final String[] parameters, final File directory) throws IOException {
+        final CommandLine commandLine = new CommandLine(command);
+        commandLine.addArguments(parameters);
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+        final DefaultExecutor executor = new DefaultExecutor();
+        executor.setWorkingDirectory(directory);
+        executor.setStreamHandler(streamHandler);
+        executor.setExitValues(null);
+        try {
+            executor.execute(commandLine);
+            return outputStream.toString();
+        } catch (ExecuteException e) {
+            // swallow execute exception and return empty
+            return StringUtils.EMPTY;
+        }
     }
 
     public static String[] executeMultipleLineOutput(final String cmd, File cwd)
