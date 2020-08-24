@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.wizards.createarmvm;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -41,6 +40,7 @@ import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.azuretools.utils.AzureModelController;
 import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.intellij.util.RxJavaUtils;
 import com.microsoft.intellij.wizards.VMWizardModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import rx.Observable;
@@ -54,8 +54,8 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.InterruptedIOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -250,22 +250,14 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 model.getCurrentNavigationState().NEXT.setEnabled(false);
                 DefaultLoader.getIdeHelper().runInBackground(
                         project, "Loading Available Locations...", false, true,
-                        "Loading Available Locations...", new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    AzureModelController.updateSubscriptionMaps(null);
-                                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            fillRegions();
-                                        }
-                                    });
-                                } catch (Exception ex) {
-                                    PluginUtil.displayErrorDialogInAWTAndLog("Error", "Error loading locations", ex);
-                                }
-                            }
-                        });
+                        "Loading Available Locations...", () -> {
+                        try {
+                            AzureModelController.updateSubscriptionMaps(null);
+                            DefaultLoader.getIdeHelper().invokeLater(() -> fillRegions());
+                        } catch (Exception ex) {
+                            PluginUtil.displayErrorDialogInAWTAndLog("Error", "Error loading locations", ex);
+                        }
+                    });
             } else {
                 fillRegions();
             }
@@ -324,7 +316,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                         return;
                     }
                     clearSelection(publisherComboBox, offerComboBox, skuComboBox, imageLabelList);
-                    unsubscribeSubscription(fillPublisherSubscription);
+                    RxJavaUtils.unsubscribeSubscription(fillPublisherSubscription);
                     fillPublisherSubscription =
                             Observable.fromCallable(() -> azure.virtualMachineImages().publishers().listByRegion(location.name()))
                                       .subscribeOn(Schedulers.io())
@@ -349,7 +341,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
             @Override
             public void run(@org.jetbrains.annotations.NotNull ProgressIndicator progressIndicator) {
                 progressIndicator.setIndeterminate(true);
-                unsubscribeSubscription(fillOfferSubscription);
+                RxJavaUtils.unsubscribeSubscription(fillOfferSubscription);
                 clearSelection(offerComboBox, skuComboBox, imageLabelList);
                 fillOfferSubscription =
                         Observable.fromCallable(() -> ((VirtualMachinePublisher) publisherComboBox.getSelectedItem()).offers().list())
@@ -375,7 +367,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 @Override
                 public void run(@org.jetbrains.annotations.NotNull ProgressIndicator progressIndicator) {
                     progressIndicator.setIndeterminate(true);
-                    unsubscribeSubscription(fillSkuSubscription);
+                    RxJavaUtils.unsubscribeSubscription(fillSkuSubscription);
                     clearSelection(skuComboBox, imageLabelList);
                     fillSkuSubscription =
                             Observable.fromCallable(() -> ((VirtualMachineOffer) offerComboBox.getSelectedItem()).skus().list())
@@ -406,7 +398,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 progressIndicator.setIndeterminate(true);
                 VirtualMachineSku sku = (VirtualMachineSku) skuComboBox.getSelectedItem();
                 if (sku != null) {
-                    unsubscribeSubscription(fillImagesSubscription);
+                    RxJavaUtils.unsubscribeSubscription(fillImagesSubscription);
                     clearSelection(imageLabelList);
                     fillImagesSubscription =
                             Observable.fromCallable(() -> sku.images().list())
@@ -436,12 +428,6 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         //validation might be delayed, so lets check if we are still on this screen
         if (customImageBtn.isSelected() && model.getCurrentStep().equals(this)) {
             model.getCurrentNavigationState().NEXT.setEnabled(false);
-        }
-    }
-
-    private void unsubscribeSubscription(Subscription subscription) {
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
         }
     }
 
