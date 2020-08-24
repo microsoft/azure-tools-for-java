@@ -268,7 +268,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     @Override
-    public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList, final ResourceEx<WebApp> selectedWebApp) {
+    public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList, @NotNull final ResourceEx<WebApp> selectedWebApp) {
         cbxSlotName.removeAllItems();
         cbxSlotConfigurationSource.removeAllItems();
 
