@@ -72,15 +72,6 @@ public class JTableUtils {
             }
         }
 
-        private void updateTableModel(final boolean headerValue) {
-            final int rowCount = table.getModel().getRowCount();
-            this.updatingHeaderValue = true;
-            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-                table.getModel().setValueAt(headerValue, rowIndex, this.colIndex);
-            }
-            this.updatingHeaderValue = false;
-        }
-
         /**
          * table model changed
          */
@@ -91,6 +82,15 @@ public class JTableUtils {
                 final TableModel model = this.table.getModel();
                 this.updateHeaderValue(model);
             }
+        }
+
+        private void updateTableModel(final boolean headerValue) {
+            final int rowCount = table.getModel().getRowCount();
+            this.updatingHeaderValue = true;
+            for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+                table.getModel().setValueAt(headerValue, rowIndex, this.colIndex);
+            }
+            this.updatingHeaderValue = false;
         }
 
         private void updateHeaderValue(final TableModel model) {
