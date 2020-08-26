@@ -27,9 +27,11 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
+import rx.Subscription;
 
+import java.io.InterruptedIOException;
 import java.util.List;
 
 public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> extends MvpPresenter<V> {
@@ -37,29 +39,28 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
     private static final String CANNOT_GET_DEPLOYMENT_SLOTS = "Failed to get the deployment slots.";
 
-    public void onLoadDeploymentSlots(final String subscriptionId, final String webAppId) {
-        if (StringUtils.isEmpty(subscriptionId) || StringUtils.isEmpty(webAppId)) {
-            return;
-        }
-        Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, webAppId))
-            .subscribeOn(getSchedulerProvider().io())
-            .subscribe(slots -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                if (isViewDetached()) {
-                    return;
-                }
-                getMvpView().fillDeploymentSlots(slots);
-            }), e -> errorHandler(CANNOT_GET_DEPLOYMENT_SLOTS, (Exception) e));
-    }
+    private Subscription loadSlotsSubscription;
+    private Subscription loadWebAppsSubscription;
 
     public void onLoadDeploymentSlots(final ResourceEx<WebApp> selectedWebApp) {
         if (selectedWebApp == null) {
             return;
         }
-        onLoadDeploymentSlots(selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id());
+        unsubscribeSubscription(loadSlotsSubscription);
+        loadSlotsSubscription = Observable.fromCallable(() -> AzureWebAppMvpModel.getInstance().getDeploymentSlots(
+                selectedWebApp.getSubscriptionId(), selectedWebApp.getResource().id()))
+                  .subscribeOn(getSchedulerProvider().io())
+                  .subscribe(slots -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                      if (isViewDetached()) {
+                          return;
+                      }
+                      getMvpView().fillDeploymentSlots(slots, selectedWebApp);
+                  }), e -> errorHandler(CANNOT_GET_DEPLOYMENT_SLOTS, (Exception) e));
     }
 
     public void loadWebApps(boolean forceRefresh, String defaultWebAppId) {
-        Observable.fromCallable(() -> {
+        unsubscribeSubscription(loadWebAppsSubscription);
+        loadWebAppsSubscription = Observable.fromCallable(() -> {
                 List<ResourceEx<WebApp>> result = AzureWebAppMvpModel.getInstance().listAllWebApps(forceRefresh);
                 return result;
             }
@@ -73,7 +74,17 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
             }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 
+    private void unsubscribeSubscription(Subscription subscription) {
+        if (subscription != null && !subscription.isUnsubscribed()) {
+            subscription.unsubscribe();
+        }
+    }
+
     private void errorHandler(String msg, Exception e) {
+        if (ExceptionUtils.getRootCause(e) instanceof InterruptedIOException) {
+            // Swallow interrupted exception caused by unsubscribe
+            return;
+        }
         DefaultLoader.getIdeHelper().invokeLater(() -> {
             if (isViewDetached()) {
                 return;

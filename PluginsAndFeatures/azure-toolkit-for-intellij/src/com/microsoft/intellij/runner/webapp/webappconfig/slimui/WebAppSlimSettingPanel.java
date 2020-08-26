@@ -268,23 +268,22 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     }
 
     @Override
-    public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList) {
+    public synchronized void fillDeploymentSlots(List<DeploymentSlot> slotList, @NotNull final ResourceEx<WebApp> selectedWebApp) {
         cbxSlotName.removeAllItems();
         cbxSlotConfigurationSource.removeAllItems();
 
         cbxSlotConfigurationSource.addItem(Constants.DO_NOT_CLONE_SLOT_CONFIGURATION);
-        cbxSlotConfigurationSource.addItem(getSelectedWebApp().getResource().name());
+        cbxSlotConfigurationSource.addItem(selectedWebApp.getResource().name());
         slotList.stream().filter(slot -> slot != null).forEach(slot -> {
             cbxSlotName.addItem(slot.name());
             cbxSlotConfigurationSource.addItem(slot.name());
-            if (Comparing.equal(slot.name(), webAppConfiguration.getSlotName())) {
+            if (StringUtils.equals(slot.name(), webAppConfiguration.getSlotName())) {
                 cbxSlotName.setSelectedItem(slot.name());
             }
-            if (Comparing.equal(slot.name(), webAppConfiguration.getNewSlotConfigurationSource())) {
+            if (StringUtils.equals(slot.name(), webAppConfiguration.getNewSlotConfigurationSource())) {
                 cbxSlotConfigurationSource.setSelectedItem(slot.name());
             }
         });
-
         boolean existDeploymentSlot = slotList.size() > 0;
         lblNewSlot.setVisible(!existDeploymentSlot);
         cbxSlotName.setVisible(existDeploymentSlot);

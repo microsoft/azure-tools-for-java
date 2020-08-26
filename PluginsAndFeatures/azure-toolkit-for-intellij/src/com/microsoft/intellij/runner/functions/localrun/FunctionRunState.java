@@ -54,7 +54,6 @@ import com.microsoft.intellij.util.ReadStreamLineThread;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.fest.util.Arrays;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -161,32 +160,32 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             if (funcVersion.compareTo(minimumVersion) < 0) {
                 throw new AzureExecutionException(FUNCTION_CORE_TOOLS_OUT_OF_DATE);
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             throw new AzureExecutionException(String.format(FAILED_TO_VALIDATE_FUNCTION_RUNTIME, e.getMessage()));
         }
     }
 
-    private ComparableVersion getFuncVersion() throws IOException, InterruptedException {
+    private ComparableVersion getFuncVersion() throws IOException {
         final File func = new File(functionRunConfiguration.getFuncPath());
-        final String[] funcVersionResult = CommandUtils.executeMultipleLineOutput(
-                String.format("%s -v", func.getName()), func.getParentFile());
-        if (Arrays.isNullOrEmpty(funcVersionResult)) {
+        final String funcVersion = CommandUtils.executeCommandAndGetOutput(func.getAbsolutePath(), new String[]{"-v"}, func.getParentFile());
+        if (StringUtils.isEmpty(funcVersion)) {
             return null;
         }
-        return new ComparableVersion(funcVersionResult[0].trim());
+        return new ComparableVersion(funcVersion);
     }
 
     // Get java runtime version following the strategy of function core tools
     // Get java version of JAVA_HOME first, fall back to use PATH if JAVA_HOME not exists
-    private ComparableVersion getJavaVersion() throws IOException, InterruptedException {
+    private ComparableVersion getJavaVersion() throws IOException {
         final String javaHome = System.getenv("JAVA_HOME");
-        final File executeFolder = StringUtils.isEmpty(javaHome) ? null : Paths.get(javaHome, "bin").toFile();
-        final String[] javaVersionResult = CommandUtils.executeMultipleLineOutput(
-                "java -version", executeFolder, Process::getErrorStream); // java -version will write to std error
-        if (Arrays.isNullOrEmpty(javaVersionResult)) {
+        final File javaFile = StringUtils.isEmpty(javaHome) ? null : Paths.get(javaHome, "bin", "java").toFile();
+        final File executeFolder = javaFile == null ? null : javaFile.getParentFile();
+        final String command = javaFile == null ? "java" : javaFile.getAbsolutePath();
+        final String javaVersion = CommandUtils.executeCommandAndGetOutput(command, new String[]{"-version"}, executeFolder);
+        if (StringUtils.isEmpty(javaVersion)) {
             return null;
         }
-        final Matcher matcher = JAVA_VERSION_PATTERN.matcher(javaVersionResult[0].trim());
+        final Matcher matcher = JAVA_VERSION_PATTERN.matcher(javaVersion);
         return matcher.find() ? new ComparableVersion(matcher.group(1)) : null;
     }
 
