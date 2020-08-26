@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.functions.core;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.codeInsight.MetaAnnotationUtil;
@@ -44,8 +43,8 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
-import com.microsoft.azure.common.utils.SneakyThrowUtils;
 import com.microsoft.azure.functions.annotation.StorageAccount;
+import com.microsoft.intellij.util.PluginUtil;
 import com.sun.tools.sjavac.Log;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -74,6 +73,16 @@ public class FunctionUtils {
     private static final String DEFAULT_LOCAL_SETTINGS_JSON = "{ \"IsEncrypted\": false, \"Values\": " +
             "{ \"FUNCTIONS_WORKER_RUNTIME\": \"java\" } }";
     private static final String AZURE_FUNCTIONS = "azure-functions";
+    private static final String AZURE_FUNCTION_CUSTOM_BINDING_CLASS =
+            "com.microsoft.azure.functions.annotation.CustomBinding";
+    private static Map<BindingEnum, List<String>> REQUIRED_ATTRIBUTE_MAP = new HashMap<>();
+    private static final List<String> CUSTOM_BINDING_RESERVED_PROPERTIES = Arrays.asList("type", "name", "direction");
+
+    static {
+        //initialize required attributes, which will be saved to function.json even if it equals to its default value
+        REQUIRED_ATTRIBUTE_MAP.put(BindingEnum.EventHubTrigger, Arrays.asList("cardinality"));
+        REQUIRED_ATTRIBUTE_MAP.put(BindingEnum.HttpTrigger, Arrays.asList("authLevel"));
+    }
 
     public static File getTempStagingFolder() throws IOException {
         final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
@@ -264,16 +273,7 @@ public class FunctionUtils {
         for (final PsiMethod method : methods) {
             final PsiAnnotation annotation = AnnotationUtil.findAnnotation(method,
                                                                            FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS);
-            final PsiNameValuePair[] attributes = annotation.getParameterList().getAttributes();
-            String functionName = null;
-            for (final PsiNameValuePair attribute : attributes) {
-                final PsiAnnotationMemberValue value = attribute.getValue();
-                final String name = attribute.getAttributeName();
-                if ("value".equals(name)) {
-                    functionName = AnnotationHelper.getPsiAnnotationMemberValue(value);
-                    break;
-                }
-            }
+            String functionName = AnnotationUtil.getDeclaredStringAttributeValue(annotation, "value");
             configMap.put(functionName, generateConfiguration(method));
         }
         return configMap;
@@ -294,15 +294,16 @@ public class FunctionUtils {
     private static void processParameterAnnotations(final PsiMethod method, final List<Binding> bindings)
             throws AzureExecutionException {
         for (final JvmParameter param : method.getParameters()) {
-            bindings.addAll(parseAnnotations(param.getAnnotations()));
+            bindings.addAll(parseAnnotations(method.getProject(), param.getAnnotations()));
         }
     }
 
-    private static List<Binding> parseAnnotations(JvmAnnotation[] annos) throws AzureExecutionException {
+    private static List<Binding> parseAnnotations(final Project project,
+                                                  JvmAnnotation[] annotations) throws AzureExecutionException {
         final List<Binding> bindings = new ArrayList<>();
 
-        for (final JvmAnnotation annotation : annos) {
-            final Binding binding = getBinding(annotation);
+        for (final JvmAnnotation annotation : annotations) {
+            final Binding binding = getBinding(project, annotation);
             if (binding != null) {
                 Log.debug("Adding binding: " + binding.toString());
                 bindings.add(binding);
@@ -312,29 +313,73 @@ public class FunctionUtils {
         return bindings;
     }
 
-    private static Binding getBinding(JvmAnnotation annotation) throws AzureExecutionException {
+    private static Binding getBinding(final Project project, JvmAnnotation annotation) throws AzureExecutionException {
         if (annotation == null) {
             return null;
         }
+        if (!(annotation instanceof PsiAnnotation)) {
+            PluginUtil.showWarningNotificationProject(project,
+                                                      "Cannot parse annotation information.",
+                                                      String.format("Expect type: %s, actual type: %s",
+                                                                    PsiAnnotation.class.getCanonicalName(),
+                                                                    annotation.getClass().getCanonicalName()));
+            return null;
+        }
+
         final BindingEnum annotationEnum =
                 Arrays.stream(BindingEnum.values())
                       .filter(bindingEnum -> StringUtils.equalsIgnoreCase(bindingEnum.name(),
                                                                           FilenameUtils.getExtension(annotation.getQualifiedName())))
                       .findFirst()
                       .orElse(null);
-        return annotationEnum == null ? getUserDefinedBinding(annotation)
-                                      : createBinding(annotationEnum, (PsiAnnotation) annotation);
+        return annotationEnum == null ? getUserDefinedBinding(project, (PsiAnnotation) annotation)
+                                      : createBinding(project, annotationEnum, (PsiAnnotation) annotation);
     }
 
-    private static Binding getUserDefinedBinding(JvmAnnotation annotation) {
-        // unsupported now
-        return null;
+    private static Binding getUserDefinedBinding(final Project project, PsiAnnotation annotation) throws AzureExecutionException {
+        PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
+        PsiAnnotation customBindingAnnotation =
+                AnnotationUtil.findAnnotation((PsiModifierListOwner) referenceElement.resolve(),
+                                              AZURE_FUNCTION_CUSTOM_BINDING_CLASS);
+        if (customBindingAnnotation == null) {
+            return null;
+        }
+        final Map<String, Object> annotationProperties = AnnotationHelper.evaluateAnnotationProperties(project,
+                                                                                                       annotation,
+                                                                                                       CUSTOM_BINDING_RESERVED_PROPERTIES);
+        final Map<String, Object> customBindingProperties = AnnotationHelper.evaluateAnnotationProperties(project,
+                                                                                                          customBindingAnnotation,
+                                                                                                          null);
+
+        Map<String, Object> mergedMap = new HashMap<>(annotationProperties);
+        customBindingProperties.forEach(mergedMap::putIfAbsent);
+        Binding extendBinding = new Binding(BindingEnum.CustomBinding) {
+
+            public String getName() {
+                return (String) mergedMap.get("name");
+            }
+
+            public String getDirection() {
+                return (String) mergedMap.get("direction");
+            }
+
+            public String getType() {
+                return (String) mergedMap.get("type");
+            }
+        };
+
+        annotationProperties.forEach((name, value) -> {
+            if (!CUSTOM_BINDING_RESERVED_PROPERTIES.contains(name)) {
+                extendBinding.setAttribute(name, value);
+            }
+        });
+        return extendBinding;
     }
 
     private static void processMethodAnnotations(final PsiMethod method, final List<Binding> bindings)
             throws AzureExecutionException {
         if (!method.getReturnType().equals(Void.TYPE)) {
-            bindings.addAll(parseAnnotations(method.getAnnotations()));
+            bindings.addAll(parseAnnotations(method.getProject(), method.getAnnotations()));
 
             if (bindings.stream().anyMatch(b -> b.getBindingEnum() == BindingEnum.HttpTrigger) &&
                     bindings.stream().noneMatch(b -> StringUtils.equalsIgnoreCase(b.getName(), "$return"))) {
@@ -355,48 +400,25 @@ public class FunctionUtils {
 
         if (storageAccount != null) {
             System.out.println("StorageAccount annotation found.");
-            storageAccount.getAttributes().forEach(t -> {
-                if (t.getAttributeName().equals("value")) {
-                    try {
-                        final String connectionString =
-                                AnnotationHelper.getJvmAnnotationAttributeValue(t.getAttributeValue());
-                        bindings.stream().filter(binding -> binding.getBindingEnum().isStorage())
-                                .filter(binding -> StringUtils.isEmpty((String) binding.getAttribute("connection")))
-                                .forEach(binding -> binding.setAttribute("connection", connectionString));
-                    } catch (AzureExecutionException e) {
-                        SneakyThrowUtils.sneakyThrow(e);
-                    }
 
-                }
-            });
+            final String connectionString = AnnotationUtil.getDeclaredStringAttributeValue(storageAccount, "value");
             // Replace empty connection string
+            bindings.stream().filter(binding -> binding.getBindingEnum().isStorage())
+                    .filter(binding -> StringUtils.isEmpty((String) binding.getAttribute("connection")))
+                    .forEach(binding -> binding.setAttribute("connection", connectionString));
 
         } else {
             System.out.println("No StorageAccount annotation found.");
         }
     }
 
-    private static Binding createBinding(BindingEnum bindingEnum, PsiAnnotation annotation)
+    private static Binding createBinding(final Project project, BindingEnum bindingEnum, PsiAnnotation annotation)
             throws AzureExecutionException {
         final Binding binding = new Binding(bindingEnum);
-        final PsiNameValuePair[] attributes = annotation.getParameterList().getAttributes();
-        for (final PsiNameValuePair attribute : attributes) {
-            final PsiAnnotationMemberValue value = attribute.getValue();
-            final String name = attribute.getAttributeName();
-            if (value instanceof PsiArrayInitializerMemberValue) {
-                final PsiAnnotationMemberValue[] initializers = ((PsiArrayInitializerMemberValue) value)
-                        .getInitializers();
-                final List<String> result = Lists.newArrayListWithCapacity(initializers.length);
-
-                for (final PsiAnnotationMemberValue initializer : initializers) {
-                    result.add(AnnotationHelper.getPsiAnnotationMemberValue(initializer));
-                }
-                binding.setAttribute(name, result.toArray(new String[0]));
-            } else {
-                final String valueText = AnnotationHelper.getPsiAnnotationMemberValue(value);
-                binding.setAttribute(name, valueText);
-            }
-        }
+        AnnotationHelper.evaluateAnnotationProperties(project, annotation, REQUIRED_ATTRIBUTE_MAP.get(bindingEnum))
+                .forEach((name, value) -> {
+                    binding.setAttribute(name, value);
+                });
         return binding;
     }
 
