@@ -34,6 +34,8 @@ import rx.Subscription;
 import java.io.InterruptedIOException;
 import java.util.List;
 
+import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
+
 public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> extends MvpPresenter<V> {
 
     private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
@@ -74,14 +76,9 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
             }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
     }
 
-    private void unsubscribeSubscription(Subscription subscription) {
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
-        }
-    }
-
     private void errorHandler(String msg, Exception e) {
-        if (ExceptionUtils.getRootCause(e) instanceof InterruptedIOException) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
             // Swallow interrupted exception caused by unsubscribe
             return;
         }

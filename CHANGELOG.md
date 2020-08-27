@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.41.1](#3411)
   - [3.41.0](#3410)
   - [3.40.0](#3400)
   - [3.39.0](#3390)
@@ -53,6 +54,11 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.41.1
+
+### Fixed
+- [#4576](https://github.com/microsoft/azure-tools-for-java/issues/4576) Fix can't list webapps in web app deployment panel
 
 ## 3.41.0
 

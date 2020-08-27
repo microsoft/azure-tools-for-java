@@ -28,7 +28,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
-import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.exception.ExceptionUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
 import com.microsoft.azure.management.resources.Location;
@@ -43,6 +42,7 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.RxJavaUtils;
 import com.microsoft.intellij.wizards.VMWizardModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
@@ -432,7 +432,8 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     }
 
     private void handleError(String errorMessage, Throwable throwable) {
-        if (ExceptionUtils.getRootCause(throwable) instanceof InterruptedIOException) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(throwable);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
             // Swallow interrupted exception caused by unsubscribe
             return;
         }
