@@ -30,47 +30,13 @@ import com.intellij.psi.util.PsiUtil;
 import com.microsoft.applicationinsights.core.dependencies.apachecommons.lang3.ClassUtils;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class AnnotationHelper {
-
-    private static Object[] handleArrayAnnotationValue(PsiConstantEvaluationHelper helper, PsiArrayInitializerMemberValue value)
-            throws AzureExecutionException {
-        final PsiAnnotationMemberValue[] initializers = value.getInitializers();
-        final List<Object> result = Lists.newArrayListWithCapacity(initializers.length);
-
-        for (final PsiAnnotationMemberValue initializer : initializers) {
-            result.add(getPsiAnnotationMemberValue(helper, initializer));
-        }
-        return result.toArray();
-    }
-
-    private static Object getPsiAnnotationMemberValue(PsiConstantEvaluationHelper helper,
-                                                      PsiAnnotationMemberValue value) throws AzureExecutionException {
-        if (value == null) {
-            return null;
-        }
-        Object obj = helper.computeConstantExpression(value);
-        if (obj == null) {
-            return null;
-        }
-        // annotation only allows primitive type or String or Class
-        if (ClassUtils.isPrimitiveOrWrapper(obj.getClass()) || obj instanceof String) {
-            return obj;
-        }
-
-        if (obj instanceof PsiClassType) {
-            return ((PsiClassType) obj).resolve().getQualifiedName();
-        }
-        throw new AzureExecutionException(String.format("Invalid type: %s for annotation.",
-                                                                PsiAnnotation.class.getCanonicalName(),
-                                                        obj.getClass().getCanonicalName()));
-    }
-
     public static Map<String, Object> evaluateAnnotationProperties(Project project, PsiAnnotation annotation,
-                                                List<String> requiredProperties) throws AzureExecutionException {
-
+            List<String> requiredProperties) throws AzureExecutionException {
         PsiConstantEvaluationHelper
                 evaluationHelper = JavaPsiFacade.getInstance(project).getConstantEvaluationHelper();
         Map<String, Object> properties = new HashMap<>();
@@ -106,5 +72,82 @@ public class AnnotationHelper {
             }
         }
         return properties;
+    }
+
+    private static Object[] handleArrayAnnotationValue(PsiConstantEvaluationHelper helper, PsiArrayInitializerMemberValue value)
+            throws AzureExecutionException {
+        final PsiAnnotationMemberValue[] initializers = value.getInitializers();
+        final List<Object> result = Lists.newArrayListWithCapacity(initializers.length);
+
+        for (final PsiAnnotationMemberValue initializer : initializers) {
+            result.add(getPsiAnnotationMemberValue(helper, initializer));
+        }
+        return result.toArray();
+    }
+
+    private static String getEnumFieldString(final String className, final String fieldName)
+            throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException {
+        final Class<?> clz = Class.forName(className);
+        final Field[] fields = clz.getFields();
+        final Optional<Field> targetField = Arrays.stream(fields).filter(field -> field.getName().equals(fieldName)).findFirst();
+        if (targetField.isPresent()) {
+            return Objects.toString(targetField.get().get(null));
+        }
+        return null;
+    }
+
+    private static String getEnumConstantString(PsiAnnotationMemberValue value) throws AzureExecutionException {
+        if (value instanceof PsiReferenceExpression) {
+            final PsiReferenceExpression referenceExpression = (PsiReferenceExpression) value;
+            final Object resolved = referenceExpression.resolve();
+            if (resolved instanceof PsiEnumConstant) {
+                final PsiEnumConstant enumConstant = (PsiEnumConstant) resolved;
+                final PsiClass enumClass = enumConstant.getContainingClass();
+                if (enumClass != null) {
+                    try {
+                        return getEnumFieldString(enumClass.getQualifiedName(), enumConstant.getName());
+                    } catch (ClassNotFoundException | IllegalAccessException e) {
+                        throw new AzureExecutionException(e.getMessage(), e);
+                    }
+                } else {
+                    return enumConstant.getName();
+                }
+            }
+
+        }
+        return null;
+    }
+
+    private static Object getPsiAnnotationMemberValue(PsiConstantEvaluationHelper helper,
+                                                      PsiAnnotationMemberValue value) throws AzureExecutionException {
+        if (value == null) {
+            return null;
+        }
+
+        // annotation only allows primitive type or String or Class or enums
+
+        // 1. enums
+        Object obj = getEnumConstantString(value);
+        if (obj != null) {
+            return obj;
+        }
+
+        // 2. String or primitive
+        obj = helper.computeConstantExpression(value);
+        if (obj == null) {
+            return null;
+        }
+
+        if (ClassUtils.isPrimitiveOrWrapper(obj.getClass()) || obj instanceof String) {
+            return obj;
+        }
+
+        // 3. class
+        if (obj instanceof PsiClassType) {
+            return ((PsiClassType) obj).resolve().getQualifiedName();
+        }
+        throw new AzureExecutionException(String.format("Invalid type: %s for annotation.",
+                                                                PsiAnnotation.class.getCanonicalName(),
+                                                        obj.getClass().getCanonicalName()));
     }
 }
