@@ -27,7 +27,7 @@
     <h3>3.41.1</h3>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4576">#4576</a> Fix can't list webapps in web app deployment panel</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4576">#4576</a> Can not list webapps in web app deployment panel</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
