@@ -44,11 +44,10 @@ import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
-import com.microsoft.intellij.util.PluginUtil;
 import com.sun.tools.sjavac.Log;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
@@ -318,18 +317,16 @@ public class FunctionUtils {
             return null;
         }
         if (!(annotation instanceof PsiAnnotation)) {
-            PluginUtil.showWarningNotificationProject(project,
-                                                      "Cannot parse annotation information.",
-                                                      String.format("Expect type: %s, actual type: %s",
+            throw new AzureExecutionException(
+                    String.format("Cannot parse annotation information, expect type: %s, actual type: %s",
                                                                     PsiAnnotation.class.getCanonicalName(),
                                                                     annotation.getClass().getCanonicalName()));
-            return null;
         }
 
         final BindingEnum annotationEnum =
                 Arrays.stream(BindingEnum.values())
                       .filter(bindingEnum -> StringUtils.equalsIgnoreCase(bindingEnum.name(),
-                                                                          FilenameUtils.getExtension(annotation.getQualifiedName())))
+                              ClassUtils.getShortClassName(annotation.getQualifiedName())))
                       .findFirst()
                       .orElse(null);
         return annotationEnum == null ? getUserDefinedBinding(project, (PsiAnnotation) annotation)

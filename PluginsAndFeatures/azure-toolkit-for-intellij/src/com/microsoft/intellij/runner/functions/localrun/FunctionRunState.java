@@ -255,7 +255,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
                 FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(), localSettingsJson, functionRunConfiguration.getAppSettings());
             } catch (AzureExecutionException | IOException e) {
-                throw new AzureExecutionException("Failed to prepare staging folder", e);
+                throw new AzureExecutionException("Failed to prepare staging folder due to error: " + e.getMessage(), e);
             }
         });
     }
