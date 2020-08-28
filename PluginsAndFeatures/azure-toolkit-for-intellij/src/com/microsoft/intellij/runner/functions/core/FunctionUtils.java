@@ -47,6 +47,7 @@ import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.sun.tools.sjavac.Log;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -62,7 +63,6 @@ import java.util.*;
 
 public class FunctionUtils {
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
-
     private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
             "com.microsoft.azure.functions.annotation.FunctionName";
     private static final String FUNCTION_JSON = "function.json";
@@ -174,7 +174,7 @@ public class FunctionUtils {
         }
     }
 
-    public static void prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
+    public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
             throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);
         if (stagingFolder.toFile().isDirectory()) {
@@ -197,7 +197,7 @@ public class FunctionUtils {
 
         final List<File> jarFiles = new ArrayList<>();
         OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
-            if (StringUtils.contains(lib.getName(), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
+            if (ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
                 return true;
             }
 
@@ -215,6 +215,7 @@ public class FunctionUtils {
         for (final File file : jarFiles) {
             FileUtils.copyFileToDirectory(file, libFolder);
         }
+        return configMap;
     }
 
     public static String getTargetFolder(Module module) {

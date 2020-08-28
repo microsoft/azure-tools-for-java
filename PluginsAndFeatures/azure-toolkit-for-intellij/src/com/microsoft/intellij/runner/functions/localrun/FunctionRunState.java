@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.runner.functions.localrun;
 
+import com.google.gson.JsonObject;
 import com.intellij.execution.Executor;
 import com.intellij.execution.ExecutorRegistry;
 import com.intellij.execution.RunnerAndConfigurationSettings;
@@ -42,6 +43,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiMethod;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.common.function.bindings.BindingEnum;
+import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -49,6 +52,7 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.util.CommandUtils;
 import com.microsoft.intellij.util.ReadStreamLineThread;
 import org.apache.commons.lang.StringUtils;
@@ -62,7 +66,10 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,6 +81,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private static final int MAX_PORT = 65535;
     private static final String FAILED_TO_GET_JAVA_VERSION = "Failed to get java runtime version";
     private static final String FAILED_TO_VALIDATE_FUNCTION_RUNTIME = "Failed to validate function runtime, %s";
+    private static final String INSTALL_FUNCTION_EXTENSIONS_FAIL = "Failed to install the Function extensions";
     private static final String DEBUG_PARAMETERS =
             "\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"";
     private static final String RUNTIME_NOT_FOUND = "Azure Functions Core Tools not found. " +
@@ -82,12 +90,18 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             + "core tools path and set the value in function run configuration.";
     private static final String FUNCTION_CORE_TOOLS_OUT_OF_DATE = "Local function core tools didn't support java 9 or higher runtime, " +
             "to update it, see: https://aka.ms/azfunc-install.";
+    private static final String HOST_JSON = "host.json";
+    private static final String EXTENSION_BUNDLE = "extensionBundle";
+    private static final String EXTENSION_BUNDLE_ID = "Microsoft.Azure.Functions.ExtensionBundle";
+    private static final String SKIP_INSTALL_EXTENSIONS_HTTP = "Skip install Function extension for HTTP Trigger Functions";
+    private static final String SKIP_INSTALL_EXTENSIONS_BUNDLE = "Extension bundle specified, skip install extension";
     private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("version \"(.*)\"");
     private static final ComparableVersion JAVA_9 = new ComparableVersion("9");
     private static final ComparableVersion FUNC_3 = new ComparableVersion("3");
     private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION = new ComparableVersion("3.0.2630");
     private static final ComparableVersion MINIMUM_JAVA_9_SUPPORTED_VERSION_V2 = new ComparableVersion("2.7.2628");
-
+    private static final BindingEnum[] FUNCTION_WITHOUT_FUNCTION_EXTENSION = { BindingEnum.HttpOutput,
+                                                                               BindingEnum.HttpTrigger };
     private boolean isDebuggerLaunched;
     private File stagingFolder;
     private Process process;
@@ -246,15 +260,47 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return processBuilder;
     }
 
+    private ProcessBuilder getRunFunctionCliExtensionInstallProcessBuilder(File stagingFolder) {
+        final ProcessBuilder processBuilder = new ProcessBuilder();
+        final String funcPath = functionRunConfiguration.getFuncPath();
+        String[] command = new String[]{funcPath, "extensions ", "install", "--java"};
+        processBuilder.command(command);
+        processBuilder.directory(stagingFolder);
+        return processBuilder;
+    }
+
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws AzureExecutionException {
         ReadAction.run(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule());
             try {
-                FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
-                FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(), localSettingsJson, functionRunConfiguration.getAppSettings());
-            } catch (AzureExecutionException | IOException e) {
+                Map<String, FunctionConfiguration> configMap =
+                        FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
+                FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(),
+                                                                                localSettingsJson, functionRunConfiguration.getAppSettings());
+
+                final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
+                if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
+                    Process installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
+
+                    readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
+                        if (processHandler.isProcessRunning()) {
+                            processHandler.println(inputLine, ProcessOutputTypes.STDERR);
+                        }
+                    });
+                    readInputStreamByLines(installProcess.getInputStream(), inputLine -> {
+                        if (processHandler.isProcessRunning()) {
+                            processHandler.setText(inputLine);
+                        }
+                    });
+                    int exitCode = installProcess.waitFor();
+                    if (exitCode != 0) {
+                        throw new AzureExecutionException(INSTALL_FUNCTION_EXTENSIONS_FAIL);
+                    }
+                }
+
+            } catch (Exception e) {
                 throw new AzureExecutionException("Failed to prepare staging folder due to error: " + e.getMessage(), e);
             }
         });
@@ -317,5 +363,34 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             processHandler.notifyComplete();
         }
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
+    }
+
+    private boolean isInstallingExtensionNeeded(Set<BindingEnum> bindingTypes, RunProcessHandler processHandler) {
+        final JsonObject hostJson = readHostJson(stagingFolder.getAbsolutePath());
+        final JsonObject extensionBundle = hostJson == null ? null : hostJson.getAsJsonObject(EXTENSION_BUNDLE);
+        if (extensionBundle != null && extensionBundle.has("id") &&
+                StringUtils.equalsIgnoreCase(extensionBundle.get("id").getAsString(), EXTENSION_BUNDLE_ID)) {
+            processHandler.println(SKIP_INSTALL_EXTENSIONS_BUNDLE, ProcessOutputTypes.STDOUT);
+            return false;
+        }
+        final boolean isNonHttpTriggersExist = bindingTypes.stream().anyMatch(binding ->
+                                                                                      !Arrays.asList(FUNCTION_WITHOUT_FUNCTION_EXTENSION).contains(binding));
+        if (!isNonHttpTriggersExist) {
+            processHandler.println(SKIP_INSTALL_EXTENSIONS_HTTP, ProcessOutputTypes.STDOUT);
+            return false;
+        }
+        return true;
+    }
+
+    private static JsonObject readHostJson(String stagingFolder) {
+        final File hostJson = new File(stagingFolder, HOST_JSON);
+        return JsonUtils.readJsonFile(hostJson);
+    }
+
+    private static Set<BindingEnum> getFunctionBindingEnums(Map<String, FunctionConfiguration> configMap) {
+        final Set<BindingEnum> result = new HashSet<>();
+        configMap.values().forEach(configuration -> configuration.getBindings().
+                forEach(binding -> result.add(binding.getBindingEnum())));
+        return result;
     }
 }
