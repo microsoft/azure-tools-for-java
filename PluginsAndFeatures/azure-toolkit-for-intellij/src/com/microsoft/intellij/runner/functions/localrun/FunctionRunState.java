@@ -82,6 +82,9 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private static final String FAILED_TO_GET_JAVA_VERSION = "Failed to get java runtime version";
     private static final String FAILED_TO_VALIDATE_FUNCTION_RUNTIME = "Failed to validate function runtime, %s";
     private static final String INSTALL_FUNCTION_EXTENSIONS_FAIL = "Failed to install the Function extensions";
+    private static final String INSTALL_FUNCTION_EXTENSIONS_ERROR = "Failed to install the Function extensions due to"
+            + " error: ";
+
     private static final String DEBUG_PARAMETERS =
             "\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"";
     private static final String RUNTIME_NOT_FOUND = "Azure Functions Core Tools not found. " +
@@ -104,6 +107,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                                                                                BindingEnum.HttpTrigger };
     private boolean isDebuggerLaunched;
     private File stagingFolder;
+    private Process installProcess;
     private Process process;
     private Executor executor;
     private FunctionRunConfiguration functionRunConfiguration;
@@ -143,6 +147,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         updateTelemetryMap(telemetryMap);
         validateFunctionRuntime(processHandler);
         stagingFolder = FunctionUtils.getTempStagingFolder();
+        addProcessTerminatedListener(processHandler);
         prepareStagingFolder(stagingFolder, processHandler);
         // Run Function Host
         runFunctionCli(processHandler, stagingFolder);
@@ -210,8 +215,6 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         final int funcPort = findFreePortForApi(Math.max(DEFAULT_FUNC_PORT, debugPort + 1));
         processHandler.println(String.format("Using port : %s", funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
-        // Add listener to close func.exe
-        addProcessTerminatedListener(processHandler, process);
         // Redirect function cli output to console
         readInputStreamByLines(process.getInputStream(), inputLine -> {
             if (isDebugMode() && StringUtils.containsIgnoreCase(inputLine, "Job host started") && !isDebuggerLaunched) {
@@ -233,16 +236,15 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     private void readInputStreamByLines(InputStream inputStream, Consumer<String> stringConsumer) {
-        new ReadStreamLineThread(inputStream, stringConsumer).run();
+        new ReadStreamLineThread(inputStream, stringConsumer).start();
     }
 
-    private void addProcessTerminatedListener(RunProcessHandler processHandler, Process process) {
+    private void addProcessTerminatedListener(RunProcessHandler processHandler) {
         processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void processTerminated(@NotNull ProcessEvent event) {
-                if (process != null && process.isAlive()) {
-                    process.destroy();
-                }
+                stopProcessIfAlive(process);
+                stopProcessIfAlive(installProcess);
             }
         });
     }
@@ -263,7 +265,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     private ProcessBuilder getRunFunctionCliExtensionInstallProcessBuilder(File stagingFolder) {
         final ProcessBuilder processBuilder = new ProcessBuilder();
         final String funcPath = functionRunConfiguration.getFuncPath();
-        String[] command = new String[]{funcPath, "extensions ", "install", "--java"};
+        String[] command = new String[]{funcPath, "extensions", "install", "--java"};
         processBuilder.command(command);
         processBuilder.directory(stagingFolder);
         return processBuilder;
@@ -282,28 +284,34 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
                 final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
                 if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
-                    Process installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
-
-                    readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
-                        if (processHandler.isProcessRunning()) {
-                            processHandler.println(inputLine, ProcessOutputTypes.STDERR);
-                        }
-                    });
-                    readInputStreamByLines(installProcess.getInputStream(), inputLine -> {
-                        if (processHandler.isProcessRunning()) {
-                            processHandler.setText(inputLine);
-                        }
-                    });
-                    int exitCode = installProcess.waitFor();
-                    if (exitCode != 0) {
-                        throw new AzureExecutionException(INSTALL_FUNCTION_EXTENSIONS_FAIL);
-                    }
+                    installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
                 }
-
-            } catch (Exception e) {
+            } catch (AzureExecutionException | IOException e) {
                 throw new AzureExecutionException("Failed to prepare staging folder due to error: " + e.getMessage(), e);
             }
         });
+        if (installProcess != null) {
+            try {
+                readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
+                    if (processHandler.isProcessRunning()) {
+                        processHandler.println(inputLine, ProcessOutputTypes.STDERR);
+                    }
+                });
+                readInputStreamByLines(installProcess.getInputStream(), inputLine -> {
+                    if (processHandler.isProcessRunning()) {
+                        processHandler.setText(inputLine);
+                    }
+                });
+                int exitCode = installProcess.waitFor();
+                if (exitCode != 0) {
+                    throw new AzureExecutionException(INSTALL_FUNCTION_EXTENSIONS_FAIL);
+                }
+            } catch (AzureExecutionException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new AzureExecutionException(INSTALL_FUNCTION_EXTENSIONS_ERROR + e.getMessage());
+            }
+        }
     }
 
     private boolean isDebugMode() {
@@ -343,9 +351,8 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @Override
     protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {
-        if (process != null && process.isAlive()) {
-            process.destroy();
-        }
+        stopProcessIfAlive(process);
+
         if (!processHandler.isProcessTerminated()) {
             processHandler.setText("Function execute succeed.");
             processHandler.notifyComplete();
@@ -355,9 +362,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     @Override
     protected void onFail(String errMsg, RunProcessHandler processHandler) {
-        if (process != null && process.isAlive()) {
-            process.destroy();
-        }
+        stopProcessIfAlive(process);
         if (!processHandler.isProcessTerminated()) {
             processHandler.println(errMsg, ProcessOutputTypes.STDERR);
             processHandler.notifyComplete();
@@ -392,5 +397,11 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         configMap.values().forEach(configuration -> configuration.getBindings().
                 forEach(binding -> result.add(binding.getBindingEnum())));
         return result;
+    }
+
+    private static void stopProcessIfAlive(final Process proc) {
+        if (proc != null && proc.isAlive()) {
+            proc.destroy();
+        }
     }
 }
