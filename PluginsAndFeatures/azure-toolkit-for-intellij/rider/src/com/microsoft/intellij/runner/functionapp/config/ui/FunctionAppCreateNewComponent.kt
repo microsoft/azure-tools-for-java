@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2019-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -34,8 +34,8 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
 import com.microsoft.intellij.ui.component.AzureComponent
-import com.microsoft.intellij.ui.component.AzureResourceGroupSelector
-import com.microsoft.intellij.ui.component.AzureSubscriptionsSelector
+import com.microsoft.intellij.ui.component.ResourceGroupSelector
+import com.microsoft.intellij.ui.component.SubscriptionSelector
 import com.microsoft.intellij.ui.component.StorageAccountSelector
 import com.microsoft.intellij.ui.component.appservice.AppNameComponent
 import com.microsoft.intellij.ui.component.appservice.HostingPlanSelector
@@ -50,19 +50,16 @@ class FunctionAppCreateNewComponent(lifetime: Lifetime) :
 
     val pnlAppName = AppNameComponent(lifetime.createNested())
 
-    val pnlSubscription = AzureSubscriptionsSelector()
+    val pnlSubscription = SubscriptionSelector()
 
-    val pnlResourceGroup = AzureResourceGroupSelector(lifetime.createNested())
-    private val pnlResourceGroupHolder =
-            HideableTitledPanel(message("run_config.publish.form.resource_group.header"), pnlResourceGroup, true)
+    val pnlResourceGroup = ResourceGroupSelector(lifetime.createNested())
+    private val pnlResourceGroupHolder = HideableTitledPanel(message("run_config.publish.form.resource_group.header"), pnlResourceGroup, true)
 
     val pnlHostingPlan = HostingPlanSelector(lifetime.createNested())
-    private val pnlHostingPlanHolder =
-            HideableTitledPanel(message("run_config.publish.form.hosting_plan.header"), pnlHostingPlan, true)
+    private val pnlHostingPlanHolder = HideableTitledPanel(message("run_config.publish.form.hosting_plan.header"), pnlHostingPlan, true)
 
     val pnlStorageAccount = StorageAccountSelector(lifetime.createNested())
-    private val pnlStorageAccountHolder =
-            HideableTitledPanel(message("run_config.publish.form.storage_account.header"), pnlStorageAccount, true)
+    private val pnlStorageAccountHolder = HideableTitledPanel(message("run_config.publish.form.storage_account.header"), pnlStorageAccount, true)
 
     init {
         add(pnlAppName, "growx")

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,22 +20,24 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.helpers.defaults
+package com.microsoft.intellij.ui.forms.appservice.base
 
+import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.resources.fluentcore.arm.Region
-import com.microsoft.azure.management.sql.DatabaseEdition
-import com.microsoft.azure.management.sql.ServiceObjectiveName
+import com.microsoft.azure.management.resources.Location
+import com.microsoft.azure.management.resources.ResourceGroup
+import com.microsoft.azure.management.resources.Subscription
+import com.microsoft.azuretools.core.mvp.ui.base.MvpView
 
-object AzureDefaults {
+interface CreateAppMvpView : MvpView {
 
-    const val SQL_DATABASE_COLLATION = "SQL_Latin1_General_CP1_CI_AS"
+    fun fillSubscription(subscriptions: List<Subscription>)
 
-    val databaseEdition: DatabaseEdition = DatabaseEdition.BASIC
+    fun fillResourceGroup(resourceGroups: List<ResourceGroup>)
 
-    val databaseComputeSize: ServiceObjectiveName = ServiceObjectiveName.BASIC
+    fun fillAppServicePlan(appServicePlans: List<AppServicePlan>)
 
-    val location: Region = Region.US_EAST
+    fun fillLocation(locations: List<Location>)
 
-    val pricingTier: PricingTier = PricingTier.STANDARD_S1
+    fun fillPricingTier(pricingTiers: List<PricingTier>)
 }

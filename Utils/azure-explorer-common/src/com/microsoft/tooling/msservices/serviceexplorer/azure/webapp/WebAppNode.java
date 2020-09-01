@@ -45,7 +45,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete the Web App: %s.\n"
         + "Are you sure you want to continue?";
-    private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
+    private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App '%s'...";
     private static final String LABEL = "WebApp";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
@@ -173,7 +173,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {
         DeleteWebAppAction() {
             super(WebAppNode.this, String.format(DELETE_WEBAPP_PROMPT_MESSAGE, getWebAppName()),
-                    DELETE_WEBAPP_PROGRESS_MESSAGE);
+                    String.format(DELETE_WEBAPP_PROGRESS_MESSAGE, getWebAppName()));
         }
 
         @Override

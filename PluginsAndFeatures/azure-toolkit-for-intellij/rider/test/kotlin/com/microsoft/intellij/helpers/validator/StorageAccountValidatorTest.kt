@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -263,8 +263,8 @@ class StorageAccountValidatorTest {
                 "test-subscription" to listOf(StorageAccountMock(name = "teststorageaccount"))
         ))
 
-        val validationResult = StorageAccountValidator.validateStorageAccountName(
-                subscriptionId = "test-subscription", name = "teststorageaccount1")
+        val validationResult =
+                StorageAccountValidator.validateStorageAccountName(name = "teststorageaccount1")
 
         validationResult.isValid.shouldBeTrue()
         validationResult.errors.shouldBeEmpty()
@@ -272,27 +272,12 @@ class StorageAccountValidatorTest {
 
     @Test
     fun testValidateStorageAccountName_NameIsNotSet() {
-        val validationResult = StorageAccountValidator.validateStorageAccountName(
-                subscriptionId = "test-subscription", name = "")
+        val validationResult =
+                StorageAccountValidator.validateStorageAccountName(name = "")
 
         validationResult.isValid.shouldBeFalse()
         validationResult.errors.size.shouldBe(1)
         validationResult.errors[0].shouldBe(RiderAzureBundle.message("run_config.publish.validation.storage_account.name_not_defined"))
-    }
-
-    @Test
-    fun testValidateStorageAccountName_AlreadyExists() {
-        val mockStorageAccount = StorageAccountMock(name = "teststorageaccount")
-        AzureStorageAccountMvpModel.setSubscriptionIdToStorageAccountMap(mapOf(
-                "test-subscription" to listOf(mockStorageAccount)
-        ))
-
-        val validationResult = StorageAccountValidator.validateStorageAccountName(
-                subscriptionId = "test-subscription", name = mockStorageAccount.name())
-
-        validationResult.isValid.shouldBeFalse()
-        validationResult.errors.size.shouldBe(1)
-        validationResult.errors[0].shouldBe(RiderAzureBundle.message("run_config.publish.validation.storage_account.name_already_exists",  mockStorageAccount.name()))
     }
 
     @Test
@@ -303,8 +288,8 @@ class StorageAccountValidatorTest {
 
         val invalidCharsString = arrayOf('-', 'A').joinToString("', '", "'", "'")
 
-        val validationResult = StorageAccountValidator.validateStorageAccountName(
-                subscriptionId = "test-subscription", name = "test-storage-Account".repeat(3))
+        val validationResult =
+                StorageAccountValidator.validateStorageAccountName(name = "test-storage-Account".repeat(3))
 
         validationResult.isValid.shouldBeFalse()
         validationResult.errors.size.shouldBe(2)

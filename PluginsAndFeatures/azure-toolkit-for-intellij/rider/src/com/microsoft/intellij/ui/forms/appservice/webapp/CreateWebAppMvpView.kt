@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,22 +20,8 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.helpers.defaults
+package com.microsoft.intellij.ui.forms.appservice.webapp
 
-import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.resources.fluentcore.arm.Region
-import com.microsoft.azure.management.sql.DatabaseEdition
-import com.microsoft.azure.management.sql.ServiceObjectiveName
+import com.microsoft.intellij.ui.forms.appservice.base.CreateAppMvpView
 
-object AzureDefaults {
-
-    const val SQL_DATABASE_COLLATION = "SQL_Latin1_General_CP1_CI_AS"
-
-    val databaseEdition: DatabaseEdition = DatabaseEdition.BASIC
-
-    val databaseComputeSize: ServiceObjectiveName = ServiceObjectiveName.BASIC
-
-    val location: Region = Region.US_EAST
-
-    val pricingTier: PricingTier = PricingTier.STANDARD_S1
-}
+interface CreateWebAppMvpView : CreateAppMvpView

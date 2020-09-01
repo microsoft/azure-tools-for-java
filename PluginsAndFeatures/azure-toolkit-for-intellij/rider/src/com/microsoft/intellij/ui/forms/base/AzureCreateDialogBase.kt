@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,30 +20,40 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer.azure.database.actions
+package com.microsoft.intellij.ui.forms.base
 
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
-import com.microsoft.azuretools.authmanage.AuthMethodManager
-import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
-import com.microsoft.intellij.ui.forms.sqlserver.CreateSqlServerDialog
-import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
+import com.jetbrains.rd.util.lifetime.LifetimeDefinition
+import com.microsoft.intellij.ui.component.AzureComponent
+import com.microsoft.intellij.ui.components.AzureDialogWrapper
+import org.jetbrains.plugins.azure.RiderAzureBundle.message
+import java.awt.Dimension
 
-@Name("New SQL Server")
-class SqlServerCreateAction(private val databasesModule: AzureDatabaseModule) : NodeActionListener() {
+abstract class AzureCreateDialogBase(private val lifetimeDef: LifetimeDefinition,
+                                     private val project: Project) :
+        AzureDialogWrapper(project),
+        AzureComponent {
 
-    override fun actionPerformed(event: NodeActionEvent?) {
-        val project = databasesModule.project as? Project ?: return
-        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) return
+    abstract val azureHelpUrl: String
 
-        val createSqlServerForm =
-                CreateSqlServerDialog(project.defineNestedLifetime(), project, Runnable { databasesModule.load(true) })
+    open val dialogMinWidth: Int = 300
 
-        createSqlServerForm.show()
+    protected val lifetime = project.defineNestedLifetime()
+
+    init {
+        setOKButtonText(message("dialog.create.ok_button.label"))
     }
 
-    override fun getIconPath(): String = "AddEntity.svg"
+    override fun getPreferredSize() = Dimension(dialogMinWidth, -1)
+
+    override fun doHelpAction() = BrowserUtil.open(azureHelpUrl)
+
+    override fun doValidateAll() = validateComponent()
+
+    override fun dispose() {
+        lifetimeDef.terminate()
+        super.dispose()
+    }
 }

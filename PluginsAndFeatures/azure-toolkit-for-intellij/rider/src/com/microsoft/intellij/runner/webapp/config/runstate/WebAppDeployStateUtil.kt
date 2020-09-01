@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2018-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -27,7 +27,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.ConnectionStringType
-import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azure.management.appservice.RuntimeStack
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.management.sql.SqlDatabase
@@ -47,7 +46,7 @@ import com.microsoft.intellij.runner.appbase.config.runstate.AppDeployStateUtil.
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.model.WebAppPublishModel
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import java.util.*
+import java.util.Date
 
 object WebAppDeployStateUtil {
 
@@ -74,60 +73,31 @@ object WebAppDeployStateUtil {
         if (model.isCreatingNewApp) {
             processHandler.setText(message("process_event.publish.web_apps.creating", model.appName))
 
-            if (model.appName.isEmpty())
-                throw RuntimeException(message("process_event.publish.web_apps.name_not_defined"))
-
-            if (model.resourceGroupName.isEmpty())
-                throw RuntimeException(message("process_event.publish.resource_group.not_defined"))
-
-            val operatingSystem = model.operatingSystem
-
-            val webAppDefinition = AzureDotNetWebAppMvpModel.WebAppDefinition(
-                    model.appName, model.isCreatingResourceGroup, model.resourceGroupName)
-
-            val webApp =
-                    if (model.isCreatingAppServicePlan) {
-                        if (model.appServicePlanName.isEmpty())
-                            throw RuntimeException(message("process_event.publish.service_plan.name_not_defined"))
-
-                        val pricingTier = model.pricingTier
-                        val appServicePlanDefinition = AzureDotNetWebAppMvpModel.AppServicePlanDefinition(model.appServicePlanName, pricingTier, model.location)
-
-                        if (operatingSystem == OperatingSystem.WINDOWS) {
-                            AzureDotNetWebAppMvpModel.createWebAppWithNewWindowsAppServicePlan(
-                                    subscriptionId,
-                                    webAppDefinition,
-                                    appServicePlanDefinition,
-                                    model.netFrameworkVersion)
-                        } else {
-                            AzureDotNetWebAppMvpModel.createWebAppWithNewLinuxAppServicePlan(
-                                    subscriptionId,
-                                    webAppDefinition,
-                                    appServicePlanDefinition,
-                                    model.netCoreRuntime)
-                        }
-                    } else {
-                        if (model.appServicePlanId.isEmpty())
-                            throw RuntimeException(message("process_event.publish.service_plan.not_defined"))
-
-                        if (operatingSystem == OperatingSystem.WINDOWS) {
-                            AzureDotNetWebAppMvpModel.createWebAppWithExistingWindowsAppServicePlan(
-                                    subscriptionId,
-                                    webAppDefinition,
-                                    model.appServicePlanId,
-                                    model.netFrameworkVersion)
-                        } else {
-                            AzureDotNetWebAppMvpModel.createWebAppWithExistingLinuxAppServicePlan(
-                                    subscriptionId,
-                                    webAppDefinition,
-                                    model.appServicePlanId,
-                                    model.netCoreRuntime)
-                        }
-                    }
+            val webApp = AzureDotNetWebAppMvpModel.createWebApp(
+                    subscriptionId           = subscriptionId,
+                    appName                  = model.appName,
+                    isCreatingResourceGroup  = model.isCreatingResourceGroup,
+                    resourceGroupName        = model.resourceGroupName,
+                    operatingSystem          = model.operatingSystem,
+                    isCreatingAppServicePlan = model.isCreatingAppServicePlan,
+                    appServicePlanId         = model.appServicePlanId,
+                    appServicePlanName       = model.appServicePlanName,
+                    pricingTier              = model.pricingTier,
+                    location                 = model.location,
+                    netFrameworkVersion      = model.netFrameworkVersion,
+                    netCoreRuntime           = model.netCoreRuntime
+            )
 
             val stateMessage = message("process_event.publish.web_apps.create_success", webApp.name())
             processHandler.setText(stateMessage)
-            activityNotifier.notifyProgress(message("tool_window.azure_activity_log.publish.web_app.create"), Date(), webApp.defaultHostName(), 100, stateMessage)
+            activityNotifier.notifyProgress(
+                    message("tool_window.azure_activity_log.publish.web_app.create"),
+                    Date(),
+                    webApp.defaultHostName(),
+                    100,
+                    stateMessage
+            )
+
             return webApp
         }
 

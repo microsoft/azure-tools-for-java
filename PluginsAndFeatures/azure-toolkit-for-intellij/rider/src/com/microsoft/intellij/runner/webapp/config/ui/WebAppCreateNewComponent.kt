@@ -32,8 +32,8 @@ import com.microsoft.azure.management.resources.ResourceGroup
 import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.intellij.ui.component.AzureComponent
-import com.microsoft.intellij.ui.component.AzureResourceGroupSelector
-import com.microsoft.intellij.ui.component.AzureSubscriptionsSelector
+import com.microsoft.intellij.ui.component.ResourceGroupSelector
+import com.microsoft.intellij.ui.component.SubscriptionSelector
 import com.microsoft.intellij.ui.component.appservice.AppNameComponent
 import com.microsoft.intellij.ui.component.appservice.AppServicePlanSelector
 import com.microsoft.intellij.ui.component.appservice.OperatingSystemSelector
@@ -48,9 +48,9 @@ class WebAppCreateNewComponent(lifetime: Lifetime) :
         AzureComponent {
 
     val pnlAppName = AppNameComponent(lifetime.createNested())
-    val pnlSubscription = AzureSubscriptionsSelector()
+    val pnlSubscription = SubscriptionSelector()
 
-    val pnlResourceGroup = AzureResourceGroupSelector(lifetime.createNested())
+    val pnlResourceGroup = ResourceGroupSelector(lifetime.createNested())
     private val pnlResourceGroupHolder = HideableTitledPanel(
             message("run_config.publish.form.resource_group.header"), pnlResourceGroup, true)
 

@@ -134,7 +134,7 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         model.publishableProject = pnlProject.lastSelectedProject
 
         model.isCreatingNewApp = pnlFunctionAppSelector.isCreateNew
-        model.appName = pnlCreateFunctionApp.pnlAppName.txtAppName.text
+        model.appName = pnlCreateFunctionApp.pnlAppName.appName
 
         if (!model.isCreatingNewApp) {
             val selectedResource = pnlExistingFunctionApp.pnlExistingAppTable.lastSelectedResource
@@ -146,23 +146,23 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
                     .find { it.subscriptionId() == selectedResource?.subscriptionId }
         }
 
-        model.isCreatingResourceGroup = pnlCreateFunctionApp.pnlResourceGroup.rdoCreateNew.isSelected
-        if (pnlCreateFunctionApp.pnlResourceGroup.rdoCreateNew.isSelected) {
-            model.resourceGroupName = pnlCreateFunctionApp.pnlResourceGroup.txtResourceGroupName.text
+        model.isCreatingResourceGroup = pnlCreateFunctionApp.pnlResourceGroup.isCreateNew
+        if (pnlCreateFunctionApp.pnlResourceGroup.isCreateNew) {
+            model.resourceGroupName = pnlCreateFunctionApp.pnlResourceGroup.resourceGroupName
         } else {
             model.resourceGroupName = pnlCreateFunctionApp.pnlResourceGroup.cbResourceGroup.getSelectedValue()?.name() ?: ""
         }
 
         val hostingPlan = pnlCreateFunctionApp.pnlHostingPlan
-        model.isCreatingAppServicePlan = hostingPlan.isCreatingHostingPlan
-        model.appServicePlanId         = hostingPlan.cbHostingPlan.getSelectedValue()?.id() ?: model.appServicePlanId
-        model.appServicePlanName       = hostingPlan.txtName.text
+        model.isCreatingAppServicePlan = hostingPlan.isCreatingNew
+        model.appServicePlanId         = hostingPlan.lastSelectedAppServicePlan?.id() ?: model.appServicePlanId
+        model.appServicePlanName       = hostingPlan.hostingPlanName
         model.location                 = hostingPlan.cbLocation.getSelectedValue()?.region() ?: model.location
         model.pricingTier              = hostingPlan.cbPricingTier.getSelectedValue() ?: model.pricingTier
 
         val storageAccount = pnlCreateFunctionApp.pnlStorageAccount
         model.isCreatingStorageAccount = storageAccount.isCreatingNew
-        model.storageAccountName       = storageAccount.txtName.text
+        model.storageAccountName       = storageAccount.storageAccountName
         model.storageAccountId         = storageAccount.cbStorageAccount.getSelectedValue()?.id() ?: ""
         model.storageAccountType       = storageAccount.cbStorageAccountType.getSelectedValue() ?: model.storageAccountType
     }

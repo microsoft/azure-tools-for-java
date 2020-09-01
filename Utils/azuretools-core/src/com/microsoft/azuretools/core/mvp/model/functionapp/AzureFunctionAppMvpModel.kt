@@ -23,9 +23,12 @@
 package com.microsoft.azuretools.core.mvp.model.functionapp
 
 import com.microsoft.azure.AzureEnvironment
-import com.microsoft.azure.management.appservice.*
+import com.microsoft.azure.management.appservice.ConnectionString
+import com.microsoft.azure.management.appservice.FunctionApp
+import com.microsoft.azure.management.appservice.OperatingSystem
+import com.microsoft.azure.management.appservice.PricingTier
+import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
-import com.microsoft.azure.management.storage.SkuName
 import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
 import com.microsoft.azuretools.authmanage.AuthMethodManager
@@ -168,8 +171,12 @@ object AzureFunctionAppMvpModel {
                     withResourceGroup
                 }
 
-        val storageAccount = AzureStorageAccountMvpModel.getStorageAccountById(subscriptionId, storageAccountId)
-        val withAppStorage = withStorageAccount(withPlan, isCreateStorageAccount, storageAccount, storageAccountName, storageAccountType.name())
+        val storageAccount =
+                if (isCreateStorageAccount) null
+                else AzureStorageAccountMvpModel.getStorageAccountById(subscriptionId, storageAccountId)
+
+        val withAppStorage =
+                withStorageAccount(withPlan, isCreateStorageAccount, storageAccount, storageAccountName, storageAccountType)
 
         return withAppStorage
                 .withLatestRuntimeVersion()
@@ -204,7 +211,7 @@ object AzureFunctionAppMvpModel {
             return checkConnectionStringNameExists(app, connectionStringName, force)
         }
 
-        val app = AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, appId)
+        val app = getFunctionAppById(subscriptionId, appId)
         return checkConnectionStringNameExists(app, connectionStringName, force)
     }
 
@@ -315,9 +322,9 @@ object AzureFunctionAppMvpModel {
                                    isCreateNew: Boolean,
                                    storageAccount: StorageAccount?,
                                    name: String,
-                                   skuName: SkuName): FunctionApp.DefinitionStages.WithCreate {
+                                   storageAccountType: StorageAccountSkuType): FunctionApp.DefinitionStages.WithCreate {
 
-        return if (isCreateNew) definition.withNewStorageAccount(name, skuName)
+        return if (isCreateNew) definition.withNewStorageAccount(name, storageAccountType)
         else definition.withExistingStorageAccount(storageAccount)
     }
 

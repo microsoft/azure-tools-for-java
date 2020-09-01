@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2018-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -22,14 +22,11 @@
 
 package com.microsoft.intellij.ui.forms.sqlserver
 
-import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.border.IdeaTitledBorder
-import com.intellij.util.ui.JBUI
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.util.ui.update.Activatable
 import com.intellij.util.ui.update.UiNotifyConnector
 import com.jetbrains.rd.platform.util.application
@@ -42,142 +39,141 @@ import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
-import com.microsoft.intellij.ui.component.AzureComponent
-import com.microsoft.intellij.ui.component.AzureResourceGroupSelector
-import com.microsoft.intellij.ui.component.AzureResourceNameComponent
-import com.microsoft.intellij.ui.component.AzureSubscriptionsSelector
-import com.microsoft.intellij.ui.extension.setDefaultRenderer
-import com.microsoft.intellij.ui.extension.getSelectedValue
-import com.microsoft.intellij.ui.extension.initValidationWithResult
-import com.microsoft.intellij.ui.extension.setComponentsEnabled
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.LocationValidator
+import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
-import com.microsoft.intellij.ui.components.AzureDialogWrapper
+import com.microsoft.intellij.ui.extension.getSelectedValue
+import com.microsoft.intellij.ui.extension.initValidationWithResult
+import com.microsoft.intellij.ui.forms.base.AzureCreateDialogBase
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
-import java.awt.Dimension
-import java.util.*
-import javax.swing.*
+import java.time.Duration
+import java.util.Date
+import javax.swing.JComponent
+import javax.swing.JPanel
 
 class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                             private val project: Project,
                             private val onCreate: Runnable = Runnable { }) :
-        AzureDialogWrapper(project),
-        CreateSqlServerMvpView,
-        AzureComponent {
+        AzureCreateDialogBase(lifetimeDef, project),
+        CreateSqlServerMvpView {
 
     companion object {
-        private const val DIALOG_MIN_WIDTH = 300
-        private const val SQL_SERVER_CREATE_TIMEOUT_MS = 120_000L
-        private const val AZURE_SQL_SERVER_HELP_URL = "https://azure.microsoft.com/en-us/services/sql-database/"
+        private val dialogTitle = message("dialog.create_sql_server.title")
+        private val sqlServerCreateTimeout: Duration = Duration.ofMinutes(2)
     }
 
-    private val mainPanel = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1"))
+    private val panel = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1", ":$dialogMinWidth:"))
 
-    private val pnlName = AzureResourceNameComponent()
-    private val pnlSubscription = AzureSubscriptionsSelector()
-    private val pnlResourceGroup = AzureResourceGroupSelector(lifetimeDef.createNested())
-
-    private val pnlSqlServerSettings = JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]"))
-    private val lblLocation = JLabel(message("dialog.create_sql_server.location.label"))
-    private val cbLocation = ComboBox<Location>()
-    private val lblAdminLogin = JLabel(message("dialog.create_sql_server.admin_login.label"))
-    private val txtAdminLoginValue = JTextField()
-    private val lblAdminPassword = JLabel(message("dialog.create_sql_server.admin_password.label"))
-    private val passAdminPassword = JPasswordField()
-    private val lblAdminPasswordConfirm = JLabel(message("dialog.create_sql_server.confirm_password.label"))
-    private val passAdminPasswordConfirm = JPasswordField()
-
-    private var cachedResourceGroups = emptyList<ResourceGroup>()
+    private val pnlCreate = SqlServerCreateNewComponent(lifetimeDef)
 
     private val presenter = CreateSqlServerViewPresenter<CreateSqlServerDialog>()
+
     private val activityNotifier = AzureDeploymentProgressNotification(project)
 
     init {
-        title = message("dialog.create_sql_server.title")
-        setOKButtonText(message("dialog.create_sql_server.ok_button.label"))
+        title = dialogTitle
+        myPreferredFocusedComponent = pnlCreate.pnlName.txtNameValue
 
         updateAzureModelInBackground(project)
+
         initSubscriptionComboBox()
-        initLocationComboBox()
         initMainPanel()
         initComponentValidation()
-
-        myPreferredFocusedComponent = pnlName.txtNameValue
 
         presenter.onAttachView(this)
 
         init()
     }
 
-    override fun getPreferredSize() = Dimension(DIALOG_MIN_WIDTH, -1)
+    override val azureHelpUrl = "https://azure.microsoft.com/en-us/services/sql-database/"
 
-    override fun createCenterPanel(): JComponent = mainPanel
+    override fun createCenterPanel(): JComponent = panel
 
-    override fun validateComponent() =
-            pnlSubscription.validateComponent() +
-            pnlResourceGroup.validateComponent() +
-            listOfNotNull(
-                    SqlServerValidator
-                            .validateSqlServerName(pnlName.txtNameValue.text)
-                            .merge(SqlServerValidator.checkSqlServerExistence(pnlSubscription.lastSelectedSubscriptionId, pnlName.txtNameValue.text))
-                            .toValidationInfo(pnlName.txtNameValue),
-                    LocationValidator.checkLocationIsSet(cbLocation.getSelectedValue()).toValidationInfo(cbLocation),
-                    SqlServerValidator.validateAdminLogin(txtAdminLoginValue.text).toValidationInfo(txtAdminLoginValue),
-                    SqlServerValidator.validateAdminPassword(txtAdminLoginValue.text, passAdminPassword.password).toValidationInfo(passAdminPassword),
-                    SqlServerValidator.checkPasswordsMatch(passAdminPassword.password, passAdminPasswordConfirm.password).toValidationInfo(passAdminPasswordConfirm)
-            )
+    override fun validateComponent(): List<ValidationInfo> {
+        val subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId
+        return pnlCreate.pnlSubscription.validateComponent() +
+                pnlCreate.pnlResourceGroup.validateComponent() +
+                listOfNotNull(
+                        SqlServerValidator
+                                .validateSqlServerName(pnlCreate.serverName)
+                                .merge(SqlServerValidator.checkSqlServerExistence(subscriptionId, pnlCreate.serverName))
+                                .toValidationInfo(pnlCreate.pnlName.txtNameValue),
+
+                        LocationValidator.checkLocationIsSet(pnlCreate.cbLocation.getSelectedValue())
+                                .toValidationInfo(pnlCreate.cbLocation),
+
+                        SqlServerValidator.validateAdminLogin(pnlCreate.txtAdminLoginValue.text)
+                                .toValidationInfo(pnlCreate.txtAdminLoginValue),
+
+                        SqlServerValidator.validateAdminPassword(pnlCreate.txtAdminLoginValue.text, pnlCreate.passAdminPassword.password)
+                                .toValidationInfo(pnlCreate.passAdminPassword),
+
+                        SqlServerValidator.checkPasswordsMatch(pnlCreate.passAdminPassword.password, pnlCreate.passAdminPasswordConfirm.password)
+                                .toValidationInfo(pnlCreate.passAdminPasswordConfirm)
+                ) +
+                listOfNotNull(
+                        if (pnlCreate.pnlResourceGroup.isCreateNew) {
+                            ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, pnlCreate.pnlResourceGroup.resourceGroupName)
+                                    .toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName)
+                        } else null
+                )
+    }
 
     override fun initComponentValidation() {
 
-        pnlName.txtNameValue.initValidationWithResult(
+        pnlCreate.pnlName.txtNameValue.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { SqlServerValidator.checkSqlServerNameMaxLength(pnlName.txtNameValue.text)
-                        .merge(SqlServerValidator.checkInvalidCharacters(pnlName.txtNameValue.text)) },
-                focusLostValidationAction = { SqlServerValidator.checkStartsEndsWithDash(pnlName.txtNameValue.text) })
+                textChangeValidationAction = { SqlServerValidator.checkSqlServerNameMaxLength(pnlCreate.serverName)
+                        .merge(SqlServerValidator.checkInvalidCharacters(pnlCreate.serverName)) },
+                focusLostValidationAction = { SqlServerValidator.checkStartsEndsWithDash(pnlCreate.serverName) })
 
-        txtAdminLoginValue.initValidationWithResult(
+        pnlCreate.txtAdminLoginValue.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { SqlServerValidator.checkLoginInvalidCharacters(txtAdminLoginValue.text) },
-                focusLostValidationAction = { SqlServerValidator.checkRestrictedLogins(txtAdminLoginValue.text) })
+                textChangeValidationAction = { SqlServerValidator.checkLoginInvalidCharacters(pnlCreate.adminLogin) },
+                focusLostValidationAction = { SqlServerValidator.checkRestrictedLogins(pnlCreate.adminLogin) })
 
-        passAdminPassword.initValidationWithResult(
+        pnlCreate.passAdminPassword.initValidationWithResult(
                 lifetimeDef,
-                textChangeValidationAction = { SqlServerValidator.checkPasswordContainsUsername(passAdminPassword.password, txtAdminLoginValue.text) },
-                focusLostValidationAction = { SqlServerValidator.checkPasswordRequirements(passAdminPassword.password).merge(
-                        if (passAdminPassword.password.isEmpty()) ValidationResult()
-                        else SqlServerValidator.checkPasswordMinLength(passAdminPassword.password)) })
+                textChangeValidationAction = { SqlServerValidator.checkPasswordContainsUsername(pnlCreate.adminPassword, pnlCreate.adminLogin) },
+                focusLostValidationAction = { SqlServerValidator.checkPasswordRequirements(pnlCreate.adminPassword).merge(
+                        if (pnlCreate.adminPassword.isEmpty()) ValidationResult()
+                        else SqlServerValidator.checkPasswordMinLength(pnlCreate.adminPassword)) })
 
-        passAdminPasswordConfirm.initValidationWithResult(
+        pnlCreate.passAdminPasswordConfirm.initValidationWithResult(
                 lifetimeDef,
                 textChangeValidationAction = { ValidationResult() },
-                focusLostValidationAction = { SqlServerValidator.checkPasswordsMatch(passAdminPassword.password, passAdminPasswordConfirm.password) })
+                focusLostValidationAction = { SqlServerValidator.checkPasswordsMatch(pnlCreate.adminPassword, pnlCreate.passAdminPasswordConfirm.password) })
     }
 
-    override fun doValidateAll() = validateComponent()
-
     override fun doOKAction() {
-        val sqlServerName = pnlName.txtNameValue.text
-        val subscriptionId = pnlSubscription.lastSelectedSubscriptionId
+        val sqlServerName = pnlCreate.serverName
+        val subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId
         val progressMessage = message("dialog.create_sql_server.creating", sqlServerName)
+        val resourceGroup =
+                when {
+                    pnlCreate.pnlResourceGroup.isCreateNew -> pnlCreate.pnlResourceGroup.resourceGroupName
+                    else -> pnlCreate.pnlResourceGroup.cbResourceGroup.getSelectedValue()?.name() ?: ""
+                }
+
+        var sqlServerId: String? = null
 
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, progressMessage, true) {
 
             override fun run(progress: ProgressIndicator) {
-                AzureSqlServerMvpModel.createSqlServer(
-                        subscriptionId,
-                        sqlServerName,
-                        cbLocation.getSelectedValue()!!.region(),
-                        pnlResourceGroup.rdoCreateNew.isSelected,
-                        when {
-                            pnlResourceGroup.rdoCreateNew.isSelected -> pnlResourceGroup.txtResourceGroupName.text
-                            else -> pnlResourceGroup.cbResourceGroup.getSelectedValue()!!.name()
-                        },
-                        txtAdminLoginValue.text,
-                        passAdminPassword.password)
+                val server = AzureSqlServerMvpModel.createSqlServer(
+                        subscriptionId          = subscriptionId,
+                        sqlServerName           = sqlServerName,
+                        region                  = pnlCreate.cbLocation.getSelectedValue()?.region() ?: AzureDefaults.location,
+                        isCreatingResourceGroup = pnlCreate.pnlResourceGroup.isCreateNew,
+                        resourceGroupName       = resourceGroup,
+                        sqlServerAdminLogin     = pnlCreate.adminLogin,
+                        sqlServerAdminPass      = pnlCreate.adminPassword
+                )
+                sqlServerId = server.id()
             }
 
             override fun onSuccess() {
@@ -191,8 +187,12 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                         message("dialog.create_sql_server.create_success", sqlServerName)
                 )
 
-                SpinWait.spinUntil(lifetimeDef, SQL_SERVER_CREATE_TIMEOUT_MS) {
-                    AzureSqlServerMvpModel.getSqlServerByName(subscriptionId, sqlServerName, true) != null
+                SpinWait.spinUntil(lifetimeDef, sqlServerCreateTimeout) {
+                    val serverId = sqlServerId ?: return@spinUntil false
+                    val server =
+                            try { AzureSqlServerMvpModel.getSqlServerById(subscriptionId, serverId) }
+                            catch (t: Throwable) { null }
+                    server != null
                 }
 
                 application.invokeLater { onCreate.run() }
@@ -202,84 +202,21 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
         super.doOKAction()
     }
 
-    override fun doHelpAction() {
-        BrowserUtil.open(AZURE_SQL_SERVER_HELP_URL)
-    }
+    override fun fillSubscription(subscriptions: List<Subscription>) = pnlCreate.fillSubscription(subscriptions)
 
-    override fun fillSubscription(subscriptions: List<Subscription>) {
-        pnlSubscription.cbSubscription.removeAllItems()
+    override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) = pnlCreate.fillResourceGroup(resourceGroups)
 
-        subscriptions.sortedWith(compareBy { it.displayName() }).forEach { subscription ->
-            pnlSubscription.cbSubscription.addItem(subscription)
-        }
-
-        if (subscriptions.isEmpty()) {
-            pnlSubscription.lastSelectedSubscriptionId = ""
-        }
-        setComponentsEnabled(true, pnlSubscription.cbSubscription)
-    }
-
-    override fun fillResourceGroup(resourceGroups: List<ResourceGroup>) {
-        cachedResourceGroups = resourceGroups
-        pnlResourceGroup.cbResourceGroup.removeAllItems()
-
-        resourceGroups.sortedWith(compareBy { it.name() }).forEach { resourceGroup ->
-            pnlResourceGroup.cbResourceGroup.addItem(resourceGroup)
-        }
-
-        if (resourceGroups.isEmpty()) {
-            pnlResourceGroup.rdoCreateNew.doClick()
-            pnlResourceGroup.lastSelectedResourceGroup = null
-        }
-        setComponentsEnabled(true, pnlResourceGroup.cbResourceGroup, pnlResourceGroup.rdoUseExisting)
-    }
-
-    override fun fillLocation(locations: List<Location>) {
-        cbLocation.removeAllItems()
-
-        locations.sortedWith(compareBy { it.displayName() }).forEach { location ->
-            cbLocation.addItem(location)
-            if (location.region() == AzureDefaults.location)
-                cbLocation.selectedItem = location
-        }
-    }
+    override fun fillLocation(locations: List<Location>) = pnlCreate.fillLocation(locations)
 
     override fun dispose() {
         presenter.onDetachView()
-        lifetimeDef.terminate()
         super.dispose()
     }
 
     private fun initMainPanel() {
+        panel.add(pnlCreate, "growx")
 
-        pnlResourceGroup.apply {
-            border = IdeaTitledBorder(message("dialog.create_sql_server.resource_group.header"), 0, JBUI.emptyInsets())
-        }
-
-        pnlSqlServerSettings.apply {
-            border = IdeaTitledBorder(message("dialog.create_sql_server.server_settings.header"), 0, JBUI.emptyInsets())
-
-            add(lblLocation, "gapbefore 3")
-            add(cbLocation, "growx")
-
-            add(lblAdminLogin, "gapbefore 3")
-            add(txtAdminLoginValue, "growx")
-
-            add(lblAdminPassword, "gapbefore 3")
-            add(passAdminPassword, "growx")
-
-            add(lblAdminPasswordConfirm, "gapbefore 3")
-            add(passAdminPasswordConfirm, "growx")
-        }
-
-        mainPanel.apply {
-            add(pnlName, "growx, wmin $DIALOG_MIN_WIDTH")
-            add(pnlSubscription, "growx")
-            add(pnlResourceGroup, "growx")
-            add(pnlSqlServerSettings, "growx")
-        }
-
-        UiNotifyConnector.Once(mainPanel, object : Activatable.Adapter() {
+        UiNotifyConnector.Once(panel, object : Activatable {
             override fun showNotify() {
                 presenter.onLoadSubscription(lifetimeDef)
             }
@@ -287,17 +224,11 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
     }
 
     private fun initSubscriptionComboBox() {
-        pnlSubscription.listenerAction = { subscription ->
+        pnlCreate.pnlSubscription.listenerAction = { subscription ->
             val subscriptionId = subscription.subscriptionId()
             presenter.onLoadResourceGroups(lifetimeDef, subscriptionId)
             presenter.onLoadLocation(lifetimeDef, subscriptionId)
-
-            pnlResourceGroup.subscriptionId = subscriptionId
         }
-    }
-
-    private fun initLocationComboBox() {
-        cbLocation.setDefaultRenderer(message("dialog.create_sql_server.location.empty_message")) { it.displayName() }
     }
 
     private fun updateAzureModelInBackground(project: Project) {

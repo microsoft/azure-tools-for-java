@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2018-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -126,11 +126,11 @@ class WebAppPublishComponent(lifetime: Lifetime,
 
         model.isCreatingNewApp = pnlWebAppSelector.isCreateNew
 
-        model.appName = pnlCreateWebApp.pnlAppName.txtAppName.text
+        model.appName = pnlCreateWebApp.pnlAppName.appName
 
-        model.isCreatingResourceGroup = pnlCreateWebApp.pnlResourceGroup.rdoCreateNew.isSelected
-        if (pnlCreateWebApp.pnlResourceGroup.rdoCreateNew.isSelected) {
-            model.resourceGroupName = pnlCreateWebApp.pnlResourceGroup.txtResourceGroupName.text
+        model.isCreatingResourceGroup = pnlCreateWebApp.pnlResourceGroup.isCreateNew
+        if (pnlCreateWebApp.pnlResourceGroup.isCreateNew) {
+            model.resourceGroupName = pnlCreateWebApp.pnlResourceGroup.resourceGroupName
         } else {
             model.resourceGroupName = pnlCreateWebApp.pnlResourceGroup.lastSelectedResourceGroup?.name() ?: ""
         }
@@ -155,7 +155,7 @@ class WebAppPublishComponent(lifetime: Lifetime,
         }
 
         model.isCreatingAppServicePlan = pnlCreateWebApp.pnlAppServicePlan.rdoCreateNew.isSelected
-        model.appServicePlanName = pnlCreateWebApp.pnlAppServicePlan.txtName.text
+        model.appServicePlanName = pnlCreateWebApp.pnlAppServicePlan.servicePlanName
         model.location = pnlCreateWebApp.pnlAppServicePlan.cbLocation.getSelectedValue()?.region() ?: model.location
         model.pricingTier = pnlCreateWebApp.pnlAppServicePlan.cbPricingTier.getSelectedValue() ?: model.pricingTier
         if (!model.isCreatingAppServicePlan)
@@ -309,15 +309,15 @@ class WebAppPublishComponent(lifetime: Lifetime,
         return netCoreAppVersionRegex.find(currentFramework)?.groups?.get(1)?.value ?: defaultVersion
     }
 
-    private fun getCurrentFrameworkId(publishableProject: PublishableProjectModel): String? {
-        val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
-        return targetFramework?.currentTargetFrameworkId?.valueOrNull?.framework?.id
-    }
-
     private fun getProjectNetFrameworkVersion(publishableProject: PublishableProjectModel): String {
         val defaultVersion = "4.7"
         val currentFramework = getCurrentFrameworkId(publishableProject) ?: return defaultVersion
         return netAppVersionRegex.find(currentFramework)?.groups?.get(1)?.value ?: defaultVersion
+    }
+
+    private fun getCurrentFrameworkId(publishableProject: PublishableProjectModel): String? {
+        val targetFramework = project.solution.projectModelTasks.targetFrameworks[publishableProject.projectModelId]
+        return targetFramework?.currentTargetFrameworkId?.valueOrNull?.framework?.id
     }
 
     private fun canBePublishedToAzure(publishableProject: PublishableProjectModel) =

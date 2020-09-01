@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,29 +20,44 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer.azure.database.actions
+package com.microsoft.intellij.serviceexplorer.azure.webapp.actions
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.defineNestedLifetime
-import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
-import com.microsoft.intellij.ui.forms.sqldatabase.CreateSqlDatabaseOnServerDialog
+import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
+import com.microsoft.intellij.ui.forms.appservice.webapp.CreateWebAppDialog
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
 
-@Name("New SQL Database")
-class SqlDatabaseCreateAction(private val sqlServerNode: SqlServerNode) : NodeActionListener() {
+@Name("New Web App")
+class WebAppCreateAction(private val webAppModule: WebAppModule) : NodeActionListener() {
+
+    companion object {
+        private val logger = Logger.getInstance(WebAppCreateAction::class.java)
+    }
 
     override fun actionPerformed(event: NodeActionEvent?) {
-        event ?: return
+        val project = webAppModule.project as? Project
+        if (project == null) {
+            logger.error("Project instance is not defined for module '${webAppModule.name}'")
+            return
+        }
 
-        val project = sqlServerNode.project as? Project ?: return
+        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+            logger.error("Failed to create Web App. User is not signed in.")
+            return
+        }
 
-        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(sqlServerNode.subscriptionId, sqlServerNode.sqlServerId)
-        val createSqlDatabaseForm =
-                CreateSqlDatabaseOnServerDialog(project.defineNestedLifetime(), project, sqlServer, Runnable { sqlServerNode.load(true) })
-        createSqlDatabaseForm.show()
+        val createWebAppForm = CreateWebAppDialog(
+                lifetimeDef = project.defineNestedLifetime(),
+                project = project,
+                onCreate = Runnable { webAppModule.load(true) })
+
+        createWebAppForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"

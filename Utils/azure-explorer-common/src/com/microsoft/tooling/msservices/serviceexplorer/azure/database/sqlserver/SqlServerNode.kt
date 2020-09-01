@@ -44,11 +44,14 @@ class SqlServerNode(parent: AzureDatabaseModule,
         private const val SQL_DATABASE_MASTER = "master"
 
         private const val ACTION_DELETE = "Delete"
-        private const val PROGRESS_MESSAGE_DELETE_SQL_SERVER = "Deleting SQL Server '%s'"
-        private const val PROMPT_MESSAGE_DELETE_SQL_SERVER =
-                "This operation will delete SQL Server '%s'.\nAre you sure you want to continue?"
+        private const val PROGRESS_MESSAGE_DELETE_SQL_SERVER = "Deleting SQL Server '%s'..."
 
         private const val ICON_ACTION_DELETE = "Discard.svg"
+
+        private val deleteSqlDatabasePromptMessage = StringBuilder()
+                .appendln("This operation will delete SQL Server '%s'.")
+                .append("Are you sure you want to continue?")
+                .toString()
     }
 
     init {
@@ -85,7 +88,7 @@ class SqlServerNode(parent: AzureDatabaseModule,
     private inner class DeleteSqlServerAction internal constructor()
         : AzureNodeActionPromptListener(
             this@SqlServerNode,
-            String.format(PROMPT_MESSAGE_DELETE_SQL_SERVER, sqlServerName),
+            String.format(deleteSqlDatabasePromptMessage, sqlServerName),
             String.format(PROGRESS_MESSAGE_DELETE_SQL_SERVER, sqlServerName)) {
 
         override fun azureNodeAction(event: NodeActionEvent?) {
@@ -99,7 +102,6 @@ class SqlServerNode(parent: AzureDatabaseModule,
             }
         }
 
-        override fun onSubscriptionsChanged(e: NodeActionEvent?) {
-        }
+        override fun onSubscriptionsChanged(e: NodeActionEvent?) { }
     }
 }

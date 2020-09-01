@@ -53,12 +53,15 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         private const val ACTION_OPEN_IN_BROWSER = "Open In Browser"
         private const val ACTION_SHOW_PROPERTIES = "Show Properties"
 
-        private const val PROGRESS_MESSAGE_DELETE_FUNCTION_APP = "Deleting Function App '%s'"
-        private const val PROMPT_MESSAGE_DELETE_FUNCTION_APP =
-                "This operation will delete Function App '%s'.\nAre you sure you want to continue?"
+        private const val PROGRESS_MESSAGE_DELETE_FUNCTION_APP = "Deleting Function App '%s'..."
 
         private const val ICON_FUNCTION_APP_RUNNING = "FunctionAppRunning.svg"
         private const val ICON_FUNCTION_APP_STOPPED = "FunctionAppStopped.svg"
+
+        private val deletingFunctionAppPromptMessage = StringBuilder()
+                .appendln("This operation will delete Function App '%s'.")
+                .append("Are you sure you want to continue?")
+                .toString()
     }
 
     private val logger = Logger.getLogger(FunctionAppNode::class.java.name)
@@ -170,7 +173,7 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
 
     private inner class DeleteFunctionAppAction internal constructor() : AzureNodeActionPromptListener(
             this@FunctionAppNode,
-            String.format(PROMPT_MESSAGE_DELETE_FUNCTION_APP, functionAppName),
+            String.format(deletingFunctionAppPromptMessage, functionAppName),
             String.format(PROGRESS_MESSAGE_DELETE_FUNCTION_APP, functionAppName)) {
 
         override fun azureNodeAction(event: NodeActionEvent?) {

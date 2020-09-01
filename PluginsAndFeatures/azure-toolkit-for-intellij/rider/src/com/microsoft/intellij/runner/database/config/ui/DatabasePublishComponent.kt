@@ -112,9 +112,9 @@ class DatabasePublishComponent(private val lifetime: Lifetime,
         if (pnlDbSelector.isCreateNew) {
             model.databaseName = pnlCreateNewDb.pnlNewDatabaseName.txtNameValue.text
 
-            model.isCreatingResourceGroup = pnlCreateNewDb.pnlResourceGroup.rdoCreateNew.isSelected
-            if (pnlCreateNewDb.pnlResourceGroup.rdoCreateNew.isSelected) {
-                model.resourceGroupName = pnlCreateNewDb.pnlResourceGroup.txtResourceGroupName.text
+            model.isCreatingResourceGroup = pnlCreateNewDb.pnlResourceGroup.isCreateNew
+            if (pnlCreateNewDb.pnlResourceGroup.isCreateNew) {
+                model.resourceGroupName = pnlCreateNewDb.pnlResourceGroup.resourceGroupName
             } else {
                 model.resourceGroupName = pnlCreateNewDb.pnlResourceGroup.lastSelectedResourceGroup?.name() ?: ""
             }
