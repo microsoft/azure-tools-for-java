@@ -7,7 +7,7 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 cd "$SCRIPTPATH"
 
 # Utils
-VERSION="3.42.0"
+VERSION="3.43.0"
 MAVEN_QUIET=""
 
 # Eclipse
