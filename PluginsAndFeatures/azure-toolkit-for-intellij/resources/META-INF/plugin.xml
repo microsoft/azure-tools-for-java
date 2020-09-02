@@ -24,10 +24,17 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.41.1</h3>
+    <h3>3.42.0</h3>
+    <h4>Added</h4>
+    <ul>
+        <li>Support Custom Binding for Azure Functions</li>
+    </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4576">#4576</a> Can not list webapps in web app deployment panel</li>
+        <li>
+            <a href="https://github.com/microsoft/azure-maven-plugins/issues/1110">#1110</a>
+            Fixes XSS issue in authentication
+        </li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

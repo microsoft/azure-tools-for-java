@@ -1,6 +1,14 @@
 <!-- Version: 3.40.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.42.0
+
+### Added
+- Support Custom Binding for Azure Functions
+
+### Fixed
+- [#1110](https://github.com/microsoft/azure-maven-plugins/issues/1110) Fixes XSS issue in authentication 
+
 ## 3.41.1
 
 ### Fixed
@@ -120,32 +128,6 @@ Azure Toolkit support Log Streaming for App Service now! You could get the live 
 - [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fix NPE caused job submission failure issue
 - [#4204](https://github.com/microsoft/azure-tools-for-java/issues/4204) Deploy Azure Spring Cloud App dialog default value is apply
 - [#4231](https://github.com/microsoft/azure-tools-for-java/issues/4231) Cannot use Auth file for spring cloud authentication
-
-## 3.35.0
-
-We are proud to announce the support for [Azure Spring Cloud](https://docs.microsoft.com/en-us/azure/spring-cloud/) in Azure Toolkit!
-
-You could have full Azure Spring Cloud experience in IntelliJ Toolkit, which cludes resolve project dependencies
-, create/deploy and troubleshooting spring cloud apps. You may try the azure spring cloud in intellij toolkit with the [quick start](https://docs.microsoft.com/en-us/azure/spring-cloud/spring-cloud-tutorial-intellij-deploy-apps?source=intellijwhatsnew).
-
-![Azure Spring Cloud](https://user-images.githubusercontent.com/12445236/82417195-c4344100-9aad-11ea-9791-fd0f33f446cd.png)
-
-### Added
-- Add Azure Spring Cloud support in Azure Toolkits
-  - Manage Azure Spring Cloud project dependencies
-  - Manage Azure Spring Cloud apps in Azure Explorer
-    * Create/Delete/Start/Stop/Restart
-    * Assign/un-assign public endpoint
-    * Update environment variables
-    * Update JVM options
-    * View app properties
-  - Deploying apps from current project
-  - Monitoring and troubleshooting apps
-    * Getting public url
-    * Getting test endpoint
-    * Instance status(shown in app properties view)
-- Support trigger function with timer trigger
-- Support log streaming for Windows functions
 
 ### Fixed
 - [#4157](https://github.com/microsoft/azure-tools-for-java/issues/4157) Can't trigger function/admin http function when click 'Trigger Function' button

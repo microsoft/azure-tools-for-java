@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.42.0](#3420)
   - [3.41.1](#3411)
   - [3.41.0](#3410)
   - [3.40.0](#3400)
@@ -54,6 +55,15 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.42.0
+
+### Added
+- Support Custom Binding for Azure Functions
+
+### Fixed
+- [#1110](https://github.com/microsoft/azure-maven-plugins/issues/1110) Fixes XSS issue in authentication 
+
 
 ## 3.41.1
 
