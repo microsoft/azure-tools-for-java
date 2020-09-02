@@ -213,7 +213,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     public AuthMethodDetails signIn() throws AzureExecutionException {
         try {
-            AzureTokenWrapper azureTokenWrapper = AzureAuthHelper.getAzureCLICredential();
+            AzureTokenWrapper azureTokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
             if (azureTokenWrapper == null) {
                 throw new AzureExecutionException(UNABLE_TO_GET_AZURE_CLI_CREDENTIALS);
             }

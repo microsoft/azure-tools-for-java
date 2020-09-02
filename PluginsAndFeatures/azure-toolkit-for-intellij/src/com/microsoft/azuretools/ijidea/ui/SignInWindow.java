@@ -219,7 +219,7 @@ public class SignInWindow extends AzureDialogWrapper {
         super.init();
         AzureTokenWrapper tokenWrapper = null;
         try {
-            tokenWrapper = AzureAuthHelper.getAzureCLICredential();
+            tokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
         } catch (IOException e) {
             // swallow exception while getting azure cli credential
         }
