@@ -33,7 +33,6 @@ import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -275,14 +274,12 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
                     EventUtil.logEvent(EventType.info, operation, properties);
                     bindingApplicationInsights(functionConfiguration);
                     final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionConfiguration);
-                    createFunctionHandler.execute();
-                    result = AuthMethodManager.getInstance().getAzureClient(functionConfiguration.getSubscription()).appServices().functionApps()
-                            .getByResourceGroup(functionConfiguration.getResourceGroup(), functionConfiguration.getAppName());
+                    result = createFunctionHandler.execute();
                     ApplicationManager.getApplication().invokeLater(() -> {
                         sendTelemetry(true, null);
                         if (AzureUIRefreshCore.listeners != null) {
                             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                    null));
+                                                                               result));
                         }
                     });
                     DefaultLoader.getIdeHelper().invokeLater(() -> FunctionCreationDialog.super.doOKAction());

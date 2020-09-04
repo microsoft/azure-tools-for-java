@@ -79,10 +79,10 @@ public class CreateFunctionHandler {
         this.ctx = ctx;
     }
 
-    public void execute() throws IOException, AzureExecutionException {
+    public FunctionApp execute() throws IOException, AzureExecutionException {
         final FunctionApp app = getFunctionApp();
         if (app == null) {
-            createFunctionApp();
+            return createFunctionApp();
         } else {
             throw new AzureExecutionException(String.format(TARGET_FUNCTION_APP_ALREADY_EXISTS, ctx.getAppName()));
         }
@@ -91,13 +91,14 @@ public class CreateFunctionHandler {
 
     // region Create or update Azure Functions
 
-    private void createFunctionApp() throws IOException, AzureExecutionException {
+    private FunctionApp createFunctionApp() throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_CREATE_START);
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
         final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
         configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
-        withCreate.create();
+        FunctionApp result = withCreate.create();
         Log.prompt(String.format(FUNCTION_APP_CREATED, ctx.getAppName()));
+        return result;
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
