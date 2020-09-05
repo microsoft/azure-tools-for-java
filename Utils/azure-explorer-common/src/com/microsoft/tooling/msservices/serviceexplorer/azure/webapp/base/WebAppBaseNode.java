@@ -23,6 +23,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -50,6 +51,9 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     protected final String label;
     protected WebAppBaseState state;
 
+    private NodeAction startAction;
+    private NodeAction restartAction;
+    private NodeAction stopAction;
     private NodeAction startStreamingLogsAction;
     private NodeAction stopStreamingLogsAction;
 
@@ -64,6 +68,25 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
         this.hostName = hostName;
     }
 
+    protected abstract NodeActionListener getStartActionListener();
+    protected abstract NodeActionListener getRestartActionListener();
+    protected abstract NodeActionListener getStopActionListener();
+    protected abstract NodeActionListener getShowPropertiesActionListener();
+    protected abstract NodeActionListener getOpenInBrowserActionListener();
+    protected abstract NodeActionListener getDeleteActionListener();
+
+    @Override
+    protected void loadActions() {
+        addAction(ACTION_START, CommonIcons.ACTION_START, getStartActionListener());
+        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, getRestartActionListener());
+        addAction(ACTION_STOP, CommonIcons.ACTION_STOP, getStopActionListener());
+        addAction(ACTION_SHOW_PROPERTY, CommonIcons.ACTION_OPEN_PREFERENCES, getShowPropertiesActionListener());
+        addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, getOpenInBrowserActionListener());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, getDeleteActionListener(), NodeActionPosition.BOTTOM);
+
+        super.loadActions();
+    }
+
     // Remove static to provide ability to override IconPath logic for [FunctionAppNode].
     protected String getIcon(final String os, final String label, final WebAppBaseState state) {
         return StringUtils.capitalize(os.toLowerCase())
@@ -74,17 +97,29 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
 
-        NodeAction startAction = getNodeActionByName(ACTION_START);
-        if (startAction != null)
-            startAction.setEnabled(!running);
+        // Show/hide Azure Start/Stop/Restart actions based on app state.
+        if (startAction == null)
+            startAction = getNodeActionByName(ACTION_START);
 
-        NodeAction stopAction = getNodeActionByName(ACTION_STOP);
-        if (stopAction != null)
-            stopAction.setEnabled(running);
+        if (restartAction == null)
+            restartAction = getNodeActionByName(ACTION_RESTART);
 
-        NodeAction restartAction = getNodeActionByName(ACTION_RESTART);
-        if (restartAction != null)
-            restartAction.setEnabled(running);
+        if (stopAction == null)
+            stopAction = getNodeActionByName(ACTION_STOP);
+
+        List<NodeAction> nodeActions = super.getNodeActions();
+
+        if (running) {
+            nodeActions.remove(startAction);
+            if (!nodeActions.contains(stopAction))
+                nodeActions.add(stopAction);
+        } else {
+            nodeActions.remove(stopAction);
+            if (!nodeActions.contains(startAction))
+                nodeActions.add(startAction);
+        }
+
+        restartAction.setEnabled(running);
 
         // Hack for Azure Streaming Logs frontend actions to hide unnecessary actions
         if (startStreamingLogsAction == null)
@@ -104,7 +139,7 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
                 nodeActions.add(startStreamingLogsAction);
         }
 
-        return super.getNodeActions();
+        return nodeActions;
     }
 
     protected NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {

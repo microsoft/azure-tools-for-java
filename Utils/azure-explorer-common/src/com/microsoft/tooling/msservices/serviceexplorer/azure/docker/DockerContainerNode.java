@@ -212,7 +212,7 @@ public class DockerContainerNode extends AzureRefreshableNode implements Telemet
         });
       }
     }));
-    addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteDockerContainerAction());
+    addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteDockerContainerAction(), NodeActionPosition.BOTTOM);
     super.loadActions();
   }
 

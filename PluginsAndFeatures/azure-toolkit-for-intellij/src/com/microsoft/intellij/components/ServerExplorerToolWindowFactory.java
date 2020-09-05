@@ -38,6 +38,7 @@ import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -209,9 +210,14 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         for (final NodeAction nodeAction : node.getNodeActions()) {
             JMenuItem menuItem = new JMenuItem(nodeAction.getName());
             menuItem.setEnabled(nodeAction.isEnabled());
-            if (nodeAction.getIconPath() != null) {
-                menuItem.setIcon(UIHelperImpl.loadIcon(nodeAction.getIconPath()));
-            }
+
+            final String iconPath = nodeAction.getIconPath();
+            Icon icon = EmptyIcon.ICON_16;
+            if (iconPath != null && !iconPath.isEmpty())
+              icon = UIHelperImpl.loadIcon(nodeAction.getIconPath());
+
+            menuItem.setIcon(icon);
+
             // delegate the menu item click to the node action's listeners
             menuItem.addActionListener(e -> nodeAction.fireNodeActionEvent());
 

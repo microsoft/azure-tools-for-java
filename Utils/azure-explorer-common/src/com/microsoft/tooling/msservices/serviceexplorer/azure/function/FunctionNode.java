@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -114,29 +115,48 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     }
 
     @Override
-    protected void loadActions() {
-        addAction(ACTION_STOP, new WrappedTelemetryNodeActionListener(FUNCTION, STOP_FUNCTION_APP,
-                createBackgroundActionListener("Stopping", () -> stopFunctionApp())));
-        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(FUNCTION, START_FUNCTION_APP,
-                createBackgroundActionListener("Starting", () -> startFunctionApp())));
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
-                createBackgroundActionListener("Restarting", () -> restartFunctionApp())));
-        addAction(ACTION_DELETE, new DeleteFunctionAppAction());
-        addAction("Open in portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP,
-                new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                        openResourcesInPortal(subscriptionId, functionAppId);
-                    }
-                }));
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP,
+    protected NodeActionListener getStartActionListener() {
+        return new WrappedTelemetryNodeActionListener(FUNCTION, START_FUNCTION_APP,
+                createBackgroundActionListener("Starting", this::startFunctionApp));
+    }
+
+    @Override
+    protected NodeActionListener getRestartActionListener() {
+        return new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
+                createBackgroundActionListener("Restarting", this::restartFunctionApp));
+    }
+
+    @Override
+    protected NodeActionListener getStopActionListener() {
+        return new WrappedTelemetryNodeActionListener(FUNCTION, STOP_FUNCTION_APP,
+                createBackgroundActionListener("Stopping", this::stopFunctionApp));
+    }
+
+    @Override
+    protected NodeActionListener getShowPropertiesActionListener() {
+        return new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP,
                 new NodeActionListener() {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) {
                         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionNode.this);
                     }
-                }));
-        super.loadActions();
+                });
+    }
+
+    @Override
+    protected NodeActionListener getOpenInBrowserActionListener() {
+        return new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP,
+                new NodeActionListener() {
+                    @Override
+                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                        openResourcesInPortal(subscriptionId, functionAppId);
+                    }
+                });
+    }
+
+    @Override
+    protected NodeActionListener getDeleteActionListener() {
+        return new DeleteFunctionAppAction();
     }
 
     @Override

@@ -22,10 +22,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp
 
-import com.microsoft.azure.CommonIcons
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
@@ -46,13 +44,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
     companion object {
         private const val FUNCTION_LABEL = "Function"
 
-        private const val ACTION_START = "Start"
-        private const val ACTION_STOP = "Stop"
-        private const val ACTION_RESTART = "Restart"
-        private const val ACTION_DELETE = "Delete"
-        private const val ACTION_OPEN_IN_BROWSER = "Open In Browser"
-        private const val ACTION_SHOW_PROPERTIES = "Show Properties"
-
         private const val PROGRESS_MESSAGE_DELETE_FUNCTION_APP = "Deleting Function App '%s'..."
 
         private const val ICON_FUNCTION_APP_RUNNING = "FunctionAppRunning.svg"
@@ -67,18 +58,23 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
     private val logger = Logger.getLogger(FunctionAppNode::class.java.name)
 
     private val presenter = FunctionAppNodePresenter<FunctionAppNode>()
-    private val startAction: NodeAction
-    private val stopAction: NodeAction
+
+    override fun getStartActionListener(): NodeActionListener =
+            createBackgroundActionListener("Starting Function App") { startFunctionApp() }
+
+    override fun getStopActionListener(): NodeActionListener =
+            createBackgroundActionListener("Stopping Function App") { stopFunctionApp() }
+
+    override fun getRestartActionListener(): NodeActionListener =
+            createBackgroundActionListener("Restarting Function App") { restartFunctionApp() }
+
+    override fun getShowPropertiesActionListener(): NodeActionListener = OpenProperties()
+
+    override fun getOpenInBrowserActionListener(): NodeActionListener = OpenInBrowserAction()
+
+    override fun getDeleteActionListener(): NodeActionListener = DeleteFunctionAppAction()
 
     init {
-        startAction = NodeAction(this, ACTION_START)
-        startAction.iconPath = CommonIcons.ACTION_START
-        startAction.addListener(createBackgroundActionListener("Starting Function App") { startFunctionApp() })
-
-        stopAction = NodeAction(this, ACTION_STOP)
-        stopAction.iconPath = CommonIcons.ACTION_STOP
-        stopAction.addListener(createBackgroundActionListener("Stopping Function App") { stopFunctionApp() })
-
         loadActions()
         presenter.onAttachView(this@FunctionAppNode)
     }
@@ -86,20 +82,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
     override fun getIcon(os: String?, label: String?, state: WebAppBaseState?): String =
             if (state == WebAppBaseState.STOPPED) ICON_FUNCTION_APP_STOPPED
             else ICON_FUNCTION_APP_RUNNING
-
-    override fun onError(message: String) {
-    }
-
-    override fun onErrorWithException(message: String, ex: Exception) {
-    }
-
-    override fun loadActions() {
-        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, createBackgroundActionListener("Restarting Function App") { restartFunctionApp() })
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteFunctionAppAction())
-        addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, OpenInBrowserAction())
-        addAction(ACTION_SHOW_PROPERTIES, CommonIcons.ACTION_OPEN_PREFERENCES, OpenProperties())
-        super.loadActions()
-    }
 
     override fun refreshItems() {
         val functions = AzureFunctionAppMvpModel.listFunctionsForAppWithId(subscriptionId, functionAppId)
@@ -126,32 +108,6 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
         }
     }
 
-    override fun getNodeActions(): MutableList<NodeAction> {
-        val isRunning = state == WebAppBaseState.RUNNING
-
-        val stopAction = getNodeActionByName(ACTION_STOP)
-        val startAction = getNodeActionByName(ACTION_START)
-        val restartAction = getNodeActionByName(ACTION_RESTART)
-
-        if (isRunning) {
-            if (startAction != null)
-                nodeActions.remove(startAction)
-
-            if (stopAction == null)
-                nodeActions.add(0, this.stopAction)
-        } else {
-            if (stopAction != null)
-                nodeActions.remove(stopAction)
-
-            if (startAction == null)
-                nodeActions.add(0, this.startAction)
-        }
-
-        restartAction.isEnabled = isRunning
-
-        return super.getNodeActions()
-    }
-
     private fun createBackgroundActionListener(actionName: String, action: () -> Unit) =
             object : NodeActionListener() {
                 override fun actionPerformed(event: NodeActionEvent) {
@@ -171,7 +127,7 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
             try { presenter.onRestartFunctionApp(subscriptionId, functionAppId) }
             catch(t: Throwable) { logger.warning("Error while restarting Function App with Id: $functionAppId: $t") }
 
-    private inner class DeleteFunctionAppAction internal constructor() : AzureNodeActionPromptListener(
+    private inner class DeleteFunctionAppAction : AzureNodeActionPromptListener(
             this@FunctionAppNode,
             String.format(deletingFunctionAppPromptMessage, functionAppName),
             String.format(PROGRESS_MESSAGE_DELETE_FUNCTION_APP, functionAppName)) {
@@ -187,19 +143,16 @@ class FunctionAppNode(parent: AzureFunctionAppModule,
             }
         }
 
-        override fun onSubscriptionsChanged(e: NodeActionEvent?) {
-        }
+        override fun onSubscriptionsChanged(e: NodeActionEvent?) { }
     }
 
-    private inner class OpenInBrowserAction internal constructor() : NodeActionListener() {
-
+    private inner class OpenInBrowserAction : NodeActionListener() {
         override fun actionPerformed(e: NodeActionEvent?) {
             DefaultLoader.getUIHelper().openInBrowser("http://$hostName")
         }
     }
 
-    private inner class OpenProperties internal constructor() : NodeActionListener() {
-
+    private inner class OpenProperties : NodeActionListener() {
         override fun actionPerformed(e: NodeActionEvent?) {
             DefaultLoader.getUIHelper().openFunctionAppProperties(this@FunctionAppNode)
         }

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -27,6 +28,7 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.arm.CreateDeploymentForm;
@@ -39,7 +41,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 
-@Name("Create Deployment")
+@Name("New Deployment")
 public class CreateDeploymentAction extends NodeActionListener {
     public static final String ERROR_CREATING_DEPLOYMENT = "Error creating Deployment";
     private final Project project;
@@ -77,5 +79,10 @@ public class CreateDeploymentAction extends NodeActionListener {
             UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
                                      MessageType.ERROR);
         }
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "AddEntity.svg";
     }
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,6 +24,7 @@
 package com.microsoft.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.forms.CreateQueueForm;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -30,7 +32,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ClientStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 
-@Name("Create new queue")
+@Name("New Queue")
 public class CreateQueueAction extends NodeActionListener {
     private QueueModule queueModule;
 
@@ -52,5 +54,10 @@ public class CreateQueueAction extends NodeActionListener {
         });
 
         form.show();
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "AddEntity.svg";
     }
 }

@@ -22,11 +22,13 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver
 
+import com.microsoft.azure.CommonIcons
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionPosition
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
@@ -46,8 +48,6 @@ class SqlServerNode(parent: AzureDatabaseModule,
         private const val ACTION_DELETE = "Delete"
         private const val PROGRESS_MESSAGE_DELETE_SQL_SERVER = "Deleting SQL Server '%s'..."
 
-        private const val ICON_ACTION_DELETE = "Discard.svg"
-
         private val deleteSqlDatabasePromptMessage = StringBuilder()
                 .appendln("This operation will delete SQL Server '%s'.")
                 .append("Are you sure you want to continue?")
@@ -65,7 +65,7 @@ class SqlServerNode(parent: AzureDatabaseModule,
     }
 
     override fun loadActions() {
-        addAction(ACTION_DELETE, ICON_ACTION_DELETE, DeleteSqlServerAction())
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlServerAction(), NodeActionPosition.BOTTOM)
         super.loadActions()
     }
 

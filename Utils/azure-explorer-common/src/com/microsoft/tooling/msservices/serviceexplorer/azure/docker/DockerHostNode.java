@@ -66,6 +66,10 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
   private static final String ACTION_SHUTDOWN_ICON = "Stop.png";
   private static final String ACTION_START_ICON = "Start.png";
 
+  private NodeAction startAction;
+  private NodeAction restartAction;
+  private NodeAction stopAction;
+
   DockerHost dockerHost;
   AzureDockerHostsManager dockerManager;
 
@@ -192,20 +196,44 @@ public class DockerHostNode extends AzureRefreshableNode implements TelemetryPro
         });
       }
     }));
-    addAction(ACTION_RESTART, CommonIcons.ACTION_START, new RestartDockerHostAction());
+    addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, new RestartDockerHostAction());
     addAction(ACTION_SHUTDOWN, CommonIcons.ACTION_STOP, new ShutdownDockerHostAction());
     super.loadActions();
   }
 
   @Override
   public List<NodeAction> getNodeActions() {
+    if (startAction == null)
+      startAction = getNodeActionByName(ACTION_START);
+
+    if (restartAction == null)
+      restartAction = getNodeActionByName(ACTION_RESTART);
+
+    if (stopAction == null)
+      stopAction = getNodeActionByName(ACTION_SHUTDOWN);
+
 //  enable/disable menu items according to VM status
     boolean started = isRunning();
+
+    List<NodeAction> nodeActions = super.getNodeActions();
+
+    if (started) {
+      nodeActions.remove(startAction);
+      if (!nodeActions.contains(stopAction))
+        nodeActions.add(stopAction);
+    } else {
+      nodeActions.remove(stopAction);
+      if (!nodeActions.contains(startAction))
+        nodeActions.add(startAction);
+    }
+
+    restartAction.setEnabled(started);
+
     getNodeActionByName(ACTION_SHUTDOWN).setEnabled(started);
     getNodeActionByName(ACTION_START).setEnabled(!started);
     getNodeActionByName(ACTION_RESTART).setEnabled(started);
 
-    return super.getNodeActions();
+    return nodeActions;
   }
 
   @Override

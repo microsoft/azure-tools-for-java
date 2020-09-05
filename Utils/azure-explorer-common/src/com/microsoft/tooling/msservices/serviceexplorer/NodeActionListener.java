@@ -98,9 +98,7 @@ public abstract class NodeActionListener implements EventListener {
     }
 
     @Nullable
-    protected String getIconPath() {
-        return iconPath;
-    }
+    protected String getIconPath() { return iconPath; }
 
     /**
      * If nodeName contains spark and hdinsight, we just think it is a spark node.

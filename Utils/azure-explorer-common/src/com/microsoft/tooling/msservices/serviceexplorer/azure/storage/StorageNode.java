@@ -23,6 +23,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -33,10 +34,7 @@ import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
@@ -49,6 +47,10 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_STORAGE
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
 public class StorageNode extends RefreshableNode implements TelemetryProperties {
+
+    private static final String ACTION_DELETE = "Delete";
+    private static final String ACTION_OPEN_IN_PORTAL = "Open in Portal";
+
     private static final String STORAGE_ACCOUNT_ICON_PATH = "StorageAccount.svg";
 
     private final StorageAccount storageAccount;
@@ -154,8 +156,8 @@ public class StorageNode extends RefreshableNode implements TelemetryProperties 
 
     @Override
     protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        addAction("Open in Portal", new OpenInPortalAction());
-        addAction("Delete", new DeleteStorageAccountAction());
+        addAction(ACTION_OPEN_IN_PORTAL, CommonIcons.ACTION_OPEN_IN_BROWSER, new OpenInPortalAction());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteStorageAccountAction(), NodeActionPosition.BOTTOM);
         return super.initActions();
     }
 

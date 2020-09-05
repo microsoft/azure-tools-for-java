@@ -23,7 +23,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
-import com.google.common.collect.ImmutableMap;
 import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -35,10 +34,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
@@ -47,7 +43,11 @@ import java.util.Map;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_BLOB_CONTAINER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
-public class ContainerNode extends Node implements TelemetryProperties{
+public class ContainerNode extends RefreshableNode implements TelemetryProperties{
+
+    private static final String ACTION_DELETE = "Delete";
+    private static final String ACTION_VIEW_BLOB_CONTAINER = "View Blob Container";
+
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
@@ -56,17 +56,6 @@ public class ContainerNode extends Node implements TelemetryProperties{
             properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
         }
         return properties;
-    }
-
-    public class RefreshAction extends NodeActionListener {
-        @Override
-        public void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().refreshBlobs(getProject(),
-                    storageAccount != null
-                            ? storageAccount.name()
-                            : clientStorageAccount.getName(),
-                    blobContainer);
-        }
     }
 
     public class ViewBlobContainer extends NodeActionListener {
@@ -174,10 +163,15 @@ public class ContainerNode extends Node implements TelemetryProperties{
     }
 
     @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        return ImmutableMap.of(
-                "Refresh", RefreshAction.class,
-                "View Blob Container", ViewBlobContainer.class,
-                "Delete", DeleteBlobContainer.class);
+    protected void refreshItems() throws AzureCmdException {
+        String accountName = storageAccount != null ? storageAccount.name() : clientStorageAccount.getName();
+        DefaultLoader.getUIHelper().refreshBlobs(getProject(), accountName, blobContainer);
+    }
+
+    @Override
+    protected void loadActions() {
+        addAction(ACTION_VIEW_BLOB_CONTAINER, new ViewBlobContainer());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteBlobContainer(), NodeActionPosition.BOTTOM);
+        super.loadActions();
     }
 }

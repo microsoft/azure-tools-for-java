@@ -40,10 +40,7 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
@@ -53,6 +50,10 @@ import java.util.Map;
 public class VMNode extends RefreshableNode implements TelemetryProperties {
     private static String RUNNING_STATUS = "PowerState/running";
     private static String STOPPED = "stopped";
+
+    private NodeAction startAction;
+    private NodeAction restartAction;
+    private NodeAction stopAction;
 
     @Override
     public Map<String, String> toProperties() {
@@ -253,15 +254,39 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     protected void loadActions() {
         super.loadActions();
         addAction(ACTION_START, CommonIcons.ACTION_START, new StartVMAction());
-        addAction(ACTION_RESTART, new RestartVMAction());
+        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, new RestartVMAction());
         addAction(ACTION_SHUTDOWN, CommonIcons.ACTION_STOP, new ShutdownVMAction());
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteVMAction());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteVMAction(), NodeActionPosition.BOTTOM);
     }
 
     @Override
     public List<NodeAction> getNodeActions() {
+        if (startAction == null)
+            startAction = getNodeActionByName(ACTION_START);
+
+        if (restartAction == null)
+            restartAction = getNodeActionByName(ACTION_RESTART);
+
+        if (stopAction == null)
+            stopAction = getNodeActionByName(ACTION_SHUTDOWN);
+
+        List<NodeAction> nodeActions = super.getNodeActions();
+
 //        // enable/disable menu items according to VM status
         boolean started = isRunning();
+
+        if (started) {
+            nodeActions.remove(startAction);
+            if (!nodeActions.contains(stopAction))
+                nodeActions.add(stopAction);
+        } else {
+            nodeActions.remove(stopAction);
+            if (!nodeActions.contains(startAction))
+                nodeActions.add(startAction);
+        }
+
+        restartAction.setEnabled(started);
+
 //        boolean stopped = virtualMachine.getStatus().equals(VirtualMachine.Status.Stopped) ||
 //                virtualMachine.getStatus().equals(VirtualMachine.Status.StoppedDeallocated);
 //
@@ -270,7 +295,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
         getNodeActionByName(ACTION_START).setEnabled(!started);
         getNodeActionByName(ACTION_RESTART).setEnabled(started);
 
-        return super.getNodeActions();
+        return nodeActions;
     }
 
     private boolean hasRDPPort(VirtualMachine virtualMachine) {

@@ -22,10 +22,12 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase
 
+import com.microsoft.azure.CommonIcons
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlDatabaseMvpModel
 import com.microsoft.tooling.msservices.components.DefaultLoader
 import com.microsoft.tooling.msservices.serviceexplorer.Node
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionPosition
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
@@ -42,7 +44,6 @@ class SqlDatabaseNode(parent: SqlServerNode,
         private const val ACTION_DELETE = "Delete"
         private const val SQL_DATABASE_ICON = "Database.svg"
         private const val DELETE_SQL_DATABASE_PROGRESS_MESSAGE = "Deleting SQL Database '%s'..."
-        private const val ICON_ACTION_DELETE = "Discard.svg"
 
         private val deleteSqlDatabasePromptMessage = StringBuilder()
                 .appendln("This operation will delete SQL Database %s.")
@@ -55,7 +56,7 @@ class SqlDatabaseNode(parent: SqlServerNode,
     }
 
     override fun loadActions() {
-        addAction(ACTION_DELETE, ICON_ACTION_DELETE, DeleteSqlDatabaseAction())
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, DeleteSqlDatabaseAction(), NodeActionPosition.BOTTOM)
         super.loadActions()
     }
 

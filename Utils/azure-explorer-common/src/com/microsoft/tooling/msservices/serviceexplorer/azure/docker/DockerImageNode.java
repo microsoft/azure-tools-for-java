@@ -26,6 +26,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.docker;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_DOCKER_IMAGE;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DOCKER;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerContainer;
 import com.microsoft.azure.docker.model.DockerHost;
@@ -39,6 +40,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionPosition;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
@@ -103,7 +105,7 @@ public class DockerImageNode extends AzureRefreshableNode implements TelemetryPr
 
   @Override
   protected void loadActions() {
-    addAction(ACTION_DELETE, new DeleteDockerImageAction());
+    addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteDockerImageAction(), NodeActionPosition.BOTTOM);
     super.loadActions();
   }
 

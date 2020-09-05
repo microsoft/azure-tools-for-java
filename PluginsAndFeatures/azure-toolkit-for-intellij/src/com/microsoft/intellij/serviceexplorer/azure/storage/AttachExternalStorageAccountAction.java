@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -35,7 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageMod
 
 import javax.swing.*;
 
-@Name("Attach external storage account...")
+@Name("Attach External Storage Account...")
 public class AttachExternalStorageAccountAction extends NodeActionListener {
     private final StorageModule storageModule;
 

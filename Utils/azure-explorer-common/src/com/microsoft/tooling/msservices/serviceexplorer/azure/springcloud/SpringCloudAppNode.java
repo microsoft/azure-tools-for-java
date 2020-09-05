@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
@@ -129,7 +130,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, RESTART_SPRING_CLOUD_APP,
                                                                          createBackgroundActionListener("Restarting", () -> restartSpringCloudApp())));
 
-        addAction(ACTION_DELETE, new DeleteSpringCloudAppAction());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteSpringCloudAppAction(), NodeActionPosition.BOTTOM);
 
         addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP,
             new NodeActionListener() {

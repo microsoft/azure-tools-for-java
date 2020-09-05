@@ -96,10 +96,10 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
                                  .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
 
         final List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>(Arrays.asList(
-                ExportTemplateAction.class,
-                ExportParameterAction.class,
+                EditDeploymentAction.class,
                 UpdateDeploymentAction.class,
-                EditDeploymentAction.class));
+                ExportTemplateAction.class,
+                ExportParameterAction.class));
 
         node2Actions.put(DeploymentNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()

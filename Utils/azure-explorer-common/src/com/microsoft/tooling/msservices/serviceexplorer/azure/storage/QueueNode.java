@@ -23,7 +23,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
-import com.google.common.collect.ImmutableMap;
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -32,28 +32,24 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.Queue;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class QueueNode extends Node implements TelemetryProperties{
+public class QueueNode extends RefreshableNode implements TelemetryProperties{
+
+    private static final String ACTION_DELETE = "Delete";
+    private static final String ACTION_VIEW_QUEUE = "View Queue";
+    private static final String ACTION_CLEAR_QUEUE = "Clear Queue";
+
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.id()).subscriptionId());
         properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
         return properties;
-    }
-
-    public class RefreshAction extends NodeActionListener {
-        @Override
-        public void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().refreshQueue(getProject(), storageAccount, queue);
-        }
     }
 
     public class ViewQueue extends NodeActionListener {
@@ -146,12 +142,15 @@ public class QueueNode extends Node implements TelemetryProperties{
     }
 
     @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        return ImmutableMap.of(
-                "Refresh", RefreshAction.class,
-                "View Queue", ViewQueue.class,
-                "Delete", DeleteQueue.class,
-                "Clear Queue", ClearQueue.class
-        );
+    protected void refreshItems() throws AzureCmdException {
+        DefaultLoader.getUIHelper().refreshQueue(getProject(), storageAccount, queue);
+    }
+
+    @Override
+    protected void loadActions() {
+        addAction(ACTION_VIEW_QUEUE, new ViewQueue());
+        addAction(ACTION_CLEAR_QUEUE, new ClearQueue());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteQueue(), NodeActionPosition.BOTTOM);
+        super.loadActions();
     }
 }

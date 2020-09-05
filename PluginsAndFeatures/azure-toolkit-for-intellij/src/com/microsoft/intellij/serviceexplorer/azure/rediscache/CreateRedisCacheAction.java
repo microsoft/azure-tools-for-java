@@ -25,6 +25,7 @@ package com.microsoft.intellij.serviceexplorer.azure.rediscache;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateRedisCacheForm;
@@ -35,7 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 
-@Name("Create Redis Cache")
+@Name("New Redis Cache")
 public class CreateRedisCacheAction extends NodeActionListener {
     private static final String ERROR_CREATING_REDIS_CACHE = "Error creating Redis cache";
     private RedisCacheModule redisCacheModule;
@@ -68,5 +69,10 @@ public class CreateRedisCacheAction extends NodeActionListener {
             AzurePlugin.log(ERROR_CREATING_REDIS_CACHE, ex);
             throw new RuntimeException("Error creating Redis Cache", ex);
         }
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "AddEntity.svg";
     }
 }

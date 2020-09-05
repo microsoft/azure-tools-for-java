@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -27,6 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.docker.AzureDockerHostsManager;
 import com.microsoft.azure.docker.model.DockerHost;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.docker.utils.AzureDockerUIResources;
@@ -95,5 +97,10 @@ public class CreateNewDockerHostAction extends NodeActionListener {
         } catch (Exception ex1) {
             ex1.printStackTrace();
         }
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "AddEntity.svg";
     }
 }

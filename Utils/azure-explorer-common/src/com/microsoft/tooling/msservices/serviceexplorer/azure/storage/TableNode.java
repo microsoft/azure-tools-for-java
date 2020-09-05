@@ -26,7 +26,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_STORAGE_TABLE;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
 
-import com.google.common.collect.ImmutableMap;
+import com.microsoft.azure.CommonIcons;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -35,28 +35,23 @@ import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.Table;
-import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class TableNode extends Node implements TelemetryProperties {
+public class TableNode extends RefreshableNode implements TelemetryProperties {
+
+    private static final String ACTION_DELETE = "Delete";
+    private static final String ACTION_VIEW_TABLE = "View Table";
+
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.id()).subscriptionId());
         properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
         return properties;
-    }
-
-    public class RefreshAction extends NodeActionListener {
-        @Override
-        public void actionPerformed(NodeActionEvent e) {
-            DefaultLoader.getUIHelper().refreshTable(getProject(), storageAccount, table);
-        }
     }
 
     public class ViewTable extends NodeActionListener {
@@ -138,11 +133,14 @@ public class TableNode extends Node implements TelemetryProperties {
     }
 
     @Override
-    protected Map<String, Class<? extends NodeActionListener>> initActions() {
-        return ImmutableMap.of(
-                "Refresh", RefreshAction.class,
-                "View Table", ViewTable.class,
-                "Delete", DeleteTable.class
-        );
+    protected void refreshItems() throws AzureCmdException {
+        DefaultLoader.getUIHelper().refreshTable(getProject(), storageAccount, table);
+    }
+
+    @Override
+    protected void loadActions() {
+        addAction(ACTION_VIEW_TABLE, new ViewTable());
+        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteTable(), NodeActionPosition.BOTTOM);
+        super.loadActions();
     }
 }

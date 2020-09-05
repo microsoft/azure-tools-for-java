@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,11 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer.azure.database.actions
+package com.microsoft.tooling.msservices.serviceexplorer
 
-import com.microsoft.tooling.msservices.helpers.Name
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
-
-@Name("Open in Browser")
-class SqlServerOpenInBrowserAction(private val sqlServerNode: SqlServerNode)
-    : OpenInBrowserAction(sqlServerNode.subscriptionId, sqlServerNode)
+enum class NodeActionPosition {
+    TOP,
+    NONE,
+    BOTTOM
+}

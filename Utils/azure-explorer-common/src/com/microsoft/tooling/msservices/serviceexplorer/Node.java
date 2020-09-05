@@ -66,7 +66,9 @@ public class Node implements MvpView, BasicTelemetryProperty {
     protected String iconPath;
     protected Object viewData;
     protected NodeAction clickAction = new NodeAction(this, CLICK_ACTION);
-    protected List<NodeAction> nodeActions = new ArrayList<NodeAction>();
+    private final List<NodeAction> nodeActions = new ArrayList<>();
+    private final List<NodeAction> nodeActionsTop = new ArrayList<>();
+    private final List<NodeAction> nodeActionsBottom = new ArrayList<>();
     protected JTree tree;
     protected TreePath treePath;
 
@@ -207,27 +209,51 @@ public class Node implements MvpView, BasicTelemetryProperty {
         childNodes.add(child);
     }
 
+    public void addAction(NodeAction action, NodeActionPosition position) {
+        switch (position) {
+            case TOP:
+                nodeActionsTop.add(action);
+                break;
+
+            case BOTTOM:
+                nodeActionsBottom.add(action);
+                break;
+
+            default:
+                nodeActions.add(action);
+                break;
+        }
+    }
+
     public void addAction(NodeAction action) {
-        nodeActions.add(action);
+        addAction(action, NodeActionPosition.NONE);
     }
 
     // Convenience method to add a new action with a pre-configured listener. If
     // an action with the same name already exists then the listener is added
     // to that action.
-    public NodeAction addAction(String name, NodeActionListener actionListener) {
+    public NodeAction addAction(String name, NodeActionListener actionListener, NodeActionPosition position) {
         NodeAction nodeAction = getNodeActionByName(name);
         if (nodeAction == null) {
             nodeAction = new NodeAction(this, name);
-            addAction(nodeAction);
+            addAction(nodeAction, position);
         }
         nodeAction.addListener(actionListener);
         return nodeAction;
     }
 
-    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener) {
-        NodeAction nodeAction = addAction(name, actionListener);
+    public NodeAction addAction(String name, NodeActionListener actionListener) {
+        return addAction(name, actionListener, NodeActionPosition.NONE);
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener, NodeActionPosition position) {
+        NodeAction nodeAction = addAction(name, actionListener, position);
         nodeAction.setIconPath(iconPath);
         return nodeAction;
+    }
+
+    public NodeAction addAction(String name, String iconPath, NodeActionListener actionListener) {
+        return addAction(name, iconPath, actionListener, NodeActionPosition.NONE);
     }
 
     protected void loadActions() {
@@ -298,11 +324,19 @@ public class Node implements MvpView, BasicTelemetryProperty {
     }
 
     public List<NodeAction> getNodeActions() {
-        return nodeActions;
+        return getRegisteredNodeActions();
+    }
+
+    final protected List<NodeAction> getRegisteredNodeActions() {
+        List<NodeAction> combinedActions = new ArrayList<>();
+        combinedActions.addAll(nodeActionsTop);
+        combinedActions.addAll(nodeActions);
+        combinedActions.addAll(nodeActionsBottom);
+        return combinedActions;
     }
 
     public NodeAction getNodeActionByName(final String name) {
-        return Iterators.tryFind(nodeActions.iterator(), new Predicate<NodeAction>() {
+        return Iterators.tryFind(getRegisteredNodeActions().iterator(), new Predicate<NodeAction>() {
             @Override
             public boolean apply(NodeAction nodeAction) {
                 return name.compareTo(nodeAction.getName()) == 0;
@@ -311,7 +345,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
     }
 
     public boolean hasNodeActions() {
-        return !nodeActions.isEmpty();
+        return !getRegisteredNodeActions().isEmpty();
     }
 
     public void addActions(Iterable<NodeAction> actions) {

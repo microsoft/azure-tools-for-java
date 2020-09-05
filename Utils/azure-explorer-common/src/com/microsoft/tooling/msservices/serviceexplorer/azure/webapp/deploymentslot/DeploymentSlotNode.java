@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -82,33 +83,55 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     @Override
-    protected void loadActions() {
-        // todo: why only the stop action has icon?
-        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED),
-            new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP_SLOT,
-                createBackgroundActionListener("Stopping Deployment Slot", () -> stop())));
-        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(WEBAPP, START_WEBAPP_SLOT,
-            createBackgroundActionListener("Starting Deployment Slot", () -> start())));
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP_SLOT,
-            createBackgroundActionListener("Restarting Deployment Slot", () -> restart())));
-        addAction(ACTION_SWAP_WITH_PRODUCTION, new WrappedTelemetryNodeActionListener(WEBAPP, SWAP_WEBAPP_SLOT,
-            createBackgroundActionListener("Swapping with Production", () -> swapWithProduction())));
-        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER,
-            new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
-            }
-        }));
-        addAction(ACTION_DELETE, new DeleteDeploymentSlotAction());
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(WEBAPP, SHOW_WEBAPP_SLOT_PROP,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
-                }
-            }));
+    protected NodeActionListener getStartActionListener() {
+        return new WrappedTelemetryNodeActionListener(WEBAPP, START_WEBAPP_SLOT,
+                createBackgroundActionListener("Starting Deployment Slot", this::start));
+    }
 
+    @Override
+    protected NodeActionListener getRestartActionListener() {
+        return new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP_SLOT,
+                createBackgroundActionListener("Restarting Deployment Slot", this::restart));
+    }
+
+    @Override
+    protected NodeActionListener getStopActionListener() {
+        return new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP_SLOT,
+                createBackgroundActionListener("Stopping Deployment Slot", this::stop));
+    }
+
+    @Override
+    protected NodeActionListener getShowPropertiesActionListener() {
+        return new WrappedTelemetryNodeActionListener(WEBAPP, SHOW_WEBAPP_SLOT_PROP,
+                new NodeActionListener() {
+                    @Override
+                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                        DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
+                    }
+                });
+    }
+
+    @Override
+    protected NodeActionListener getOpenInBrowserActionListener() {
+        return new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER,
+                new NodeActionListener() {
+                    @Override
+                    protected void actionPerformed(NodeActionEvent e) {
+                        DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
+                    }
+                });
+    }
+
+    @Override
+    protected NodeActionListener getDeleteActionListener() {
+        return new DeleteDeploymentSlotAction();
+    }
+
+    @Override
+    protected void loadActions() {
+        // Removed all base actions defined in WebAppBaseNode.
+        addAction(ACTION_SWAP_WITH_PRODUCTION, new WrappedTelemetryNodeActionListener(WEBAPP, SWAP_WEBAPP_SLOT,
+            createBackgroundActionListener("Swapping with Production", this::swapWithProduction)));
         super.loadActions();
     }
 

@@ -57,7 +57,7 @@ public abstract class RefreshableNode extends Node {
             public void actionPerformed(NodeActionEvent e) {
                 load(true);
             }
-        });
+        }, NodeActionPosition.TOP);
 
         super.loadActions();
     }

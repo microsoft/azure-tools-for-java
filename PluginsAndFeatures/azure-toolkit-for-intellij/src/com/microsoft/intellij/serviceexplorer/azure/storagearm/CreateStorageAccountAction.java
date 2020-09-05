@@ -25,6 +25,7 @@ package com.microsoft.intellij.serviceexplorer.azure.storagearm;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.forms.CreateArmStorageAccountForm;
@@ -35,7 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 
-@Name("Create Storage Account...")
+@Name("New Storage Account...")
 public class CreateStorageAccountAction extends NodeActionListener {
 
     public static final String ERROR_CREATING_STORAGE_ACCOUNT = "Error creating storage account";
@@ -69,5 +70,10 @@ public class CreateStorageAccountAction extends NodeActionListener {
             AzurePlugin.log(ERROR_CREATING_STORAGE_ACCOUNT, ex);
             throw new RuntimeException("Error creating storage account", ex);
         }
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "AddEntity.svg";
     }
 }

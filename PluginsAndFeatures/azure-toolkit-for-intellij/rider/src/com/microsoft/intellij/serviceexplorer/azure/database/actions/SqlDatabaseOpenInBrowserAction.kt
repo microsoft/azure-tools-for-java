@@ -25,6 +25,6 @@ package com.microsoft.intellij.serviceexplorer.azure.database.actions
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 
-@Name("Open in browser")
+@Name("Open in Browser")
 class SqlDatabaseOpenInBrowserAction(sqlDatabaseNode: SqlDatabaseNode)
     : OpenInBrowserAction(sqlDatabaseNode.subscriptionId, sqlDatabaseNode)

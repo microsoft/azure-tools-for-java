@@ -25,6 +25,7 @@ package com.microsoft.intellij.serviceexplorer.azure.vmarm;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.util.AzureLoginHelper;
@@ -35,7 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 
-@Name("Create VM")
+@Name("New VM...")
 public class CreateVMAction extends NodeActionListener {
     private static final String ERROR_CREATING_VIRTUAL_MACHINE = "Error creating virtual machine";
     private VMArmModule vmModule;
@@ -60,5 +61,10 @@ public class CreateVMAction extends NodeActionListener {
             AzurePlugin.log(ERROR_CREATING_VIRTUAL_MACHINE, ex);
             throw new RuntimeException("Error creating virtual machine", ex);
         }
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "AddEntity.svg";
     }
 }

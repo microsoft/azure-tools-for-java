@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -23,6 +24,7 @@
 package com.microsoft.intellij.serviceexplorer.azure.storage;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.forms.CreateTableForm;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -30,7 +32,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ClientStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 
-@Name("Create new table")
+@Name("New Table")
 public class CreateTableAction extends NodeActionListener {
     private TableModule tableModule;
 
@@ -53,5 +55,10 @@ public class CreateTableAction extends NodeActionListener {
         });
 
         form.show();
+    }
+
+    @Override
+    protected @Nullable String getIconPath() {
+        return "AddEntity.svg";
     }
 }

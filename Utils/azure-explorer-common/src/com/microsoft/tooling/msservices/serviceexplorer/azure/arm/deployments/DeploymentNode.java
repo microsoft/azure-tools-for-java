@@ -32,6 +32,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionPosition;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 
@@ -73,7 +74,7 @@ public class DeploymentNode extends Node implements DeploymentNodeView {
     @Override
     protected void loadActions() {
         addAction(SHOW_PROPERTY_ACTION, CommonIcons.ACTION_OPEN_PREFERENCES, new ShowDeploymentPropertyAction());
-        addAction(DELETE_ACTION, CommonIcons.ACTION_DISCARD, new DeleteDeploymentAction());
+        addAction(DELETE_ACTION, CommonIcons.ACTION_DISCARD, new DeleteDeploymentAction(), NodeActionPosition.BOTTOM);
         super.loadActions();
     }
 

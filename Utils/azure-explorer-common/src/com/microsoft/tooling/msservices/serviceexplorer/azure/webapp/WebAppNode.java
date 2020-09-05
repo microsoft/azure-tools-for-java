@@ -23,20 +23,16 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.CommonIcons;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
@@ -53,9 +49,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     protected String webAppId;
     protected Map<String, String> propertyMap;
 
-    private NodeAction startAction;
-    private NodeAction stopAction;
-
     /**
      * Constructor.
      */
@@ -67,16 +60,47 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
-
-        startAction = new NodeAction(this, ACTION_START);
-        startAction.setIconPath(CommonIcons.ACTION_START);
-        startAction.addListener(createBackgroundActionListener("Starting Web App", this::startWebApp));
-
-        stopAction = new NodeAction(this, ACTION_STOP);
-        stopAction.setIconPath(CommonIcons.ACTION_STOP);
-        stopAction.addListener(createBackgroundActionListener("Stopping Web App", this::stopWebApp));
-
         loadActions();
+    }
+
+    @Override
+    protected NodeActionListener getStartActionListener() {
+        return createBackgroundActionListener("Starting Web App", this::startWebApp);
+    }
+
+    @Override
+    protected NodeActionListener getRestartActionListener() {
+        return createBackgroundActionListener("Restarting Web App", this::restartWebApp);
+    }
+
+    @Override
+    protected NodeActionListener getStopActionListener() {
+        return createBackgroundActionListener("Stopping Web App", this::stopWebApp);
+    }
+
+    @Override
+    protected NodeActionListener getShowPropertiesActionListener() {
+        return new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
+            }
+        };
+    }
+
+    @Override
+    protected NodeActionListener getOpenInBrowserActionListener() {
+        return new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
+            }
+        };
+    }
+
+    @Override
+    protected NodeActionListener getDeleteActionListener() {
+        return new DeleteWebAppAction();
     }
 
     @Override
@@ -87,44 +111,6 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public void renderSubModules() {
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webAppId));
-    }
-
-    @Override
-    protected void loadActions() {
-        addAction(ACTION_RESTART, CommonIcons.ACTION_RESTART, createBackgroundActionListener("Restarting Web App", () -> restartWebApp()));
-        addAction(ACTION_DELETE, CommonIcons.ACTION_DISCARD, new DeleteWebAppAction());
-        addAction(ACTION_OPEN_IN_BROWSER, CommonIcons.ACTION_OPEN_IN_BROWSER, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
-            }
-        });
-        addAction(ACTION_SHOW_PROPERTY, CommonIcons.ACTION_OPEN_PREFERENCES, new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
-            }
-        });
-
-        super.loadActions();
-    }
-
-    @Override
-    public List<NodeAction> getNodeActions() {
-        boolean isRunning = state == WebAppBaseState.RUNNING;
-
-        NodeAction stopAction = getNodeActionByName(ACTION_STOP);
-        NodeAction startAction = getNodeActionByName(ACTION_START);
-
-        if (isRunning && stopAction == null) {
-            nodeActions.remove(getNodeActionByName(ACTION_START));
-            nodeActions.add(0, this.stopAction);
-        } else if (!isRunning && startAction == null) {
-            nodeActions.remove(getNodeActionByName(ACTION_STOP));
-            nodeActions.add(0, this.startAction);
-        }
-
-        return super.getNodeActions();
     }
 
     @Override
