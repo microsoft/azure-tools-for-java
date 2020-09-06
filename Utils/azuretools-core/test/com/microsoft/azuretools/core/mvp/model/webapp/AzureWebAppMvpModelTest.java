@@ -125,7 +125,7 @@ public class AzureWebAppMvpModelTest {
 
         try {
             WebApp result = azureWebAppMvpModel.getWebAppById(MOCK_SUBSCRIPTION, "test");
-            assert(result.toString()).equals("testApp");
+            assert (result.toString()).equals("testApp");
         } catch (Exception e) {
             fail();
         }
@@ -156,7 +156,7 @@ public class AzureWebAppMvpModelTest {
         when(withOS.withOperatingSystem(OperatingSystem.WINDOWS)).thenReturn(withCreate);
 
         WebApp.DefinitionStages.Blank def = mock(WebApp.DefinitionStages.Blank.class);
-        WebApp.DefinitionStages.WithNewAppServicePlan with =  mock(WebApp.DefinitionStages.WithNewAppServicePlan.class);
+        WebApp.DefinitionStages.WithNewAppServicePlan with = mock(WebApp.DefinitionStages.WithNewAppServicePlan.class);
         WebApp.DefinitionStages.NewAppServicePlanWithGroup withGrp = mock(WebApp.DefinitionStages.NewAppServicePlanWithGroup.class);
         when(webAppsMock.define(settingModel.getWebAppName())).thenReturn(def);
         when(def.withRegion(settingModel.getRegion())).thenReturn(withGrp);
@@ -164,7 +164,7 @@ public class AzureWebAppMvpModelTest {
 
         try {
             azureWebAppMvpModel.createWebAppOnWindows(settingModel);
-        }catch (Exception e) {
+        } catch (Exception e) {
         }
 
         verify(with, times(1)).withNewWindowsPlan(withCreate);
@@ -188,7 +188,7 @@ public class AzureWebAppMvpModelTest {
         WebApp.DefinitionStages.ExistingWindowsPlanWithGroup withGrp = mock(WebApp.DefinitionStages.ExistingWindowsPlanWithGroup.class);
         when(def.withExistingWindowsPlan(srvPlan)).thenReturn(withGrp);
 
-        try{
+        try {
             azureWebAppMvpModel.createWebAppOnWindows(settingModel);
         } catch (Exception e) {
         }
@@ -221,9 +221,9 @@ public class AzureWebAppMvpModelTest {
         WebApp.DefinitionStages.ExistingLinuxPlanWithGroup withGrp = mock(WebApp.DefinitionStages.ExistingLinuxPlanWithGroup.class);
         when(def.withExistingLinuxPlan(srvPlan)).thenReturn(withGrp);
 
-        try{
+        try {
             azureWebAppMvpModel.createWebAppWithPrivateRegistryImage(model);
-        } catch(Exception e) {
+        } catch (Exception e) {
         }
 
         verify(withGrp, times(1)).withExistingResourceGroup(anyString());
@@ -293,7 +293,7 @@ public class AzureWebAppMvpModelTest {
     public void testListAppServicePlanBySubscriptionId() {
         try {
             azureWebAppMvpModel.listAppServicePlanBySubscriptionId(MOCK_SUBSCRIPTION);
-        }catch(Exception e) {
+        } catch (Exception e) {
             printException(e);
         }
 
@@ -458,7 +458,7 @@ public class AzureWebAppMvpModelTest {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
-        String sStackTrace = sw.toString(); // stack trace as a string
-        System.out.println(sStackTrace);
+        String stacktrace = sw.toString(); // stack trace as a string
+        System.out.println(stacktrace);
     }
 }
