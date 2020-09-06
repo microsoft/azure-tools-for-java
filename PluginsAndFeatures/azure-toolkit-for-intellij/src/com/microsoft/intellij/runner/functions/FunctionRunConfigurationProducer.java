@@ -85,6 +85,8 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
             final Module module = findModule(runConfiguration, contextModule);
             if (module != null) {
                 runConfiguration.initializeDefaults(module);
+            } else {
+                return false;
             }
         }
         if (StringUtils.isBlank(configuration.getName())) {
