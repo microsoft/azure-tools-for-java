@@ -297,7 +297,7 @@ public class AzureWebAppMvpModelTest {
             printException(e);
         }
 
-        verify(appSrvPlans, times(1)).list();
+        verify(appSrvPlans, times(1)).list(true);
     }
 
     @Test

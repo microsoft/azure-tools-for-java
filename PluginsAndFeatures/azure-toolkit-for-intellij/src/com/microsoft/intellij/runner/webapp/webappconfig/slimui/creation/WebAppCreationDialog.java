@@ -208,6 +208,7 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     @Override
     public void fillAppServicePlan(@NotNull List<AppServicePlan> appServicePlans) {
+        updateConfiguration();
         cbExistAppServicePlan.removeAllItems();
         appServicePlans.stream()
             .filter(item -> Comparing.equal(item.operatingSystem(), webAppConfiguration.getOS()))

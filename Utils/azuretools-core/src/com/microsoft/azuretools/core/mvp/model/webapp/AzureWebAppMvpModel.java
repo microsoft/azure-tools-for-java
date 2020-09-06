@@ -478,7 +478,7 @@ public class AzureWebAppMvpModel {
      * List app service plan by subscription id.
      */
     public List<AppServicePlan> listAppServicePlanBySubscriptionId(String sid) throws IOException {
-        return AuthMethodManager.getInstance().getAzureClient(sid).appServices().appServicePlans().list();
+        return AuthMethodManager.getInstance().getAzureClient(sid).appServices().appServicePlans().list(true);
     }
 
     /**
