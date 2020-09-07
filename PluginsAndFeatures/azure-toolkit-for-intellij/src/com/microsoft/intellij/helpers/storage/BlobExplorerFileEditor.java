@@ -459,7 +459,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             return false;
         } else {
             Object icon = blobListTable.getValueAt(selectedRow, 0);
-            return icon instanceof Icon;
+            return icon instanceof Icon && icon == AllIcons.Nodes.Folder;
         }
     }
 
