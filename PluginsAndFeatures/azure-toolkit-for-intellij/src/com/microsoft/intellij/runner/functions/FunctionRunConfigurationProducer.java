@@ -55,17 +55,17 @@ public class FunctionRunConfigurationProducer extends LazyRunConfigurationProduc
     }
 
     @Override
-    protected boolean setupConfigurationFromContext(AzureRunConfigurationBase configuration, ConfigurationContext context, Ref ref) {
-        if (!(configuration instanceof FunctionRunConfiguration || configuration instanceof FunctionDeployConfiguration)) {
+    protected boolean setupConfigurationFromContext(AzureRunConfigurationBase runConfigurationBase, ConfigurationContext context, Ref ref) {
+        if (!(runConfigurationBase instanceof FunctionRunConfiguration || runConfigurationBase instanceof FunctionDeployConfiguration)) {
             return false;
         }
-
         final Location contextLocation = context.getLocation();
         assert contextLocation != null;
         Location<PsiMethod> methodLocation = getAzureFunctionMethods(contextLocation);
         if (methodLocation == null) {
             return false;
         }
+        AzureRunConfigurationBase configuration = runConfigurationBase;
         if (configuration instanceof FunctionDeployConfiguration) {
             final RunManagerEx manager = RunManagerEx.getInstanceEx(context.getProject());
             // since deploy configuration doesn't support, we need to create a FunctionRunConfiguration
