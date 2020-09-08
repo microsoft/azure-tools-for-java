@@ -107,6 +107,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private static final String IMAGE_NAME_PREFIX = "localimage";
     private static final String DEFAULT_TAG_NAME = "latest";
     private static final String SELECT_DOCKER_FILE = "Browse...";
+    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
 
     private DockerHostRunSetting dataModel;
     private Text txtDockerHost;
@@ -351,8 +352,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
             try {
                 docker.ping();
             } catch (DockerException | InterruptedException e) {
-                final String format = "Failed to connect docker host: %s\nIs Docker installed and running?";
-                final String msg = String.format(format, dataModel.getDockerHost());
+                final String msg = String.format(DOCKER_PING_ERROR, dataModel.getDockerHost());
                 DefaultLoader.getUIHelper().showError(msg, "Failed to connect docker host");
                 throw new AzureExecutionException(String.format("Failed to connect docker host: %s", dataModel.getDockerHost()));
             }
