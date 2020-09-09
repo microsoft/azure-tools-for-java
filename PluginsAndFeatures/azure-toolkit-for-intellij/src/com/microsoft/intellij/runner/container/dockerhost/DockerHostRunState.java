@@ -30,6 +30,7 @@ import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.core.mvp.model.container.pojo.DockerHostRunSetting;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
@@ -39,7 +40,9 @@ import com.microsoft.intellij.runner.container.utils.Constant;
 import com.microsoft.intellij.runner.container.utils.DockerProgressHandler;
 import com.microsoft.intellij.runner.container.utils.DockerUtil;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.Container;
 
 import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
@@ -53,6 +56,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 public class DockerHostRunState extends AzureRunProfileState<String> {
+    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
     private final DockerHostRunSetting dataModel;
 
 
@@ -130,7 +134,13 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
                 dataModel.isTlsEnabled(),
                 dataModel.getDockerCertPath()
         );
-
+        try {
+            docker.ping();
+        } catch (DockerException | InterruptedException e) {
+            final String msg = String.format(DOCKER_PING_ERROR, dataModel.getDockerHost());
+            DefaultLoader.getUIHelper().showError(msg, "Failed to connect docker host");
+            throw new AzureExecutionException(String.format("Failed to connect docker host: %s", dataModel.getDockerHost()));
+        }
         DockerUtil.buildImage(docker,
                 imageNameWithTag,
                 targetDockerfile.getParent(),

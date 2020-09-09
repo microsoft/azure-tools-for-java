@@ -25,6 +25,7 @@ package com.microsoft.azuretools.container.ui;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERLOCAL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -41,6 +42,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.spotify.docker.client.exceptions.DockerException;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -104,6 +107,7 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
     private static final String IMAGE_NAME_PREFIX = "localimage";
     private static final String DEFAULT_TAG_NAME = "latest";
     private static final String SELECT_DOCKER_FILE = "Browse...";
+    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
 
     private DockerHostRunSetting dataModel;
     private Text txtDockerHost;
@@ -345,6 +349,13 @@ public class DockerRunDialog extends AzureTitleAreaDialogWrapper {
             ConsoleLogger.info(String.format("Building image ...  [%s]", imageNameWithTag));
             DockerClient docker = DockerUtil.getDockerClient(dataModel.getDockerHost(), dataModel.isTlsEnabled(),
                     dataModel.getDockerCertPath());
+            try {
+                docker.ping();
+            } catch (DockerException | InterruptedException e) {
+                final String msg = String.format(DOCKER_PING_ERROR, dataModel.getDockerHost());
+                DefaultLoader.getUIHelper().showError(msg, "Failed to connect docker host");
+                throw new AzureExecutionException(String.format("Failed to connect docker host: %s", dataModel.getDockerHost()));
+            }
             DockerUtil.buildImage(docker, imageNameWithTag, targetDockerfile.getParent(),
                     targetDockerfile.getFileName().toString(), new DockerProgressHandler());
 
