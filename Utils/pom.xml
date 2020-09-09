@@ -42,7 +42,9 @@
         <azure.storage.version>8.6.4</azure.storage.version>
         <commons.io.version>2.7</commons.io.version>
         <azure.auth.helper.version>0.6.0</azure.auth.helper.version>
-        <azure.security.keyvault.version>4.2.0</azure.security.keyvault.version>
+        <azure.security.keyvault.secrets.version>4.2.0</azure.security.keyvault.secrets.version>
+        <azure.security.keyvault.keys.version>4.2.0</azure.security.keyvault.keys.version>
+        <azure.security.keyvault.certificates.version>4.1.0</azure.security.keyvault.certificates.version>
         <azure.storage.queue.version>12.6.0</azure.storage.queue.version>
         <azure.storage.blob.version>12.8.0</azure.storage.blob.version>
         <azure.storage.blob.batch.version>12.6.0</azure.storage.blob.batch.version>
@@ -157,17 +159,17 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-security-keyvault-secrets</artifactId>
-                <version>${azure.security.keyvault.version}</version>
+                <version>${azure.security.keyvault.secrets.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-security-keyvault-keys</artifactId>
-                <version>${azure.security.keyvault.version}</version>
+                <version>${azure.security.keyvault.keys.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-security-keyvault-certificates</artifactId>
-                <version>${azure.security.keyvault.version}</version>
+                <version>${azure.security.keyvault.certificates.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>

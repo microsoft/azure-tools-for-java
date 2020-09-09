@@ -27,7 +27,7 @@ import java.io.FilenameFilter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -114,7 +114,8 @@ public class ClasspathContainer implements IClasspathContainer {
                     for (int i = 0; i < jars.length; i++) {
                         if (jars[i].getName().contains(Messages.appInsightMng)
                                 || jars[i].getName().contains(Messages.adAuth)
-                                || jars[i].getName().contains(Messages.srvExp)) {
+                                || jars[i].getName().contains(Messages.srvExp)
+                                || StringUtils.equals(getArtifactName(jars[i].getName()), Messages.azureStorage)) {
                             /*
                              * Do not add them as they are not part of Azure SDK. They are just used for coding purpose.
                              */
@@ -148,6 +149,10 @@ public class ClasspathContainer implements IClasspathContainer {
     @Override
     public IPath getPath() {
         return containerPath;
+    }
+    
+    private String getArtifactName(String fileName) {
+    	return StringUtils.substringBeforeLast(fileName, "-");
     }
 
 }
