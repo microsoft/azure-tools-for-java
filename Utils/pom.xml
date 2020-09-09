@@ -39,7 +39,6 @@
         <azure.version>1.36.2</azure.version>
         <docker.client.version>8.16.0</docker.client.version>
         <azure.client.version>1.7.5</azure.client.version>
-        <azure.keyvault.version>1.2.4</azure.keyvault.version>
         <azure.storage.version>8.6.4</azure.storage.version>
         <commons.io.version>2.7</commons.io.version>
         <azure.auth.helper.version>0.6.0</azure.auth.helper.version>
@@ -342,16 +341,6 @@
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-annotations</artifactId>
                 <version>1.10.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-keyvault</artifactId>
-                <version>${azure.keyvault.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-keyvault-core</artifactId>
-                <version>${azure.keyvault.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.azure</groupId>

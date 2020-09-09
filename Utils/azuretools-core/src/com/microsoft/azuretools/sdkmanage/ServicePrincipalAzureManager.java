@@ -22,16 +22,12 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.common.utils.SneakyThrowUtils;
+import com.microsoft.azure.credentials.ApplicationTokenCredentials;
+import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
-import org.apache.commons.lang3.StringUtils;
-
-import com.microsoft.azure.AzureEnvironment;
-import com.microsoft.azure.credentials.ApplicationTokenCredentials;
-import com.microsoft.azure.keyvault.KeyVaultClient;
-import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
-import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.adauth.PromptBehavior;
@@ -45,7 +41,7 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
-import com.microsoft.rest.credentials.ServiceClientCredentials;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -190,23 +186,6 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     public List<Tenant> getTenants() throws IOException {
         List<Tenant> tl = auth().tenants().list();
         return tl;
-    }
-
-    @Override
-    public KeyVaultClient getKeyVaultClient(String tid) {
-        ServiceClientCredentials creds = new KeyVaultCredentials() {
-            @Override
-            public String doAuthenticate(String authorization, String resource, String scope) {
-                try {
-                    initATCIfNeeded();
-                    return atc.getToken(resource);
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        };
-
-        return new KeyVaultClient(creds);
     }
 
     @Override

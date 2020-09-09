@@ -25,9 +25,6 @@
    <feature url="features/com.microsoft.azuretools.webapp.feature_3.24.0.qualifier.jar" id="com.microsoft.azuretools.webapp.feature" version="3.24.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
-   <feature url="features/com.microsoft.azuretools.docker.feature_3.24.0.qualifier.jar" id="com.microsoft.azuretools.docker.feature" version="3.24.0.qualifier">
-      <category name="com.persistent.azuretools.eclipseplugin.category"/>
-   </feature>
    <feature url="features/com.microsoft.azuretools.container.feature_3.24.0.qualifier.jar" id="com.microsoft.azuretools.container.feature" version="3.24.0.qualifier">
       <category name="com.persistent.azuretools.eclipseplugin.category"/>
    </feature>
