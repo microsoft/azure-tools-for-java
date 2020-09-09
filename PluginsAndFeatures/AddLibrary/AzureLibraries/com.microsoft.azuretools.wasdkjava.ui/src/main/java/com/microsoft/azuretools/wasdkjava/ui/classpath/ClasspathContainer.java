@@ -150,9 +150,9 @@ public class ClasspathContainer implements IClasspathContainer {
     public IPath getPath() {
         return containerPath;
     }
-    
+
     private String getArtifactName(String fileName) {
-    	return StringUtils.substringBeforeLast(fileName, "-");
+        return StringUtils.substringBeforeLast(fileName, "-");
     }
 
 }
