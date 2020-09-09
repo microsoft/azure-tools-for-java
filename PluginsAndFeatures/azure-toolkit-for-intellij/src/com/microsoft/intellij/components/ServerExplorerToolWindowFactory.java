@@ -139,8 +139,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     if (!node.isLoading()) {
                         node.getClickAction().fireNodeActionEvent();
                     }
-                }
-                else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+                } else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
                     if (node.hasNodeActions()) {
                         JPopupMenu menu = createPopupMenuForNode(node);
                         menu.show(e.getComponent(), (int) rectangle.getX(), (int) rectangle.getY());
@@ -174,7 +173,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
     private void treeMousePressed(MouseEvent e, JTree tree) {
         // get the tree node associated with this mouse click
-        TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+        final TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
         if (treePath == null) {
             return;
         }
