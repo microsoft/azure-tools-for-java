@@ -22,8 +22,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.azure.keyvault.KeyVaultClient;
-import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
@@ -43,7 +41,6 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
-import com.microsoft.rest.credentials.ServiceClientCredentials;
 import rx.Observable;
 
 import java.io.IOException;
@@ -225,22 +222,6 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     private InsightsManager authApplicationInsights(String sid, String tid) {
         return buildAzureManager(InsightsManager.configure())
                 .authenticate(new RefreshableTokenCredentials(this, tid), sid);
-    }
-
-    @Override
-    public KeyVaultClient getKeyVaultClient(String tid) {
-        ServiceClientCredentials creds = new KeyVaultCredentials() {
-            @Override
-            public String doAuthenticate(String authorization, String resource, String scope) {
-                try {
-                    // TODO: check usage
-                    return delegateADAuthManager.getAccessToken(tid, resource, PromptBehavior.Auto);
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        };
-        return new KeyVaultClient(creds);
     }
 
     @Override

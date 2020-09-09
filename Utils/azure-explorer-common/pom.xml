@@ -109,18 +109,6 @@
             <version>${azuretool.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-keyvault</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.microsoft.azure</groupId>
-                    <artifactId>azure-client-runtime</artifactId>
-                </exclusion>
-            </exclusions>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>${project.basedir}/../azuretools-core/lib/azure-keyvault-1.0.0-beta5-SNAPSHOT.jar</systemPath>-->
-        </dependency>
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.12</version>
