@@ -26,8 +26,6 @@ import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.credentials.AzureCliCredentials;
-import com.microsoft.azure.keyvault.KeyVaultClient;
-import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
@@ -45,7 +43,6 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
-import com.microsoft.rest.credentials.ServiceClientCredentials;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -162,24 +159,6 @@ public class AzureCliAzureManager extends AzureManagerBase {
         azureCliCredentials = null;
         environment = null;
         subscriptionManager.cleanSubscriptions();
-    }
-
-    @Override
-    public KeyVaultClient getKeyVaultClient(String tid) {
-        if (!isSignedIn()) {
-            return null;
-        }
-        final ServiceClientCredentials credentials = new KeyVaultCredentials() {
-            @Override
-            public String doAuthenticate(String authorization, String resource, String scope) {
-                try {
-                    return azureCliCredentials.getToken(resource);
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        };
-        return new KeyVaultClient(credentials);
     }
 
     @Override
