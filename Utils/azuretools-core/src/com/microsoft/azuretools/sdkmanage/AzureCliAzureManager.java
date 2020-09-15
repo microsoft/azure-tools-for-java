@@ -57,10 +57,10 @@ public class AzureCliAzureManager extends AzureManagerBase {
     private static final String FAILED_TO_AUTH_WITH_AZURE_CLI = "Failed to auth with Azure CLI";
     private static final String UNABLE_TO_GET_AZURE_CLI_CREDENTIALS = "Unable to get Azure CLI credentials, " +
             "please ensure you have installed Azure CLI and signed in.";
-    public static final String CLI_TOKEN_FORMAT_ACCESSOR = "az account get-access-token --output json -t %s";
-    public static final String CLI_TOKEN_PROP_ACCESS_TOKEN = "accessToken";
-    public static final String CLI_TOKEN_PROP_EXPIRATION = "expiresOn";
-    public static final String PATTERN_TENANT = "[a-zA-Z_\\-0-9]*";
+    private static final String CLI_TOKEN_FORMAT_ACCESSOR = "az account get-access-token --output json -t %s";
+    private static final String CLI_TOKEN_PROP_ACCESS_TOKEN = "accessToken";
+    private static final String CLI_TOKEN_PROP_EXPIRATION = "expiresOn";
+    private static final String PATTERN_TENANT = "[a-zA-Z_\\-0-9]*";
 
     protected Map<String, Pair<String, OffsetDateTime>> tenantTokens = new ConcurrentHashMap<>();
 
