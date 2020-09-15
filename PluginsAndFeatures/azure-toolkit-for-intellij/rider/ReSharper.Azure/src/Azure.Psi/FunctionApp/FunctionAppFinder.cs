@@ -73,7 +73,9 @@ namespace JetBrains.ReSharper.Azure.Psi.FunctionApp
 
         /// <summary>
         /// Check whether a method define a Function App that can be run.
-        /// Reference link: https://docs.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library#methods-recognized-as-functions
+        /// Reference links:
+        /// - https://docs.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library#methods-recognized-as-functions
+        /// - https://docs.microsoft.com/en-us/azure/azure-functions/functions-dotnet-dependency-injection
         /// </summary>
         /// <param name="method">A Method instance to check.</param>
         /// <returns>Flag whether provided method can be considered as a method to start a Function App of any type.</returns>
@@ -81,7 +83,6 @@ namespace JetBrains.ReSharper.Azure.Psi.FunctionApp
         {
             return method != null &&
                    method.GetAccessRights() == AccessRights.PUBLIC &&
-                   method.IsStatic &&
                    GetFunctionNameAttribute(method) != null;
         }
 
