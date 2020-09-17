@@ -145,7 +145,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         processHandler.setText("Job done");
         processHandler.notifyComplete();
         if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
     }
 

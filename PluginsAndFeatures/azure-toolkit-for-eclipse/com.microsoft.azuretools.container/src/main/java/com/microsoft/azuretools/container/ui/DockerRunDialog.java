@@ -25,7 +25,6 @@ package com.microsoft.azuretools.container.ui;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DEPLOY_WEBAPP_DOCKERLOCAL;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
