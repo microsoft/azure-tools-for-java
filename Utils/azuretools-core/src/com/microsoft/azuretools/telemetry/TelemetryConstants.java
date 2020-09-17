@@ -67,6 +67,7 @@ public class TelemetryConstants {
     public static final String STOP_WEBAPP = "stop-webapp";
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
+    public static final String WEBAPP_SSHINTO = "sshinto-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
     public static final String START_STREAMING_LOG_WEBAPP = "start-streaming-log-webapp";
     public static final String STOP_STREAMING_LOG_WEBAPP = "stop-streaming-log-webapp";

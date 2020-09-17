@@ -30,10 +30,12 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_OPEN_INBROWSER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_SHOWPROP;
 
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -48,6 +50,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
+    public static final String SSH_INTO = "SSH into Web App";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     protected String webAppName;
@@ -146,6 +149,13 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
             e.printStackTrace();
             // TODO: Error handling
         }
+    }
+
+    @Override
+    public List<NodeAction> getNodeActions() {
+        boolean running = this.state == WebAppBaseState.RUNNING;
+        getNodeActionByName(SSH_INTO).setEnabled(running && OS_LINUX.equalsIgnoreCase(os));
+        return super.getNodeActions();
     }
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {
