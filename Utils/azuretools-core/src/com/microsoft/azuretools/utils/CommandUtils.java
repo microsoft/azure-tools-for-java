@@ -20,24 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.util;
+package com.microsoft.azuretools.utils;
 
 import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CommandUtils {
 
+    private static final Logger logger = Logger.getLogger(CommandUtils.class.getName());
+    private static final String WINDOWS_STARTER = "cmd.exe";
+    private static final String LINUX_MAC_STARTER = "/bin/sh";
+    private static final String WINDOWS_SWITCHER = "/c";
+    private static final String LINUX_MAC_SWITCHER = "-c";
+    private static final String DEFAULT_WINDOWS_SYSTEM_ROOT = System.getenv("SystemRoot");
+    private static final String DEFAULT_MAC_LINUX_PATH = "/bin/";
     public final static String COMMEND_SUFFIX_WINDOWS = ".cmd";
 
     public static List<File> resolvePathForCommandForCmdOnWindows(final String command) throws IOException, InterruptedException {
@@ -57,24 +64,51 @@ public class CommandUtils {
         if (exitCode != 0) {
             return new String[0];
         }
-        return StringUtils.split(IOUtils.toString(streamFunction.apply(p), "utf8"), "\n");
+        return StringUtils.split(IOUtils.toString(streamFunction.apply(p), StandardCharsets.UTF_8), "\n");
     }
 
-    public static String executeCommandAndGetOutput(final String command, final String[] parameters, final File directory) throws IOException {
-        final CommandLine commandLine = new CommandLine(command);
-        commandLine.addArguments(parameters);
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+    public static String exec(final String commandWithArgs) throws IOException {
+        final String starter = isWindows() ? WINDOWS_STARTER : LINUX_MAC_STARTER;
+        final String switcher = isWindows() ? WINDOWS_SWITCHER : LINUX_MAC_SWITCHER;
+        final String workingDirectory = getSafeWorkingDirectory();
+        if (StringUtils.isEmpty(workingDirectory)) {
+            final IllegalStateException exception = new IllegalStateException("A Safe Working directory could not be found to execute command from.");
+            logger.throwing(CommandUtils.class.getName(), "exec", exception);
+            throw exception;
+        }
+        final String wrappedCommand = String.format("%s %s %s", starter, switcher, commandWithArgs);
+        return executeCommandAndGetOutput(wrappedCommand, new File(workingDirectory));
+    }
+
+    public static String executeCommandAndGetOutput(final String commandWithoutArgs, final String[] args, final File directory) throws IOException {
+        final CommandLine commandLine = new CommandLine(commandWithoutArgs);
+        commandLine.addArguments(args);
+        return executeCommandAndGetOutput(commandLine, directory);
+    }
+
+    public static String executeCommandAndGetOutput(final String commandWithArgs, final File directory) throws IOException {
+        final CommandLine commandLine = CommandLine.parse(commandWithArgs);
+        return executeCommandAndGetOutput(commandLine, directory);
+    }
+
+    private static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory) throws IOException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final ByteArrayOutputStream err = new ByteArrayOutputStream();
+        final PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
         final DefaultExecutor executor = new DefaultExecutor();
         executor.setWorkingDirectory(directory);
         executor.setStreamHandler(streamHandler);
         executor.setExitValues(null);
         try {
             executor.execute(commandLine);
-            return outputStream.toString();
+            logger.log(Level.SEVERE, err.toString());
+            return out.toString();
         } catch (ExecuteException e) {
             // swallow execute exception and return empty
             return StringUtils.EMPTY;
+        } finally {
+            out.close();
+            err.close();
         }
     }
 
@@ -132,6 +166,17 @@ public class CommandUtils {
 
     public static boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
+    }
+	
+	private static String getSafeWorkingDirectory() {
+        if (isWindows()) {
+            if (StringUtils.isEmpty(DEFAULT_WINDOWS_SYSTEM_ROOT)) {
+                return null;
+            }
+            return DEFAULT_WINDOWS_SYSTEM_ROOT + "\\system32";
+        } else {
+            return DEFAULT_MAC_LINUX_PATH;
+        }
     }
 
     public static class CommendExecOutput {

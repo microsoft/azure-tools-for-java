@@ -22,6 +22,7 @@
 
 package com.microsoft.intellij.util;
 
+import com.microsoft.azuretools.utils.CommandUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
