@@ -30,7 +30,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.terminal.JBTerminalPanel;
 import com.jediterm.terminal.TerminalOutputStream;
 import com.microsoft.azuretools.utils.CommandUtils;
-import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
 import com.microsoft.intellij.util.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.intellij.util.PluginUtil;
@@ -45,12 +44,14 @@ import java.io.IOException;
 public enum SSHTerminalManager {
     INSTANCE;
 
-    private final static long CMD_EXEC_TIMEOUT = 20 * 1000L;
+    private static final long CMD_EXEC_TIMEOUT = 20 * 1000L;
 
-    private final static String CMD_SSH_TO_LOCAL_PROXY = "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" root@127.0.0.1 -p %s \r\n";
-    private final static String CMD_SSH_TO_LOCAL_PWD = "Docker!\r\n";
+    private static final String CMD_SSH_TO_LOCAL_PROXY =
+            "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" root@127.0.0.1 -p %s \r\n";
+    private static final String CMD_SSH_TO_LOCAL_PWD = "Docker!\r\n";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "SSH into Web App (%s) is not started. Please try again.";
-    private static final String SSH_INTO_WEB_APP_DISABLE_MESSAGE = "SSH is not enabled for this app. To enable SSH follow this instructions: https://go.microsoft.com/fwlink/?linkid=2132395";
+    private static final String SSH_INTO_WEB_APP_DISABLE_MESSAGE =
+            "SSH is not enabled for this app. To enable SSH follow this instructions: https://go.microsoft.com/fwlink/?linkid=2132395";
 
     /**
      * try to execute azure CLI command to detect it is installed or not.
@@ -61,10 +62,12 @@ public enum SSHTerminalManager {
      */
     public boolean checkToConfirmAzureCliInstalled() {
         try {
-            DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(AzureCliUtils.CLI_GROUP_AZ, new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
+            DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(
+                    AzureCliUtils.CLI_GROUP_AZ, new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
             resultHandler.waitFor(CMD_EXEC_TIMEOUT);
             int exitValue = resultHandler.getExitValue();
-            System.out.println("com.microsoft.intellij.serviceexplorer.azure.appservice.SSHTerminalManager.checkToConfirmAzureCliInstalled: exitCode: " + exitValue);
+            System.out.println(
+                    "com.microsoft.intellij.serviceexplorer.azure.appservice.SSHTerminalManager.checkToConfirmAzureCliInstalled: exitCode: " + exitValue);
             if (exitValue == 0) {
                 return true;
             }
@@ -156,8 +159,8 @@ public enum SSHTerminalManager {
                     SimpleToolWindowPanel terminalToolWindowPanel = (SimpleToolWindowPanel) root.getComponent(0);
                     JPanel panel = (JPanel) terminalToolWindowPanel.getComponent(0);
                     ShellTerminalWidget panel1 = (ShellTerminalWidget) panel.getComponent(0);
-                    JLayeredPane jLayeredPane = (JLayeredPane) panel1.getComponent(0);
-                    JBTerminalPanel terminalPanel = (JBTerminalPanel) jLayeredPane.getComponent(0);
+                    JLayeredPane javaLayeredPane = (JLayeredPane) panel1.getComponent(0);
+                    JBTerminalPanel terminalPanel = (JBTerminalPanel) javaLayeredPane.getComponent(0);
                     TerminalOutputStream terminalOutputStream = terminalPanel.getTerminalOutputStream();
                     terminalOutputStream.sendString(String.format(CMD_SSH_TO_LOCAL_PROXY, connectionInfo.getPort()));
                     try {

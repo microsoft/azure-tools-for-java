@@ -45,7 +45,7 @@ public class CommandUtils {
     private static final String LINUX_MAC_SWITCHER = "-c";
     private static final String DEFAULT_WINDOWS_SYSTEM_ROOT = System.getenv("SystemRoot");
     private static final String DEFAULT_MAC_LINUX_PATH = "/bin/";
-    public final static String COMMEND_SUFFIX_WINDOWS = ".cmd";
+    public static final String COMMEND_SUFFIX_WINDOWS = ".cmd";
 
     public static List<File> resolvePathForCommandForCmdOnWindows(final String command) throws IOException, InterruptedException {
         return resolvePathForCommand(isWindows() ? (command + ".cmd") : command);
@@ -127,7 +127,6 @@ public class CommandUtils {
         Arrays.stream(parameters).forEach(e -> System.out.print(e + " "));
         System.out.println();
         String internalCommand = CommandUtils.isWindows() ? command + CommandUtils.COMMEND_SUFFIX_WINDOWS : command;
-        CommendExecution execution = new CommendExecution();
         final CommandLine commandLine = new CommandLine(internalCommand);
         commandLine.addArguments(parameters);
         final DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
@@ -137,6 +136,7 @@ public class CommandUtils {
         executor.setStreamHandler(streamHandler);
         executor.setExitValues(null);
         executor.execute(commandLine, resultHandler);
+        CommendExecution execution = new CommendExecution();
         execution.setOutputStream(outputStream);
         execution.setResultHandler(resultHandler);
         return execution;
@@ -167,8 +167,8 @@ public class CommandUtils {
     public static boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
     }
-	
-	private static String getSafeWorkingDirectory() {
+
+    private static String getSafeWorkingDirectory() {
         if (isWindows()) {
             if (StringUtils.isEmpty(DEFAULT_WINDOWS_SYSTEM_ROOT)) {
                 return null;

@@ -40,14 +40,14 @@ import org.jetbrains.plugins.terminal.TerminalView;
 @Name(WebAppNode.SSH_INTO)
 public class SSHIntoWebAppAction extends NodeActionListener {
 
-    public final static String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
-    private final static String CLI_NOT_INSTALLED_DIALOG_MESSAGE = "Azure CLI is vital for SSH into Web App. Please install it and then try again.";
-    private final static String WIN_NOT_SUPPORT_DIALOG_TITLE = "SSH into Web App Error";
-    private final static String WIN_NOT_SUPPORT_DIALOG_MESSAGE = "Azure SSH is only supported for Linux web apps";
-    private final static String OS_LINUX = "linux";
-    private final static String WEBAPP_TERMINAL_TABLE_NAME = "SSH - %s";
-    private final static String RESOUCE_GROUP_PATH_PREFIX = "resourceGroups/";
-    private final static String RESOUCE_ELEMENT_PATTERN = "[^/]+";
+    public static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
+    private static final String CLI_NOT_INSTALLED_DIALOG_MESSAGE = "Azure CLI is vital for SSH into Web App. Please install it and then try again.";
+    private static final String WIN_NOT_SUPPORT_DIALOG_TITLE = "SSH into Web App Error";
+    private static final String WIN_NOT_SUPPORT_DIALOG_MESSAGE = "Azure SSH is only supported for Linux web apps";
+    private static final String OS_LINUX = "linux";
+    private static final String WEBAPP_TERMINAL_TABLE_NAME = "SSH - %s";
+    private static final String RESOUCE_GROUP_PATH_PREFIX = "resourceGroups/";
+    private static final String RESOUCE_ELEMENT_PATTERN = "[^/]+";
 
     private final Project project;
     private final String resourceId;
@@ -71,7 +71,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
         // check to confirm that azure cli is installed.
         if (!SSHTerminalManager.INSTANCE.checkToConfirmAzureCliInstalled()) {
             Messages.showWarningDialog(CLI_NOT_INSTALLED_DIALOG_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            return ;
+            return;
         }
         // only support these web app those os is linux.
         if (!OS_LINUX.equalsIgnoreCase(os)) {
@@ -85,7 +85,8 @@ public class SSHIntoWebAppAction extends NodeActionListener {
         // ssh to connect to remote web app container.
         DefaultLoader.getIdeHelper().runInBackground(project, String.format("Connecting to Web App (%s) ...", webAppName), true, false, null, () -> {
             // build proxy between remote and local
-            SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(AzureCliUtils.CLI_GROUP_AZ, AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
+            SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
+                    AzureCliUtils.CLI_GROUP_AZ, AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
             System.out.println(String.format("Complete to execute ssh connection. output message is below: %s", connectionInfo.getOutputMessage()));
             // validate create-remote-connection output to ensure it's ready to ssh to local proxy and open terminal.
             if (!SSHTerminalManager.INSTANCE.validateConnectionOutputForOpenInTerminal(connectionInfo, webAppName)) {
