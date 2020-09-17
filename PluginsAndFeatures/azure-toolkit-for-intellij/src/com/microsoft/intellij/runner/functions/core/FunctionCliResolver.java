@@ -24,7 +24,7 @@ package com.microsoft.intellij.runner.functions.core;
 
 import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.TextUtils;
-import com.microsoft.intellij.util.CommandUtils;
+import com.microsoft.azuretools.utils.CommandUtils;
 
 import java.io.File;
 import java.io.IOException;
