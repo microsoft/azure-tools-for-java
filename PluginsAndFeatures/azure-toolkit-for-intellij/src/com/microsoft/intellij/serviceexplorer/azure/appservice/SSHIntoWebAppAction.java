@@ -23,7 +23,6 @@
 package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.util.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
@@ -40,11 +39,6 @@ import org.jetbrains.plugins.terminal.TerminalView;
 @Name(WebAppNode.SSH_INTO)
 public class SSHIntoWebAppAction extends NodeActionListener {
 
-    public static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
-
-    private static final String CLI_NOT_INSTALLED_DIALOG_MESSAGE = "Azure CLI is vital for SSH into Web App. Please install it and then try again.";
-    private static final String WIN_NOT_SUPPORT_DIALOG_MESSAGE = "Azure SSH is only supported for Linux web apps";
-    private static final String OS_LINUX = "linux";
     private static final String WEBAPP_TERMINAL_TABLE_NAME = "SSH - %s";
     private static final String RESOUCE_GROUP_PATH_PREFIX = "resourceGroups/";
     private static final String RESOUCE_ELEMENT_PATTERN = "[^/]+";
@@ -55,6 +49,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     private final String subscriptionId;
     private final String resourceGroupName;
     private final String os;
+    private final String fxVersion;
 
     public SSHIntoWebAppAction(WebAppNode webAppNode) {
         super();
@@ -64,21 +59,16 @@ public class SSHIntoWebAppAction extends NodeActionListener {
         this.subscriptionId = webAppNode.getSubscriptionId();
         this.resourceGroupName = PatternUtils.parseWordByPatternAndPrefix(resourceId, RESOUCE_ELEMENT_PATTERN, RESOUCE_GROUP_PATH_PREFIX);
         this.os = webAppNode.getOs();
+        this.fxVersion = webAppNode.getFxVersion();
     }
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        // check to confirm that azure cli is installed.
-        if (!SSHTerminalManager.INSTANCE.checkToConfirmAzureCliInstalled()) {
-            Messages.showWarningDialog(CLI_NOT_INSTALLED_DIALOG_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            return;
-        }
-        // only support these web app those os is linux.
-        if (!OS_LINUX.equalsIgnoreCase(os)) {
-            Messages.showWarningDialog(WIN_NOT_SUPPORT_DIALOG_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            return;
-        }
         System.out.println(String.format("Start to perform SSH into Web App (%s)....", webAppName));
+        // check these conditions to ssh into web app
+        if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(os, fxVersion)) {
+            return;
+        }
         // create a new terminal tab.
         TerminalView terminalView = TerminalView.getInstance(project);
         terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
@@ -86,14 +76,14 @@ public class SSHIntoWebAppAction extends NodeActionListener {
         DefaultLoader.getIdeHelper().runInBackground(project, String.format("Connecting to Web App (%s) ...", webAppName), true, false, null, () -> {
             // build proxy between remote and local
             SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
-                    AzureCliUtils.CLI_GROUP_AZ, AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
+                    AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
             System.out.println(String.format("Complete to execute ssh connection. output message is below: %s", connectionInfo.getOutputMessage()));
             // validate create-remote-connection output to ensure it's ready to ssh to local proxy and open terminal.
-            if (!SSHTerminalManager.INSTANCE.validateConnectionOutputForOpenInTerminal(connectionInfo, webAppName)) {
+            if (!SSHTerminalManager.INSTANCE.validateConnectionOutputBeforeOpenInTerminal(connectionInfo, webAppName)) {
                 return;
             }
             // create connection to the local proxy.
-            SSHTerminalManager.INSTANCE.openConnectionInTerminal(project, webAppName, connectionInfo);
+            SSHTerminalManager.INSTANCE.openConnectionInTerminal(project, connectionInfo);
         });
         System.out.println(String.format("End to perform SSH into Web App (%s)", webAppName));
     }

@@ -24,6 +24,7 @@ package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -33,7 +34,6 @@ import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.intellij.util.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.intellij.util.PluginUtil;
-import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory;
@@ -44,52 +44,64 @@ import java.io.IOException;
 public enum SSHTerminalManager {
     INSTANCE;
 
-    private static final long CMD_EXEC_TIMEOUT = 20 * 1000L;
-    private static final int CMD_EXEC_EXIT_CODE_SUCCESS = 0;
-
+    private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "SSH into Web App (%s) is not started. Please try again.";
+    private static final String CLI_DIALOG_MESSAGE_NOT_INSTALLED = "Azure CLI is vital for SSH into Web App. Please install it and then try again.";
+    private static final String CLI_DIALOG_MESSAGE_NOT_LOGIN = "Please run 'az login' to setup account.";
+    private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_MESSAGE_ACCOUNT_MISMATCH = "Please run 'az login' to setup account.";
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS = "Azure SSH is only supported for Linux web apps";
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER = "Azure SSH is only supported for Java web apps. Current app is a Docker.";
+    private static final String OS_LINUX = "linux";
+    private static final String WEB_APP_FX_VERSION_PREFIX = "DOCKER|";
     private static final String CMD_SSH_TO_LOCAL_PROXY =
             "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" root@127.0.0.1 -p %s \r\n";
     private static final String CMD_SSH_TO_LOCAL_PWD = "Docker!\r\n";
-    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "SSH into Web App (%s) is not started. Please try again.";
     private static final String SSH_INTO_WEB_APP_DISABLE_MESSAGE =
             "SSH is not enabled for this app. To enable SSH follow this instructions: https://go.microsoft.com/fwlink/?linkid=2132395";
 
     /**
-     * try to execute azure CLI command to detect it is installed or not.
+     * these actions (validation, etc) before ssh into web app.
      *
+     * @param os
+     * @param fxVersion
      * @return
-     * true : azure installed.
-     * false : azure not installed.
      */
-    public boolean checkToConfirmAzureCliInstalled() {
-        try {
-            DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(
-                    AzureCliUtils.CLI_GROUP_AZ, new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
-            resultHandler.waitFor(CMD_EXEC_TIMEOUT);
-            int exitValue = resultHandler.getExitValue();
-            System.out.println("exitCode: " + exitValue);
-            if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
-                return true;
-            }
-            return false;
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+    public boolean beforeExecuteAzCreateRemoteConnection(String os, String fxVersion) {
+        // check to confirm that azure cli is installed.
+        if (!AzureCliUtils.checkCliInstalled()) {
+            Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NOT_INSTALLED, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
+        // check azure cli login
+        if (!AzureCliUtils.checkCliLogined()) {
+            Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NOT_LOGIN, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            return false;
+        }
+        // check login account
+
+        // only support these web app those os is linux.
+        if (!OS_LINUX.equalsIgnoreCase(os)) {
+            Messages.showWarningDialog(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            return false;
+        }
+        // check non-docker web app
+        if (StringUtils.containsIgnoreCase(fxVersion, WEB_APP_FX_VERSION_PREFIX)) {
+            Messages.showWarningDialog(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+        }
+        return true;
     }
 
     /**
      * create remote connection to remote web app container.
      *
-     * @param command
      * @param parameters
      * @return
      */
-    public CreateRemoteConnectionOutput executeAzCreateRemoteConnectionAndGetOutput(final String command, final String[] parameters) {
+    public CreateRemoteConnectionOutput executeAzCreateRemoteConnectionAndGetOutput(final String[] parameters) {
         CreateRemoteConnectionOutput connectionInfo = new CreateRemoteConnectionOutput();
         CommandUtils.CommendExecOutput commendExecOutput = null;
         try {
-            commendExecOutput = AzureCliUtils.executeCommandAndGetOutputWithCompleteKeyWord(command, parameters,
+            commendExecOutput = AzureCliUtils.executeCommandAndGetOutputWithCompleteKeyWord(parameters,
                     AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORDS, AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORDS);
         } catch (IOException e) {
             e.printStackTrace();
@@ -121,20 +133,20 @@ public enum SSHTerminalManager {
      * @param connectionInfo
      * @param webAppName
      */
-    public boolean validateConnectionOutputForOpenInTerminal(CreateRemoteConnectionOutput connectionInfo, String webAppName) {
+    public boolean validateConnectionOutputBeforeOpenInTerminal(CreateRemoteConnectionOutput connectionInfo, String webAppName) {
         if (connectionInfo == null) {
-            ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSHIntoWebAppAction.SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
+            ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
                     String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName)));
             return false;
         }
         if (connectionInfo.getSuccess()) {
             if (StringUtils.isBlank(connectionInfo.getPort())) {
-                ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSHIntoWebAppAction.SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
+                ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
                         String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName)));
                 return false;
             }
         } else {
-            ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSHIntoWebAppAction.SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
+            ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
                     SSH_INTO_WEB_APP_DISABLE_MESSAGE));
             return false;
         }
@@ -145,10 +157,9 @@ public enum SSHTerminalManager {
      * ssh to connect to local proxy and open the terminal for remote container.
      *
      * @param project
-     * @param webAppName
      * @param connectionInfo
      */
-    public void openConnectionInTerminal(Project project, final String webAppName, CreateRemoteConnectionOutput connectionInfo) {
+    public void openConnectionInTerminal(Project project, CreateRemoteConnectionOutput connectionInfo) {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {

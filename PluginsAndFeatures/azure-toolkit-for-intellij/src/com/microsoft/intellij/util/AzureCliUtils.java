@@ -23,6 +23,7 @@
 package com.microsoft.intellij.util;
 
 import com.microsoft.azuretools.utils.CommandUtils;
+import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -33,34 +34,28 @@ import java.io.IOException;
  */
 public class AzureCliUtils {
 
-    public static final String CLI_GROUP_AZ = "az";
-
-    public static final String CLI_SUBGROUP_WEBAPP = "webapp";
-    private static final String CLI_COMMAND_REMOTE_CONNECTION = "create-remote-connection";
-
-    public static final String CLI_COMMAND_VERSION = "version";
+    private static final String CLI_GROUP_AZ = "az";
+    private static final String CLI_SUBGROUP_WEBAPP = "webapp";
+    private static final String CLI_SUBGROUP_WEBAPP_COMMAND_REMOTE_CONNECTION = "create-remote-connection";
+    private static final String CLI_SUBGROUP_ACCOUNT = "account";
+    private static final String CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW = "show";
+    private static final String CLI_COMMAND_VERSION = "version";
     private static final String CLI_ARGUMENTS_WEBAPP_NAME = "-n";
     private static final String CLI_ARGUMENTS_RESOURCE_GROUP = "-g";
     private static final String CLI_ARGUMENTS_SUBSCRIPTION = "--subscription";
-
-    private static final String CLI_COMMAND_VERSION_EXEC_SUCCESS_KEY_WORD = "\"azure-cli\":";
-    private static final String CLI_COMMAND_AZ_NOT_FOUND_KEY_WORD_WINDOWS = "is not recognized as an internal or external command";
-    private static final String CLI_COMMAND_AZ_NOT_FOUND_KEY_WORD_LINUX = "command not found";
     private static final String CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORD = "Ctrl + C to close";
     private static final String CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORD = "SSH is not enabled for this app.";
 
-    public static final String[] CLI_COMMAND_VERSION_EXEC_SUCCESS_KEY_WORDS = new String[]{CLI_COMMAND_VERSION_EXEC_SUCCESS_KEY_WORD};
-    public static final String[] CLI_COMMAND_VERSION_EXEC_FAILED_KEY_WORDS =
-            new String[]{CLI_COMMAND_AZ_NOT_FOUND_KEY_WORD_WINDOWS, CLI_COMMAND_AZ_NOT_FOUND_KEY_WORD_LINUX};
     public static final String[] CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORDS = new String[]{CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORD};
     public static final String[] CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORDS = new String[]{CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORD};
 
-    private static final int CMD_EXEC_TIMEOUT = 15 * 1000;
+    private static final int CMD_EXEC_TIMEOUT = 10 * 1000;
+    private static final int CMD_EXEC_EXIT_CODE_SUCCESS = 0;
 
     public static String[] formatCreateWebAppRemoteConnectionParameters(final String subscrption, final String resourceGroup, final String webapp) {
         String[] parameters = new String[8];
         parameters[0] = CLI_SUBGROUP_WEBAPP;
-        parameters[1] = CLI_COMMAND_REMOTE_CONNECTION;
+        parameters[1] = CLI_SUBGROUP_WEBAPP_COMMAND_REMOTE_CONNECTION;
         parameters[2] = CLI_ARGUMENTS_SUBSCRIPTION;
         parameters[3] = subscrption;
         parameters[4] = CLI_ARGUMENTS_RESOURCE_GROUP;
@@ -70,9 +65,44 @@ public class AzureCliUtils {
         return parameters;
     }
 
+    /**
+     * try to execute azure CLI command to detect it is installed or not.
+     *
+     * @return
+     * true : azure installed.
+     * false : azure not installed.
+     */
+    public static boolean checkCliInstalled() {
+        return checkCliCommandExecutedStatus(new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
+    }
+
+    /**
+     * check these status of local cli login.
+     * @return
+     */
+    public static boolean checkCliLogined() {
+        return checkCliCommandExecutedStatus(new String[]{CLI_SUBGROUP_ACCOUNT, CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW});
+    }
+
+    private static boolean checkCliCommandExecutedStatus(String[] parameters) {
+        try {
+            DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
+            resultHandler.waitFor(CMD_EXEC_TIMEOUT);
+            int exitValue = resultHandler.getExitValue();
+            System.out.println("exitCode: " + exitValue);
+            if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
+                return true;
+            }
+            return false;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static CommandUtils.CommendExecOutput executeCommandAndGetOutputWithCompleteKeyWord(
-            final String command, final String[] parameters, final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException {
-        ByteArrayOutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(command, parameters);
+            final String[] parameters, final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException {
+        ByteArrayOutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
         CommandUtils.CommendExecOutput commendExecOutput = new CommandUtils.CommendExecOutput();
         if ((sucessKeyWords == null || sucessKeyWords.length == 0) && (failedKeyWords == null || failedKeyWords.length == 0)) {
             commendExecOutput.setSuccess(true);
