@@ -30,6 +30,7 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_OPEN_INBROWSER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_SHOWPROP;
 
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
@@ -55,16 +56,30 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     protected String webAppName;
     protected String webAppId;
+    protected String fxVersion;
     protected Map<String, String> propertyMap;
 
     /**
      * Constructor.
      */
+    @Deprecated
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
                       String state, String hostName, String os, Map<String, String> propertyMap) {
         super(webAppId, webAppName, LABEL, parent, subscriptionId, hostName, os, state);
         this.webAppId = webAppId;
         this.webAppName = webAppName;
+        this.propertyMap = propertyMap;
+        webAppNodePresenter = new WebAppNodePresenter<>();
+        webAppNodePresenter.onAttachView(WebAppNode.this);
+        loadActions();
+    }
+
+    public WebAppNode(WebAppModule parent, String subscriptionId, WebApp delegate, Map<String, String> propertyMap) {
+        super(delegate.id(), delegate.name(), LABEL, parent, subscriptionId, delegate.defaultHostName(),
+                delegate.operatingSystem().toString(), delegate.state());
+        this.webAppId = delegate.id();
+        this.webAppName = delegate.name();
+        this.fxVersion = delegate.linuxFxVersion();
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
@@ -122,6 +137,10 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     public String getWebAppName() {
         return this.webAppName;
+    }
+
+    public String getFxVersion() {
+        return fxVersion;
     }
 
     public void startWebApp() {
