@@ -22,12 +22,17 @@
 
 package com.microsoft.intellij.util;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.microsoft.azure.common.utils.JsonUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Utils of Azure CLI
@@ -39,6 +44,7 @@ public class AzureCliUtils {
     private static final String CLI_SUBGROUP_WEBAPP_COMMAND_REMOTE_CONNECTION = "create-remote-connection";
     private static final String CLI_SUBGROUP_ACCOUNT = "account";
     private static final String CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW = "show";
+    private static final String CLI_SUBGROUP_ACCOUNT_COMMAND_LIST = "list";
     private static final String CLI_COMMAND_VERSION = "version";
     private static final String CLI_ARGUMENTS_WEBAPP_NAME = "-n";
     private static final String CLI_ARGUMENTS_RESOURCE_GROUP = "-g";
@@ -49,7 +55,8 @@ public class AzureCliUtils {
     public static final String[] CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORDS = new String[]{CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORD};
     public static final String[] CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORDS = new String[]{CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORD};
 
-    private static final int CMD_EXEC_TIMEOUT = 10 * 1000;
+    private static final int CMD_EXEC_TIMEOUT = 12 * 1000;
+    private static final int CMD_EXEC_CONNECT_TIMEOUT = 30 * 1000;
     private static final int CMD_EXEC_EXIT_CODE_SUCCESS = 0;
 
     public static String[] formatCreateWebAppRemoteConnectionParameters(final String subscrption, final String resourceGroup, final String webapp) {
@@ -100,6 +107,48 @@ public class AzureCliUtils {
         }
     }
 
+    /**
+     * check contains a specific subscription or not.
+     */
+    public static boolean containSubscription(String subscriptionId) {
+        if (StringUtils.isBlank(subscriptionId)) {
+            return false;
+        }
+        String subscriptionsAsJson = executeCliCommandAndGetOutputIfSuccess(new String[]{CLI_SUBGROUP_ACCOUNT, CLI_SUBGROUP_ACCOUNT_COMMAND_LIST});
+        if (StringUtils.isBlank(subscriptionsAsJson)) {
+            return false;
+        }
+        Gson gson = new Gson();
+        List<AzureCliSubscription> subscriptions = gson.fromJson(subscriptionsAsJson, new TypeToken<List<AzureCliSubscription>>(){}.getType());
+        if (CollectionUtils.isEmpty(subscriptions)) {
+            return false;
+        }
+        return subscriptions.stream().filter(e -> subscriptionId.equals(e.getId())).count() > 0;
+    }
+
+    private static String executeCliCommandAndGetOutputIfSuccess(String[] parameters) {
+        try {
+            CommandUtils.CommandExecution executionOutput =
+                    CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
+            executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
+            int exitValue = executionOutput.getResultHandler().getExitValue();
+            System.out.println("exitCode: " + exitValue);
+            if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
+                return executionOutput.getOutputStream().toString();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * execute CLI command with detecting the output message with a success-complete and a failed-completed key words.
+     * @param parameters
+     * @param sucessKeyWords
+     * @param failedKeyWords
+     * @return
+     */
     public static CommandUtils.CommendExecOutput executeCommandAndGetOutputWithCompleteKeyWord(
             final String[] parameters, final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException {
         ByteArrayOutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
@@ -110,7 +159,7 @@ public class AzureCliUtils {
             return commendExecOutput;
         }
         int interval = 100;
-        int maxCount = CMD_EXEC_TIMEOUT / interval;
+        int maxCount = CMD_EXEC_CONNECT_TIMEOUT / interval;
         int count = 0;
         try {
             while (count++ <= maxCount) {
@@ -146,6 +195,27 @@ public class AzureCliUtils {
             }
         }
         return false;
+    }
+
+    public static class AzureCliSubscription {
+        private String id;
+        private String name;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 
 }

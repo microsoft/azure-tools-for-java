@@ -173,7 +173,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(SSH_INTO).setEnabled(running && OS_LINUX.equalsIgnoreCase(os));
+        getNodeActionByName(SSH_INTO).setEnabled(running);
         return super.getNodeActions();
     }
 

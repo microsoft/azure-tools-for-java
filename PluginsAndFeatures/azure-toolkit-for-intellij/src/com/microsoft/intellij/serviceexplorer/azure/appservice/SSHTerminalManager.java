@@ -48,7 +48,8 @@ public enum SSHTerminalManager {
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "SSH into Web App (%s) is not started. Please try again.";
     private static final String CLI_DIALOG_MESSAGE_NOT_INSTALLED = "Azure CLI is vital for SSH into Web App. Please install it and then try again.";
     private static final String CLI_DIALOG_MESSAGE_NOT_LOGIN = "Please run 'az login' to setup account.";
-    private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_MESSAGE_ACCOUNT_MISMATCH = "Please run 'az login' to setup account.";
+    private static final String CLI_DIALOG_MESSAGE_NO_PERMISSION_TO_CURRENT_SUBS =
+            "Azure CLI acccount has NO permission to access current subscription. Please sign in with same account.";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS = "Azure SSH is only supported for Linux web apps";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER = "Azure SSH is only supported for Java web apps. Current app is a Docker.";
     private static final String OS_LINUX = "linux";
@@ -66,7 +67,7 @@ public enum SSHTerminalManager {
      * @param fxVersion
      * @return
      */
-    public boolean beforeExecuteAzCreateRemoteConnection(String os, String fxVersion) {
+    public boolean beforeExecuteAzCreateRemoteConnection(String subscriptionId, String os, String fxVersion) {
         // check to confirm that azure cli is installed.
         if (!AzureCliUtils.checkCliInstalled()) {
             Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NOT_INSTALLED, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
@@ -77,8 +78,11 @@ public enum SSHTerminalManager {
             Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NOT_LOGIN, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
-        // check login account
-
+        // check cli signed-in account has permission to connect to current subscription.
+        if (!AzureCliUtils.containSubscription(subscriptionId)) {
+            Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NO_PERMISSION_TO_CURRENT_SUBS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            return false;
+        }
         // only support these web app those os is linux.
         if (!OS_LINUX.equalsIgnoreCase(os)) {
             Messages.showWarningDialog(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
@@ -87,6 +91,7 @@ public enum SSHTerminalManager {
         // check non-docker web app
         if (StringUtils.containsIgnoreCase(fxVersion, WEB_APP_FX_VERSION_PREFIX)) {
             Messages.showWarningDialog(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            return false;
         }
         return true;
     }

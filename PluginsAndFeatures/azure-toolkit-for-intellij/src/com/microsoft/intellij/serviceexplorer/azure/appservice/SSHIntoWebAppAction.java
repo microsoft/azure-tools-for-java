@@ -66,7 +66,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         System.out.println(String.format("Start to perform SSH into Web App (%s)....", webAppName));
         // check these conditions to ssh into web app
-        if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(os, fxVersion)) {
+        if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, fxVersion)) {
             return;
         }
         // create a new terminal tab.

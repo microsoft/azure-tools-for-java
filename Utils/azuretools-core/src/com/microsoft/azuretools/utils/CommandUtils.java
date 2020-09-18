@@ -113,16 +113,16 @@ public class CommandUtils {
     }
 
     public static ByteArrayOutputStream executeCommandAndGetOutputStream(final String command, final String[] parameters) throws IOException {
-        CommandExecution execution = executeCommandAndGetExecution(command, parameters);
+        CommandExecutionOutput execution = executeCommandAndGetExecution(command, parameters);
         return execution.getOutputStream();
     }
 
     public static DefaultExecuteResultHandler executeCommandAndGetResultHandler(final String command, final String[] parameters) throws IOException {
-        CommandExecution execution = executeCommandAndGetExecution(command, parameters);
+        CommandExecutionOutput execution = executeCommandAndGetExecution(command, parameters);
         return execution.getResultHandler();
     }
 
-    private static CommandExecution executeCommandAndGetExecution(final String command, final String[] parameters) throws IOException {
+    public static CommandExecutionOutput executeCommandAndGetExecution(final String command, final String[] parameters) throws IOException {
         System.out.printf(command + " ");
         Arrays.stream(parameters).forEach(e -> System.out.print(e + " "));
         System.out.println();
@@ -136,7 +136,7 @@ public class CommandUtils {
         executor.setStreamHandler(streamHandler);
         executor.setExitValues(null);
         executor.execute(commandLine, resultHandler);
-        CommandExecution execution = new CommandExecution();
+        CommandExecutionOutput execution = new CommandExecutionOutput();
         execution.setOutputStream(outputStream);
         execution.setResultHandler(resultHandler);
         return execution;
@@ -200,7 +200,7 @@ public class CommandUtils {
         }
     }
 
-    private static class CommandExecution {
+    public static class CommandExecutionOutput {
 
         private ByteArrayOutputStream outputStream;
         private DefaultExecuteResultHandler resultHandler;
