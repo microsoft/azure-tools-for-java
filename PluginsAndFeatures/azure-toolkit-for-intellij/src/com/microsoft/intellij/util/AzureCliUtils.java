@@ -24,7 +24,6 @@ package com.microsoft.intellij.util;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.microsoft.azure.common.utils.JsonUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
