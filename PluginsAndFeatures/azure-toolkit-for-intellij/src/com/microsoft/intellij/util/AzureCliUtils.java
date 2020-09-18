@@ -127,7 +127,7 @@ public class AzureCliUtils {
 
     private static String executeCliCommandAndGetOutputIfSuccess(String[] parameters) {
         try {
-            CommandUtils.CommandExecution executionOutput =
+            CommandUtils.CommandExecutionOutput executionOutput =
                     CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
             executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
             int exitValue = executionOutput.getResultHandler().getExitValue();
