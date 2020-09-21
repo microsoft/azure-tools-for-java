@@ -73,7 +73,7 @@ public class AzureCliUtils {
      * true : azure installed.
      * false : azure not installed.
      */
-    public static boolean isCliInstalled() {
+    public static boolean isCliInstalled() throws IOException, InterruptedException {
         return checkCliCommandExecutedStatus(new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
     }
 
@@ -81,30 +81,25 @@ public class AzureCliUtils {
      * check these status of local cli login.
      * @return
      */
-    public static boolean isCliLogined() {
+    public static boolean isCliLogined() throws IOException, InterruptedException {
         return checkCliCommandExecutedStatus(new String[]{CLI_SUBGROUP_ACCOUNT, CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW});
     }
 
-    private static boolean checkCliCommandExecutedStatus(String[] parameters) {
-        try {
-            DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
-            resultHandler.waitFor(CMD_EXEC_TIMEOUT);
-            int exitValue = resultHandler.getExitValue();
-            logger.info("exitCode: " + exitValue);
-            if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
-                return true;
-            }
-            return false;
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            return false;
+    private static boolean checkCliCommandExecutedStatus(String[] parameters) throws IOException, InterruptedException {
+        DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
+        resultHandler.waitFor(CMD_EXEC_TIMEOUT);
+        int exitValue = resultHandler.getExitValue();
+        logger.info("exitCode: " + exitValue);
+        if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
+            return true;
         }
+        return false;
     }
 
     /**
      * check contains a specific subscription or not.
      */
-    public static boolean containSubscription(String subscriptionId) {
+    public static boolean containSubscription(String subscriptionId) throws IOException, InterruptedException {
         if (StringUtils.isBlank(subscriptionId)) {
             return false;
         }
@@ -120,18 +115,13 @@ public class AzureCliUtils {
         return subscriptions.stream().filter(e -> subscriptionId.equals(e.getId())).count() > 0;
     }
 
-    private static String executeCliCommandAndGetOutputIfSuccess(String[] parameters) {
-        try {
-            CommandUtils.CommandExecutionOutput executionOutput =
-                    CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
-            executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
-            int exitValue = executionOutput.getResultHandler().getExitValue();
-            logger.info("exitCode: " + exitValue);
-            if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
-                return executionOutput.getOutputStream().toString();
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+    private static String executeCliCommandAndGetOutputIfSuccess(String[] parameters) throws IOException, InterruptedException {
+        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
+        executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
+        int exitValue = executionOutput.getResultHandler().getExitValue();
+        logger.info("exitCode: " + exitValue);
+        if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
+            return executionOutput.getOutputStream().toString();
         }
         return null;
     }
@@ -143,8 +133,8 @@ public class AzureCliUtils {
      * @param failedKeyWords
      * @return
      */
-    public static CommandUtils.CommendExecOutput executeCommandAndGetOutputWithCompleteKeyWord(
-            final String[] parameters, final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException {
+    public static CommandUtils.CommendExecOutput executeCommandAndGetOutputWithCompleteKeyWord(final String[] parameters
+            , final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException, InterruptedException {
         ByteArrayOutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
         CommandUtils.CommendExecOutput commendExecOutput = new CommandUtils.CommendExecOutput();
         if ((sucessKeyWords == null || sucessKeyWords.length == 0) && (failedKeyWords == null || failedKeyWords.length == 0)) {
@@ -155,23 +145,19 @@ public class AzureCliUtils {
         int interval = 100;
         int maxCount = CMD_EXEC_CONNECT_TIMEOUT / interval;
         int count = 0;
-        try {
-            while (count++ <= maxCount) {
-                String currentOutputMessage = outputStream.toString();
-                if (sucessKeyWords != null && sucessKeyWords.length > 0 && checkCommendExecComplete(currentOutputMessage, sucessKeyWords)) {
-                    commendExecOutput.setOutputMessage(currentOutputMessage);
-                    commendExecOutput.setSuccess(true);
-                    break;
-                }
-                if (failedKeyWords != null && failedKeyWords.length > 0 && checkCommendExecComplete(currentOutputMessage, failedKeyWords)) {
-                    commendExecOutput.setOutputMessage(currentOutputMessage);
-                    commendExecOutput.setSuccess(false);
-                    break;
-                }
-                Thread.sleep(interval);
+        while (count++ <= maxCount) {
+            String currentOutputMessage = outputStream.toString();
+            if (sucessKeyWords != null && sucessKeyWords.length > 0 && checkCommendExecComplete(currentOutputMessage, sucessKeyWords)) {
+                commendExecOutput.setOutputMessage(currentOutputMessage);
+                commendExecOutput.setSuccess(true);
+                break;
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            if (failedKeyWords != null && failedKeyWords.length > 0 && checkCommendExecComplete(currentOutputMessage, failedKeyWords)) {
+                commendExecOutput.setOutputMessage(currentOutputMessage);
+                commendExecOutput.setSuccess(false);
+                break;
+            }
+            Thread.sleep(interval);
         }
         return commendExecOutput;
     }

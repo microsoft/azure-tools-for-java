@@ -30,18 +30,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public enum SSHTerminalManager {
     INSTANCE;
 
+    private static final Logger logger = Logger.getLogger(SSHTerminalManager.class.getName());
+
     private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
-    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "SSH into Web App (%s) is not started. Please try again.";
-    private static final String CLI_DIALOG_MESSAGE_NOT_INSTALLED = "Azure CLI is vital for SSH into Web App. Please install it and then try again.";
-    private static final String CLI_DIALOG_MESSAGE_NOT_LOGIN = "Please run 'az login' to setup account.";
-    private static final String CLI_DIALOG_MESSAGE_NO_PERMISSION_TO_CURRENT_SUBS =
-            "Azure CLI acccount has NO permission to access current subscription. Please sign in with same account.";
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "Failed to SSH into Web App. Please try again.";
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME = "Failed to SSH into Web App (%s). Please try again.";
+    private static final String CLI_DIALOG_MESSAGE_DEFAULT =
+            "Failed to invoke Azure CLI. Please make sure Azure CLI is installed and signed-in with same account.";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS = "Azure SSH is only supported for Linux web apps";
-    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER = "Azure SSH is only supported for Java web apps. Current app is a Docker.";
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER = "Azure SSH is only supported for Linux web apps (Not in custom container).";
     private static final String OS_LINUX = "linux";
     private static final String WEB_APP_FX_VERSION_PREFIX = "DOCKER|";
     private static final String CMD_SSH_TO_LOCAL_PROXY =
@@ -53,24 +55,30 @@ public enum SSHTerminalManager {
     /**
      * these actions (validation, etc) before ssh into web app.
      *
+     * @param subscriptionId
      * @param os
      * @param fxVersion
      * @return
      */
     public boolean beforeExecuteAzCreateRemoteConnection(String subscriptionId, String os, String fxVersion) {
-        // check to confirm that azure cli is installed.
-        if (!AzureCliUtils.isCliInstalled()) {
-            DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_NOT_INSTALLED, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            return false;
-        }
-        // check azure cli login
-        if (!AzureCliUtils.isCliLogined()) {
-            DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_NOT_LOGIN, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            return false;
-        }
-        // check cli signed-in account has permission to connect to current subscription.
-        if (!AzureCliUtils.containSubscription(subscriptionId)) {
-            DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_NO_PERMISSION_TO_CURRENT_SUBS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+        try {
+            // check to confirm that azure cli is installed.
+            if (!AzureCliUtils.isCliInstalled()) {
+                DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+                return false;
+            }
+            // check azure cli login
+            if (!AzureCliUtils.isCliLogined()) {
+                DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+                return false;
+            }
+            // check cli signed-in account has permission to connect to current subscription.
+            if (!AzureCliUtils.containSubscription(subscriptionId)) {
+                DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+                return false;
+            }
+        } catch (IOException | InterruptedException e) {
+            DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         // only support these web app those os is linux.
@@ -98,8 +106,9 @@ public enum SSHTerminalManager {
         try {
             commendExecOutput = AzureCliUtils.executeCommandAndGetOutputWithCompleteKeyWord(parameters,
                     AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORDS, AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORDS);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | InterruptedException e) {
+            DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            return connectionInfo;
         }
         connectionInfo.setOutputMessage(commendExecOutput.getOutputMessage());
         connectionInfo.setSuccess(commendExecOutput.isSuccess());
@@ -128,16 +137,16 @@ public enum SSHTerminalManager {
      */
     public boolean validateConnectionOutputBeforeOpenInTerminal(CreateRemoteConnectionOutput connectionInfo, String webAppName) {
         if (connectionInfo == null) {
-            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         if (connectionInfo.isSuccess()) {
             if (StringUtils.isBlank(connectionInfo.getPort())) {
-                DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+                DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
                 return false;
             }
         } else {
-            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         return true;
@@ -159,7 +168,7 @@ public enum SSHTerminalManager {
             Thread.sleep(5000);
             shellTerminalWidget.executeCommand(CMD_SSH_TO_LOCAL_PWD);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
         }
     }
 
