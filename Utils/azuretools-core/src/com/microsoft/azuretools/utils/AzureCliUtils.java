@@ -20,11 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.util;
+package com.microsoft.azuretools.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.microsoft.azuretools.utils.CommandUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -74,7 +73,7 @@ public class AzureCliUtils {
      * false : azure not installed.
      */
     public static boolean isCliInstalled() throws IOException, InterruptedException {
-        return checkCliCommandExecutedStatus(new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
+        return isCliCommandExecutedStatus(new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
     }
 
     /**
@@ -82,10 +81,10 @@ public class AzureCliUtils {
      * @return
      */
     public static boolean isCliLogined() throws IOException, InterruptedException {
-        return checkCliCommandExecutedStatus(new String[]{CLI_SUBGROUP_ACCOUNT, CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW});
+        return isCliCommandExecutedStatus(new String[]{CLI_SUBGROUP_ACCOUNT, CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW});
     }
 
-    private static boolean checkCliCommandExecutedStatus(String[] parameters) throws IOException, InterruptedException {
+    private static boolean isCliCommandExecutedStatus(String[] parameters) throws IOException, InterruptedException {
         DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
         resultHandler.waitFor(CMD_EXEC_TIMEOUT);
         int exitValue = resultHandler.getExitValue();
@@ -133,10 +132,10 @@ public class AzureCliUtils {
      * @param failedKeyWords
      * @return
      */
-    public static CommandUtils.CommendExecOutput executeCommandAndGetOutputWithCompleteKeyWord(final String[] parameters
+    public static CommandUtils.CommandExecOutput executeCommandAndGetOutputWithCompleteKeyWord(final String[] parameters
             , final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException, InterruptedException {
         ByteArrayOutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
-        CommandUtils.CommendExecOutput commendExecOutput = new CommandUtils.CommendExecOutput();
+        CommandUtils.CommandExecOutput commendExecOutput = new CommandUtils.CommandExecOutput();
         if ((sucessKeyWords == null || sucessKeyWords.length == 0) && (failedKeyWords == null || failedKeyWords.length == 0)) {
             commendExecOutput.setSuccess(true);
             commendExecOutput.setOutputMessage(outputStream.toString());

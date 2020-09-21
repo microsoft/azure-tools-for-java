@@ -24,7 +24,7 @@ package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.intellij.util.AzureCliUtils;
+import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;

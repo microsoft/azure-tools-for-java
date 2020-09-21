@@ -178,7 +178,7 @@ public class CommandUtils {
         }
     }
 
-    public static class CommendExecOutput {
+    public static class CommandExecOutput {
         private boolean success;
         private String outputMessage;
 

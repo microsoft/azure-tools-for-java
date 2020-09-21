@@ -22,8 +22,8 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
+import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.azuretools.utils.CommandUtils;
-import com.microsoft.intellij.util.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
@@ -102,7 +102,7 @@ public enum SSHTerminalManager {
      */
     public CreateRemoteConnectionOutput executeAzCreateRemoteConnectionAndGetOutput(final String[] parameters) {
         CreateRemoteConnectionOutput connectionInfo = new CreateRemoteConnectionOutput();
-        CommandUtils.CommendExecOutput commendExecOutput = null;
+        CommandUtils.CommandExecOutput commendExecOutput = null;
         try {
             commendExecOutput = AzureCliUtils.executeCommandAndGetOutputWithCompleteKeyWord(parameters,
                     AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_SUCCESS_KEY_WORDS, AzureCliUtils.CLI_COMMAND_REMOTE_CONNECTION_EXEC_FAILED_KEY_WORDS);
@@ -172,7 +172,7 @@ public enum SSHTerminalManager {
         }
     }
 
-    public static class CreateRemoteConnectionOutput extends CommandUtils.CommendExecOutput {
+    public static class CreateRemoteConnectionOutput extends CommandUtils.CommandExecOutput {
         private String username;
         private String password;
         private String port;
