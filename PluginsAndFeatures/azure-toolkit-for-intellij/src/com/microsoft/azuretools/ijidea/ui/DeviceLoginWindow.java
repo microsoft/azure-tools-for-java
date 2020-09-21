@@ -53,7 +53,7 @@ import java.util.concurrent.Future;
 
 public class DeviceLoginWindow extends AzureDialogWrapper {
     private static final String TITLE = "Azure Device Login";
-    private JPanel jPanel;
+    private JPanel panel;
     private JEditorPane editorPanel;
     private AuthenticationResult authenticationResult = null;
     private Future<?> authExecutor;
@@ -70,7 +70,7 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         this.deviceCode = deviceCode;
         setModal(true);
         setTitle(TITLE);
-        editorPanel.setBackground(jPanel.getBackground());
+        editorPanel.setBackground(panel.getBackground());
         editorPanel.setText(createHtmlFormatMessage());
         editorPanel.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -149,12 +149,12 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Window w = getWindow();
             w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
-        }, ModalityState.stateForComponent(jPanel));
+        }, ModalityState.stateForComponent(panel));
     }
 
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return jPanel;
+        return panel;
     }
 }
