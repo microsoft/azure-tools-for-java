@@ -45,6 +45,7 @@ import java.util.*;
 
 public class SpringCloudDependencyManager {
     public static final String POM_NAMESPACE = "http://maven.apache.org/POM/4.0.0";
+    private static final String LATEST_SPRING_BOOT_RELEASE = "2.3.0.RELEASE";
     private Document doc;
 
     public SpringCloudDependencyManager(String effectivePomXml) throws DocumentException {
@@ -93,7 +94,7 @@ public class SpringCloudDependencyManager {
             List<String> latestVersions = getMavenCentralVersions(dependency.getGroupId(), dependency.getArtifactId());
             String targetVersionText = getCompatibleVersionWithBootVersion(latestVersions, springBootVersion);
             if (StringUtils.isEmpty(targetVersionText)) {
-                if (isGreaterOrEqualVersion(springBootVersionStr, "2.3.0.RELEASE") && !latestVersions.isEmpty()) {
+                if (isGreaterOrEqualVersion(springBootVersionStr, LATEST_SPRING_BOOT_RELEASE) && !latestVersions.isEmpty()) {
                     // to handle the ege case: spring-cloud-starter-config 2.2.5.RELEASE supports spring boot 2.3.0
                     // here for newest spring boot versions, use the latest versions
                     targetVersionText = latestVersions.get(latestVersions.size() - 1);

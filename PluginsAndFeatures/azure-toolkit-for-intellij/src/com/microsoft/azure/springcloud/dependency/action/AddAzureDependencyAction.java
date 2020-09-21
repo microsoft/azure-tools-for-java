@@ -137,56 +137,21 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     boolean noAzureSpringCloudClientDependency = shouldNotAddAzureSpringCloudClientDependency(versionMaps) ||
                             shouldNotAddAzureSpringCloudClientDependency(managerDependencyVersionsMaps);
 
-                    List<DependencyArtifact> dep = new ArrayList<>();
-                    if (!noAzureSpringCloudClientDependency) {
-                        dep.add(getDependencyArtifact(GROUP_ID, ARTIFACT_ID, versionMaps));
-                    }
-                    dep.add(getDependencyArtifact(SPRING_BOOT_GROUP_ID, "spring-boot-starter-actuator", versionMaps));
-                    dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-config-client", versionMaps));
-                    dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID,
-                            "spring-cloud-starter-netflix-eureka-client",
-                            versionMaps));
-                    dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-zipkin", versionMaps));
-                    dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-sleuth", versionMaps));
                     ProgressManager.checkCanceled();
-                    List<DependencyArtifact> versionChanges = SpringCloudDependencyManager.getCompatibleVersions(dep, springBootVer);
+                    final List<DependencyArtifact> versionChanges = calculateVersionChanges(springBootVer, noAzureSpringCloudClientDependency, versionMaps);
                     if (versionChanges.isEmpty()) {
                         PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
                                 "No updates are needed.");
                         return;
                     }
                     progressIndicator.setText("Applying versions ...");
-                    File pomFile = new File(mavenProject.getFile().getCanonicalPath());
+                    final File pomFile = new File(mavenProject.getFile().getCanonicalPath());
                     ProgressManager.checkCanceled();
-                    versionChanges.stream().filter(change -> managerDependencyVersionsMaps.containsKey(change.getKey())).forEach(change -> {
-                        String managementVersion = managerDependencyVersionsMaps.get(change.getKey()).getCurrentVersion();
-                        if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)
-                                || SpringCloudDependencyManager.isCompatibleVersion(managementVersion, springBootVer)) {
-                            change.setCompatibleVersion("");
-                            change.setManagementVersion(managementVersion);
-                        }
-                    });
-                    if (!dependencyManager.update(pomFile, versionChanges)) {
-                        PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
-                                "No updates are needed.");
-                        return;
+                    if (applyVersionChanges(dependencyManager, pomFile, springBootVer, managerDependencyVersionsMaps, versionChanges)) {
+                        noticeUserVersionChanges(project, pomFile, versionChanges);
+                    } else {
+                        PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.", "No updates are needed.");
                     }
-
-                    final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pomFile);
-                    RefreshQueue.getInstance().refresh(true, false, null, new VirtualFile[]{vf});
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        FileEditorManager.getInstance(project).closeFile(vf);
-                        FileEditorManager.getInstance(project).openFile(vf, true, true);
-                        if (versionChanges.stream().anyMatch(t -> StringUtils.isNotEmpty(t.getCurrentVersion()))) {
-                            PluginUtil.showInfoNotificationProject(project,
-                                    "Azure Spring Cloud dependencies are updated successfully.",
-                                    summaryVersionChanges(versionChanges));
-                        } else {
-                            PluginUtil.showInfoNotificationProject(project,
-                                    "Azure Spring Cloud dependencies are added to your project successfully.",
-                                    summaryVersionChanges(versionChanges));
-                        }
-                    });
                 } catch (DocumentException | IOException | AzureExecutionException | MavenProcessCanceledException e) {
                     PluginUtil.showErrorNotification("Error",
                             "Failed to update Azure Spring Cloud dependencies due to error: "
@@ -270,5 +235,58 @@ public class AddAzureDependencyAction extends AzureAnAction {
             return SpringCloudDependencyManager.isGreaterOrEqualVersion(version, "2.2.5.RELEASE");
         }
         return false;
+    }
+
+    private static List<DependencyArtifact> calculateVersionChanges(String springBootVer,
+                                                                    boolean noAzureSpringCloudClientDependency,
+                                                                    Map<String, DependencyArtifact> versionMaps)
+            throws AzureExecutionException, DocumentException, IOException {
+        List<DependencyArtifact> dep = new ArrayList<>();
+        if (!noAzureSpringCloudClientDependency) {
+            dep.add(getDependencyArtifact(GROUP_ID, ARTIFACT_ID, versionMaps));
+        }
+        dep.add(getDependencyArtifact(SPRING_BOOT_GROUP_ID, "spring-boot-starter-actuator", versionMaps));
+        dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-config-client", versionMaps));
+        dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID,
+                "spring-cloud-starter-netflix-eureka-client",
+                versionMaps));
+        dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-zipkin", versionMaps));
+        dep.add(getDependencyArtifact(SPRING_CLOUD_GROUP_ID, "spring-cloud-starter-sleuth", versionMaps));
+
+        return SpringCloudDependencyManager.getCompatibleVersions(dep, springBootVer);
+    }
+
+    private static boolean applyVersionChanges(SpringCloudDependencyManager dependencyManager,
+                                               File pomFile,
+                                               String springBootVer,
+                                               Map<String, DependencyArtifact> managerDependencyVersionsMaps,
+                                               List<DependencyArtifact> versionChanges) throws IOException, DocumentException {
+        versionChanges.stream().filter(change -> managerDependencyVersionsMaps.containsKey(change.getKey())).forEach(change -> {
+            String managementVersion = managerDependencyVersionsMaps.get(change.getKey()).getCurrentVersion();
+            if (StringUtils.equals(change.getCompatibleVersion(), managementVersion)
+                    || SpringCloudDependencyManager.isCompatibleVersion(managementVersion, springBootVer)) {
+                change.setCompatibleVersion("");
+                change.setManagementVersion(managementVersion);
+            }
+        });
+        return dependencyManager.update(pomFile, versionChanges);
+    }
+
+    private static void noticeUserVersionChanges(Project project, File pomFile, List<DependencyArtifact> versionChanges) {
+        final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pomFile);
+        RefreshQueue.getInstance().refresh(true, false, null, new VirtualFile[]{vf});
+        ApplicationManager.getApplication().invokeLater(() -> {
+            FileEditorManager.getInstance(project).closeFile(vf);
+            FileEditorManager.getInstance(project).openFile(vf, true, true);
+            if (versionChanges.stream().anyMatch(t -> StringUtils.isNotEmpty(t.getCurrentVersion()))) {
+                PluginUtil.showInfoNotificationProject(project,
+                        "Azure Spring Cloud dependencies are updated successfully.",
+                        summaryVersionChanges(versionChanges));
+            } else {
+                PluginUtil.showInfoNotificationProject(project,
+                        "Azure Spring Cloud dependencies are added to your project successfully.",
+                        summaryVersionChanges(versionChanges));
+            }
+        });
     }
 }
