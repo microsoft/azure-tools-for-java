@@ -22,23 +22,13 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.terminal.JBTerminalPanel;
-import com.jediterm.terminal.TerminalOutputStream;
 import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.intellij.util.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
-import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
-import org.jetbrains.plugins.terminal.TerminalToolWindowFactory;
 
-import javax.swing.*;
 import java.io.IOException;
 
 public enum SSHTerminalManager {
@@ -69,28 +59,28 @@ public enum SSHTerminalManager {
      */
     public boolean beforeExecuteAzCreateRemoteConnection(String subscriptionId, String os, String fxVersion) {
         // check to confirm that azure cli is installed.
-        if (!AzureCliUtils.checkCliInstalled()) {
-            Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NOT_INSTALLED, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+        if (!AzureCliUtils.isCliInstalled()) {
+            DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_NOT_INSTALLED, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         // check azure cli login
-        if (!AzureCliUtils.checkCliLogined()) {
-            Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NOT_LOGIN, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+        if (!AzureCliUtils.isCliLogined()) {
+            DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_NOT_LOGIN, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         // check cli signed-in account has permission to connect to current subscription.
         if (!AzureCliUtils.containSubscription(subscriptionId)) {
-            Messages.showWarningDialog(CLI_DIALOG_MESSAGE_NO_PERMISSION_TO_CURRENT_SUBS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_NO_PERMISSION_TO_CURRENT_SUBS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         // only support these web app those os is linux.
         if (!OS_LINUX.equalsIgnoreCase(os)) {
-            Messages.showWarningDialog(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         // check non-docker web app
         if (StringUtils.containsIgnoreCase(fxVersion, WEB_APP_FX_VERSION_PREFIX)) {
-            Messages.showWarningDialog(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         return true;
@@ -112,8 +102,8 @@ public enum SSHTerminalManager {
             e.printStackTrace();
         }
         connectionInfo.setOutputMessage(commendExecOutput.getOutputMessage());
-        connectionInfo.setSuccess(commendExecOutput.getSuccess());
-        if (commendExecOutput.getSuccess()) {
+        connectionInfo.setSuccess(commendExecOutput.isSuccess());
+        if (commendExecOutput.isSuccess()) {
             String username = PatternUtils.parseWordByPatternAndPrefix(commendExecOutput.getOutputMessage(), PatternUtils.PATTERN_WHOLE_WORD, "username: ");
             if (StringUtils.isNotBlank(username)) {
                 connectionInfo.setUsername(username);
@@ -126,8 +116,6 @@ public enum SSHTerminalManager {
             if (StringUtils.isNotBlank(password)) {
                 connectionInfo.setPassword(password);
             }
-        } else {
-
         }
         return connectionInfo;
     }
@@ -140,19 +128,16 @@ public enum SSHTerminalManager {
      */
     public boolean validateConnectionOutputBeforeOpenInTerminal(CreateRemoteConnectionOutput connectionInfo, String webAppName) {
         if (connectionInfo == null) {
-            ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
-                    String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName)));
+            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
-        if (connectionInfo.getSuccess()) {
+        if (connectionInfo.isSuccess()) {
             if (StringUtils.isBlank(connectionInfo.getPort())) {
-                ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
-                        String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName)));
+                DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
                 return false;
             }
         } else {
-            ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE,
-                    SSH_INTO_WEB_APP_DISABLE_MESSAGE));
+            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
         return true;
@@ -161,33 +146,21 @@ public enum SSHTerminalManager {
     /**
      * ssh to connect to local proxy and open the terminal for remote container.
      *
-     * @param project
+     * @param shellTerminalWidget
      * @param connectionInfo
      */
-    public void openConnectionInTerminal(Project project, CreateRemoteConnectionOutput connectionInfo) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID);
-                JComponent root = toolWindow.getComponent();
-                toolWindow.show(() -> {
-                    // TerminalToolWindowPanel is an inner class of TerminalView, and sub class of SimpleToolWindowPanel
-                    SimpleToolWindowPanel terminalToolWindowPanel = (SimpleToolWindowPanel) root.getComponent(0);
-                    JPanel panel = (JPanel) terminalToolWindowPanel.getComponent(0);
-                    ShellTerminalWidget panel1 = (ShellTerminalWidget) panel.getComponent(0);
-                    JLayeredPane javaLayeredPane = (JLayeredPane) panel1.getComponent(0);
-                    JBTerminalPanel terminalPanel = (JBTerminalPanel) javaLayeredPane.getComponent(0);
-                    TerminalOutputStream terminalOutputStream = terminalPanel.getTerminalOutputStream();
-                    terminalOutputStream.sendString(String.format(CMD_SSH_TO_LOCAL_PROXY, connectionInfo.getPort()));
-                    try {
-                        Thread.sleep(4000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    terminalOutputStream.sendString(CMD_SSH_TO_LOCAL_PWD);
-                });
+    public void openConnectionInTerminal(ShellTerminalWidget shellTerminalWidget, CreateRemoteConnectionOutput connectionInfo) {
+        try {
+            int count = 0;
+            while ((shellTerminalWidget.getTtyConnector() == null) && count++ < 200) {
+                Thread.sleep(100);
             }
-        });
+            shellTerminalWidget.executeCommand(String.format(CMD_SSH_TO_LOCAL_PROXY, connectionInfo.getPort()));
+            Thread.sleep(5000);
+            shellTerminalWidget.executeCommand(CMD_SSH_TO_LOCAL_PWD);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static class CreateRemoteConnectionOutput extends CommandUtils.CommendExecOutput {

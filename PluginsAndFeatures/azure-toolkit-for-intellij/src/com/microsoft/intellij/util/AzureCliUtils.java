@@ -32,12 +32,14 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Utils of Azure CLI
  */
 public class AzureCliUtils {
 
+    private static final Logger logger = Logger.getLogger(AzureCliUtils.class.getName());
     private static final String CLI_GROUP_AZ = "az";
     private static final String CLI_SUBGROUP_WEBAPP = "webapp";
     private static final String CLI_SUBGROUP_WEBAPP_COMMAND_REMOTE_CONNECTION = "create-remote-connection";
@@ -59,15 +61,8 @@ public class AzureCliUtils {
     private static final int CMD_EXEC_EXIT_CODE_SUCCESS = 0;
 
     public static String[] formatCreateWebAppRemoteConnectionParameters(final String subscrption, final String resourceGroup, final String webapp) {
-        String[] parameters = new String[8];
-        parameters[0] = CLI_SUBGROUP_WEBAPP;
-        parameters[1] = CLI_SUBGROUP_WEBAPP_COMMAND_REMOTE_CONNECTION;
-        parameters[2] = CLI_ARGUMENTS_SUBSCRIPTION;
-        parameters[3] = subscrption;
-        parameters[4] = CLI_ARGUMENTS_RESOURCE_GROUP;
-        parameters[5] = resourceGroup;
-        parameters[6] = CLI_ARGUMENTS_WEBAPP_NAME;
-        parameters[7] = webapp;
+        String[] parameters = new String[] {CLI_SUBGROUP_WEBAPP, CLI_SUBGROUP_WEBAPP_COMMAND_REMOTE_CONNECTION
+                , CLI_ARGUMENTS_SUBSCRIPTION, subscrption, CLI_ARGUMENTS_RESOURCE_GROUP, resourceGroup, CLI_ARGUMENTS_WEBAPP_NAME, webapp};
         return parameters;
     }
 
@@ -78,7 +73,7 @@ public class AzureCliUtils {
      * true : azure installed.
      * false : azure not installed.
      */
-    public static boolean checkCliInstalled() {
+    public static boolean isCliInstalled() {
         return checkCliCommandExecutedStatus(new String[]{AzureCliUtils.CLI_COMMAND_VERSION});
     }
 
@@ -86,7 +81,7 @@ public class AzureCliUtils {
      * check these status of local cli login.
      * @return
      */
-    public static boolean checkCliLogined() {
+    public static boolean isCliLogined() {
         return checkCliCommandExecutedStatus(new String[]{CLI_SUBGROUP_ACCOUNT, CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW});
     }
 
@@ -95,7 +90,7 @@ public class AzureCliUtils {
             DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
             resultHandler.waitFor(CMD_EXEC_TIMEOUT);
             int exitValue = resultHandler.getExitValue();
-            System.out.println("exitCode: " + exitValue);
+            logger.info("exitCode: " + exitValue);
             if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
                 return true;
             }
@@ -131,7 +126,7 @@ public class AzureCliUtils {
                     CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
             executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
             int exitValue = executionOutput.getResultHandler().getExitValue();
-            System.out.println("exitCode: " + exitValue);
+            logger.info("exitCode: " + exitValue);
             if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
                 return executionOutput.getOutputStream().toString();
             }

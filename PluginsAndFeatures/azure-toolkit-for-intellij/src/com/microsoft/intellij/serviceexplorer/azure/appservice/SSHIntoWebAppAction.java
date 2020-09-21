@@ -31,13 +31,18 @@ import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
+import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 import org.jetbrains.plugins.terminal.TerminalView;
+
+import java.util.logging.Logger;
 
 /**
  * SSH into Web App Action
  */
 @Name(WebAppNode.SSH_INTO)
 public class SSHIntoWebAppAction extends NodeActionListener {
+
+    private static final Logger logger = Logger.getLogger(SSHIntoWebAppAction.class.getName());
 
     private static final String WEBAPP_TERMINAL_TABLE_NAME = "SSH - %s";
     private static final String RESOUCE_GROUP_PATH_PREFIX = "resourceGroups/";
@@ -64,27 +69,32 @@ public class SSHIntoWebAppAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        System.out.println(String.format("Start to perform SSH into Web App (%s)....", webAppName));
-        // check these conditions to ssh into web app
-        if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, fxVersion)) {
-            return;
-        }
-        // create a new terminal tab.
-        TerminalView terminalView = TerminalView.getInstance(project);
-        terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
+        logger.info(String.format("Start to perform SSH into Web App (%s)....", webAppName));
         // ssh to connect to remote web app container.
         DefaultLoader.getIdeHelper().runInBackground(project, String.format("Connecting to Web App (%s) ...", webAppName), true, false, null, () -> {
+            // check these conditions to ssh into web app
+            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, fxVersion)) {
+                return;
+            }
             // build proxy between remote and local
             SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
                     AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
-            System.out.println(String.format("Complete to execute ssh connection. output message is below: %s", connectionInfo.getOutputMessage()));
+            logger.info(String.format("Complete to execute ssh connection. output message is below: %s", connectionInfo.getOutputMessage()));
             // validate create-remote-connection output to ensure it's ready to ssh to local proxy and open terminal.
             if (!SSHTerminalManager.INSTANCE.validateConnectionOutputBeforeOpenInTerminal(connectionInfo, webAppName)) {
                 return;
             }
-            // create connection to the local proxy.
-            SSHTerminalManager.INSTANCE.openConnectionInTerminal(project, connectionInfo);
+            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                // create a new terminal tab.
+                TerminalView terminalView = TerminalView.getInstance(project);
+                ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
+                DefaultLoader.getIdeHelper().runInBackground(project, String.format("Opening SSH - %s session ...", webAppName), true, false, null, () -> {
+                    // create connection to the local proxy.
+                    SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
+                });
+            });
+
         });
-        System.out.println(String.format("End to perform SSH into Web App (%s)", webAppName));
+        logger.info(String.format("End to perform SSH into Web App (%s)", webAppName));
     }
 }

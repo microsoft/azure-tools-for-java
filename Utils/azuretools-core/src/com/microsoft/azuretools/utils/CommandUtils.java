@@ -91,7 +91,7 @@ public class CommandUtils {
         return executeCommandAndGetOutput(commandLine, directory);
     }
 
-    private static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory) throws IOException {
+    public static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final ByteArrayOutputStream err = new ByteArrayOutputStream();
         final PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
@@ -123,9 +123,6 @@ public class CommandUtils {
     }
 
     public static CommandExecutionOutput executeCommandAndGetExecution(final String command, final String[] parameters) throws IOException {
-        System.out.printf(command + " ");
-        Arrays.stream(parameters).forEach(e -> System.out.print(e + " "));
-        System.out.println();
         String internalCommand = CommandUtils.isWindows() ? command + CommandUtils.COMMEND_SUFFIX_WINDOWS : command;
         final CommandLine commandLine = new CommandLine(internalCommand);
         commandLine.addArguments(parameters);
@@ -183,7 +180,7 @@ public class CommandUtils {
         private boolean success;
         private String outputMessage;
 
-        public boolean getSuccess() {
+        public boolean isSuccess() {
             return success;
         }
 
