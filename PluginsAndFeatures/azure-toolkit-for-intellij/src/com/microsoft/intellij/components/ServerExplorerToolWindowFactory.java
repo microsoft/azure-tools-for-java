@@ -172,21 +172,14 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private void treeMousePressed(MouseEvent e, JTree tree) {
-        // get the tree node associated with this mouse click
-        final TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
-        if (treePath == null) {
-            return;
-        }
-
-        SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
-        Node node = (Node) treeNode.getUserObject();
-
-        // set tree and tree path to expand the node later
-        node.setTree(tree);
-        node.setTreePath(treePath);
-
         // delegate click to the node's click action if this is a left button click
         if (SwingUtilities.isLeftMouseButton(e)) {
+            TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+            if (treePath == null) {
+                return;
+            }
+            // get the tree node associated with left mouse click
+            Node node = getTreeNodeOnMouseClick(tree, treePath);
             // if the node in question is in a "loading" state then we
             // do not propagate the click event to it
             if (!node.isLoading()) {
@@ -195,6 +188,12 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // for right click show the context menu populated with all the
         // actions from the node
         } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+            TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
+            if (treePath == null) {
+                return;
+            }
+            // get the tree node associated with right mouse click
+            Node node = getTreeNodeOnMouseClick(tree, treePath);
             if (node.hasNodeActions()) {
                 // select the node which was right-clicked
                 tree.getSelectionModel().setSelectionPath(treePath);
@@ -203,6 +202,15 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }
+    }
+
+    private Node getTreeNodeOnMouseClick(JTree tree, TreePath treePath) {
+        SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
+        Node node = (Node) treeNode.getUserObject();
+        // set tree and tree path to expand the node later
+        node.setTree(tree);
+        node.setTreePath(treePath);
+        return node;
     }
 
     private JPopupMenu createPopupMenuForNode(Node node) {
