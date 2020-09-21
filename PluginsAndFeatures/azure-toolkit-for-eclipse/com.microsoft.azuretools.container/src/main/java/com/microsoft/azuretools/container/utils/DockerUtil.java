@@ -34,9 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.container.Constant;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
@@ -51,6 +53,8 @@ import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.RegistryAuth;
 
 public class DockerUtil {
+    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
+
     /**
      * create a docker file in specified folder.
      */
@@ -185,5 +189,15 @@ public class DockerUtil {
             // ignore it
         }
         return "";
+    }
+
+    public static void ping(DockerClient docker) throws AzureExecutionException {
+        try {
+            docker.ping();
+        } catch (DockerException | InterruptedException e) {
+            final String msg = String.format(DOCKER_PING_ERROR, docker.getHost());
+            DefaultLoader.getUIHelper().showError(msg, "Failed to connect docker host");
+            throw new AzureExecutionException(String.format("Failed to connect docker host: %s", docker.getHost()));
+        }
     }
 }
