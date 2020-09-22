@@ -47,10 +47,8 @@ public enum SSHTerminalManager {
     private static final String OS_LINUX = "linux";
     private static final String WEB_APP_FX_VERSION_PREFIX = "DOCKER|";
     private static final String CMD_SSH_TO_LOCAL_PROXY =
-            "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" root@127.0.0.1 -p %s \r\n";
-    private static final String CMD_SSH_TO_LOCAL_PWD = "Docker!\r\n";
-    private static final String SSH_INTO_WEB_APP_DISABLE_MESSAGE =
-            "SSH is not enabled for this app. To enable SSH follow this instructions: https://go.microsoft.com/fwlink/?linkid=2132395";
+            "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" root@127.0.0.1 -p %s";
+    private static final String CMD_SSH_TO_LOCAL_PWD = "Docker!";
 
     /**
      * these actions (validation, etc) before ssh into web app.
