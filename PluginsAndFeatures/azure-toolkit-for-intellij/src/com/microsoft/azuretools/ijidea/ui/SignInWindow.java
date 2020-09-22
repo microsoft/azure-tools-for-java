@@ -177,8 +177,8 @@ public class SignInWindow extends AzureDialogWrapper {
     protected void doOKAction() {
         authMethodDetailsResult = new AuthMethodDetails();
         if (automatedRadioButton.isSelected()) { // automated
-            final Map<String, String> properties =
-                    Collections.singletonMap(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
+            final Map<String, String> properties = new HashMap<>();
+            properties.put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
             properties.putAll(signInSPProp);
             EventUtil.logEvent(EventType.info, ACCOUNT, SIGNIN, properties, null);
             String authPath = authFileTextField.getText();
