@@ -46,11 +46,10 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
-import com.microsoft.azuretools.sdkmanage.AzureCliAzureManager
 import com.microsoft.azuretools.sdkmanage.AzureManager
 import com.microsoft.rest.credentials.ServiceClientCredentials
-import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.AzureNotifications
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionParameters
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleProvisionTerminalParameters
 import org.jetbrains.plugins.azure.cloudshell.rest.CloudConsoleService
@@ -76,29 +75,6 @@ class StartAzureCloudShellAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = CommonDataKeys.PROJECT.getData(e.dataContext) ?: return
         val azureManager = AuthMethodManager.getInstance().azureManager ?: return
-
-        // TODO maartenba - Once https://github.com/JetBrains/azure-tools-for-intellij/issues/340 is resolved
-        // with Microsoft, this check + warning can be removed.
-        if (azureManager is AzureCliAzureManager) {
-            AzureNotifications.notify(project,
-                    RiderAzureBundle.message("common.azure"),
-                    RiderAzureBundle.message("notification.cloud_shell.start.failed_azcli.subtitle"),
-                    RiderAzureBundle.message("notification.cloud_shell.start.failed_azcli.message") +
-                            " <a href='moreinfo'>" +
-                            RiderAzureBundle.message("notification.cloud_shell.start.failed_azcli.message.more_info") +
-                            "</a>",
-                    NotificationType.WARNING,
-                    object : NotificationListener.Adapter() {
-                        override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
-                            if (!project.isDisposed) {
-                                when (e.description) {
-                                    "moreinfo" -> BrowserUtil.browse("https://github.com/JetBrains/azure-tools-for-intellij/issues/340")
-                                }
-                            }
-                        }
-                    })
-            return
-        }
 
         object : Task.Backgroundable(project, RiderAzureBundle.message("progress.common.start.retrieving_subscription"), true, PerformInBackgroundOption.DEAF)
         {
