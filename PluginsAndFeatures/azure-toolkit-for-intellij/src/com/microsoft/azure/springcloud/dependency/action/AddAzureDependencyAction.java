@@ -110,7 +110,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
                     }
                 } catch (InterruptedException | ExecutionException e) {
                     PluginUtil.showErrorNotification("Error",
-                            "Failed to update update project due to error: "
+                            "Failed to update project due to error: "
                                     + e.getMessage());
                     return;
                 }
