@@ -22,15 +22,14 @@
 
 package com.microsoft.azuretools.utils;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -85,19 +84,8 @@ public class AzureCliUtils {
         return isCliCommandExecutedStatus(new String[]{CLI_SUBGROUP_ACCOUNT, CLI_SUBGROUP_ACCOUNT_COMMAND_SHOW});
     }
 
-    private static boolean isCliCommandExecutedStatus(String[] parameters) throws IOException, InterruptedException {
-        DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
-        resultHandler.waitFor(CMD_EXEC_TIMEOUT);
-        int exitValue = resultHandler.getExitValue();
-        logger.info("exitCode: " + exitValue);
-        if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
-            return true;
-        }
-        return false;
-    }
-
     /**
-     * check contains a specific subscription or not.
+     * check azure cli contains a specific subscription or not.
      */
     public static boolean containSubscription(String subscriptionId) throws IOException, InterruptedException {
         if (StringUtils.isBlank(subscriptionId)) {
@@ -107,23 +95,11 @@ public class AzureCliUtils {
         if (StringUtils.isBlank(subscriptionsAsJson)) {
             return false;
         }
-        Gson gson = new Gson();
-        List<AzureCliSubscription> subscriptions = gson.fromJson(subscriptionsAsJson, new TypeToken<List<AzureCliSubscription>>(){}.getType());
+        List<AzureCliSubscription> subscriptions = JsonUtils.fromJson(subscriptionsAsJson, new TypeToken<List<AzureCliSubscription>>(){}.getType());
         if (CollectionUtils.isEmpty(subscriptions)) {
             return false;
         }
         return subscriptions.stream().filter(e -> subscriptionId.equals(e.getId())).count() > 0;
-    }
-
-    private static String executeCliCommandAndGetOutputIfSuccess(String[] parameters) throws IOException, InterruptedException {
-        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
-        executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
-        int exitValue = executionOutput.getResultHandler().getExitValue();
-        logger.info("exitCode: " + exitValue);
-        if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
-            return executionOutput.getOutputStream().toString();
-        }
-        return null;
     }
 
     /**
@@ -135,7 +111,7 @@ public class AzureCliUtils {
      */
     public static CommandUtils.CommandExecOutput executeCommandAndGetOutputWithCompleteKeyWord(final String[] parameters
             , final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException, InterruptedException {
-        ByteArrayOutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
+        OutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
         CommandUtils.CommandExecOutput commendExecOutput = new CommandUtils.CommandExecOutput();
         if (ArrayUtils.isEmpty(sucessKeyWords) && ArrayUtils.isEmpty(failedKeyWords)) {
             commendExecOutput.setSuccess(true);
@@ -160,6 +136,28 @@ public class AzureCliUtils {
             Thread.sleep(interval);
         }
         return commendExecOutput;
+    }
+
+    private static boolean isCliCommandExecutedStatus(String[] parameters) throws IOException, InterruptedException {
+        DefaultExecuteResultHandler resultHandler = CommandUtils.executeCommandAndGetResultHandler(CLI_GROUP_AZ, parameters);
+        resultHandler.waitFor(CMD_EXEC_TIMEOUT);
+        int exitValue = resultHandler.getExitValue();
+        logger.info("exitCode: " + exitValue);
+        if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
+            return true;
+        }
+        return false;
+    }
+
+    private static String executeCliCommandAndGetOutputIfSuccess(String[] parameters) throws IOException, InterruptedException {
+        CommandUtils.CommandExecutionOutput executionOutput = CommandUtils.executeCommandAndGetExecution(CLI_GROUP_AZ, parameters);
+        executionOutput.getResultHandler().waitFor(CMD_EXEC_TIMEOUT);
+        int exitValue = executionOutput.getResultHandler().getExitValue();
+        logger.info("exitCode: " + exitValue);
+        if (exitValue == CMD_EXEC_EXIT_CODE_SUCCESS) {
+            return executionOutput.getOutputStream().toString();
+        }
+        return null;
     }
 
     private static boolean checkCommendExecComplete(String outputMessage, String[] completeKeyWords) {

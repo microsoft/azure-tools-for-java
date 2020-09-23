@@ -80,10 +80,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
             SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
                     AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
             logger.info(String.format("Complete to execute ssh connection. output message is below: %s", connectionInfo.getOutputMessage()));
-            // validate create-remote-connection output to ensure it's ready to ssh to local proxy and open terminal.
-            if (!SSHTerminalManager.INSTANCE.validateConnectionOutputBeforeOpenInTerminal(connectionInfo, webAppName)) {
-                return;
-            }
+            // ssh to local proxy and open terminal.
             DefaultLoader.getIdeHelper().invokeAndWait(() -> {
                 // create a new terminal tab.
                 TerminalView terminalView = TerminalView.getInstance(project);

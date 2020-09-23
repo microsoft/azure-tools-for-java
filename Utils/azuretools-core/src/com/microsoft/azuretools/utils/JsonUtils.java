@@ -20,14 +20,12 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions.core;
+package com.microsoft.azuretools.utils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 public class JsonUtils {
@@ -65,5 +63,9 @@ public class JsonUtils {
 
     public static <T> T fromJsonString(String jsonString, Class<T> clz) {
         return GSON.fromJson(jsonString, clz);
+    }
+
+    public static <T> T fromJson(String json, Type typeOfT) {
+        return GSON.fromJson(json, typeOfT);
     }
 }

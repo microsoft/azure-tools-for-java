@@ -27,10 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +111,7 @@ public class CommandUtils {
         }
     }
 
-    public static ByteArrayOutputStream executeCommandAndGetOutputStream(final String command, final String[] parameters) throws IOException {
+    public static OutputStream executeCommandAndGetOutputStream(final String command, final String[] parameters) throws IOException {
         CommandExecutionOutput execution = executeCommandAndGetExecution(command, parameters);
         return execution.getOutputStream();
     }
@@ -201,14 +198,14 @@ public class CommandUtils {
 
     public static class CommandExecutionOutput {
 
-        private ByteArrayOutputStream outputStream;
+        private OutputStream outputStream;
         private DefaultExecuteResultHandler resultHandler;
 
-        public ByteArrayOutputStream getOutputStream() {
+        public OutputStream getOutputStream() {
             return outputStream;
         }
 
-        public void setOutputStream(ByteArrayOutputStream outputStream) {
+        public void setOutputStream(OutputStream outputStream) {
             this.outputStream = outputStream;
         }
 

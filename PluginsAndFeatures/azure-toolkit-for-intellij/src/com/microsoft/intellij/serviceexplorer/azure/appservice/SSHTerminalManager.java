@@ -30,25 +30,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public enum SSHTerminalManager {
     INSTANCE;
 
-    private static final Logger logger = Logger.getLogger(SSHTerminalManager.class.getName());
-
     private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "Failed to SSH into Web App. Please try again.";
-    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME = "Failed to SSH into Web App (%s). Please try again.";
     private static final String CLI_DIALOG_MESSAGE_DEFAULT =
             "Failed to invoke Azure CLI. Please make sure Azure CLI is installed and signed-in with same account.";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS = "Azure SSH is only supported for Linux web apps";
     private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER = "Azure SSH is only supported for Linux web apps (Not in custom container).";
     private static final String OS_LINUX = "linux";
-    private static final String WEB_APP_FX_VERSION_PREFIX = "DOCKER|";
+    private static final String WEB_APP_DOCKER_PREFIX = "DOCKER|";
     private static final String CMD_SSH_TO_LOCAL_PROXY =
-            "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" root@127.0.0.1 -p %s";
-    private static final String CMD_SSH_TO_LOCAL_PWD = "Docker!";
+            "ssh -o StrictHostKeyChecking=no -o \"UserKnownHostsFile /dev/null\" -o \"LogLevel ERROR\" %s@127.0.0.1 -p %s";
 
     /**
      * these actions (validation, etc) before ssh into web app.
@@ -65,12 +60,7 @@ public enum SSHTerminalManager {
                 DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
                 return false;
             }
-            // check azure cli login
-            // if (!AzureCliUtils.isCliLogined()) {
-            //    DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            //    return false;
-            //}
-            // check cli signed-in account has permission to connect to current subscription.
+            // check if cli signed-in and the account has permission to connect to current subscription.
             if (!AzureCliUtils.containSubscription(subscriptionId)) {
                 DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
                 return false;
@@ -85,7 +75,7 @@ public enum SSHTerminalManager {
             return false;
         }
         // check non-docker web app
-        if (StringUtils.containsIgnoreCase(fxVersion, WEB_APP_FX_VERSION_PREFIX)) {
+        if (StringUtils.containsIgnoreCase(fxVersion, WEB_APP_DOCKER_PREFIX)) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return false;
         }
@@ -128,43 +118,25 @@ public enum SSHTerminalManager {
     }
 
     /**
-     * validate create-remote-connection output to ensure it's ready to ssh to local proxy and open terminal.
-     *
-     * @param connectionInfo
-     * @param webAppName
-     */
-    public boolean validateConnectionOutputBeforeOpenInTerminal(CreateRemoteConnectionOutput connectionInfo, String webAppName) {
-        if (connectionInfo == null) {
-            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            return false;
-        }
-        if (connectionInfo.isSuccess()) {
-            if (StringUtils.isBlank(connectionInfo.getPort())) {
-                DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-                return false;
-            }
-        } else {
-            DefaultLoader.getUIHelper().showError(String.format(SSH_INTO_WEB_APP_ERROR_MESSAGE_WITH_NAME, webAppName), SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * ssh to connect to local proxy and open the terminal for remote container.
      *
      * @param shellTerminalWidget
      * @param connectionInfo
      */
     public void openConnectionInTerminal(ShellTerminalWidget shellTerminalWidget, CreateRemoteConnectionOutput connectionInfo) {
+        if (connectionInfo == null || !connectionInfo.isSuccess() || StringUtils.isBlank(connectionInfo.getPort())
+                || StringUtils.isBlank(connectionInfo.getUsername()) || StringUtils.isBlank(connectionInfo.getPassword())) {
+            DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            return;
+        }
         try {
             int count = 0;
             while ((shellTerminalWidget.getTtyConnector() == null) && count++ < 200) {
                 Thread.sleep(100);
             }
-            shellTerminalWidget.executeCommand(String.format(CMD_SSH_TO_LOCAL_PROXY, connectionInfo.getPort()));
+            shellTerminalWidget.executeCommand(String.format(CMD_SSH_TO_LOCAL_PROXY, connectionInfo.getUsername(), connectionInfo.getPort()));
             Thread.sleep(5000);
-            shellTerminalWidget.executeCommand(CMD_SSH_TO_LOCAL_PWD);
+            shellTerminalWidget.executeCommand(connectionInfo.getPassword());
         } catch (IOException | InterruptedException e) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
         }

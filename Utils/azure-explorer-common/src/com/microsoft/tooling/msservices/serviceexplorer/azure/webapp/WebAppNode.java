@@ -51,7 +51,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
-    public static final String SSH_INTO = "SSH into Web App";
+    public static final String SSH_INTO = "SSH into Web App (Preview)";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     protected String webAppName;
