@@ -38,6 +38,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.security.InvalidParameterException;
@@ -49,6 +50,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_AZ;
 import static com.microsoft.azuretools.authmanage.Environment.ENVIRONMENT_LIST;
@@ -58,9 +60,15 @@ public class AzureCliAzureManager extends AzureManagerBase {
     private static final String UNABLE_TO_GET_AZURE_CLI_CREDENTIALS = "Unable to get Azure CLI credentials, " +
             "please ensure you have installed Azure CLI and signed in.";
     private static final String CLI_TOKEN_FORMAT_ACCESSOR = "az account get-access-token --output json -t %s";
+    private static final String CLI_TOKEN_FORMAT_ACCESSOR_RESOURCE = "az account get-access-token --output json -t %s --resource %s";
     private static final String CLI_TOKEN_PROP_ACCESS_TOKEN = "accessToken";
     private static final String CLI_TOKEN_PROP_EXPIRATION = "expiresOn";
-    private static final String PATTERN_TENANT = "[a-zA-Z_\\-0-9]*";
+    /**
+     * refer https://github.com/Azure/azure-sdk-for-java/blob/e193ac6467cd9c9792ead0e1d242663fe1194fee/sdk/identity/azure-identity/src/main/java/com/azure
+     * /identity/implementation/util/ScopeUtil.java#L16
+     */
+    private static final Pattern PATTERN_RESOURCE = Pattern.compile("^[0-9a-zA-Z-.:/]+$");
+    private static final Pattern PATTERN_TENANT = Pattern.compile("^[a-zA-Z_\\-0-9]+$");
 
     protected Map<String, Pair<String, OffsetDateTime>> tenantTokens = new ConcurrentHashMap<>();
 
@@ -72,15 +80,16 @@ public class AzureCliAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
+    public @Nullable String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
         if (!this.isSignedIn()) {
             return null;
         }
-        Pair<String, OffsetDateTime> token = tenantTokens.get(tid);
+        final String key = tid + ":" + resource;
+        Pair<String, OffsetDateTime> token = tenantTokens.get(key);
         final OffsetDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault()).toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC);
         if (Objects.isNull(token) || token.second().isBefore(now)) {
-            token = this.getAccessTokenViaCli(tid);
-            tenantTokens.put(tid, token);
+            token = this.getAccessTokenViaCli(tid, resource);
+            tenantTokens.put(key, token);
         }
         return token.first();
     }
@@ -108,7 +117,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
 
     public AuthMethodDetails signIn() throws AzureExecutionException {
         try {
-            AzureTokenWrapper azureTokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
+            final AzureTokenWrapper azureTokenWrapper = AzureAuthHelper.getAzureCLICredential(null);
             if (azureTokenWrapper == null) {
                 throw new AzureExecutionException(UNABLE_TO_GET_AZURE_CLI_CREDENTIALS);
             }
@@ -129,10 +138,10 @@ public class AzureCliAzureManager extends AzureManagerBase {
             authResult.setAuthMethod(AuthMethod.AZ);
             authResult.setAzureEnv(credentials.environment().toString());
             return authResult;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             try {
                 drop();
-            } catch (IOException ignore) {
+            } catch (final IOException ignore) {
                 // swallow exception while clean up
             }
             throw new AzureExecutionException(FAILED_TO_AUTH_WITH_AZURE_CLI, e);
@@ -154,7 +163,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
         public AuthMethodDetails restore(final AuthMethodDetails authMethodDetails) {
             try {
                 getInstance().signIn();
-            } catch (AzureExecutionException ignore) {
+            } catch (final AzureExecutionException ignore) {
                 // Catch the exception when restore
             }
             return authMethodDetails;
@@ -169,19 +178,23 @@ public class AzureCliAzureManager extends AzureManagerBase {
      * refer https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/identity/azure-identity/src/main/java/com/azure/
      * identity/implementation/IdentityClient.java#L366
      */
-    private Pair<String, OffsetDateTime> getAccessTokenViaCli(String tid) throws IOException {
-        if (!tid.matches(PATTERN_TENANT)) {
+    private Pair<String, OffsetDateTime> getAccessTokenViaCli(String tid, @Nullable String resource) throws IOException {
+        if (!PATTERN_TENANT.matcher(tid).matches()) {
             throw new InvalidParameterException(String.format("[%s] is not a valid tenant ID", tid));
+        } else if (StringUtils.isNotEmpty(resource) && !PATTERN_RESOURCE.matcher(resource).matches()) {
+            throw new InvalidParameterException(String.format("[%s] is not a valid resource endpoint", resource));
         }
-        final String command = String.format(CLI_TOKEN_FORMAT_ACCESSOR, tid);
+        final String command = StringUtils.isEmpty(resource) ?
+                               String.format(CLI_TOKEN_FORMAT_ACCESSOR, tid) :
+                               String.format(CLI_TOKEN_FORMAT_ACCESSOR_RESOURCE, tid, resource);
         final String jsonToken = CommandUtils.exec(command);
         final Map<String, Object> objectMap = JsonUtils.fromJson(jsonToken, Map.class);
         final String strToken = (String) objectMap.get(CLI_TOKEN_PROP_ACCESS_TOKEN);
         final String strTime = (String) objectMap.get(CLI_TOKEN_PROP_EXPIRATION);
         final String decoratedTime = String.join("T", strTime.substring(0, strTime.indexOf(".")).split(" "));
         final OffsetDateTime expiresOn = LocalDateTime.parse(decoratedTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                .atZone(ZoneId.systemDefault())
-                .toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC);
+                                                      .atZone(ZoneId.systemDefault())
+                                                      .toOffsetDateTime().withOffsetSameInstant(ZoneOffset.UTC);
         return new Pair<>(strToken, expiresOn);
     }
 }
