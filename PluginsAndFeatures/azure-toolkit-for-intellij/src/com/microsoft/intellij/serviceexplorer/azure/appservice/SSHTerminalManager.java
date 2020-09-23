@@ -66,10 +66,10 @@ public enum SSHTerminalManager {
                 return false;
             }
             // check azure cli login
-            if (!AzureCliUtils.isCliLogined()) {
-                DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
-                return false;
-            }
+            // if (!AzureCliUtils.isCliLogined()) {
+            //    DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
+            //    return false;
+            //}
             // check cli signed-in account has permission to connect to current subscription.
             if (!AzureCliUtils.containSubscription(subscriptionId)) {
                 DefaultLoader.getUIHelper().showError(CLI_DIALOG_MESSAGE_DEFAULT, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);

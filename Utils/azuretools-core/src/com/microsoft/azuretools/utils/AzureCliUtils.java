@@ -26,6 +26,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -136,7 +137,7 @@ public class AzureCliUtils {
             , final String[] sucessKeyWords, final String[] failedKeyWords) throws IOException, InterruptedException {
         ByteArrayOutputStream outputStream = CommandUtils.executeCommandAndGetOutputStream(CLI_GROUP_AZ, parameters);
         CommandUtils.CommandExecOutput commendExecOutput = new CommandUtils.CommandExecOutput();
-        if ((sucessKeyWords == null || sucessKeyWords.length == 0) && (failedKeyWords == null || failedKeyWords.length == 0)) {
+        if (ArrayUtils.isEmpty(sucessKeyWords) && ArrayUtils.isEmpty(failedKeyWords)) {
             commendExecOutput.setSuccess(true);
             commendExecOutput.setOutputMessage(outputStream.toString());
             return commendExecOutput;
@@ -146,12 +147,12 @@ public class AzureCliUtils {
         int count = 0;
         while (count++ <= maxCount) {
             String currentOutputMessage = outputStream.toString();
-            if (sucessKeyWords != null && sucessKeyWords.length > 0 && checkCommendExecComplete(currentOutputMessage, sucessKeyWords)) {
+            if (ArrayUtils.isNotEmpty(sucessKeyWords) && checkCommendExecComplete(currentOutputMessage, sucessKeyWords)) {
                 commendExecOutput.setOutputMessage(currentOutputMessage);
                 commendExecOutput.setSuccess(true);
                 break;
             }
-            if (failedKeyWords != null && failedKeyWords.length > 0 && checkCommendExecComplete(currentOutputMessage, failedKeyWords)) {
+            if (ArrayUtils.isNotEmpty(failedKeyWords) && checkCommendExecComplete(currentOutputMessage, failedKeyWords)) {
                 commendExecOutput.setOutputMessage(currentOutputMessage);
                 commendExecOutput.setSuccess(false);
                 break;
