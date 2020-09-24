@@ -22,6 +22,7 @@
 
 package org.jetbrains.plugins.azure.functions.run
 
+import com.intellij.openapi.project.Project
 import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.adviseOnce
@@ -41,6 +42,7 @@ import java.io.File
 
 class AzureFunctionsHostConfigurationViewModel(
         private val lifetime: Lifetime,
+        project: Project,
         private val runnableProjectsModel: RunnableProjectsModel,
         val projectSelector: ProjectSelector,
         val tfmSelector: StringSelector,
@@ -54,6 +56,7 @@ class AzureFunctionsHostConfigurationViewModel(
         val dotNetBrowserSettingsEditor: BrowserSettingsEditor
 ) : DotNetExeConfigurationViewModel(
         lifetime,
+        project,
         PathSelector("", null, lifetime),
         programParametersEditor,
         workingDirectorySelector,

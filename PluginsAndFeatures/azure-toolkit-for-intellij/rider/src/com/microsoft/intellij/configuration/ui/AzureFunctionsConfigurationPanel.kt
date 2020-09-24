@@ -77,10 +77,7 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     private val releaseInfoLink = HyperlinkLabel().apply {
         setIcon(AllIcons.General.Information)
-        setHyperlinkText(
-                message("settings.app_services.function_app.core_tools.release_info_before_link_text"),
-                message("settings.app_services.function_app.core_tools.release_info_link_text"),
-                ".")
+        setTextWithHyperlink(message("settings.app_services.function_app.core_tools.release_info_link_text"))
         setHyperlinkTarget("https://github.com/Azure/azure-functions-core-tools/releases")
     }
 

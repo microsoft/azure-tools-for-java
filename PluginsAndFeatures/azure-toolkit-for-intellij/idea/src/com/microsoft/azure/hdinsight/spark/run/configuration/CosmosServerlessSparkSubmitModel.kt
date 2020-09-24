@@ -42,13 +42,14 @@ class CosmosServerlessSparkSubmitModel(project: Project) : SparkSubmitModel(proj
     }
 
     override fun getDefaultParameters(): Stream<Pair<String, out Any>> {
-        return listOf(
+        val list: List<Pair<String, out Any>> = listOf(
                 Pair(CreateSparkBatchJobParameters.DriverMemory, CreateSparkBatchJobParameters.DriverMemoryDefaultValue),
                 Pair(CreateSparkBatchJobParameters.DriverCores, CreateSparkBatchJobParameters.DriverCoresDefaultValue),
                 Pair(CreateSparkBatchJobParameters.ExecutorMemory, CreateSparkBatchJobParameters.ExecutorMemoryDefaultValue),
                 Pair(CreateSparkBatchJobParameters.ExecutorCores, CreateSparkBatchJobParameters.ExecutorCoresDefaultValue),
                 Pair(CreateSparkBatchJobParameters.NumExecutors, CreateSparkBatchJobParameters.NumExecutorsDefaultValue)
-        ).stream()
+        )
+        return list.stream()
     }
 
     override fun getSparkClusterTypeDisplayName(): String = "Cosmos Serverless Spark account"

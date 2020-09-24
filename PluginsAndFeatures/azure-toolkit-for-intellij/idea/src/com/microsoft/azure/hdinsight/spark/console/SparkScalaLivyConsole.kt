@@ -33,7 +33,7 @@ class SparkScalaLivyConsole(module: Module) : ScalaLanguageConsole(module), Spar
         super.textSent(codes)
     }
 
-    override fun attachToProcess(processHandler: ProcessHandler?) {
+    override fun attachToProcess(processHandler: ProcessHandler) {
         super.attachToProcess(processHandler)
 
         // Remove self from ScalaConsoleInfo

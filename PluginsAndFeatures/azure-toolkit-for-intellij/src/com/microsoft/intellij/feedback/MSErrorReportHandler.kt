@@ -36,7 +36,7 @@ class MSErrorReportHandler : ErrorReportSubmitter() {
     override fun submit(events: Array<out IdeaLoggingEvent>,
                         additionalInfo: String?,
                         parentComponent: Component,
-                        callback: Consumer<SubmittedReportInfo>): Boolean {
+                        callback: Consumer<in SubmittedReportInfo>): Boolean {
         val event = events[0]
 
         val githubIssue = GithubIssue(

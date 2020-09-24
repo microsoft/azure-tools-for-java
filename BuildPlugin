@@ -145,7 +145,7 @@ if $BUILD_INTELLIJ; then
     tc_close "Building IDEA plugin"
 fi
 
-BUILD_NUMBER="3.40.0.$BUILD_COUNTER-2020.2"
+BUILD_NUMBER="3.40.0.$BUILD_COUNTER-2020.3"
 BUILD_CONFIGURATION=Release
 
 tc_open "Building Rider plugin"

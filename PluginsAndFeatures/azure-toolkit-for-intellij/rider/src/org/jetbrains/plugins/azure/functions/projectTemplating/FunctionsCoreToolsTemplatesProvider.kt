@@ -22,7 +22,6 @@
 
 package org.jetbrains.plugins.azure.functions.projectTemplating
 
-import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.IOptProperty
 import com.jetbrains.rd.util.reactive.OptProperty
@@ -73,11 +72,9 @@ class FunctionsCoreToolsTemplatesProvider : RiderProjectTemplateProvider {
                 override val expandActionName: String
                     get() = message("template.project.function_app.actions.expand.reload")
 
-                override fun expand() {
+                override fun expand(): Runnable? {
                     // just close dialog and show again to refresh templates
-                    application.invokeLater {
-                        ProjectTemplateDialog.show(context.project, context.item)
-                    }
+                    return Runnable { ProjectTemplateDialog.show(context.project, context.item) }
                 }
 
                 override fun getComponent(): JComponent {

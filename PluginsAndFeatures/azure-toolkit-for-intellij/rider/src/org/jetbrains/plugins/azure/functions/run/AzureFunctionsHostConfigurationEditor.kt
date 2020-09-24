@@ -95,6 +95,7 @@ class AzureFunctionsHostConfigurationEditor(private val project: Project)
 
         viewModel = AzureFunctionsHostConfigurationViewModel(
                 lifetime,
+                project,
                 project.solution.runnableProjectsModel,
                 ProjectSelector(message("run_config.common.form.project_label")),
                 StringSelector(message("run_config.common.form.target_framework_label")),

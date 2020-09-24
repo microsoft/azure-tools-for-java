@@ -53,7 +53,7 @@ class FormBuilder(var columnTemplate: ColumnTemplate? = null) {
 
     val colSize: Int
         get() = (allComponentConstraints.asSequence().map { it.constraints?.column ?: 0 }
-                .max() ?: -1 ) + 1
+                .maxOrNull() ?: -1 ) + 1
 
     inner class Row(val index: Int, val comps: MutableList<ColComponent> = mutableListOf()) {
         fun c(component: Component? = null, block: GridConstraints.() -> Unit = {}) {

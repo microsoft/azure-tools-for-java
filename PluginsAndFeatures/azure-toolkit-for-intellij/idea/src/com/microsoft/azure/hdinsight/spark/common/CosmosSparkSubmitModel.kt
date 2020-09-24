@@ -44,11 +44,13 @@ open class CosmosSparkSubmitModel : SparkSubmitModel {
     constructor(project: Project, submissionParameter: SparkSubmissionParameter): super(project, submissionParameter)
 
     override fun getDefaultParameters(): Stream<Pair<String, out Any>> {
-        return listOf(
+        val list: List<Pair<String, out Any>> = listOf(
                 Pair(SparkSubmissionParameter.DriverMemory, SparkSubmissionParameter.DriverMemoryDefaultValue),
                 Pair(SparkSubmissionParameter.DriverCores, SparkSubmissionParameter.DriverCoresDefaultValue),
                 Pair(SparkSubmissionParameter.ExecutorMemory, SparkSubmissionParameter.ExecutorMemoryDefaultValue),
-                Pair(SparkSubmissionParameter.ExecutorCores, SparkSubmissionParameter.ExecutorCoresDefaultValue)).stream()
+                Pair(SparkSubmissionParameter.ExecutorCores, SparkSubmissionParameter.ExecutorCoresDefaultValue)
+        )
+        return list.stream()
     }
 
     override fun getSparkClusterTypeDisplayName(): String = "Apache Spark on Cosmos cluster"

@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.hdinsight.spark.run
 
+import com.intellij.core.JavaPsiBundle
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
@@ -32,7 +33,6 @@ import com.intellij.execution.process.KillableColoredProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.execution.ui.ConfigurationModuleSelector.NO_MODULE_TEXT
 import com.intellij.execution.util.JavaParametersUtil
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
@@ -126,7 +126,7 @@ open class SparkBatchLocalRunState(val myProject: Project,
 
         if (hasJmockit) {
             params.vmParametersList.addAll(
-                    getCommandLineVmParameters(executor, params, mainModule?.name ?: NO_MODULE_TEXT))
+                    getCommandLineVmParameters(executor, params, mainModule?.name ?: JavaPsiBundle.message("list.item.no.module")))
         }
 
         if (hasClassPath) {

@@ -56,7 +56,7 @@ class AzureFunctionsDotNetCoreDebugProfile(
                             withWorkDirectory(dotNetExecutable.workingDirectoryOrExeFolder)
                         })
         )
-        return patchCommandLineInPlugins(lifetime, resolvedPromise)
+        return patchCommandLineInPlugins(lifetime, executionEnvironment.project, resolvedPromise)
     }
 
     override fun startDebuggerWorker(

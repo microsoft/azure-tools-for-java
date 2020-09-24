@@ -24,7 +24,7 @@ package org.jetbrains.icons
 
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.IconPathPatcher
-import com.intellij.ui.ScalableIconWrapperWithToolTip
+import com.intellij.ui.RetrievableIcon
 import com.microsoft.icons.CommonIcons
 import icons.RestClientIcons
 import javax.swing.Icon
@@ -45,7 +45,7 @@ internal class RiderIconsPatcher : IconPathPatcher() {
 
         private fun path(icon: Icon): String {
             val iconToProcess =
-                    if (icon is ScalableIconWrapperWithToolTip) icon.retrieveIcon()
+                    if (icon is RetrievableIcon) icon.retrieveIcon()
                     else icon
 
             val cachedIcon = iconToProcess as? IconLoader.CachedImageIcon
@@ -63,7 +63,7 @@ internal class RiderIconsPatcher : IconPathPatcher() {
         else originalClassLoader
 
     private val myIconsOverrideMap = mapOf(
-        "/resharper/FunctionAppRunMarkers/RunFunctionApp.svg" to path(CommonIcons.AzureFunctions.FunctionAppRunConfiguration),
-        "/resharper/FunctionAppRunMarkers/Trigger.svg" to path(RestClientIcons.Http_requests_filetype)
+            "/resharper/FunctionAppRunMarkers/RunFunctionApp.svg" to path(CommonIcons.AzureFunctions.FunctionAppRunConfiguration),
+            "/resharper/FunctionAppRunMarkers/Trigger.svg" to path(RestClientIcons.Http_requests_filetype)
     )
 }

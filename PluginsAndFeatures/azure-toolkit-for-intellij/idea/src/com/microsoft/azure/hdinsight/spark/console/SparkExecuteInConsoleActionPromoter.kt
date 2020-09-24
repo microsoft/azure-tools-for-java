@@ -30,7 +30,7 @@ import com.microsoft.azure.hdinsight.common.logger.ILogger
 class SparkExecuteInConsoleActionPromoter : ActionPromoter, ILogger {
     private fun shouldPromote(anAction: AnAction): Boolean = anAction is SparkConsoleExecuteAction
 
-    override fun promote(actions: MutableList<AnAction>, context: DataContext?): MutableList<AnAction> =
+    override fun promote(actions: MutableList<AnAction>, context: DataContext): MutableList<AnAction> =
             actions.firstOrNull { shouldPromote(it) }
                     ?.let { mutableListOf(it) }
                     ?: mutableListOf()
