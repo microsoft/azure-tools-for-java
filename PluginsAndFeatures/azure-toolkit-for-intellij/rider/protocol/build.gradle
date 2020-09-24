@@ -59,8 +59,8 @@ task generateModel(type: tasks.getByName('rdgen').class) {
         sources modelDir.canonicalPath
         packages = "model"
 
-        properties['ktGeneratedOutput']="${ktGeneratedOutput.canonicalPath}"
-        properties['csDaemonGeneratedOutput']="${resharperPluginPath.canonicalPath}/src/Azure.Daemon/Protocol"
+        systemProperties["ktGeneratedOutput"]="${ktGeneratedOutput.canonicalPath}"
+        systemProperties["csDaemonGeneratedOutput"]="${resharperPluginPath.canonicalPath}/src/Azure.Daemon/Protocol"
     }
 }
 
