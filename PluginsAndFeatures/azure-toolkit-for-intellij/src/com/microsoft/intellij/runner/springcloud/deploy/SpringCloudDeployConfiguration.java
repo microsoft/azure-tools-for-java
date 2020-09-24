@@ -39,8 +39,8 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceRes
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
+import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;

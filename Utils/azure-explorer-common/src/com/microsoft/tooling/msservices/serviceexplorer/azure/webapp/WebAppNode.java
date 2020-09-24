@@ -30,10 +30,13 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_OPEN_INBROWSER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_SHOWPROP;
 
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -48,20 +51,35 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
+    public static final String SSH_INTO = "SSH into Web App (Preview)";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     protected String webAppName;
     protected String webAppId;
+    protected String fxVersion;
     protected Map<String, String> propertyMap;
 
     /**
      * Constructor.
      */
+    @Deprecated
     public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
                       String state, String hostName, String os, Map<String, String> propertyMap) {
         super(webAppId, webAppName, LABEL, parent, subscriptionId, hostName, os, state);
         this.webAppId = webAppId;
         this.webAppName = webAppName;
+        this.propertyMap = propertyMap;
+        webAppNodePresenter = new WebAppNodePresenter<>();
+        webAppNodePresenter.onAttachView(WebAppNode.this);
+        loadActions();
+    }
+
+    public WebAppNode(WebAppModule parent, String subscriptionId, WebApp delegate, Map<String, String> propertyMap) {
+        super(delegate.id(), delegate.name(), LABEL, parent, subscriptionId, delegate.defaultHostName(),
+                delegate.operatingSystem().toString(), delegate.state());
+        this.webAppId = delegate.id();
+        this.webAppName = delegate.name();
+        this.fxVersion = delegate.linuxFxVersion();
         this.propertyMap = propertyMap;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
@@ -121,6 +139,10 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return this.webAppName;
     }
 
+    public String getFxVersion() {
+        return fxVersion;
+    }
+
     public void startWebApp() {
         try {
             webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webAppId);
@@ -146,6 +168,13 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
             e.printStackTrace();
             // TODO: Error handling
         }
+    }
+
+    @Override
+    public List<NodeAction> getNodeActions() {
+        boolean running = this.state == WebAppBaseState.RUNNING;
+        getNodeActionByName(SSH_INTO).setEnabled(running);
+        return super.getNodeActions();
     }
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {

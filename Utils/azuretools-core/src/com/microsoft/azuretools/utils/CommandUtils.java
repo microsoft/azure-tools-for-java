@@ -22,10 +22,7 @@
 
 package com.microsoft.azuretools.utils;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -47,6 +44,7 @@ public class CommandUtils {
     private static final String LINUX_MAC_SWITCHER = "-c";
     private static final String DEFAULT_WINDOWS_SYSTEM_ROOT = System.getenv("SystemRoot");
     private static final String DEFAULT_MAC_LINUX_PATH = "/bin/";
+    public static final String COMMEND_SUFFIX_WINDOWS = ".cmd";
 
     public static List<File> resolvePathForCommandForCmdOnWindows(final String command) throws IOException, InterruptedException {
         return resolvePathForCommand(isWindows() ? (command + ".cmd") : command);
@@ -92,7 +90,7 @@ public class CommandUtils {
         return executeCommandAndGetOutput(commandLine, directory);
     }
 
-    private static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory) throws IOException {
+    public static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final ByteArrayOutputStream err = new ByteArrayOutputStream();
         final PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
@@ -111,6 +109,33 @@ public class CommandUtils {
             out.close();
             err.close();
         }
+    }
+
+    public static OutputStream executeCommandAndGetOutputStream(final String command, final String[] parameters) throws IOException {
+        CommandExecutionOutput execution = executeCommandAndGetExecution(command, parameters);
+        return execution.getOutputStream();
+    }
+
+    public static DefaultExecuteResultHandler executeCommandAndGetResultHandler(final String command, final String[] parameters) throws IOException {
+        CommandExecutionOutput execution = executeCommandAndGetExecution(command, parameters);
+        return execution.getResultHandler();
+    }
+
+    public static CommandExecutionOutput executeCommandAndGetExecution(final String command, final String[] parameters) throws IOException {
+        String internalCommand = CommandUtils.isWindows() ? command + CommandUtils.COMMEND_SUFFIX_WINDOWS : command;
+        final CommandLine commandLine = new CommandLine(internalCommand);
+        commandLine.addArguments(parameters);
+        final DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+        final DefaultExecutor executor = new DefaultExecutor();
+        executor.setStreamHandler(streamHandler);
+        executor.setExitValues(null);
+        executor.execute(commandLine, resultHandler);
+        CommandExecutionOutput execution = new CommandExecutionOutput();
+        execution.setOutputStream(outputStream);
+        execution.setResultHandler(resultHandler);
+        return execution;
     }
 
     public static String[] executeMultipleLineOutput(final String cmd, File cwd)
@@ -147,6 +172,49 @@ public class CommandUtils {
             return DEFAULT_WINDOWS_SYSTEM_ROOT + "\\system32";
         } else {
             return DEFAULT_MAC_LINUX_PATH;
+        }
+    }
+
+    public static class CommandExecOutput {
+        private boolean success;
+        private String outputMessage;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public String getOutputMessage() {
+            return outputMessage;
+        }
+
+        public void setOutputMessage(String outputMessage) {
+            this.outputMessage = outputMessage;
+        }
+    }
+
+    public static class CommandExecutionOutput {
+
+        private OutputStream outputStream;
+        private DefaultExecuteResultHandler resultHandler;
+
+        public OutputStream getOutputStream() {
+            return outputStream;
+        }
+
+        public void setOutputStream(OutputStream outputStream) {
+            this.outputStream = outputStream;
+        }
+
+        public DefaultExecuteResultHandler getResultHandler() {
+            return resultHandler;
+        }
+
+        public void setResultHandler(DefaultExecuteResultHandler resultHandler) {
+            this.resultHandler = resultHandler;
         }
     }
 }

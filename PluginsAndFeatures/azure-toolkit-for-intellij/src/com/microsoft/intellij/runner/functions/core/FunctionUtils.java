@@ -44,6 +44,7 @@ import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
+import com.microsoft.azuretools.utils.JsonUtils;
 import com.sun.tools.sjavac.Log;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
