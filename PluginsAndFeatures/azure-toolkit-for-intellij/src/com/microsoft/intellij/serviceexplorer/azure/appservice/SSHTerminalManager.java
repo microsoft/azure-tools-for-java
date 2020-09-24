@@ -124,8 +124,8 @@ public enum SSHTerminalManager {
      * @param connectionInfo
      */
     public void openConnectionInTerminal(ShellTerminalWidget shellTerminalWidget, CreateRemoteConnectionOutput connectionInfo) {
-        if (connectionInfo == null || !connectionInfo.isSuccess() || StringUtils.isBlank(connectionInfo.getPort())
-                || StringUtils.isBlank(connectionInfo.getUsername()) || StringUtils.isBlank(connectionInfo.getPassword())) {
+        if (connectionInfo == null || !connectionInfo.isSuccess()
+                || StringUtils.isAnyBlank(connectionInfo.getPort(), connectionInfo.getUsername(), connectionInfo.getPassword())) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return;
         }
