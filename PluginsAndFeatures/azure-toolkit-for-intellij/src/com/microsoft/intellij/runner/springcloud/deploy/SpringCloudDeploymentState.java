@@ -44,6 +44,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -246,6 +247,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     private Map<String, String> getSpringAppDependencies(Enumeration<JarEntry> jarEntryEnumeration,
                                                          String libraryPath) {
+        final String[] springArtifacts = ArrayUtils.add(SPRING_ARTIFACTS, SPRING_BOOT_AUTOCONFIGURE);
         final List<JarEntry> jarEntries = Collections.list(jarEntryEnumeration);
         return jarEntries.stream()
                          .filter(jarEntry -> StringUtils.startsWith(jarEntry.getName(), libraryPath)
@@ -260,6 +262,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
                                     } :
                                     new String[]{fileName, ""};
                          })
+                         .filter(entry -> ArrayUtils.contains(springArtifacts, entry[0]))
                          .collect(Collectors.toMap(entry -> entry[0], entry -> entry[1]));
     }
 
