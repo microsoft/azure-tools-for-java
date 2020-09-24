@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.43.0](#3430)
   - [3.42.0](#3420)
   - [3.41.1](#3411)
   - [3.41.0](#3410)
@@ -55,6 +56,22 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.43.0
+
+### Added
+- Support SSH into Linux web app
+
+### Changed
+- Update Spring Cloud dependency constraint rule for spring-cloud-starter-azure-spring-cloud-client
+
+### Fixed
+- [#4555](https://github.com/microsoft/azure-tools-for-java/issues/4555) Azure CLI authentication does not show subscriptions for all tenants
+- [#4558](https://github.com/microsoft/azure-tools-for-java/issues/4558) Unhandled exception in device login
+- [#4560](https://github.com/microsoft/azure-tools-for-java/issues/4560) Unhandled exception while create application insights
+- [#4595](https://github.com/microsoft/azure-tools-for-java/pull/4595) Unhandled exception in Docker Run/Run on Web App for Containers
+- [#4601](https://github.com/microsoft/azure-tools-for-java/issues/4601) Fixed customized configuration are wrongly cleared after blob storage is slected for Synapse batch job issue
+- [#4607](https://github.com/microsoft/azure-tools-for-java/pull/4607) Fixed regression in service principal authentication
 
 ## 3.42.0
 
