@@ -62,6 +62,9 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ### Added
 - Support SSH into Linux web app
 
+### Changed
+- Update Spring Cloud dependency constraint rule for spring-cloud-starter-azure-spring-cloud-client
+
 ### Fixed
 - [#4555](https://github.com/microsoft/azure-tools-for-java/issues/4555) Azure CLI authentication does not show subscriptions for all tenants
 - [#4558](https://github.com/microsoft/azure-tools-for-java/issues/4558) Unhandled exception in device login

@@ -29,6 +29,10 @@
     <ul>
         <li>Support SSH into Linux web app</li>
     </ul>
+    <h4>Changed</h4>
+    <ul>
+        <li>Update Spring Cloud dependency constraint rule for spring-cloud-starter-azure-spring-cloud-client</li>
+    </ul>
     <h4>Fixed</h4>
     <ul>
         <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4555">#4555</a> Azure CLI authentication does
