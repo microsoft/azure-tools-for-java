@@ -1,6 +1,19 @@
 <!-- Version: 3.40.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.43.0
+
+### Added
+- Support SSH into Linux web app
+
+### Fixed
+- [#4555](https://github.com/microsoft/azure-tools-for-java/issues/4555) Azure CLI authentication does not show subscriptions for all tenants
+- [#4558](https://github.com/microsoft/azure-tools-for-java/issues/4558) Unhandled exception in device login
+- [#4560](https://github.com/microsoft/azure-tools-for-java/issues/4560) Unhandled exception while create application insights
+- [#4595](https://github.com/microsoft/azure-tools-for-java/pull/4595) Unhandled exception in Docker Run/Run on Web App for Containers
+- [#4601](https://github.com/microsoft/azure-tools-for-java/issues/4601) Fixed customized configuration are wrongly cleared after blob storage is slected for Synapse batch job issue
+- [#4607](https://github.com/microsoft/azure-tools-for-java/pull/4607) Fixed regression in service principal authentication
+
 ## 3.42.0
 
 ### Added
@@ -92,49 +105,6 @@ We are proud to announce the support for [Azure Synapse](https://docs.microsoft.
 - [#4413](https://github.com/microsoft/azure-tools-for-java/issues/4413) The regression issue of Spark local console with Scala plugin 2020.1.36
 - [#4422](https://github.com/microsoft/azure-tools-for-java/issues/4422) Fixes <code>ConcurrentModificationException</code> while refreshing spring cloud clusters
 - [#4438](https://github.com/microsoft/azure-tools-for-java/issues/4438) Fixes modality state issue when open what's new document
-
-## 3.37.0
-
-### Added
-- Add what's new document in Azure menu
-- Filter unsupported regions when creating new app service plan
-
-### Changed
-- Sort Spark on Cosmos Serverless jobs in descending order by job submission time
-
-### Fixed
-- Fixed Spark batch job submission skipped after uploading artifact to SQL Server big data cluster issue
-- Fixed no permission issue after submitting Spark batch job to ESP HDInsight cluster with ADLS Gen2 as default storage account type
-- [#4370](https://github.com/microsoft/azure-tools-for-java/issues/4370) Fixes NPE while loading Function deployment panel
-- [#4347](https://github.com/microsoft/azure-tools-for-java/issues/4347) Fixes NPE while getting action status
-- [#4380](https://github.com/microsoft/azure-tools-for-java/pull/4380) Fixes validation may freeze UI in spring cloud deployment panel
-- [#4350](https://github.com/microsoft/azure-tools-for-java/issues/4350) Fixes null value in spring cloud property view
-
-## 3.36.0
-Azure Toolkit support Log Streaming for App Service now! You could get the live log with log streaming in explorer with simple click.
-
-![logstreaming](https://user-images.githubusercontent.com/12445236/82419555-2b9fc000-9ab1-11ea-8165-0c7fa1b97933.gif)
-
-### Added
-- Support log streaming for webapp
-- Support open portal Live Metrics Stream for linux function app 
-- Validate Azure dependencies version before deploying
-- Tag log line with log source(azuretool, livy, driver.stderr) for Spark batch job logs and interactive session logs
-
-### Changed
-- Remove version of Azure Spring Cloud dependencies when it is not necessary
-
-### Fixed
-- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fix NPE caused job submission failure issue
-- [#4204](https://github.com/microsoft/azure-tools-for-java/issues/4204) Deploy Azure Spring Cloud App dialog default value is apply
-- [#4231](https://github.com/microsoft/azure-tools-for-java/issues/4231) Cannot use Auth file for spring cloud authentication
-
-### Fixed
-- [#4157](https://github.com/microsoft/azure-tools-for-java/issues/4157) Can't trigger function/admin http function when click 'Trigger Function' button
-- [#4160](https://github.com/microsoft/azure-tools-for-java/issues/4160) Nothing shown in function run mark
-- [#4179](https://github.com/microsoft/azure-tools-for-java/issues/4179) Fixed NPE caused Spark job submission failure in 201EAP
-- [#4213](https://github.com/microsoft/azure-tools-for-java/issues/4213) Unhandled error when creating function app
-- [#4215](https://github.com/microsoft/azure-tools-for-java/issues/4215) App settings not loaded when openning the deploy wizard
 
 ## Summary
 

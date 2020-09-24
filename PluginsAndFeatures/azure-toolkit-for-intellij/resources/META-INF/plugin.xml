@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.42.0</version>
+  <version>3.43.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,17 +24,25 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.42.0</h3>
+    <h3>3.43.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Support Custom Binding for Azure Functions</li>
+        <li>Support SSH into Linux web app</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li>
-            <a href="https://github.com/microsoft/azure-maven-plugins/issues/1110">#1110</a>
-            Fixes XSS issue in authentication
-        </li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4555">#4555</a> Azure CLI authentication does
+            not show subscriptions for all tenants</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4558">#4558</a> Unhandled exception in device
+            login</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4560">#4560</a> Unhandled exception while
+            create application insights</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4595">#4595</a> Unhandled exception in Docker
+            Run/Run on Web App for Containers</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4601">#4601</a> Fixed customized configuration
+            are wrongly cleared after blob storage is slected for Synapse batch job issue</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4607">#4607</a> Fixed regression in service
+            principal authentication</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
