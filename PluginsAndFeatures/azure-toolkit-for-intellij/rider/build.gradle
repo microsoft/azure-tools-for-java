@@ -43,7 +43,7 @@ intellij {
 
     // Workaround for https://youtrack.jetbrains.com/issue/IDEA-179607
     def extraPlugins = [ "rider-plugins-appender" ]
-    plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient', 'markdown'] + extraPlugins
+    plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient'] + extraPlugins
 
     downloadSources = Boolean.valueOf(sources)
 }

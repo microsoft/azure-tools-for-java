@@ -23,8 +23,6 @@
     ]]>
   </change-notes>
 
-  <depends>org.intellij.plugins.markdown</depends>
-
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
 
   <extensionPoints>
