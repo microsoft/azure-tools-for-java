@@ -22,12 +22,20 @@
 
 package com.microsoft.azuretools.utils;
 
-import org.apache.commons.exec.*;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecuteResultHandler;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,8 +83,7 @@ public class CommandUtils {
             logger.throwing(CommandUtils.class.getName(), "exec", exception);
             throw exception;
         }
-        final String wrappedCommand = String.format("%s %s %s", starter, switcher, commandWithArgs);
-        return executeCommandAndGetOutput(wrappedCommand, new File(workingDirectory));
+        return executeCommandAndGetOutput(starter, switcher, commandWithArgs, new File(workingDirectory));
     }
 
     public static String executeCommandAndGetOutput(final String commandWithoutArgs, final String[] args, final File directory) throws IOException {
@@ -85,8 +92,10 @@ public class CommandUtils {
         return executeCommandAndGetOutput(commandLine, directory);
     }
 
-    public static String executeCommandAndGetOutput(final String commandWithArgs, final File directory) throws IOException {
-        final CommandLine commandLine = CommandLine.parse(commandWithArgs);
+    public static String executeCommandAndGetOutput(final String  starter, final String switcher, final String commandWithArgs, final File directory) throws IOException {
+        final CommandLine commandLine = new CommandLine(starter);
+        commandLine.addArgument(switcher, false);
+        commandLine.addArgument(commandWithArgs, false);
         return executeCommandAndGetOutput(commandLine, directory);
     }
 
@@ -122,9 +131,11 @@ public class CommandUtils {
     }
 
     public static CommandExecutionOutput executeCommandAndGetExecution(final String command, final String[] parameters) throws IOException {
-        String internalCommand = CommandUtils.isWindows() ? command + CommandUtils.COMMEND_SUFFIX_WINDOWS : command;
-        final CommandLine commandLine = new CommandLine(internalCommand);
-        commandLine.addArguments(parameters);
+        final String starter = isWindows() ? WINDOWS_STARTER : LINUX_MAC_STARTER;
+        final String switcher = isWindows() ? WINDOWS_SWITCHER : LINUX_MAC_SWITCHER;
+        final CommandLine commandLine = new CommandLine(starter);
+        commandLine.addArgument(switcher, false);
+        commandLine.addArgument(command + StringUtils.SPACE + String.join(StringUtils.SPACE, parameters), false);
         final DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
