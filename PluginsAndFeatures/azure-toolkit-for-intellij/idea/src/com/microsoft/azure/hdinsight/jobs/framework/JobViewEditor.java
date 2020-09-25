@@ -29,7 +29,7 @@ import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.microsoft.azure.hdinsight.spark.jobs.framework.JobViewPanel;
+//import com.microsoft.azure.hdinsight.spark.jobs.framework.JobViewPanel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -61,7 +61,10 @@ public class JobViewEditor implements FileEditor {
         myProvider = provider;
         myVirtualFile = file;
         uuid = file.getUserData(JobViewEditorProvider.JOB_VIEW_UUID);
-        myComponent = new JobViewPanel(PluginUtil.getPluginRootDirectory(), uuid);
+        // Microsoft's HDInsight library uses JFX, commenting out the usage for now.
+        // TODO MB/SDUBOV: Check usage of JFX when merging upstream later.
+        // myComponent = new JobViewPanel(PluginUtil.getPluginRootDirectory(), uuid);
+        myComponent = new JLabel("Can not use JFX.");
         AppInsightsClient.create(HDInsightBundle.message("HDInsightSparkJobview"), null);
         EventUtil.logEvent(EventType.info, TelemetryConstants.HDINSIGHT,
             HDInsightBundle.message("HDInsightSparkJobview"), null);
