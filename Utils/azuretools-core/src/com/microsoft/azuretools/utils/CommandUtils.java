@@ -92,7 +92,8 @@ public class CommandUtils {
         return executeCommandAndGetOutput(commandLine, directory);
     }
 
-    public static String executeCommandAndGetOutput(final String  starter, final String switcher, final String commandWithArgs, final File directory) throws IOException {
+    public static String executeCommandAndGetOutput(final String starter, final String switcher, final String commandWithArgs,
+                                                    final File directory) throws IOException {
         final CommandLine commandLine = new CommandLine(starter);
         commandLine.addArgument(switcher, false);
         commandLine.addArgument(commandWithArgs, false);
