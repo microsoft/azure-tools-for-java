@@ -29,7 +29,7 @@ tc_open "Initializing build script"
     SKIP_CHECKSTYLE=$TRAVIS
 
     # Eclipse
-    BUILD_ECLIPSE=true
+    BUILD_ECLIPSE=false
 
     #IntelliJ
     BUILD_INTELLIJ=true
