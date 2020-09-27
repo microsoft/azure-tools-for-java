@@ -164,7 +164,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     public class ShutdownVMAction extends AzureNodeActionPromptListener {
         public ShutdownVMAction() {
             super(VMNode.this, String.format(
-                    "This operation will result in losing the virtual IP address\nthat was assigned to this virtual machine.\n\n" +
+                    "This operation will result in losing the virtual IP address that was assigned to this virtual machine.\n\n" +
                             "Are you sure that you want to shut down virtual machine %s?", virtualMachine.name()),
                     "Shutting down VM");
         }
