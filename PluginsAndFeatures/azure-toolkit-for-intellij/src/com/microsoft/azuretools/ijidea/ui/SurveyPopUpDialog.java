@@ -124,7 +124,7 @@ public class SurveyPopUpDialog extends JDialog {
         if (isMac) {
             return;
         }
-        if (UIUtils.isUnderIntelliJTheme()) {
+        if (UIUtils.isUnderLightTheme()) {
             UIUtils.setPanelBackGroundColor(contentPane, Color.WHITE);
             ButtonUI buttonUI = new MetalButtonUI();
             giveFeedbackButton.setUI(buttonUI);
