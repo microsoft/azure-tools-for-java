@@ -258,12 +258,7 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
 
     @Override
     public List<NodeAction> getNodeActions() {
-//        // enable/disable menu items according to VM status
         boolean started = isRunning();
-//        boolean stopped = virtualMachine.getStatus().equals(VirtualMachine.Status.Stopped) ||
-//                virtualMachine.getStatus().equals(VirtualMachine.Status.StoppedDeallocated);
-//
-//        getNodeActionByName(ACTION_DOWNLOAD_RDP_FILE).setEnabled(!stopped && hasRDPPort(virtualMachine));
         getNodeActionByName(ACTION_SHUTDOWN).setEnabled(started);
         getNodeActionByName(ACTION_START).setEnabled(!started);
         getNodeActionByName(ACTION_RESTART).setEnabled(started);
@@ -272,12 +267,6 @@ public class VMNode extends RefreshableNode implements TelemetryProperties {
     }
 
     private boolean hasRDPPort(VirtualMachine virtualMachine) {
-//        for (Endpoint endpoint : virtualMachine.getEndpoints()) {
-//            if (endpoint.getPrivatePort() == REMOTE_DESKTOP_PORT) {
-//                return true;
-//            }
-//        }
-
         return false;
     }
 
