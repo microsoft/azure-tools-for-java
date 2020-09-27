@@ -135,10 +135,6 @@ public class AzureCliAzureManager extends AzureManagerBase {
                     .findAny()
                     .orElse(Environment.GLOBAL);
             CommonSettings.setUpEnvironment(environment);
-
-            // update subscription manager by this call
-            this.subscriptionManager.updateSubscriptionDetailsIfNull();
-
             final AuthMethodDetails authResult = new AuthMethodDetails();
             authResult.setAuthMethod(AuthMethod.AZ);
             authResult.setAzureEnv(credentials.environment().toString());

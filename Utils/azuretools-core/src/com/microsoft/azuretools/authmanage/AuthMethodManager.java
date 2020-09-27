@@ -66,6 +66,14 @@ public class AuthMethodManager {
 
     private AuthMethodManager(AuthMethodDetails authMethodDetails) {
         this.authMethodDetails = authMethodDetails;
+        // initialize subscription manager when restore authentication
+        if (this.authMethodDetails.getAuthMethod() != null) {
+            try {
+                getAzureManager().getSubscriptionManager().updateSubscriptionDetailsIfNull();
+            } catch (IOException e) {
+                // swallow exception
+            }
+        }
     }
 
     public static AuthMethodManager getInstance() {
