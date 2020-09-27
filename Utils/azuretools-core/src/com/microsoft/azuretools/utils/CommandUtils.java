@@ -87,9 +87,14 @@ public class CommandUtils {
     }
 
     public static String executeCommandAndGetOutput(final String commandWithoutArgs, final String[] args, final File directory) throws IOException {
+        return executeCommandAndGetOutput(commandWithoutArgs, args, directory, false);
+    }
+
+    public static String executeCommandAndGetOutput(final String commandWithoutArgs, final String[] args, final File directory,
+                                                    final boolean mergeErrorStream) throws IOException {
         final CommandLine commandLine = new CommandLine(commandWithoutArgs);
         commandLine.addArguments(args);
-        return executeCommandAndGetOutput(commandLine, directory);
+        return executeCommandAndGetOutput(commandLine, directory, mergeErrorStream);
     }
 
     public static String executeCommandAndGetOutput(final String starter, final String switcher, final String commandWithArgs,
@@ -101,8 +106,12 @@ public class CommandUtils {
     }
 
     public static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory) throws IOException {
+        return executeCommandAndGetOutput(commandLine, directory, false);
+    }
+
+    public static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory, final boolean mergeErrorStream) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final ByteArrayOutputStream err = new ByteArrayOutputStream();
+        final ByteArrayOutputStream err = mergeErrorStream ? out : new ByteArrayOutputStream();
         final PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
         final DefaultExecutor executor = new DefaultExecutor();
         executor.setWorkingDirectory(directory);
@@ -110,7 +119,9 @@ public class CommandUtils {
         executor.setExitValues(null);
         try {
             executor.execute(commandLine);
-            logger.log(Level.SEVERE, err.toString());
+            if (!mergeErrorStream) {
+                logger.log(Level.SEVERE, err.toString());
+            }
             return out.toString();
         } catch (ExecuteException e) {
             // swallow execute exception and return empty
