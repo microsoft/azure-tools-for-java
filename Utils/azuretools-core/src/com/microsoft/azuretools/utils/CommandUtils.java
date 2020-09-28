@@ -83,7 +83,8 @@ public class CommandUtils {
             logger.throwing(CommandUtils.class.getName(), "exec", exception);
             throw exception;
         }
-        return executeCommandAndGetOutput(starter, switcher, commandWithArgs, new File(workingDirectory));
+        final String commandWithPath = isWindows() ? commandWithArgs : String.format("export PATH=$PATH:/usr/local/bin ; %s", commandWithArgs);
+        return executeCommandAndGetOutput(starter, switcher, commandWithPath, new File(workingDirectory));
     }
 
     public static String executeCommandAndGetOutput(final String commandWithoutArgs, final String[] args, final File directory) throws IOException {
