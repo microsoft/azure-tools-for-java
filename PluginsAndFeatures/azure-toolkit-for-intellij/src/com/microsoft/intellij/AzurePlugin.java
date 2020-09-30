@@ -139,12 +139,13 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     }
 
     private void initializeWhatsNew(Project project) {
-        try {
-            WhatsNewManager.INSTANCE.showWhatsNew(false, project);
-        } catch (IOException e) {
-            // swallow this exception as shown whats new in startup should not block users
-            LOG.error(e.getMessage(), e);
-        }
+        EventUtil.executeWithLog(SYSTEM, SHOW_WHATS_NEW,
+            operation -> {
+                WhatsNewManager.INSTANCE.showWhatsNew(false, project);
+            },
+            error -> {
+                // swallow this exception as shown whats new in startup should not block users
+            });
     }
 
     private void initializeFeedbackNotification(Project myProject) {
