@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -436,7 +437,7 @@ public class StorageClientSDKManager {
     }
 
     @NotNull
-    public List<Queue> getQueues(@NotNull StorageAccount storageAccount)
+    public List<Queue> getQueues(@NotNull ClientStorageAccount storageAccount)
             throws AzureCmdException {
         List<Queue> qList = new ArrayList<Queue>();
 
@@ -458,7 +459,7 @@ public class StorageClientSDKManager {
     }
 
     @NotNull
-    public Queue createQueue(@NotNull StorageAccount storageAccount,
+    public Queue createQueue(@NotNull ClientStorageAccount storageAccount,
                              @NotNull Queue queue)
             throws AzureCmdException {
         try {
@@ -480,7 +481,7 @@ public class StorageClientSDKManager {
         }
     }
 
-    public void deleteQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public void deleteQueue(@NotNull ClientStorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -493,7 +494,7 @@ public class StorageClientSDKManager {
     }
 
     @NotNull
-    public List<QueueMessage> getQueueMessages(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public List<QueueMessage> getQueueMessages(@NotNull ClientStorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         List<QueueMessage> qmList = new ArrayList<QueueMessage>();
 
@@ -530,7 +531,7 @@ public class StorageClientSDKManager {
         }
     }
 
-    public void clearQueue(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public void clearQueue(@NotNull ClientStorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -542,7 +543,7 @@ public class StorageClientSDKManager {
         }
     }
 
-    public void createQueueMessage(@NotNull StorageAccount storageAccount,
+    public void createQueueMessage(@NotNull ClientStorageAccount storageAccount,
                                    @NotNull QueueMessage queueMessage,
                                    int timeToLiveInSeconds)
             throws AzureCmdException {
@@ -557,7 +558,7 @@ public class StorageClientSDKManager {
     }
 
     @NotNull
-    public QueueMessage dequeueFirstQueueMessage(@NotNull StorageAccount storageAccount, @NotNull Queue queue)
+    public QueueMessage dequeueFirstQueueMessage(@NotNull ClientStorageAccount storageAccount, @NotNull Queue queue)
             throws AzureCmdException {
         try {
             CloudQueueClient client = getCloudQueueClient(storageAccount);
@@ -781,9 +782,9 @@ public class StorageClientSDKManager {
     }
 
     @NotNull
-    private static CloudQueueClient getCloudQueueClient(@NotNull StorageAccount storageAccount)
+    private static CloudQueueClient getCloudQueueClient(@NotNull ClientStorageAccount storageAccount)
             throws Exception {
-        CloudStorageAccount csa = getCloudStorageAccount(getConnectionString(storageAccount));
+        CloudStorageAccount csa = getCloudStorageAccount(storageAccount.getConnectionString());
 
         return csa.createCloudQueueClient();
     }

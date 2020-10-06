@@ -29,7 +29,6 @@ import com.microsoft.intellij.forms.CreateQueueForm;
 import com.microsoft.tooling.msservices.helpers.Name;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.ClientStorageNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModule;
 
 @Name("New Queue")
@@ -43,14 +42,11 @@ public class CreateQueueAction extends NodeActionListener {
     @Override
     public void actionPerformed(NodeActionEvent e) {
         CreateQueueForm form = new CreateQueueForm((Project) queueModule.getProject());
-//        form.setStorageAccount(queueModule.getStorageAccount());
+        form.setStorageAccount(queueModule.getStorageAccount());
 
-        form.setOnCreate(new Runnable() {
-            @Override
-            public void run() {
-                queueModule.getParent().removeAllChildNodes();
-                ((ClientStorageNode) queueModule.getParent()).load(false);
-            }
+        form.setOnCreate(() -> {
+            queueModule.removeAllChildNodes();
+            queueModule.load(false);
         });
 
         form.show();

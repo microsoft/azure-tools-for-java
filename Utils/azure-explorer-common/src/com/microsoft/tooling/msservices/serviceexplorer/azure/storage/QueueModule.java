@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,9 +23,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
-import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
+import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 
@@ -32,10 +33,10 @@ import java.util.List;
 
 public class QueueModule extends RefreshableNode {
     private static final String QUEUES = "Queues";
-    final StorageAccount storageAccount;
+    final ClientStorageAccount storageAccount;
 
-    public QueueModule(ClientStorageNode parent, StorageAccount storageAccount) {
-        super(QUEUES + storageAccount.name(), QUEUES, parent, null);
+    public QueueModule(ClientStorageNode parent, ClientStorageAccount storageAccount) {
+        super(QUEUES + storageAccount.getName(), QUEUES, parent, null);
 
         this.storageAccount = storageAccount;
         this.parent = parent;
@@ -51,7 +52,7 @@ public class QueueModule extends RefreshableNode {
         }
     }
 
-    public StorageAccount getStorageAccount() {
+    public ClientStorageAccount getStorageAccount() {
         return storageAccount;
     }
 }

@@ -39,8 +39,8 @@ class HostJsonPatcherTest {
 
     companion object {
         private val hostJsonContent = StringBuilder()
-                .appendln("{")
-                .appendln("  \"version\": \"2.0\"")
+                .appendLine("{")
+                .appendLine("  \"version\": \"2.0\"")
                 .append("}")
                 .toString()
     }
@@ -97,11 +97,11 @@ class HostJsonPatcherTest {
 
         hostJsonFile.exists().shouldBeTrue()
         hostJsonFile.readText().shouldBe(StringBuilder()
-                .appendln("{")
-                .appendln("  \"version\": \"2.0\",")
-                .appendln("  \"functions\": [")
-                .appendln("    \"function\"")
-                .appendln("  ]")
+                .appendLine("{")
+                .appendLine("  \"version\": \"2.0\",")
+                .appendLine("  \"functions\": [")
+                .appendLine("    \"function\"")
+                .appendLine("  ]")
                 .append("}").toString())
     }
 
@@ -112,11 +112,11 @@ class HostJsonPatcherTest {
 
         HostJsonPatcher.tryPatchHostJsonFile(workingDirectory = workingDir.path, functionNames = "function")
         hostJsonFile.readText().shouldBe(StringBuilder()
-                .appendln("{")
-                .appendln("  \"version\": \"2.0\",")
-                .appendln("  \"functions\": [")
-                .appendln("    \"function\"")
-                .appendln("  ]")
+                .appendLine("{")
+                .appendLine("  \"version\": \"2.0\",")
+                .appendLine("  \"functions\": [")
+                .appendLine("    \"function\"")
+                .appendLine("  ]")
                 .append("}").toString())
     }
 
@@ -127,11 +127,11 @@ class HostJsonPatcherTest {
 
         HostJsonPatcher.tryPatchHostJsonFile(workingDirectory = workingDir.path, functionNames = "function")
         hostJsonFile.readText().shouldBe(StringBuilder()
-                .appendln("{")
-                .appendln("  \"version\": \"2.0\",")
-                .appendln("  \"functions\": [")
-                .appendln("    \"function\"")
-                .appendln("  ]")
+                .appendLine("{")
+                .appendLine("  \"version\": \"2.0\",")
+                .appendLine("  \"functions\": [")
+                .appendLine("    \"function\"")
+                .appendLine("  ]")
                 .append("}").toString())
     }
 
@@ -153,12 +153,12 @@ class HostJsonPatcherTest {
         HostJsonPatcher.tryPatchHostJsonFile(workingDirectory = workingDir, functionNames = "function1, function2")
 
         hostJsonFile.readText().shouldBe(StringBuilder()
-                .appendln("{")
-                .appendln("  \"version\": \"2.0\",")
-                .appendln("  \"functions\": [")
-                .appendln("    \"function1\",")
-                .appendln("    \"function2\"")
-                .appendln("  ]")
+                .appendLine("{")
+                .appendLine("  \"version\": \"2.0\",")
+                .appendLine("  \"functions\": [")
+                .appendLine("    \"function1\",")
+                .appendLine("    \"function2\"")
+                .appendLine("  ]")
                 .append("}").toString())
     }
 
@@ -178,11 +178,11 @@ class HostJsonPatcherTest {
 
         hostJsonFile.readText().shouldBe(hostJsonContent)
         hostJsonFileRoot.readText().shouldBe(StringBuilder()
-                .appendln("{")
-                .appendln("  \"version\": \"2.0\",")
-                .appendln("  \"functions\": [")
-                .appendln("    \"function\"")
-                .appendln("  ]")
+                .appendLine("{")
+                .appendLine("  \"version\": \"2.0\",")
+                .appendLine("  \"functions\": [")
+                .appendLine("    \"function\"")
+                .appendLine("  ]")
                 .append("}").toString())
     }
 

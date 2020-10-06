@@ -41,13 +41,7 @@ import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 // TODO: FIX_VERSION: Replace with [SolutionLoadNotification] when async notifications are merged into 202
 class AzureCoreToolsNotification : StartupActivity {
     companion object {
-        private val notificationGroup = NotificationGroup(
-                displayId = "AzureFunctions",
-                displayType = NotificationDisplayType.BALLOON,
-                isLogByDefault = true,
-                toolWindowId = null,
-                icon = null
-        )
+        private const val notificationGroupName = "AzureFunctions"
     }
 
     override fun runActivity(project: Project) {
@@ -80,12 +74,14 @@ class AzureCoreToolsNotification : StartupActivity {
     private fun createInstallNotification(project: Project, allowPreRelease: Boolean): Notification {
         val title = message("notification.function_app.core_tools.install.title")
         val description = message("notification.function_app.core_tools.install.description")
-        val notification = notificationGroup.createNotification(
-                title = title,
-                subtitle = null,
-                content = description,
-                type = NotificationType.INFORMATION
-        )
+        val notification = NotificationGroupManager.getInstance()
+                .getNotificationGroup(notificationGroupName)
+                .createNotification(
+                        title = title,
+                        subtitle = null,
+                        content = description,
+                        type = NotificationType.INFORMATION
+                )
 
         notification.appendDownloadCoreToolsAction(
                 project = project,
@@ -100,12 +96,14 @@ class AzureCoreToolsNotification : StartupActivity {
         val title = message("notification.function_app.core_tools.update.title")
         val description = message("notification.function_app.core_tools.update.description")
 
-        val notification = notificationGroup.createNotification(
-                title = title,
-                subtitle = null,
-                content = description,
-                type = NotificationType.INFORMATION
-        )
+        val notification = NotificationGroupManager.getInstance()
+                .getNotificationGroup(notificationGroupName)
+                .createNotification(
+                        title = title,
+                        subtitle = null,
+                        content = description,
+                        type = NotificationType.INFORMATION
+                )
 
         notification.appendDownloadCoreToolsAction(
                 project = project,

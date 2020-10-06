@@ -31,6 +31,7 @@ import com.microsoft.azuretools.telemetry.TelemetryProperties;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
+import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
@@ -47,8 +48,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
-        properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.id()).subscriptionId());
-        properties.put(AppInsightsConstants.Region, this.storageAccount.regionName());
+        properties.put(AppInsightsConstants.SubscriptionId, ResourceId.fromString(this.storageAccount.getSubscriptionId()).subscriptionId());
         return properties;
     }
 
@@ -69,7 +69,7 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
         @Override
         protected void azureNodeAction(NodeActionEvent e)
                 throws AzureCmdException {
-            Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), queue);
+            Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.getName(), queue);
 
             if (openedFile != null) {
                 DefaultLoader.getIdeHelper().closeFile(getProject(), openedFile);
@@ -117,11 +117,11 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
     }
 
     private static final String QUEUE_MODULE_ID = QueueNode.class.getName();
-    private static final String ICON_PATH = "container.svg";
+    private static final String ICON_PATH = "queue.svg";
     private final Queue queue;
-    private final StorageAccount storageAccount;
+    private final ClientStorageAccount storageAccount;
 
-    public QueueNode(QueueModule parent, StorageAccount storageAccount, Queue queue) {
+    public QueueNode(QueueModule parent, ClientStorageAccount storageAccount, Queue queue) {
         super(QUEUE_MODULE_ID, queue.getName(), parent, ICON_PATH, true);
 
         this.storageAccount = storageAccount;
@@ -132,10 +132,10 @@ public class QueueNode extends RefreshableNode implements TelemetryProperties{
 
     @Override
     protected void onNodeClick(NodeActionEvent ex) {
-        final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.name(), queue);
+        final Object openedFile = DefaultLoader.getUIHelper().getOpenedFile(getProject(), storageAccount.getName(), queue);
 
         if (openedFile == null) {
-            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "container.svg");
+            DefaultLoader.getUIHelper().openItem(getProject(), storageAccount, queue, " [Queue]", "Queue", "queue.svg");
         } else {
             DefaultLoader.getUIHelper().openItem(getProject(), openedFile);
         }

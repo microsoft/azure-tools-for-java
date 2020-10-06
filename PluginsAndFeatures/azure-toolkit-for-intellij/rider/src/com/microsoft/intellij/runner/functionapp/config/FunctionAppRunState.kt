@@ -24,10 +24,7 @@ package com.microsoft.intellij.runner.functionapp.config
 
 import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationGroup
-import com.intellij.notification.NotificationType
-import com.intellij.notification.Notifications
+import com.intellij.notification.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowId
 import com.microsoft.azure.management.appservice.FunctionApp
@@ -173,8 +170,10 @@ class FunctionAppRunState(project: Project,
     }
 
     private fun showPublishNotification(text: String, type: NotificationType) {
-        val displayId = NotificationGroup.toolWindowGroup("Azure Web App Publish Message", ToolWindowId.RUN).displayId
-        val notification = Notification(displayId, "", text, type)
+        val notification = NotificationGroupManager.getInstance()
+                .getNotificationGroup("Azure Web App Publish Message")
+                .createNotification(text, type)
+
         Notifications.Bus.notify(notification, project)
     }
 }

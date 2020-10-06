@@ -86,7 +86,7 @@ public interface UIHelper {
 
     void openItem(@NotNull Object projectObject, @NotNull Object itemVirtualFile);
 
-    void refreshQueue(@NotNull Object projectObject, @NotNull StorageAccount storageAccount, @NotNull Queue queue);
+    void refreshQueue(@NotNull Object projectObject, @NotNull ClientStorageAccount storageAccount, @NotNull Queue queue);
 
     void refreshBlobs(@NotNull Object projectObject, @NotNull String accountName, @NotNull BlobContainer container);
 

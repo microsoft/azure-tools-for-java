@@ -22,15 +22,21 @@
 
 package com.microsoft.intellij.forms;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.ui.messages.AzureBundle;
+import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
+import com.microsoft.tooling.msservices.model.storage.QueueMessage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +45,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
+import java.util.GregorianCalendar;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.compile;
@@ -57,6 +64,7 @@ public class QueueMessageForm extends AzureDialogWrapper {
         super(project, true);
         this.project = project;
         setModal(true);
+        setTitle("Create Queue Message");
 
         ((AbstractDocument) expireTimeTextField.getDocument()).setDocumentFilter(new DocumentFilter() {
             Pattern pat = compile("\\d+");
@@ -119,7 +127,7 @@ public class QueueMessageForm extends AzureDialogWrapper {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Adding queue message", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-                /*try {
+                try {
                     QueueMessage queueMessage = new QueueMessage(
                             "",
                             queue.getName(),
@@ -134,9 +142,10 @@ public class QueueMessageForm extends AzureDialogWrapper {
                         ApplicationManager.getApplication().invokeLater(onAddedMessage);
                     }
                 } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to add queue message." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
+                    String msg = "An error occurred while attempting to add queue message." + "\n"
+                            + String.format(AzureBundle.message("webappExpMsg"), e.getMessage());
+                    PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"), msg, e);
+                }
             }
         });
 

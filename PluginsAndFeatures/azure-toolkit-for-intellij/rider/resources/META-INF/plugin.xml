@@ -25,6 +25,7 @@
         <p>[3.40.0-2020.3]</p>
         <ul>
           <li>Compatibility with Rider 2020.3 EAP</li>
+          <li>Add queue support to storage explorer (for Azurite storage emulator) <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/96">#96</a></li>
         </ul>
         <p>[3.40.0-2020.2]</p>
         <ul>
@@ -219,6 +220,10 @@
     <serviceViewContributor implementation="org.jetbrains.plugins.azure.storage.azurite.AzuriteServiceViewContributor" />
 
     <editorNotificationProvider implementation="org.jetbrains.plugins.azure.identity.ad.notifications.DefaultAzureAdApplicationRegistrationNotificationProvider"/>
+
+    <notificationGroup id="Azure" displayType="BALLOON" isLogByDefault="true"/>
+    <notificationGroup id="AzureFunctions" displayType="BALLOON" isLogByDefault="true"/>
+    <notificationGroup id="Azure Web App Publish Message" displayType="BALLOON" isLogByDefault="true" toolWindowId="Run"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">

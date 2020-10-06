@@ -7,6 +7,7 @@
       <h4>Features:</h4>
       <ul>
         <li>Compatibility with Rider 2020.3 EAP</li>
+        <li>Add queue support to storage explorer (for Azurite storage emulator) <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/96">#96</a></li>
       </ul>
     </html>
     ]]>

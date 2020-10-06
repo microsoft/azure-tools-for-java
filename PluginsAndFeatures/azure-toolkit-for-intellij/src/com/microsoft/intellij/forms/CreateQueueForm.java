@@ -28,9 +28,15 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import com.microsoft.intellij.ui.messages.AzureBundle;
+import com.microsoft.intellij.util.PluginUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
+import com.microsoft.tooling.msservices.model.storage.Queue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,21 +45,20 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class CreateQueueForm extends AzureDialogWrapper {
-    private static final String NAME_REGEX = "^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$";
-    private static final int NAME_MAX = 63;
-    private static final int NAME_MIN = 3;
-    private JPanel contentPane;
     private JLabel namingGuidelinesLink;
     private JTextField nameTextField;
     private Runnable onCreate;
     private ClientStorageAccount storageAccount;
+    private static final String NAME_REGEX = "^[a-z0-9](?!.*--)[a-z0-9-]+[a-z0-9]$";
+    private static final int NAME_MAX = 63;
+    private static final int NAME_MIN = 3;
+    private JPanel contentPane;
     private Project project;
 
     public CreateQueueForm(Project project) {
         super(project, true);
 
         this.project = project;
-        setModal(true);
 
         setTitle("Create Queue");
         namingGuidelinesLink.addMouseListener(new LinkListener("https://go.microsoft.com/fwlink/?LinkId=255557"));
@@ -76,6 +81,11 @@ public class CreateQueueForm extends AzureDialogWrapper {
         });
 
         init();
+    }
+
+    @Override
+    public @Nullable JComponent getPreferredFocusedComponent() {
+        return nameTextField;
     }
 
     private void changedName() {
@@ -111,17 +121,13 @@ public class CreateQueueForm extends AzureDialogWrapper {
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating queue...", false) {
             @Override
             public void run(@NotNull ProgressIndicator progressIndicator) {
-                /*try {
+                try {
                     progressIndicator.setIndeterminate(true);
 
                     for (Queue queue : StorageClientSDKManager.getManager().getQueues(storageAccount)) {
                         if (queue.getName().equals(name)) {
-                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    JOptionPane.showMessageDialog(null, "A queue with the specified name already exists.", "Azure Explorer", JOptionPane.ERROR_MESSAGE);
-                                }
-                            });
+                            DefaultLoader.getIdeHelper().invokeLater(
+                                    () -> JOptionPane.showMessageDialog(null, "A queue with the specified name already exists.", "Azure Explorer", JOptionPane.ERROR_MESSAGE));
 
                             return;
                         }
@@ -134,9 +140,9 @@ public class CreateQueueForm extends AzureDialogWrapper {
                         DefaultLoader.getIdeHelper().invokeLater(onCreate);
                     }
                 } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to create queue." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
+                    String msg = "An error occurred while attempting to create queue." + "\n" + String.format(AzureBundle.message("webappExpMsg"), e.getMessage());
+                    PluginUtil.displayErrorDialogAndLog(AzureBundle.message("errTtl"), msg, e);
+                }
             }
         });
 

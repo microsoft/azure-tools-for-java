@@ -125,7 +125,7 @@ object FunctionsCoreToolsManager {
             indicator.text = message("progress.function_app.core_tools.extracting")
             indicator.isIndeterminate = true
             try {
-                ZipUtil.extract(tempFile, latestDirectory, null)
+                ZipUtil.extract(tempFile.toPath(), latestDirectory.toPath(), null)
             } catch (e: Exception) {
                 logger.error("Error while extracting $tempFile.path to $latestDirectory.path", e)
             }

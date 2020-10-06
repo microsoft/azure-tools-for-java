@@ -21,16 +21,26 @@
  */
 package org.jetbrains.plugins.azure
 
-import com.intellij.notification.*
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationListener
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
 
 class AzureNotifications {
     companion object {
-        val notificationGroup = NotificationGroup("Azure", NotificationDisplayType.BALLOON, true, null, null)
+        private const val notificationGroupName = "Azure"
 
         fun notify(project: Project, title: String?, subtitle: String?, content: String?, type: NotificationType, listener: NotificationListener? = null) {
-            val notification = notificationGroup.createNotification(
-                    title, subtitle, content, type, listener)
+            val notification = NotificationGroupManager.getInstance()
+                    .getNotificationGroup(notificationGroupName)
+                    .createNotification(
+                            title = title,
+                            subtitle = subtitle,
+                            content = content,
+                            type = type,
+                            listener = listener
+                    )
 
             Notifications.Bus.notify(notification, project)
         }

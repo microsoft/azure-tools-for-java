@@ -1,5 +1,6 @@
 /*
  * Copyright (c) Microsoft Corporation
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -22,10 +23,8 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.storage;
 
-import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
 
@@ -52,10 +51,10 @@ public abstract class ClientStorageNode extends RefreshableNode {
 
         addChildNode(blobsNode);
 
-//        QueueModule queueNode = new QueueModule(this, storageAccount);
-//        queueNode.load();
-//
-//        addChildNode(queueNode);
+        QueueModule queueNode = new QueueModule(this, storageAccount);
+        queueNode.load(false);
+
+        addChildNode(queueNode);
 //
 //        TableModule tableNode = new TableModule(this, storageAccount);
 //        tableNode.load();

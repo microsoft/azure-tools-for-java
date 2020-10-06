@@ -70,6 +70,11 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
         init();
     }
 
+    @Override
+    public @Nullable JComponent getPreferredFocusedComponent() {
+        return nameTextField;
+    }
+
     @Nullable
     @Override
     protected ValidationInfo doValidate() {

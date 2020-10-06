@@ -102,7 +102,7 @@ import static com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyV
 
 
 public class UIHelperImpl implements UIHelper {
-    public static Key<StorageAccount> STORAGE_KEY = new Key<StorageAccount>("storageAccount");
+    public static Key<StorageAccount> STORAGE_KEY = new Key<>("storageAccount");
     public static Key<ClientStorageAccount> CLIENT_STORAGE_KEY = new Key<ClientStorageAccount>("clientStorageAccount");
     public static final Key<String> SUBSCRIPTION_ID = new Key<>("subscriptionId");
     public static final Key<String> RESOURCE_ID = new Key<>("resourceId");
@@ -303,12 +303,12 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void refreshQueue(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
+    public void refreshQueue(@NotNull final Object projectObject, @NotNull final ClientStorageAccount storageAccount,
                              @NotNull final Queue queue) {
         ApplicationManager.getApplication().runReadAction(new Runnable() {
             @Override
             public void run() {
-                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), queue);
+                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.getName(), queue);
                 if (file != null) {
                     final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
