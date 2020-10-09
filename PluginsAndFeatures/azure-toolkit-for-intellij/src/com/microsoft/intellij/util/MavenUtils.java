@@ -23,10 +23,6 @@
 package com.microsoft.intellij.util;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
-import com.microsoft.intellij.maven.SpringCloudDependencyManager;
-import org.apache.commons.lang3.StringUtils;
-import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenExplicitProfiles;
 import org.jetbrains.idea.maven.project.*;
@@ -34,28 +30,19 @@ import org.jetbrains.idea.maven.server.MavenEmbedderWrapper;
 import org.jetbrains.idea.maven.utils.MavenProcessCanceledException;
 
 import java.nio.file.Paths;
-import java.util.concurrent.*;
+import java.util.List;
 
 public class MavenUtils {
-    private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
+    public static boolean isMavenProject(Project project) {
+        return MavenProjectsManager.getInstance(project).isMavenizedProject();
+    }
 
-    public static String getSpringBootFinalJarPath(@NotNull Project ideaProject, @NotNull MavenProject mavenProject)
-            throws AzureExecutionException, DocumentException, MavenProcessCanceledException {
-        String xml = evaluateEffectivePom(ideaProject, mavenProject);
-        if (StringUtils.isEmpty(xml)) {
-            throw new AzureExecutionException("Failed to evaluate effective pom for project: " + ideaProject.getName());
-        }
-        SpringCloudDependencyManager manager = new SpringCloudDependencyManager(xml);
-        String finalName = manager.getPluginConfiguration("org.springframework.boot", "spring-boot-maven"
-                + "-plugin", "finalName");
-        if (StringUtils.isEmpty(finalName)) {
-            finalName = mavenProject.getFinalName();
-        }
+    public static List<MavenProject> getMavenProjects(Project project) {
+        return MavenProjectsManager.getInstance(project).getRootProjects();
+    }
 
-        if (StringUtils.isEmpty(finalName)) {
-            throw new AzureExecutionException("Failed to evaluate <finalName> for project: " + ideaProject.getName());
-        }
-        return Paths.get(mavenProject.getBuildDirectory(), finalName + "." + mavenProject.getPackaging()).toString();
+    public static String getTargetFile(Project project, MavenProject mavenProject) {
+        return Paths.get(mavenProject.getBuildDirectory(), mavenProject.getFinalName() + "." + mavenProject.getPackaging()).toString();
     }
 
     public static String evaluateEffectivePom(@NotNull Project ideaProject,

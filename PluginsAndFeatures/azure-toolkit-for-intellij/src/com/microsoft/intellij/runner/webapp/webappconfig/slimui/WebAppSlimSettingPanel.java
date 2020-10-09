@@ -196,7 +196,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             }
         });
 
-        cbArtifact.addActionListener(e -> artifactActionPeformed((Artifact) cbArtifact.getSelectedItem()));
+        cbArtifact.addActionListener(e -> artifactActionPerformed((Artifact) cbArtifact.getSelectedItem()));
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
             @Override
             public void customize(JList list, Artifact artifact, int index, boolean isSelected, boolean cellHasFocus) {

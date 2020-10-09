@@ -281,7 +281,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
         // Artifact
         cbArtifact.addActionListener(e -> {
-            artifactActionPeformed((Artifact) cbArtifact.getSelectedItem());
+            artifactActionPerformed((Artifact) cbArtifact.getSelectedItem());
         });
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
@@ -296,7 +296,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
 
         cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
             @Override
-            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+            public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
                 if (mavenProject != null) {
                     setIcon(MavenIcons.MavenProject);
                     setText(mavenProject.toString());
@@ -446,7 +446,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             webAppConfiguration.setWebAppId(selectedWebApp == null ? "" : selectedWebApp.getResource().id());
             webAppConfiguration.setSubscriptionId(selectedWebApp == null ? "" : selectedWebApp.getSubscriptionId());
             webAppConfiguration.setDeployToSlot(cbDeployToSlot.isSelected());
-            webAppConfiguration.setSlotName((String)cbDeploymentSlots.getSelectedItem());
+            webAppConfiguration.setSlotName((String) cbDeploymentSlots.getSelectedItem());
             webAppConfiguration.setCreatingNew(false);
             if (cbDeployToSlot.isSelected() && cbDeploymentSlots.getSelectedItem() == Constants.CREATE_NEW_SLOT) {
                 webAppConfiguration.setNewSlotName(txtNewSlotName.getText());
@@ -480,7 +480,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
             // runtime
             if (rdoLinuxOS.isSelected()) {
                 webAppConfiguration.setOS(OperatingSystem.LINUX);
-                RuntimeStack linuxRuntime = (RuntimeStack)cbLinuxRuntime.getSelectedItem();
+                RuntimeStack linuxRuntime = (RuntimeStack) cbLinuxRuntime.getSelectedItem();
                 if (linuxRuntime != null) {
                     webAppConfiguration.setStack(linuxRuntime.stack());
                     webAppConfiguration.setVersion(linuxRuntime.version());
@@ -853,7 +853,7 @@ public class WebAppSettingPanel extends AzureSettingPanel<WebAppConfiguration> i
     @Override
     public void fillLinuxRuntime(@NotNull List<RuntimeStack> linuxRuntimes) {
         cbLinuxRuntime.removeAllItems();
-        for(final RuntimeStack runtime: linuxRuntimes) {
+        for (final RuntimeStack runtime: linuxRuntimes) {
             cbLinuxRuntime.addItem(runtime);
             if (Comparing.equal(runtime, WebAppCreationDialog.DEFAULT_LINUX_RUNTIME)
                 && cbLinuxRuntime.getSelectedIndex() < 0) {
