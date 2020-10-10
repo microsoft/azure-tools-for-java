@@ -30,6 +30,7 @@ import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.MavenUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -92,7 +93,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     protected boolean isMavenProject() {
-        return MavenRunTaskUtil.isMavenProject(project);
+        return MavenUtils.isMavenProject(project);
     }
 
     protected String getProjectBasePath() {
@@ -126,7 +127,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         return targetName;
     }
 
-    protected void artifactActionPeformed(Artifact selectArtifact) {
+    protected void artifactActionPerformed(Artifact selectArtifact) {
         JPanel pnlRoot = getMainPanel();
         if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
             if (lastSelectedArtifact != null && isCbArtifactInited) {
