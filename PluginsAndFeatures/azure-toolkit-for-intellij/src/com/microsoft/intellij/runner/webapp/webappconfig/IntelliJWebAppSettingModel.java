@@ -29,7 +29,6 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
     private boolean openBrowserAfterDeployment = true;
     private boolean slotPanelVisible = false;
 
-
     public boolean isOpenBrowserAfterDeployment() {
         return openBrowserAfterDeployment;
     }
