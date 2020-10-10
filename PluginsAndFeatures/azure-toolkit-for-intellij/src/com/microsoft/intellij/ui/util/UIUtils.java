@@ -59,8 +59,6 @@ public class UIUtils {
                                                            final FileChooserDescriptor descriptor) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-//                final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createAllButJarContentsDescriptor();
-//                DataContext dataContext = DataManager.getInstance().getDataContextFromFocus().getResult();
                 final VirtualFile[] files = FileChooser.chooseFiles(descriptor, parent, project,
                         (project == null) && !parent.getText().isEmpty() ? LocalFileSystem.getInstance().findFileByPath(parent.getText()) : null);
                 if (files.length > 0) {
@@ -192,9 +190,9 @@ public class UIUtils {
         return Messages.showYesNoDialog(null, prompt, title, "Yes", "No", null) == 0;
     }
 
-    public static boolean isUnderIntelliJTheme() {
+    public static boolean isUnderLightTheme() {
         UIManager.LookAndFeelInfo theme = LafManager.getInstance().getCurrentLookAndFeel();
-        return theme.getName().equalsIgnoreCase("intellij");
+        return StringUtils.containsIgnoreCase(theme.getName(), "light");
     }
 
     public static void setPanelBackGroundColor(JPanel panel, Color color) {

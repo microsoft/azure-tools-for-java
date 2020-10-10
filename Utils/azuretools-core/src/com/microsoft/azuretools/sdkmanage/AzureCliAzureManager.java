@@ -108,6 +108,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
     public void drop() throws IOException {
         this.currentClientId = null;
         this.currentTenantId = null;
+        this.tenantTokens.clear();
         super.drop();
     }
 
@@ -121,6 +122,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
             if (azureTokenWrapper == null) {
                 throw new AzureExecutionException(UNABLE_TO_GET_AZURE_CLI_CREDENTIALS);
             }
+            // Todo: Deprecate AzureCliCredentials as it will be deprecated soon with azure cli updates
             final AzureCliCredentials credentials = (AzureCliCredentials) azureTokenWrapper.getAzureTokenCredentials();
             final Azure.Authenticated authenticated = Azure.configure().authenticate(credentials);
             if (authenticated == null) {
@@ -133,7 +135,6 @@ public class AzureCliAzureManager extends AzureManagerBase {
                     .findAny()
                     .orElse(Environment.GLOBAL);
             CommonSettings.setUpEnvironment(environment);
-
             final AuthMethodDetails authResult = new AuthMethodDetails();
             authResult.setAuthMethod(AuthMethod.AZ);
             authResult.setAzureEnv(credentials.environment().toString());

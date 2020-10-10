@@ -32,10 +32,8 @@ import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.packaging.artifacts.ArtifactType;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider;
 
@@ -47,16 +45,12 @@ public class MavenRunTaskUtil {
 
     private static final String MAVEN_TASK_PACKAGE = "package";
 
-    public static boolean isMavenProject(Project project) {
-        return MavenProjectsManager.getInstance(project).isMavenizedProject();
-    }
-
     /**
      * Add Maven package goal into the run configuration's before run task.
      */
     public static void addMavenPackageBeforeRunTask(RunConfiguration runConfiguration) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(runConfiguration.getProject());
-        if (isMavenProject(runConfiguration.getProject())) {
+        if (MavenUtils.isMavenProject(runConfiguration.getProject())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
             if (MavenRunTaskUtil.shouldAddMavenPackageTask(tasks, runConfiguration.getProject())) {
                 MavenBeforeRunTask task = new MavenBeforeRunTask();
@@ -65,21 +59,9 @@ public class MavenRunTaskUtil {
                         + MavenConstants.POM_XML);
                 task.setGoal(MAVEN_TASK_PACKAGE);
                 tasks.add(task);
-                manager.setBeforeRunTasks(runConfiguration, tasks, false);
+                manager.setBeforeRunTasks(runConfiguration, tasks);
             }
         }
-    }
-
-    /**
-     * Get the MavenProject object if the given project is a maven typed project.
-     */
-    @Nullable
-    public static MavenProject getMavenProject(Project project) {
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
-        if (mavenProjects.size() > 0) {
-            return mavenProjects.get(0);
-        }
-        return null;
     }
 
     @NotNull

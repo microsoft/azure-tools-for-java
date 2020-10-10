@@ -22,12 +22,20 @@
 
 package com.microsoft.azuretools.utils;
 
-import org.apache.commons.exec.*;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecuteResultHandler;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,24 +83,36 @@ public class CommandUtils {
             logger.throwing(CommandUtils.class.getName(), "exec", exception);
             throw exception;
         }
-        final String wrappedCommand = String.format("%s %s %s", starter, switcher, commandWithArgs);
-        return executeCommandAndGetOutput(wrappedCommand, new File(workingDirectory));
+        final String commandWithPath = isWindows() ? commandWithArgs : String.format("export PATH=$PATH:/usr/local/bin ; %s", commandWithArgs);
+        return executeCommandAndGetOutput(starter, switcher, commandWithPath, new File(workingDirectory));
     }
 
     public static String executeCommandAndGetOutput(final String commandWithoutArgs, final String[] args, final File directory) throws IOException {
-        final CommandLine commandLine = new CommandLine(commandWithoutArgs);
-        commandLine.addArguments(args);
-        return executeCommandAndGetOutput(commandLine, directory);
+        return executeCommandAndGetOutput(commandWithoutArgs, args, directory, false);
     }
 
-    public static String executeCommandAndGetOutput(final String commandWithArgs, final File directory) throws IOException {
-        final CommandLine commandLine = CommandLine.parse(commandWithArgs);
+    public static String executeCommandAndGetOutput(final String commandWithoutArgs, final String[] args, final File directory,
+                                                    final boolean mergeErrorStream) throws IOException {
+        final CommandLine commandLine = new CommandLine(commandWithoutArgs);
+        commandLine.addArguments(args);
+        return executeCommandAndGetOutput(commandLine, directory, mergeErrorStream);
+    }
+
+    public static String executeCommandAndGetOutput(final String starter, final String switcher, final String commandWithArgs,
+                                                    final File directory) throws IOException {
+        final CommandLine commandLine = new CommandLine(starter);
+        commandLine.addArgument(switcher, false);
+        commandLine.addArgument(commandWithArgs, false);
         return executeCommandAndGetOutput(commandLine, directory);
     }
 
     public static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory) throws IOException {
+        return executeCommandAndGetOutput(commandLine, directory, false);
+    }
+
+    public static String executeCommandAndGetOutput(final CommandLine commandLine, final File directory, final boolean mergeErrorStream) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final ByteArrayOutputStream err = new ByteArrayOutputStream();
+        final ByteArrayOutputStream err = mergeErrorStream ? out : new ByteArrayOutputStream();
         final PumpStreamHandler streamHandler = new PumpStreamHandler(out, err);
         final DefaultExecutor executor = new DefaultExecutor();
         executor.setWorkingDirectory(directory);
@@ -100,7 +120,9 @@ public class CommandUtils {
         executor.setExitValues(null);
         try {
             executor.execute(commandLine);
-            logger.log(Level.SEVERE, err.toString());
+            if (!mergeErrorStream) {
+                logger.log(Level.SEVERE, err.toString());
+            }
             return out.toString();
         } catch (ExecuteException e) {
             // swallow execute exception and return empty
@@ -122,18 +144,22 @@ public class CommandUtils {
     }
 
     public static CommandExecutionOutput executeCommandAndGetExecution(final String command, final String[] parameters) throws IOException {
-        String internalCommand = CommandUtils.isWindows() ? command + CommandUtils.COMMEND_SUFFIX_WINDOWS : command;
-        final CommandLine commandLine = new CommandLine(internalCommand);
-        commandLine.addArguments(parameters);
+        final String starter = isWindows() ? WINDOWS_STARTER : LINUX_MAC_STARTER;
+        final String switcher = isWindows() ? WINDOWS_SWITCHER : LINUX_MAC_SWITCHER;
+        final CommandLine commandLine = new CommandLine(starter);
+        commandLine.addArgument(switcher, false);
+        commandLine.addArgument(command + StringUtils.SPACE + String.join(StringUtils.SPACE, parameters), false);
         final DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+        final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+        final PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, errorStream);
         final DefaultExecutor executor = new DefaultExecutor();
         executor.setStreamHandler(streamHandler);
         executor.setExitValues(null);
         executor.execute(commandLine, resultHandler);
         CommandExecutionOutput execution = new CommandExecutionOutput();
         execution.setOutputStream(outputStream);
+        execution.setErrorStream(errorStream);
         execution.setResultHandler(resultHandler);
         return execution;
     }
@@ -178,6 +204,7 @@ public class CommandUtils {
     public static class CommandExecOutput {
         private boolean success;
         private String outputMessage;
+        private String errorMessage;
 
         public boolean isSuccess() {
             return success;
@@ -194,11 +221,20 @@ public class CommandUtils {
         public void setOutputMessage(String outputMessage) {
             this.outputMessage = outputMessage;
         }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public void setErrorMessage(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
     }
 
     public static class CommandExecutionOutput {
 
         private OutputStream outputStream;
+        private OutputStream errorStream;
         private DefaultExecuteResultHandler resultHandler;
 
         public OutputStream getOutputStream() {
@@ -207,6 +243,14 @@ public class CommandUtils {
 
         public void setOutputStream(OutputStream outputStream) {
             this.outputStream = outputStream;
+        }
+
+        public OutputStream getErrorStream() {
+            return errorStream;
+        }
+
+        public void setErrorStream(OutputStream errorStream) {
+            this.errorStream = errorStream;
         }
 
         public DefaultExecuteResultHandler getResultHandler() {
