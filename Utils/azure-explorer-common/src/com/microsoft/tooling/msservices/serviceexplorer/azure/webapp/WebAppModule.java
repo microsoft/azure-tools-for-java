@@ -60,7 +60,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        webAppModulePresenter.onModuleRefresh();
+//        webAppModulePresenter.onModuleRefresh();
     }
 
     @Override
