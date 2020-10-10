@@ -26,22 +26,9 @@ import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 
 public class IntelliJWebAppSettingModel extends WebAppSettingModel {
 
-    public enum UIVersion{
-        OLD,
-        NEW
-    }
-
-    private UIVersion uiVersion = UIVersion.NEW;
     private boolean openBrowserAfterDeployment = true;
     private boolean slotPanelVisible = false;
 
-    public UIVersion getUiVersion() {
-        return uiVersion;
-    }
-
-    public void setUiVersion(UIVersion uiVersion) {
-        this.uiVersion = uiVersion;
-    }
 
     public boolean isOpenBrowserAfterDeployment() {
         return openBrowserAfterDeployment;
