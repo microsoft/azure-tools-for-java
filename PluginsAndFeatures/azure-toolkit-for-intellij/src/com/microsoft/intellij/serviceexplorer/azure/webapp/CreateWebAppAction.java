@@ -26,7 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.intellij.runner.appservice.webapp.WebAppCreationDialog;
+import com.microsoft.azure.appservice.webapp.component.WebAppCreationDialog;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;

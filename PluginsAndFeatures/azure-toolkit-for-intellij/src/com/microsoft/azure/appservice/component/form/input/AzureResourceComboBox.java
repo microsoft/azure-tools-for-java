@@ -1,4 +1,4 @@
-package com.microsoft.intellij.components;
+package com.microsoft.azure.appservice.component.form.input;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.ComboBox;
@@ -15,7 +15,7 @@ import javax.swing.plaf.basic.BasicComboBoxEditor;
 import java.util.Collections;
 import java.util.List;
 
-public class AzureResourceComboBox<T> extends ComboBox<T> {
+public abstract class AzureResourceComboBox<T> extends AzureComboBox<T> {
 
     private Subscription refreshSubscription;
 
@@ -39,7 +39,7 @@ public class AzureResourceComboBox<T> extends ComboBox<T> {
     public void refreshResource(Observable<? extends List<T>> observable, T defaultValue) {
         this.removeAllItems();
         this.addItem(defaultValue);
-        this.setEnabled(false);
+        this.setEditable(false);
         refreshSubscription = observable.subscribeOn(Schedulers.io())
                                         .subscribe(resources -> {
                                             resources.forEach(AzureResourceComboBox.this::addItem);

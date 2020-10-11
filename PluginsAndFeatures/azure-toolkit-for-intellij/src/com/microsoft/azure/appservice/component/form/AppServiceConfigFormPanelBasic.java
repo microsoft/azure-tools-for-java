@@ -20,34 +20,27 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.appservice;
+package com.microsoft.azure.appservice.component.form;
 
-import com.intellij.openapi.ui.ComboBox;
-import com.intellij.ui.components.JBRadioButton;
-import com.microsoft.intellij.components.AzureResourceComboBox;
-import com.microsoft.intellij.components.DeployTargetComboBox;
+import com.microsoft.azure.appservice.AppServiceConfig;
+import com.microsoft.azure.appservice.component.form.input.ComboBoxDeployment;
+import com.microsoft.azure.appservice.component.form.input.ComboBoxPlatform;
 
 import javax.swing.*;
 
-public class AppServiceAdvancedConfigPanel extends JPanel {
-    private JPanel content;
+public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
+    private JPanel contentPanel;
 
-    private JPanel sectionInstanceDetails;
+    protected JTextField textName;
+    protected ComboBoxPlatform selectorPlatform;
+    protected ComboBoxDeployment selectorApplication;
 
-    private ComboBox selectorSubscription;
+    public JPanel getContentPanel() {
+        return contentPanel;
+    }
 
-    private JTextField textName;
-    private ComboBox selectorRuntime;
-    private JBRadioButton radioOsLinux;
-    private JBRadioButton radioOsWindows;
-    private ComboBox selectorRegion;
-
-    private JLabel textSku;
-    private DeployTargetComboBox selectorApplication;
-    private AzureResourceComboBox selectorGroup;
-    private AzureResourceComboBox azureResourceComboBox1;
-
-    public JPanel getContent() {
-        return content;
+    @Override
+    public T getData() {
+        return null;
     }
 }

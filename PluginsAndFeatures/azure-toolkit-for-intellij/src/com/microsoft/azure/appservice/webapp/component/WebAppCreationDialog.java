@@ -20,50 +20,57 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.appservice.webapp;
+package com.microsoft.azure.appservice.webapp.component;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.intellij.runner.appservice.AppServiceAdvancedConfigPanel;
-import com.microsoft.intellij.runner.appservice.AppServiceBasicConfigPanel;
+import com.microsoft.azure.appservice.component.form.AzureForm;
+import com.microsoft.azure.appservice.component.form.AzureFormPanel;
+import com.microsoft.azure.appservice.webapp.WebAppConfig;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 
-public class WebAppCreationDialog extends AzureDialogWrapper {
+public class WebAppCreationDialog extends AzureDialogWrapper
+        implements AzureForm<WebAppConfig> {
     public static final String LABEL_ADVANCED_MODE = "More settings";
-    public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
-    private Project project;
-    private JPanel panel;
-    private AppServiceAdvancedConfigPanel advancedPanel;
-    private AppServiceBasicConfigPanel basicPanel;
+    protected Project project;
     private JCheckBox checkboxMode;
+    private boolean advancedMode = false;
+    public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
+    private JPanel panel;
+    private WebAppConfigFormPanelAdvanced advancedForm;
+    private WebAppConfigFormPanelBasic basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project, true);
-
         this.project = project;
-        setTitle(TITLE_CREATE_WEBAPP_DIALOG);
+        setTitle(this.getDialogTitle());
         setModal(true);
         this.init();
     }
 
     protected void toggleAdvancedMode(boolean advancedMode) {
-        final Dimension size = this.getSize();
+        this.advancedMode = advancedMode;
         if (advancedMode) {
-            this.basicPanel.setVisible(false);
-            this.basicPanel.getContent().setVisible(false);
-            this.advancedPanel.setVisible(true);
-            this.advancedPanel.getContent().setVisible(true);
+            basicForm.getContentPanel().setVisible(false);
+            basicForm.setVisible(false);
+            advancedForm.getContentPanel().setVisible(true);
+            advancedForm.setVisible(true);
         } else {
-            this.advancedPanel.setVisible(false);
-            this.advancedPanel.getContent().setVisible(false);
-            this.basicPanel.setVisible(true);
-            this.basicPanel.getContent().setVisible(true);
+            basicForm.getContentPanel().setVisible(true);
+            basicForm.setVisible(true);
+            advancedForm.getContentPanel().setVisible(false);
+            advancedForm.setVisible(false);
         }
         this.pack();
         this.repaint();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        this.toggleAdvancedMode(false);
     }
 
     @Override
@@ -75,15 +82,18 @@ public class WebAppCreationDialog extends AzureDialogWrapper {
         return this.checkboxMode;
     }
 
+    @Override
+    public WebAppConfig getData() {
+        return null;
+    }
+
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
         return this.panel;
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        this.toggleAdvancedMode(false);
+    protected String getDialogTitle() {
+        return TITLE_CREATE_WEBAPP_DIALOG;
     }
 }
