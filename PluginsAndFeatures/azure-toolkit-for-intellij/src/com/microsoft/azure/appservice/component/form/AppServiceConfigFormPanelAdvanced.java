@@ -64,25 +64,4 @@ public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> exten
     public T getData() {
         return null;
     }
-
-    private void createUIComponents() {
-        this.selectorGroup = new ComboBoxResourceGroup(() -> {
-            final Subscription subscription = this.selectorSubscription.getValue();
-            final String sid = subscription.subscriptionId();
-            return AzureMvpModel.getInstance().getResourceGroupsBySubscriptionId(sid);
-        });
-
-        //FIXME: move to webapp, seems only webapp has service plan/regions?
-        this.selectorServicePlan = new ComboBoxServicePlan(() -> {
-            final Subscription subscription = this.selectorSubscription.getValue();
-            final String sid = subscription.subscriptionId();
-            return AzureWebAppMvpModel.getInstance().listAppServicePlanBySubscriptionId(sid);
-        });
-        this.selectorRegion = new ComboBoxRegion(() -> {
-            final Subscription subscription = this.selectorSubscription.getValue();
-            final String sid = subscription.subscriptionId();
-            final PricingTier tier = PricingTier.BASIC_B2; // FIXME
-            return AzureWebAppMvpModel.getInstance().getAvailableRegions(sid, tier);
-        });
-    }
 }

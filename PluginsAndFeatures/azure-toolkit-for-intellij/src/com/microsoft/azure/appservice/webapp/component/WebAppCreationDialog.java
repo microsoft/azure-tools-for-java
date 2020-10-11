@@ -23,48 +23,22 @@
 package com.microsoft.azure.appservice.webapp.component;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.appservice.component.form.AzureForm;
+import com.microsoft.azure.appservice.component.AppServiceConfigDialog;
 import com.microsoft.azure.appservice.component.form.AzureFormPanel;
 import com.microsoft.azure.appservice.webapp.WebAppConfig;
-import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class WebAppCreationDialog extends AzureDialogWrapper
-        implements AzureForm<WebAppConfig> {
-    public static final String LABEL_ADVANCED_MODE = "More settings";
-    protected Project project;
-    private JCheckBox checkboxMode;
-    private boolean advancedMode = false;
+public class WebAppCreationDialog extends AppServiceConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
     private JPanel panel;
     private WebAppConfigFormPanelAdvanced advancedForm;
     private WebAppConfigFormPanelBasic basicForm;
 
     public WebAppCreationDialog(Project project) {
-        super(project, true);
-        this.project = project;
-        setTitle(this.getDialogTitle());
-        setModal(true);
+        super(project);
         this.init();
-    }
-
-    protected void toggleAdvancedMode(boolean advancedMode) {
-        this.advancedMode = advancedMode;
-        if (advancedMode) {
-            basicForm.getContentPanel().setVisible(false);
-            basicForm.setVisible(false);
-            advancedForm.getContentPanel().setVisible(true);
-            advancedForm.setVisible(true);
-        } else {
-            basicForm.getContentPanel().setVisible(true);
-            basicForm.setVisible(true);
-            advancedForm.getContentPanel().setVisible(false);
-            advancedForm.setVisible(false);
-        }
-        this.pack();
-        this.repaint();
     }
 
     @Override
@@ -74,17 +48,13 @@ public class WebAppCreationDialog extends AzureDialogWrapper
     }
 
     @Override
-    protected JComponent createDoNotAskCheckbox() {
-        this.checkboxMode = new JCheckBox(LABEL_ADVANCED_MODE);
-        this.checkboxMode.setVisible(true);
-        this.checkboxMode.setSelected(false);
-        this.checkboxMode.addActionListener(e -> this.toggleAdvancedMode(this.checkboxMode.isSelected()));
-        return this.checkboxMode;
+    protected AzureFormPanel<WebAppConfig> getAdvancedFormPanel() {
+        return this.advancedForm;
     }
 
     @Override
-    public WebAppConfig getData() {
-        return null;
+    protected AzureFormPanel<WebAppConfig> getBasicFormPanel() {
+        return this.basicForm;
     }
 
     @Nullable
