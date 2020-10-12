@@ -39,6 +39,8 @@ public class WebAppSettingModel {
     private String webAppId = "";
     private String targetPath = "";
     private String targetName = "";
+    private String projectBase = "";
+    private String projectType = "";
     private boolean deployToRoot = true;
     private boolean deployToSlot = false;
     private String slotName;
@@ -108,6 +110,22 @@ public class WebAppSettingModel {
 
     public void setTargetName(String targetName) {
         this.targetName = targetName;
+    }
+
+    public String getProjectBase() {
+        return projectBase;
+    }
+
+    public void setProjectBase(String projectBase) {
+        this.projectBase = projectBase;
+    }
+
+    public String getProjectType() {
+        return projectType;
+    }
+
+    public void setProjectType(String projectType) {
+        this.projectType = projectType;
     }
 
     public boolean isCreatingNew() {

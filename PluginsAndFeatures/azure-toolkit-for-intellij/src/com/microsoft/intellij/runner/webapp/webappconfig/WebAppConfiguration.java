@@ -31,8 +31,6 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.util.InvalidDataException;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
@@ -40,7 +38,6 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
 import org.apache.commons.lang.StringUtils;
-import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,19 +67,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
         webAppSettingModel = new IntelliJWebAppSettingModel();
-    }
-
-    @Override
-    public void readExternal(Element element) throws InvalidDataException {
-        super.readExternal(element);
-        if (!existVersionConfiguration(element) && !isFirstTimeCreated()) {
-            this.setUiVersion(IntelliJWebAppSettingModel.UIVersion.OLD);
-        }
-    }
-
-    private boolean existVersionConfiguration(Element configuration) {
-        return configuration.getChildren().stream()
-            .filter(element -> Comparing.equal(element.getAttributeValue("name"), "uiVersion")).count() > 0;
     }
 
     @Override
@@ -134,15 +118,12 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                     throw new ConfigurationException(MISSING_APP_SERVICE_PLAN);
                 }
             }
-            if (getUiVersion().equals(IntelliJWebAppSettingModel.UIVersion.NEW)) {
-                return;
-            }
         } else {
             if (Utils.isEmptyString(webAppSettingModel.getWebAppId())) {
                 throw new ConfigurationException(NEED_CHOOSE_WEB_APP);
             }
             if (webAppSettingModel.isDeployToSlot()) {
-                if (webAppSettingModel.getSlotName() == Constants.CREATE_NEW_SLOT) {
+                if (webAppSettingModel.getSlotName().equals(Constants.CREATE_NEW_SLOT)) {
                     if (Utils.isEmptyString(webAppSettingModel.getNewSlotName())) {
                         throw new ConfigurationException(MISSING_SLOT_NAME);
                     }
@@ -343,14 +324,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     @Override
     public String getTargetName() {
         return webAppSettingModel.getTargetName();
-    }
-
-    public IntelliJWebAppSettingModel.UIVersion getUiVersion() {
-        return webAppSettingModel.getUiVersion();
-    }
-
-    public void setUiVersion(IntelliJWebAppSettingModel.UIVersion uiVersion) {
-        webAppSettingModel.setUiVersion(uiVersion);
     }
 
     public boolean isOpenBrowserAfterDeployment() {
