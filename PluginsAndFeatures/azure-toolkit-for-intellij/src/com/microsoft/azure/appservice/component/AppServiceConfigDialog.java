@@ -29,6 +29,7 @@ import com.microsoft.azure.appservice.component.form.AzureFormPanel;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 
 import javax.swing.*;
+import java.util.Objects;
 
 public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
         extends AzureDialogWrapper
@@ -37,6 +38,7 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
     protected Project project;
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;
+    protected OkActionListener<T> okActionListener;
 
     public AppServiceConfigDialog(Project project) {
         super(project, true);
@@ -56,8 +58,20 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
             basicForm.setVisible(true);
             advancedForm.setVisible(false);
         }
-        this.pack();
         this.repaint();
+    }
+
+    public void setOkActionListener(OkActionListener<T> listener) {
+        this.okActionListener = listener;
+    }
+
+    @Override
+    protected void doOKAction() {
+        if (Objects.nonNull(this.okActionListener)) {
+            final T data = this.getData();
+            this.okActionListener.onOk(data);
+        }
+        super.doOKAction();
     }
 
     @Override
@@ -84,7 +98,8 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
 
     protected abstract String getDialogTitle();
 
-//    protected void createUIComponents() {
-//        this.toggleAdvancedMode(false);
-//    }
+    @FunctionalInterface
+    public interface OkActionListener<T extends AppServiceConfig> {
+        void onOk(T data);
+    }
 }

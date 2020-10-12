@@ -19,7 +19,6 @@ import rx.Observable;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInput<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
@@ -34,13 +33,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void init() {
-        final ExtendableTextComponent.Extension extension = this.getExtension();
-        if (Objects.nonNull(extension)) {
-            this.setEditable(true);
-            this.setEditor(new AzureComboBoxEditor());
-        }
         this.loadingSpinner = new AzureComboBoxLoadingSpinner();
-        this.inputEditor = this.getEditor();
+        this.inputEditor = new AzureComboBoxEditor();
+        this.setEditable(true);
+        this.setEditor(this.inputEditor);
         this.setRenderer(new SimpleListCellRenderer<T>() {
             @Override
             public void customize(final JList l, final Object o, final int i, final boolean b, final boolean b1) {
@@ -65,11 +61,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     protected void setLoading(final boolean loading) {
         if (loading) {
-            this.setEditable(true);
             this.setEnabled(false);
             this.setEditor(this.loadingSpinner);
         } else {
-            this.setEditable(true);
             this.setEnabled(true);
             this.setEditor(this.inputEditor);
         }
@@ -136,14 +130,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     class AzureComboBoxEditor extends BasicComboBoxEditor {
         private Object item;
-        private ExtendableTextField extendableEditor;
 
         @Override
         public void setItem(Object item) {
             this.item = item;
-            extendableEditor.setText(getItemText(this.item));
-            extendableEditor.getAccessibleContext().setAccessibleName(extendableEditor.getText());
-            extendableEditor.getAccessibleContext().setAccessibleDescription(extendableEditor.getText());
+            this.editor.setText(getItemText(this.item));
         }
 
         @Override
@@ -154,17 +145,13 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         @Override
         protected JTextField createEditorComponent() {
             final ExtendableTextComponent.Extension extension = this.getExtension();
-            if (extendableEditor == null && extension != null) {
-                synchronized (this) {
-                    // init extendableTextField here as intellij may call `createEditorComponent` before constructor done
-                    if (extendableEditor == null) {
-                        extendableEditor = new ExtendableTextField();
-                        extendableEditor.addExtension(extension);
-                        extendableEditor.setBorder(null);
-                    }
-                }
+            if (extension != null) {
+                final ExtendableTextField editor = new ExtendableTextField();
+                editor.addExtension(extension);
+                editor.setBorder(null);
+                return editor;
             }
-            return extendableEditor;
+            return super.createEditorComponent();
         }
 
         protected ExtendableTextComponent.Extension getExtension() {

@@ -35,10 +35,6 @@ public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends 
     protected ComboBoxPlatform selectorPlatform;
     protected ComboBoxDeployment selectorApplication;
 
-    public JPanel getContentPanel() {
-        return contentPanel;
-    }
-
     @Override
     public T getData() {
         return null;

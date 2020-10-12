@@ -1,11 +1,8 @@
 package com.microsoft.azure.appservice.webapp;
 
 import com.microsoft.azure.appservice.AppServiceConfig;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 public class WebAppConfig extends AppServiceConfig {
-
 }

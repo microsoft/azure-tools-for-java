@@ -37,8 +37,6 @@ import java.util.List;
 public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private JPanel contentPanel;
 
-    private JPanel sectionInstanceDetails;
-
     protected ComboBoxSubscription selectorSubscription;
 
     protected JTextField textName;
@@ -54,10 +52,6 @@ public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> exten
 
     public AppServiceConfigFormPanelAdvanced() {
         super();
-    }
-
-    public JPanel getContentPanel() {
-        return contentPanel;
     }
 
     @Override

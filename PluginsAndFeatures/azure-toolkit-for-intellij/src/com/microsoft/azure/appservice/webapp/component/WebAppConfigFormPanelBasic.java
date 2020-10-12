@@ -17,20 +17,20 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     protected ComboBoxDeployment selectorApplication;
 
     @Override
-    public void setVisible(final boolean visible) {
-        this.contentPanel.setVisible(visible);
-        super.setVisible(visible);
-    }
-
-    @Override
     public WebAppConfig getData() {
         final String name = this.textName.getText();
         final Platform platform = this.selectorPlatform.getValue();
         final Path path = this.selectorApplication.getValue();
-        final WebAppConfig config = new WebAppConfig();
-        config.setName(name);
-        config.setApplication(path);
-        config.setPlatform(platform);
-        return config;
+        return WebAppConfig.builder()
+                           .name(name)
+                           .platform(platform)
+                           .application(path)
+                           .build();
+    }
+
+    @Override
+    public void setVisible(final boolean visible) {
+        this.contentPanel.setVisible(visible);
+        super.setVisible(visible);
     }
 }
