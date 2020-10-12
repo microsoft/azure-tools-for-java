@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner;
 
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
@@ -33,6 +32,7 @@ import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfiguration;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
@@ -181,7 +181,8 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             JPanel pnlRoot = getMainPanel();
             if (Objects.nonNull(lastSelectedAzureArtifact)) {
                 try {
-                    addOrRemoveBeforeRunTask(pnlRoot, lastSelectedAzureArtifact, configuration, false);
+                    BeforeRunTaskUtils.addOrRemoveBeforeRunTask(pnlRoot, lastSelectedAzureArtifact, configuration,
+                                                                false);
                 } catch (IllegalAccessException e) {
                     PluginUtil.showErrorNotificationProject(configuration.getProject(), "Remove Before Run Task error",
                                                             e.getMessage());
@@ -191,7 +192,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             lastSelectedAzureArtifact = azureArtifact;
             if (Objects.nonNull(lastSelectedAzureArtifact)) {
                 try {
-                    addOrRemoveBeforeRunTask(pnlRoot, lastSelectedAzureArtifact, configuration, true);
+                    BeforeRunTaskUtils.addOrRemoveBeforeRunTask(pnlRoot, lastSelectedAzureArtifact, configuration, true);
                 } catch (IllegalAccessException e) {
                     PluginUtil.showErrorNotificationProject(configuration.getProject(), "Add Before Run Task error",
                                                             e.getMessage());
@@ -243,7 +244,10 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     protected void setupAzureArtifactCombo(String artifactIdentifier, RunConfiguration configuration) {
-        List<AzureArtifact> azureArtifacts = AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+        List<AzureArtifact> azureArtifacts =
+                configuration instanceof SpringCloudDeployConfiguration ?
+                AzureArtifactManager.getInstance(project).getSupportedAzureArtifactsForSpringCloud() :
+                AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
         if (!azureArtifacts.isEmpty()) {
             for (AzureArtifact azureArtifact : azureArtifacts) {
                 getCbAzureArtifact().addItem(azureArtifact);
@@ -339,29 +343,4 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         );
     }
 
-    private static void addOrRemoveBeforeRunTask(JComponent runConfigurationEditorComponent,
-                                                 AzureArtifact azureArtifact,
-                                                 RunConfiguration configuration,
-                                                 final boolean add) throws IllegalAccessException {
-        switch (azureArtifact.getType()) {
-            case Maven:
-                BeforeRunTaskUtils.addOrRemoveBuildMavenProjectBeforeRunOption(runConfigurationEditorComponent,
-                                                                               (MavenProject) azureArtifact.getReferencedObject(),
-                                                                               configuration, add);
-                break;
-            case Gradle:
-                BeforeRunTaskUtils.addOrRemoveBuildGradleProjectBeforeRunOption(runConfigurationEditorComponent,
-                                                                                (ExternalProjectPojo) azureArtifact.getReferencedObject(),
-                                                                                configuration, add);
-                break;
-            case Artifact:
-                BeforeRunTaskUtils.addOrRemoveBuildArtifactBeforeRunOption(runConfigurationEditorComponent,
-                                                                           (Artifact) azureArtifact.getReferencedObject(),
-                                                                           configuration, add);
-                break;
-            default:
-                // do nothing
-
-        }
-    }
 }
