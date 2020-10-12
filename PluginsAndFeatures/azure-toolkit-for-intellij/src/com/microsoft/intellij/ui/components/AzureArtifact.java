@@ -69,8 +69,9 @@ public class AzureArtifact {
                 return MavenIcons.MavenProject;
             case Artifact:
                 return ((Artifact) referencedObject).getArtifactType().getIcon();
+            default:
+                return null;
         }
-        return null;
     }
 
     public String getName() {
@@ -80,7 +81,6 @@ public class AzureArtifact {
     public AzureArtifactType getType() {
         return type;
     }
-
 
     public Object getReferencedObject() {
         return referencedObject;
@@ -101,8 +101,8 @@ public class AzureArtifact {
                 return MavenUtils.getTargetFile((MavenProject) referencedObject);
             case Artifact:
                 return ((Artifact) referencedObject).getOutputFilePath();
+            default:
+                throw new RuntimeException(String.format("Invalid type '%s' for AzureArtifact", type));
         }
-
-        throw new RuntimeException(String.format("Invalid type '%s' for AzureArtifact", type));
     }
 }
