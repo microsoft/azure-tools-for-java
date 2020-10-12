@@ -22,11 +22,20 @@
 
 package com.microsoft.intellij.serviceexplorer.azure.webapp;
 
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.appservice.webapp.WebAppConfig;
+import com.microsoft.azure.appservice.webapp.WebAppService;
+import com.microsoft.azure.appservice.webapp.component.WebAppCreationDialog;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.intellij.AzurePlugin;
-import com.microsoft.azure.appservice.webapp.component.WebAppCreationDialog;
 import com.microsoft.intellij.util.AzureLoginHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -36,11 +45,14 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 
 @Name("Create Web App")
 public class CreateWebAppAction extends NodeActionListener {
-    private static final String ERROR_CREATING_WEB_APP = "Error creating web app";
-    private WebAppModule webappModule;
+    private static final String ERROR_SIGNING_IN = "Error occurs on signing in";
+    private final WebAppService webappService;
+    private final WebAppModule webappModule;
 
     public CreateWebAppAction(WebAppModule webappModule) {
+        super();
         this.webappModule = webappModule;
+        this.webappService = WebAppService.getInstance();
     }
 
     @Override
@@ -48,14 +60,41 @@ public class CreateWebAppAction extends NodeActionListener {
         final Project project = (Project) webappModule.getProject();
         try {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                    !AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_CREATING_WEB_APP)) {
+                    !AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_SIGNING_IN)) {
                 return;
             }
-            final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
-            dialog.show();
         } catch (final Exception ex) {
-            AzurePlugin.log(ERROR_CREATING_WEB_APP, ex);
-            DefaultLoader.getUIHelper().showException(ERROR_CREATING_WEB_APP, ex, "Error creating Web App", false, true);
+            AzurePlugin.log(ERROR_SIGNING_IN, ex);
+            DefaultLoader.getUIHelper().showException(ERROR_SIGNING_IN, ex, ERROR_SIGNING_IN, false, true);
         }
+        final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
+        dialog.setOkActionListener((data) -> this.createWebApp(data, dialog::close));
+        dialog.show();
+    }
+
+    private void createWebApp(final WebAppConfig config, Runnable callback) {
+        final Task.Modal task = new Task.Modal(null, "Creating New Web App...", true) {
+            @Override
+            public void run(ProgressIndicator indicator) {
+                indicator.setIndeterminate(true);
+                try {
+                    final WebApp webapp = webappService.createWebApp(config);
+                    callback.run();
+                    refreshAzureExplorer();
+                } catch (final Exception ex) {
+                    DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(), "Create WebApp Failed");
+                }
+            }
+        };
+        ProgressManager.getInstance().run(task);
+    }
+
+    private void refreshAzureExplorer() {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            sendTelemetry(null);
+            if (AzureUIRefreshCore.listeners != null) {
+                AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
+            }
+        });
     }
 }

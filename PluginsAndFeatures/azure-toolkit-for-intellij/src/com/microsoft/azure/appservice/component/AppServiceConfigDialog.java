@@ -71,7 +71,10 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
             final T data = this.getData();
             this.okActionListener.onOk(data);
         }
-        super.doOKAction();
+    }
+
+    public void close() {
+        this.doCancelAction();
     }
 
     @Override
