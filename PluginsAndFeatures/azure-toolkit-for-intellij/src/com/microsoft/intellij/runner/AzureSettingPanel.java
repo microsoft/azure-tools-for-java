@@ -42,6 +42,7 @@ import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
@@ -90,6 +91,9 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             if (!isMavenProject()) {
                 List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
                 setupArtifactCombo(artifacts, configuration.getTargetPath());
+            }  else {
+                List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+                setupMavenProjectCombo(mavenProjects, configuration.getTargetPath());
             }
         } else {
             setupAzureArtifactCombo(configuration.getArtifactIdentifier(), configuration);
