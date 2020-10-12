@@ -68,9 +68,13 @@ public class MavenRunTaskUtil {
     public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
         List<Artifact> artifacts = new ArrayList<>();
         ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
+        ArtifactType earArtifactType = ArtifactType.findById("ear");
         ArtifactType jarArtifactType = ArtifactType.findById(MavenConstants.TYPE_JAR);
         if (warArtifactType != null) {
             artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType));
+        }
+        if (earArtifactType != null) {
+            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(earArtifactType));
         }
         if (jarArtifactType != null) {
             artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(jarArtifactType));
