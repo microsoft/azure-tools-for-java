@@ -53,7 +53,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
-    private static final String NEED_SPECIFY_PROJECT = "Please select a maven project";
+    private static final String NEED_SPECIFY_ARTIFACT = "Please select an artifact";
     private static final String NEED_SPECIFY_SUBSCRIPTION = "Please select your subscription.";
     private static final String NEED_SPECIFY_CLUSTER = "Please select a target cluster.";
     private static final String NEED_SPECIFY_APP_NAME = "Please select a target app.";
@@ -81,6 +81,14 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     protected SpringCloudDeployConfiguration(@NotNull SpringCloudDeployConfiguration source) {
         super(source);
         this.springCloudModel = JsonUtils.deepCopyWithJson(source.getModel());
+    }
+
+    public String getArtifactIdentifier() {
+        return springCloudModel.getArtifactIdentifier();
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        springCloudModel.setArtifactIdentifier(artifactIdentifier);
     }
 
     @Override
@@ -153,10 +161,6 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         return springCloudModel.getJvmOptions();
     }
 
-    public String getProjectName() {
-        return springCloudModel.getProjectName();
-    }
-
     public String getResourceGroup() {
         final String clusterId = getClusterId();
         return StringUtils.isEmpty(clusterId) ? null : SpringCloudIdHelper.getResourceGroup(clusterId);
@@ -223,15 +227,11 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         springCloudModel.setEnvironment(environment);
     }
 
-    public void setProjectName(String moduleName) {
-        springCloudModel.setProjectName(moduleName);
-    }
-
     @Override
     public void validate() throws ConfigurationException {
         checkAzurePreconditions();
-        if (StringUtils.isEmpty(getProjectName())) {
-            throw new ConfigurationException(NEED_SPECIFY_PROJECT);
+        if (StringUtils.isEmpty(getArtifactIdentifier())) {
+            throw new ConfigurationException(NEED_SPECIFY_ARTIFACT);
         }
         if (StringUtils.isEmpty(getSubscriptionId())) {
             throw new ConfigurationException(NEED_SPECIFY_SUBSCRIPTION);

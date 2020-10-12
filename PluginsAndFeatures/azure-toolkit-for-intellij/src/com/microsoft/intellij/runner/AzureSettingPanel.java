@@ -22,36 +22,40 @@
 
 package com.microsoft.intellij.runner;
 
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.MavenUtils;
+import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
+    private boolean legacyMode = true;
     protected final Project project;
     private boolean isCbArtifactInited;
     private boolean isArtifact;
     private boolean telemetrySent;
     private Artifact lastSelectedArtifact;
+    private AzureArtifact lastSelectedAzureArtifact;
     protected SecureStore secureStore;
 
     public AzureSettingPanel(@NotNull Project project) {
@@ -60,27 +64,38 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         this.secureStore = ServiceManager.getServiceProvider(SecureStore.class);
     }
 
+    public AzureSettingPanel(@NotNull Project project,
+                             boolean legacyMode) {
+        this(project);
+        this.legacyMode = legacyMode;
+    }
+
     public void reset(@NotNull T configuration) {
-        if (!isMavenProject()) {
-            List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-            setupArtifactCombo(artifacts, configuration.getTargetPath());
+        // legacy initialize, will be removed later
+        if (legacyMode) {
+            if (!isMavenProject()) {
+                List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+                setupArtifactCombo(artifacts, configuration.getTargetPath());
+            }
         } else {
-            List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-            setupMavenProjectCombo(mavenProjects, configuration.getTargetPath());
+            setupAzureArtifactCombo(configuration.getArtifactIdentifier(), configuration);
         }
 
         resetFromConfig(configuration);
         sendTelemetry(configuration.getSubscriptionId(), configuration.getTargetName());
     }
 
-    protected void savePassword(String serviceName, String userName, String password) {
+    protected void savePassword(String serviceName,
+                                String userName,
+                                String password) {
         if (StringUtils.isEmpty(serviceName) || StringUtils.isEmpty(userName) || StringUtils.isEmpty(password)) {
             return;
         }
         this.secureStore.savePassword(serviceName, userName, password);
     }
 
-    protected String loadPassword(String serviceName, String userName) {
+    protected String loadPassword(String serviceName,
+                                  String userName) {
         if (StringUtils.isEmpty(serviceName) || StringUtils.isEmpty(userName)) {
             return StringUtils.EMPTY;
         }
@@ -128,17 +143,42 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     protected void artifactActionPerformed(Artifact selectArtifact) {
-        JPanel pnlRoot = getMainPanel();
         if (!Comparing.equal(lastSelectedArtifact, selectArtifact)) {
+            JPanel pnlRoot = getMainPanel();
             if (lastSelectedArtifact != null && isCbArtifactInited) {
                 BuildArtifactsBeforeRunTaskProvider
-                    .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
+                        .setBuildArtifactBeforeRunOption(pnlRoot, project, lastSelectedArtifact, false);
             }
             if (selectArtifact != null && isCbArtifactInited) {
                 BuildArtifactsBeforeRunTaskProvider
-                    .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
+                        .setBuildArtifactBeforeRunOption(pnlRoot, project, selectArtifact, true);
             }
             lastSelectedArtifact = selectArtifact;
+        }
+    }
+
+    protected void syncBeforeRunTasks(AzureArtifact azureArtifact,
+                                               final RunConfiguration configuration) {
+        if (!Comparing.equal(lastSelectedAzureArtifact, azureArtifact)) {
+            JPanel pnlRoot = getMainPanel();
+            if (Objects.nonNull(lastSelectedAzureArtifact)) {
+                try {
+                    addOrRemoveBeforeRunTask(pnlRoot, lastSelectedAzureArtifact, configuration, false);
+                } catch (IllegalAccessException e) {
+                    PluginUtil.showErrorNotificationProject(configuration.getProject(), "Remove Before Run Task error",
+                                                            e.getMessage());
+                }
+            }
+
+            lastSelectedAzureArtifact = azureArtifact;
+            if (Objects.nonNull(lastSelectedAzureArtifact)) {
+                try {
+                    addOrRemoveBeforeRunTask(pnlRoot, lastSelectedAzureArtifact, configuration, true);
+                } catch (IllegalAccessException e) {
+                    PluginUtil.showErrorNotificationProject(configuration.getProject(), "Add Before Run Task error",
+                                                            e.getMessage());
+                }
+            }
         }
     }
 
@@ -155,18 +195,77 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     public abstract JPanel getMainPanel();
 
     @NotNull
-    protected abstract JComboBox<Artifact> getCbArtifact();
+    protected JLabel getLblArtifact() {
+        return new JLabel();
+    }
 
     @NotNull
-    protected abstract JLabel getLblArtifact();
+    protected JComboBox<Artifact> getCbArtifact() {
+        return new JComboBox<>();
+    }
 
     @NotNull
-    protected abstract JComboBox<MavenProject> getCbMavenProject();
+    protected JComboBox<MavenProject> getCbMavenProject() {
+        return new JComboBox<>();
+    }
 
     @NotNull
-    protected abstract JLabel getLblMavenProject();
+    protected JLabel getLblMavenProject() {
+        return new JLabel();
+    }
 
-    private void setupArtifactCombo(List<Artifact> artifacts, String targetPath) {
+    @NotNull
+    protected JLabel getLblAzureArtifact() {
+        return new JLabel();
+    }
+
+    @NotNull
+    protected JComboBox<AzureArtifact> getCbAzureArtifact() {
+        return new JComboBox<>();
+    }
+
+    protected void setupAzureArtifactCombo(String artifactIdentifier, RunConfiguration configuration) {
+        List<AzureArtifact> azureArtifacts = AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+        if (!azureArtifacts.isEmpty()) {
+            for (AzureArtifact azureArtifact : azureArtifacts) {
+                getCbAzureArtifact().addItem(azureArtifact);
+                if (StringUtils.equals(AzureArtifactManager.getInstance(project).getArtifactIdentifier(azureArtifact)
+                        , artifactIdentifier)) {
+                    getCbAzureArtifact().setSelectedItem(azureArtifact);
+                }
+            }
+        }
+
+        getLblAzureArtifact().setVisible(true);
+        getCbAzureArtifact().setVisible(true);
+
+        getCbAzureArtifact().setRenderer(new SimpleListCellRenderer<AzureArtifact>() {
+            @Override
+            public void customize(JList list,
+                                  AzureArtifact artifact,
+                                  int index,
+                                  boolean isSelected,
+                                  boolean cellHasFocus) {
+                if (Objects.nonNull(artifact)) {
+                    setIcon(artifact.getIcon());
+                    setText(artifact.getName());
+                }
+            }
+        });
+        getCbAzureArtifact().addActionListener(e -> {
+            AzureArtifact artifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
+            syncBeforeRunTasks(artifact, configuration);
+        });
+
+        if (getCbAzureArtifact().getSelectedItem() != null) {
+            syncBeforeRunTasks((AzureArtifact) getCbAzureArtifact().getSelectedItem() , configuration);
+        }
+
+        isCbArtifactInited = true;
+    }
+
+    private void setupArtifactCombo(List<Artifact> artifacts,
+                                    String targetPath) {
         isCbArtifactInited = false;
         JComboBox<Artifact> cbArtifact = getCbArtifact();
         cbArtifact.removeAllItems();
@@ -184,7 +283,8 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
         isCbArtifactInited = true;
     }
 
-    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetPath) {
+    private void setupMavenProjectCombo(List<MavenProject> mvnprjs,
+                                        String targetPath) {
         JComboBox<MavenProject> cbMavenProject = getCbMavenProject();
         cbMavenProject.removeAllItems();
         if (null != mvnprjs) {
@@ -219,5 +319,31 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             (res) -> telemetrySent = true,
             (err) -> telemetrySent = true
         );
+    }
+
+    private static void addOrRemoveBeforeRunTask(JComponent runConfigurationEditorComponent,
+                                                 AzureArtifact azureArtifact,
+                                                 RunConfiguration configuration,
+                                                 final boolean add) throws IllegalAccessException {
+        switch (azureArtifact.getType()) {
+            case Maven:
+                BeforeRunTaskUtils.addOrRemoveBuildMavenProjectBeforeRunOption(runConfigurationEditorComponent,
+                                                                               (MavenProject) azureArtifact.getReferencedObject(),
+                                                                               configuration, add);
+                break;
+            case Gradle:
+                BeforeRunTaskUtils.addOrRemoveBuildGradleProjectBeforeRunOption(runConfigurationEditorComponent,
+                                                                                (ExternalProjectPojo) azureArtifact.getReferencedObject(),
+                                                                                configuration, add);
+                break;
+            case Artifact:
+                BeforeRunTaskUtils.addOrRemoveBuildArtifactBeforeRunOption(runConfigurationEditorComponent,
+                                                                           (Artifact) azureArtifact.getReferencedObject(),
+                                                                           configuration, add);
+                break;
+            default:
+                // do nothing
+
+        }
     }
 }

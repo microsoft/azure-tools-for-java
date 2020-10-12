@@ -27,8 +27,7 @@ import java.util.Map;
 
 public class SpringCloudModel {
     private boolean isCreateNewApp;
-
-    private String projectName;
+    private String artifactIdentifier;
     // app
     private boolean isPublic;
     private String subscriptionId;
@@ -80,10 +79,6 @@ public class SpringCloudModel {
         return jvmOptions;
     }
 
-    public String getProjectName() {
-        return projectName;
-    }
-
     public String getClusterId() {
         return clusterId;
     }
@@ -132,10 +127,6 @@ public class SpringCloudModel {
         this.enablePersistentStorage = enablePersistentStorage;
     }
 
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
     public void setEnvironment(Map<String, String> environment) {
         this.environment = environment;
     }
@@ -146,6 +137,14 @@ public class SpringCloudModel {
 
     public void setClusterId(final String clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public String getArtifactIdentifier() {
+        return artifactIdentifier;
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        this.artifactIdentifier = artifactIdentifier;
     }
 
     public Map<String, String> getTelemetryProperties() {

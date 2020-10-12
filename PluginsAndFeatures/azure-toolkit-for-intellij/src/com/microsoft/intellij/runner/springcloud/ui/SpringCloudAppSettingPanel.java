@@ -42,11 +42,12 @@ import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeployConfiguration;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingMvpView;
 import com.microsoft.intellij.runner.springcloud.deploy.SpringCloudDeploySettingPresenter;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -59,7 +60,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private final SpringCloudDeployConfiguration configuration;
     private static final String CREATE_APP = "Create app ...";
     private JPanel panelRoot;
-    private JComboBox cbMavenProject;
+    private JComboBox<AzureArtifact> cbMavenProject;
     private JLabel lblMavenProject;
     private JComboBox cbSpringApps;
     private JRadioButton java8RadioButton;
@@ -93,15 +94,20 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private boolean isAppInitialized = false;
     private boolean isClusterInitialized = false;
 
-    public SpringCloudAppSettingPanel(@NotNull Project project, @NotNull SpringCloudDeployConfiguration configuration) {
-        super(project);
+    public SpringCloudAppSettingPanel(@NotNull Project project,
+                                      @NotNull SpringCloudDeployConfiguration configuration) {
+        super(project, false);
         this.configuration = configuration;
         this.presenter = new SpringCloudDeploySettingPresenter();
         this.presenter.onAttachView(this);
         cbSubscription.setRenderer(new SimpleListCellRenderer<Object>() {
             @Override
-            public void customize(JList list, Object subscription, int
-                    index, boolean isSelected, boolean cellHasFocus) {
+            public void customize(JList list,
+                                  Object subscription,
+                                  int
+                                          index,
+                                  boolean isSelected,
+                                  boolean cellHasFocus) {
                 if (subscription instanceof Subscription) {
                     setText(((Subscription) subscription).displayName());
                 } else {
@@ -111,8 +117,12 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         });
         cbClusters.setRenderer(new SimpleListCellRenderer<Object>() {
             @Override
-            public void customize(JList list, Object cluster, int
-                    index, boolean isSelected, boolean cellHasFocus) {
+            public void customize(JList list,
+                                  Object cluster,
+                                  int
+                                          index,
+                                  boolean isSelected,
+                                  boolean cellHasFocus) {
                 if (cluster instanceof ServiceResourceInner) {
                     setText(((ServiceResourceInner) cluster).name());
                 } else {
@@ -123,8 +133,12 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
 
         cbSpringApps.setRenderer(new SimpleListCellRenderer<Object>() {
             @Override
-            public void customize(JList list, Object app, int
-                    index, boolean isSelected, boolean cellHasFocus) {
+            public void customize(JList list,
+                                  Object app,
+                                  int
+                                          index,
+                                  boolean isSelected,
+                                  boolean cellHasFocus) {
                 setText(Objects.toString(app, ""));
             }
         });
@@ -162,6 +176,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
                 lastSelectedClusterId = selectedCid;
             }
         });
+
         final ButtonGroup javaButtonGroup = new ButtonGroup();
         javaButtonGroup.add(java8RadioButton);
         javaButtonGroup.add(java11RadioButton);
@@ -196,7 +211,8 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         }
     }
 
-    private synchronized void initApp(String initialValue, boolean isCreate) {
+    private synchronized void initApp(String initialValue,
+                                      boolean isCreate) {
         if (!isAppInitialized) {
             cbSpringApps.removeAllItems();
             cbSpringApps.addItem(new AzureResourceWrapper(CREATE_APP, true));
@@ -279,7 +295,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         final boolean isPreviousConfigurationExisted =
                 subscriptions.stream()
                              .anyMatch(subscription -> Comparing.equal(subscription.subscriptionId(),
-                                                                     configuration.getSubscriptionId()));
+                                                                       configuration.getSubscriptionId()));
         fillComboBoxSilently(cbSubscription, () -> {
             cbSubscription.removeAllItems();
             for (Subscription subscription : subscriptions) {
@@ -400,14 +416,15 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         boolean isPublic = configuration.isPublic();
         this.radioPublic.setSelected(isPublic);
         this.radioNonPublic.setSelected(!isPublic);
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
+
         if (MapUtils.isNotEmpty(configuration.getEnvironment())) {
             environmentVariableTable.setEnv(configuration.getEnvironment());
         }
-        setupMavenProjectCombo(mavenProjects, this.configuration.getProjectName());
     }
 
-    private void fillComboBoxSilently(JComboBox cbArtifact, Runnable runnable, boolean shouldBeSilent) {
+    private void fillComboBoxSilently(JComboBox cbArtifact,
+                                      Runnable runnable,
+                                      boolean shouldBeSilent) {
         if (!shouldBeSilent) {
             runnable.run();
             return;
@@ -418,11 +435,22 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         Arrays.stream(listeners).forEach(listener -> cbArtifact.addItemListener(listener));
     }
 
-    private static String intToString(Integer i, int defaultValue) {
+    private static String intToString(Integer i,
+                                      int defaultValue) {
         if (i != null) {
             return i.toString();
         }
         return Integer.toString(defaultValue);
+    }
+
+    @NotNull
+    protected JLabel getLblAzureArtifact() {
+        return lblMavenProject;
+    }
+
+    @NotNull
+    protected JComboBox<AzureArtifact> getCbAzureArtifact() {
+        return cbMavenProject;
     }
 
     @Override
@@ -465,29 +493,19 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         configuration.setEnablePersistentStorage(this.radioEnablePersistent.isSelected());
         configuration.setPublic(radioPublic.isSelected());
         configuration.setEnvironment(environmentVariableTable.getEnv());
-        configuration.setProjectName(getProjectName());
-    }
-
-    private void setupMavenProjectCombo(List<MavenProject> mvnprjs, String targetName) {
-        cbMavenProject.removeAllItems();
-        if (null != mvnprjs) {
-            for (MavenProject prj : mvnprjs) {
-                cbMavenProject.addItem(prj);
-                if (StringUtils.equals(prj.getName(), targetName)) {
-                    cbMavenProject.setSelectedItem(prj);
-                }
-            }
+        AzureArtifact artifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
+        if (Objects.nonNull(artifact)) {
+            configuration.setArtifactIdentifier(
+                    AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact));
+        } else {
+            configuration.setArtifactIdentifier("");
         }
-        cbMavenProject.setVisible(true);
-        getLblMavenProject().setVisible(true);
+
     }
 
-    private String getProjectName() {
-        MavenProject mavenProject = (MavenProject) (cbMavenProject.getSelectedItem());
-        return mavenProject != null ? mavenProject.getName() : "";
-    }
-
-    private static <T, Q> T getValueFromComboBox(JComboBox comboBox, Function<Q, T> selectFunc, @NotNull Class<Q> clz) {
+    private static <T, Q> T getValueFromComboBox(JComboBox comboBox,
+                                                 Function<Q, T> selectFunc,
+                                                 @NotNull Class<Q> clz) {
         if (comboBox == null || comboBox.getSelectedItem() == null) {
             return null;
         }
