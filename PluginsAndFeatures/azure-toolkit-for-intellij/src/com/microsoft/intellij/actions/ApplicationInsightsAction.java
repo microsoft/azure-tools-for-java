@@ -30,11 +30,11 @@ import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.ui.components.DefaultDialogWrapper;
 import com.microsoft.intellij.ui.libraries.ApplicationInsightsPanel;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.MavenUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ApplicatioInsightsAction extends AzureAnAction {
+public class ApplicationInsightsAction extends AzureAnAction {
     @Override
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         final Module module = event.getData(LangDataKeys.MODULE);
@@ -46,7 +46,7 @@ public class ApplicatioInsightsAction extends AzureAnAction {
     @Override
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        boolean isMavenOrNull = (module == null || MavenRunTaskUtil.isMavenProject(module.getProject()));
+        boolean isMavenOrNull = (module == null || MavenUtils.isMavenProject(module.getProject()));
         event.getPresentation().setEnabledAndVisible(!isMavenOrNull && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
     }
 }

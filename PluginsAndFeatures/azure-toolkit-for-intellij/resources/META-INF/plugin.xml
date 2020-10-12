@@ -178,7 +178,7 @@
             class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
             description="Libraries Configuration"/>
     <action id="Actions.ApplicationInsightsAction"
-            class="com.microsoft.intellij.actions.ApplicatioInsightsAction" text="Configure Application Insights..."
+            class="com.microsoft.intellij.actions.ApplicationInsightsAction" text="Configure Application Insights..."
             description="Configure Application Insights..." icon="/icons/ApplicationInsights_16.png"/>
     <action class="com.microsoft.intellij.actions.AzureExplorerOpenAction" id="Actions.AzureExplorerOpenAction"
             text="Show Azure Explorer" description="Show Azure Explorer" icon="/icons/AzureExplorer_16.png"/>

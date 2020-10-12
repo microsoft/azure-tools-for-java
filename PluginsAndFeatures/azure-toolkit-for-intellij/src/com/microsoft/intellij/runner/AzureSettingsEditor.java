@@ -29,6 +29,7 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.MavenUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
@@ -52,7 +53,7 @@ public abstract class AzureSettingsEditor<T extends AzureRunConfigurationBase> e
         if (conf.isFirstTimeCreated()) {
             if (FunctionUtils.isFunctionProject(conf.getProject())) {
                 // Todo: Add before run build job
-            } else if (MavenRunTaskUtil.isMavenProject(project)) {
+            } else if (MavenUtils.isMavenProject(project)) {
                 MavenRunTaskUtil.addMavenPackageBeforeRunTask(conf);
             } else {
                 final List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);

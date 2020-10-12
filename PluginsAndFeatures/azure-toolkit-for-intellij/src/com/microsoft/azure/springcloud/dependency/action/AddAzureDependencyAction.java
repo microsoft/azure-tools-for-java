@@ -48,7 +48,6 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.maven.DependencyArtifact;
 import com.microsoft.intellij.maven.SpringCloudDependencyManager;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.MavenUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -165,7 +164,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
     public void update(@NotNull AnActionEvent event) {
         final Presentation presentation = event.getPresentation();
         final Module module = event.getData(LangDataKeys.MODULE);
-        boolean isMaven = module != null && MavenRunTaskUtil.isMavenProject(module.getProject());
+        boolean isMaven = module != null && MavenUtils.isMavenProject(module.getProject());
         if (isMaven && StringUtils.equals(event.getPlace(), "EditorPopup")) {
             presentation.setEnabledAndVisible(isEditingMavenPomXml(module, event));
         } else {
@@ -189,7 +188,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
             return false;
         }
         PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
-        boolean isMaven = module != null && MavenRunTaskUtil.isMavenProject(module.getProject());
+        boolean isMaven = module != null && MavenUtils.isMavenProject(module.getProject());
         if (!isMaven) {
             return false;
         }

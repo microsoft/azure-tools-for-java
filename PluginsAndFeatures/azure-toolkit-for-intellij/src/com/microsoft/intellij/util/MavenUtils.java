@@ -34,12 +34,18 @@ import org.jetbrains.idea.maven.server.MavenEmbedderWrapper;
 import org.jetbrains.idea.maven.utils.MavenProcessCanceledException;
 
 import java.nio.file.Paths;
-import java.util.concurrent.*;
+import java.util.List;
 
 public class MavenUtils {
-    private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
+    public static boolean isMavenProject(Project project) {
+        return MavenProjectsManager.getInstance(project).isMavenizedProject();
+    }
 
-    public static String getSpringBootFinalJarPath(@NotNull Project ideaProject, @NotNull MavenProject mavenProject)
+    public static List<MavenProject> getMavenProjects(Project project) {
+        return MavenProjectsManager.getInstance(project).getRootProjects();
+    }
+
+    public static String getTargetFile(@NotNull Project ideaProject, @NotNull MavenProject mavenProject)
             throws AzureExecutionException, DocumentException, MavenProcessCanceledException {
         String xml = evaluateEffectivePom(ideaProject, mavenProject);
         if (StringUtils.isEmpty(xml)) {
