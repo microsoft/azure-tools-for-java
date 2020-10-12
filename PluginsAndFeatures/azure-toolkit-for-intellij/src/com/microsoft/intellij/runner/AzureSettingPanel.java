@@ -91,7 +91,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
             if (!isMavenProject()) {
                 List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
                 setupArtifactCombo(artifacts, configuration.getTargetPath());
-            }  else {
+            } else {
                 List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
                 setupMavenProjectCombo(mavenProjects, configuration.getTargetPath());
             }
