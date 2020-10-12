@@ -119,7 +119,7 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             throw new AzureExecutionException(String.format("Project '%s' cannot be found.",
                                                             springCloudDeployConfiguration.getProjectName()));
         }
-        String finalJarName = MavenUtils.getTargetFile(project, targetProject);
+        String finalJarName = MavenUtils.getSpringBootFinalJarFilePath(project, targetProject);
         if (!Files.exists(Paths.get(finalJarName))) {
             throw new AzureExecutionException(String.format("File '%s' cannot be found.",
                                                             finalJarName));

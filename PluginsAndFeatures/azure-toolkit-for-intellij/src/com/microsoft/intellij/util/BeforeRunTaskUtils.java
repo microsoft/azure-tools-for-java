@@ -36,6 +36,7 @@ import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
 import com.intellij.ui.CollectionListModel;
 import com.intellij.util.Producer;
 import com.intellij.util.containers.ContainerUtil;
+import com.microsoft.intellij.ui.components.AzureArtifact;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -56,6 +57,32 @@ import java.util.stream.Collectors;
 public class BeforeRunTaskUtils {
     private static final String GRADLE_TASK_ASSEMBLE = "assemble";
     private static final String MAVEN_TASK_PACKAGE = "package";
+
+    public static void addOrRemoveBeforeRunTask(JComponent runConfigurationEditorComponent,
+                                                 AzureArtifact azureArtifact,
+                                                 RunConfiguration configuration,
+                                                 final boolean add) throws IllegalAccessException {
+        switch (azureArtifact.getType()) {
+            case Maven:
+                addOrRemoveBuildMavenProjectBeforeRunOption(runConfigurationEditorComponent,
+                                                                               (MavenProject) azureArtifact.getReferencedObject(),
+                                                                               configuration, add);
+                break;
+            case Gradle:
+                addOrRemoveBuildGradleProjectBeforeRunOption(runConfigurationEditorComponent,
+                                                                                (ExternalProjectPojo) azureArtifact.getReferencedObject(),
+                                                                                configuration, add);
+                break;
+            case Artifact:
+                addOrRemoveBuildArtifactBeforeRunOption(runConfigurationEditorComponent,
+                                                                           (Artifact) azureArtifact.getReferencedObject(),
+                                                                           configuration, add);
+                break;
+            default:
+                // do nothing
+
+        }
+    }
 
     public static void addOrRemoveBuildArtifactBeforeRunOption(@NotNull JComponent runConfigurationEditorComponent,
                                                                @NotNull Artifact artifact,
