@@ -32,6 +32,7 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azuretools.securestore.SecureStore;
 import com.microsoft.azuretools.service.ServiceManager;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
@@ -73,6 +74,19 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     public void reset(@NotNull T configuration) {
         // legacy initialize, will be removed later
         if (legacyMode) {
+            if (configuration.isFirstTimeCreated()) {
+                if (FunctionUtils.isFunctionProject(configuration.getProject())) {
+                    // Todo: Add before run build job
+                } else if (MavenUtils.isMavenProject(project)) {
+                    MavenRunTaskUtil.addMavenPackageBeforeRunTask(configuration);
+                } else {
+                    final List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
+                    if (artifacts.size() > 0) {
+                        BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, configuration, artifacts.get(0));
+                    }
+                }
+            }
+            configuration.setFirstTimeCreated(false);
             if (!isMavenProject()) {
                 List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
                 setupArtifactCombo(artifacts, configuration.getTargetPath());
