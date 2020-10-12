@@ -52,12 +52,6 @@ public class SpringCloudDeploymentSettingEditor extends AzureSettingsEditor<Spri
 
     @Override
     protected void resetEditorFrom(@NotNull SpringCloudDeployConfiguration conf) {
-        if (conf.isFirstTimeCreated()) {
-            if (MavenUtils.isMavenProject(project)) {
-                MavenRunTaskUtil.addMavenPackageBeforeRunTask(conf);
-            }
-        }
-        conf.setFirstTimeCreated(false);
         this.getPanel().reset(conf);
     }
 }
