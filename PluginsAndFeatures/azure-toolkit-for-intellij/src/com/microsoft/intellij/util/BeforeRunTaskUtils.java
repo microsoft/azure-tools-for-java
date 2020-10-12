@@ -23,6 +23,7 @@
 package com.microsoft.intellij.util;
 
 import com.intellij.execution.BeforeRunTask;
+import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.impl.ConfigurationSettingsEditorWrapper;
 import com.intellij.ide.DataManager;
@@ -45,6 +46,7 @@ import org.jetbrains.plugins.gradle.execution.GradleBeforeRunTaskProvider;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import javax.swing.JComponent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -74,7 +76,7 @@ public class BeforeRunTaskUtils {
                 BuildArtifactsBeforeRunTask task = provider.createTask(runConfiguration);
                 task.addArtifact(artifact);
                 return task;
-            }, add);
+            }, runConfiguration, add);
     }
 
     public static void addOrRemoveBuildMavenProjectBeforeRunOption(@NotNull JComponent runConfigurationEditorComponent,
@@ -91,7 +93,7 @@ public class BeforeRunTaskUtils {
                 task.setProjectPath(pomXmlPath);
                 task.setGoal(MAVEN_TASK_PACKAGE);
                 return task;
-            }, add);
+            }, runConfiguration, add);
     }
 
     public static void addOrRemoveBuildGradleProjectBeforeRunOption(@NotNull JComponent runConfigurationEditorComponent,
@@ -115,7 +117,7 @@ public class BeforeRunTaskUtils {
                 task.getTaskExecutionSettings().setExternalProjectPath(gradleProject.getPath());
                 task.getTaskExecutionSettings().setTaskNames(Arrays.asList(GRADLE_TASK_ASSEMBLE));
                 return task;
-            }, add);
+            }, runConfiguration, add);
     }
 
     public static <T extends BeforeRunTask> void updateBeforeRunOption(
@@ -123,6 +125,7 @@ public class BeforeRunTaskUtils {
             @NotNull Class<T> runTaskClass,
             @NotNull Predicate<T> filter,
             Producer<T> producer,
+            RunConfiguration runConfiguration,
             boolean add) throws IllegalAccessException {
         DataContext dataContext = DataManager.getInstance().getDataContext(runConfigurationEditorComponent);
         ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(
@@ -136,6 +139,11 @@ public class BeforeRunTaskUtils {
                 T task = producer.produce();
                 task.setEnabled(true);
                 tasks.add(task);
+
+                RunManagerEx manager = RunManagerEx.getInstanceEx(runConfiguration.getProject());
+                List<BeforeRunTask> tasks2 = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
+                tasks2.add(task);
+                manager.setBeforeRunTasks(runConfiguration, tasks2);
                 editor.addBeforeLaunchStep(task);
             } else {
                 if (add) {
