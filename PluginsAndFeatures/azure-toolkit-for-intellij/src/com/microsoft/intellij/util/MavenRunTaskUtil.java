@@ -82,12 +82,6 @@ public class MavenRunTaskUtil {
         return artifacts;
     }
 
-    public static List<Artifact> collectProjectArtifactByArtifactType(@NotNull Project project, ArtifactType type) {
-        if (type != null) {
-            return new ArrayList<>(ArtifactManager.getInstance(project).getArtifactsByType(type));
-        }
-        return null;
-    }
 
     public static String getTargetPath(MavenProject mavenProject) {
         return (mavenProject == null) ? null : new File(mavenProject.getBuildDirectory()).getPath() + File.separator

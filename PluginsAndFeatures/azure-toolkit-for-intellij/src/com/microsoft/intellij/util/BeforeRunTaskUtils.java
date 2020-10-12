@@ -64,17 +64,17 @@ public class BeforeRunTaskUtils {
                                                  final boolean add) throws IllegalAccessException {
         switch (azureArtifact.getType()) {
             case Maven:
-                BeforeRunTaskUtils.addOrRemoveBuildMavenProjectBeforeRunOption(runConfigurationEditorComponent,
+                addOrRemoveBuildMavenProjectBeforeRunOption(runConfigurationEditorComponent,
                                                                                (MavenProject) azureArtifact.getReferencedObject(),
                                                                                configuration, add);
                 break;
             case Gradle:
-                BeforeRunTaskUtils.addOrRemoveBuildGradleProjectBeforeRunOption(runConfigurationEditorComponent,
+                addOrRemoveBuildGradleProjectBeforeRunOption(runConfigurationEditorComponent,
                                                                                 (ExternalProjectPojo) azureArtifact.getReferencedObject(),
                                                                                 configuration, add);
                 break;
             case Artifact:
-                BeforeRunTaskUtils.addOrRemoveBuildArtifactBeforeRunOption(runConfigurationEditorComponent,
+                addOrRemoveBuildArtifactBeforeRunOption(runConfigurationEditorComponent,
                                                                            (Artifact) azureArtifact.getReferencedObject(),
                                                                            configuration, add);
                 break;
