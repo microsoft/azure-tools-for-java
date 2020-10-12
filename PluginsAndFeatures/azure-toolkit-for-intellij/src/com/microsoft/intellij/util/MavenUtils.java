@@ -35,6 +35,7 @@ import org.jetbrains.idea.maven.utils.MavenProcessCanceledException;
 
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 public class MavenUtils {
     public static boolean isMavenProject(Project project) {
@@ -74,5 +75,9 @@ public class MavenUtils {
                                                                      MavenEmbeddersManager.FOR_DEPENDENCIES_RESOLVE);
         embedder.clearCachesFor(mavenProject.getMavenId());
         return embedder.evaluateEffectivePom(mavenProject.getFile(), profiles.getEnabledProfiles(), profiles.getDisabledProfiles());
+    }
+
+    public static String getMavenModulePath(MavenProject mavenProject) {
+        return Objects.isNull(mavenProject) ? null : mavenProject.getFile().getPath();
     }
 }
