@@ -60,6 +60,7 @@
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
   <depends optional="true" config-file="">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
+  <depends>org.jetbrains.plugins.gradle</depends>
   <depends>com.intellij.modules.java</depends>
   <depends>org.intellij.plugins.markdown</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
