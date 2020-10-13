@@ -40,7 +40,7 @@ public class AppServiceComboBoxModel<T extends WebAppBase> {
     }
 
     public AppServiceComboBoxModel(ResourceEx<T> resourceEx) {
-        final WebAppBase resource = resourceEx.getResource();
+        this.resource = resourceEx.getResource();
         this.resourceId = resource.id();
         this.appName = resource.name();
         this.resourceGroup = resource.resourceGroupName();

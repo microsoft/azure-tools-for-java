@@ -39,7 +39,7 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
         this.runtime = WebAppUtils.getJavaRuntime(resourceEx.getResource());
     }
 
-    public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel){
+    public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
         this.appName = webAppSettingModel.getWebAppName();
         this.resourceGroup = webAppSettingModel.getResourceGroup();
         this.os = webAppSettingModel.getOS().name();
