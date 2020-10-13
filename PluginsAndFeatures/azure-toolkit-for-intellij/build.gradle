@@ -117,6 +117,10 @@ dependencies {
     compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+
     testCompile 'junit:junit:4.13'
     testCompile 'info.cukes:cucumber-junit:1.2.6'
     testCompile 'info.cukes:cucumber-java:1.2.6'
