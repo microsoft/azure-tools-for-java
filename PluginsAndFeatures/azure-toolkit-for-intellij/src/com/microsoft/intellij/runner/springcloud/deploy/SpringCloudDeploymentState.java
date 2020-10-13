@@ -176,11 +176,15 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
 
     @Override
     protected void onFail(Throwable throwable, @NotNull RunProcessHandler processHandler) {
-        DefaultLoader.getUIHelper().showException(throwable.getMessage(), throwable, "Deployed failed", false, true);
         try {
             processHandler.println(throwable.getMessage(), ProcessOutputTypes.STDERR);
         } catch (Exception ex) {
             // should not propagate error infinitely
+        }
+        // todo: create new user error base exception
+        if (!(throwable instanceof SpringCloudValidationException)) {
+            DefaultLoader.getUIHelper().showException(throwable.getMessage(), throwable, "Deployed failed",
+                                                      false, true);
         }
         processHandler.notifyComplete();
     }
@@ -200,16 +204,15 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
         final Attributes manifestAttributes = jarFile.getManifest().getMainAttributes();
         final String mainClass = manifestAttributes.getValue(MAIN_CLASS);
         if (StringUtils.isEmpty(mainClass)) {
-            throw new AzureExecutionException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
+            throw new SpringCloudValidationException(String.format(MAIN_CLASS_NOT_FOUND, finalJar));
         }
         final String library = manifestAttributes.getValue(SPRING_BOOT_LIB);
         if (StringUtils.isEmpty(library)) {
-            // it is fine to deploy non-spring app to azure spring cloud
             return;
         }
         final Map<String, String> dependencies = getSpringAppDependencies(jarFile.entries(), library);
         if (!dependencies.containsKey(SPRING_BOOT_AUTOCONFIGURE)) {
-            throw new AzureExecutionException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
+            throw new SpringCloudValidationException(String.format(NOT_SPRING_BOOT_Artifact, finalJar));
         }
         final String springVersion = dependencies.get(SPRING_BOOT_AUTOCONFIGURE);
         final List<String> missingDependencies = new ArrayList<>();
