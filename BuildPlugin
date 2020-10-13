@@ -27,11 +27,10 @@ tc_open "Initializing build script"
 
     MAVEN_QUIET=""
 
-    # Eclipse
-    BUILD_ECLIPSE=false
-
-    #IntelliJ
+    BUILD_ECLIPSE=true
     BUILD_INTELLIJ=true
+    BUILD_RIDER=true
+
     INJECT_INTELLIJ_VERSION=false
 
     IJ_VERSION_MAJOR_BUILD=202
@@ -43,7 +42,7 @@ tc_open "Initializing build script"
 
     while getopts ":hqvBC:e:" option; do
         case $option in
-            h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter] [-e eclipse/intellij]"; exit ;;
+            h) echo "usage: $0 [-h] [-q] [-v] [-B] [-C BuildCounter] [-e eclipse/intellij/rider]"; exit ;;
             q) MAVEN_QUIET="-q" ;;
             v) INJECT_INTELLIJ_VERSION=true ;;
             B) MAVEN_QUIET="--batch-mode" ;;
@@ -53,6 +52,7 @@ tc_open "Initializing build script"
               case $OPTARG in
                 eclipse) BUILD_ECLIPSE=false ;;
                 intellij) BUILD_INTELLIJ=false ;;
+                rider) BUILD_RIDER=false ;;
               esac ;;
             ?) echo "error: option -$OPTARG is not implemented"; exit ;;
         esac
@@ -124,7 +124,6 @@ if $BUILD_ECLIPSE; then
     tc_close "Building Eclipse plugin"
 fi
 
-# Build IntelliJ plugin
 if $BUILD_INTELLIJ; then
     tc_open "Building IDEA plugin"
     {
@@ -145,15 +144,17 @@ if $BUILD_INTELLIJ; then
     tc_close "Building IDEA plugin"
 fi
 
-BUILD_NUMBER="3.40.0.$BUILD_COUNTER-2020.3"
-BUILD_CONFIGURATION=Release
+if $BUILD_RIDER; then
+    BUILD_NUMBER="3.40.0.$BUILD_COUNTER-2020.3"
+    BUILD_CONFIGURATION=Release
 
-tc_open "Building Rider plugin"
-{
-    (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info --rerun-tasks :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER -PBuildConfiguration=$BUILD_CONFIGURATION --console=plain)
-    cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-"$BUILD_NUMBER".zip "$ARTIFACTS_DIR"/azure-toolkit-for-rider-"$BUILD_NUMBER".zip
-    df -h
-}
-tc_close "Building Rider plugin"
+    tc_open "Building Rider plugin"
+    {
+        (cd "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij && ./gradlew --info --rerun-tasks :rider:buildPlugin -s -Pbuild_common_code_with=rider -PBuildNumber=$BUILD_NUMBER -PBuildConfiguration=$BUILD_CONFIGURATION --console=plain)
+        cp "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/rider/build/distributions/azure-toolkit-for-rider-"$BUILD_NUMBER".zip "$ARTIFACTS_DIR"/azure-toolkit-for-rider-"$BUILD_NUMBER".zip
+        df -h
+    }
+    tc_close "Building Rider plugin"
+fi
 
 echo "ALL BUILD SUCCESSFUL"
