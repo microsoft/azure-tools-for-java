@@ -210,6 +210,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     class AzureComboBoxLoadingSpinner extends AzureComboBoxEditor {
+
+        @Override
+        public void setItem(Object item) {
+            super.setItem(item);
+            if (item == null) {
+                this.editor.setText("Refreshing...");
+            }
+        }
+
         protected ExtendableTextComponent.Extension getExtension() {
             return ExtendableTextComponent.Extension.create(
                     new AnimatedIcon.Default(), null, null);

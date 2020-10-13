@@ -35,6 +35,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.intellij.appservice.webapp.ComboBoxWebApp;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureSettingPanel;
@@ -101,6 +102,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private HyperlinkLabel lblNewSlot;
     private JPanel pnlExistingSlot;
     private JButton btnSlotHover;
+    private ComboBoxWebApp comboBoxWebApp1;
     private HideableDecorator slotDecorator;
 
     // presenter
@@ -447,6 +449,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         lblNewSlot = new HyperlinkLabel("No available deployment slot, click to create a new one");
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
+
+        comboBoxWebApp1 = new ComboBoxWebApp();
     }
 
     private void refreshWebApps(boolean force) {
