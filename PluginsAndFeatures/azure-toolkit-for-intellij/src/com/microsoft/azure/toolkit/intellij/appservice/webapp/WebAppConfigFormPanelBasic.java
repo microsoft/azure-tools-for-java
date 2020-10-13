@@ -34,9 +34,9 @@ import java.nio.file.Path;
 public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel<WebAppConfig> {
     private JPanel contentPanel;
 
-    protected JTextField textName;
-    protected ComboBoxPlatform selectorPlatform;
-    protected ComboBoxDeployment selectorApplication;
+    private JTextField textName;
+    private ComboBoxPlatform selectorPlatform;
+    private ComboBoxDeployment selectorApplication;
 
     @Override
     public WebAppConfig getData() {

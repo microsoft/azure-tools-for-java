@@ -41,16 +41,16 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
 
     private JPanel contentPanel;
 
-    protected ComboBoxSubscription selectorSubscription;
+    private ComboBoxSubscription selectorSubscription;
 
-    protected JTextField textName;
-    protected ComboBoxPlatform selectorPlatform;
-    protected ComboBoxRegion selectorRegion;
+    private JTextField textName;
+    private ComboBoxPlatform selectorPlatform;
+    private ComboBoxRegion selectorRegion;
 
-    protected JLabel textSku;
-    protected ComboBoxDeployment selectorApplication;
-    protected ComboBoxResourceGroup selectorGroup;
-    protected ComboBoxServicePlan selectorServicePlan;
+    private JLabel textSku;
+    private ComboBoxDeployment selectorApplication;
+    private ComboBoxResourceGroup selectorGroup;
+    private ComboBoxServicePlan selectorServicePlan;
 
     public WebAppConfigFormPanelAdvanced() {
         super();
