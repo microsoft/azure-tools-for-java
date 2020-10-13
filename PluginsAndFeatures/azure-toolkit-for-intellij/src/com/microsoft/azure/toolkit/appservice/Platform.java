@@ -15,16 +15,20 @@ public interface Platform {
     String getStackVersionOrJavaVersion();
 
     List<Platform> platforms = ImmutableList.copyOf(new Platform[]{
-            Linux.JAVA8_JBOSS72,
             Linux.JAVA8_TOMCAT9,
             Linux.JAVA8_TOMCAT85,
+            Linux.JAVA8_JBOSS72,
+            Linux.JAVA8,
             Linux.JAVA11_TOMCAT9,
             Linux.JAVA11_TOMCAT85,
-            Windows.JAVA8_JBOSS72,
+            Linux.JAVA11,
             Windows.JAVA8_TOMCAT9,
             Windows.JAVA8_TOMCAT85,
+            Windows.JAVA8_JBOSS72,
+            Windows.JAVA8,
             Windows.JAVA11_TOMCAT9,
-            Windows.JAVA11_TOMCAT85
+            Windows.JAVA11_TOMCAT85,
+            Windows.JAVA11
     });
 
     /**
@@ -32,6 +36,8 @@ public interface Platform {
      */
     @Getter
     enum Linux implements Platform {
+        JAVA8("JAVA", "8-jre8"),
+        JAVA11("JAVA", "11-java11"),
         JAVA8_JBOSS72("JBOSS", "7.2-jre8"),
         JAVA8_TOMCAT9("TOMCAT", "9.0-jre8"),
         JAVA8_TOMCAT85("TOMCAT", "8.5-jre8"),
@@ -64,8 +70,11 @@ public interface Platform {
         @Override
         public String toString() {
             //TODO: improve implementation
-            final String containerVersion = this.version.split("-")[0];
             final String javaVersion = this.version.endsWith("11") ? "11" : "8";
+            if ("JAVA".equals(this.getStack())) {
+                return String.format("Linux-Java %s(Embedded Web Server)", javaVersion);
+            }
+            final String containerVersion = this.version.split("-")[0];
             return String.format("Linux-Java %s-%s %s", javaVersion, this.stack.toUpperCase(), containerVersion);
         }
     }
@@ -76,6 +85,8 @@ public interface Platform {
      */
     @Getter
     enum Windows implements Platform {
+        JAVA8("java 8", "1.8"),
+        JAVA11("java 11", "11"),
         JAVA8_JBOSS72("jboss 7.2", "1.8"),
         JAVA8_TOMCAT9("tomcat 9.0", "1.8"),
         JAVA8_TOMCAT85("tomcat 8.5", "1.8"),
@@ -109,6 +120,9 @@ public interface Platform {
         public String toString() {
             //TODO: improve implementation
             final String javaVersion = "11".equals(this.javaVersion) ? "11" : "8";
+            if (this.webContainer.startsWith("java")) {
+                return String.format("Windows-Java %s(Embedded Web Server)", javaVersion);
+            }
             return String.format("Windows-Java %s-%s", javaVersion, this.webContainer.toUpperCase());
         }
     }
