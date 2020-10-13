@@ -206,7 +206,7 @@ public class UIHelperImpl implements UIHelper {
     }
 
     @Override
-    public void refreshQueue(Object projectObject, final StorageAccount storageAccount, final Queue queue) {
+    public void refreshQueue(Object projectObject, final ClientStorageAccount storageAccount, final Queue queue) {
         IWorkbench workbench=PlatformUI.getWorkbench();
         final IEditorDescriptor editorDescriptor=workbench.getEditorRegistry()
                 .findEditor("com.microsoft.azuretools.azureexplorer.editors.QueueFileEditor");
