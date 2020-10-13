@@ -239,9 +239,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         protected void textChanged(@NotNull final DocumentEvent documentEvent) {
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 try {
-                    if (documentEvent.getType() == DocumentEvent.EventType.CHANGE) {
-                        return;
-                    }
                     String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
                     AzureComboBox.this.removeAllItems();
                     list.stream().filter(item -> filter.test(item, text)).forEach(item -> AzureComboBox.this.addItem(item));
