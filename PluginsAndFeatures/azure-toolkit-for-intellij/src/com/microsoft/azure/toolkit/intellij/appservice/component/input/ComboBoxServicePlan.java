@@ -46,8 +46,12 @@ public class ComboBoxServicePlan extends AzureComboBox<AppServicePlan> {
         return ((AppServicePlan) item).name();
     }
 
-    public void refreshWith(Subscription subscription) {
+    public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
+        if (subscription == null) {
+            this.clear();
+            return;
+        }
         this.refreshItems();
     }
 

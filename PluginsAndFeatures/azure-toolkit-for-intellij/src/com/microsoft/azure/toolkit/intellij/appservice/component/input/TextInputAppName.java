@@ -20,11 +20,32 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij;
+package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
-public interface AzureFormPanel<T> extends AzureForm<T> {
-    void setVisible(boolean visible);
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.AzureValidationInfo;
+import com.microsoft.intellij.util.ValidationUtils;
 
-    default void $$$setupUI$$$() {
+import java.util.Objects;
+
+public class TextInputAppName extends AzureTextField {
+
+    private Subscription subscription;
+
+    @Override
+    public AzureValidationInfo validateValue() {
+        final AzureValidationInfo info = super.validateValue();
+        if (Objects.isNull(info)) {
+            try {
+                ValidationUtils.validateAppServiceName(this.subscription.subscriptionId(), this.getValue());
+            } catch (final IllegalArgumentException e) {
+                return AzureValidationInfo.builder().input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
+            }
+        }
+        return info;
+    }
+
+    public void setSubscription(Subscription subscription) {
+        this.subscription = subscription;
     }
 }

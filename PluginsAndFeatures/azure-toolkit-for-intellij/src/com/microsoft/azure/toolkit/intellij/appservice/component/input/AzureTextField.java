@@ -20,8 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij;
+package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
-public interface AzureFormInput<T> {
-    T getValue();
+import com.microsoft.azure.toolkit.intellij.appservice.component.AzureFormInputComponent;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.swing.*;
+
+public class AzureTextField extends JTextField implements AzureFormInputComponent<String> {
+    @Getter
+    @Setter
+    private boolean required;
+
+    @Override
+    public String getValue() {
+        return this.getText();
+    }
+
+    @Override
+    public JComponent getInputComponent() {
+        return this;
+    }
 }

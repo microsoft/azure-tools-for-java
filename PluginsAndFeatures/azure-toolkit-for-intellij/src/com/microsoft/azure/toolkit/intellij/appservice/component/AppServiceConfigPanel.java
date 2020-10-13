@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij;
+package com.microsoft.azure.toolkit.intellij.appservice.component;
 
-public interface AzureForm<T> {
-    T getData();
+import com.microsoft.azure.toolkit.lib.AzureForm;
 
-    default Object get(String name) {
-        throw new RuntimeException();
+public interface AppServiceConfigPanel<T> extends AzureForm<T> {
+    void setVisible(boolean visible);
+    default void $$$setupUI$$$() {
     }
 }
