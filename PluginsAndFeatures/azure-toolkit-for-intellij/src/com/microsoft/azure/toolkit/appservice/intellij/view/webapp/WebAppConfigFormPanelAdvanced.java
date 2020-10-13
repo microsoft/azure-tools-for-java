@@ -3,8 +3,6 @@ package com.microsoft.azure.toolkit.appservice.intellij.view.webapp;
 import com.microsoft.azure.toolkit.appservice.Platform;
 import com.microsoft.azure.toolkit.appservice.intellij.view.AzureFormPanel;
 import com.microsoft.azure.toolkit.appservice.intellij.view.component.*;
-import com.microsoft.azure.toolkit.appservice.view.component.*;
-import com.microsoft.azure.toolkit.appservice.view.component.input.*;
 import com.microsoft.azure.toolkit.appservice.webapp.WebAppConfig;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.resources.ResourceGroup;

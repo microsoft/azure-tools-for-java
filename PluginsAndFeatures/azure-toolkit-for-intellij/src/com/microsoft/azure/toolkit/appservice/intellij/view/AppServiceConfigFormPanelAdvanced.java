@@ -25,8 +25,6 @@ package com.microsoft.azure.toolkit.appservice.intellij.view;
 import com.intellij.ui.components.JBRadioButton;
 import com.microsoft.azure.toolkit.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.appservice.intellij.view.component.*;
-import com.microsoft.azure.toolkit.appservice.view.component.*;
-import com.microsoft.azure.toolkit.appservice.view.component.input.*;
 
 import javax.swing.*;
 
