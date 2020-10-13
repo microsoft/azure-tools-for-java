@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.appservice.intellij.view;
+package com.microsoft.azure.toolkit.intellij;
 
 public interface AzureForm<T> {
     T getData();

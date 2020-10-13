@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.appservice.intellij.view.component;
+package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooser;

@@ -1,10 +1,7 @@
-package com.microsoft.azure.toolkit.appservice;
+package com.microsoft.azure.toolkit.lib.appservice;
 
-import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import lombok.Getter;
-
-import java.util.List;
 
 public interface Platform {
 
@@ -13,23 +10,6 @@ public interface Platform {
     String getStackOrWebContainer();
 
     String getStackVersionOrJavaVersion();
-
-    List<Platform> platforms = ImmutableList.copyOf(new Platform[]{
-            Linux.JAVA8_TOMCAT9,
-            Linux.JAVA8_TOMCAT85,
-            Linux.JAVA8_JBOSS72,
-            Linux.JAVA8,
-            Linux.JAVA11_TOMCAT9,
-            Linux.JAVA11_TOMCAT85,
-            Linux.JAVA11,
-            Windows.JAVA8_TOMCAT9,
-            Windows.JAVA8_TOMCAT85,
-            Windows.JAVA8_JBOSS72,
-            Windows.JAVA8,
-            Windows.JAVA11_TOMCAT9,
-            Windows.JAVA11_TOMCAT85,
-            Windows.JAVA11
-    });
 
     /**
      * refer com.microsoft.azure.management.appservice.RuntimeStack

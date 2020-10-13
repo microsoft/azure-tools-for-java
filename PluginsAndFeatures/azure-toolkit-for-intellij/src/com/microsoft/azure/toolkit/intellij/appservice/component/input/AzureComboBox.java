@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.appservice.intellij.view.component;
+package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.AnimatedIcon;
@@ -7,7 +7,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
-import com.microsoft.azure.toolkit.appservice.intellij.view.AzureFormInput;
+import com.microsoft.azure.toolkit.intellij.AzureFormInput;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelper;

@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.appservice.intellij.view;
+package com.microsoft.azure.toolkit.intellij;
 
 public interface AzureFormPanel<T> extends AzureForm<T> {
     void setVisible(boolean visible);
