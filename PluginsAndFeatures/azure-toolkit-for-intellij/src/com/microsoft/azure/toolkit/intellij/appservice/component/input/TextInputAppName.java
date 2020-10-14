@@ -24,28 +24,59 @@ package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.lib.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.utils.TailingDebouncer;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.util.ValidationUtils;
 
 import java.util.Objects;
 
 public class TextInputAppName extends AzureTextField {
 
+    public static final int DEBOUNCE_DELAY = 500;
+    private final Debouncer validator;
     private Subscription subscription;
+    private AzureValidationInfo validationInfo;
+
+    public TextInputAppName() {
+        super();
+        this.validator = new TailingDebouncer(() -> this.validationInfo = this.doValidate(), DEBOUNCE_DELAY);
+    }
 
     @Override
     public AzureValidationInfo validateValue() {
+        if (this.validator.isPending()) {
+            return AzureValidationInfo.PENDING;
+        } else {
+            return this.validationInfo;
+        }
+    }
+
+    public void setSubscription(Subscription subscription) {
+        if (!Objects.equals(subscription, this.subscription)) {
+            this.subscription = subscription;
+            this.validator.debounce();
+        }
+    }
+
+    protected void onValueChanged() {
+        this.validator.debounce();
+    }
+
+    @Nullable
+    private AzureValidationInfo doValidate() {
         final AzureValidationInfo info = super.validateValue();
         if (Objects.isNull(info)) {
             try {
                 ValidationUtils.validateAppServiceName(this.subscription.subscriptionId(), this.getValue());
             } catch (final IllegalArgumentException e) {
-                return AzureValidationInfo.builder().input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
+                return AzureValidationInfo.builder()
+                                          .input(this)
+                                          .message(e.getMessage())
+                                          .type(AzureValidationInfo.Type.ERROR)
+                                          .build();
             }
         }
         return info;
-    }
-
-    public void setSubscription(Subscription subscription) {
-        this.subscription = subscription;
     }
 }

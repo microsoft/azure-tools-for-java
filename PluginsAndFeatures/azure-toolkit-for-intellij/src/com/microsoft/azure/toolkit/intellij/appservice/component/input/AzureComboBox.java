@@ -85,7 +85,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             }
         });
         if (isFilterable()) {
-//            this.addPopupMenuListener(new AzureComboBoxPopupMenuListener());
+            this.addPopupMenuListener(new AzureComboBoxPopupMenuListener());
         }
     }
 

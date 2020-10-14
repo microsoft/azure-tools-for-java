@@ -28,12 +28,14 @@ import lombok.Data;
 @Data
 @Builder
 public class AzureValidationInfo {
+    public static final AzureValidationInfo PENDING =
+            AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
     private AzureFormInput<?> input;
     private String message;
     @Builder.Default
     private Type type = Type.ERROR;
 
     public enum Type {
-        ERROR, WARNING, INFO
+        ERROR, WARNING, INFO, PENDING
     }
 }

@@ -94,7 +94,11 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
     @Override
     protected List<ValidationInfo> doValidateAll() {
         final List<AzureValidationInfo> infos = this.getForm().validateData();
-        return infos.stream().map(AppServiceConfigDialog::toIntellijValidationInfo).collect(Collectors.toList());
+        this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING));
+        return infos.stream()
+                    .filter(i -> i != AzureValidationInfo.PENDING)
+                    .map(AppServiceConfigDialog::toIntellijValidationInfo)
+                    .collect(Collectors.toList());
     }
 
     public AzureForm<T> getForm() {

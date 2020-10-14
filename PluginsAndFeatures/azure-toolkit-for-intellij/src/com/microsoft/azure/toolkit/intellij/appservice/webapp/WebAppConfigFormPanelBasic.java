@@ -57,9 +57,9 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AppServiceConf
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-                this.textName,
-                this.selectorPlatform,
-                this.selectorApplication
+            this.textName,
+            this.selectorPlatform,
+            this.selectorApplication
         };
         return Arrays.asList(inputs);
 

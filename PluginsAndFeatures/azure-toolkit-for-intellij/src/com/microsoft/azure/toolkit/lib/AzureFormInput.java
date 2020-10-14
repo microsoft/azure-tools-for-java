@@ -24,25 +24,19 @@ package com.microsoft.azure.toolkit.lib;
 
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public interface AzureFormInput<T> {
 
-    String MSG_REQUIRED = "%s is required";
+    String MSG_REQUIRED = "this field is required";
 
     T getValue();
-
-    default String getName() {
-        return "";
-    }
 
     @Nullable
     default AzureValidationInfo validateValue() {
         final T value = this.getValue();
         if (this.isRequired() && ObjectUtils.isEmpty(value)) {
-            final String name = StringUtils.isEmpty(this.getName()) ? "this field" : this.getName();
             return AzureValidationInfo.builder()
-                                      .message(String.format(MSG_REQUIRED, name))
+                                      .message(MSG_REQUIRED)
                                       .input(this)
                                       .type(AzureValidationInfo.Type.ERROR)
                                       .build();

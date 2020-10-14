@@ -26,6 +26,8 @@ import com.microsoft.azure.toolkit.lib.AzureForm;
 
 public interface AppServiceConfigPanel<T> extends AzureForm<T> {
     void setVisible(boolean visible);
+
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
     default void $$$setupUI$$$() {
     }
 }

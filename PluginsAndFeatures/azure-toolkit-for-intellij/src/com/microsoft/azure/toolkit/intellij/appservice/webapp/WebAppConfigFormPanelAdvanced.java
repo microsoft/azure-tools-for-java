@@ -88,13 +88,13 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AppServiceC
     @Override
     public List<AzureFormInput<?>> getInputs() {
         final AzureFormInput<?>[] inputs = {
-                this.selectorSubscription,
-                this.selectorGroup,
-                this.textName,
-                this.selectorPlatform,
-                this.selectorRegion,
-                this.selectorApplication,
-                this.selectorServicePlan
+            this.selectorSubscription,
+            this.selectorGroup,
+            this.textName,
+            this.selectorPlatform,
+            this.selectorRegion,
+            this.selectorApplication,
+            this.selectorServicePlan
         };
         return Arrays.asList(inputs);
     }

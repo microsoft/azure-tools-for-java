@@ -20,51 +20,39 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.component.input;
+package com.microsoft.azure.toolkit.lib.utils;
 
-import com.microsoft.azure.toolkit.intellij.appservice.component.AzureFormInputComponent;
-import lombok.Getter;
-import lombok.Setter;
+import rx.Observable;
+import rx.Subscription;
+import rx.schedulers.Schedulers;
 
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-public class AzureTextField extends JTextField implements AzureFormInputComponent<String>, DocumentListener {
-    @Getter
-    @Setter
-    private boolean required;
+public class TailingDebouncer implements Debouncer {
+    private final Runnable debounced;
+    private final int delay;
+    private Subscription timer;
 
-    public AzureTextField() {
-        super();
-        this.getDocument().addDocumentListener(this);
+    public TailingDebouncer(final Runnable debounced, final int delayInMillis) {
+        this.debounced = debounced;
+        this.delay = delayInMillis;
     }
 
     @Override
-    public String getValue() {
-        return this.getText();
+    public synchronized void debounce() {
+        if (this.isPending()) {
+            this.timer.unsubscribe();
+        }
+        this.timer = Observable.timer(this.delay, TimeUnit.MILLISECONDS)
+                               .subscribeOn(Schedulers.io())
+                               .subscribe(ignore -> {
+                                   this.debounced.run();
+                                   this.timer = null;
+                               });
     }
 
-    @Override
-    public JComponent getInputComponent() {
-        return this;
-    }
-
-    protected void onValueChanged() {
-    }
-
-    @Override
-    public void insertUpdate(final DocumentEvent e) {
-        this.onValueChanged();
-    }
-
-    @Override
-    public void removeUpdate(final DocumentEvent e) {
-        this.onValueChanged();
-    }
-
-    @Override
-    public void changedUpdate(final DocumentEvent e) {
-        this.onValueChanged();
+    public synchronized boolean isPending() {
+        return Objects.nonNull(this.timer) && !this.timer.isUnsubscribed();
     }
 }

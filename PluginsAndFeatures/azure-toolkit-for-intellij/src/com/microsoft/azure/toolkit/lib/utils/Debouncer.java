@@ -20,51 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.component.input;
+package com.microsoft.azure.toolkit.lib.utils;
 
-import com.microsoft.azure.toolkit.intellij.appservice.component.AzureFormInputComponent;
-import lombok.Getter;
-import lombok.Setter;
+public interface Debouncer {
+    void debounce();
 
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-public class AzureTextField extends JTextField implements AzureFormInputComponent<String>, DocumentListener {
-    @Getter
-    @Setter
-    private boolean required;
-
-    public AzureTextField() {
-        super();
-        this.getDocument().addDocumentListener(this);
-    }
-
-    @Override
-    public String getValue() {
-        return this.getText();
-    }
-
-    @Override
-    public JComponent getInputComponent() {
-        return this;
-    }
-
-    protected void onValueChanged() {
-    }
-
-    @Override
-    public void insertUpdate(final DocumentEvent e) {
-        this.onValueChanged();
-    }
-
-    @Override
-    public void removeUpdate(final DocumentEvent e) {
-        this.onValueChanged();
-    }
-
-    @Override
-    public void changedUpdate(final DocumentEvent e) {
-        this.onValueChanged();
-    }
+    boolean isPending();
 }
