@@ -39,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
@@ -72,11 +73,10 @@ public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
     protected String getItemText(final Object item) {
         if (item instanceof WebAppComboBoxModel) {
             final WebAppComboBoxModel selectedItem = (WebAppComboBoxModel) item;
-            return selectedItem.isNewCreateResource()
-                   ? String.format("%s (New Created)", selectedItem.getAppName())
-                   : selectedItem.getAppName();
+            return selectedItem.isNewCreateResource() ?
+                   String.format("%s (New Created)", selectedItem.getAppName()) : selectedItem.getAppName();
         } else {
-            return item == null ? StringUtils.EMPTY : item.toString();
+            return Objects.toString(item, StringUtils.EMPTY);
         }
     }
 
