@@ -37,7 +37,7 @@ using JetBrains.Util.Logging;
 
 namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
 {
-    public abstract class FunctionAppRunMarkerGutterMark : IconGutterMark
+    public abstract class FunctionAppRunMarkerGutterMark : IconGutterMarkType
     {
         private static readonly ILogger ourLogger = Logger.GetLogger<FunctionAppRunMarkerGutterMark>();
 
