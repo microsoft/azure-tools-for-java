@@ -28,7 +28,9 @@ import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import lombok.Getter;
 
+@Getter
 public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
 
     private String runtime;
@@ -39,7 +41,7 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
         this.runtime = WebAppUtils.getJavaRuntime(resourceEx.getResource());
     }
 
-    public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel){
+    public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
         this.appName = webAppSettingModel.getWebAppName();
         this.resourceGroup = webAppSettingModel.getResourceGroup();
         this.os = webAppSettingModel.getOS().name();
@@ -48,13 +50,5 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
         this.subscriptionId = webAppSettingModel.getSubscriptionId();
         this.isNewCreateResource = true;
         this.webAppSettingModel = webAppSettingModel;
-    }
-
-    public String getRuntime() {
-        return runtime;
-    }
-
-    public WebAppSettingModel getWebAppSettingModel() {
-        return webAppSettingModel;
     }
 }

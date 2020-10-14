@@ -24,8 +24,10 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
+@Getter
 public class AppServiceComboBoxModel<T extends WebAppBase> {
     protected boolean isNewCreateResource;
     protected String subscriptionId;
@@ -40,40 +42,12 @@ public class AppServiceComboBoxModel<T extends WebAppBase> {
     }
 
     public AppServiceComboBoxModel(ResourceEx<T> resourceEx) {
-        final WebAppBase resource = resourceEx.getResource();
+        this.resource = resourceEx.getResource();
         this.resourceId = resource.id();
         this.appName = resource.name();
         this.resourceGroup = resource.resourceGroupName();
         this.os = StringUtils.capitalize(resource.operatingSystem().toString());
         this.subscriptionId = resourceEx.getSubscriptionId();
         this.isNewCreateResource = false;
-    }
-
-    public boolean isNewCreateResource() {
-        return isNewCreateResource;
-    }
-
-    public String getSubscriptionId() {
-        return subscriptionId;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public String getResourceGroup() {
-        return resourceGroup;
-    }
-
-    public String getOs() {
-        return os;
-    }
-
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public T getResource() {
-        return resource;
     }
 }

@@ -36,6 +36,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelper;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelperFactory;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProvider;
 import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
 import rx.Observable;
@@ -45,9 +46,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInput<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
@@ -165,42 +166,24 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     class AzureComboBoxEditor extends BasicComboBoxEditor {
-        private Object item;
-        private ExtendableTextField textField;
 
         @Override
         public void setItem(Object item) {
-            this.item = item;
             if (!AzureComboBox.this.isPopupVisible()) {
-                this.editor.setText(getItemText(this.item));
+                super.setItem(item);
+                this.editor.setText(getItemText(item));
             }
-        }
-
-        @Override
-        public Object getItem() {
-            return item;
         }
 
         @Override
         protected JTextField createEditorComponent() {
-            return getTextField();
-        }
-
-        protected ExtendableTextField getTextField() {
-            if (textField == null) {
-                synchronized (this) {
-                    // init extendableTextField here as intellij may call `createEditorComponent` before constructor done
-                    if (textField == null) {
-                        textField = new ExtendableTextField();
-                        final ExtendableTextComponent.Extension extension = this.getExtension();
-                        if (extension != null) {
-                            textField.addExtension(extension);
-                        }
-                        textField.setBorder(null);
-                        textField.setEditable(false);
-                    }
-                }
+            final ExtendableTextField textField = new ExtendableTextField();
+            final ExtendableTextComponent.Extension extension = this.getExtension();
+            if (extension != null) {
+                textField.addExtension(extension);
             }
+            textField.setBorder(null);
+            textField.setEditable(false);
             return textField;
         }
 
@@ -231,28 +214,30 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
         @Override
         public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
-            inputEditor.getTextField().setEditable(true);
-            inputEditor.getTextField().setText(StringUtils.EMPTY);
-            itemList = new ArrayList<>();
-            for (int i = 0; i < AzureComboBox.this.getItemCount(); i++) {
-                itemList.add((T) AzureComboBox.this.getItemAt(i));
-            }
+            getEditorComponent().setEditable(true);
+            getEditorComponent().setText(StringUtils.EMPTY);
+            itemList = UIUtils.listComboBoxItems(AzureComboBox.this);
             // todo: support customized combo box filter
-            listener = new ComboFilterListener(itemList, (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
-            inputEditor.getTextField().getDocument().addDocumentListener(listener);
+            listener = new ComboFilterListener(itemList,
+                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+            getEditorComponent().getDocument().addDocumentListener(listener);
         }
 
         @Override
         public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
-            inputEditor.getTextField().setEditable(false);
+            getEditorComponent().setEditable(false);
             if (listener != null) {
-                inputEditor.getTextField().getDocument().removeDocumentListener(listener);
+                getEditorComponent().getDocument().removeDocumentListener(listener);
             }
             final Object selectedItem = AzureComboBox.this.getSelectedItem();
             AzureComboBox.this.removeAllItems();
             AzureComboBox.this.setItems(itemList);
             AzureComboBox.this.setSelectedItem(selectedItem);
-            inputEditor.getTextField().setText(getItemText((T) selectedItem));
+            getEditorComponent().setText(getItemText((T) selectedItem));
+        }
+
+        private JTextField getEditorComponent() {
+            return (JTextField) inputEditor.getEditorComponent();
         }
     }
 
@@ -272,7 +257,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 try {
                     String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
                     AzureComboBox.this.removeAllItems();
-                    list.stream().filter(item -> filter.test(item, text)).forEach(item -> AzureComboBox.this.addItem(item));
+                    AzureComboBox.this.setItems(list.stream().filter(item -> filter.test(item, text)).collect(Collectors.toList()));
                 } catch (BadLocationException e) {
                     // swallow exception and show all items
                 }
