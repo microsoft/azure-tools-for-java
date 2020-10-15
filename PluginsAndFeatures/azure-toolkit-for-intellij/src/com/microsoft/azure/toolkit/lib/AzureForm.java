@@ -23,7 +23,6 @@
 package com.microsoft.azure.toolkit.lib;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public interface AzureForm<T> {
@@ -32,6 +31,6 @@ public interface AzureForm<T> {
     List<AzureFormInput<?>> getInputs();
 
     default List<AzureValidationInfo> validateData() {
-        return this.getInputs().stream().map(AzureFormInput::validateValue).filter(Objects::nonNull).collect(Collectors.toList());
+        return this.getInputs().stream().map(AzureFormInput::validateValue).collect(Collectors.toList());
     }
 }

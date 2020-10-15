@@ -33,7 +33,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.nio.file.Path;
 
-
 @Data
 @SuperBuilder
 public class AppServiceConfig {
@@ -41,18 +40,14 @@ public class AppServiceConfig {
     public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
     public static final PricingTier DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2");
 
-    private Subscription subscription;
-    private ResourceGroup resourceGroup;
-
     private String name;
+    private Path application;
     @Builder.Default
     private Platform platform = DEFAULT_PLATFORM;
-    @Builder.Default
-    private Region region = DEFAULT_REGION;
 
+    private Subscription subscription;
+    private ResourceGroup resourceGroup;
     private AppServicePlan servicePlan;
     @Builder.Default
-    private PricingTier pricingTier = DEFAULT_PRICING_TIER;
-
-    private Path application;
+    private Region region = DEFAULT_REGION;
 }

@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib;
 
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.ObjectUtils;
 
 public interface AzureFormInput<T> {
@@ -31,7 +31,7 @@ public interface AzureFormInput<T> {
 
     T getValue();
 
-    @Nullable
+    @NotNull
     default AzureValidationInfo validateValue() {
         final T value = this.getValue();
         if (this.isRequired() && ObjectUtils.isEmpty(value)) {
@@ -41,7 +41,7 @@ public interface AzureFormInput<T> {
                                       .type(AzureValidationInfo.Type.ERROR)
                                       .build();
         }
-        return null;
+        return AzureValidationInfo.OK;
     }
 
     default boolean isRequired() {

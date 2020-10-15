@@ -26,7 +26,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.lib.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.utils.TailingDebouncer;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.ValidationUtils;
 
 import java.util.Objects;
@@ -47,9 +47,10 @@ public class TextInputAppName extends AzureTextField {
     public AzureValidationInfo validateValue() {
         if (this.validator.isPending()) {
             return AzureValidationInfo.PENDING;
-        } else {
-            return this.validationInfo;
+        } else if (this.validationInfo == null) {
+            this.validationInfo = this.doValidate();
         }
+        return this.validationInfo;
     }
 
     public void setSubscription(Subscription subscription) {
@@ -63,10 +64,10 @@ public class TextInputAppName extends AzureTextField {
         this.validator.debounce();
     }
 
-    @Nullable
+    @NotNull
     private AzureValidationInfo doValidate() {
         final AzureValidationInfo info = super.validateValue();
-        if (Objects.isNull(info)) {
+        if (info == AzureValidationInfo.OK) {
             try {
                 ValidationUtils.validateAppServiceName(this.subscription.subscriptionId(), this.getValue());
             } catch (final IllegalArgumentException e) {
