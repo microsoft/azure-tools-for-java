@@ -57,9 +57,15 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     private AzureComboBoxEditor inputEditor;
 
     public AzureComboBox() {
+        this(true);
+    }
+
+    public AzureComboBox(boolean refresh) {
         super();
         this.init();
-        this.refreshItems();
+        if (refresh) {
+            this.refreshItems();
+        }
     }
 
     protected void init() {
@@ -133,7 +139,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
-    private Observable<? extends List<? extends T>> loadItemsAsync() {
+    protected Observable<? extends List<? extends T>> loadItemsAsync() {
         return Observable.fromCallable(this::loadItems).subscribeOn(getSchedulerProvider().io());
     }
 
@@ -167,12 +173,19 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     class AzureComboBoxEditor extends BasicComboBoxEditor {
 
+        private Object item;
+
         @Override
         public void setItem(Object item) {
+            this.item = item;
             if (!AzureComboBox.this.isPopupVisible()) {
-                super.setItem(item);
                 this.editor.setText(getItemText(item));
             }
+        }
+
+        @Override
+        public Object getItem() {
+            return item;
         }
 
         @Override

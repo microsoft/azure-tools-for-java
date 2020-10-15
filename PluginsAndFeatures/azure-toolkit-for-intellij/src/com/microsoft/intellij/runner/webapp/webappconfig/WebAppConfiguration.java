@@ -34,7 +34,9 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.toolkit.intellij.appservice.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
 import org.apache.commons.lang.StringUtils;
@@ -340,5 +342,31 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void setSlotPanelVisible(boolean slotPanelVisible) {
         webAppSettingModel.setSlotPanelVisible(slotPanelVisible);
+    }
+
+    public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {
+        setWebAppId(webAppComboBoxModel.getResourceId());
+        setWebAppName(webAppComboBoxModel.getAppName());
+        setResourceGroup(webAppComboBoxModel.getResourceGroup());
+        setSubscriptionId(webAppComboBoxModel.getSubscriptionId());
+        if (webAppComboBoxModel.isNewCreateResource()) {
+            setCreatingNew(true);
+            final WebAppSettingModel settingModel = webAppComboBoxModel.getWebAppSettingModel();
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+            setAppServicePlanName(settingModel.getAppServicePlanName());
+            setRegion(settingModel.getRegion());
+            setPricing(settingModel.getPricing());
+            setAppServicePlanId(settingModel.getAppServicePlanId());
+            setOS(settingModel.getOS());
+            setStack(settingModel.getStack());
+            setVersion(settingModel.getVersion());
+            setJdkVersion(settingModel.getJdkVersion());
+            setWebContainer(settingModel.getWebContainer());
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+        } else {
+            setCreatingNew(false);
+        }
     }
 }

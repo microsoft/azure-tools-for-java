@@ -91,6 +91,11 @@ public class AzureWebAppMvpModel {
         return app;
     }
 
+    public WebApp getWebAppByName(String sid, String resourceGroup, String appName) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        return azure.webApps().getByResourceGroup(resourceGroup, appName);
+    }
+
     /**
      * API to create new Web App by setting model.
      */

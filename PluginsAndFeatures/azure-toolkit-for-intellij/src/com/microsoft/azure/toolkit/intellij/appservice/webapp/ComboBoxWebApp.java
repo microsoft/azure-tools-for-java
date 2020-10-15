@@ -34,21 +34,68 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import rx.Subscription;
 
 import javax.swing.*;
+import java.io.InterruptedIOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+
+import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
 
     private Project project;
+    private Subscription subscription;
 
     public ComboBoxWebApp() {
-        super();
+        super(false);
         this.setRenderer(new WebAppCombineBoxRender(this));
+    }
+
+    // todo: optimize refreshing logic
+    public synchronized void refreshItemsWithDefaultValue(@NotNull WebAppComboBoxModel defaultValue,
+                                                          @NotNull BiPredicate<WebAppComboBoxModel, WebAppComboBoxModel> comparator) {
+        unsubscribeSubscription(subscription);
+        this.setLoading(true);
+        this.removeAllItems();
+        this.addItem(defaultValue);
+        subscription = this.loadItemsAsync()
+                           .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                               this.removeAllItems();
+                               setItems(items);
+                               this.setLoading(false);
+                               final WebAppComboBoxModel model =
+                                       (WebAppComboBoxModel) UIUtils.listComboBoxItems(this)
+                                                                    .stream()
+                                                                    .filter(item -> comparator.test((WebAppComboBoxModel) item, defaultValue))
+                                                                    .findFirst().orElse(null);
+                               if (model != null) {
+                                   this.setSelectedItem(model);
+                               } else if (defaultValue.isNewCreateResource()) {
+                                   this.addItem(defaultValue);
+                                   this.setSelectedItem(defaultValue);
+                               }
+                           }), (e) -> {
+                                   this.handleLoadingError(e);
+                                   this.setLoading(false);
+                               });
+    }
+
+    @Override
+    protected void handleLoadingError(final Throwable e) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
+            // Swallow interrupted exception caused by unsubscribe
+            return;
+        }
+        super.handleLoadingError(e);
     }
 
     @NotNull
@@ -86,6 +133,7 @@ public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
         webAppCreationDialog.setOkActionListener(webAppConfig -> {
             final WebAppComboBoxModel newModel =
                     new WebAppComboBoxModel(WebAppService.convertConfig2Settings(webAppConfig));
+            newModel.setNewCreateResource(true);
             ComboBoxWebApp.this.addItem(newModel);
             ComboBoxWebApp.this.setSelectedItem(newModel);
             DefaultLoader.getIdeHelper().invokeLater(webAppCreationDialog::close);

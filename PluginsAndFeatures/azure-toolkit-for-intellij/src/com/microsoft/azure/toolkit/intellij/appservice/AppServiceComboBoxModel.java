@@ -25,10 +25,12 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 @Getter
 public class AppServiceComboBoxModel<T extends WebAppBase> {
+    @Setter
     protected boolean isNewCreateResource;
     protected String subscriptionId;
     protected String resourceGroup;

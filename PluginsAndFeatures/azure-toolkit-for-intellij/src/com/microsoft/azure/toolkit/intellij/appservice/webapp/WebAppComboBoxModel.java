@@ -29,6 +29,7 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 @Getter
 public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
@@ -42,13 +43,21 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
     }
 
     public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
+        this.resourceId = webAppSettingModel.getWebAppId();
         this.appName = webAppSettingModel.getWebAppName();
         this.resourceGroup = webAppSettingModel.getResourceGroup();
         this.os = webAppSettingModel.getOS().name();
         this.runtime = webAppSettingModel.getOS() == OperatingSystem.LINUX ?
                        webAppSettingModel.getLinuxRuntime().toString() : webAppSettingModel.getWebContainer();
         this.subscriptionId = webAppSettingModel.getSubscriptionId();
-        this.isNewCreateResource = true;
+        this.isNewCreateResource = webAppSettingModel.isCreatingNew();
         this.webAppSettingModel = webAppSettingModel;
+    }
+
+    public static boolean isSameWebApp(WebAppComboBoxModel first, WebAppComboBoxModel second) {
+        return StringUtils.equalsAnyIgnoreCase(first.resourceId, second.resourceId) ||
+                (StringUtils.equalsAnyIgnoreCase(first.appName, second.appName) &&
+                        StringUtils.equalsAnyIgnoreCase(first.resourceGroup, second.resourceGroup) &&
+                        StringUtils.equalsAnyIgnoreCase(first.subscriptionId, second.subscriptionId));
     }
 }

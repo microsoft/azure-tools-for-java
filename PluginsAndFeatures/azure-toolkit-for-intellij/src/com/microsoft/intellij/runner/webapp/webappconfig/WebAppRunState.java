@@ -28,6 +28,7 @@ import com.intellij.openapi.util.Comparing;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppService;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -148,7 +149,12 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     @NotNull
     private WebAppBase getDeployTargetByConfiguration(@NotNull RunProcessHandler processHandler) throws Exception {
         if (webAppSettingModel.isCreatingNew()) {
-            return createWebApp(processHandler);
+            final WebApp webapp = AzureWebAppMvpModel.getInstance().getWebAppByName(webAppSettingModel.getSubscriptionId(),
+                                                                                    webAppSettingModel.getResourceGroup(),
+                                                                                    webAppSettingModel.getWebAppName());
+            if (webapp == null) {
+                return createWebApp(processHandler);
+            }
         }
 
         final WebApp webApp = AzureWebAppMvpModel.getInstance()
