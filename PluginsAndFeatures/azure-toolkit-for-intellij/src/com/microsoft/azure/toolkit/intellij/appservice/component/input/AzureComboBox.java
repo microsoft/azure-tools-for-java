@@ -30,6 +30,7 @@ import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
 import com.microsoft.azure.toolkit.intellij.appservice.component.AzureFormInputComponent;
+import com.microsoft.azure.toolkit.lib.utils.TailingDebouncer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpUIHelper;
@@ -55,6 +56,8 @@ import java.util.stream.Collectors;
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
     private static final String ERROR_LOADING_ITEMS = "Failed to list resources";
+    private static final int DEBOUNCE_DELAY = 500;
+    private final TailingDebouncer refresher;
     private AzureComboBoxEditor loadingSpinner;
     private AzureComboBoxEditor inputEditor;
     @Getter
@@ -68,6 +71,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     public AzureComboBox(boolean refresh) {
         super();
         this.init();
+        this.refresher = new TailingDebouncer(this::doRefreshItems, DEBOUNCE_DELAY);
         if (refresh) {
             DefaultLoader.getIdeHelper().invokeLater(this::refreshItems);
         }
@@ -95,28 +99,32 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
-    public void refreshItems() { // TODO: @wangmi add debouncing
-        this.setLoading(true);
-        this.loadItemsAsync()
-            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                this.removeAllItems();
-                setItems(items);
-                this.setLoading(false);
-            }), (e) -> {
-                    this.handleLoadingError(e);
-                    this.setLoading(false);
-                });
+    public void refreshItems() {
+        this.refresher.debounce();
+    }
+
+    private void doRefreshItems() {
+        try {
+            this.setLoading(true);
+            final List<? extends T> items = this.loadItems();
+            this.setLoading(false);
+            DefaultLoader.getIdeHelper().invokeLater(() -> this.setItems(items));
+        } catch (final Exception e) {
+            this.setLoading(false);
+            this.handleLoadingError(e);
+        }
     }
 
     protected void setLoading(final boolean loading) {
-        if (loading) {
-            this.setEnabled(false);
-            this.setEditor(this.loadingSpinner);
-        } else {
-            this.setEnabled(true);
-            this.setEditor(this.inputEditor);
-        }
-        this.repaint();
+        DefaultLoader.getIdeHelper().invokeLater(() -> {
+            if (loading) {
+                this.setEnabled(false);
+                this.setEditor(this.loadingSpinner);
+            } else {
+                this.setEnabled(true);
+                this.setEditor(this.inputEditor);
+            }
+        });
     }
 
     @Override
@@ -142,6 +150,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void setItems(final List<? extends T> items) {
+        this.removeAllItems();
         items.forEach(this::addItem);
         final T defaultValue = this.getDefaultValue();
         if (defaultValue != null && items.contains(defaultValue)) {
@@ -281,7 +290,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 try {
                     final String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
                     AzureComboBox.this.removeAllItems();
-                    AzureComboBox.this.setItems(list.stream().filter(item -> filter.test(item, text)).collect(Collectors.toList()));
+                    AzureComboBox.this.setItems(list.stream()
+                                                    .filter(item -> filter.test(item, text))
+                                                    .collect(Collectors.toList()));
                 } catch (BadLocationException e) {
                     // swallow exception and show all items
                 }

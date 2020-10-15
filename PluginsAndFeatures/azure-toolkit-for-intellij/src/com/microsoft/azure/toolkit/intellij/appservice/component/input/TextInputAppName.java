@@ -40,7 +40,7 @@ public class TextInputAppName extends AzureTextField {
 
     public TextInputAppName() {
         super();
-        this.validator = new TailingDebouncer(() -> this.validationInfo = this.doValidate(), DEBOUNCE_DELAY);
+        this.validator = new TailingDebouncer(this::revalidateValue, DEBOUNCE_DELAY);
     }
 
     @Override
@@ -51,6 +51,10 @@ public class TextInputAppName extends AzureTextField {
             this.validationInfo = this.doValidate();
         }
         return this.validationInfo;
+    }
+
+    private void revalidateValue() {
+        this.validationInfo = this.doValidate();
     }
 
     public void setSubscription(Subscription subscription) {

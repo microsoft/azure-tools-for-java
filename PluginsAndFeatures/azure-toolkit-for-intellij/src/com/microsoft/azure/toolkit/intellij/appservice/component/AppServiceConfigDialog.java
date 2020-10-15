@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 @Log
 public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
-        extends AzureDialogWrapper {
+    extends AzureDialogWrapper {
     public static final String LABEL_ADVANCED_MODE = "More settings";
     protected Project project;
     private JCheckBox checkboxMode;
@@ -96,7 +96,7 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
         final List<AzureValidationInfo> infos = this.getForm().validateData();
         this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING));
         return infos.stream()
-                    .filter(i -> i != AzureValidationInfo.PENDING)
+                    .filter(i -> i != AzureValidationInfo.PENDING && i != AzureValidationInfo.OK)
                     .map(AppServiceConfigDialog::toIntellijValidationInfo)
                     .collect(Collectors.toList());
     }

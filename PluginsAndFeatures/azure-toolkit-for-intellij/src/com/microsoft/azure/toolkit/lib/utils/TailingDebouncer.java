@@ -42,7 +42,10 @@ public class TailingDebouncer implements Debouncer {
     @Override
     public synchronized void debounce() {
         if (this.isPending()) {
-            this.timer.unsubscribe();
+            try {
+                this.timer.unsubscribe();
+            } catch (final Exception ignore) {
+            }
         }
         this.timer = Observable.timer(this.delay, TimeUnit.MILLISECONDS)
                                .subscribeOn(Schedulers.io())
