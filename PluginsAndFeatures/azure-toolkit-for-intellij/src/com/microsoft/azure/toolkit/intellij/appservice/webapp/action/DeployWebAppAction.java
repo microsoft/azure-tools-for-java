@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // todo: Remove duplicate codes with Web Deploy Action
-@Name("Deploy Web App")
+@Name("Deploy")
 public class DeployWebAppAction extends NodeActionListener {
 
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();

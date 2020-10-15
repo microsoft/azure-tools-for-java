@@ -20,24 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.component;
+package com.microsoft.azure.toolkit.lib;
 
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.intellij.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.appservice.component.input.ComboBoxDeployment;
-import com.microsoft.azure.toolkit.intellij.appservice.component.input.ComboBoxPlatform;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.swing.*;
+public interface AzureForm<T> {
+    T getData();
 
-public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
-    private JPanel contentPanel;
+    List<AzureFormInput<?>> getInputs();
 
-    protected JTextField textName;
-    protected ComboBoxPlatform selectorPlatform;
-    protected ComboBoxDeployment selectorApplication;
-
-    @Override
-    public T getData() {
-        return null;
+    default List<AzureValidationInfo> validateData() {
+        return this.getInputs().stream().map(AzureFormInput::validateValue).collect(Collectors.toList());
     }
 }

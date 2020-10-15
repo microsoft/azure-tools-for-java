@@ -24,7 +24,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.component.AppServiceConfigDialog;
-import com.microsoft.azure.toolkit.intellij.AzureFormPanel;
+import com.microsoft.azure.toolkit.intellij.appservice.component.AppServiceConfigPanel;
 import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppConfig;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,12 +48,12 @@ public class WebAppCreationDialog extends AppServiceConfigDialog<WebAppConfig> {
     }
 
     @Override
-    protected AzureFormPanel<WebAppConfig> getAdvancedFormPanel() {
+    protected AppServiceConfigPanel<WebAppConfig> getAdvancedFormPanel() {
         return this.advancedForm;
     }
 
     @Override
-    protected AzureFormPanel<WebAppConfig> getBasicFormPanel() {
+    protected AppServiceConfigPanel<WebAppConfig> getBasicFormPanel() {
         return this.basicForm;
     }
 

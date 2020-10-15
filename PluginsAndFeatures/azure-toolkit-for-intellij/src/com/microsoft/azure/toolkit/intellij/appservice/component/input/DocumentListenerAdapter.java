@@ -20,34 +20,24 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.appservice;
+package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-import java.nio.file.Path;
+public interface DocumentListenerAdapter extends DocumentListener {
+    default void insertUpdate(final DocumentEvent e) {
+        this.onDocumentChanged();
+    }
 
-@Data
-@SuperBuilder
-public class AppServiceConfig {
-    public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
-    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
-    public static final PricingTier DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2");
+    default void removeUpdate(final DocumentEvent e) {
+        this.onDocumentChanged();
+    }
 
-    private String name;
-    private Path application;
-    @Builder.Default
-    private Platform platform = DEFAULT_PLATFORM;
+    default void changedUpdate(final DocumentEvent e) {
+        this.onDocumentChanged();
+    }
 
-    private Subscription subscription;
-    private ResourceGroup resourceGroup;
-    private AppServicePlan servicePlan;
-    @Builder.Default
-    private Region region = DEFAULT_REGION;
+    default void onDocumentChanged() {
+    }
 }

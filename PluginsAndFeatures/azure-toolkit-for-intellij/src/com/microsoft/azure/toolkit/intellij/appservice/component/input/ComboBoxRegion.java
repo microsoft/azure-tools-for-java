@@ -45,13 +45,16 @@ public class ComboBoxRegion extends AzureComboBox<Region> {
         return ((Region) item).name();
     }
 
-    public void refreshWith(Subscription subscription) {
+    public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
+        if (subscription == null) {
+            this.clear();
+            return;
+        }
         this.refreshItems();
     }
 
-    public void refreshWith(Subscription subscription, PricingTier tier) {
-        this.subscription = subscription;
+    public void setPricingTier(PricingTier tier) {
         this.tier = tier;
         this.refreshItems();
     }

@@ -20,8 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij;
+package com.microsoft.azure.toolkit.lib;
+
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.commons.lang3.ObjectUtils;
 
 public interface AzureFormInput<T> {
+
+    String MSG_REQUIRED = "this field is required";
+
     T getValue();
+
+    @NotNull
+    default AzureValidationInfo validateValue() {
+        final T value = this.getValue();
+        if (this.isRequired() && ObjectUtils.isEmpty(value)) {
+            return AzureValidationInfo.builder()
+                                      .message(MSG_REQUIRED)
+                                      .input(this)
+                                      .type(AzureValidationInfo.Type.ERROR)
+                                      .build();
+        }
+        return AzureValidationInfo.OK;
+    }
+
+    default boolean isRequired() {
+        return false;
+    }
 }

@@ -20,34 +20,24 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.appservice;
+package com.microsoft.azure.toolkit.lib;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import lombok.Getter;
 
-import java.nio.file.Path;
-
-@Data
-@SuperBuilder
-public class AppServiceConfig {
-    public static final Region DEFAULT_REGION = Region.EUROPE_WEST;
-    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
-    public static final PricingTier DEFAULT_PRICING_TIER = new PricingTier("Premium", "P1V2");
-
-    private String name;
-    private Path application;
+@Getter
+@Builder
+public class AzureValidationInfo {
+    public static final AzureValidationInfo PENDING =
+        AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
+    public static final AzureValidationInfo OK =
+        AzureValidationInfo.builder().type(Type.INFO).message("OK").build();
+    private final AzureFormInput<?> input;
+    private final String message;
     @Builder.Default
-    private Platform platform = DEFAULT_PLATFORM;
+    private final Type type = Type.ERROR;
 
-    private Subscription subscription;
-    private ResourceGroup resourceGroup;
-    private AppServicePlan servicePlan;
-    @Builder.Default
-    private Region region = DEFAULT_REGION;
+    public enum Type {
+        ERROR, WARNING, INFO, PENDING
+    }
 }

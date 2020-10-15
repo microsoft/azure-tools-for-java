@@ -23,17 +23,22 @@
 package com.microsoft.azure.toolkit.intellij.appservice.component;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azure.toolkit.lib.AzureForm;
+import com.microsoft.azure.toolkit.lib.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.intellij.AzureForm;
-import com.microsoft.azure.toolkit.intellij.AzureFormPanel;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
+import lombok.extern.java.Log;
 
 import javax.swing.*;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+@Log
 public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
-        extends AzureDialogWrapper
-        implements AzureForm<T> {
+        extends AzureDialogWrapper {
     public static final String LABEL_ADVANCED_MODE = "More settings";
     protected Project project;
     private JCheckBox checkboxMode;
@@ -49,8 +54,8 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
 
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
-        final AzureFormPanel<T> basicForm = this.getBasicFormPanel();
-        final AzureFormPanel<T> advancedForm = this.getAdvancedFormPanel();
+        final AppServiceConfigPanel<T> basicForm = this.getBasicFormPanel();
+        final AppServiceConfigPanel<T> advancedForm = this.getAdvancedFormPanel();
         if (advancedMode) {
             basicForm.setVisible(false);
             advancedForm.setVisible(true);
@@ -68,7 +73,7 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
     @Override
     protected void doOKAction() {
         if (Objects.nonNull(this.okActionListener)) {
-            final T data = this.getData();
+            final T data = this.getForm().getData();
             this.okActionListener.onOk(data);
         }
     }
@@ -87,19 +92,34 @@ public abstract class AppServiceConfigDialog<T extends AppServiceConfig>
     }
 
     @Override
-    public T getData() {
-        return this.getForm().getData();
+    protected List<ValidationInfo> doValidateAll() {
+        final List<AzureValidationInfo> infos = this.getForm().validateData();
+        this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING));
+        return infos.stream()
+                    .filter(i -> i != AzureValidationInfo.PENDING)
+                    .map(AppServiceConfigDialog::toIntellijValidationInfo)
+                    .collect(Collectors.toList());
     }
 
     public AzureForm<T> getForm() {
         return this.advancedMode ? this.getAdvancedFormPanel() : this.getBasicFormPanel();
     }
 
-    protected abstract AzureFormPanel<T> getAdvancedFormPanel();
+    protected abstract AppServiceConfigPanel<T> getAdvancedFormPanel();
 
-    protected abstract AzureFormPanel<T> getBasicFormPanel();
+    protected abstract AppServiceConfigPanel<T> getBasicFormPanel();
 
     protected abstract String getDialogTitle();
+
+    //TODO: @wangmi move to some util class
+    private static ValidationInfo toIntellijValidationInfo(final AzureValidationInfo info) {
+        final AzureFormInput<?> input = info.getInput();
+        if (input instanceof AzureFormInputComponent) {
+            final JComponent component = ((AzureFormInputComponent<?>) input).getInputComponent();
+            return new ValidationInfo(info.getMessage(), component);
+        }
+        return new ValidationInfo(info.getMessage(), null);
+    }
 
     @FunctionalInterface
     public interface OkActionListener<T extends AppServiceConfig> {

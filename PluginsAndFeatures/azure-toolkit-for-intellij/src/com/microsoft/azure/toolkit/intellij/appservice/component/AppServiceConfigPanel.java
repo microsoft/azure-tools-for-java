@@ -22,35 +22,12 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.component;
 
-import com.intellij.ui.components.JBRadioButton;
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.intellij.AzureFormPanel;
-import com.microsoft.azure.toolkit.intellij.appservice.component.input.*;
+import com.microsoft.azure.toolkit.lib.AzureForm;
 
-import javax.swing.*;
+public interface AppServiceConfigPanel<T> extends AzureForm<T> {
+    void setVisible(boolean visible);
 
-public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
-    private JPanel contentPanel;
-
-    protected ComboBoxSubscription selectorSubscription;
-
-    protected JTextField textName;
-    protected ComboBoxPlatform selectorRuntime;
-    protected JBRadioButton radioOsLinux;
-    protected JBRadioButton radioOsWindows;
-    protected ComboBoxRegion selectorRegion;
-
-    protected JLabel textSku;
-    protected ComboBoxDeployment selectorApplication;
-    protected ComboBoxResourceGroup selectorGroup;
-    protected ComboBoxServicePlan selectorServicePlan;
-
-    public AppServiceConfigFormPanelAdvanced() {
-        super();
-    }
-
-    @Override
-    public T getData() {
-        return null;
+    // CHECKSTYLE IGNORE check FOR NEXT 1 LINES
+    default void $$$setupUI$$$() {
     }
 }

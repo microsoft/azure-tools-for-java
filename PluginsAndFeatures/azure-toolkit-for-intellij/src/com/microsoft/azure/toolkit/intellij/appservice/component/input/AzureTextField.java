@@ -20,11 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij;
+package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
-public interface AzureFormPanel<T> extends AzureForm<T> {
-    void setVisible(boolean visible);
+import com.microsoft.azure.toolkit.intellij.appservice.component.AzureFormInputComponent;
+import lombok.Getter;
+import lombok.Setter;
 
-    default void $$$setupUI$$$() {
+import javax.swing.*;
+
+public class AzureTextField extends JTextField implements AzureFormInputComponent<String>, DocumentListenerAdapter {
+    @Getter
+    @Setter
+    private boolean required;
+
+    public AzureTextField() {
+        super();
+        this.getDocument().addDocumentListener(this);
+    }
+
+    @Override
+    public String getValue() {
+        return this.getText();
+    }
+
+    @Override
+    public JComponent getInputComponent() {
+        return this;
     }
 }
