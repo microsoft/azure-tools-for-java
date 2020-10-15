@@ -42,7 +42,6 @@ import rx.Subscription;
 
 import javax.swing.*;
 import java.io.InterruptedIOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
@@ -78,7 +77,7 @@ public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
                                });
     }
 
-    private void resetDefaultValue(@NotNull WebAppComboBoxModel defaultValue,@NotNull BiPredicate<WebAppComboBoxModel,
+    private void resetDefaultValue(@NotNull WebAppComboBoxModel defaultValue, @NotNull BiPredicate<WebAppComboBoxModel,
                                    WebAppComboBoxModel> comparator) {
         final WebAppComboBoxModel model =
                 (WebAppComboBoxModel) UIUtils.listComboBoxItems(this)
@@ -107,13 +106,12 @@ public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
     @NotNull
     @Override
     protected List<WebAppComboBoxModel> loadItems() throws Exception {
-//        final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
-//        return webApps.stream()
-//                      .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-//                      .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-//                      .map(webAppResourceEx -> new WebAppComboBoxModel(webAppResourceEx))
-//                      .collect(Collectors.toList());
-        return Collections.EMPTY_LIST;
+        final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
+        return webApps.stream()
+                      .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
+                      .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
+                      .map(webAppResourceEx -> new WebAppComboBoxModel(webAppResourceEx))
+                      .collect(Collectors.toList());
     }
 
     @Nullable

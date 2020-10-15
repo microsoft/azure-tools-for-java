@@ -48,9 +48,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
-import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
@@ -106,9 +103,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 setItems(items);
                 this.setLoading(false);
             }), (e) -> {
-                this.handleLoadingError(e);
-                this.setLoading(false);
-            });
+                    this.handleLoadingError(e);
+                    this.setLoading(false);
+                });
     }
 
     protected void setLoading(final boolean loading) {
@@ -245,7 +242,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = UIUtils.listComboBoxItems(AzureComboBox.this);
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 
