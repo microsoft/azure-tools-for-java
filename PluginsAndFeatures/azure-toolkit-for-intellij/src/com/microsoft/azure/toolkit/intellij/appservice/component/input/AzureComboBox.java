@@ -41,16 +41,21 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
+import rx.Subscription;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
+import java.io.InterruptedIOException;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+
+import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
@@ -89,16 +94,18 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
+    private Subscription refreshSubscription;
+
     public void refreshItems() { // TODO: @wangmi add debouncing
+        unsubscribeSubscription(refreshSubscription);
         this.setLoading(true);
-        this.loadItemsAsync()
+        refreshSubscription = this.loadItemsAsync()
             .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                 this.removeAllItems();
                 setItems(items);
                 this.setLoading(false);
             }), (e) -> {
                 this.handleLoadingError(e);
-                this.setLoading(false);
             });
     }
 
@@ -160,6 +167,12 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     }
 
     protected void handleLoadingError(Throwable e) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
+            // Swallow interrupted exception caused by unsubscribe
+            return;
+        }
+        setLoading(false);
         final MvpUIHelper uiHelper = MvpUIHelperFactory.getInstance().getMvpUIHelper();
         if (uiHelper != null) {
             uiHelper.showException(ERROR_LOADING_ITEMS, (Exception) e);
