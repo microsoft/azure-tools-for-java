@@ -69,23 +69,27 @@ public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
         subscription = this.loadItemsAsync()
                            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                                this.removeAllItems();
-                               setItems(items);
+                               this.setItems(items);
                                this.setLoading(false);
-                               final WebAppComboBoxModel model =
-                                       (WebAppComboBoxModel) UIUtils.listComboBoxItems(this)
-                                                                    .stream()
-                                                                    .filter(item -> comparator.test((WebAppComboBoxModel) item, defaultValue))
-                                                                    .findFirst().orElse(null);
-                               if (model != null) {
-                                   this.setSelectedItem(model);
-                               } else if (defaultValue.isNewCreateResource()) {
-                                   this.addItem(defaultValue);
-                                   this.setSelectedItem(defaultValue);
-                               }
+                               this.resetDefaultValue(defaultValue, comparator);
                            }), (e) -> {
                                    this.handleLoadingError(e);
-                                   this.setLoading(false);
                                });
+    }
+
+    private void resetDefaultValue(@NotNull WebAppComboBoxModel defaultValue,@NotNull BiPredicate<WebAppComboBoxModel,
+                                   WebAppComboBoxModel> comparator) {
+        final WebAppComboBoxModel model =
+                (WebAppComboBoxModel) UIUtils.listComboBoxItems(this)
+                                             .stream()
+                                             .filter(item -> comparator.test((WebAppComboBoxModel) item, defaultValue))
+                                             .findFirst().orElse(null);
+        if (model != null) {
+            this.setSelectedItem(model);
+        } else if (defaultValue.isNewCreateResource()) {
+            this.addItem(defaultValue);
+            this.setSelectedItem(defaultValue);
+        }
     }
 
     @Override
@@ -95,6 +99,7 @@ public class ComboBoxWebApp extends AzureComboBox<WebAppComboBoxModel> {
             // Swallow interrupted exception caused by unsubscribe
             return;
         }
+        this.setLoading(false);
         super.handleLoadingError(e);
     }
 

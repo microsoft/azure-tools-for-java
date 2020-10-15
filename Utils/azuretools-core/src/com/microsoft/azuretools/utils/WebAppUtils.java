@@ -76,7 +76,7 @@ public class WebAppUtils {
     private static final String WEB_CONFIG_FILENAME = "web.config";
     private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
     private static final String ROOT = "ROOT";
-    private static final String JAVASE_ROOT= "app";
+    private static final String JAVASE_ROOT = "app";
     private static final String JAVASE_ARTIFACT_NAME = "app.jar";
     private static final int FTP_MAX_TRY = 3;
     private static final int DEPLOY_MAX_TRY = 3;
@@ -92,17 +92,14 @@ public class WebAppUtils {
     public static final String RETRY_FAIL_MESSAGE = "Failed to deploy after %d times of retry.";
     public static final String COPYING_RESOURCES = "Copying resources to staging folder...";
 
-
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
-
-        FTPClient ftp = new FTPClient();
-
         System.out.println("\t\t" + pp.ftpUrl());
         System.out.println("\t\t" + pp.ftpUsername());
         System.out.println("\t\t" + pp.ftpPassword());
 
         URI uri = URI.create("ftp://" + pp.ftpUrl());
+        FTPClient ftp = new FTPClient();
         ftp.connect(uri.getHost(), 21);
         final int replyCode = ftp.getReplyCode();
         if (!FTPReply.isPositiveCompletion(replyCode)) {
@@ -116,12 +113,13 @@ public class WebAppUtils {
 
         ftp.setControlKeepAliveTimeout(Constants.connection_read_timeout_ms);
         ftp.setFileType(FTP.BINARY_FILE_TYPE);
-        ftp.enterLocalPassiveMode();//Switch to passive mode
+        ftp.enterLocalPassiveMode(); //Switch to passive mode
 
         return ftp;
     }
 
-    public static int deployArtifact(String artifactName, String artifactPath, PublishingProfile pp, boolean toRoot, IProgressIndicator indicator) throws IOException {
+    public static int deployArtifact(String artifactName, String artifactPath, PublishingProfile pp, boolean toRoot, IProgressIndicator indicator)
+            throws IOException {
         File file = new File(artifactPath);
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, artifactPath));
@@ -176,7 +174,7 @@ public class WebAppUtils {
         }
         FTPClient ftp = null;
         int uploadingTryCount;
-        try (InputStream input = new FileInputStream(artifactPath)){
+        try (InputStream input = new FileInputStream(artifactPath)) {
             if (indicator != null) {
                 indicator.setText("Connecting to FTP server...");
             }
@@ -205,12 +203,13 @@ public class WebAppUtils {
                 if (FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
                     return;
                 }
-                if (ftp.makeDirectory(FTP_WEB_APPS_PATH)){
+                if (ftp.makeDirectory(FTP_WEB_APPS_PATH)) {
                     return;
                 }
                 try {
                     Thread.sleep(SLEEP_TIME);
-                } catch (InterruptedException ignore) {}
+                } catch (InterruptedException ignore) {
+                }
             } catch (Exception e) {
                 if (count == FTP_MAX_TRY) {
                     throw new IOException("FTP client can't make directory, reply code: " + ftp.getReplyCode(), e);
@@ -297,8 +296,9 @@ public class WebAppUtils {
 
     /**
      * Deploys artifact to Azure App Service
-     * @param deployTarget the web app or deployment slot
-     * @param artifact artifact to deploy
+     *
+     * @param deployTarget      the web app or deployment slot
+     * @param artifact          artifact to deploy
      * @param isDeployToRoot
      * @param progressIndicator
      */
@@ -410,7 +410,7 @@ public class WebAppUtils {
         private String displayName;
         private String value;
 
-        WebContainerMod(String displayName, String value ) {
+        WebContainerMod(String displayName, String value) {
             this.displayName = displayName;
             this.value = value;
         }
@@ -467,16 +467,16 @@ public class WebAppUtils {
     public static void uploadWebConfig(WebApp webApp, InputStream fileStream, IProgressIndicator indicator) throws IOException {
         FTPClient ftp = null;
         try {
-            if(indicator != null) indicator.setText("Stopping the service...");
+            if (indicator != null) indicator.setText("Stopping the service...");
             webApp.stop();
 
             PublishingProfile pp = webApp.getPublishingProfile();
             ftp = getFtpConnection(pp);
 
-            if(indicator != null) indicator.setText("Uploading " + WEB_CONFIG_FILENAME + "...");
+            if (indicator != null) indicator.setText("Uploading " + WEB_CONFIG_FILENAME + "...");
             uploadFileToFtp(ftp, FTP_ROOT_PATH + WEB_CONFIG_FILENAME, fileStream, indicator);
 
-            if(indicator != null) indicator.setText("Starting the service...");
+            if (indicator != null) indicator.setText("Starting the service...");
             webApp.start();
         } finally {
             if (ftp != null && ftp.isConnected()) {
@@ -486,7 +486,7 @@ public class WebAppUtils {
     }
 
     public static int uploadToRemoteServer(WebAppBase webApp, String fileName, InputStream ins,
-        IProgressIndicator indicator, String targetPath) throws IOException {
+                                           IProgressIndicator indicator, String targetPath) throws IOException {
         FTPClient ftp = null;
         try {
             PublishingProfile pp = webApp.getPublishingProfile();
@@ -518,7 +518,8 @@ public class WebAppUtils {
                 rc = ftp.getReplyCode();
                 try {
                     Thread.sleep(SLEEP_TIME);
-                } catch (InterruptedException ignore) {}
+                } catch (InterruptedException ignore) {
+                }
             } catch (Exception e) {
                 if (count == FTP_MAX_TRY) {
                     throw new IOException("FTP client can't store the artifact, reply code: " + rc, e);
@@ -535,7 +536,8 @@ public class WebAppUtils {
         public ResourceGroup appServicePlanResourceGroup;
         public WebApp webApp;
 
-        public WebAppDetails() {}
+        public WebAppDetails() {
+        }
 
         public WebAppDetails(ResourceGroup resourceGroup, WebApp webApp,
                              AppServicePlan appServicePlan, ResourceGroup appServicePlanResourceGroup,
@@ -551,13 +553,16 @@ public class WebAppUtils {
     public static class AspDetails {
         private AppServicePlan asp;
         private ResourceGroup rg;
+
         public AspDetails(AppServicePlan asp, ResourceGroup rg) {
             this.asp = asp;
             this.rg = rg;
         }
+
         public AppServicePlan getAsp() {
             return asp;
         }
+
         public ResourceGroup getRg() {
             return rg;
         }
@@ -569,8 +574,8 @@ public class WebAppUtils {
      */
     public static boolean isJavaWebApp(@NotNull WebApp webApp) {
         return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
-         || (webApp.operatingSystem() == OperatingSystem.LINUX && (StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8")
-         || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "java11")));
+                || (webApp.operatingSystem() == OperatingSystem.LINUX && (StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre")
+                || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "java")));
     }
 
     /**
@@ -585,7 +590,7 @@ public class WebAppUtils {
             case WINDOWS:
                 webContainer = webApp.javaContainer() == null ? null : webApp.javaContainer().toLowerCase();
                 return String.format("%s %s (Java%s)",
-                    StringUtils.capitalize(webContainer), webApp.javaContainerVersion(), webApp.javaVersion().toString());
+                        StringUtils.capitalize(webContainer), webApp.javaContainerVersion(), webApp.javaVersion().toString());
             case LINUX:
                 final String linuxVersion = webApp.linuxFxVersion();
                 if (linuxVersion == null) {
@@ -601,10 +606,10 @@ public class WebAppUtils {
                 final String webContainerVersion = versions[1];
                 final String jreVersion = versions[2];
                 final boolean isJavaLinuxRuntimeWithWebContainer = getAllJavaLinuxRuntimeStacks()
-                    .stream()
-                    .map(r -> r.stack())
-                    .filter(w -> !w.equalsIgnoreCase("java"))
-                    .anyMatch(w -> w.equalsIgnoreCase(webContainer));
+                        .stream()
+                        .map(r -> r.stack())
+                        .filter(w -> !w.equalsIgnoreCase("java"))
+                        .anyMatch(w -> w.equalsIgnoreCase(webContainer));
                 if (isJavaLinuxRuntimeWithWebContainer) {
                     // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
                     return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());

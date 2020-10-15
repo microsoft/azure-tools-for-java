@@ -227,7 +227,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         return lblMavenProject;
     }
 
-
     @Override
     protected void resetFromConfig(@NotNull WebAppConfiguration configuration) {
         final WebAppComboBoxModel configurationModel = new WebAppComboBoxModel(configuration.getModel());
