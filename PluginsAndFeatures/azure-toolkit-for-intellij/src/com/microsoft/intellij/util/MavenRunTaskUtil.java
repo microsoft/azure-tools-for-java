@@ -39,7 +39,9 @@ import org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MavenRunTaskUtil {
 
@@ -66,20 +68,11 @@ public class MavenRunTaskUtil {
 
     @NotNull
     public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
-        List<Artifact> artifacts = new ArrayList<>();
-        ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
-        ArtifactType earArtifactType = ArtifactType.findById("ear");
-        ArtifactType jarArtifactType = ArtifactType.findById(MavenConstants.TYPE_JAR);
-        if (warArtifactType != null) {
-            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType));
-        }
-        if (earArtifactType != null) {
-            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(earArtifactType));
-        }
-        if (jarArtifactType != null) {
-            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(jarArtifactType));
-        }
-        return artifacts;
+        return Arrays.asList(MavenConstants.TYPE_WAR, "ear", MavenConstants.TYPE_JAR).stream()
+              .map(ArtifactType::findById)
+              .flatMap(type -> ArtifactManager.getInstance(project).getArtifactsByType(type).stream()).collect(
+                Collectors.toList());
+
     }
 
     public static String getTargetPath(MavenProject mavenProject) {
@@ -92,6 +85,10 @@ public class MavenRunTaskUtil {
 
     }
 
+    /**
+     * Legacy code, will be replaced by BeforeRunTaskUtils
+     * @deprecated
+     */
     private static boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {
         boolean shouldAdd = true;
         for (BeforeRunTask task : tasks) {

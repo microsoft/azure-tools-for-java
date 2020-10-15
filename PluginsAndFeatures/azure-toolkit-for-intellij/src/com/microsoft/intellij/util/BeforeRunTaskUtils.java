@@ -88,7 +88,7 @@ public class BeforeRunTaskUtils {
                                                                @NotNull Artifact artifact,
                                                                RunConfiguration runConfiguration,
                                                                boolean add) throws IllegalAccessException {
-        updateBeforeRunOption(runConfigurationEditorComponent, BuildArtifactsBeforeRunTask.class,
+        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, BuildArtifactsBeforeRunTask.class,
             task ->
                   Objects.nonNull(task) &&
                           Objects.nonNull(task.getArtifactPointers())
@@ -96,8 +96,7 @@ public class BeforeRunTaskUtils {
                                                                    .stream()
                                                                    .map(a -> a.getArtifact())
                                                                    .collect(Collectors.toList()),
-                                                               Arrays.asList(artifact)),
-            () -> {
+                                                               Arrays.asList(artifact)), () -> {
                 BuildArtifactsBeforeRunTaskProvider provider =
                       new BuildArtifactsBeforeRunTaskProvider(runConfiguration.getProject());
                 BuildArtifactsBeforeRunTask task = provider.createTask(runConfiguration);
@@ -111,7 +110,7 @@ public class BeforeRunTaskUtils {
                                                                    RunConfiguration runConfiguration,
                                                                    boolean add) throws IllegalAccessException {
         String pomXmlPath = MavenUtils.getMavenModulePath(mavenProject);
-        updateBeforeRunOption(runConfigurationEditorComponent, MavenBeforeRunTask.class, task ->
+        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, MavenBeforeRunTask.class, task ->
                                       Objects.nonNull(task) && StringUtils.equals(task.getProjectPath(), pomXmlPath)
                                               && StringUtils.equals(MAVEN_TASK_PACKAGE, task.getGoal()),
             () -> {
@@ -127,7 +126,7 @@ public class BeforeRunTaskUtils {
                                                                     @NotNull ExternalProjectPojo gradleProject,
                                                                     RunConfiguration runConfiguration, boolean add)
             throws IllegalAccessException {
-        updateBeforeRunOption(runConfigurationEditorComponent, ExternalSystemBeforeRunTask.class, task ->
+        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, ExternalSystemBeforeRunTask.class, task ->
                                       Objects.nonNull(task) &&
                                               Objects.nonNull(task.getTaskExecutionSettings())
                                               && StringUtils.equals(task.getTaskExecutionSettings()
@@ -147,7 +146,7 @@ public class BeforeRunTaskUtils {
             }, runConfiguration, add);
     }
 
-    public static <T extends BeforeRunTask> void updateBeforeRunOption(
+    public static <T extends BeforeRunTask> void addOrRemoveBeforeRunOption(
             @NotNull JComponent runConfigurationEditorComponent,
             @NotNull Class<T> runTaskClass,
             @NotNull Predicate<T> filter,
@@ -158,23 +157,21 @@ public class BeforeRunTaskUtils {
         ConfigurationSettingsEditorWrapper editor = ConfigurationSettingsEditorWrapper.CONFIGURATION_EDITOR_KEY.getData(
                 dataContext);
         if (editor != null) {
-            List<T> tasks = ContainerUtil.findAll(editor.getStepsBeforeLaunch(), runTaskClass)
+            List<T> matchedTasks = ContainerUtil.findAll(editor.getStepsBeforeLaunch(), runTaskClass)
                                          .stream()
                                          .filter(filter)
                                          .collect(Collectors.toList());
-            if (add && tasks.isEmpty()) {
+            if (add && matchedTasks.isEmpty()) {
                 T task = producer.produce();
                 task.setEnabled(true);
-                tasks.add(task);
-
                 RunManagerEx manager = RunManagerEx.getInstanceEx(runConfiguration.getProject());
-                List<BeforeRunTask> tasks2 = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
-                tasks2.add(task);
-                manager.setBeforeRunTasks(runConfiguration, tasks2);
+                List<BeforeRunTask> tasksFromConfig = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
+                tasksFromConfig.add(task);
+                manager.setBeforeRunTasks(runConfiguration, tasksFromConfig);
                 editor.addBeforeLaunchStep(task);
             } else {
                 if (add) {
-                    for (T task : tasks) {
+                    for (T task : matchedTasks) {
                         task.setEnabled(true);
                     }
                 } else {
@@ -184,12 +181,12 @@ public class BeforeRunTaskUtils {
                                                                                            "myModel",
                                                                                            true);
                     if (model != null) {
-                        for (T task : tasks) {
+                        for (T task : matchedTasks) {
                             task.setEnabled(false);
                             model.remove(task);
                         }
                     } else {
-                        for (T task : tasks) {
+                        for (T task : matchedTasks) {
                             task.setEnabled(false);
                         }
                     }
