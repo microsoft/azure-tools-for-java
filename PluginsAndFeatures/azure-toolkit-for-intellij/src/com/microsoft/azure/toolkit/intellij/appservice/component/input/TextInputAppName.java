@@ -59,7 +59,7 @@ public class TextInputAppName extends AzureTextField {
         }
     }
 
-    protected void onValueChanged() {
+    public void onDocumentChanged() {
         this.validator.debounce();
     }
 

@@ -22,29 +22,22 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.component.input;
 
-import com.microsoft.azure.toolkit.intellij.appservice.component.AzureFormInputComponent;
-import lombok.Getter;
-import lombok.Setter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
-import javax.swing.*;
-
-public class AzureTextField extends JTextField implements AzureFormInputComponent<String>, DocumentListenerAdapter {
-    @Getter
-    @Setter
-    private boolean required;
-
-    public AzureTextField() {
-        super();
-        this.getDocument().addDocumentListener(this);
+public interface DocumentListenerAdapter extends DocumentListener {
+    default void insertUpdate(final DocumentEvent e) {
+        this.onDocumentChanged();
     }
 
-    @Override
-    public String getValue() {
-        return this.getText();
+    default void removeUpdate(final DocumentEvent e) {
+        this.onDocumentChanged();
     }
 
-    @Override
-    public JComponent getInputComponent() {
-        return this;
+    default void changedUpdate(final DocumentEvent e) {
+        this.onDocumentChanged();
+    }
+
+    default void onDocumentChanged() {
     }
 }
