@@ -20,7 +20,7 @@
 
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Host.Features;
-using JetBrains.Rider.Model;
+using JetBrains.Rider.Azure.Model;
 
 namespace JetBrains.ReSharper.Azure.Daemon.FunctionApp
 {

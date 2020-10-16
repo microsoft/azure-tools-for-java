@@ -36,8 +36,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rd.platform.ui.bedsl.extensions.valueOrEmpty
 import com.jetbrains.rdclient.util.idea.LifetimedProjectComponent
+import com.jetbrains.rider.azure.model.functionAppDaemonModel
 import com.jetbrains.rider.model.RunnableProject
-import com.jetbrains.rider.model.functionAppDaemonModel
 import com.jetbrains.rider.model.runnableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import org.jetbrains.plugins.azure.functions.actions.TriggerAzureFunctionAction

@@ -38,8 +38,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.openapi.vfs.VirtualFile
-import com.jetbrains.rdclient.editors.FrontendTextControlHost
-import com.jetbrains.rider.model.EditableEntityModelId
 import com.jetbrains.rider.projectView.ProjectModelViewHost
 import com.jetbrains.rider.projectView.RiderProjectDataRule
 import com.jetbrains.rider.projectView.nodes.ProjectModelNode
@@ -91,7 +89,6 @@ class RegisterApplicationInAzureAdAction
 
         val projectModelNode = tryGetProjectModelNodeFromFile(project, e.dataContext.PsiFile?.virtualFile)
                 ?: e.dataContext.getData(RiderProjectDataRule.RD_PROJECT_MODEL_NODE)
-                ?: tryGetProjectModelNodeFromLastFocusedTextControl(project)
 
         e.presentation.isEnabledAndVisible = projectModelNode != null &&
                 tryGetAppSettingsJsonVirtualFile(projectModelNode) != null
@@ -103,7 +100,6 @@ class RegisterApplicationInAzureAdAction
 
         val projectModelNode = tryGetProjectModelNodeFromFile(project, e.dataContext.PsiFile?.virtualFile)
                 ?: e.dataContext.getData(RiderProjectDataRule.RD_PROJECT_MODEL_NODE)
-                ?: tryGetProjectModelNodeFromLastFocusedTextControl(project)
                 ?: return
 
         val appSettingsJsonVirtualFile = tryGetAppSettingsJsonVirtualFile(projectModelNode) ?: return
@@ -306,18 +302,6 @@ class RegisterApplicationInAzureAdAction
         if (file == null) return null
 
         return ProjectModelViewHost.getInstance(project).getItemsByVirtualFile(file).firstOrNull()
-    }
-
-    private fun tryGetProjectModelNodeFromLastFocusedTextControl(project: Project): ProjectModelNode? {
-        val documentId = FrontendTextControlHost.getInstance(project).lastFocusedTextControl.value?.id?.documentId
-        if (documentId != null) {
-            val modelId = documentId as? EditableEntityModelId
-            val projectModelId = modelId?.projectModelElementId
-            if (projectModelId != null) {
-                return ProjectModelViewHost.getInstance(project).getItemById(projectModelId)
-            }
-        }
-        return null
     }
 
     private fun tryGetAppSettingsJsonVirtualFile(item: ProjectModelNode): VirtualFile? {

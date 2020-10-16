@@ -24,14 +24,10 @@ package org.jetbrains.plugins.azure.functions.run
 
 import com.intellij.openapi.project.Project
 import com.intellij.util.execution.ParametersListUtil
+import com.jetbrains.rd.ide.model.EnvironmentVariable
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.adviseOnce
-import com.jetbrains.rider.model.EnvironmentVariable
-import com.jetbrains.rider.model.Key
-import com.jetbrains.rider.model.ProjectOutput
-import com.jetbrains.rider.model.RunnableProjectsModel
-import com.jetbrains.rider.model.RunnableProjectKind
-import com.jetbrains.rider.model.RunnableProject
+import com.jetbrains.rider.model.*
 import com.jetbrains.rider.run.configurations.controls.*
 import com.jetbrains.rider.run.configurations.controls.startBrowser.BrowserSettings
 import com.jetbrains.rider.run.configurations.controls.startBrowser.BrowserSettingsEditor

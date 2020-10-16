@@ -32,11 +32,11 @@ import com.jetbrains.rider.model.nova.ide.SolutionModel
 import java.io.File
 
 object DaemonKotlinGenerator : ExternalGenerator(
-        Kotlin11Generator(FlowTransform.AsIs, "com.jetbrains.rider.model", File(syspropertyOrInvalid("ktGeneratedOutput"))),
+        Kotlin11Generator(FlowTransform.AsIs, "com.jetbrains.rider.azure.model", File(syspropertyOrInvalid("ktGeneratedOutput"))),
         IdeRoot)
 
 object DaemonCSharpGenerator : ExternalGenerator(
-        CSharp50Generator(FlowTransform.Reversed, "JetBrains.Rider.Model", File(syspropertyOrInvalid("csDaemonGeneratedOutput"))),
+        CSharp50Generator(FlowTransform.Reversed, "JetBrains.Rider.Azure.Model", File(syspropertyOrInvalid("csDaemonGeneratedOutput"))),
         IdeRoot)
 
 @Suppress("unused")
@@ -49,6 +49,9 @@ object FunctionAppDaemonModel : Ext(SolutionModel.Solution) {
     }
 
     init {
+        setting(Kotlin11Generator.Namespace, "com.jetbrains.rider.azure.model")
+        setting(CSharp50Generator.Namespace, "JetBrains.Rider.Azure.Model")
+
         setting(GeneratorBase.AcceptsGenerator) { generator ->
             generator == DaemonKotlinGenerator.generator ||
                     generator == DaemonCSharpGenerator.generator
