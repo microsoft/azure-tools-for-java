@@ -38,6 +38,7 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.startup.StartupManager;
+import com.intellij.util.ExceptionUtil;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
@@ -71,6 +72,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -259,7 +261,11 @@ public class AzurePlugin implements StartupActivity.DumbAware {
             }
             AzureSettings.getSafeInstance(myProject).saveAppInsights();
         } catch (Exception ex) {
-            AzurePlugin.log(ex.getMessage(), ex);
+            // https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000093184-What-is-com-intellij-openapi-progress-ProcessCanceledException
+            // should ignore ProcessCanceledException
+            if (Objects.isNull(ExceptionUtil.findCause(ex, ProcessCanceledException.class))) {
+                AzurePlugin.log(ex.getMessage(), ex);
+            }
         }
     }
 
