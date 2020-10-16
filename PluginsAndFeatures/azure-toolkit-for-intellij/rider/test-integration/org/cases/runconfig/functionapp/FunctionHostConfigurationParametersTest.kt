@@ -25,6 +25,7 @@ package org.cases.runconfig.functionapp
 import com.intellij.execution.configurations.RuntimeConfigurationError
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.Project
+import com.jetbrains.rd.ide.model.EnvironmentVariable
 import com.jetbrains.rider.model.*
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.run.configurations.project.DotNetStartBrowserParameters
