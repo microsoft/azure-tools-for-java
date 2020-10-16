@@ -40,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 public abstract class AzureRunConfigurationBase<T> extends LocatableConfigurationBase implements LocatableConfiguration {
     private boolean firstTimeCreated = true;
     protected JavaRunConfigurationModule myModule;
+    protected String artifactIdentifier;
 
     protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
@@ -102,5 +103,13 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
         } catch (AzureExecutionException e) {
             throw new ConfigurationException(e.getMessage());
         }
+    }
+
+    public String getArtifactIdentifier() {
+        return artifactIdentifier;
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        this.artifactIdentifier = artifactIdentifier;
     }
 }

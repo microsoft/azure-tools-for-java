@@ -37,7 +37,8 @@ import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.intellij.maven.SpringCloudDependencyManager;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
-import com.microsoft.intellij.util.MavenUtils;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.intellij.util.SpringCloudUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -48,8 +49,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -106,20 +105,17 @@ public class SpringCloudDeploymentState extends AzureRunProfileState<AppResource
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         // prepare the jar to be deployed
         updateTelemetryMap(telemetryMap);
-        if (StringUtils.isEmpty(springCloudDeployConfiguration.getProjectName())) {
-            throw new AzureExecutionException("You must specify a maven project.");
+        if (StringUtils.isEmpty(springCloudDeployConfiguration.getArtifactIdentifier())) {
+            throw new AzureExecutionException("You must specify an artifact");
         }
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getProjects();
-        MavenProject targetProject = mavenProjects
-                .stream()
-                .filter(t -> StringUtils.equals(t.getName(), springCloudDeployConfiguration.getProjectName()))
-                .findFirst()
-                .orElse(null);
-        if (targetProject == null) {
-            throw new AzureExecutionException(String.format("Project '%s' cannot be found.",
-                                                            springCloudDeployConfiguration.getProjectName()));
+
+        AzureArtifact artifact =
+                AzureArtifactManager.getInstance(project).getAzureArtifactById(springCloudDeployConfiguration.getArtifactIdentifier());
+        if (Objects.isNull(artifact)) {
+            throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists",
+                                                            springCloudDeployConfiguration.getArtifactIdentifier()));
         }
-        String finalJarName = MavenUtils.getSpringBootFinalJarFilePath(project, targetProject);
+        String finalJarName = AzureArtifactManager.getInstance(project).getFileForDeployment(artifact);
         if (!Files.exists(Paths.get(finalJarName))) {
             throw new AzureExecutionException(String.format("File '%s' cannot be found.",
                                                             finalJarName));
