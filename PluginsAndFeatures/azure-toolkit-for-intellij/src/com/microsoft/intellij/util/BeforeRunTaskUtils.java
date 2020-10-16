@@ -92,11 +92,9 @@ public class BeforeRunTaskUtils {
             task ->
                   Objects.nonNull(task) &&
                           Objects.nonNull(task.getArtifactPointers())
-                          && CollectionUtils.isEqualCollection(task.getArtifactPointers()
-                                                                   .stream()
-                                                                   .map(a -> a.getArtifact())
-                                                                   .collect(Collectors.toList()),
-                                                               Arrays.asList(artifact)), () -> {
+                          && task.getArtifactPointers().size() == 1
+                          && Objects.equals(task.getArtifactPointers().get(0).getArtifact(),
+                                                               artifact), () -> {
                 BuildArtifactsBeforeRunTaskProvider provider =
                       new BuildArtifactsBeforeRunTaskProvider(runConfiguration.getProject());
                 BuildArtifactsBeforeRunTask task = provider.createTask(runConfiguration);
@@ -166,6 +164,9 @@ public class BeforeRunTaskUtils {
                 task.setEnabled(true);
                 RunManagerEx manager = RunManagerEx.getInstanceEx(runConfiguration.getProject());
                 List<BeforeRunTask> tasksFromConfig = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
+                // need to add the before run task back to runConfiguration since for the create scenario:
+                // the before run task editor will reset tasks in runConfiguration, that's the reason why
+                // here we need to add the task here
                 tasksFromConfig.add(task);
                 manager.setBeforeRunTasks(runConfiguration, tasksFromConfig);
                 editor.addBeforeLaunchStep(task);

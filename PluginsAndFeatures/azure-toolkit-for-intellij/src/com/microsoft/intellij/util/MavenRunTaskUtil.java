@@ -41,6 +41,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class MavenRunTaskUtil {
@@ -70,6 +71,7 @@ public class MavenRunTaskUtil {
     public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
         return Arrays.asList(MavenConstants.TYPE_WAR, "ear", MavenConstants.TYPE_JAR).stream()
               .map(ArtifactType::findById)
+              .filter(Objects::nonNull)
               .flatMap(type -> ArtifactManager.getInstance(project).getArtifactsByType(type).stream()).collect(
                 Collectors.toList());
 
