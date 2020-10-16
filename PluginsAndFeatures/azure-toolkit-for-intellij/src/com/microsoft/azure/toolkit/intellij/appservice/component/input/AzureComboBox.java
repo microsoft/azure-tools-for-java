@@ -42,6 +42,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
 
 import javax.swing.*;
@@ -49,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
+import java.io.InterruptedIOException;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
@@ -89,9 +91,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.setEditor(this.inputEditor);
         this.setRenderer(new SimpleListCellRenderer<T>() {
             @Override
-            public void customize(final JList l, final Object o, final int i, final boolean b, final boolean b1) {
-                setText(getItemText(o));
-                setIcon(getItemIcon(o));
+            public void customize(@NotNull final JList<? extends T> jList, final T t, final int i, final boolean b, final boolean b1) {
+                setText(getItemText(t));
+                setIcon(getItemIcon(t));
             }
         });
         if (isFilterable()) {
@@ -110,6 +112,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             this.setLoading(false);
             DefaultLoader.getIdeHelper().invokeLater(() -> this.setItems(items));
         } catch (final Exception e) {
+            final Throwable rootCause = ExceptionUtils.getRootCause(e);
+            if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
+                throw (RuntimeException) e;
+            }
             this.setLoading(false);
             this.handleLoadingError(e);
         }
@@ -236,7 +242,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
         protected ExtendableTextComponent.Extension getExtension() {
             return ExtendableTextComponent.Extension.create(
-                    new AnimatedIcon.Default(), null, null);
+                new AnimatedIcon.Default(), null, null);
         }
     }
 
@@ -251,7 +257,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = UIUtils.listComboBoxItems(AzureComboBox.this);
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 
