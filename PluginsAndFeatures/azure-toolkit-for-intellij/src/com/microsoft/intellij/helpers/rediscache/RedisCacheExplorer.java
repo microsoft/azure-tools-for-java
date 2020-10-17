@@ -23,31 +23,28 @@
 
 package com.microsoft.intellij.helpers.rediscache;
 
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-
 import com.microsoft.azuretools.azurecommons.helpers.RedisKeyType;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisScanResult;
 import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
-import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.components.AzureListSelectionListenerWrapper;
-import com.microsoft.intellij.ui.components.EnvironmentUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
-
+import icons.CommonIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
+
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 
 public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpView {

@@ -34,12 +34,12 @@ import com.intellij.ui.HideableTitledPanel
 import com.intellij.ui.HyperlinkLabel
 import com.microsoft.azure.management.appservice.OperatingSystem
 import com.microsoft.azuretools.core.mvp.ui.webapp.WebAppProperty
-import com.microsoft.icons.CommonIcons
 import com.microsoft.intellij.ui.components.AppSettingsComponent
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper
 import com.microsoft.intellij.ui.util.UIUtils
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppBasePropertyMvpView
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter
+import icons.CommonIcons
 import net.miginfocom.swing.MigLayout
 import java.awt.Font
 import java.awt.event.ActionEvent

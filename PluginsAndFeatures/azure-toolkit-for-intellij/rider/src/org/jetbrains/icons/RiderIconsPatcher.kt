@@ -25,7 +25,7 @@ package org.jetbrains.icons
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.IconPathPatcher
 import com.intellij.ui.RetrievableIcon
-import com.microsoft.icons.CommonIcons
+import icons.CommonIcons
 import icons.RestClientIcons
 import javax.swing.Icon
 

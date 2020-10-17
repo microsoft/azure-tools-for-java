@@ -31,10 +31,10 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.intellij.wizards.VMWizardModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import icons.CommonIcons;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

@@ -32,7 +32,7 @@
           factoryClass="com.microsoft.intellij.activitylog.ActivityLogToolWindowFactory"
           id="Azure Activity Log"
           canCloseContents="true"
-          icon="/icons/toolWindowAzureLog.svg" />
+          icon="CommonIcons.ToolWindow.AzureLog" />
 
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
@@ -62,14 +62,14 @@
           factoryClass="com.microsoft.intellij.components.ServerExplorerToolWindowFactory"
           id="Azure Explorer"
           canCloseContents="false"
-          icon="/icons/toolWindowAzure.svg"
+          icon="CommonIcons.ToolWindow.Azure"
           order="after Project" />
 
     <toolWindow
             anchor="bottom"
             factoryClass="com.microsoft.intellij.helpers.StreamingLogsToolWindowFactory"
             id="Azure Streaming Log"
-            icon="/icons/toolWindowAzureStreamingLog.svg"
+            icon="CommonIcons.ToolWindow.AzureStreamingLog"
             canCloseContents="true"/>
 
     <fileTypeFactory implementation="com.microsoft.intellij.language.arm.file.ARMFileTypeFactory"/>
@@ -92,7 +92,7 @@
             class="com.microsoft.intellij.actions.AzureExplorerOpenAction"
             text="Show Azure Explorer"
             description="Show Azure Explorer"
-            icon="/icons/AzureExplorer.svg" />
+            icon="CommonIcons.AzureExplorer" />
 
     <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
             text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
@@ -114,7 +114,7 @@
     <group id="AzureToolkit.AzureActionGroup"
            text="Azure"
            description="Contains Azure tools plugin actions"
-           icon="/icons/Azure.svg"
+           icon="CommonIcons.Azure"
            popup="true"
            class="com.intellij.openapi.actionSystem.DefaultActionGroup">
       <add-to-group group-id="ToolsMenu" anchor="first"/>

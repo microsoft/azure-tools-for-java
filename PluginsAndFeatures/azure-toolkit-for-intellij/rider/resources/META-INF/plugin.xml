@@ -245,7 +245,7 @@
             class="com.microsoft.intellij.actions.AzureDotNetCodeSamples"
             text="Azure Code Samples"
             description="Opens an Azure Code Samples page in your default browser"
-            icon="/icons/CodeSamples.svg">
+            icon="CommonIcons.CodeSamples">
       <add-to-group group-id="AzureToolbarGroup" anchor="after" relative-to-action="Actions.AzureExplorerOpenAction" />
     </action>
 
@@ -253,7 +253,7 @@
            text="Publish Group"
            description="Publish Group"
            popup="true"
-           icon="/icons/publishAzure.svg">
+           icon="CommonIcons.PublishAzure">
       <add-to-group group-id="AzureToolbarGroup" anchor="first" />
     </group>
 
@@ -262,7 +262,7 @@
            class="com.intellij.openapi.actionSystem.DefaultActionGroup"
            text="Azure Cloud Shell"
            description="Contains Azure Cloud Shell actions"
-           icon="/icons/AzureOpenCloudShell.svg">
+           icon="CommonIcons.CloudShell.AzureOpenCloudShell">
 
       <add-to-group group-id="AzureToolkit.AzureActionGroup"
                     anchor="before"
@@ -272,7 +272,7 @@
               class="org.jetbrains.plugins.azure.cloudshell.actions.StartAzureCloudShellAction"
               text="Start Azure Cloud Shell..."
               description="Start Azure Cloud Shell"
-              icon="/icons/AzureOpenCloudShell.svg" />
+              icon="CommonIcons.CloudShell.AzureOpenCloudShell" />
 
       <action id="AzureToolkit.UploadToAzureCloudShellAction"
               class="org.jetbrains.plugins.azure.cloudshell.actions.UploadToAzureCloudShellAction"
@@ -344,7 +344,7 @@
               class="org.jetbrains.plugins.azure.identity.ad.actions.RegisterApplicationInAzureAdAction"
               text="Register Azure AD application"
               description="Register application in Azure Active Directory"
-              icon="/icons/AzureActiveDirectory.svg">
+              icon="CommonIcons.AzureActiveDirectory">
       </action>
 
       <separator />

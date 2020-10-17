@@ -36,7 +36,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.icons.CommonIcons;
 import com.microsoft.intellij.forms.TableEntityForm;
 import com.microsoft.intellij.forms.TablesQueryDesigner;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
@@ -44,6 +43,7 @@ import com.microsoft.tooling.msservices.model.storage.Table;
 import com.microsoft.tooling.msservices.model.storage.TableEntity;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import icons.CommonIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
