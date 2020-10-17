@@ -31,6 +31,6 @@ public interface AzureForm<T> {
     List<AzureFormInput<?>> getInputs();
 
     default List<AzureValidationInfo> validateData() {
-        return this.getInputs().stream().map(AzureFormInput::validateValue).collect(Collectors.toList());
+        return this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList());
     }
 }

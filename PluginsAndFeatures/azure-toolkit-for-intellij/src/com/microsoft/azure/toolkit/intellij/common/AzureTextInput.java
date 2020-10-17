@@ -20,31 +20,32 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.common.form;
+package com.microsoft.azure.toolkit.intellij.common;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import org.apache.commons.lang3.ObjectUtils;
+import com.intellij.ui.components.fields.ExtendableTextField;
+import lombok.Getter;
+import lombok.Setter;
 
-public interface AzureFormInput<T> extends Validatable {
+import javax.swing.*;
 
-    String MSG_REQUIRED = "this field is required";
+public class AzureTextInput extends ExtendableTextField
+        implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
+    @Getter
+    @Setter
+    private boolean required;
 
-    T getValue();
-
-    @NotNull
-    default AzureValidationInfo doValidate() {
-        final T value = this.getValue();
-        if (this.isRequired() && ObjectUtils.isEmpty(value)) {
-            return AzureValidationInfo.builder()
-                                      .message(MSG_REQUIRED)
-                                      .input(this)
-                                      .type(AzureValidationInfo.Type.ERROR)
-                                      .build();
-        }
-        return Validatable.super.doValidate();
+    public AzureTextInput() {
+        super();
+        this.getDocument().addDocumentListener(this);
     }
 
-    default boolean isRequired() {
-        return false;
+    @Override
+    public String getValue() {
+        return this.getText();
+    }
+
+    @Override
+    public JComponent getInputComponent() {
+        return this;
     }
 }

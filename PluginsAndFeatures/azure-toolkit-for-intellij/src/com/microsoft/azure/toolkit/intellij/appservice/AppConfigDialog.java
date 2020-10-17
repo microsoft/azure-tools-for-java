@@ -23,21 +23,17 @@
 package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormDialog;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import lombok.extern.java.Log;
 
 import javax.swing.*;
 
 @Log
 public abstract class AppConfigDialog<T extends AppServiceConfig>
-        extends AzureFormDialog<T> {
+    extends AzureFormDialog<T> {
     public static final String LABEL_ADVANCED_MODE = "More settings";
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;
@@ -75,15 +71,5 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
 
     public AzureForm<T> getForm() {
         return this.advancedMode ? this.getAdvancedFormPanel() : this.getBasicFormPanel();
-    }
-
-    //TODO: @wangmi move to some util class
-    private static ValidationInfo toIntellijValidationInfo(final AzureValidationInfo info) {
-        final AzureFormInput<?> input = info.getInput();
-        if (input instanceof AzureFormInputComponent) {
-            final JComponent component = ((AzureFormInputComponent<?>) input).getInputComponent();
-            return new ValidationInfo(info.getMessage(), component);
-        }
-        return new ValidationInfo(info.getMessage(), null);
     }
 }

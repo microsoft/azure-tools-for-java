@@ -21,14 +21,27 @@
  */
 package com.microsoft.azure.toolkit.intellij.appservice;
 
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.ValidationUtils;
 
-public class AppNameInput extends AppComponentNameInput {
+import java.util.Objects;
+
+public class AppNameInput extends ValidationDebouncedTextInput {
+    private Subscription subscription;
+
+    public void setSubscription(Subscription subscription) {
+        if (!Objects.equals(subscription, this.subscription)) {
+            this.subscription = subscription;
+            this.revalidateValue();
+        }
+    }
+
     @NotNull
-    protected AzureValidationInfo doValidate() {
-        final AzureValidationInfo info = super.validateValue();
+    public AzureValidationInfo doValidateValue() {
+        final AzureValidationInfo info = super.doValidateValue();
         if (info == AzureValidationInfo.OK) {
             try {
                 ValidationUtils.validateAppServiceName(this.subscription.subscriptionId(), this.getValue());

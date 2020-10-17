@@ -1,4 +1,4 @@
-/*
+package com.microsoft.azure.toolkit.intellij.common;/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -20,32 +20,39 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 
-import com.intellij.ui.components.fields.ExtendableTextField;
-import lombok.Getter;
-import lombok.Setter;
+public class ValidationDebouncedTextInput extends AzureTextInput {
+    protected static final int DEBOUNCE_DELAY = 500;
+    protected AzureValidationInfo validationInfo;
+    private final Debouncer validator;
 
-import javax.swing.*;
-
-public class AzureTextField extends ExtendableTextField
-        implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
-    @Getter
-    @Setter
-    private boolean required;
-
-    public AzureTextField() {
+    public ValidationDebouncedTextInput() {
         super();
-        this.getDocument().addDocumentListener(this);
+        this.validator = new TailingDebouncer(() -> this.validationInfo = this.doValidateValue(), DEBOUNCE_DELAY);
+    }
+
+    protected AzureValidationInfo doValidateValue() {
+        return super.doValidate();
     }
 
     @Override
-    public String getValue() {
-        return this.getText();
+    public AzureValidationInfo doValidate() {
+        if (this.validator.isPending()) {
+            return AzureValidationInfo.PENDING;
+        } else if (this.validationInfo == null) {
+            this.validationInfo = this.doValidateValue();
+        }
+        return this.validationInfo;
     }
 
-    @Override
-    public JComponent getInputComponent() {
-        return this;
+    protected void revalidateValue() {
+        this.validator.debounce();
+    }
+
+    public void onDocumentChanged() {
+        this.revalidateValue();
     }
 }
