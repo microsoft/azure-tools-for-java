@@ -23,19 +23,20 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
 import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
-import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
+import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.serviceplan.ServicePlanComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
-import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 
 import javax.swing.*;
@@ -116,12 +117,30 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         this.textSku.setText(NOT_APPLICABLE);
         this.selectorServicePlan.addItemListener(this::onServicePlanChanged);
         this.selectorSubscription.addItemListener(this::onSubscriptionChanged);
+        this.selectorPlatform.addItemListener(this::onPlatformChanged);
+        this.selectorRegion.addItemListener(this::onRegionChanged);
+    }
+
+    private void onRegionChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+            final Region region = e.getStateChange() == ItemEvent.SELECTED ? (Region) e.getItem() : null;
+            this.selectorServicePlan.setRegion(region);
+        }
+    }
+
+    private void onPlatformChanged(final ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+            final OperatingSystem operatingSystem =
+                e.getStateChange() == ItemEvent.SELECTED ? ((Platform) e.getItem()).getOs() : null;
+            this.selectorServicePlan.setOperatingSystem(operatingSystem);
+        }
     }
 
     private void onSubscriptionChanged(final ItemEvent e) {
         //TODO: @wangmi try subscription mechanism? e.g. this.selectorGroup.subscribe(this.selectSubscription)
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Subscription subscription = e.getStateChange() == ItemEvent.SELECTED ? (Subscription) e.getItem() : null;
+            final Subscription subscription =
+                e.getStateChange() == ItemEvent.SELECTED ? (Subscription) e.getItem() : null;
             this.selectorGroup.setSubscription(subscription);
             this.textName.setSubscription(subscription);
             this.selectorRegion.setSubscription(subscription);
