@@ -22,12 +22,14 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.intellij.ui.components.fields.ExtendableTextField;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
 
-public class AzureTextField extends JTextField implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
+public class AzureTextField extends ExtendableTextField
+        implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
     @Getter
     @Setter
     private boolean required;

@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
-import com.microsoft.azure.toolkit.lib.common.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 
 public interface AzureFormPanel<T> extends AzureForm<T> {
     void setVisible(boolean visible);

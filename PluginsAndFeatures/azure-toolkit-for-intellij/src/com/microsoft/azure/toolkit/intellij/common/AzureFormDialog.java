@@ -19,62 +19,53 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-package com.microsoft.azure.toolkit.intellij.appservice;
+package com.microsoft.azure.toolkit.intellij.common;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormDialog;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormInputComponent;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import lombok.extern.java.Log;
 
 import javax.swing.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Log
-public abstract class AppConfigDialog<T extends AppServiceConfig>
-        extends AzureFormDialog<T> {
-    public static final String LABEL_ADVANCED_MODE = "More settings";
-    private JCheckBox checkboxMode;
-    private boolean advancedMode = false;
+public abstract class AzureFormDialog<T> extends AzureDialogWrapper {
+    protected Project project;
+    protected OkActionListener<T> okActionListener;
 
-    public AppConfigDialog(Project project) {
-        super(project);
+    public AzureFormDialog(Project project) {
+        super(project, true);
+        this.project = project;
+        setTitle(this.getDialogTitle());
+        setModal(true);
     }
-
-    protected void toggleAdvancedMode(boolean advancedMode) {
-        this.advancedMode = advancedMode;
-        final AzureFormPanel<T> basicForm = this.getBasicFormPanel();
-        final AzureFormPanel<T> advancedForm = this.getAdvancedFormPanel();
-        if (advancedMode) {
-            basicForm.setVisible(false);
-            advancedForm.setVisible(true);
-        } else {
-            basicForm.setVisible(true);
-            advancedForm.setVisible(false);
-        }
-        this.repaint();
-    }
-
-    protected abstract AzureFormPanel<T> getAdvancedFormPanel();
-
-    protected abstract AzureFormPanel<T> getBasicFormPanel();
 
     @Override
-    protected JComponent createDoNotAskCheckbox() {
-        this.checkboxMode = new JCheckBox(LABEL_ADVANCED_MODE);
-        this.checkboxMode.setVisible(true);
-        this.checkboxMode.setSelected(false);
-        this.checkboxMode.addActionListener(e -> this.toggleAdvancedMode(this.checkboxMode.isSelected()));
-        return this.checkboxMode;
+    protected void doOKAction() {
+        if (Objects.nonNull(this.okActionListener)) {
+            final T data = this.getForm().getData();
+            this.okActionListener.onOk(data);
+        }
     }
 
-    public AzureForm<T> getForm() {
-        return this.advancedMode ? this.getAdvancedFormPanel() : this.getBasicFormPanel();
+    public void close() {
+        this.doCancelAction();
+    }
+
+    @Override
+    protected List<ValidationInfo> doValidateAll() {
+        final List<AzureValidationInfo> infos = this.getForm().validateData();
+        this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING));
+        return infos.stream()
+                    .filter(i -> i != AzureValidationInfo.PENDING && i != AzureValidationInfo.OK)
+                    .map(AzureFormDialog::toIntellijValidationInfo)
+                    .collect(Collectors.toList());
     }
 
     //TODO: @wangmi move to some util class
@@ -85,5 +76,18 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
             return new ValidationInfo(info.getMessage(), component);
         }
         return new ValidationInfo(info.getMessage(), null);
+    }
+
+    public abstract AzureForm<T> getForm();
+
+    protected abstract String getDialogTitle();
+
+    public void setOkActionListener(OkActionListener<T> listener) {
+        this.okActionListener = listener;
+    }
+
+    @FunctionalInterface
+    public interface OkActionListener<T> {
+        void onOk(T data);
     }
 }

@@ -19,15 +19,56 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.microsoft.azure.toolkit.intellij.appservice;
+package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
 
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.intellij.common.AzureTextField;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
+import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.intellij.util.ValidationUtils;
 
-public class AppNameInput extends AppComponentNameInput {
+import java.util.Objects;
+
+public class ResourceGroupNameInput extends AzureTextField {
+    public static final int DEBOUNCE_DELAY = 500;
+    private final Debouncer validator;
+    private Subscription subscription;
+    private AzureValidationInfo validationInfo;
+
+    public ResourceGroupNameInput() {
+        super();
+        this.validator = new TailingDebouncer(this::revalidateValue, DEBOUNCE_DELAY);
+    }
+
+    @Override
+    public AzureValidationInfo validateValue() {
+        if (this.validator.isPending()) {
+            return AzureValidationInfo.PENDING;
+        } else if (this.validationInfo == null) {
+            this.validationInfo = this.doValidate();
+        }
+        return this.validationInfo;
+    }
+
+    private void revalidateValue() {
+        this.validationInfo = this.doValidate();
+    }
+
+    public void setSubscription(Subscription subscription) {
+        if (!Objects.equals(subscription, this.subscription)) {
+            this.subscription = subscription;
+            this.validator.debounce();
+        }
+    }
+
+    public void onDocumentChanged() {
+        this.validator.debounce();
+    }
+
     @NotNull
-    protected AzureValidationInfo doValidate() {
+    private AzureValidationInfo doValidate() {
         final AzureValidationInfo info = super.validateValue();
         if (info == AzureValidationInfo.OK) {
             try {

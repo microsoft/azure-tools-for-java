@@ -22,7 +22,7 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
-import com.microsoft.azure.toolkit.lib.common.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 
 import javax.swing.*;
 

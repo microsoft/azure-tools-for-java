@@ -26,7 +26,7 @@ import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
-import com.microsoft.azure.toolkit.lib.common.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 
