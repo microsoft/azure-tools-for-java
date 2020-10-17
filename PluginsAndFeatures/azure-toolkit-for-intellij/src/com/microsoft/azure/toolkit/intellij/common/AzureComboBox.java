@@ -90,7 +90,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         this.setEditor(this.inputEditor);
         this.setRenderer(new SimpleListCellRenderer<T>() {
             @Override
-            public void customize(@NotNull final JList<? extends T> jList, final T t, final int i, final boolean b, final boolean b1) {
+            public void customize(@NotNull final JList<? extends T> l, final T t, final int i, final boolean b,
+                                  final boolean b1) {
                 setText(getItemText(t));
                 setIcon(getItemIcon(t));
             }
