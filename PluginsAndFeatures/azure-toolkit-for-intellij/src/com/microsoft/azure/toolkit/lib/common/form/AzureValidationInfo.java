@@ -23,10 +23,12 @@
 package com.microsoft.azure.toolkit.lib.common.form;
 
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
 @Getter
 @Builder
+@Data
 public class AzureValidationInfo {
     public static final AzureValidationInfo PENDING =
         AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();

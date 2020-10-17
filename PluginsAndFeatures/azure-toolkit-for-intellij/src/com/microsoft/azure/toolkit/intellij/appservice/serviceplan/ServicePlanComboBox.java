@@ -34,6 +34,7 @@ import com.microsoft.azure.toolkit.lib.appservice.ServicePlanMock;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ import java.util.stream.Stream;
 public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
 
     private Subscription subscription;
-    private ServicePlanMock localItem;
+    private List<ServicePlanMock> localItems = new ArrayList<>();
     private OperatingSystem os;
     private Region region;
 
@@ -91,18 +92,23 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     protected List<? extends AppServicePlan> loadItems() throws Exception {
         final List<AppServicePlan> plans = new ArrayList<>();
         if (Objects.nonNull(this.subscription)) {
-            final String sid = subscription.subscriptionId();
-            Stream<AppServicePlan> stream = AzureWebAppMvpModel
+            if (CollectionUtils.isNotEmpty(this.localItems)) {
+                plans.addAll(this.localItems.stream()
+                                            .filter(p -> this.subscription.equals(p.getSubscription()))
+                                            .collect(Collectors.toList()));
+            }
+            final List<AppServicePlan> remotePlans = AzureWebAppMvpModel
                 .getInstance()
-                .listAppServicePlanBySubscriptionId(sid)
-                .stream();
+                .listAppServicePlanBySubscriptionId(subscription.subscriptionId());
+            plans.addAll(remotePlans);
+            Stream<AppServicePlan> stream = plans.stream();
             if (Objects.nonNull(this.region)) {
                 stream = stream.filter(p -> Objects.equals(p.region(), this.region));
             }
             if (Objects.nonNull(this.os)) {
                 stream = stream.filter(p -> p.operatingSystem() == this.os);
             }
-            plans.addAll(stream.collect(Collectors.toList()));
+            return stream.collect(Collectors.toList());
         }
         return plans;
     }
@@ -117,12 +123,12 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     private void showServicePlanCreationPopup() {
         final ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(this.subscription, this.os, this.region);
         dialog.setOkActionListener((plan) -> {
-            this.localItem = plan;
+            this.localItems.add(0, plan);
             dialog.close();
             final List<AppServicePlan> items = this.getItems();
-            items.add(0, this.localItem);
+            items.add(0, plan);
             this.setItems(items);
-            this.setValue(this.localItem);
+            this.setValue(plan);
         });
         dialog.show();
     }

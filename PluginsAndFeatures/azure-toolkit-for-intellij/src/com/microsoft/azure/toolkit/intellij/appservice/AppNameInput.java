@@ -46,11 +46,8 @@ public class AppNameInput extends ValidationDebouncedTextInput {
             try {
                 ValidationUtils.validateAppServiceName(this.subscription.subscriptionId(), this.getValue());
             } catch (final IllegalArgumentException e) {
-                return AzureValidationInfo.builder()
-                                          .input(this)
-                                          .message(e.getMessage())
-                                          .type(AzureValidationInfo.Type.ERROR)
-                                          .build();
+                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                return builder.input(this).message(e.getMessage()).type(AzureValidationInfo.Type.ERROR).build();
             }
         }
         return info;

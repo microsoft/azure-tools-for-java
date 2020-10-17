@@ -5,9 +5,11 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
 import com.microsoft.azure.management.appservice.implementation.AppServicePlanInner;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
 import rx.Observable;
 
@@ -15,8 +17,10 @@ import java.util.Map;
 
 @Setter
 @Builder
-public class SimpleServicePlan implements AppServicePlan {
+public class ServicePlanMock implements AppServicePlan, Mock {
 
+    @Getter
+    private Subscription subscription;
     private String name;
     private Region region;
     private OperatingSystem os;

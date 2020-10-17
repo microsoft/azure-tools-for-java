@@ -23,7 +23,7 @@
 package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormDialog;
+import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -33,7 +33,7 @@ import javax.swing.*;
 
 @Log
 public abstract class AppConfigDialog<T extends AppServiceConfig>
-    extends AzureFormDialog<T> {
+    extends AzureDialog<T> {
     public static final String LABEL_ADVANCED_MODE = "More settings";
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;

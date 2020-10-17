@@ -35,11 +35,8 @@ public interface AzureFormInput<T> extends Validatable {
     default AzureValidationInfo doValidate() {
         final T value = this.getValue();
         if (this.isRequired() && ObjectUtils.isEmpty(value)) {
-            return AzureValidationInfo.builder()
-                                      .message(MSG_REQUIRED)
-                                      .input(this)
-                                      .type(AzureValidationInfo.Type.ERROR)
-                                      .build();
+            final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+            return builder.message(MSG_REQUIRED).input(this).type(AzureValidationInfo.Type.ERROR).build();
         }
         return Validatable.super.doValidate();
     }

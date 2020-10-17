@@ -29,10 +29,13 @@ import lombok.Setter;
 import javax.swing.*;
 
 public class AzureTextInput extends ExtendableTextField
-        implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
+    implements AzureFormInputComponent<String>, TextDocumentListenerAdapter {
     @Getter
     @Setter
     private boolean required;
+    @Getter
+    @Setter
+    private Validator validator;
 
     public AzureTextInput() {
         super();

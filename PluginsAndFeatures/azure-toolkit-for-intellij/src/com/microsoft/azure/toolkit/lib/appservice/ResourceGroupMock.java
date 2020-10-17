@@ -3,12 +3,14 @@ package com.microsoft.azure.toolkit.lib.appservice;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.ResourceGroupExportResult;
 import com.microsoft.azure.management.resources.ResourceGroupExportTemplateOptions;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.resources.implementation.ResourceGroupInner;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
 import com.microsoft.rest.ServiceCallback;
 import com.microsoft.rest.ServiceFuture;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
 import rx.Observable;
 
@@ -16,10 +18,10 @@ import java.util.Map;
 
 @Setter
 @Builder
-public class SimpleResourceGroup implements ResourceGroup {
-
+public class ResourceGroupMock implements ResourceGroup, Mock {
+    @Getter
+    private Subscription subscription;
     private String name;
-    private Region region;
 
     @Override
     public String name() {
@@ -28,7 +30,7 @@ public class SimpleResourceGroup implements ResourceGroup {
 
     @Override
     public Region region() {
-        return this.region;
+        throw new OperationNotSupportedException();
     }
 
     @Override

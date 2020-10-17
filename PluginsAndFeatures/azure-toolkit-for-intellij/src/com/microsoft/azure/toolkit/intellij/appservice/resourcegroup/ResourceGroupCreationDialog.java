@@ -1,33 +1,77 @@
 package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
 
-import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.common.AzureFormDialog;
-import com.microsoft.azure.toolkit.lib.appservice.SimpleResourceGroup;
+import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
+import com.microsoft.azure.toolkit.lib.appservice.ResourceGroupMock;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
+import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo.AzureValidationInfoBuilder;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.intellij.util.ValidationUtils;
 
 import javax.swing.*;
+import java.util.Collections;
+import java.util.List;
 
-public class ResourceGroupCreationDialog extends AzureFormDialog<SimpleResourceGroup> {
+public class ResourceGroupCreationDialog extends AzureDialog<ResourceGroupMock>
+    implements AzureForm<ResourceGroupMock> {
+    public static final String DESCRIPTION =
+        "A resource group is a container that holds related resources for an Azure solution.";
+    public static final String DIALOG_TITLE = "New Resource Group";
+    private final Subscription subscription;
     private JPanel contentPanel;
+    private ValidationDebouncedTextInput textName;
+    private JLabel labelDescription;
 
-    public ResourceGroupCreationDialog(final Project project) {
-        super(project);
+    public ResourceGroupCreationDialog(Subscription subscription) {
+        super();
+        this.init();
+        this.subscription = subscription;
+        this.textName.setValidator(() -> validateName(subscription));
+    }
+
+    private AzureValidationInfo validateName(final Subscription subscription) {
+        try {
+            ValidationUtils.validateResourceGroupName(subscription.subscriptionId(), this.textName.getValue());
+        } catch (final IllegalArgumentException e) {
+            final AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+            return builder.input(this.textName).type(AzureValidationInfo.Type.ERROR).message(e.getMessage()).build();
+        }
+        return AzureValidationInfo.OK;
     }
 
     @Override
-    public AzureForm<SimpleResourceGroup> getForm() {
-        return null;
+    public AzureForm<ResourceGroupMock> getForm() {
+        return this;
     }
 
     @Override
     protected String getDialogTitle() {
-        return "new resource group";
+        return DIALOG_TITLE;
     }
 
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
         return this.contentPanel;
+    }
+
+    @Override
+    public ResourceGroupMock getData() {
+        final ResourceGroupMock.ResourceGroupMockBuilder builder = ResourceGroupMock.builder();
+        builder.subscription(this.subscription)
+               .name(this.textName.getValue());
+        return builder.build();
+    }
+
+    @Override
+    public List<AzureFormInput<?>> getInputs() {
+        return Collections.singletonList(this.textName);
+    }
+
+    private void createUIComponents() {
+        this.labelDescription = new JLabel("<html><body><p>" + DESCRIPTION + "</p></body></html");
     }
 }

@@ -39,11 +39,6 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public WebAppCreationDialog(Project project) {
         super(project);
         this.init();
-    }
-
-    @Override
-    protected void init() {
-        super.init();
         this.toggleAdvancedMode(false);
     }
 

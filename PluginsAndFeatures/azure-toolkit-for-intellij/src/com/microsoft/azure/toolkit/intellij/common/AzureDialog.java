@@ -35,13 +35,17 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Log
-public abstract class AzureFormDialog<T> extends AzureDialogWrapper {
-    protected Project project;
+public abstract class AzureDialog<T> extends AzureDialogWrapper {
     protected OkActionListener<T> okActionListener;
 
-    public AzureFormDialog(Project project) {
+    public AzureDialog(Project project) {
         super(project, true);
-        this.project = project;
+        setTitle(this.getDialogTitle());
+        setModal(true);
+    }
+
+    public AzureDialog() {
+        super(true);
         setTitle(this.getDialogTitle());
         setModal(true);
     }
@@ -64,7 +68,7 @@ public abstract class AzureFormDialog<T> extends AzureDialogWrapper {
         this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING));
         return infos.stream()
                     .filter(i -> i != AzureValidationInfo.PENDING && i != AzureValidationInfo.OK)
-                    .map(AzureFormDialog::toIntellijValidationInfo)
+                    .map(AzureDialog::toIntellijValidationInfo)
                     .collect(Collectors.toList());
     }
 

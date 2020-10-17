@@ -74,7 +74,7 @@ public interface Platform {
             //TODO: improve implementation
             final String javaVersion = this.version.endsWith("11") ? "11" : "8";
             if ("JAVA".equals(this.getStack())) {
-                return String.format("Linux-Java %s(Embedded Web Server)", javaVersion);
+                return String.format("Linux-Java %s (Embedded Web Server)", javaVersion);
             }
             final String containerVersion = this.version.split("-")[0];
             return String.format("Linux-Java %s-%s %s", javaVersion, this.stack.toUpperCase(), containerVersion);
@@ -123,7 +123,7 @@ public interface Platform {
             //TODO: improve implementation
             final String javaVersionString = "11".equals(this.javaVersion) ? "11" : "8";
             if (this.webContainer.startsWith("java")) {
-                return String.format("Windows-Java %s(Embedded Web Server)", javaVersionString);
+                return String.format("Windows-Java %s (Embedded Web Server)", javaVersionString);
             }
             return String.format("Windows-Java %s-%s", javaVersionString, this.webContainer.toUpperCase());
         }
