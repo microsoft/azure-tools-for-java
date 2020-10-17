@@ -20,15 +20,10 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
+package com.microsoft.azure.toolkit.lib.common.utils;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+public interface Debouncer {
+    void debounce();
 
-import java.util.List;
-
-public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
+    boolean isPending();
 }

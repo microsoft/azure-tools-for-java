@@ -20,15 +20,39 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
+package com.microsoft.azure.toolkit.lib.common.utils;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import rx.Observable;
+import rx.Subscription;
+import rx.schedulers.Schedulers;
 
-import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
+public class TailingDebouncer implements Debouncer {
+    private final Runnable debounced;
+    private final int delay;
+    private Subscription timer;
+
+    public TailingDebouncer(final Runnable debounced, final int delayInMillis) {
+        this.debounced = debounced;
+        this.delay = delayInMillis;
+    }
+
+    @Override
+    public synchronized void debounce() {
+        if (this.isPending()) {
+            this.timer.unsubscribe();
+        }
+        this.timer = Observable.timer(this.delay, TimeUnit.MILLISECONDS)
+                               .subscribeOn(Schedulers.io())
+                               .subscribe(ignore -> {
+                                   this.debounced.run();
+                                   this.timer = null;
+                               }, (e) -> this.timer = null);
+    }
+
+    public synchronized boolean isPending() {
+        return Objects.nonNull(this.timer) && !this.timer.isUnsubscribed();
+    }
 }
