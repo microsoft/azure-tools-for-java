@@ -58,7 +58,9 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         this.subscription = subscription;
         this.os = os;
         this.region = region;
+        this.labelDescription.setText("<html><body><p>" + DESCRIPTION + "</p></body></html");
         this.textName.setValidator(this::validateName);
+        this.pack();
     }
 
     private AzureValidationInfo validateName() {
@@ -101,9 +103,5 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Collections.singletonList(this.textName);
-    }
-
-    private void createUIComponents() {
-        this.labelDescription = new JLabel("<html><body><b>" + DESCRIPTION + "</b></body></html>");
     }
 }
