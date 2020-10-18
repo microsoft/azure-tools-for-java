@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
+import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
@@ -41,6 +42,8 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     private AppNameInput textName;
     private PlatformComboBox selectorPlatform;
     private ArtifactComboBox selectorApplication;
+    private TitledSeparator deploymentTitle;
+    private JLabel deploymentLabel;
 
     @Override
     public WebAppConfig getData() {
@@ -69,5 +72,12 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     public void setVisible(final boolean visible) {
         this.contentPanel.setVisible(visible);
         super.setVisible(visible);
+    }
+
+    @Override
+    public void setDeploymentVisible(boolean visible){
+        this.deploymentTitle.setVisible(visible);
+        this.deploymentLabel.setVisible(visible);
+        this.selectorApplication.setVisible(visible);
     }
 }
