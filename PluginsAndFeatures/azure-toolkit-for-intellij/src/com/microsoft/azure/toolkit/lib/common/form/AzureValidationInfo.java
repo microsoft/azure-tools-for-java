@@ -20,15 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
+package com.microsoft.azure.toolkit.lib.common.form;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
 
-import java.util.List;
+@Getter
+@Builder
+@Data
+public class AzureValidationInfo {
+    public static final AzureValidationInfo PENDING =
+        AzureValidationInfo.builder().type(Type.PENDING).message("PENDING").build();
+    public static final AzureValidationInfo OK =
+        AzureValidationInfo.builder().type(Type.INFO).message("OK").build();
+    private final AzureFormInput<?> input;
+    private final String message;
+    @Builder.Default
+    private final Type type = Type.ERROR;
 
-public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
+    public enum Type {
+        ERROR, WARNING, INFO, PENDING
+    }
 }

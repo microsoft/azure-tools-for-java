@@ -20,15 +20,21 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
+package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
 import java.util.List;
 
-public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
+public class PricingTierComboBox extends AzureComboBox<PricingTier> {
+    public static PricingTier DEFAULT_TIER = PricingTier.BASIC_B2;
+
+    @NotNull
+    @Override
+    protected List<? extends PricingTier> loadItems() throws Exception {
+        return AzureMvpModel.getInstance().listPricingTier();
+    }
 }

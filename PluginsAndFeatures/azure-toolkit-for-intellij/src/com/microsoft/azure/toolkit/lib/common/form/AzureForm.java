@@ -20,15 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
-
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+package com.microsoft.azure.toolkit.lib.common.form;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
+public interface AzureForm<T> {
+    T getData();
+
+    List<AzureFormInput<?>> getInputs();
+
+    default List<AzureValidationInfo> validateData() {
+        return this.getInputs().stream().map(AzureFormInput::doValidate).collect(Collectors.toList());
+    }
 }

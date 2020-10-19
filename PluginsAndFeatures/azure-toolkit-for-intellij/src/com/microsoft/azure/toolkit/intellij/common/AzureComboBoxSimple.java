@@ -20,15 +20,37 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
+package com.microsoft.azure.toolkit.intellij.common;
 
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-public interface WebAppDeployMvpViewSlim extends MvpView {
-    void fillDeploymentSlots(@NotNull List<DeploymentSlot> slots, final WebAppComboBoxModel selectedWebApp);
+public class AzureComboBoxSimple<T> extends AzureComboBox<T> {
+
+    private DataProvider<? extends List<? extends T>> provider;
+
+    public AzureComboBoxSimple() {
+        super();
+    }
+
+    public AzureComboBoxSimple(final DataProvider<? extends List<? extends T>> provider) {
+        this();
+        this.provider = provider;
+    }
+
+    @NotNull
+    protected List<? extends T> loadItems() throws Exception {
+        if (Objects.nonNull(this.provider)) {
+            return this.provider.loadData();
+        }
+        return Collections.emptyList();
+    }
+
+    @FunctionalInterface
+    public interface DataProvider<T> {
+        T loadData() throws Exception;
+    }
 }

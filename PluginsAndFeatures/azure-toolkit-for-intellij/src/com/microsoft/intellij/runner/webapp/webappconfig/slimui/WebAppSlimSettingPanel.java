@@ -32,9 +32,9 @@ import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.toolkit.intellij.appservice.component.input.ComboBoxAzureArtifact;
-import com.microsoft.azure.toolkit.intellij.appservice.webapp.ComboBoxWebApp;
-import com.microsoft.azure.toolkit.intellij.appservice.webapp.WebAppComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBox;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
@@ -92,8 +92,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private HyperlinkLabel lblNewSlot;
     private JPanel pnlExistingSlot;
     private JButton btnSlotHover;
-    private ComboBoxWebApp comboBoxWebApp;
-    private ComboBoxAzureArtifact comboBoxArtifact;
+    private AzureArtifactComboBox comboBoxArtifact;
+    private WebAppComboBox comboBoxWebApp;
     private HideableDecorator slotDecorator;
 
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
@@ -317,10 +317,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         lblNewSlot = new HyperlinkLabel("No available deployment slot, click to create a new one");
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
 
-        comboBoxWebApp = new ComboBoxWebApp();
+        comboBoxWebApp = new WebAppComboBox();
         comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
 
-        comboBoxArtifact = new ComboBoxAzureArtifact(this.project);
+        comboBoxArtifact = new AzureArtifactComboBox(this.project);
         comboBoxArtifact.setFileChooserDescriptor(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);

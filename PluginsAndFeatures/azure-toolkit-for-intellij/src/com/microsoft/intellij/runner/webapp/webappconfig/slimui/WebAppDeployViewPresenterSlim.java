@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui;
 
-import com.microsoft.azure.toolkit.intellij.appservice.webapp.WebAppComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
