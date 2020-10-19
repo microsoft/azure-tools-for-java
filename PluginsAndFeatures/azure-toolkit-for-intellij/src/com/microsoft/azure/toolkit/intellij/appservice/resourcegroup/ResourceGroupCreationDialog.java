@@ -94,6 +94,6 @@ public class ResourceGroupCreationDialog extends AzureDialog<ResourceGroupMock>
     }
 
     private void createUIComponents() {
-        this.labelDescription = new JLabel("<html><body><p>" + DESCRIPTION + "</p></body></html");
+        this.labelDescription = new JLabel("<html><body><p>" + DESCRIPTION + "</p></body></html>");
     }
 }

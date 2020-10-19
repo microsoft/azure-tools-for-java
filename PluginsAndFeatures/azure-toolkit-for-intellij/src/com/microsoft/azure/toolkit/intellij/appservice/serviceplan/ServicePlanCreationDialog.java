@@ -104,6 +104,6 @@ public class ServicePlanCreationDialog extends AzureDialog<ServicePlanMock>
     }
 
     private void createUIComponents() {
-        this.labelDescription = new JLabel("<html><body><b>" + DESCRIPTION + "</b></body></html");
+        this.labelDescription = new JLabel("<html><body><b>" + DESCRIPTION + "</b></body></html>");
     }
 }
