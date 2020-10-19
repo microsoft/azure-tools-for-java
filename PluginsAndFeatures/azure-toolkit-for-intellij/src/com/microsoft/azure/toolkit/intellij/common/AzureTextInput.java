@@ -48,6 +48,11 @@ public class AzureTextInput extends ExtendableTextField
     }
 
     @Override
+    public void setValue(final String val) {
+        this.setText(val);
+    }
+
+    @Override
     public JComponent getInputComponent() {
         return this;
     }

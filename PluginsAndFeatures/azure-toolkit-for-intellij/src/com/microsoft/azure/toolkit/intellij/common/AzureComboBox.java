@@ -51,7 +51,9 @@ import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -65,6 +67,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Getter
     @Setter
     private boolean required;
+    private T value;
 
     public AzureComboBox() {
         this(true);
@@ -102,6 +105,30 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
+    @Override
+    public T getValue() {
+        return ((T) this.getSelectedItem());
+    }
+
+    @Override
+    public void setValue(final T val) {
+        this.value = val;
+        final List<T> items = this.getItems();
+        if (items.contains(this.value)) {
+            super.setSelectedItem(this.value);
+        } else if (items.size() > 0) {
+            super.setSelectedItem(items.get(0));
+        } else {
+            super.setSelectedItem(null);
+        }
+    }
+
+    @Override
+    public void setSelectedItem(final Object value) {
+        this.value = (T) value; // update value on user action;
+        super.setSelectedItem(value);
+    }
+
     public void refreshItems() {
         this.refresher.debounce();
     }
@@ -122,6 +149,24 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
+    public List<T> getItems() {
+        final List<T> result = new ArrayList<>();
+        for (int i = 0; i < this.getItemCount(); i++) {
+            result.add(this.getItemAt(i));
+        }
+        return result;
+    }
+
+    protected void setItems(final List<? extends T> items) {
+        this.removeAllItems();
+        items.forEach(this::addItem);
+        this.setValue(this.value);
+    }
+
+    public void clear() {
+        this.setItems(Collections.emptyList());
+    }
+
     protected void setLoading(final boolean loading) {
         DefaultLoader.getIdeHelper().invokeLater(() -> {
             if (loading) {
@@ -132,15 +177,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 this.setEditor(this.inputEditor);
             }
         });
-    }
-
-    public void setValue(T v) {
-
-    }
-
-    @Override
-    public T getValue() {
-        return (T) this.getSelectedItem();
     }
 
     protected String getItemText(Object item) {
@@ -158,23 +194,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Nullable
     protected ExtendableTextComponent.Extension getExtension() {
         return null;
-    }
-
-    protected void setItems(final List<? extends T> items) {
-        this.removeAllItems();
-        items.forEach(this::addItem);
-        final T defaultValue = this.getDefaultValue();
-        if (defaultValue != null && items.contains(defaultValue)) {
-            this.setSelectedItem(defaultValue);
-        }
-    }
-
-    protected List<T> getItems() {
-        final List<T> result = new ArrayList<>();
-        for (int i = 0; i < this.getItemCount(); i++) {
-            result.add(this.getItemAt(i));
-        }
-        return result;
     }
 
     protected Observable<? extends List<? extends T>> loadItemsAsync() {
@@ -202,11 +221,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     protected boolean isFilterable() {
         return true;
-    }
-
-    public void clear() {
-        this.removeAllItems();
-        this.setSelectedItem(null);
     }
 
     class AzureComboBoxEditor extends BasicComboBoxEditor {
@@ -267,11 +281,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
             getEditorComponent().setEditable(true);
             getEditorComponent().setText(StringUtils.EMPTY);
-            itemList = UIUtils.listComboBoxItems(AzureComboBox.this);
+            itemList = AzureComboBox.this.getItems();
             // todo: support customized combo box filter
-            comboFilterListener = new ComboFilterListener(itemList,
-                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(
-                                                              item), input));
+            final BiPredicate<T, String> predicate = (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input);
+            comboFilterListener = new ComboFilterListener(itemList, predicate);
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 
@@ -282,9 +295,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 getEditorComponent().getDocument().removeDocumentListener(comboFilterListener);
             }
             final Object selectedItem = AzureComboBox.this.getSelectedItem();
-            AzureComboBox.this.removeAllItems();
             AzureComboBox.this.setItems(itemList);
-            AzureComboBox.this.setSelectedItem(selectedItem);
+            if (!Objects.equals(selectedItem, AzureComboBox.this.getValue())) {
+                AzureComboBox.this.setSelectedItem(selectedItem);
+            }
             getEditorComponent().setText(getItemText(selectedItem));
         }
 

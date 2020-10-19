@@ -31,6 +31,8 @@ public interface AzureFormInput<T> extends Validatable {
 
     T getValue();
 
+    void setValue(final T val);
+
     @NotNull
     default AzureValidationInfo doValidate() {
         final T value = this.getValue();
