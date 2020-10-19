@@ -42,6 +42,14 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
         super(project);
     }
 
+    public void setData(final T config) {
+        this.getForm().setData(config);
+    }
+
+    public T getData() {
+        return this.getForm().getData();
+    }
+
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
         final AzureFormPanel<T> basicForm = this.getBasicFormPanel();

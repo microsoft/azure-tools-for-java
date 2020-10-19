@@ -34,7 +34,9 @@ public class SubscriptionComboBox extends AzureComboBox<Subscription> {
     @NotNull
     @Override
     protected List<Subscription> loadItems() throws Exception {
-        return AzureMvpModel.getInstance().getSelectedSubscriptions();
+        final List<Subscription> items = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        this.setValue(items.get(0)); // select the first subscription
+        return items;
     }
 
     @Override

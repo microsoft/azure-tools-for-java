@@ -92,6 +92,11 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     }
 
     @Override
+    public void setData(final ResourceGroupMock data) {
+
+    }
+
+    @Override
     public List<AzureFormInput<?>> getInputs() {
         return Collections.singletonList(this.textName);
     }

@@ -22,21 +22,31 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.TitledSeparator;
+import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.artifact.ArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
+import com.microsoft.azure.toolkit.lib.appservice.ResourceGroupMock;
+import com.microsoft.azure.toolkit.lib.appservice.ServicePlanMock;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel<WebAppConfig> {
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
+
     private JPanel contentPanel;
 
     private AppNameInput textName;
@@ -45,16 +55,53 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
+
+    public WebAppConfigFormPanelBasic() {
+        super();
+        $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
+        this.init();
+    }
+
+    private void init() {
+        final String date = DATE_FORMAT.format(new Date());
+        final Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        final String defaultWebAppName = String.format("app-%s-%s", project.getName(), date);
+        this.textName.setValue(defaultWebAppName);
+        final List<Subscription> items = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        this.textName.setSubscription(items.get(0)); // select the first subscription as the default
+    }
+
     @Override
     public WebAppConfig getData() {
+        final String date = DATE_FORMAT.format(new Date());
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
         final Path path = this.selectorApplication.getValue();
-        return WebAppConfig.builder()
-                           .name(name)
-                           .platform(platform)
-                           .application(path)
-                           .build();
+
+        final WebAppConfig config = WebAppConfig.builder().build();
+        final ResourceGroupMock group = ResourceGroupMock.builder().build();
+        group.setName(String.format("rg-%s-%s", name, date));
+        config.setResourceGroup(group);
+        config.setName(name);
+        config.setPlatform(platform);
+        config.setRegion(WebAppConfig.DEFAULT_REGION);
+
+        final ServicePlanMock plan = ServicePlanMock.builder().build();
+        plan.setName(String.format("sp-%s-%s", name, date));
+        plan.setTier(WebAppConfig.DEFAULT_PRICING_TIER);
+        plan.setOs(platform.getOs());
+        plan.setRegion(WebAppConfig.DEFAULT_REGION);
+        config.setServicePlan(plan);
+
+        config.setApplication(path);
+        return config;
+    }
+
+    @Override
+    public void setData(final WebAppConfig config) {
+        this.textName.setValue(config.getName());
+        this.selectorPlatform.setValue(config.getPlatform());
+        this.selectorApplication.setValue(config.getApplication());
     }
 
     @Override

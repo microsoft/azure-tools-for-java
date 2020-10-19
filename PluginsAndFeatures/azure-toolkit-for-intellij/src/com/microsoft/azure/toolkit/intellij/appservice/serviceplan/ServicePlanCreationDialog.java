@@ -101,6 +101,11 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     }
 
     @Override
+    public void setData(final ServicePlanMock data) {
+
+    }
+
+    @Override
     public List<AzureFormInput<?>> getInputs() {
         return Collections.singletonList(this.textName);
     }

@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 public interface AzureForm<T> {
     T getData();
 
+    void setData(T data);
+
     List<AzureFormInput<?>> getInputs();
 
     default List<AzureValidationInfo> validateData() {
