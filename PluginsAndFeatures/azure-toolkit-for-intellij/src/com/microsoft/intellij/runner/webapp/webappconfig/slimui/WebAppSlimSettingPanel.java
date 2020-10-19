@@ -40,10 +40,10 @@ import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.util.UIUtils;
+import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -54,6 +54,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -96,10 +97,13 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private WebAppComboBox comboBoxWebApp;
     private HideableDecorator slotDecorator;
 
+    private WebAppConfiguration webAppConfiguration;
+
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project);
         this.presenter = new WebAppDeployViewPresenterSlim();
         this.presenter.onAttachView(this);
+        this.webAppConfiguration = webAppConfiguration;
 
         final ButtonGroup slotButtonGroup = new ButtonGroup();
         slotButtonGroup.add(rbtNewSlot);
@@ -215,7 +219,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel, WebAppComboBoxModel::isSameWebApp);
         }
         if (configuration.getAzureArtifactType() != null) {
-            comboBoxArtifact.refreshItems(configuration.getAzureArtifactType(), configuration.getTargetPath());
+            comboBoxArtifact.refreshItems(configuration.getAzureArtifactType(), configuration.getTargetPath(), configuration.getArtifactIdentifier());
         } else {
             comboBoxArtifact.refreshItems();
         }
@@ -254,12 +258,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (selectedWebApp != null) {
             configuration.setModel(selectedWebApp);
         }
-        final AzureArtifact azureArtifact = comboBoxArtifact.getValue();
-        if (azureArtifact != null) {
-            configuration.setAzureArtifactType(azureArtifact.getType());
-            configuration.setTargetPath(azureArtifact.getTargetPath());
-            configuration.setTargetName(FilenameUtils.getName(azureArtifact.getTargetPath()));
-        }
+        configuration.saveArtifact(comboBoxArtifact.getValue());
         configuration.setDeployToSlot(chkDeployToSlot.isSelected());
         configuration.setSlotPanelVisible(slotDecorator.isExpanded());
         chkToRoot.setVisible(isAbleToDeployToRoot(configuration.getTargetName()));
@@ -324,6 +323,23 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         comboBoxArtifact.setFileChooserDescriptor(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
+        });
+        comboBoxArtifact.addItemListener(event -> {
+            if (!(event.getItem() instanceof AzureArtifact)) {
+                return;
+            }
+            final AzureArtifact azureArtifact = (AzureArtifact) event.getItem();
+            DefaultLoader.getIdeHelper().invokeLater(() -> {
+                try {
+                    if (event.getStateChange() == ItemEvent.DESELECTED) {
+                        BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), azureArtifact, webAppConfiguration, false);
+                    } else if (event.getStateChange() == ItemEvent.SELECTED) {
+                        BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), azureArtifact, webAppConfiguration, true);
+                    }
+                } catch (IllegalAccessException e) {
+                    // swallow before run task errors
+                }
+            });
         });
     }
 

@@ -30,6 +30,15 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
     private AzureArtifactType azureArtifactType;
     private boolean openBrowserAfterDeployment = true;
     private boolean slotPanelVisible = false;
+    private String artifactIdentifier;
+
+    public String getArtifactIdentifier() {
+        return artifactIdentifier;
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        this.artifactIdentifier = artifactIdentifier;
+    }
 
     public boolean isOpenBrowserAfterDeployment() {
         return openBrowserAfterDeployment;

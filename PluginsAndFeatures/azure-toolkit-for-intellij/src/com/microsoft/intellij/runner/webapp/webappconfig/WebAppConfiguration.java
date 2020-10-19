@@ -39,7 +39,10 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.components.AzureArtifactType;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +59,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
+    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar|.ear) artifact has not been configured.";
     private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
         + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
         + "the digits '0' through '9', '.', '-' and '_'.";
@@ -351,6 +354,22 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void setAzureArtifactType(final AzureArtifactType azureArtifactType) {
         webAppSettingModel.setAzureArtifactType(azureArtifactType);
+    }
+
+    public String getArtifactIdentifier() {
+        return webAppSettingModel.getArtifactIdentifier();
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        webAppSettingModel.setArtifactIdentifier(artifactIdentifier);
+    }
+
+    public void saveArtifact(AzureArtifact azureArtifact) {
+        webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
+        webAppSettingModel.setTargetPath(azureArtifact == null ? null : azureArtifact.getTargetPath());
+        webAppSettingModel.setTargetName(azureArtifact == null ? null : FilenameUtils.getName(azureArtifact.getTargetPath()));
+        webAppSettingModel.setArtifactIdentifier(
+                azureArtifact == null ? null : AzureArtifactManager.getInstance(getProject()).getArtifactIdentifier(azureArtifact));
     }
 
     public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {

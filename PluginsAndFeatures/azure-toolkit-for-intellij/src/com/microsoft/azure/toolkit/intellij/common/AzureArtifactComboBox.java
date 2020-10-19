@@ -60,7 +60,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         this.filter = filter;
     }
 
-    public synchronized void refreshItems(AzureArtifactType defaultArtifactType, String defaultPath) {
+    public synchronized void refreshItems(AzureArtifactType defaultArtifactType, String defaultPath, String artifactIdentifier) {
         unsubscribeSubscription(subscription);
         this.setLoading(true);
         subscription = this.loadItemsAsync()
@@ -68,7 +68,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
                                this.removeAllItems();
                                this.setItems(items);
                                this.setLoading(false);
-                               this.resetDefaultValue(defaultArtifactType, defaultPath);
+                               this.resetDefaultValue(defaultArtifactType, defaultPath, artifactIdentifier);
                            }), (e) -> {
                                    this.handleLoadingError(e);
                                });
@@ -127,12 +127,12 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         }
     }
 
-    private void resetDefaultValue(final AzureArtifactType defaultArtifactType, final String defaultPath) {
+    private void resetDefaultValue(final AzureArtifactType defaultArtifactType, final String defaultPath, final String artifactIdentifier) {
         final List<AzureArtifact> artifacts = UIUtils.listComboBoxItems(this);
         final AzureArtifact defaultArtifact =
-                artifacts.stream().filter(artifact -> StringUtils.equals(artifact.getTargetPath(), defaultPath)
-                        && defaultArtifactType == artifact.getType())
-                         .findFirst().orElse(null);
+                artifacts.stream()
+                         .filter(artifact -> StringUtils.equals(artifactIdentifier, AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)))
+                                                        .findFirst().orElse(null);
         if (defaultArtifact != null) {
             this.setSelectedItem(defaultArtifact);
         } else if (defaultArtifactType == AzureArtifactType.File) {
