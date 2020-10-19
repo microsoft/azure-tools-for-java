@@ -66,4 +66,10 @@ public class WebAppCreationDialog extends AppServiceConfigDialog<WebAppConfig> {
     protected String getDialogTitle() {
         return TITLE_CREATE_WEBAPP_DIALOG;
     }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        advancedForm = new WebAppConfigFormPanelAdvanced(project);
+        basicForm = new WebAppConfigFormPanelBasic(project);
+    }
 }

@@ -22,8 +22,9 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.webapp;
 
+import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.component.AppServiceConfigPanel;
-import com.microsoft.azure.toolkit.intellij.appservice.component.input.ComboBoxDeployment;
+import com.microsoft.azure.toolkit.intellij.appservice.component.input.ComboBoxAzureArtifact;
 import com.microsoft.azure.toolkit.intellij.appservice.component.input.ComboBoxPlatform;
 import com.microsoft.azure.toolkit.intellij.appservice.component.input.TextInputAppName;
 import com.microsoft.azure.toolkit.lib.AzureFormInput;
@@ -32,21 +33,28 @@ import com.microsoft.azure.toolkit.lib.appservice.webapp.WebAppConfig;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 public class WebAppConfigFormPanelBasic extends JPanel implements AppServiceConfigPanel<WebAppConfig> {
+    private Project project;
     private JPanel contentPanel;
 
     private TextInputAppName textName;
     private ComboBoxPlatform selectorPlatform;
-    private ComboBoxDeployment selectorApplication;
+    private ComboBoxAzureArtifact selectorApplication;
+
+    public WebAppConfigFormPanelBasic(final Project project) {
+        super();
+        this.project = project;
+    }
 
     @Override
     public WebAppConfig getData() {
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
-        final Path path = this.selectorApplication.getValue();
+        final Path path = Paths.get(this.selectorApplication.getValue().getTargetPath());
         return WebAppConfig.builder()
                            .name(name)
                            .platform(platform)
@@ -69,5 +77,10 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AppServiceConf
     public void setVisible(final boolean visible) {
         this.contentPanel.setVisible(visible);
         super.setVisible(visible);
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        this.selectorApplication = new ComboBoxAzureArtifact(project);
     }
 }

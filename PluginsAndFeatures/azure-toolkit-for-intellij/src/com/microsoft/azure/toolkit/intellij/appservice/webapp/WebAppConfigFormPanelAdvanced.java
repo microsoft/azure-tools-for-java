@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.webapp;
 
+import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
@@ -36,11 +37,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ItemEvent;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 public class WebAppConfigFormPanelAdvanced extends JPanel implements AppServiceConfigPanel<WebAppConfig> {
     private static final String NOT_APPLICABLE = "N/A";
+    private Project project;
 
     private JPanel contentPanel;
 
@@ -52,11 +55,12 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AppServiceC
     private ComboBoxRegion selectorRegion;
 
     private JLabel textSku;
-    private ComboBoxDeployment selectorApplication;
     private ComboBoxServicePlan selectorServicePlan;
+    private ComboBoxAzureArtifact selectorApplication;
 
-    public WebAppConfigFormPanelAdvanced() {
+    public WebAppConfigFormPanelAdvanced(final Project project) {
         super();
+        this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
@@ -72,7 +76,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AppServiceC
 
         final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
 
-        final Path path = this.selectorApplication.getValue();
+        final Path path = Paths.get(this.selectorApplication.getValue().getTargetPath());
 
         return WebAppConfig.builder()
                            .subscription(subscription)
@@ -130,5 +134,10 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AppServiceC
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
             this.textSku.setText(NOT_APPLICABLE);
         }
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        this.selectorApplication = new ComboBoxAzureArtifact(project);
     }
 }

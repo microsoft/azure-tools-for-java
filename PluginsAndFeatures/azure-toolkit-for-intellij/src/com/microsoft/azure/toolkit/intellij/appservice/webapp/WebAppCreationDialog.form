@@ -30,15 +30,14 @@
             <properties/>
             <border type="none"/>
             <children>
-              <nested-form id="793ad" form-file="com/microsoft/azure/toolkit/intellij/appservice/webapp/WebAppConfigFormPanelAdvanced.form"
-                           binding="advancedForm">
+              <nested-form id="793ad" form-file="com/microsoft/azure/toolkit/intellij/appservice/webapp/WebAppConfigFormPanelAdvanced.form" binding="advancedForm" custom-create="true">
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="295" height="366"/>
                   </grid>
                 </constraints>
               </nested-form>
-              <nested-form id="797d" form-file="com/microsoft/azure/toolkit/intellij/appservice/webapp/WebAppConfigFormPanelBasic.form" binding="basicForm">
+              <nested-form id="797d" form-file="com/microsoft/azure/toolkit/intellij/appservice/webapp/WebAppConfigFormPanelBasic.form" binding="basicForm" custom-create="true">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="295" height="150"/>

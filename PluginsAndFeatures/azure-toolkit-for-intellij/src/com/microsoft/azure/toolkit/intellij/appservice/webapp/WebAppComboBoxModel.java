@@ -25,6 +25,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.webapp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
+import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
@@ -44,7 +45,11 @@ public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
 
     public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
         this.resourceId = webAppSettingModel.getWebAppId();
-        this.appName = webAppSettingModel.getWebAppName();
+        // In case recover from configuration, get the app name from resource id
+        this.appName =
+                StringUtils.isEmpty(webAppSettingModel.getWebAppName()) && StringUtils.isNotEmpty(resourceId) ?
+                AzureMvpModel.getSegment(resourceId, "sites") :
+                webAppSettingModel.getWebAppName();
         this.resourceGroup = webAppSettingModel.getResourceGroup();
         this.os = webAppSettingModel.getOS().name();
         this.runtime = webAppSettingModel.getOS() == OperatingSystem.LINUX ?
