@@ -23,6 +23,7 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.resources.ResourceGroup;
@@ -64,6 +65,8 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     private JLabel textSku;
     private AzureArtifactComboBox selectorApplication;
     private ServicePlanComboBox selectorServicePlan;
+    private TitledSeparator deploymentTitle;
+    private JLabel deploymentLabel;
 
     public WebAppConfigFormPanelAdvanced(final Project project) {
         super();
@@ -114,6 +117,12 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     public void setVisible(final boolean visible) {
         this.contentPanel.setVisible(visible);
         super.setVisible(visible);
+    }
+
+    public void setDeploymentVisible(boolean visible) {
+        this.deploymentTitle.setVisible(visible);
+        this.deploymentLabel.setVisible(visible);
+        this.selectorApplication.setVisible(visible);
     }
 
     private void init() {

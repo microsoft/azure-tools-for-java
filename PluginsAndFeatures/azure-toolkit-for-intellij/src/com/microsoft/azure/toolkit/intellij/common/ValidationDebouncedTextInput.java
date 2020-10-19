@@ -22,6 +22,8 @@
 
 package com.microsoft.azure.toolkit.intellij.common;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.ui.AnimatedIcon;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
@@ -30,6 +32,9 @@ public class ValidationDebouncedTextInput extends AzureTextInput {
     protected static final int DEBOUNCE_DELAY = 500;
     protected AzureValidationInfo validationInfo;
     private final Debouncer validator;
+    private final Extension spinner = Extension.create(new AnimatedIcon.Default(), "validating", null);
+    private final Extension invalid = Extension.create(AllIcons.General.BalloonError, "invalid", null);
+    private final Extension valid = Extension.create(AllIcons.General.InspectionsOK, "valid", null);
 
     public ValidationDebouncedTextInput() {
         super();
@@ -42,12 +47,21 @@ public class ValidationDebouncedTextInput extends AzureTextInput {
 
     @Override
     public AzureValidationInfo doValidate() {
+        AzureValidationInfo info = this.validationInfo;
         if (this.validator.isPending()) {
-            return AzureValidationInfo.PENDING;
+            info = AzureValidationInfo.PENDING;
         } else if (this.validationInfo == null) {
             this.validationInfo = this.doValidateValue();
+            info = this.validationInfo;
         }
-        return this.validationInfo;
+        if (info == AzureValidationInfo.PENDING) {
+            this.setExtensions(spinner);
+        } else if (info == AzureValidationInfo.OK) {
+            this.setExtensions(valid);
+        } else {
+            this.setExtensions(invalid);
+        }
+        return info;
     }
 
     protected void revalidateValue() {

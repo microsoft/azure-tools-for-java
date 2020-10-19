@@ -45,6 +45,12 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
         this.toggleAdvancedMode(false);
     }
 
+    public void setDeploymentVisible(boolean visible) {
+        this.advancedForm.setDeploymentVisible(visible);
+        this.basicForm.setDeploymentVisible(visible);
+        this.pack();
+    }
+
     @Override
     protected AzureFormPanel<WebAppConfig> getAdvancedFormPanel() {
         return this.advancedForm;

@@ -22,10 +22,12 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 
+import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -48,7 +50,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     private final OperatingSystem os;
     private final Region region;
     private JPanel contentPanel;
-    private JLabel labelDescription;
+    private JBLabel labelDescription;
     private ValidationDebouncedTextInput textName;
     private PricingTierComboBox comboBoxPricingTier;
 
@@ -59,6 +61,8 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         this.os = os;
         this.region = region;
         this.textName.setValidator(this::validateName);
+        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, DESCRIPTION);
+        this.pack();
     }
 
     private AzureValidationInfo validateName() {
@@ -101,9 +105,5 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Collections.singletonList(this.textName);
-    }
-
-    private void createUIComponents() {
-        this.labelDescription = new JLabel("<html><body><b>" + DESCRIPTION + "</b></body></html>");
     }
 }

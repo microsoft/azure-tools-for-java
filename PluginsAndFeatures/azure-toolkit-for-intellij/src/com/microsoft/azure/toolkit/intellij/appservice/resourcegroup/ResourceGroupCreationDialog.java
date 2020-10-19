@@ -22,8 +22,10 @@
 
 package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
 
+import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
+import com.microsoft.azure.toolkit.intellij.common.SwingUtils;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
 import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
@@ -38,20 +40,22 @@ import java.util.Collections;
 import java.util.List;
 
 public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
-    implements AzureForm<DraftResourceGroup> {
+        implements AzureForm<DraftResourceGroup> {
     public static final String DESCRIPTION =
-        "A resource group is a container that holds related resources for an Azure solution.";
+            "A resource group is a container that holds related resources for an Azure solution.";
     public static final String DIALOG_TITLE = "New Resource Group";
     private final Subscription subscription;
+    private JBLabel labelDescription;
     private JPanel contentPanel;
     private ValidationDebouncedTextInput textName;
-    private JLabel labelDescription;
 
     public ResourceGroupCreationDialog(Subscription subscription) {
         super();
         this.init();
         this.subscription = subscription;
         this.textName.setValidator(() -> validateName(subscription));
+        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, DESCRIPTION);
+        this.pack();
     }
 
     private AzureValidationInfo validateName(final Subscription subscription) {
@@ -91,9 +95,5 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Collections.singletonList(this.textName);
-    }
-
-    private void createUIComponents() {
-        this.labelDescription = new JLabel("<html><body><p>" + DESCRIPTION + "</p></body></html>");
     }
 }
