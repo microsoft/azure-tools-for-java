@@ -23,6 +23,7 @@ package com.microsoft.intellij.ui.components;
 
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -70,6 +71,8 @@ public class AzureArtifactManager {
                 return artifact.getReferencedObject().toString();
             case Artifact:
                 return ((Artifact) artifact.getReferencedObject()).getOutputFilePath();
+            case File:
+                return getFileForDeployment(artifact);
             default:
                 return null;
         }
@@ -83,6 +86,8 @@ public class AzureArtifactManager {
                 return MavenUtils.getSpringBootFinalJarFilePath(project, (MavenProject) artifact.getReferencedObject());
             case Artifact:
                 return ((Artifact) artifact.getReferencedObject()).getOutputFilePath();
+            case File:
+                return ((VirtualFile) artifact.getReferencedObject()).getPath();
             default:
                 return null;
         }
@@ -102,6 +107,8 @@ public class AzureArtifactManager {
                 return ((MavenProject) artifact.getReferencedObject()).getPackaging();
             case Artifact:
                 return FileNameUtils.getExtension(((Artifact) artifact.getReferencedObject()).getOutputFilePath());
+            case File:
+                return FileNameUtils.getExtension(getFileForDeployment(artifact));
             default:
                 return null;
         }
