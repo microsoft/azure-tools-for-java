@@ -1,4 +1,4 @@
-package com.microsoft.azure.toolkit.intellij.common;/*
+/*
  * Copyright (c) Microsoft Corporation
  *
  * All rights reserved.
@@ -19,6 +19,8 @@ package com.microsoft.azure.toolkit.intellij.common;/*
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+package com.microsoft.azure.toolkit.intellij.common;
 
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.utils.Debouncer;
