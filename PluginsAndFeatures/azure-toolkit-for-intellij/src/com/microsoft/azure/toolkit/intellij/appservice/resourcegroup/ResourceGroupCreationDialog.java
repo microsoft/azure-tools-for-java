@@ -25,7 +25,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.resourcegroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
-import com.microsoft.azure.toolkit.lib.appservice.ResourceGroupMock;
+import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -37,8 +37,8 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 
-public class ResourceGroupCreationDialog extends AzureDialog<ResourceGroupMock>
-    implements AzureForm<ResourceGroupMock> {
+public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
+    implements AzureForm<DraftResourceGroup> {
     public static final String DESCRIPTION =
         "A resource group is a container that holds related resources for an Azure solution.";
     public static final String DIALOG_TITLE = "New Resource Group";
@@ -65,7 +65,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<ResourceGroupMock>
     }
 
     @Override
-    public AzureForm<ResourceGroupMock> getForm() {
+    public AzureForm<DraftResourceGroup> getForm() {
         return this;
     }
 
@@ -81,8 +81,8 @@ public class ResourceGroupCreationDialog extends AzureDialog<ResourceGroupMock>
     }
 
     @Override
-    public ResourceGroupMock getData() {
-        final ResourceGroupMock.ResourceGroupMockBuilder builder = ResourceGroupMock.builder();
+    public DraftResourceGroup getData() {
+        final DraftResourceGroup.DraftResourceGroupBuilder builder = DraftResourceGroup.builder();
         builder.subscription(this.subscription)
                .name(this.textName.getValue());
         return builder.build();

@@ -27,8 +27,8 @@ import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.lib.appservice.Mock;
-import com.microsoft.azure.toolkit.lib.appservice.ResourceGroupMock;
+import com.microsoft.azure.toolkit.lib.appservice.Draft;
+import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -41,14 +41,14 @@ import java.util.stream.Collectors;
 
 public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private Subscription subscription;
-    private List<ResourceGroupMock> localItems = new ArrayList<>();
+    private List<DraftResourceGroup> localItems = new ArrayList<>();
 
     @Override
     protected String getItemText(final Object item) {
         if (Objects.isNull(item)) {
             return EMPTY_ITEM;
         }
-        if (item instanceof Mock) {
+        if (item instanceof Draft) {
             return "(New) " + ((ResourceGroup) item).name();
         }
         return ((ResourceGroup) item).name();

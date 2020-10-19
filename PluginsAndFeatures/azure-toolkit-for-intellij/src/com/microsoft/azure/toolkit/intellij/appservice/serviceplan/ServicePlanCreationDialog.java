@@ -27,7 +27,7 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
 import com.microsoft.azure.toolkit.intellij.common.ValidationDebouncedTextInput;
-import com.microsoft.azure.toolkit.lib.appservice.ServicePlanMock;
+import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.common.form.AzureForm;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
@@ -39,8 +39,8 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 
-public class ServicePlanCreationDialog extends AzureDialog<ServicePlanMock>
-    implements AzureForm<ServicePlanMock> {
+public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
+    implements AzureForm<DraftServicePlan> {
     public static final String DESCRIPTION =
         "App Service plan pricing tier determines the location, features, cost and compute resources associated with your app.";
     public static final String DIALOG_TITLE = "New App Service Plan";
@@ -72,7 +72,7 @@ public class ServicePlanCreationDialog extends AzureDialog<ServicePlanMock>
     }
 
     @Override
-    public AzureForm<ServicePlanMock> getForm() {
+    public AzureForm<DraftServicePlan> getForm() {
         return this;
     }
 
@@ -88,8 +88,8 @@ public class ServicePlanCreationDialog extends AzureDialog<ServicePlanMock>
     }
 
     @Override
-    public ServicePlanMock getData() {
-        final ServicePlanMock.ServicePlanMockBuilder builder = ServicePlanMock.builder();
+    public DraftServicePlan getData() {
+        final DraftServicePlan.DraftServicePlanBuilder builder = DraftServicePlan.builder();
         builder.subscription(this.subscription)
                .name(this.textName.getValue())
                .os(this.os)

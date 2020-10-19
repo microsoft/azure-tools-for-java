@@ -29,8 +29,8 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.lib.appservice.Mock;
-import com.microsoft.azure.toolkit.lib.appservice.ServicePlanMock;
+import com.microsoft.azure.toolkit.lib.appservice.Draft;
+import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
 
     private Subscription subscription;
-    private List<ServicePlanMock> localItems = new ArrayList<>();
+    private List<DraftServicePlan> localItems = new ArrayList<>();
     private OperatingSystem os;
     private Region region;
 
@@ -54,7 +54,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         if (Objects.isNull(item)) {
             return EMPTY_ITEM;
         }
-        if (item instanceof Mock) {
+        if (item instanceof Draft) {
             return "(New) " + ((AppServicePlan) item).name();
         }
         return ((AppServicePlan) item).name();

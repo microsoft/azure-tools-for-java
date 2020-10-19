@@ -22,15 +22,14 @@
 
 package com.microsoft.azure.toolkit.lib.appservice;
 
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.ResourceGroupExportResult;
-import com.microsoft.azure.management.resources.ResourceGroupExportTemplateOptions;
+import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.implementation.AppServiceManager;
+import com.microsoft.azure.management.appservice.implementation.AppServicePlanInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.management.resources.implementation.ResourceGroupInner;
 import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
-import com.microsoft.rest.ServiceCallback;
-import com.microsoft.rest.ServiceFuture;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,10 +39,14 @@ import java.util.Map;
 
 @Setter
 @Builder
-public class ResourceGroupMock implements ResourceGroup, Mock {
+public class DraftServicePlan implements AppServicePlan, Draft {
+
     @Getter
     private Subscription subscription;
     private String name;
+    private Region region;
+    private OperatingSystem os;
+    private PricingTier tier;
 
     @Override
     public String name() {
@@ -52,27 +55,46 @@ public class ResourceGroupMock implements ResourceGroup, Mock {
 
     @Override
     public Region region() {
+        return this.region;
+    }
+
+    @Override
+    public PricingTier pricingTier() {
+        return this.tier;
+    }
+
+    @Override
+    public OperatingSystem operatingSystem() {
+        return this.os;
+    }
+
+    @Override
+    public String resourceGroupName() {
         throw new OperationNotSupportedException();
     }
 
     @Override
-    public String provisioningState() {
+    public int maxInstances() {
         throw new OperationNotSupportedException();
     }
 
     @Override
-    public ResourceGroupExportResult exportTemplate(final ResourceGroupExportTemplateOptions resourceGroupExportTemplateOptions) {
+    public int capacity() {
         throw new OperationNotSupportedException();
     }
 
     @Override
-    public Observable<ResourceGroupExportResult> exportTemplateAsync(final ResourceGroupExportTemplateOptions resourceGroupExportTemplateOptions) {
+    public boolean perSiteScaling() {
         throw new OperationNotSupportedException();
     }
 
     @Override
-    public ServiceFuture<ResourceGroupExportResult> exportTemplateAsync(final ResourceGroupExportTemplateOptions resourceGroupExportTemplateOptions,
-                                                                        final ServiceCallback<ResourceGroupExportResult> serviceCallback) {
+    public int numberOfWebApps() {
+        throw new OperationNotSupportedException();
+    }
+
+    @Override
+    public AppServiceManager manager() {
         throw new OperationNotSupportedException();
     }
 
@@ -97,7 +119,7 @@ public class ResourceGroupMock implements ResourceGroup, Mock {
     }
 
     @Override
-    public ResourceGroupInner inner() {
+    public AppServicePlanInner inner() {
         throw new OperationNotSupportedException();
     }
 
@@ -107,12 +129,12 @@ public class ResourceGroupMock implements ResourceGroup, Mock {
     }
 
     @Override
-    public ResourceGroup refresh() {
+    public AppServicePlan refresh() {
         throw new OperationNotSupportedException();
     }
 
     @Override
-    public Observable<ResourceGroup> refreshAsync() {
+    public Observable<AppServicePlan> refreshAsync() {
         throw new OperationNotSupportedException();
     }
 
