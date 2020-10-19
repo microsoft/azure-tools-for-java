@@ -23,5 +23,5 @@
 package com.microsoft.intellij.ui.components;
 
 public enum AzureArtifactType {
-    Gradle, Maven, Artifact
+    Gradle, Maven, Artifact, File
 }

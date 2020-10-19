@@ -29,19 +29,22 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
-import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.intellij.appservice.component.input.ComboBoxAzureArtifact;
 import com.microsoft.azure.toolkit.intellij.appservice.webapp.ComboBoxWebApp;
 import com.microsoft.azure.toolkit.intellij.appservice.webapp.WebAppComboBoxModel;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
+import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import icons.MavenIcons;
+import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -58,7 +61,7 @@ import java.util.Date;
 import java.util.List;
 
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
-
+    private static final String[] FILE_NAME_EXT = {"war", "jar", "ear"};
     private static final String DEPLOYMENT_SLOT = "Deployment Slot";
     private static final String DEFAULT_SLOT_NAME = "slot-%s";
     private static final String CREATE_NEW_WEBAPP = "Create New WebApp";
@@ -73,11 +76,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JTextField txtNewSlotName;
     private JComboBox cbxSlotConfigurationSource;
     private JCheckBox chkDeployToSlot;
-    private JLabel lblArtifact;
-    private JComboBox cbArtifact;
     private JCheckBox chkToRoot;
-    private JLabel lblMavenProject;
-    private JComboBox cbMavenProject;
     private JPanel pnlRoot;
     private JPanel pnlSlotDetails;
     private JRadioButton rbtNewSlot;
@@ -94,6 +93,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private JPanel pnlExistingSlot;
     private JButton btnSlotHover;
     private ComboBoxWebApp comboBoxWebApp;
+    private ComboBoxAzureArtifact comboBoxArtifact;
     private HideableDecorator slotDecorator;
 
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
@@ -127,27 +127,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             public void focusLost(FocusEvent focusEvent) {
                 btnSlotHover.setBorderPainted(false);
                 IdeTooltipManager.getInstance().dispose();
-            }
-        });
-
-        cbArtifact.addActionListener(e -> artifactActionPerformed((Artifact) cbArtifact.getSelectedItem()));
-        cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
-            @Override
-            public void customize(JList list, Artifact artifact, int index, boolean isSelected, boolean cellHasFocus) {
-                if (artifact != null) {
-                    setIcon(artifact.getArtifactType().getIcon());
-                    setText(artifact.getName());
-                }
-            }
-        });
-
-        cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
-            @Override
-            public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
-                if (mavenProject != null) {
-                    setIcon(MavenIcons.MavenProject);
-                    setText(mavenProject.toString());
-                }
             }
         });
 
@@ -206,25 +185,25 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     @NotNull
     @Override
     protected JComboBox<Artifact> getCbArtifact() {
-        return cbArtifact;
+        return new JComboBox<>();
     }
 
     @NotNull
     @Override
     protected JLabel getLblArtifact() {
-        return lblArtifact;
+        return new JLabel();
     }
 
     @NotNull
     @Override
     protected JComboBox<MavenProject> getCbMavenProject() {
-        return cbMavenProject;
+        return new JComboBox<>();
     }
 
     @NotNull
     @Override
     protected JLabel getLblMavenProject() {
-        return lblMavenProject;
+        return new JLabel();
     }
 
     @Override
@@ -234,6 +213,11 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             comboBoxWebApp.refreshItems();
         } else {
             comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel, WebAppComboBoxModel::isSameWebApp);
+        }
+        if (configuration.getAzureArtifactType() != null) {
+            comboBoxArtifact.refreshItems(configuration.getAzureArtifactType(), configuration.getTargetPath());
+        } else {
+            comboBoxArtifact.refreshItems();
         }
         if (configuration.getWebAppId() != null && configuration.isDeployToSlot()) {
             toggleSlotPanel(true);
@@ -270,12 +254,15 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (selectedWebApp != null) {
             configuration.setModel(selectedWebApp);
         }
-        final String targetName = getTargetName();
-        configuration.setTargetPath(getTargetPath());
-        configuration.setTargetName(targetName);
+        final AzureArtifact azureArtifact = comboBoxArtifact.getValue();
+        if (azureArtifact != null) {
+            configuration.setAzureArtifactType(azureArtifact.getType());
+            configuration.setTargetPath(azureArtifact.getTargetPath());
+            configuration.setTargetName(FilenameUtils.getName(azureArtifact.getTargetPath()));
+        }
         configuration.setDeployToSlot(chkDeployToSlot.isSelected());
         configuration.setSlotPanelVisible(slotDecorator.isExpanded());
-        chkToRoot.setVisible(isAbleToDeployToRoot(targetName));
+        chkToRoot.setVisible(isAbleToDeployToRoot(configuration.getTargetName()));
         toggleSlotPanel(configuration.isDeployToSlot() && selectedWebApp != null);
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
@@ -332,6 +319,12 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         comboBoxWebApp = new ComboBoxWebApp();
         comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
+
+        comboBoxArtifact = new ComboBoxAzureArtifact(this.project);
+        comboBoxArtifact.setFileChooserDescriptor(virtualFile -> {
+            final String ext = FileNameUtils.getExtension(virtualFile.getPath());
+            return ArrayUtils.contains(FILE_NAME_EXT, ext);
+        });
     }
 
     private void loadDeploymentSlot(WebAppComboBoxModel selectedWebApp) {

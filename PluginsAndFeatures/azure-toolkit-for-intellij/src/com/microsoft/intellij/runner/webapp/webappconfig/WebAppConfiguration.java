@@ -39,6 +39,7 @@ import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
+import com.microsoft.intellij.ui.components.AzureArtifactType;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,7 +61,7 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
         + "the digits '0' through '9', '.', '-' and '_'.";
 
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
+    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar|ear)$";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
     private static final String INVALID_SLOT_NAME =
         "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
@@ -342,6 +343,14 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void setSlotPanelVisible(boolean slotPanelVisible) {
         webAppSettingModel.setSlotPanelVisible(slotPanelVisible);
+    }
+
+    public AzureArtifactType getAzureArtifactType() {
+        return webAppSettingModel.getAzureArtifactType();
+    }
+
+    public void setAzureArtifactType(final AzureArtifactType azureArtifactType) {
+        webAppSettingModel.setAzureArtifactType(azureArtifactType);
     }
 
     public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {

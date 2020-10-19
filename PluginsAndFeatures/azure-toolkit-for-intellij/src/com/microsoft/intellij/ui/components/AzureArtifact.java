@@ -22,7 +22,9 @@
 
 package com.microsoft.intellij.ui.components;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
@@ -43,6 +45,10 @@ public class AzureArtifact {
         this.type = type;
         this.name = name;
         this.referencedObject = obj;
+    }
+
+    public static AzureArtifact createFromFile(@NotNull VirtualFile virtualFile) {
+        return new AzureArtifact(AzureArtifactType.File, virtualFile.getName(), virtualFile);
     }
 
     public static AzureArtifact createFromArtifact(@NotNull Artifact artifact) {
@@ -69,6 +75,8 @@ public class AzureArtifact {
                 return MavenIcons.MavenProject;
             case Artifact:
                 return ((Artifact) referencedObject).getArtifactType().getIcon();
+            case File:
+                return AllIcons.FileTypes.Archive;
             default:
                 return null;
         }
@@ -101,6 +109,8 @@ public class AzureArtifact {
                 return MavenUtils.getTargetFile((MavenProject) referencedObject);
             case Artifact:
                 return ((Artifact) referencedObject).getOutputFilePath();
+            case File:
+                return ((VirtualFile) referencedObject).getPath();
             default:
                 throw new RuntimeException(String.format("Invalid type '%s' for AzureArtifact", type));
         }
