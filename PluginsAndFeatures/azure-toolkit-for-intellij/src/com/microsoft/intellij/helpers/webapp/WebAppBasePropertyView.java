@@ -171,8 +171,8 @@ public abstract class WebAppBasePropertyView extends BaseEditor implements WebAp
         setTextFieldStyle();
 
         btnGetPublishFile.setIcon(AllIcons.Actions.Download);
-        btnSave.setIcon(CommonIcons.INSTANCE.getSaveChanges());
-        btnDiscard.setIcon(CommonIcons.INSTANCE.getDiscard());
+        btnSave.setIcon(CommonIcons.SaveChanges);
+        btnDiscard.setIcon(CommonIcons.Discard);
     }
 
     protected abstract String getId();

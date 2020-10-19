@@ -95,10 +95,10 @@ public class TableFileEditor implements FileEditor {
             }
         };
 
-        queryButton.setIcon(CommonIcons.INSTANCE.getSearch());
+        queryButton.setIcon(CommonIcons.Search);
         queryButton.addActionListener(queryActionListener);
 
-        refreshButton.setIcon(CommonIcons.INSTANCE.getRefresh());
+        refreshButton.setIcon(CommonIcons.Refresh);
         refreshButton.addActionListener(queryActionListener);
 
         deleteButton.addActionListener(new ActionListener() {

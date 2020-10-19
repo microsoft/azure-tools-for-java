@@ -29,31 +29,31 @@ object CommonIcons {
 
     @JvmField val Azure = load("Azure.svg")
     @JvmField val AzureExplorer = load("AzureExplorer.svg")
-    val Subscriptions by lazy { load("Subscriptions.svg") }
-    val Database by lazy { load("Database.svg") }
-    val WebApp by lazy { load("WebApp.svg") }
-    val Firewall by lazy { load("Firewall.svg") }
+    @JvmField val Subscriptions = load("Subscriptions.svg")
+    @JvmField val Database = load("Database.svg")
+    @JvmField val WebApp = load("WebApp.svg")
+    @JvmField val Firewall = load("Firewall.svg")
 
-    val Warning by lazy { load("AzureWarning.svg") }
+    @JvmField val Warning = load("AzureWarning.svg")
 
-    val Search by lazy { load("Search.svg") }
-    val Refresh by lazy { load("refresh.svg") }
-    val OpenParent by lazy { load("AzureOpenParent.svg") }
-    val Discard by lazy { load("Discard.svg") }
-    val SaveChanges by lazy { load("SaveChanges.svg") }
-    val Open by lazy { load("AzureOpen.svg") }
-    val Upload by lazy { load("AzureUpload.svg") }
+    @JvmField val Search = load("Search.svg")
+    @JvmField val Refresh = load("refresh.svg")
+    @JvmField val OpenParent = load("AzureOpenParent.svg")
+    @JvmField val Discard = load("Discard.svg")
+    @JvmField val SaveChanges = load("SaveChanges.svg")
+    @JvmField val Open = load("AzureOpen.svg")
+    @JvmField val Upload = load("AzureUpload.svg")
 
     @JvmField val PublishAzure = load("publishAzure.svg")
     @JvmField val CodeSamples = load("CodeSamples.svg")
 
-    val Azurite by lazy { load("AzureStorageEmulator.svg") }
+    @JvmField val Azurite = load("AzureStorageEmulator.svg")
 
     @JvmField val AzureActiveDirectory = load("AzureActiveDirectory.svg")
 
     object OS {
-        val Windows by lazy { load("OSWindows.svg") }
-        val Linux by lazy { load("OSLinux.svg") }
+        @JvmField val Windows = load("OSWindows.svg")
+        @JvmField val Linux = load("OSLinux.svg")
     }
 
     object CloudShell {
@@ -67,17 +67,17 @@ object CommonIcons {
     }
 
     object AzureFunctions {
-        val FunctionApp by lazy { load("FunctionApp.svg") }
+        @JvmField val FunctionApp = load("FunctionApp.svg")
         @JvmField val FunctionAppRunConfiguration = load("FunctionAppRunConfiguration.svg")
-        val FunctionAppConfigurationType by lazy { load("FunctionApp.svg") }
-        val TemplateAzureFunc by lazy { load("TemplateAzureFunc.svg") }
+        @JvmField val FunctionAppConfigurationType = load("FunctionApp.svg")
+        @JvmField val TemplateAzureFunc = load("TemplateAzureFunc.svg")
     }
 
     @Suppress("unused")
     object ResourceManagement {
-        val ResourceManagement by lazy { load("AzureARM.svg") }
-        val ResourceGroup by lazy { load("AzureARMResourceGroup.svg") }
-        val Deployment by lazy { load("AzureARMDeployment.svg") }
+        @JvmField val ResourceManagement = load("AzureARM.svg")
+        @JvmField val ResourceGroup = load("AzureARMResourceGroup.svg")
+        @JvmField val Deployment = load("AzureARMDeployment.svg")
     }
 
     private fun load(path: String): Icon = IconLoader.getIcon("/icons/$path", this::class.java)

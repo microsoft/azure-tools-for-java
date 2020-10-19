@@ -220,7 +220,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         sorter.setSortKeys(sortKeys);
         sorter.sort();
 
-        backButton.setIcon(CommonIcons.INSTANCE.getOpenParent());
+        backButton.setIcon(CommonIcons.OpenParent);
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -287,13 +287,13 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         };
 
-        refreshButton.setIcon(CommonIcons.INSTANCE.getRefresh());
+        refreshButton.setIcon(CommonIcons.Refresh);
         refreshButton.addActionListener(queryAction);
 
-        queryButton.setIcon(CommonIcons.INSTANCE.getSearch());
+        queryButton.setIcon(CommonIcons.Search);
         queryButton.addActionListener(queryAction);
 
-        deleteButton.setIcon(CommonIcons.INSTANCE.getDiscard());
+        deleteButton.setIcon(CommonIcons.Discard);
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -301,7 +301,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        saveAsButton.setIcon(CommonIcons.INSTANCE.getSaveChanges());
+        saveAsButton.setIcon(CommonIcons.SaveChanges);
         saveAsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -309,7 +309,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        openButton.setIcon(CommonIcons.INSTANCE.getOpen());
+        openButton.setIcon(CommonIcons.Open);
         openButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -317,7 +317,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             }
         });
 
-        uploadButton.setIcon(CommonIcons.INSTANCE.getUpload());
+        uploadButton.setIcon(CommonIcons.Upload);
         uploadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {

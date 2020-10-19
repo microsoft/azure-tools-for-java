@@ -166,7 +166,7 @@ public class QueueFileEditor implements FileEditor {
             }
         });
 
-        refreshButton.setIcon(CommonIcons.INSTANCE.getRefresh());
+        refreshButton.setIcon(CommonIcons.Refresh);
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -174,7 +174,7 @@ public class QueueFileEditor implements FileEditor {
             }
         });
 
-        dequeueMessageButton.setIcon(CommonIcons.INSTANCE.getOpen());
+        dequeueMessageButton.setIcon(CommonIcons.Open);
         dequeueMessageButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
