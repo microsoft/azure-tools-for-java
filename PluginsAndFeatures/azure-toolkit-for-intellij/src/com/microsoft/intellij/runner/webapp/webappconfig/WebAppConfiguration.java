@@ -365,11 +365,11 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     }
 
     public void saveArtifact(AzureArtifact azureArtifact) {
+        final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
         webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
-        webAppSettingModel.setTargetPath(azureArtifact == null ? null : azureArtifact.getTargetPath());
-        webAppSettingModel.setTargetName(azureArtifact == null ? null : FilenameUtils.getName(azureArtifact.getTargetPath()));
-        webAppSettingModel.setArtifactIdentifier(
-                azureArtifact == null ? null : AzureArtifactManager.getInstance(getProject()).getArtifactIdentifier(azureArtifact));
+        webAppSettingModel.setTargetPath(azureArtifact == null ? null : azureArtifactManager.getFileForDeployment(azureArtifact));
+        webAppSettingModel.setTargetName(azureArtifact == null ? null : FilenameUtils.getName(getTargetPath()));
+        webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
     }
 
     public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {

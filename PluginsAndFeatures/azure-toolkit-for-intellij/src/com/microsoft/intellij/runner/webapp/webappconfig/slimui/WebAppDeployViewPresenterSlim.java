@@ -52,7 +52,7 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
                 selectedWebApp.getSubscriptionId(), selectedWebApp.getResourceId()))
                   .subscribeOn(getSchedulerProvider().io())
                   .subscribe(slots -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                      if (isViewDetached()) {
+                      if (slots == null || isViewDetached()) {
                           return;
                       }
                       getMvpView().fillDeploymentSlots(slots, selectedWebApp);

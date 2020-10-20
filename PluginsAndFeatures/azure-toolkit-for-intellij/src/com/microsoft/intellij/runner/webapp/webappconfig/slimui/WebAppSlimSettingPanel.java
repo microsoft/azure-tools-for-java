@@ -113,7 +113,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
         chkDeployToSlot.addActionListener(e -> toggleSlotPanel(chkDeployToSlot.isSelected()));
 
-        Icon informationIcon = AllIcons.General.Information;
+        Icon informationIcon = AllIcons.General.ContextHelp;
         btnSlotHover.setIcon(informationIcon);
         btnSlotHover.setHorizontalAlignment(SwingConstants.CENTER);
         btnSlotHover.setPreferredSize(new Dimension(informationIcon.getIconWidth(), informationIcon.getIconHeight()));
@@ -152,6 +152,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     @Override
     public void disposeEditor() {
+        presenter.onDetachView();
     }
 
     @Override
@@ -285,7 +286,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             return false;
         }
         final WebApp app = selectedWebApp.getResource();
-        final boolean isDeployingWar =
+        final boolean isDeployingWar = StringUtils.isNoneEmpty(targetName) &&
                 MavenRunTaskUtil.getFileType(targetName).equalsIgnoreCase(MavenConstants.TYPE_WAR);
         return isDeployingWar && (app.operatingSystem() == OperatingSystem.WINDOWS ||
                 !Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion()));

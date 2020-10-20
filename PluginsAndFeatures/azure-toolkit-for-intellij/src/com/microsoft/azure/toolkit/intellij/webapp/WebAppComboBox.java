@@ -118,7 +118,7 @@ public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(
-                AllIcons.General.Add, "Create new web app", this::createNewWebApp);
+                AllIcons.General.Add, "Create", this::createNewWebApp);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
         if (item instanceof WebAppComboBoxModel) {
             final WebAppComboBoxModel selectedItem = (WebAppComboBoxModel) item;
             return selectedItem.isNewCreateResource() ?
-                   String.format("%s (New Created)", selectedItem.getAppName()) : selectedItem.getAppName();
+                   String.format("(New) %s", selectedItem.getAppName()) : selectedItem.getAppName();
         } else {
             return Objects.toString(item, StringUtils.EMPTY);
         }
@@ -135,6 +135,7 @@ public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
     private void createNewWebApp() {
         // todo: hide deployment part in creation dialog
         WebAppCreationDialog webAppCreationDialog = new WebAppCreationDialog(project);
+        webAppCreationDialog.setDeploymentVisible(false);
         webAppCreationDialog.setOkActionListener(webAppConfig -> {
             final WebAppComboBoxModel newModel =
                     new WebAppComboBoxModel(WebAppService.convertConfig2Settings(webAppConfig));
@@ -167,13 +168,13 @@ public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
 
         private String getWebAppLabelText(WebAppComboBoxModel webApp) {
             final String webAppName = webApp.isNewCreateResource() ?
-                                      String.format("%s (New Created)", webApp.getAppName()) : webApp.getAppName();
+                                      String.format("(New) %s", webApp.getAppName()) : webApp.getAppName();
             final String os = webApp.getOs();
             final String runtime = webApp.getRuntime();
             final String resourceGroup = webApp.getResourceGroup();
 
-            return String.format("<html><div>%s</div></div><small>OS:%s Runtime: %s ResourceGroup:%s</small></html>",
-                    webAppName, os, runtime, resourceGroup);
+            return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
+                    webAppName, runtime, resourceGroup);
         }
     }
 }

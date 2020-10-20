@@ -42,6 +42,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -459,8 +460,15 @@ public class AzureWebAppMvpModel {
      * Get all the deployment slots of a web app by the subscription id and web app id.
      */
     public List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) throws IOException {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            return null;
+        }
         final List<DeploymentSlot> deploymentSlots = new ArrayList<>();
         final WebApp webApp = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        if (webApp == null) {
+            return null;
+        }
         deploymentSlots.addAll(webApp.deploymentSlots().list());
         return deploymentSlots;
     }
@@ -470,6 +478,7 @@ public class AzureWebAppMvpModel {
      */
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
         List<AppServicePlan> appServicePlans = new ArrayList<>();
+
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
             appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));

@@ -28,7 +28,6 @@ import com.microsoft.azure.toolkit.intellij.appservice.AppComboBoxModel;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
-import com.microsoft.azuretools.utils.WebAppUtils;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,7 +39,11 @@ public class WebAppComboBoxModel extends AppComboBoxModel<WebApp> {
 
     public WebAppComboBoxModel(final ResourceEx<WebApp> resourceEx) {
         super(resourceEx);
-        this.runtime = WebAppUtils.getJavaRuntime(resourceEx.getResource());
+        final WebApp webApp = resourceEx.getResource();
+        this.runtime = webApp.operatingSystem() == OperatingSystem.WINDOWS ?
+                       String.format("%s-%s-%s", "Windows", webApp.javaContainer(), webApp.javaVersion()) :
+                       String.format("%s-%s %s", "Linux", webApp.linuxFxVersion().split("\\|")[0],
+                                     webApp.linuxFxVersion().split("\\|")[1]);
     }
 
     public WebAppComboBoxModel(WebAppSettingModel webAppSettingModel) {
@@ -52,6 +55,9 @@ public class WebAppComboBoxModel extends AppComboBoxModel<WebApp> {
                 webAppSettingModel.getWebAppName();
         this.resourceGroup = webAppSettingModel.getResourceGroup();
         this.os = webAppSettingModel.getOS().name();
+        this.runtime = webAppSettingModel.getOS() == OperatingSystem.WINDOWS ?
+                       String.format("%s-%s-%s", "Windows", webAppSettingModel.getWebContainer(), webAppSettingModel.getJdkVersion()) :
+                       String.format("%s-%s %s", "Linux", webAppSettingModel.getLinuxRuntime().stack(), webAppSettingModel.getLinuxRuntime().version());
         this.runtime = webAppSettingModel.getOS() == OperatingSystem.LINUX ?
                        webAppSettingModel.getLinuxRuntime().toString() : webAppSettingModel.getWebContainer();
         this.subscriptionId = webAppSettingModel.getSubscriptionId();

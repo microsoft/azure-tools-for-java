@@ -120,15 +120,15 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
                         && StringUtils.equalsAnyIgnoreCase(artifact.getTargetPath(), selectArtifact.getTargetPath()))
                          .findFirst().orElse(null);
         if (existingArtifact == null) {
-            AzureArtifactComboBox.this.addItem(selectArtifact);
-            AzureArtifactComboBox.this.setSelectedItem(selectArtifact);
+            this.addItem(selectArtifact);
+            this.setSelectedItem(selectArtifact);
         } else {
-            AzureArtifactComboBox.this.setSelectedItem(existingArtifact);
+            this.setSelectedItem(existingArtifact);
         }
     }
 
     private void resetDefaultValue(final AzureArtifactType defaultArtifactType, final String defaultPath, final String artifactIdentifier) {
-        final List<AzureArtifact> artifacts = UIUtils.listComboBoxItems(this);
+        final List<AzureArtifact> artifacts = this.getItems();
         final AzureArtifact defaultArtifact =
                 artifacts.stream()
                          .filter(artifact -> StringUtils.equals(artifactIdentifier, AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)))
