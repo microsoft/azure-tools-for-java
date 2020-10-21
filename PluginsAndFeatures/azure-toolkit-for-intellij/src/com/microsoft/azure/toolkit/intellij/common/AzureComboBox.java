@@ -68,7 +68,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Setter
     private boolean required;
     private T value;
-    private boolean valueNeverSet = true;
+    private boolean valueNotSet = true;
 
     public AzureComboBox() {
         this(true);
@@ -118,7 +118,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @Override
     public void setValue(final T val) {
-        this.valueNeverSet = false;
+        this.valueNotSet = false;
         this.value = val;
         this.refreshValue();
     }
@@ -128,7 +128,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             return;
         }
         final List<T> items = this.getItems();
-        if (this.valueNeverSet && this.value == null && !items.isEmpty()) {
+        if (this.valueNotSet && this.value == null && !items.isEmpty()) {
             super.setSelectedItem(items.get(0));
         } else if (items.contains(this.value)) {
             super.setSelectedItem(this.value);
