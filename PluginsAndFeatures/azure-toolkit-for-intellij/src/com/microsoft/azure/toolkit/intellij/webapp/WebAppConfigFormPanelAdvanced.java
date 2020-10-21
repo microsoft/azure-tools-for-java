@@ -160,15 +160,15 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
 
     private void onRegionChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Region region = e.getStateChange() == ItemEvent.SELECTED ? (Region) e.getItem() : null;
+            final Region region = (Region) e.getItem();
             this.selectorServicePlan.setRegion(region);
         }
     }
 
     private void onPlatformChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final OperatingSystem operatingSystem =
-                e.getStateChange() == ItemEvent.SELECTED ? ((Platform) e.getItem()).getOs() : null;
+            final Platform platform = (Platform) e.getItem();
+            final OperatingSystem operatingSystem = Objects.isNull(platform) ? null : platform.getOs();
             this.selectorServicePlan.setOperatingSystem(operatingSystem);
         }
     }
@@ -176,8 +176,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     private void onSubscriptionChanged(final ItemEvent e) {
         //TODO: @wangmi try subscription mechanism? e.g. this.selectorGroup.subscribe(this.selectSubscription)
         if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-            final Subscription subscription =
-                e.getStateChange() == ItemEvent.SELECTED ? (Subscription) e.getItem() : null;
+            final Subscription subscription = (Subscription) e.getItem();
             this.selectorGroup.setSubscription(subscription);
             this.textName.setSubscription(subscription);
             this.selectorRegion.setSubscription(subscription);
