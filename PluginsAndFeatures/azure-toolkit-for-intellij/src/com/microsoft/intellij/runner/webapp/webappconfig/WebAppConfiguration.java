@@ -42,7 +42,6 @@ import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.components.AzureArtifactType;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,11 +59,11 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
     private static final String MISSING_ARTIFACT = "A web archive (.war|.jar|.ear) artifact has not been configured.";
-    private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
+    private static final String INVALID_ARTIFACT_FILE = "The artifact name %s is invalid. "
         + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
         + "the digits '0' through '9', '.', '-' and '_'.";
 
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar|ear)$";
+    private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar|ear)$";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
     private static final String INVALID_SLOT_NAME =
         "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
@@ -141,11 +140,12 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                 }
             }
         }
-        if (Utils.isEmptyString(webAppSettingModel.getTargetName())) {
+        if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
-        if (!webAppSettingModel.isDeployToRoot() && !webAppSettingModel.getTargetName().matches(WAR_NAME_REGEX)) {
-            throw new ConfigurationException(String.format(INVALID_WAR_FILE, webAppSettingModel.getTargetName()));
+        if (webAppSettingModel.getAzureArtifactType() == AzureArtifactType.File && StringUtils.isNotEmpty(getTargetName()) &&
+                !webAppSettingModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
+            throw new ConfigurationException(String.format(INVALID_ARTIFACT_FILE, webAppSettingModel.getTargetName()));
         }
     }
 
@@ -366,10 +366,13 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void saveArtifact(AzureArtifact azureArtifact) {
         final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
-        webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
-        webAppSettingModel.setTargetPath(azureArtifact == null ? null : azureArtifactManager.getFileForDeployment(azureArtifact));
-        webAppSettingModel.setTargetName(azureArtifact == null ? null : FilenameUtils.getName(getTargetPath()));
         webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
+        webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
+        if (azureArtifact != null && azureArtifact.getType() == AzureArtifactType.File) {
+            webAppSettingModel.setTargetPath(azureArtifactManager.getFileForDeployment(azureArtifact));
+        } else {
+            webAppSettingModel.setTargetPath(null);
+        }
     }
 
     public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {

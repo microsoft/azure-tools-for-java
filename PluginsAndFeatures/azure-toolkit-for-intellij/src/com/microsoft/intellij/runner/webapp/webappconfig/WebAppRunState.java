@@ -25,6 +25,7 @@ package com.microsoft.intellij.runner.webapp.webappconfig;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
@@ -38,6 +39,9 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.runner.AzureRunProfileState;
 import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.webapp.Constants;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import com.microsoft.intellij.ui.components.AzureArtifactType;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +52,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Objects;
 
 public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
@@ -78,7 +83,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     @Override
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
-        File file = new File(webAppSettingModel.getTargetPath());
+        File file = new File(getTargetPath());
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
         }
@@ -171,6 +176,19 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             }
         } else {
             return webApp;
+        }
+    }
+
+    private String getTargetPath() throws AzureExecutionException {
+        if (webAppConfiguration.getAzureArtifactType() == AzureArtifactType.File) {
+            return webAppConfiguration.getTargetPath();
+        } else {
+            final AzureArtifact azureArtifact =
+                    AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getArtifactIdentifier());
+            if (Objects.isNull(azureArtifact)) {
+                throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", webAppConfiguration.getArtifactIdentifier()));
+            }
+            return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
         }
     }
 
