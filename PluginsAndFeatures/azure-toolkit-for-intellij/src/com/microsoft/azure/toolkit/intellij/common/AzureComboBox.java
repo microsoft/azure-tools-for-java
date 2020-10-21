@@ -275,13 +275,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         @Override
         public void setItem(Object item) {
             // do nothing: item can not be set on loading
-        }
-
-        @Override
-        protected JTextField createEditorComponent() {
-            final JTextField editor = super.createEditorComponent();
-            editor.setText("Refreshing...");
-            return editor;
+            super.setItem(item);
+            if (item == null) {
+                this.editor.setText("Refreshing...");
+            }
         }
 
         protected ExtendableTextComponent.Extension getExtension() {
@@ -301,7 +298,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = AzureComboBox.this.getItems();
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 

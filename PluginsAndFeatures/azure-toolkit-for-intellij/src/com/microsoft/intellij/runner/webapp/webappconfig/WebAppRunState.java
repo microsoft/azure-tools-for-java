@@ -42,7 +42,6 @@ import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -85,7 +84,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(getTargetPath());
         if (!file.exists()) {
-            throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
+            throw new FileNotFoundException(String.format(NO_TARGET_FILE, file.getAbsolutePath()));
         }
         webAppConfiguration.setTargetName(file.getName());
         WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
@@ -117,8 +116,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
         updateConfigurationDataModel(result);
-        DefaultLoader.getIdeHelper().invokeLater(() -> AzureWebAppMvpModel.getInstance().listAllWebApps(true /*force*/));
-
         int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
         final String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
         final String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);

@@ -30,8 +30,6 @@ import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HideableDecorator;
 import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBox;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
@@ -42,7 +40,6 @@ import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -264,7 +261,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         configuration.saveArtifact(comboBoxArtifact.getValue());
         configuration.setDeployToSlot(chkDeployToSlot.isSelected());
         configuration.setSlotPanelVisible(slotDecorator.isExpanded());
-        chkToRoot.setVisible(isAbleToDeployToRoot(configuration.getTargetName()));
+        chkToRoot.setVisible(isAbleToDeployToRoot(comboBoxArtifact.getValue()));
         toggleSlotPanel(configuration.isDeployToSlot() && selectedWebApp != null);
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
@@ -282,16 +279,15 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
     }
 
-    private boolean isAbleToDeployToRoot(final String targetName) {
+    private boolean isAbleToDeployToRoot(final AzureArtifact azureArtifact) {
         final WebAppComboBoxModel selectedWebApp = getSelectedWebApp();
-        if (selectedWebApp == null) {
+        if (selectedWebApp == null || azureArtifact == null) {
             return false;
         }
-        final WebApp app = selectedWebApp.getResource();
-        final boolean isDeployingWar = StringUtils.isNoneEmpty(targetName) &&
-                MavenRunTaskUtil.getFileType(targetName).equalsIgnoreCase(MavenConstants.TYPE_WAR);
-        return isDeployingWar && (app.operatingSystem() == OperatingSystem.WINDOWS ||
-                !Constants.LINUX_JAVA_SE_RUNTIME.equalsIgnoreCase(app.linuxFxVersion()));
+        final String runtime = selectedWebApp.getRuntime();
+        final String packaging = AzureArtifactManager.getInstance(project).getPackaging(azureArtifact);
+        final boolean isDeployingWar = StringUtils.equalsAnyIgnoreCase(packaging, MavenConstants.TYPE_WAR, "ear");
+        return isDeployingWar && StringUtils.containsIgnoreCase(runtime, "tomcat") || StringUtils.containsIgnoreCase(runtime, "jboss");
     }
 
     private void toggleSlotPanel(boolean slot) {
@@ -338,6 +334,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     private synchronized void syncBeforeRunTasks(AzureArtifact azureArtifact) {
         try {
+            if (AzureArtifactManager.getInstance(project).equalsAzureArtifactIdentifier(previousArtifact, azureArtifact)) {
+                return;
+            }
             if (previousArtifact != null) {
                 BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), previousArtifact, webAppConfiguration, false);
             }
