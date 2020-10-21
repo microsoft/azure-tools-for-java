@@ -90,7 +90,7 @@ public class CreateWebAppAction extends NodeActionListener {
                     refreshAzureExplorer();
                     final Path application = config.getApplication();
                     if (Objects.nonNull(application) && application.toFile().exists()) {
-                        deploy(webapp, application, project);
+                        DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
                     }
                 } catch (final Exception ex) {
                     // TODO: @wangmi show error with balloon notification instead of dialog
@@ -124,7 +124,6 @@ public class CreateWebAppAction extends NodeActionListener {
 
     private void refreshAzureExplorer() {
         ApplicationManager.getApplication().invokeLater(() -> {
-            sendTelemetry(null);
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }

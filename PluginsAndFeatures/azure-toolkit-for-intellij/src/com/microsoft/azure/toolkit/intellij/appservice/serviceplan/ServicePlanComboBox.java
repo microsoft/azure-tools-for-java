@@ -61,6 +61,9 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     public void setSubscription(Subscription subscription) {
+        if (Objects.equals(subscription, this.subscription)) {
+            return;
+        }
         this.subscription = subscription;
         if (subscription == null) {
             this.clear();
@@ -70,6 +73,9 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     public void setOperatingSystem(OperatingSystem os) {
+        if (os == this.os) {
+            return;
+        }
         this.os = os;
         if (os == null) {
             this.clear();

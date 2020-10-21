@@ -55,6 +55,9 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     }
 
     public void setSubscription(Subscription subscription) {
+        if (Objects.equals(subscription, this.subscription)) {
+            return;
+        }
         this.subscription = subscription;
         if (subscription == null) {
             this.clear();
