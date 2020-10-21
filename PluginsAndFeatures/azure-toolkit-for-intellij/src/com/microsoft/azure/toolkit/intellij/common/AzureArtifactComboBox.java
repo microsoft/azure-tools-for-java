@@ -28,7 +28,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -39,7 +38,6 @@ import com.microsoft.intellij.ui.components.AzureArtifactType;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.plexus.util.FileUtils;
 import rx.Subscription;
 
 import javax.swing.*;

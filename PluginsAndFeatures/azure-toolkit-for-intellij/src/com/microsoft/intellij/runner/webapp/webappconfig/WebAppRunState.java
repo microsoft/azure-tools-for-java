@@ -41,8 +41,8 @@ import com.microsoft.intellij.runner.RunProcessHandler;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
-import com.microsoft.intellij.ui.components.AzureArtifactType;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -87,6 +87,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
         }
+        webAppConfiguration.setTargetName(file.getName());
         WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
         WebAppUtils.deployArtifactsToAppService(deployTarget, file,
                 webAppConfiguration.isDeployToRoot(), processHandler);
@@ -116,7 +117,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
         updateConfigurationDataModel(result);
-        AzureWebAppMvpModel.getInstance().listAllWebApps(true /*force*/);
+        DefaultLoader.getIdeHelper().invokeLater(() -> AzureWebAppMvpModel.getInstance().listAllWebApps(true /*force*/));
 
         int indexOfDot = webAppSettingModel.getTargetName().lastIndexOf(".");
         final String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
@@ -181,7 +182,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     private String getTargetPath() throws AzureExecutionException {
         final AzureArtifact azureArtifact =
-                AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getArtifactIdentifier());
+                AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getAzureArtifactType(),
+                                                                               webAppConfiguration.getArtifactIdentifier());
         if (Objects.isNull(azureArtifact)) {
             throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", webAppConfiguration.getArtifactIdentifier()));
         }

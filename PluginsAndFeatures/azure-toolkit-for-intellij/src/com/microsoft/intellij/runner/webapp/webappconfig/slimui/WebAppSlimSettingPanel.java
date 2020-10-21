@@ -55,7 +55,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -102,7 +101,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private WebAppConfiguration webAppConfiguration;
 
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
-        super(project);
+        super(project, false);
         this.presenter = new WebAppDeployViewPresenterSlim();
         this.presenter.onAttachView(this);
         this.webAppConfiguration = webAppConfiguration;

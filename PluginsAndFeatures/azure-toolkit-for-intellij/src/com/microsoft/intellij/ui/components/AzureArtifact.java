@@ -26,7 +26,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.impl.http.LocalFileStorage;
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.util.MavenUtils;
 import icons.GradleIcons;
