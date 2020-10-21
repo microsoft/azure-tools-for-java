@@ -29,6 +29,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
+import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.ArrayList;
@@ -95,6 +97,8 @@ public abstract class RefreshableNode extends Node {
                 }
                 refreshItems();
                 future.set(getChildNodes());
+            } catch (AzureRuntimeException e) {
+                DefaultLoader.getUIHelper().showInfoNotification("MS Services - Error Refreshing Nodes", ErrorEnum.getDisplayMessageByCode(e.getCode()));
             } catch (Exception e) {
                 future.setException(e);
             } finally {

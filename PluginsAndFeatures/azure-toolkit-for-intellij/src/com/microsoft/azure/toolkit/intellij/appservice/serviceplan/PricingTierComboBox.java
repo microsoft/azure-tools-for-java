@@ -32,6 +32,11 @@ import java.util.List;
 public class PricingTierComboBox extends AzureComboBox<PricingTier> {
     public static PricingTier DEFAULT_TIER = PricingTier.BASIC_B2;
 
+    public PricingTierComboBox() {
+        super();
+        this.setValue(DEFAULT_TIER);
+    }
+
     @NotNull
     @Override
     protected List<? extends PricingTier> loadItems() throws Exception {

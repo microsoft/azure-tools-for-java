@@ -40,16 +40,18 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ItemEvent;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPanel<WebAppConfig> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
@@ -86,7 +88,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         final Platform platform = this.selectorPlatform.getValue();
         final Region region = this.selectorRegion.getValue();
         final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
-        final Path path = Paths.get(this.selectorApplication.getValue().getTargetPath());
+        final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final WebAppConfig config = WebAppConfig.builder().build();
         config.setSubscription(subscription);
@@ -95,7 +97,11 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         config.setPlatform(platform);
         config.setRegion(region);
         config.setServicePlan(servicePlan);
-        config.setApplication(path);
+        if (Objects.nonNull(artifact)) {
+            final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
+            final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
+            config.setApplication(Paths.get(path));
+        }
         return config;
     }
 

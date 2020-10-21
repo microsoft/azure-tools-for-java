@@ -65,6 +65,7 @@ import com.microsoft.intellij.helpers.storage.*;
 import com.microsoft.intellij.helpers.webapp.DeploymentSlotPropertyViewProvider;
 import com.microsoft.intellij.helpers.webapp.WebAppPropertyViewProvider;
 import com.microsoft.intellij.ui.util.UIUtils;
+import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.UIHelper;
 import com.microsoft.tooling.msservices.model.storage.Queue;
@@ -756,6 +757,11 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public String showInputDialog(Component component, String message, String title, Icon icon) {
         return runFromDispatchThread(() -> Messages.showInputDialog(component, message, title, icon));
+    }
+
+    @Override
+    public void showInfoNotification(String title, String message) {
+        PluginUtil.showInfoNotification(title, message);
     }
 
     private static <T> T runFromDispatchThread(Supplier<T> supplier) {

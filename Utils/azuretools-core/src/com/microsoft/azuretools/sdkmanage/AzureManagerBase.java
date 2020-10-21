@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.google.common.base.Throwables;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
@@ -30,11 +31,9 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementa
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
-import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.Environment;
-import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
+import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
+import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
@@ -42,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,10 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azuretools.authmanage.Environment.CHINA;
-import static com.microsoft.azuretools.authmanage.Environment.GERMAN;
-import static com.microsoft.azuretools.authmanage.Environment.GLOBAL;
-import static com.microsoft.azuretools.authmanage.Environment.US_GOVERNMENT;
+import static com.microsoft.azuretools.authmanage.Environment.*;
 
 /**
  * Created by vlashch on 1/27/17.
@@ -249,14 +246,20 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
-        return authentication.tenants().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-                    return Observable.empty();
-                })
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
+        try {
+            return authentication.tenants().listAsync()
+                    .toList()
+                    .toBlocking()
+                    .singleOrDefault(Collections.emptyList());
+        } catch (Exception err) {
+            LOGGER.warning(Throwables.getStackTraceAsString(err));
+            if (Throwables.getCausalChain(err).stream().filter(e -> e instanceof UnknownHostException).count() > 0) {
+                throw new AzureRuntimeException(ErrorEnum.UNKNOWN_HOST_EXCEPTION);
+            } else if (err instanceof AzureRuntimeException) {
+                throw err;
+            }
+            return Collections.emptyList();
+        }
     }
 
     protected Azure.Authenticated authTenant(String tenantId) {

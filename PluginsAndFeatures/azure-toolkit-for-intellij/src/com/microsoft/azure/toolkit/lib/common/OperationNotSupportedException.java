@@ -23,4 +23,11 @@
 package com.microsoft.azure.toolkit.lib.common;
 
 public class OperationNotSupportedException extends RuntimeException {
+    public OperationNotSupportedException() {
+        super();
+    }
+
+    public OperationNotSupportedException(final String message) {
+        super(message);
+    }
 }

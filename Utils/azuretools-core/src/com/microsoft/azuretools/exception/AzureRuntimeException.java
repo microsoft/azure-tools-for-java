@@ -20,12 +20,37 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.common;
+package com.microsoft.azuretools.exception;
 
-import javax.swing.*;
+import com.microsoft.azuretools.enums.ErrorEnum;
 
-public class SwingUtils {
-    public static void setTextAndEnableAutoWrap(JLabel label, String text) {
-        label.setText("<html><body>" + text + "</body></html>");
+/**
+ * RuntinmeException for azure tools.
+ */
+public class AzureRuntimeException extends RuntimeException {
+
+    private int code;
+
+    public AzureRuntimeException(ErrorEnum errorEnum) {
+        super(errorEnum.getErrorMessage());
+        this.code = errorEnum.getErrorCode();
+    }
+
+    public AzureRuntimeException(int code) {
+        this.code = code;
+    }
+
+    public AzureRuntimeException(int code, String message) {
+        super(message);
+        this.code = code;
+    }
+
+    public AzureRuntimeException(int code, String message, Throwable cause) {
+        super(message, cause);
+        this.code = code;
+    }
+
+    public int getCode() {
+        return code;
     }
 }

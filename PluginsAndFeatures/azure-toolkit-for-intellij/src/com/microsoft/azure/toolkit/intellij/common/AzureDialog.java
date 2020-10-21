@@ -65,7 +65,7 @@ public abstract class AzureDialog<T> extends AzureDialogWrapper {
     @Override
     protected List<ValidationInfo> doValidateAll() {
         final List<AzureValidationInfo> infos = this.getForm().validateData();
-        this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING));
+        this.setOKActionEnabled(infos.stream().noneMatch(i -> i == AzureValidationInfo.PENDING || i.getType() == AzureValidationInfo.Type.ERROR));
         return infos.stream()
                     .filter(i -> i != AzureValidationInfo.PENDING && i != AzureValidationInfo.OK)
                     .map(AzureDialog::toIntellijValidationInfo)

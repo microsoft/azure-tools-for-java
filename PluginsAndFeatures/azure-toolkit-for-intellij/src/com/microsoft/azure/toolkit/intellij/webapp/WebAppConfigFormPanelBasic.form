@@ -24,7 +24,7 @@
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
         <properties>
-          <text value="Name"/>
+          <text value="Name:"/>
         </properties>
       </component>
       <component id="d4130" class="com.microsoft.azure.toolkit.intellij.appservice.AppNameInput" binding="textName">
@@ -40,7 +40,7 @@
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
         <properties>
-          <text value="Runtime stack"/>
+          <text value="Platform:"/>
         </properties>
       </component>
       <component id="a4196" class="com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox" binding="selectorPlatform">
@@ -63,7 +63,7 @@
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
         <properties>
-          <text value="Application"/>
+          <text value="Artifact:"/>
         </properties>
       </component>
       <component id="d6c71" class="javax.swing.JLabel">

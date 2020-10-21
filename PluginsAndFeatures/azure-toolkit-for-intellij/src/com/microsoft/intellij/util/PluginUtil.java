@@ -202,6 +202,12 @@ public class PluginUtil {
                          message, NotificationType.ERROR).notify(project);
     }
 
+    public static void showInfoNotification(String title, String message) {
+        Notification notification = new Notification(NOTIFICATION_GROUP_ID, title,
+                message, NotificationType.INFORMATION);
+        Notifications.Bus.notify(notification);
+    }
+
     public static void showWarnNotification(String title, String message) {
         Notification notification = new Notification(NOTIFICATION_GROUP_ID, title,
                 message, NotificationType.WARNING);

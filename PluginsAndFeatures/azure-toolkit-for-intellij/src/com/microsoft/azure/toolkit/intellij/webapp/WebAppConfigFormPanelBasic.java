@@ -38,16 +38,18 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel<WebAppConfig> {
     private final Project project;
@@ -88,7 +90,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
         final String date = DATE_FORMAT.format(new Date());
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
-        final Path path = Paths.get(this.selectorApplication.getValue().getTargetPath());
+        final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final PricingTier tier = WebAppConfig.DEFAULT_PRICING_TIER;
         final List<Region> regions = AzureWebAppMvpModel.getInstance().getAvailableRegions(this.subscription.subscriptionId(), tier);
@@ -112,7 +114,11 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
         plan.setRegion(region);
         config.setServicePlan(plan);
 
-        config.setApplication(path);
+        if (Objects.nonNull(artifact)) {
+            final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
+            final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
+            config.setApplication(Paths.get(path));
+        }
         return config;
     }
 

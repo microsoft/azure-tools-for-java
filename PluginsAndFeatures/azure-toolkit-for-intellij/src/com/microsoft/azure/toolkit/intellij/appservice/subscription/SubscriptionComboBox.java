@@ -31,12 +31,17 @@ import java.util.List;
 import java.util.Objects;
 
 public class SubscriptionComboBox extends AzureComboBox<Subscription> {
+
+    public SubscriptionComboBox() {
+        super();
+        final List<Subscription> items = AzureMvpModel.getInstance().getSelectedSubscriptions();
+        this.setValue(items.get(0)); // select the first subscription
+    }
+
     @NotNull
     @Override
     protected List<Subscription> loadItems() throws Exception {
-        final List<Subscription> items = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        this.setValue(items.get(0)); // select the first subscription
-        return items;
+        return AzureMvpModel.getInstance().getSelectedSubscriptions();
     }
 
     @Override

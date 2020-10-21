@@ -29,6 +29,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
+import com.microsoft.azure.toolkit.lib.common.OperationNotSupportedException;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -115,7 +116,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         final List<T> items = this.getItems();
         if (items.contains(this.value)) {
             super.setSelectedItem(this.value);
-        } else if (items.size() > 0) {
+        } else if (!items.isEmpty()) {
             super.setSelectedItem(items.get(0));
         } else {
             super.setSelectedItem(null);
@@ -148,6 +149,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
+    @Override
+    public void addItem(final T item) {
+        throw new OperationNotSupportedException("use setItems instead");
+    }
+
     public List<T> getItems() {
         final List<T> result = new ArrayList<>();
         for (int i = 0; i < this.getItemCount(); i++) {
@@ -158,7 +164,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     protected void setItems(final List<? extends T> items) {
         this.removeAllItems();
-        items.forEach(this::addItem);
+        items.forEach(super::addItem);
         this.setValue(this.value);
     }
 
@@ -283,7 +289,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             itemList = AzureComboBox.this.getItems();
             // todo: support customized combo box filter
             comboFilterListener = new ComboFilterListener(itemList,
-                (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
+                                                          (item, input) -> StringUtils.containsIgnoreCase(getItemText(item), input));
             getEditorComponent().getDocument().addDocumentListener(comboFilterListener);
         }
 

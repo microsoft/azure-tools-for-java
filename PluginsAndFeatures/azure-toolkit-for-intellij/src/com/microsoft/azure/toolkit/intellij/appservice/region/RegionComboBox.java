@@ -43,7 +43,7 @@ public class RegionComboBox extends AzureComboBox<Region> {
         if (Objects.isNull(item)) {
             return AzureComboBox.EMPTY_ITEM;
         }
-        return ((Region) item).name();
+        return ((Region) item).label();
     }
 
     public void setSubscription(Subscription subscription) {

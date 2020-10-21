@@ -34,7 +34,9 @@ import com.microsoft.azuretools.authmanage.AzureManagerFactory;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang.ObjectUtils;
@@ -189,6 +191,9 @@ public class AzureCliAzureManager extends AzureManagerBase {
                                String.format(CLI_TOKEN_FORMAT_ACCESSOR, tid) :
                                String.format(CLI_TOKEN_FORMAT_ACCESSOR_RESOURCE, tid, resource);
         final String jsonToken = CommandUtils.exec(command);
+        if (StringUtils.isBlank(jsonToken)) {
+            throw new AzureRuntimeException(ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN_BY_CLI);
+        }
         final Map<String, Object> objectMap = JsonUtils.fromJson(jsonToken, Map.class);
         final String strToken = (String) objectMap.get(CLI_TOKEN_PROP_ACCESS_TOKEN);
         final String strTime = (String) objectMap.get(CLI_TOKEN_PROP_EXPIRATION);

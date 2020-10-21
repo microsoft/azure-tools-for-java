@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
+import com.google.common.base.Throwables;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
@@ -43,6 +44,8 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
+import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +57,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,9 +66,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class AzureWebAppMvpModel {
+
+    private static final Logger logger = Logger.getLogger(AzureWebAppMvpModel.class.getName());
 
     public static final String CANNOT_GET_WEB_APP_WITH_ID = "Cannot get Web App with ID: ";
     private final Map<String, List<ResourceEx<WebApp>>> subscriptionIdToWebApps;
@@ -587,8 +594,11 @@ public class AzureWebAppMvpModel {
                 .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
                 .collect(Collectors.toList());
             subscriptionIdToWebApps.put(subscriptionId, webApps);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception err) {
+            if (Throwables.getCausalChain(err).stream().filter(e -> e instanceof SocketTimeoutException).count() > 0) {
+                throw new AzureRuntimeException(ErrorEnum.SOCKET_TIMEOUT_EXCEPTION);
+            }
+            logger.warning(Throwables.getStackTraceAsString(err));
         }
         return webApps;
     }

@@ -27,7 +27,7 @@ import org.apache.commons.lang3.ObjectUtils;
 
 public interface AzureFormInput<T> extends Validatable {
 
-    String MSG_REQUIRED = "this field is required";
+    String MSG_REQUIRED = "This field is required.";
 
     T getValue();
 

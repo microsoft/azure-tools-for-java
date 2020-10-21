@@ -24,7 +24,7 @@
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
         <properties>
-          <text value="Name"/>
+          <text value="Name:"/>
         </properties>
       </component>
       <component id="d4130" class="com.microsoft.azure.toolkit.intellij.appservice.AppNameInput" binding="textName">
@@ -40,7 +40,7 @@
           <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
         <properties>
-          <text value="Platform"/>
+          <text value="Platform:"/>
         </properties>
       </component>
       <component id="928ea" class="javax.swing.JLabel">
@@ -48,7 +48,7 @@
           <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Region"/>
+          <text value="Region:"/>
         </properties>
       </component>
       <component id="d3b72" class="com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox" binding="selectorPlatform">
@@ -79,18 +79,18 @@
         <properties>
           <horizontalTextPosition value="10"/>
           <icon value="general/contextHelp.png"/>
-          <text value="Subscription"/>
+          <text value="Subscription:"/>
           <toolTipText value="All resources in an Azure subscription are billed together."/>
         </properties>
       </component>
       <component id="2676b" class="javax.swing.JLabel">
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
         <properties>
           <horizontalTextPosition value="10"/>
           <icon value="general/contextHelp.png"/>
-          <text value="Resource Group"/>
+          <text value="Resource Group:"/>
           <toolTipText value="A resource group is a collection of resources that share the same lifecycle, permissions, and policies."/>
         </properties>
       </component>
@@ -117,7 +117,7 @@
         <properties>
           <horizontalTextPosition value="10"/>
           <icon value="general/contextHelp.png"/>
-          <text value="Plan"/>
+          <text value="Plan:"/>
           <toolTipText value="App Service Plans are filtered based on your region and operating system selection."/>
         </properties>
       </component>
@@ -126,7 +126,7 @@
           <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="SKU and size"/>
+          <text value="SKU and size:"/>
         </properties>
       </component>
       <component id="ff031" class="javax.swing.JLabel" binding="textSku">
@@ -154,7 +154,7 @@
           <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
         <properties>
-          <text value="Application"/>
+          <text value="Artifact:"/>
         </properties>
       </component>
       <component id="8161" class="com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox" binding="selectorGroup">
