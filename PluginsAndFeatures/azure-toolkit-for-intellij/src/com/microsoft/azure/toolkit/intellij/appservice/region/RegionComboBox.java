@@ -47,6 +47,9 @@ public class RegionComboBox extends AzureComboBox<Region> {
     }
 
     public void setSubscription(Subscription subscription) {
+        if (Objects.equals(subscription, this.subscription)) {
+            return;
+        }
         this.subscription = subscription;
         if (subscription == null) {
             this.clear();
@@ -56,6 +59,9 @@ public class RegionComboBox extends AzureComboBox<Region> {
     }
 
     public void setPricingTier(PricingTier tier) {
+        if (Objects.equals(tier, this.tier)) {
+            return;
+        }
         this.tier = tier;
         this.refreshItems();
     }

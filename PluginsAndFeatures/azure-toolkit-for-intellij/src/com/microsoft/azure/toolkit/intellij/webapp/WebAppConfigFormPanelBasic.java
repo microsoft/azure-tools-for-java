@@ -40,6 +40,7 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,6 +66,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
     private Subscription subscription;
+    private Region defaultRegion;
 
     public WebAppConfigFormPanelBasic(final Project project) {
         super();
@@ -79,9 +81,22 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
         this.textName.setValue(defaultWebAppName);
         final List<Subscription> items = AzureMvpModel.getInstance().getSelectedSubscriptions();
         this.subscription = items.get(0); // select the first subscription as the default
+        DefaultLoader.getIdeHelper().invokeLater(this::getRegion);
         this.textName.setSubscription(this.subscription);
         this.textName.setRequired(true);
         this.selectorPlatform.setRequired(true);
+    }
+
+    @SneakyThrows
+    private Region getRegion() {
+        if (Objects.nonNull(this.defaultRegion)) {
+            return this.defaultRegion;
+        }
+        final String subId = this.subscription.subscriptionId();
+        final PricingTier tier = WebAppConfig.DEFAULT_PRICING_TIER;
+        final List<Region> regions = AzureWebAppMvpModel.getInstance().getAvailableRegions(subId, tier);
+        this.defaultRegion = regions.get(0);
+        return this.defaultRegion;
     }
 
     @SneakyThrows
@@ -93,8 +108,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
         final PricingTier tier = WebAppConfig.DEFAULT_PRICING_TIER;
-        final List<Region> regions = AzureWebAppMvpModel.getInstance().getAvailableRegions(this.subscription.subscriptionId(), tier);
-        final Region region = regions.get(0);
+        final Region region = this.getRegion();
 
         final WebAppConfig config = WebAppConfig.builder().build();
         config.setSubscription(this.subscription);
