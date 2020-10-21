@@ -48,6 +48,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.text.BadLocationException;
+import java.awt.event.ItemEvent;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +68,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     @Setter
     private boolean required;
     private T value;
+    private boolean valueNeverSet = true;
 
     public AzureComboBox() {
         this(true);
@@ -102,6 +104,11 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         if (isFilterable()) {
             this.addPopupMenuListener(new AzureComboBoxPopupMenuListener());
         }
+        this.addItemListener((e) -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                this.refreshValue();
+            }
+        });
     }
 
     @Override
@@ -111,12 +118,20 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @Override
     public void setValue(final T val) {
+        this.valueNeverSet = false;
         this.value = val;
+        this.refreshValue();
+    }
+
+    private void refreshValue() {
+        if (Objects.equals(this.value, this.getSelectedItem())) {
+            return;
+        }
         final List<T> items = this.getItems();
-        if (items.contains(this.value)) {
-            super.setSelectedItem(this.value);
-        } else if (!items.isEmpty()) {
+        if (this.valueNeverSet && this.value == null && !items.isEmpty()) {
             super.setSelectedItem(items.get(0));
+        } else if (items.contains(this.value)) {
+            super.setSelectedItem(this.value);
         } else {
             super.setSelectedItem(null);
         }
@@ -124,8 +139,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
     @Override
     public void setSelectedItem(final Object value) {
-        this.value = (T) value; // update value on user action;
-        super.setSelectedItem(value);
+        this.setValue((T) value);
     }
 
     public void refreshItems() {
@@ -159,7 +173,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     protected void setItems(final List<? extends T> items) {
         this.removeAllItems();
         items.forEach(super::addItem);
-        this.setValue(this.value);
+        this.refreshValue();
     }
 
     public void clear() {
@@ -260,10 +274,14 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
 
         @Override
         public void setItem(Object item) {
-            super.setItem(item);
-            if (item == null) {
-                this.editor.setText("Refreshing...");
-            }
+            // do nothing: item can not be set on loading
+        }
+
+        @Override
+        protected JTextField createEditorComponent() {
+            final JTextField editor = super.createEditorComponent();
+            editor.setText("Refreshing...");
+            return editor;
         }
 
         protected ExtendableTextComponent.Extension getExtension() {
