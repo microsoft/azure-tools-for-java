@@ -39,21 +39,32 @@ import com.microsoft.intellij.ui.components.AzureArtifactType;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.plexus.util.FileUtils;
 import rx.Subscription;
 
 import javax.swing.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     private Project project;
+    private boolean existOnly;
     private Condition<? super VirtualFile> filter;
     private Subscription subscription;
 
     public AzureArtifactComboBox(Project project) {
+        this(project, false);
+        this.project = project;
+    }
+
+    public AzureArtifactComboBox(Project project, boolean existOnly) {
         super(false);
         this.project = project;
+        this.existOnly = existOnly;
     }
 
     public void setFileChooserDescriptor(final Condition<? super VirtualFile> filter) {
@@ -77,7 +88,11 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @NotNull
     @Override
     protected List<? extends AzureArtifact> loadItems() throws Exception {
-        return AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+        return AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts()
+                                   .stream()
+                                   .filter(azureArtifact -> !existOnly || FileUtils.fileExists(AzureArtifactManager.getInstance(project)
+                                                                                                                   .getFileForDeployment(azureArtifact)))
+                                   .collect(Collectors.toList());
     }
 
     @Nullable

@@ -140,7 +140,8 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        this.selectorApplication = new AzureArtifactComboBox(project);
+        this.selectorApplication = new AzureArtifactComboBox(project, true);
+        this.selectorApplication.refreshItems();
     }
 
     public void setDeploymentVisible(boolean visible) {
