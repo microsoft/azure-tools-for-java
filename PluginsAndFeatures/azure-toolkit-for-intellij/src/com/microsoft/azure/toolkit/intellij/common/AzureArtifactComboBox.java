@@ -43,8 +43,6 @@ import org.codehaus.plexus.util.FileUtils;
 import rx.Subscription;
 
 import javax.swing.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +51,7 @@ import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     private Project project;
     private boolean existOnly;
-    private Condition<? super VirtualFile> filter;
+    private Condition<? super VirtualFile> fileFilter;
     private Subscription subscription;
 
     public AzureArtifactComboBox(Project project) {
@@ -67,8 +65,8 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         this.existOnly = existOnly;
     }
 
-    public void setFileChooserDescriptor(final Condition<? super VirtualFile> filter) {
-        this.filter = filter;
+    public void setFileFilter(final Condition<? super VirtualFile> filter) {
+        this.fileFilter = filter;
     }
 
     public synchronized void refreshItems(AzureArtifactType defaultArtifactType, String defaultPath, String artifactIdentifier) {
@@ -76,7 +74,6 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         this.setLoading(true);
         subscription = this.loadItemsAsync()
                            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                               this.removeAllItems();
                                this.setItems(items);
                                this.setLoading(false);
                                this.resetDefaultValue(defaultArtifactType, defaultPath, artifactIdentifier);
@@ -117,8 +114,8 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
 
     private void onSelectFile() {
         final FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-        if (filter != null) {
-            fileDescriptor.withFileFilter(filter);
+        if (fileFilter != null) {
+            fileDescriptor.withFileFilter(fileFilter);
         }
         fileDescriptor.withTitle("Select artifact to deploy");
         final VirtualFile file = FileChooser.chooseFile(fileDescriptor, null, null);
@@ -130,10 +127,9 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     private void addOrSelectExistingVirtualFile(VirtualFile virtualFile) {
         final AzureArtifact selectArtifact = AzureArtifact.createFromFile(virtualFile);
         final List<AzureArtifact> artifacts = UIUtils.listComboBoxItems(AzureArtifactComboBox.this);
+        final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(project);
         final AzureArtifact existingArtifact =
-                artifacts.stream().filter(artifact -> artifact.getType() == AzureArtifactType.Artifact
-                        && StringUtils.equalsAnyIgnoreCase(artifact.getTargetPath(), selectArtifact.getTargetPath()))
-                         .findFirst().orElse(null);
+                artifacts.stream().filter(artifact -> azureArtifactManager.equalsAzureArtifactIdentifier(artifact, selectArtifact)).findFirst().orElse(null);
         if (existingArtifact == null) {
             this.addItem(selectArtifact);
             this.setSelectedItem(selectArtifact);

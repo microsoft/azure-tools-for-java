@@ -321,7 +321,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
 
         comboBoxArtifact = new AzureArtifactComboBox(this.project);
-        comboBoxArtifact.setFileChooserDescriptor(virtualFile -> {
+        comboBoxArtifact.setFileFilter(virtualFile -> {
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
         });
