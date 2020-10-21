@@ -144,7 +144,7 @@ public class BeforeRunTaskUtils {
             }, runConfiguration, add);
     }
 
-    public synchronized static <T extends BeforeRunTask> void addOrRemoveBeforeRunOption(
+    public static synchronized <T extends BeforeRunTask> void addOrRemoveBeforeRunOption(
             @NotNull JComponent runConfigurationEditorComponent,
             @NotNull Class<T> runTaskClass,
             @NotNull Predicate<T> filter,
