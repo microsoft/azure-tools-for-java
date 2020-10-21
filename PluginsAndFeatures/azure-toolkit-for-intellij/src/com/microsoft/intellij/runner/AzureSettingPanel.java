@@ -173,8 +173,9 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     protected void syncBeforeRunTasks(AzureArtifact azureArtifact,
-                                               final RunConfiguration configuration) {
-        if (!Comparing.equal(lastSelectedAzureArtifact, azureArtifact)) {
+                                               @NotNull final RunConfiguration configuration) {
+        if (!AzureArtifactManager.getInstance(configuration.getProject())
+                                 .equalsAzureArtifactIdentifier(lastSelectedAzureArtifact, azureArtifact)) {
             JPanel pnlRoot = getMainPanel();
             if (Objects.nonNull(lastSelectedAzureArtifact)) {
                 try {

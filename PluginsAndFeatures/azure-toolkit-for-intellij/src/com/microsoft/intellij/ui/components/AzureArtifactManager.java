@@ -28,7 +28,7 @@ import com.microsoft.intellij.util.GradleUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
 import com.microsoft.intellij.util.MavenUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
@@ -105,6 +105,13 @@ public class AzureArtifactManager {
             default:
                 return null;
         }
+    }
+
+    public boolean equalsAzureArtifactIdentifier(AzureArtifact artifact1, AzureArtifact artifact2) {
+        if (Objects.isNull(artifact1) || Objects.isNull(artifact2)) {
+            return artifact1 == artifact2;
+        }
+        return StringUtils.equals(getArtifactIdentifier(artifact1), getArtifactIdentifier(artifact2));
     }
 
     private String getGradleProjectId(ExternalProjectPojo gradleProjectPojo) {
