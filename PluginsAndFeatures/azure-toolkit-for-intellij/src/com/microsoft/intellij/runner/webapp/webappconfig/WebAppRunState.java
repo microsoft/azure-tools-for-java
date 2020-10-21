@@ -180,16 +180,12 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     private String getTargetPath() throws AzureExecutionException {
-        if (webAppConfiguration.getAzureArtifactType() == AzureArtifactType.File) {
-            return webAppConfiguration.getTargetPath();
-        } else {
-            final AzureArtifact azureArtifact =
-                    AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getArtifactIdentifier());
-            if (Objects.isNull(azureArtifact)) {
-                throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", webAppConfiguration.getArtifactIdentifier()));
-            }
-            return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
+        final AzureArtifact azureArtifact =
+                AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getArtifactIdentifier());
+        if (Objects.isNull(azureArtifact)) {
+            throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", webAppConfiguration.getArtifactIdentifier()));
         }
+        return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
     }
 
     private WebApp createWebApp(@NotNull RunProcessHandler processHandler) throws Exception {

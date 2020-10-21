@@ -40,7 +40,7 @@ public interface Platform {
     enum Linux implements Platform {
         JAVA8("JAVA", "8-jre8"),
         JAVA11("JAVA", "11-java11"),
-        JAVA8_JBOSS72("JBOSS", "7.2-jre8"),
+        JAVA8_JBOSS72("JBOSSEAP", "7.2-java8"),
         JAVA8_TOMCAT9("TOMCAT", "9.0-jre8"),
         JAVA8_TOMCAT85("TOMCAT", "8.5-jre8"),
         JAVA11_TOMCAT9("TOMCAT", "9.0-java11"),

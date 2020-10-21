@@ -39,6 +39,7 @@ import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
@@ -97,6 +98,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private WebAppComboBox comboBoxWebApp;
     private HideableDecorator slotDecorator;
 
+    private AzureArtifact previousArtifact;
     private WebAppConfiguration webAppConfiguration;
 
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
@@ -220,7 +222,8 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel, WebAppComboBoxModel::isSameWebApp);
         }
         if (configuration.getAzureArtifactType() != null) {
-            comboBoxArtifact.refreshItems(configuration.getAzureArtifactType(), configuration.getTargetPath(), configuration.getArtifactIdentifier());
+            previousArtifact = AzureArtifactManager.getInstance(project).getAzureArtifactById(configuration.getArtifactIdentifier());
+            comboBoxArtifact.refreshItems(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
         } else {
             comboBoxArtifact.refreshItems();
         }
@@ -317,7 +320,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         lblNewSlot = new HyperlinkLabel("No available deployment slot, click to create a new one");
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
 
-        comboBoxWebApp = new WebAppComboBox();
+        comboBoxWebApp = new WebAppComboBox(project);
         comboBoxWebApp.addItemListener(e -> loadDeploymentSlot(getSelectedWebApp()));
 
         comboBoxArtifact = new AzureArtifactComboBox(this.project);
@@ -328,20 +331,22 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         comboBoxArtifact.addItemListener(event -> {
             if (!(event.getItem() instanceof AzureArtifact)) {
                 return;
+            } else {
+                syncBeforeRunTasks((AzureArtifact) event.getItem());
             }
-            final AzureArtifact azureArtifact = (AzureArtifact) event.getItem();
-            DefaultLoader.getIdeHelper().invokeLater(() -> {
-                try {
-                    if (event.getStateChange() == ItemEvent.DESELECTED) {
-                        BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), azureArtifact, webAppConfiguration, false);
-                    } else if (event.getStateChange() == ItemEvent.SELECTED) {
-                        BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), azureArtifact, webAppConfiguration, true);
-                    }
-                } catch (IllegalAccessException e) {
-                    // swallow before run task errors
-                }
-            });
         });
+    }
+
+    private synchronized void syncBeforeRunTasks(AzureArtifact azureArtifact) {
+        try {
+            if (previousArtifact != null) {
+                BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), previousArtifact, webAppConfiguration, false);
+            }
+            previousArtifact = azureArtifact;
+            BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), azureArtifact, webAppConfiguration, true);
+        } catch (IllegalAccessException e) {
+            // swallow before run task errors
+        }
     }
 
     private void loadDeploymentSlot(WebAppComboBoxModel selectedWebApp) {

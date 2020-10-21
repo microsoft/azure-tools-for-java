@@ -54,8 +54,9 @@ public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
     private Project project;
     private Subscription subscription;
 
-    public WebAppComboBox() {
+    public WebAppComboBox(final Project project) {
         super(false);
+        this.project = project;
         this.setRenderer(new WebAppCombineBoxRender(this));
     }
 
@@ -68,7 +69,6 @@ public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
         this.addItem(defaultValue);
         subscription = this.loadItemsAsync()
                            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                               this.removeAllItems();
                                this.setItems(items);
                                this.setLoading(false);
                                this.resetDefaultValue(defaultValue, comparator);

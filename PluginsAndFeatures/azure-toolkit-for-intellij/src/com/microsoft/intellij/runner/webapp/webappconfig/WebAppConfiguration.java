@@ -59,9 +59,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
     private static final String MISSING_ARTIFACT = "A web archive (.war|.jar|.ear) artifact has not been configured.";
-    private static final String INVALID_ARTIFACT_FILE = "The artifact name %s is invalid. "
-        + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
-        + "the digits '0' through '9', '.', '-' and '_'.";
 
     private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar|ear)$";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
@@ -142,10 +139,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         }
         if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
-        }
-        if (webAppSettingModel.getAzureArtifactType() == AzureArtifactType.File && StringUtils.isNotEmpty(getTargetName()) &&
-                !webAppSettingModel.getTargetName().matches(ARTIFACT_NAME_REGEX)) {
-            throw new ConfigurationException(String.format(INVALID_ARTIFACT_FILE, webAppSettingModel.getTargetName()));
         }
     }
 
@@ -368,11 +361,6 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
         webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
         webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
-        if (azureArtifact != null && azureArtifact.getType() == AzureArtifactType.File) {
-            webAppSettingModel.setTargetPath(azureArtifactManager.getFileForDeployment(azureArtifact));
-        } else {
-            webAppSettingModel.setTargetPath(null);
-        }
     }
 
     public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {

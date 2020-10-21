@@ -98,6 +98,12 @@ public class AzureArtifactManager {
                 artifact), artifactId)).findFirst().orElse(null);
     }
 
+    public AzureArtifact getAzureArtifactById(AzureArtifactType azureArtifactType, String artifactId) {
+        return azureArtifactType == AzureArtifactType.File ? AzureArtifact.createFromFile(artifactId) :
+               getAllSupportedAzureArtifacts().stream().filter(artifact -> StringUtils.equals(getArtifactIdentifier(
+                artifact), artifactId)).findFirst().orElse(null);
+    }
+
     public String getPackaging(AzureArtifact artifact) {
         switch (artifact.getType()) {
             case Gradle:

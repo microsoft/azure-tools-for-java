@@ -149,11 +149,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
         }
     }
 
-    @Override
-    public void addItem(final T item) {
-        throw new OperationNotSupportedException("use setItems instead");
-    }
-
     public List<T> getItems() {
         final List<T> result = new ArrayList<>();
         for (int i = 0; i < this.getItemCount(); i++) {
