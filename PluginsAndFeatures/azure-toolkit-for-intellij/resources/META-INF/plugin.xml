@@ -24,29 +24,34 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.43.0</h3>
+    <h3>3.44.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Support SSH into Linux web app</li>
+        <li>Support new runtime JBOSS 7.2 for Linux Web App</li>
+        <li>Support Gradle projects for Web App and Spring Cloud</li>
+        <li>Support file deployment for Web App</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Update Spring Cloud dependency constraint rule for spring-cloud-starter-azure-spring-cloud-client</li>
+        <li>New creation wizard for Web App with basic and advanced mode</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4555">#4555</a> Azure CLI authentication does
-            not show subscriptions for all tenants</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4558">#4558</a> Unhandled exception in device
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2975">#2975</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/4600">#4600</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/4605">#4605</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/4544">#4544</a> Enhance error handling for
+            network issues</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4545">#4545</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/4566">#4566</a> Unhandled
+            ProcessCanceledException while start up</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4530">#4530</a> Unhandled exception in whats
+            new document</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4591">#4591</a>,<a
+                href="https://github.com/microsoft/azure-tools-for-java/issues/4599">#4599</a> Fix Spring Cloud deployment
+            error handling</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4604">#4558</a> Unhandled exception in device
             login</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4560">#4560</a> Unhandled exception while
-            create application insights</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4595">#4595</a> Unhandled exception in Docker
-            Run/Run on Web App for Containers</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4601">#4601</a> Fixed customized configuration
-            are wrongly cleared after blob storage is slected for Synapse batch job issue</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4607">#4607</a> Fixed regression in service
-            principal authentication</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
