@@ -240,9 +240,8 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     protected void setupAzureArtifactCombo(String artifactIdentifier, RunConfiguration configuration) {
-
         if (isCbArtifactInited || getCbAzureArtifact() == EMPTY_COMBO_BOX) {
-                return;
+            return;
         }
         List<AzureArtifact> azureArtifacts =
                 configuration instanceof SpringCloudDeployConfiguration ?

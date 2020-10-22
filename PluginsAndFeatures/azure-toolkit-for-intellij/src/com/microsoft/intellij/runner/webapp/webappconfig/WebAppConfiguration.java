@@ -60,11 +60,16 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
     private static final String MISSING_ARTIFACT = "A web archive (.war|.jar|.ear) artifact has not been configured.";
-
-    private static final String ARTIFACT_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar|ear)$";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
     private static final String INVALID_SLOT_NAME =
         "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
+    private static final String INVALID_RUNTIME = "Invalid target, please select a web app with Java runtime";
+    private static final String INVALID_TOMCAT_ARTIFACT = "Invalid artifact, tomcat app service only supports .war artifact";
+    private static final String INVALID_JBOSS_ARTIFACT = "Invalid artifact, jboss app service only supports .war or .ear artifact";
+    private static final String INVALID_JAVA_SE_ARTIFACT = "Invalid artifact, java se app service only supports .jar artifact";
+    private static final String TOMCAT = "tomcat";
+    private static final String JAVA = "java";
+    private static final String JBOSS = "jboss";
     private final IntelliJWebAppSettingModel webAppSettingModel;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -140,28 +145,15 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         }
         // validate runtime with artifact
         final String artifactPackage = webAppSettingModel.getPackaging();
-        final String runtime = getRuntime();
+        final String runtime = StringUtils.lowerCase(getRuntime());
         if (StringUtils.isEmpty(runtime)) {
-            throw new ConfigurationException("Invalid target, please select a web app with Java runtime");
-        }
-        switch (StringUtils.upperCase(getRuntime())) {
-            case "TOMCAT":
-                if (!StringUtils.equalsAnyIgnoreCase(artifactPackage, "war")) {
-                    throw new ConfigurationException("Invalid artifact, tomcat app service only support .war artifact");
-                }
-                break;
-            case "JBOSSEAP":
-                if (!StringUtils.equalsAnyIgnoreCase(artifactPackage, "war", "ear")) {
-                    throw new ConfigurationException("Invalid artifact, jboss app service only support .war or .ear artifact");
-                }
-                break;
-            case "JAVA":
-                if (!StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
-                    throw new ConfigurationException("Invalid artifact, java se app service only support .jar artifact");
-                }
-                break;
-            default:
-                throw new ConfigurationException("Invalid target, please select a web app with Java runtime");
+            throw new ConfigurationException(INVALID_RUNTIME);
+        } else if (StringUtils.contains(runtime, TOMCAT) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war")) {
+            throw new ConfigurationException(INVALID_TOMCAT_ARTIFACT);
+        } else if (StringUtils.contains(runtime, JBOSS) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war", "ear")) {
+            throw new ConfigurationException(INVALID_JBOSS_ARTIFACT);
+        } else if (StringUtils.contains(runtime, JAVA) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
+            throw new ConfigurationException(INVALID_JAVA_SE_ARTIFACT);
         }
         if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
@@ -172,12 +164,12 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         if (getOS() == OperatingSystem.LINUX) {
             return getModel().getStack();
         } else {
-            if (StringUtils.containsIgnoreCase(getWebContainer(), "tomcat")) {
-                return "TOMCAT";
-            } else if (StringUtils.containsIgnoreCase(getWebContainer(), "java")) {
-                return "JAVA";
-            } else if (StringUtils.containsIgnoreCase(getWebContainer(), "jboss")) {
-                return "JBOSSEAP";
+            if (StringUtils.containsIgnoreCase(getWebContainer(), TOMCAT)) {
+                return TOMCAT;
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), JAVA)) {
+                return JAVA;
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), JBOSS)) {
+                return JBOSS;
             } else {
                 return null;
             }
