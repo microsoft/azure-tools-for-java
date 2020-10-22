@@ -43,6 +43,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.utils.WebAppUtils;
@@ -96,6 +97,11 @@ public class AzureWebAppMvpModel {
             throw new IOException(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
         return app;
+    }
+
+    public WebApp getWebAppByName(String sid, String resourceGroup, String appName) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        return azure.webApps().getByResourceGroup(resourceGroup, appName);
     }
 
     /**
@@ -461,8 +467,15 @@ public class AzureWebAppMvpModel {
      * Get all the deployment slots of a web app by the subscription id and web app id.
      */
     public List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) throws IOException {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            return null;
+        }
         final List<DeploymentSlot> deploymentSlots = new ArrayList<>();
         final WebApp webApp = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        if (webApp == null) {
+            return null;
+        }
         deploymentSlots.addAll(webApp.deploymentSlots().list());
         return deploymentSlots;
     }
@@ -472,6 +485,7 @@ public class AzureWebAppMvpModel {
      */
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
         List<AppServicePlan> appServicePlans = new ArrayList<>();
+
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
             appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));

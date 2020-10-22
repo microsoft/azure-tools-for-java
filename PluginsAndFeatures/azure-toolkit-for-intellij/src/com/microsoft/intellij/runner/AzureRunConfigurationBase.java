@@ -103,4 +103,8 @@ public abstract class AzureRunConfigurationBase<T> extends LocatableConfiguratio
             throw new ConfigurationException(e.getMessage());
         }
     }
+
+    public String getArtifactIdentifier() {
+        return null;
+    }
 }

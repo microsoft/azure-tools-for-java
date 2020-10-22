@@ -51,9 +51,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UIUtils {
+
+    public static List listComboBoxItems(JComboBox comboBox) {
+        final List result = new ArrayList();
+        for (int i = 0; i < comboBox.getItemCount(); i++) {
+            result.add(comboBox.getItemAt(i));
+        }
+        return result;
+    }
 
     public static ActionListener createFileChooserListener(final TextFieldWithBrowseButton parent, final @Nullable Project project,
                                                            final FileChooserDescriptor descriptor) {

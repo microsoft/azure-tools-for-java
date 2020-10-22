@@ -311,8 +311,9 @@ public class WebAppUtils {
 
     /**
      * Deploys artifact to Azure App Service
-     * @param deployTarget the web app or deployment slot
-     * @param artifact artifact to deploy
+     *
+     * @param deployTarget      the web app or deployment slot
+     * @param artifact          artifact to deploy
      * @param isDeployToRoot
      * @param progressIndicator
      */
@@ -506,7 +507,7 @@ public class WebAppUtils {
     }
 
     public static int uploadToRemoteServer(WebAppBase webApp, String fileName, InputStream ins,
-        IProgressIndicator indicator, String targetPath) throws IOException {
+                                           IProgressIndicator indicator, String targetPath) throws IOException {
         FTPClient ftp = null;
         try {
             PublishingProfile pp = webApp.getPublishingProfile();
@@ -556,7 +557,8 @@ public class WebAppUtils {
         public ResourceGroup appServicePlanResourceGroup;
         public WebApp webApp;
 
-        public WebAppDetails() {}
+        public WebAppDetails() {
+        }
 
         public WebAppDetails(ResourceGroup resourceGroup, WebApp webApp,
                              AppServicePlan appServicePlan, ResourceGroup appServicePlanResourceGroup,
@@ -577,6 +579,7 @@ public class WebAppUtils {
             this.asp = asp;
             this.rg = rg;
         }
+
         public AppServicePlan getAsp() {
             return asp;
         }
@@ -592,8 +595,8 @@ public class WebAppUtils {
      */
     public static boolean isJavaWebApp(@NotNull WebApp webApp) {
         return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
-                || (webApp.operatingSystem() == OperatingSystem.LINUX && (StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre8")
-                || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "java11")));
+                || (webApp.operatingSystem() == OperatingSystem.LINUX && (StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre")
+                || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "java")));
     }
 
     /**
@@ -608,7 +611,7 @@ public class WebAppUtils {
             case WINDOWS:
                 webContainer = webApp.javaContainer() == null ? null : webApp.javaContainer().toLowerCase();
                 return String.format("%s %s (Java%s)",
-                    StringUtils.capitalize(webContainer), webApp.javaContainerVersion(), webApp.javaVersion().toString());
+                        StringUtils.capitalize(webContainer), webApp.javaContainerVersion(), webApp.javaVersion().toString());
             case LINUX:
                 final String linuxVersion = webApp.linuxFxVersion();
                 if (linuxVersion == null) {
@@ -624,10 +627,10 @@ public class WebAppUtils {
                 final String webContainerVersion = versions[1];
                 final String jreVersion = versions[2];
                 final boolean isJavaLinuxRuntimeWithWebContainer = getAllJavaLinuxRuntimeStacks()
-                    .stream()
-                    .map(r -> r.stack())
-                    .filter(w -> !w.equalsIgnoreCase("java"))
-                    .anyMatch(w -> w.equalsIgnoreCase(webContainer));
+                        .stream()
+                        .map(r -> r.stack())
+                        .filter(w -> !w.equalsIgnoreCase("java"))
+                        .anyMatch(w -> w.equalsIgnoreCase(webContainer));
                 if (isJavaLinuxRuntimeWithWebContainer) {
                     // TOMCAT|8.5-jre8 -> Tomcat 8.5 (JRE8)
                     return String.format("%s %s (%s)", StringUtils.capitalize(webContainer), webContainerVersion, jreVersion.toUpperCase());

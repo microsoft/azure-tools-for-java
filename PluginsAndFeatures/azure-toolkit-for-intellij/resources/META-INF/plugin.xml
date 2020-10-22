@@ -68,6 +68,7 @@
   <depends>com.intellij.modules.java</depends>
   <depends>org.intellij.plugins.markdown</depends>
   <depends>org.jetbrains.plugins.terminal</depends>
+  <depends>com.intellij.gradle</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
@@ -39,6 +40,7 @@ import com.microsoft.intellij.serviceexplorer.azure.storage.CreateTableAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.ModifyExternalStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
 import com.microsoft.intellij.serviceexplorer.azure.vmarm.CreateVMAction;
+import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.sqlbigdata.serverexplore.action.LinkSqlServerBigDataClusterAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
@@ -54,6 +56,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.QueueModul
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.TableModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotNode;
 
@@ -74,6 +77,8 @@ public class NodeActionsMap {
                 .add(CreateStorageAccountAction.class).build());
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateRedisCacheAction.class).build());
+        node2Actions.put(WebAppModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateWebAppAction.class).build());
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
         // todo: what is ConfirmDialogAction?
@@ -109,7 +114,8 @@ public class NodeActionsMap {
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class).build());
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)
+                .add(DeployWebAppAction.class).build());
 
         node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
