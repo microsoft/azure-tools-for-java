@@ -100,7 +100,6 @@ public class WebAppUtils {
 
         FTPClient ftp = new FTPClient();
         URI uri = URI.create("ftp://" + pp.ftpUrl());
-        FTPClient ftp = new FTPClient();
         ftp.connect(uri.getHost(), 21);
         final int replyCode = ftp.getReplyCode();
         if (!FTPReply.isPositiveCompletion(replyCode)) {
