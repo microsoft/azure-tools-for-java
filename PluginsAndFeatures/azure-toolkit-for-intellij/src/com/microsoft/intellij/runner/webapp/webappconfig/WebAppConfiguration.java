@@ -34,6 +34,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -42,7 +43,7 @@ import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.components.AzureArtifactType;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -137,8 +138,49 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                 }
             }
         }
+        // validate runtime with artifact
+        final String artifactPackage = webAppSettingModel.getPackaging();
+        final String runtime = getRuntime();
+        if (StringUtils.isEmpty(runtime)) {
+            throw new ConfigurationException("Invalid target, please select a web app with Java runtime");
+        }
+        switch (StringUtils.upperCase(getRuntime())) {
+            case "TOMCAT":
+                if (!StringUtils.equalsAnyIgnoreCase(artifactPackage, "war")) {
+                    throw new ConfigurationException("Invalid artifact, tomcat app service only support .war artifact");
+                }
+                break;
+            case "JBOSSEAP":
+                if (!StringUtils.equalsAnyIgnoreCase(artifactPackage, "war", "ear")) {
+                    throw new ConfigurationException("Invalid artifact, jboss app service only support .war or .ear artifact");
+                }
+                break;
+            case "JAVA":
+                if (!StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
+                    throw new ConfigurationException("Invalid artifact, java se app service only support .jar artifact");
+                }
+                break;
+            default:
+                throw new ConfigurationException("Invalid target, please select a web app with Java runtime");
+        }
         if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
+        }
+    }
+
+    private String getRuntime() {
+        if (getOS() == OperatingSystem.LINUX) {
+            return getModel().getStack();
+        } else {
+            if (StringUtils.containsIgnoreCase(getWebContainer(), "tomcat")) {
+                return "TOMCAT";
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), "java")) {
+                return "JAVA";
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), "jboss")) {
+                return "JBOSSEAP";
+            } else {
+                return null;
+            }
         }
     }
 
@@ -361,9 +403,10 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
         final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
         webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
         webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
+        webAppSettingModel.setPackaging(azureArtifact == null ? null : azureArtifactManager.getPackaging(azureArtifact));
     }
 
-    public void setModel(final WebAppComboBoxModel webAppComboBoxModel) {
+    public void saveModel(final WebAppComboBoxModel webAppComboBoxModel) {
         setWebAppId(webAppComboBoxModel.getResourceId());
         setWebAppName(webAppComboBoxModel.getAppName());
         setResourceGroup(webAppComboBoxModel.getResourceGroup());
@@ -386,6 +429,20 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
         } else {
             setCreatingNew(false);
+            final WebApp webApp = webAppComboBoxModel.getResource();
+            if (webApp != null) {
+                setOS(webApp.operatingSystem());
+                setAppServicePlanId(webApp.appServicePlanId());
+                setRegion(webApp.regionName());
+                setWebContainer(webApp.javaContainer() + " " + webApp.javaContainerVersion());
+                setJdkVersion(webApp.javaVersion());
+                final String linuxFxVersion = webApp.linuxFxVersion();
+                if (StringUtils.contains(linuxFxVersion, "|")) {
+                    final String[] runtime = linuxFxVersion.split("\\|");
+                    setStack(runtime[0]);
+                    setVersion(runtime[1]);
+                }
+            }
         }
     }
 }

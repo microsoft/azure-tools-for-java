@@ -256,7 +256,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     protected void apply(@NotNull WebAppConfiguration configuration) {
         final WebAppComboBoxModel selectedWebApp = getSelectedWebApp();
         if (selectedWebApp != null) {
-            configuration.setModel(selectedWebApp);
+            configuration.saveModel(selectedWebApp);
         }
         configuration.saveArtifact(comboBoxArtifact.getValue());
         configuration.setDeployToSlot(chkDeployToSlot.isSelected());

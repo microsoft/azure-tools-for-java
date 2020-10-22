@@ -31,6 +31,7 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
     private boolean openBrowserAfterDeployment = true;
     private boolean slotPanelVisible = false;
     private String artifactIdentifier;
+    private String packaging;
 
     public String getArtifactIdentifier() {
         return artifactIdentifier;
@@ -38,6 +39,14 @@ public class IntelliJWebAppSettingModel extends WebAppSettingModel {
 
     public void setArtifactIdentifier(final String artifactIdentifier) {
         this.artifactIdentifier = artifactIdentifier;
+    }
+
+    public String getPackaging() {
+        return packaging;
+    }
+
+    public void setPackaging(final String packaging) {
+        this.packaging = packaging;
     }
 
     public boolean isOpenBrowserAfterDeployment() {
