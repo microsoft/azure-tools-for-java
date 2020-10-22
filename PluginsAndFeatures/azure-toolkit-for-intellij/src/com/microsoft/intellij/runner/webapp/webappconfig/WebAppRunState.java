@@ -83,8 +83,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, webAppSettingModel.getTargetPath()));
         }
         WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
-        WebAppUtils.deployArtifactsToAppService(deployTarget, file,
-                webAppConfiguration.isDeployToRoot(), processHandler);
+        WebAppUtils.oneDeployArtifactsToAppService(deployTarget, file, webAppConfiguration.isDeployToRoot(), processHandler);
         return deployTarget;
     }
 
