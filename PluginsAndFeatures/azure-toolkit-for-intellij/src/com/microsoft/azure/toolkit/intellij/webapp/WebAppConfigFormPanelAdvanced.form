@@ -154,7 +154,7 @@
           <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="1" use-parent-layout="true"/>
         </constraints>
         <properties>
-          <text value="Artifact:"/>
+          <text value="Artifact(Optional):"/>
         </properties>
       </component>
       <component id="8161" class="com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox" binding="selectorGroup">

@@ -92,6 +92,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
             final Platform platform = this.selectorPlatform.getValue();
             return org.apache.commons.lang.StringUtils.isNotBlank(ext) && Platform.isSupportedArtifactType(ext, platform);
         });
+        this.setDeploymentVisible(false);
     }
 
     @SneakyThrows
@@ -168,7 +169,6 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     private void createUIComponents() {
         // TODO: place custom component creation code here
         this.selectorApplication = new AzureArtifactComboBox(project, true);
-        this.selectorApplication.refreshItems();
     }
 
     public void setDeploymentVisible(boolean visible) {
