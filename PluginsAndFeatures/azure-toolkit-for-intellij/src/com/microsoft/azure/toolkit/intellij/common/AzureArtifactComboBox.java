@@ -30,25 +30,28 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
+import com.microsoft.azure.toolkit.lib.common.form.AzureValidationInfo;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.components.AzureArtifactType;
-import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import rx.Subscription;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
-    private Project project;
-    private boolean fileArtifactOnly;
+    private static final String ARTIFACT_NOT_SUPPORTED = "The selected platform does not support this type of artifact.";
+    private final Project project;
+    private final boolean fileArtifactOnly;
     private Condition<? super VirtualFile> fileFilter;
     private Subscription subscription;
 
@@ -74,9 +77,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
                                this.setItems(items);
                                this.setLoading(false);
                                this.resetDefaultValue(defaultArtifactType, artifactIdentifier);
-                           }), (e) -> {
-                                   this.handleLoadingError(e);
-                               });
+                           }), this::handleLoadingError);
     }
 
     @NotNull
@@ -91,8 +92,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     @Nullable
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-                AllIcons.General.OpenDisk, "Open file", this::onSelectFile);
+        return ExtendableTextComponent.Extension.create(AllIcons.General.OpenDisk, "Open file", this::onSelectFile);
     }
 
     protected String getItemText(Object item) {
@@ -108,12 +108,27 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         return item instanceof AzureArtifact ? ((AzureArtifact) item).getIcon() : null;
     }
 
+    @NotNull
+    @Override
+    public AzureValidationInfo doValidate() {
+        final AzureValidationInfo info = super.doValidate();
+        final AzureArtifact artifact = this.getValue();
+        if (info == AzureValidationInfo.OK && Objects.nonNull(artifact) && artifact.getType() == AzureArtifactType.File) {
+            final VirtualFile referencedObject = (VirtualFile) artifact.getReferencedObject();
+            if (!this.fileFilter.value(referencedObject)) {
+                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                return builder.input(this).message(ARTIFACT_NOT_SUPPORTED).type(AzureValidationInfo.Type.ERROR).build();
+            }
+        }
+        return info;
+    }
+
     private void onSelectFile() {
         final FileChooserDescriptor fileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
         if (fileFilter != null) {
             fileDescriptor.withFileFilter(fileFilter);
         }
-        fileDescriptor.withTitle("Select artifact to deploy");
+        fileDescriptor.withTitle("Select Artifact to Deploy");
         final VirtualFile file = FileChooser.chooseFile(fileDescriptor, null, null);
         if (file != null && file.exists()) {
             addOrSelectExistingVirtualFile(file);
@@ -122,10 +137,10 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
 
     private void addOrSelectExistingVirtualFile(VirtualFile virtualFile) {
         final AzureArtifact selectArtifact = AzureArtifact.createFromFile(virtualFile);
-        final List<AzureArtifact> artifacts = UIUtils.listComboBoxItems(AzureArtifactComboBox.this);
-        final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(project);
+        final List<AzureArtifact> artifacts = this.getItems();
+        final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
         final AzureArtifact existingArtifact =
-                artifacts.stream().filter(artifact -> azureArtifactManager.equalsAzureArtifactIdentifier(artifact, selectArtifact)).findFirst().orElse(null);
+            artifacts.stream().filter(artifact -> manager.equalsAzureArtifactIdentifier(artifact, selectArtifact)).findFirst().orElse(null);
         if (existingArtifact == null) {
             this.addItem(selectArtifact);
             this.setSelectedItem(selectArtifact);
@@ -136,10 +151,9 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
 
     private void resetDefaultValue(final AzureArtifactType defaultArtifactType, final String artifactIdentifier) {
         final List<AzureArtifact> artifacts = this.getItems();
-        final AzureArtifact defaultArtifact =
-                artifacts.stream()
-                         .filter(artifact -> StringUtils.equals(artifactIdentifier, AzureArtifactManager.getInstance(project).getArtifactIdentifier(artifact)))
-                                                        .findFirst().orElse(null);
+        final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
+        final Predicate<AzureArtifact> predicate = artifact -> StringUtils.equals(artifactIdentifier, manager.getArtifactIdentifier(artifact));
+        final AzureArtifact defaultArtifact = artifacts.stream().filter(predicate).findFirst().orElse(null);
         if (defaultArtifact != null) {
             this.setSelectedItem(defaultArtifact);
         } else if (defaultArtifactType == AzureArtifactType.File) {

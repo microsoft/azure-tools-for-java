@@ -42,6 +42,7 @@ import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.SneakyThrows;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -85,6 +86,12 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
         this.textName.setSubscription(this.subscription);
         this.textName.setRequired(true);
         this.selectorPlatform.setRequired(true);
+
+        this.selectorApplication.setFileFilter(virtualFile -> {
+            final String ext = FileNameUtils.getExtension(virtualFile.getPath());
+            final Platform platform = this.selectorPlatform.getValue();
+            return org.apache.commons.lang.StringUtils.isNotBlank(ext) && Platform.isSupportedArtifactType(ext, platform);
+        });
     }
 
     @SneakyThrows
