@@ -98,6 +98,7 @@ public class WebAppUtils {
         System.out.println("\t\t" + pp.ftpUsername());
         System.out.println("\t\t" + pp.ftpPassword());
 
+        FTPClient ftp = new FTPClient();
         URI uri = URI.create("ftp://" + pp.ftpUrl());
         FTPClient ftp = new FTPClient();
         ftp.connect(uri.getHost(), 21);
@@ -118,8 +119,8 @@ public class WebAppUtils {
         return ftp;
     }
 
-    public static int deployArtifact(String artifactName, String artifactPath, PublishingProfile pp, boolean toRoot, IProgressIndicator indicator)
-            throws IOException {
+    public static int deployArtifact(String artifactName, String artifactPath, PublishingProfile pp,
+                                     boolean toRoot, IProgressIndicator indicator) throws IOException {
         File file = new File(artifactPath);
         if (!file.exists()) {
             throw new FileNotFoundException(String.format(NO_TARGET_FILE, artifactPath));
@@ -128,11 +129,15 @@ public class WebAppUtils {
         InputStream input = null;
         int uploadingTryCount = 0;
         try {
-            if (indicator != null) indicator.setText("Connecting to FTP server...");
+            if (indicator != null) {
+                indicator.setText("Connecting to FTP server...");
+            }
 
             ftp = getFtpConnection(pp);
             ensureWebAppsFolderExist(ftp);
-            if (indicator != null) indicator.setText("Uploading the application...");
+            if (indicator != null) {
+                indicator.setText("Uploading the application...");
+            }
             input = new FileInputStream(artifactPath);
             int indexOfDot = artifactPath.lastIndexOf(".");
             String fileType = artifactPath.substring(indexOfDot + 1);
@@ -155,11 +160,14 @@ public class WebAppUtils {
                 default:
                     break;
             }
-            if (indicator != null) indicator.setText("Logging out of FTP server...");
+            if (indicator != null) {
+                indicator.setText("Logging out of FTP server...");
+            }
             ftp.logout();
         } finally {
-            if (input != null)
+            if (input != null) {
                 input.close();
+            }
             if (ftp != null && ftp.isConnected()) {
                 ftp.disconnect();
             }
@@ -225,7 +233,9 @@ public class WebAppUtils {
         FTPFile[] subFiles = ftpClient.listFiles(path);
         if (subFiles.length > 0) {
             for (FTPFile ftpFile : subFiles) {
-                if (pi != null && pi.isCanceled()) break;
+                if (pi != null && pi.isCanceled()) {
+                    break;
+                }
                 String currentFileName = ftpFile.getName();
                 if (currentFileName.equals(".") || currentFileName.equals("..")) {
                     continue; // skip
@@ -237,15 +247,21 @@ public class WebAppUtils {
                     removeFtpDirectory(ftpClient, path1, pi);
                 } else {
                     // delete the file
-                    if (pi != null) pi.setText2(prefix + path1);
+                    if (pi != null) {
+                        pi.setText2(prefix + path1);
+                    }
                     ftpClient.deleteFile(path1);
                 }
             }
         }
 
-        if (pi != null) pi.setText2(prefix + path);
+        if (pi != null) {
+            pi.setText2(prefix + path);
+        }
         ftpClient.removeDirectory(path);
-        if (pi != null) pi.setText2("");
+        if (pi != null) {
+            pi.setText2("");
+        }
     }
 
     public static boolean doesRemoteFileExist(FTPClient ftp, String path, String fileName) throws IOException {
@@ -467,16 +483,22 @@ public class WebAppUtils {
     public static void uploadWebConfig(WebApp webApp, InputStream fileStream, IProgressIndicator indicator) throws IOException {
         FTPClient ftp = null;
         try {
-            if (indicator != null) indicator.setText("Stopping the service...");
+            if (indicator != null) {
+                indicator.setText("Stopping the service...");
+            }
             webApp.stop();
 
             PublishingProfile pp = webApp.getPublishingProfile();
             ftp = getFtpConnection(pp);
 
-            if (indicator != null) indicator.setText("Uploading " + WEB_CONFIG_FILENAME + "...");
+            if (indicator != null) {
+                indicator.setText("Uploading " + WEB_CONFIG_FILENAME + "...");
+            }
             uploadFileToFtp(ftp, FTP_ROOT_PATH + WEB_CONFIG_FILENAME, fileStream, indicator);
 
-            if (indicator != null) indicator.setText("Starting the service...");
+            if (indicator != null) {
+                indicator.setText("Starting the service...");
+            }
             webApp.start();
         } finally {
             if (ftp != null && ftp.isConnected()) {
