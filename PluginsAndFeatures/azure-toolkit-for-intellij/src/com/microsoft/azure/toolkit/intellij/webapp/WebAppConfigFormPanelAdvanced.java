@@ -42,6 +42,8 @@ import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -156,6 +158,12 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         this.selectorSubscription.setRequired(true);
         this.selectorPlatform.setRequired(true);
         this.selectorRegion.setRequired(true);
+
+        this.selectorApplication.setFileFilter(virtualFile -> {
+            final String ext = FileNameUtils.getExtension(virtualFile.getPath());
+            final Platform platform = this.selectorPlatform.getValue();
+            return StringUtils.isNotBlank(ext) && Platform.isSupportedArtifactType(ext, platform);
+        });
     }
 
     private void onRegionChanged(final ItemEvent e) {
