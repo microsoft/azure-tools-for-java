@@ -236,10 +236,14 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     }
 
     protected void setupAzureArtifactCombo(String artifactIdentifier, RunConfiguration configuration) {
+        if (isCbArtifactInited) {
+            return;
+        }
         List<AzureArtifact> azureArtifacts =
                 configuration instanceof SpringCloudDeployConfiguration ?
                 AzureArtifactManager.getInstance(project).getSupportedAzureArtifactsForSpringCloud() :
                 AzureArtifactManager.getInstance(project).getAllSupportedAzureArtifacts();
+        getCbAzureArtifact().removeAllItems();
         if (!azureArtifacts.isEmpty()) {
             for (AzureArtifact azureArtifact : azureArtifacts) {
                 getCbAzureArtifact().addItem(azureArtifact);
@@ -266,13 +270,14 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
                 }
             }
         });
+
         getCbAzureArtifact().addActionListener(e -> {
             AzureArtifact artifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
             syncBeforeRunTasks(artifact, configuration);
         });
 
         if (getCbAzureArtifact().getSelectedItem() != null) {
-            syncBeforeRunTasks((AzureArtifact) getCbAzureArtifact().getSelectedItem() , configuration);
+            syncBeforeRunTasks((AzureArtifact) getCbAzureArtifact().getSelectedItem(), configuration);
         }
 
         isCbArtifactInited = true;
