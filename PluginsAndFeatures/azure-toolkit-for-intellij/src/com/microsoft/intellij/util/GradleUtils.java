@@ -22,23 +22,20 @@
 
 package com.microsoft.intellij.util;
 
-import com.intellij.openapi.externalSystem.model.ProjectSystemId;
 import com.intellij.openapi.externalSystem.model.project.ExternalProjectPojo;
 import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.plugins.gradle.GradleManager;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache;
+import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.util.*;
 
 public class GradleUtils {
 
-    // Copied from org.jetbrains.plugins.gradle.util.GradleConstants
-    public static final ProjectSystemId SYSTEM_ID = new ProjectSystemId("GRADLE");
-
     public static List<ExternalProjectPojo> listGradleProjects(Project project) {
-        GradleManager manager = (GradleManager) ExternalSystemApiUtil.getManager(SYSTEM_ID);
+        GradleManager manager = (GradleManager) ExternalSystemApiUtil.getManager(GradleConstants.SYSTEM_ID);
         Map<ExternalProjectPojo, Collection<ExternalProjectPojo>> projects =
                 manager.getLocalSettingsProvider().fun(project).getAvailableProjects();
         return new ArrayList(projects.keySet());
