@@ -23,7 +23,10 @@
 package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
+
+import java.util.Objects;
 
 public interface Platform {
 
@@ -32,6 +35,20 @@ public interface Platform {
     String getStackOrWebContainer();
 
     String getStackVersionOrJavaVersion();
+
+    static boolean isSupportedArtifactType(@NotNull final String artifactExt, Platform platform) {
+        if (Objects.nonNull(platform)) {
+            final String container = platform.getStackOrWebContainer().toLowerCase();
+            if (container.startsWith("java")) {
+                return "jar".equals(artifactExt);
+            } else if (container.startsWith("tomcat")) {
+                return "war".equals(artifactExt);
+            } else if (container.startsWith("jboss")) {
+                return "war".equals(artifactExt) || "ear".equals(artifactExt);
+            }
+        }
+        return true;
+    }
 
     /**
      * refer com.microsoft.azure.management.appservice.RuntimeStack
