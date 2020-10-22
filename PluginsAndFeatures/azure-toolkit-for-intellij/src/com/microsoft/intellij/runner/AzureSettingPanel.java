@@ -51,6 +51,10 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
+
+    private static final JLabel EMPTY_LABEL = new JLabel();
+    private static final JComboBox EMPTY_COMBO_BOX = new JComboBox();
+
     private boolean oldMode = true;
     protected final Project project;
     private boolean isCbArtifactInited;
@@ -222,20 +226,23 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
 
     @NotNull
     protected JLabel getLblMavenProject() {
-        return new JLabel();
+        return EMPTY_LABEL;
     }
 
     @NotNull
     protected JLabel getLblAzureArtifact() {
-        return new JLabel();
+        return EMPTY_LABEL;
     }
 
     @NotNull
     protected JComboBox<AzureArtifact> getCbAzureArtifact() {
-        return new JComboBox<>();
+        return EMPTY_COMBO_BOX;
     }
 
     protected void setupAzureArtifactCombo(String artifactIdentifier, RunConfiguration configuration) {
+        if (getCbAzureArtifact() == EMPTY_COMBO_BOX) {
+            return;
+        }
         List<AzureArtifact> azureArtifacts =
                 configuration instanceof SpringCloudDeployConfiguration ?
                 AzureArtifactManager.getInstance(project).getSupportedAzureArtifactsForSpringCloud() :
