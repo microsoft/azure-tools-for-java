@@ -62,7 +62,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 ### Added
 - Support new runtime JBOSS 7.2 for Linux Web App
 - Support Gradle projects for Web App and Spring Cloud
-- Support file deployment for Web App
+- Support file deploy for Web App
 
 ### Changed
 - New creation wizard for Web App with basic and advanced mode

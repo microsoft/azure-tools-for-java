@@ -2,9 +2,7 @@
 # What's new in Azure Toolkit for IntelliJ
 
 ## 3.44.0
-We are proud to announce the support for JBoss in IntelliJ Toolkit! You can now create JBoss Linux app service with
- totally new resource creation experience. You may create Web App more easily in the simple mode, while you could
-  still set all the parameters in advance mode if necessary.
+We are proud to announce the support for JBoss in IntelliJ Toolkit! You can now create JBoss Linux app service with totally new resource creation experience. You may create Web App more easily in the simple mode, while you could still set all the parameters in advance mode if necessary.
 
 <img src="https://user-images.githubusercontent.com/12445236/96878853-e2172f00-14ad-11eb-99d2-05b2b61b0bb1.gif" width="800" height="600" />
 

@@ -29,7 +29,7 @@
     <ul>
         <li>Support new runtime JBOSS 7.2 for Linux Web App</li>
         <li>Support Gradle projects for Web App and Spring Cloud</li>
-        <li>Support file deployment for Web App</li>
+        <li>Support file deploy for Web App</li>
     </ul>
     <h4>Changed</h4>
     <ul>
