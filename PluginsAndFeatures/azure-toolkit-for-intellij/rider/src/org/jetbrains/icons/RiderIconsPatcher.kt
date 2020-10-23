@@ -24,10 +24,6 @@ package org.jetbrains.icons
 
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.IconPathPatcher
-import com.intellij.ui.RetrievableIcon
-import icons.CommonIcons
-import icons.RestClientIcons
-import javax.swing.Icon
 
 /**
  * Icons Patcher for icons set from Rider backend (R#).
@@ -42,18 +38,6 @@ internal class RiderIconsPatcher : IconPathPatcher() {
         private val myInstallPatcher: Unit by lazy {
             IconLoader.installPathPatcher(RiderIconsPatcher())
         }
-
-        private fun path(icon: Icon): String {
-            val iconToProcess =
-                    if (icon is RetrievableIcon) icon.retrieveIcon()
-                    else icon
-
-            val cachedIcon = iconToProcess as? IconLoader.CachedImageIcon
-                    ?: throw RuntimeException("${icon.javaClass.simpleName} should be CachedImageIcon")
-
-            return cachedIcon.originalPath
-                    ?: throw RuntimeException("Unable to get original path for icon: ${cachedIcon.javaClass.simpleName}")
-        }
     }
 
     override fun patchPath(path: String, classLoader: ClassLoader?): String? = myIconsOverrideMap[path]
@@ -63,7 +47,7 @@ internal class RiderIconsPatcher : IconPathPatcher() {
         else originalClassLoader
 
     private val myIconsOverrideMap = mapOf(
-            "/resharper/FunctionAppRunMarkers/RunFunctionApp.svg" to path(CommonIcons.AzureFunctions.FunctionAppRunConfiguration),
-            "/resharper/FunctionAppRunMarkers/Trigger.svg" to path(RestClientIcons.Http_requests_filetype)
+            "/resharper/FunctionAppRunMarkers/RunFunctionApp.svg" to "CommonIcons.AzureFunctions.FunctionAppRunConfiguration",
+            "/resharper/FunctionAppRunMarkers/Trigger.svg" to "RestClientIcons.Http_requests_filetype"
     )
 }
