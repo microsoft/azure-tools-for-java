@@ -1,5 +1,32 @@
-<!-- Version: 3.40.0 -->
+<!-- Version: 3.44.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.44.0
+We are proud to announce the support for JBoss in IntelliJ Toolkit! You can now create JBoss Linux app service with totally new resource creation experience. You may create Web App more easily in the simple mode, while you could still set all the parameters in advance mode if necessary.
+
+<img src="https://user-images.githubusercontent.com/12445236/96878853-e2172f00-14ad-11eb-99d2-05b2b61b0bb1.gif" width="800" height="600" />
+
+Besides, file deploy is also added to Web App support, you could deploy your artifact directly with new entrance in Azure explorer.   
+
+<img src="https://user-images.githubusercontent.com/12445236/96880775-29062400-14b0-11eb-8fee-523fe164c333.png" width="700" height="600" />
+
+For all the updates and fixes in this release, please refer the release notes below.
+ 
+### Added
+- Support new runtime JBOSS 7.2 for Linux Web App
+- Support Gradle projects for Web App and Spring Cloud
+- Support file deploy for Web App
+
+### Changed
+- New creation wizard for Web App with basic and advanced mode
+
+### Fixed
+- [#2975](https://github.com/microsoft/azure-tools-for-java/issues/2975) ,[#4600](https://github.com/microsoft/azure-tools-for-java/issues/4600) ,[#4605](https://github.com/microsoft/azure-tools-for-java/issues/4605), [#4544](https://github.com/microsoft/azure-tools-for-java/issues/4544) Enhance error handling for network issues
+- [#4545](https://github.com/microsoft/azure-tools-for-java/issues/4545), [#4566](https://github.com/microsoft/azure-tools-for-java/issues/4566) Unhandled ProcessCanceledException while start up
+- [#4530](https://github.com/microsoft/azure-tools-for-java/issues/4530) Unhandled exception in whats new document
+- [#4591](https://github.com/microsoft/azure-tools-for-java/issues/4591) ,[#4599](https://github.com/microsoft/azure-tools-for-java/issues/4599) Fix Spring Cloud deployment error handling
+- [#4558](https://github.com/microsoft/azure-tools-for-java/pull/4604) Unhandled exception in device login
+
 
 ## 3.43.0
 
