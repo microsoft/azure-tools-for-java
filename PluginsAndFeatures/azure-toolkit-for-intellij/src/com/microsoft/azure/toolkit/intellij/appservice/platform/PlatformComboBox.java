@@ -40,7 +40,6 @@ public class PlatformComboBox extends AzureComboBox<Platform> {
         Platform.Linux.JAVA11,
         Platform.Windows.JAVA8_TOMCAT9,
         Platform.Windows.JAVA8_TOMCAT85,
-        Platform.Windows.JAVA8_JBOSS72,
         Platform.Windows.JAVA8,
         Platform.Windows.JAVA11_TOMCAT9,
         Platform.Windows.JAVA11_TOMCAT85,
