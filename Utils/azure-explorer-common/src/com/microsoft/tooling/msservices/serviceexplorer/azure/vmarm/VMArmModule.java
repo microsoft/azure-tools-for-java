@@ -62,7 +62,7 @@ public class VMArmModule extends AzureRefreshableNode {
             SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
             Set<String> sidList = subscriptionManager.getSelectedSubscriptionDetails()
                     .stream()
-                    .filter(Objects::nonNull)
+                    .filter(subscriptionDetail -> Objects.nonNull(subscriptionDetail) && subscriptionDetail.isSelected())
                     .map(subscriptionDetail -> subscriptionDetail.getSubscriptionId())
                     .collect(Collectors.toSet());
             for (String sid : sidList) {
