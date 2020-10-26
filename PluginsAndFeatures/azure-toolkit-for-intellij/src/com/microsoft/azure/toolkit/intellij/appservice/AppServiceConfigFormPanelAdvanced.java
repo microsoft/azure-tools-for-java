@@ -29,7 +29,6 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;

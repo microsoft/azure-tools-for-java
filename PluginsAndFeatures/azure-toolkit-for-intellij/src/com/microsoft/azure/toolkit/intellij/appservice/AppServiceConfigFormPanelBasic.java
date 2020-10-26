@@ -27,7 +27,6 @@ import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;

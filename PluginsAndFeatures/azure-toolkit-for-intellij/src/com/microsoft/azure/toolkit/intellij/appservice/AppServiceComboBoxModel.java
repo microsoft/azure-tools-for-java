@@ -23,7 +23,6 @@
 package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import lombok.Getter;
 import lombok.Setter;
