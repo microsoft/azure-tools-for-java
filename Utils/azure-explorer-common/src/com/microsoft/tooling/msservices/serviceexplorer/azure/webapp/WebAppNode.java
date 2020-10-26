@@ -80,20 +80,20 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         final NodeActionListener restarting_web_app = createBackgroundActionListener("Restarting Web App", this::restartWebApp);
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP, restarting_web_app));
         addAction(ACTION_DELETE, new DeleteWebAppAction());
-        final NodeActionListener listener = new NodeActionListener() {
+        final NodeActionListener openBrowserListener = new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
             }
         };
-        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_OPEN_INBROWSER, listener));
-        final NodeActionListener listener1 = new NodeActionListener() {
+        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_OPEN_INBROWSER, openBrowserListener));
+        final NodeActionListener showPropListener = new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
             }
         };
-        addAction(ACTION_SHOW_PROPERTY, null, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_SHOWPROP, listener1));
+        addAction(ACTION_SHOW_PROPERTY, null, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_SHOWPROP, showPropListener));
         super.loadActions();
     }
 
