@@ -31,11 +31,11 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 @Getter
-public class FunctionComboBoxModel extends AppServiceComboBoxModel<FunctionApp> {
+public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<FunctionApp> {
     private String runtime;
     private FunctionDeployModel functionDeployModel;
 
-    public FunctionComboBoxModel(final ResourceEx<FunctionApp> resourceEx) {
+    public FunctionAppComboBoxModel(final ResourceEx<FunctionApp> resourceEx) {
         super(resourceEx);
         final FunctionApp functionApp = resourceEx.getResource();
         this.runtime = functionApp.operatingSystem() == OperatingSystem.WINDOWS ?
@@ -43,7 +43,7 @@ public class FunctionComboBoxModel extends AppServiceComboBoxModel<FunctionApp> 
                        String.format("%s-%s", "Linux", functionApp.linuxFxVersion().replace("|", "-"));
     }
 
-    public FunctionComboBoxModel(FunctionDeployModel functionDeployModel) {
+    public FunctionAppComboBoxModel(FunctionDeployModel functionDeployModel) {
         this.resourceId = functionDeployModel.getFunctionId();
         // In case recover from configuration, get the app name from resource id
         this.appName =

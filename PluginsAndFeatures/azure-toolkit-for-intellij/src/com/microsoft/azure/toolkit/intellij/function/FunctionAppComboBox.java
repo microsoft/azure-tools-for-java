@@ -33,9 +33,9 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FunctionComboBox extends AppServiceComboBox<FunctionComboBoxModel> {
+public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxModel> {
 
-    public FunctionComboBox(final Project project) {
+    public FunctionAppComboBox(final Project project) {
         super(project);
     }
 
@@ -46,12 +46,12 @@ public class FunctionComboBox extends AppServiceComboBox<FunctionComboBoxModel> 
 
     @NotNull
     @Override
-    protected List<? extends FunctionComboBoxModel> loadItems() throws Exception {
+    protected List<? extends FunctionAppComboBoxModel> loadItems() throws Exception {
         final List<ResourceEx<FunctionApp>> functions = AzureFunctionMvpModel.getInstance().listAllFunctions(false);
         return functions.stream()
                         .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
                         .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-                        .map(function -> new FunctionComboBoxModel(function))
+                        .map(function -> new FunctionAppComboBoxModel(function))
                         .collect(Collectors.toList());
     }
 }
