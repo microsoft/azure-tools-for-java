@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.webapp;
+package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
@@ -55,7 +55,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPanel<WebAppConfig> {
+public class AppServiceConfigFormPanelAdvanced extends JPanel implements AzureFormPanel<WebAppConfig> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final String NOT_APPLICABLE = "N/A";
     private final Project project;
@@ -75,7 +75,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
-    public WebAppConfigFormPanelAdvanced(final Project project) {
+    public AppServiceConfigFormPanelAdvanced(final Project project) {
         super();
         this.project = project;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.

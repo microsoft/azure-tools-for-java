@@ -23,13 +23,14 @@
 package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 @Getter
-public class AppComboBoxModel<T extends WebAppBase> {
+public abstract class AppServiceComboBoxModel<T extends WebAppBase> {
     @Setter
     protected boolean isNewCreateResource;
     protected String subscriptionId;
@@ -39,11 +40,11 @@ public class AppComboBoxModel<T extends WebAppBase> {
     protected String resourceId;
     protected T resource;
 
-    public AppComboBoxModel() {
+    public AppServiceComboBoxModel() {
 
     }
 
-    public AppComboBoxModel(ResourceEx<T> resourceEx) {
+    public AppServiceComboBoxModel(ResourceEx<T> resourceEx) {
         this.resource = resourceEx.getResource();
         this.resourceId = resource.id();
         this.appName = resource.name();
@@ -52,4 +53,13 @@ public class AppComboBoxModel<T extends WebAppBase> {
         this.subscriptionId = resourceEx.getSubscriptionId();
         this.isNewCreateResource = false;
     }
+
+    public static boolean isSameApp(AppServiceComboBoxModel first, AppServiceComboBoxModel second) {
+        return StringUtils.equalsAnyIgnoreCase(first.resourceId, second.resourceId) ||
+                (StringUtils.equalsAnyIgnoreCase(first.appName, second.appName) &&
+                        StringUtils.equalsAnyIgnoreCase(first.resourceGroup, second.resourceGroup) &&
+                        StringUtils.equalsAnyIgnoreCase(first.subscriptionId, second.subscriptionId));
+    }
+
+    public abstract String getRuntime();
 }

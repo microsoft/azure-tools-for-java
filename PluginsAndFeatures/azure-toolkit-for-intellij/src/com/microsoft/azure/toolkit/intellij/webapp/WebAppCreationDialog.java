@@ -24,6 +24,8 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelAdvanced;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelBasic;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import org.jetbrains.annotations.Nullable;
@@ -34,8 +36,8 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
     private Project project;
     private JPanel panel;
-    private WebAppConfigFormPanelAdvanced advancedForm;
-    private WebAppConfigFormPanelBasic basicForm;
+    private AppServiceConfigFormPanelAdvanced advancedForm;
+    private AppServiceConfigFormPanelBasic basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project);
@@ -73,7 +75,7 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        advancedForm = new WebAppConfigFormPanelAdvanced(project);
-        basicForm = new WebAppConfigFormPanelBasic(project);
+        advancedForm = new AppServiceConfigFormPanelAdvanced(project);
+        basicForm = new AppServiceConfigFormPanelBasic(project);
     }
 }

@@ -215,7 +215,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (StringUtils.isAllEmpty(configurationModel.getAppName(), configurationModel.getResourceId())) {
             comboBoxWebApp.refreshItems();
         } else {
-            comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel, WebAppComboBoxModel::isSameWebApp);
+            comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel);
         }
         if (configuration.getAzureArtifactType() != null) {
             previousArtifact = AzureArtifactManager.getInstance(project).getAzureArtifactById(configuration.getArtifactIdentifier());
