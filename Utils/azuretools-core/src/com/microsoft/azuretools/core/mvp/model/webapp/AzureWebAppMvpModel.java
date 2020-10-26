@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.google.common.base.Throwables;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
