@@ -29,6 +29,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +51,7 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
         final List<ResourceEx<FunctionApp>> functions = AzureFunctionMvpModel.getInstance().listAllFunctions(false);
         return functions.stream()
                         .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-                        .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
+                        .sorted((a, b) -> StringUtils.compareIgnoreCase(a.getResource().name(), b.getResource().name()))
                         .map(function -> new FunctionAppComboBoxModel(function))
                         .collect(Collectors.toList());
     }

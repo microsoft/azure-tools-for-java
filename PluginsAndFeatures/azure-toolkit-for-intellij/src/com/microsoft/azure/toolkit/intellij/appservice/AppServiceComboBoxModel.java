@@ -54,10 +54,10 @@ public abstract class AppServiceComboBoxModel<T extends WebAppBase> {
     }
 
     public static boolean isSameApp(AppServiceComboBoxModel first, AppServiceComboBoxModel second) {
-        return StringUtils.equalsAnyIgnoreCase(first.resourceId, second.resourceId) ||
-                (StringUtils.equalsAnyIgnoreCase(first.appName, second.appName) &&
-                        StringUtils.equalsAnyIgnoreCase(first.resourceGroup, second.resourceGroup) &&
-                        StringUtils.equalsAnyIgnoreCase(first.subscriptionId, second.subscriptionId));
+        return StringUtils.equalsIgnoreCase(first.resourceId, second.resourceId) ||
+                (StringUtils.equalsIgnoreCase(first.appName, second.appName) &&
+                        StringUtils.equalsIgnoreCase(first.resourceGroup, second.resourceGroup) &&
+                        StringUtils.equalsIgnoreCase(first.subscriptionId, second.subscriptionId));
     }
 
     public abstract String getRuntime();

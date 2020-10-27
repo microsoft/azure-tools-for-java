@@ -27,10 +27,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
-import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -39,7 +37,6 @@ import rx.Subscription;
 import javax.swing.*;
 import java.io.InterruptedIOException;
 import java.util.Objects;
-import java.util.function.BiPredicate;
 
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
@@ -64,19 +61,17 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
                            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                                this.setItems(items);
                                this.setLoading(false);
-                               this.resetDefaultValue(defaultValue, AppServiceComboBoxModel::isSameApp);
+                               this.resetDefaultValue(defaultValue);
                            }), (e) -> {
                                    this.handleLoadingError(e);
                                });
     }
 
-    private void resetDefaultValue(@NotNull AppServiceComboBoxModel defaultValue, @NotNull BiPredicate<AppServiceComboBoxModel,
-            AppServiceComboBoxModel> comparator) {
-        final WebAppComboBoxModel model =
-                (WebAppComboBoxModel) UIUtils.listComboBoxItems(this)
-                                             .stream()
-                                             .filter(item -> comparator.test((WebAppComboBoxModel) item, defaultValue))
-                                             .findFirst().orElse(null);
+    private void resetDefaultValue(@NotNull AppServiceComboBoxModel defaultValue) {
+        final AppServiceComboBoxModel model = getItems()
+                .stream()
+                .filter(item -> AppServiceComboBoxModel.isSameApp(defaultValue, item))
+                .findFirst().orElse(null);
         if (model != null) {
             this.setSelectedItem(model);
         } else if (defaultValue.isNewCreateResource()) {
@@ -128,21 +123,21 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
             if (value instanceof AppServiceComboBoxModel) {
                 final AppServiceComboBoxModel app = (AppServiceComboBoxModel) value;
                 if (index >= 0) {
-                    setText(getWebAppLabelText(app));
+                    setText(getAppServiceLabel(app));
                 } else {
                     setText(app.getAppName());
                 }
             }
         }
 
-        private String getWebAppLabelText(AppServiceComboBoxModel webApp) {
-            final String webAppName = webApp.isNewCreateResource() ?
-                                      String.format("(New) %s", webApp.getAppName()) : webApp.getAppName();
-            final String runtime = webApp.getRuntime();
-            final String resourceGroup = webApp.getResourceGroup();
+        private String getAppServiceLabel(AppServiceComboBoxModel appServiceModel) {
+            final String appServiceName = appServiceModel.isNewCreateResource() ?
+                                      String.format("(New) %s", appServiceModel.getAppName()) : appServiceModel.getAppName();
+            final String runtime = appServiceModel.getRuntime();
+            final String resourceGroup = appServiceModel.getResourceGroup();
 
             return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
-                    webAppName, runtime, resourceGroup);
+                    appServiceName, runtime, resourceGroup);
         }
     }
 }
