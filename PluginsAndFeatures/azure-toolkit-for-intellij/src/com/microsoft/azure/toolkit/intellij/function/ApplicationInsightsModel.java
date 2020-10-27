@@ -19,37 +19,29 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.azure.toolkit.intellij.function;
 
-package com.microsoft.azure.toolkit.lib.appservice;
-
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import lombok.Builder;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-
 @Data
 @SuperBuilder
-public class AppServiceConfig {
-    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
-    public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
-
+public class ApplicationInsightsModel {
+    private boolean newCreate;
     private String name;
-    private Path application;
-    @Builder.Default
-    private Platform platform = DEFAULT_PLATFORM;
+    private String instrumentationKey;
+    private ApplicationInsightsComponent component;
 
-    private Subscription subscription;
-    private ResourceGroup resourceGroup;
-    private AppServicePlan servicePlan;
-    private Region region;
-    @Builder.Default
-    private Map<String, String> appSettings = new HashMap<>();
+    public ApplicationInsightsModel(String name) {
+        this.newCreate = true;
+        this.name = name;
+    }
+
+    public ApplicationInsightsModel(ApplicationInsightsComponent component) {
+        this.newCreate = false;
+        this.name = component.name();
+        this.instrumentationKey = component.instrumentationKey();
+        this.component = component;
+    }
 }

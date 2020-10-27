@@ -42,7 +42,8 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
 
     @Override
     protected void createResource() {
-
+        FunctionAppCreationDialog functionAppCreationDialog = new FunctionAppCreationDialog(project);
+        functionAppCreationDialog.showAndGet();
     }
 
     @NotNull

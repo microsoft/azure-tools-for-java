@@ -36,9 +36,9 @@ import com.microsoft.azure.toolkit.intellij.appservice.serviceplan.ServicePlanCo
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -53,11 +53,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
-public class AppServiceConfigFormPanelAdvanced extends JPanel implements AzureFormPanel<WebAppConfig> {
+public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final String NOT_APPLICABLE = "N/A";
     private final Project project;
+    private final Supplier<T> supplier;
 
     private JPanel contentPanel;
 
@@ -74,15 +76,16 @@ public class AppServiceConfigFormPanelAdvanced extends JPanel implements AzureFo
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
-    public AppServiceConfigFormPanelAdvanced(final Project project) {
+    public AppServiceConfigFormPanelAdvanced(final Project project, final Supplier<T> supplier) {
         super();
         this.project = project;
+        this.supplier = supplier;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
 
     @Override
-    public WebAppConfig getData() {
+    public T getData() {
         final Subscription subscription = this.selectorSubscription.getValue();
         final ResourceGroup resourceGroup = this.selectorGroup.getValue();
         final String name = this.textName.getValue();
@@ -91,7 +94,7 @@ public class AppServiceConfigFormPanelAdvanced extends JPanel implements AzureFo
         final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
-        final WebAppConfig config = WebAppConfig.builder().build();
+        final T config = supplier.get();
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
         config.setName(name);
@@ -107,7 +110,7 @@ public class AppServiceConfigFormPanelAdvanced extends JPanel implements AzureFo
     }
 
     @Override
-    public void setData(final WebAppConfig config) {
+    public void setData(final AppServiceConfig config) {
         this.selectorSubscription.setValue(config.getSubscription());
         this.selectorGroup.setValue(config.getResourceGroup());
         this.textName.setValue(config.getName());
@@ -140,6 +143,10 @@ public class AppServiceConfigFormPanelAdvanced extends JPanel implements AzureFo
         this.deploymentTitle.setVisible(visible);
         this.deploymentLabel.setVisible(visible);
         this.selectorApplication.setVisible(visible);
+    }
+
+    public SubscriptionComboBox getSelectorSubscription() {
+        return selectorSubscription;
     }
 
     private void init() {

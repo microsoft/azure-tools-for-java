@@ -20,36 +20,15 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.lib.appservice;
+package com.microsoft.azure.toolkit.lib.function;
 
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import lombok.Builder;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-
 @Data
 @SuperBuilder
-public class AppServiceConfig {
-    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
-    public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
-
-    private String name;
-    private Path application;
-    @Builder.Default
-    private Platform platform = DEFAULT_PLATFORM;
-
-    private Subscription subscription;
-    private ResourceGroup resourceGroup;
-    private AppServicePlan servicePlan;
-    private Region region;
-    @Builder.Default
-    private Map<String, String> appSettings = new HashMap<>();
+public class FunctionAppConfig extends AppServiceConfig {
+    private String insightsName;
+    private String instrumentationKey;
 }
