@@ -340,9 +340,9 @@ public class WebAppUtils {
      * @param progressIndicator
      */
     public static void oneDeployArtifactsToAppService(WebAppBase deployTarget
-            , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppUtils2.WebAppException {
+            , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
         if (!(deployTarget instanceof WebApp || deployTarget instanceof DeploymentSlot)) {
-            throw new WebAppUtils2.WebAppException("Illegal deploy target.");
+            throw new WebAppException("Illegal deploy target.");
         }
         progressIndicator.setText(deployTarget instanceof WebApp ? START_ONE_DEPLOY_WEB_APP : START_ONE_DEPLOY_DEPLOYMENT_SLOT);
         SupportsOneDeploy oneDeployTarget = (SupportsOneDeploy) deployTarget;
@@ -355,7 +355,7 @@ public class WebAppUtils {
     }
 
     private static void oneDeployWithRetry(SupportsOneDeploy deployTarget, DeployType deployType, File artifact, DeployOptions options,
-                                           IProgressIndicator progressIndicator) throws WebAppUtils2.WebAppException {
+                                           IProgressIndicator progressIndicator) throws WebAppException {
         int retryCount = 0;
         while (retryCount++ < DEPLOY_MAX_TRY) {
             try {
@@ -369,7 +369,7 @@ public class WebAppUtils {
                 progressIndicator.setText(String.format(RETRY_MESSAGE, e.getMessage(), retryCount, DEPLOY_MAX_TRY));
             }
         }
-        throw new WebAppUtils2.WebAppException(String.format(RETRY_FAIL_MESSAGE, DEPLOY_MAX_TRY));
+        throw new WebAppException(String.format(RETRY_FAIL_MESSAGE, DEPLOY_MAX_TRY));
     }
 
     private static boolean isJarBaseOnFileName(String filePath) {
