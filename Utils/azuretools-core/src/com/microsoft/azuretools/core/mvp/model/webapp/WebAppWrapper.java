@@ -23,6 +23,8 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.apigeneration.Beta;
+import com.microsoft.azure.management.appservice.DeployOptions;
+import com.microsoft.azure.management.appservice.DeployType;
 import com.microsoft.azure.management.appservice.DeploymentSlots;
 import com.microsoft.azure.management.appservice.SupportedTlsVersions;
 import com.microsoft.azure.management.appservice.WebApp;
@@ -131,5 +133,45 @@ public class WebAppWrapper extends WebAppBaseWrapper implements WebApp {
         } catch (final IOException e) {
             throw new RuntimeException("Failed to get webapp instance");
         }
+    }
+
+    @Override
+    public void deploy(DeployType type, File file) {
+        this.getWebApp().deploy(type, file);
+    }
+
+    @Override
+    public Completable deployAsync(DeployType type, File file) {
+        return this.getWebApp().deployAsync(type, file);
+    }
+
+    @Override
+    public void deploy(DeployType type, File file, DeployOptions deployOptions) {
+        this.getWebApp().deploy(type, file, deployOptions);
+    }
+
+    @Override
+    public Completable deployAsync(DeployType type, File file, DeployOptions deployOptions) {
+        return this.getWebApp().deployAsync(type, file, deployOptions);
+    }
+
+    @Override
+    public void deploy(DeployType type, InputStream file) {
+        this.getWebApp().deploy(type, file);
+    }
+
+    @Override
+    public Completable deployAsync(DeployType type, InputStream file) {
+        return this.getWebApp().deployAsync(type, file);
+    }
+
+    @Override
+    public void deploy(DeployType type, InputStream file, DeployOptions deployOptions) {
+        this.getWebApp().deploy(type, file, deployOptions);
+    }
+
+    @Override
+    public Completable deployAsync(DeployType type, InputStream file, DeployOptions deployOptions) {
+        return this.getWebApp().deployAsync(type, file, deployOptions);
     }
 }
