@@ -88,8 +88,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         }
         webAppConfiguration.setTargetName(file.getName());
         WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
-        WebAppUtils.deployArtifactsToAppService(deployTarget, file,
-                webAppConfiguration.isDeployToRoot(), processHandler);
+        WebAppUtils.oneDeployArtifactsToAppService(deployTarget, file, webAppConfiguration.isDeployToRoot(), processHandler);
         return deployTarget;
     }
 

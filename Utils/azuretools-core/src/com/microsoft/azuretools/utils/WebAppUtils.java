@@ -26,11 +26,14 @@ package com.microsoft.azuretools.utils;
 import com.microsoft.applicationinsights.web.dependencies.apachecommons.io.FileUtils;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
+import com.microsoft.azure.management.appservice.DeployOptions;
+import com.microsoft.azure.management.appservice.DeployType;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.SupportsOneDeploy;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
@@ -91,6 +94,8 @@ public class WebAppUtils {
             " %s, retrying immediately (%d/%d)";
     public static final String RETRY_FAIL_MESSAGE = "Failed to deploy after %d times of retry.";
     public static final String COPYING_RESOURCES = "Copying resources to staging folder...";
+    public static final String START_ONE_DEPLOY_WEB_APP = "One Deploying web app...";
+    public static final String START_ONE_DEPLOY_DEPLOYMENT_SLOT = "One Deploying deployment slot...";
 
     @NotNull
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
@@ -336,6 +341,46 @@ public class WebAppUtils {
             progressIndicator.setText(successMessage);
             deployTarget.start();
         }
+    }
+
+    /**
+     * Deploys artifact to Azure App Service through One Deploy API
+     * @param deployTarget the web app or deployment slot
+     * @param artifact artifact to deploy
+     * @param isDeployToRoot
+     * @param progressIndicator
+     */
+    public static void oneDeployArtifactsToAppService(WebAppBase deployTarget
+            , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
+        if (!(deployTarget instanceof WebApp || deployTarget instanceof DeploymentSlot)) {
+            throw new WebAppException("Illegal deploy target.");
+        }
+        progressIndicator.setText(deployTarget instanceof WebApp ? START_ONE_DEPLOY_WEB_APP : START_ONE_DEPLOY_DEPLOYMENT_SLOT);
+        SupportsOneDeploy oneDeployTarget = (SupportsOneDeploy) deployTarget;
+        if (isJarBaseOnFileName(artifact.getPath())) {
+            oneDeployWithRetry(oneDeployTarget, DeployType.JAR, artifact, null, progressIndicator);
+        } else {
+            DeployOptions options = new DeployOptions().withPath("webapps/" + (isDeployToRoot ? "ROOT" : FilenameUtils.getBaseName(artifact.getName())));
+            oneDeployWithRetry(oneDeployTarget, DeployType.WAR, artifact, options, progressIndicator);
+        }
+    }
+
+    private static void oneDeployWithRetry(SupportsOneDeploy deployTarget, DeployType deployType, File artifact, DeployOptions options,
+                                           IProgressIndicator progressIndicator) throws WebAppException {
+        int retryCount = 0;
+        while (retryCount++ < DEPLOY_MAX_TRY) {
+            try {
+                if (options != null) {
+                    deployTarget.deploy(deployType, artifact, options);
+                } else {
+                    deployTarget.deploy(deployType, artifact);
+                }
+                return;
+            } catch (Exception e) {
+                progressIndicator.setText(String.format(RETRY_MESSAGE, e.getMessage(), retryCount, DEPLOY_MAX_TRY));
+            }
+        }
+        throw new WebAppException(String.format(RETRY_FAIL_MESSAGE, DEPLOY_MAX_TRY));
     }
 
     private static boolean isJarBaseOnFileName(String filePath) {
