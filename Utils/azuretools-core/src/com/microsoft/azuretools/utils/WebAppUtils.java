@@ -348,7 +348,7 @@ public class WebAppUtils {
         if (isJarBaseOnFileName(artifact.getPath())) {
             oneDeployWithRetry(oneDeployTarget, DeployType.JAR, artifact, null, progressIndicator);
         } else {
-            DeployOptions options = isDeployToRoot ? null : new DeployOptions().withPath("webapps/" + FilenameUtils.getBaseName(artifact.getName()));
+            DeployOptions options = new DeployOptions().withPath("webapps/" + (isDeployToRoot ? "ROOT" : FilenameUtils.getBaseName(artifact.getName())));
             oneDeployWithRetry(oneDeployTarget, DeployType.WAR, artifact, options, progressIndicator);
         }
     }
