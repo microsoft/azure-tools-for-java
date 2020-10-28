@@ -34,10 +34,16 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
+import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.intellij.webapp.WebAppComboBoxModel;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.webapp.Constants;
-import org.apache.commons.lang.StringUtils;
+import com.microsoft.intellij.ui.components.AzureArtifact;
+import com.microsoft.intellij.ui.components.AzureArtifactManager;
+import com.microsoft.intellij.ui.components.AzureArtifactType;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,15 +59,17 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
     private static final String MISSING_APP_SERVICE_PLAN = "App Service Plan not provided.";
     private static final String MISSING_LOCATION = "Location not provided.";
     private static final String MISSING_PRICING_TIER = "Pricing Tier not provided.";
-    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar) artifact has not been configured.";
-    private static final String INVALID_WAR_FILE = "The artifact name %s is invalid. "
-        + "An artifact name may contain only the ASCII letters 'a' through 'z' (case-insensitive), "
-        + "the digits '0' through '9', '.', '-' and '_'.";
-
-    private static final String WAR_NAME_REGEX = "^[.A-Za-z0-9_-]+\\.(war|jar)$";
+    private static final String MISSING_ARTIFACT = "A web archive (.war|.jar|.ear) artifact has not been configured.";
     private static final String SLOT_NAME_REGEX = "[a-zA-Z0-9-]{1,60}";
     private static final String INVALID_SLOT_NAME =
         "The slot name is invalid, it needs to match the pattern " + SLOT_NAME_REGEX;
+    private static final String INVALID_RUNTIME = "Invalid target, please select a web app with Java runtime";
+    private static final String INVALID_TOMCAT_ARTIFACT = "Invalid artifact, tomcat app service only supports .war artifact";
+    private static final String INVALID_JBOSS_ARTIFACT = "Invalid artifact, jboss app service only supports .war or .ear artifact";
+    private static final String INVALID_JAVA_SE_ARTIFACT = "Invalid artifact, java se app service only supports .jar artifact";
+    private static final String TOMCAT = "tomcat";
+    private static final String JAVA = "java";
+    private static final String JBOSS = "jboss";
     private final IntelliJWebAppSettingModel webAppSettingModel;
 
     public WebAppConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
@@ -135,11 +143,36 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
                 }
             }
         }
-        if (Utils.isEmptyString(webAppSettingModel.getTargetName())) {
+        // validate runtime with artifact
+        final String artifactPackage = webAppSettingModel.getPackaging();
+        final String runtime = StringUtils.lowerCase(getRuntime());
+        if (StringUtils.isEmpty(runtime)) {
+            throw new ConfigurationException(INVALID_RUNTIME);
+        } else if (StringUtils.contains(runtime, TOMCAT) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war")) {
+            throw new ConfigurationException(INVALID_TOMCAT_ARTIFACT);
+        } else if (StringUtils.contains(runtime, JBOSS) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "war", "ear")) {
+            throw new ConfigurationException(INVALID_JBOSS_ARTIFACT);
+        } else if (StringUtils.contains(runtime, JAVA) && !StringUtils.equalsAnyIgnoreCase(artifactPackage, "jar")) {
+            throw new ConfigurationException(INVALID_JAVA_SE_ARTIFACT);
+        }
+        if (StringUtils.isEmpty(webAppSettingModel.getArtifactIdentifier())) {
             throw new ConfigurationException(MISSING_ARTIFACT);
         }
-        if (!webAppSettingModel.isDeployToRoot() && !webAppSettingModel.getTargetName().matches(WAR_NAME_REGEX)) {
-            throw new ConfigurationException(String.format(INVALID_WAR_FILE, webAppSettingModel.getTargetName()));
+    }
+
+    private String getRuntime() {
+        if (getOS() == OperatingSystem.LINUX) {
+            return getModel().getStack();
+        } else {
+            if (StringUtils.containsIgnoreCase(getWebContainer(), TOMCAT)) {
+                return TOMCAT;
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), JAVA)) {
+                return JAVA;
+            } else if (StringUtils.containsIgnoreCase(getWebContainer(), JBOSS)) {
+                return JBOSS;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -340,5 +373,68 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
 
     public void setSlotPanelVisible(boolean slotPanelVisible) {
         webAppSettingModel.setSlotPanelVisible(slotPanelVisible);
+    }
+
+    public AzureArtifactType getAzureArtifactType() {
+        return webAppSettingModel.getAzureArtifactType();
+    }
+
+    public void setAzureArtifactType(final AzureArtifactType azureArtifactType) {
+        webAppSettingModel.setAzureArtifactType(azureArtifactType);
+    }
+
+    public String getArtifactIdentifier() {
+        return webAppSettingModel.getArtifactIdentifier();
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        webAppSettingModel.setArtifactIdentifier(artifactIdentifier);
+    }
+
+    public void saveArtifact(AzureArtifact azureArtifact) {
+        final AzureArtifactManager azureArtifactManager = AzureArtifactManager.getInstance(getProject());
+        webAppSettingModel.setArtifactIdentifier(azureArtifact == null ? null : azureArtifactManager.getArtifactIdentifier(azureArtifact));
+        webAppSettingModel.setAzureArtifactType(azureArtifact == null ? null : azureArtifact.getType());
+        webAppSettingModel.setPackaging(azureArtifact == null ? null : azureArtifactManager.getPackaging(azureArtifact));
+    }
+
+    public void saveModel(final WebAppComboBoxModel webAppComboBoxModel) {
+        setWebAppId(webAppComboBoxModel.getResourceId());
+        setWebAppName(webAppComboBoxModel.getAppName());
+        setResourceGroup(webAppComboBoxModel.getResourceGroup());
+        setSubscriptionId(webAppComboBoxModel.getSubscriptionId());
+        if (webAppComboBoxModel.isNewCreateResource()) {
+            setCreatingNew(true);
+            final WebAppSettingModel settingModel = webAppComboBoxModel.getWebAppSettingModel();
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+            setAppServicePlanName(settingModel.getAppServicePlanName());
+            setRegion(settingModel.getRegion());
+            setPricing(settingModel.getPricing());
+            setAppServicePlanId(settingModel.getAppServicePlanId());
+            setOS(settingModel.getOS());
+            setStack(settingModel.getStack());
+            setVersion(settingModel.getVersion());
+            setJdkVersion(settingModel.getJdkVersion());
+            setWebContainer(settingModel.getWebContainer());
+            setCreatingResGrp(settingModel.isCreatingResGrp());
+            setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+        } else {
+            setCreatingNew(false);
+            final WebApp webApp = webAppComboBoxModel.getResource();
+            if (webApp != null) {
+                setOS(webApp.operatingSystem());
+                setAppServicePlanId(webApp.appServicePlanId());
+                setRegion(webApp.regionName());
+                setWebContainer(webApp.javaContainer() + " " + webApp.javaContainerVersion());
+                setJdkVersion(webApp.javaVersion());
+                final String linuxFxVersion = webApp.linuxFxVersion();
+                if (StringUtils.contains(linuxFxVersion, "|")) {
+                    final String[] runtime = linuxFxVersion.split("\\|");
+                    setStack(runtime[0]);
+                    setVersion(runtime[1]);
+                }
+            }
+        }
     }
 }

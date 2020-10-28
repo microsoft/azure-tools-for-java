@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
-import com.google.common.base.Throwables;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
@@ -37,15 +36,16 @@ import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebAppDiagnosticLogs;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.appservice.implementation.GeoRegionInner;
+import com.microsoft.azure.management.appservice.implementation.SiteInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.enums.ErrorEnum;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
+import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
@@ -56,7 +56,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketTimeoutException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -96,6 +96,11 @@ public class AzureWebAppMvpModel {
             throw new IOException(CANNOT_GET_WEB_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
         return app;
+    }
+
+    public WebApp getWebAppByName(String sid, String resourceGroup, String appName) throws IOException {
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        return azure.webApps().getByResourceGroup(resourceGroup, appName);
     }
 
     /**
@@ -461,8 +466,15 @@ public class AzureWebAppMvpModel {
      * Get all the deployment slots of a web app by the subscription id and web app id.
      */
     public List<DeploymentSlot> getDeploymentSlots(final String subscriptionId, final String appId) throws IOException {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        if (azureManager == null) {
+            return null;
+        }
         final List<DeploymentSlot> deploymentSlots = new ArrayList<>();
         final WebApp webApp = AuthMethodManager.getInstance().getAzureClient(subscriptionId).webApps().getById(appId);
+        if (webApp == null) {
+            return null;
+        }
         deploymentSlots.addAll(webApp.deploymentSlots().list());
         return deploymentSlots;
     }
@@ -472,6 +484,7 @@ public class AzureWebAppMvpModel {
      */
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
         List<AppServicePlan> appServicePlans = new ArrayList<>();
+
         try {
             Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
             appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));
@@ -549,7 +562,7 @@ public class AzureWebAppMvpModel {
     public List<ResourceEx<WebApp>> listWebAppsOnLinux(@NotNull final String subscriptionId, final boolean force) {
         return listWebApps(subscriptionId, force)
             .stream()
-            .filter(resourceEx -> OperatingSystem.LINUX.equals(resourceEx.getResource().operatingSystem()))
+            .filter(resourceEx -> OperatingSystem.LINUX == resourceEx.getResource().operatingSystem())
             .collect(Collectors.toList());
     }
 
@@ -559,34 +572,28 @@ public class AzureWebAppMvpModel {
     public List<ResourceEx<WebApp>> listWebAppsOnWindows(@NotNull final String subscriptionId, final boolean force) {
         return listWebApps(subscriptionId, force)
             .stream()
-            .filter(resourceEx -> OperatingSystem.WINDOWS.equals((resourceEx.getResource().operatingSystem())))
+            .filter(resourceEx -> OperatingSystem.WINDOWS == (resourceEx.getResource().operatingSystem()))
             .collect(Collectors.toList());
     }
 
     /**
      * List all web apps by subscription id.
      */
+    @SneakyThrows
     @NotNull
     public List<ResourceEx<WebApp>> listWebApps(final String subscriptionId, final boolean force) {
         if (!force && subscriptionIdToWebApps.get(subscriptionId) != null) {
             return subscriptionIdToWebApps.get(subscriptionId);
         }
-
-        List<ResourceEx<WebApp>> webApps = new ArrayList<>();
-        try {
-            final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
-            webApps = azure.webApps().list()
-                .stream()
-                .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
-                .collect(Collectors.toList());
-            subscriptionIdToWebApps.put(subscriptionId, webApps);
-        } catch (Exception err) {
-            if (Throwables.getCausalChain(err).stream().filter(e -> e instanceof SocketTimeoutException).count() > 0) {
-                throw new AzureRuntimeException(ErrorEnum.SOCKET_TIMEOUT_EXCEPTION);
-            }
-            logger.warning(Throwables.getStackTraceAsString(err));
-        }
-        return webApps;
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId);
+        final Predicate<SiteInner> filter = inner -> inner.kind() == null || !Arrays.asList(inner.kind().split(",")).contains("functionapp");
+        final List<ResourceEx<WebApp>> webapps = azure.appServices().webApps()
+                                                      .inner().list().stream().filter(filter)
+                                                      .map(inner -> new WebAppWrapper(subscriptionId, inner))
+                                                      .map(app -> new ResourceEx<WebApp>(app, subscriptionId))
+                                                      .collect(Collectors.toList());
+        subscriptionIdToWebApps.put(subscriptionId, webapps);
+        return webapps;
     }
 
     /**

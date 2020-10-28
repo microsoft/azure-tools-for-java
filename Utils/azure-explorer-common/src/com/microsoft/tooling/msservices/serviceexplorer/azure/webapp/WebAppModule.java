@@ -37,7 +37,7 @@ import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import java.util.HashMap;
+
 import java.util.List;
 
 public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
@@ -98,8 +98,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                                 try {
                                     addChildNode(new WebAppNode(WebAppModule.this,
                                             ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
-                                            webAppDetails.webApp,
-                                            null));
+                                            webAppDetails.webApp));
                                 } catch (Exception ex) {
                                     DefaultLoader.getUIHelper().logError("WebAppModule::createListener ADD", ex);
                                     ex.printStackTrace();
@@ -123,15 +122,10 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     public void renderChildren(@NotNull final List<ResourceEx<WebApp>> resourceExes) {
         for (final ResourceEx<WebApp> resourceEx : resourceExes) {
             final WebApp app = resourceEx.getResource();
-            final WebAppNode node = new WebAppNode(this, resourceEx.getSubscriptionId(), app,
-                new HashMap<String, String>() {
-                    {
-                        put("regionName", app.regionName());
-                    }
-                });
+            final String sId = resourceEx.getSubscriptionId();
+            final WebAppNode node = new WebAppNode(this, sId, app);
 
             addChildNode(node);
-            node.refreshItems();
         }
     }
 }
