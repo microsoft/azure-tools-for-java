@@ -211,7 +211,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         String url = "https://" + webApp.defaultHostName();
         if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)
             && !webAppSettingModel.isDeployToRoot()) {
-            url += "/" + fileName;
+            url += "/" + WebAppUtils.encodeURL(fileName).replaceAll("\\+", "%20");
         }
         return url;
     }
