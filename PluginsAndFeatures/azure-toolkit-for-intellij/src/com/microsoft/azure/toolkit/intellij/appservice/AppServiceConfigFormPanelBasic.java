@@ -30,6 +30,7 @@ import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
@@ -51,12 +52,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
-public class AppServiceConfigFormPanelBasic extends JPanel implements AzureFormPanel<WebAppConfig> {
-    private final Project project;
+public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final int RG_NAME_MAX_LENGTH = 90;
     private static final int SP_NAME_MAX_LENGTH = 40;
+    private final Project project;
+    private final Supplier<T> supplier;
 
     private JPanel contentPanel;
 
@@ -68,9 +71,10 @@ public class AppServiceConfigFormPanelBasic extends JPanel implements AzureFormP
     private Subscription subscription;
     private Region defaultRegion;
 
-    public AppServiceConfigFormPanelBasic(final Project project) {
+    public AppServiceConfigFormPanelBasic(final Project project, final Supplier<T> supplier) {
         super();
         this.project = project;
+        this.supplier = supplier;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
@@ -108,7 +112,7 @@ public class AppServiceConfigFormPanelBasic extends JPanel implements AzureFormP
 
     @SneakyThrows
     @Override
-    public WebAppConfig getData() {
+    public T getData() {
         final String date = DATE_FORMAT.format(new Date());
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
@@ -117,7 +121,7 @@ public class AppServiceConfigFormPanelBasic extends JPanel implements AzureFormP
         final PricingTier tier = WebAppConfig.DEFAULT_PRICING_TIER;
         final Region region = this.getRegion();
 
-        final WebAppConfig config = WebAppConfig.builder().build();
+        final T config = supplier.get();
         config.setSubscription(this.subscription);
         final DraftResourceGroup group = DraftResourceGroup.builder().build();
         group.setName(StringUtils.substring(String.format("rg-%s", name), 0, RG_NAME_MAX_LENGTH));
@@ -144,7 +148,7 @@ public class AppServiceConfigFormPanelBasic extends JPanel implements AzureFormP
     }
 
     @Override
-    public void setData(final WebAppConfig config) {
+    public void setData(final AppServiceConfig config) {
         this.textName.setValue(config.getName());
         this.selectorPlatform.setValue(config.getPlatform());
     }

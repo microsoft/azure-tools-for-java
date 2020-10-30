@@ -20,66 +20,53 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.webapp;
+package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelAdvanced;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelBasic;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
-import org.jetbrains.annotations.Nullable;
+import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import javax.swing.*;
 
-public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
-    public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
-    private JPanel panel;
-    private AppServiceConfigFormPanelAdvanced advancedForm;
-    private AppServiceConfigFormPanelBasic basicForm;
+public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig> {
 
-    public WebAppCreationDialog(Project project) {
+    private JPanel contentPane;
+    private AppServiceConfigFormPanelBasic basicPanel;
+    private FunctionAppConfigFormPanelAdvance advancePanel;
+
+    public FunctionAppCreationDialog(final Project project) {
         super(project);
-
         this.init();
         this.toggleAdvancedMode(false);
     }
 
-    public void setDeploymentVisible(boolean visible) {
-        this.advancedForm.setDeploymentVisible(visible);
-        this.basicForm.setDeploymentVisible(visible);
-        this.pack();
+    @Override
+    protected AzureFormPanel<FunctionAppConfig> getAdvancedFormPanel() {
+        return advancePanel;
     }
 
     @Override
-    public WebAppConfig getData() {
-        return super.getData();
+    protected AzureFormPanel<FunctionAppConfig> getBasicFormPanel() {
+        return basicPanel;
     }
 
     @Override
-    protected AzureFormPanel<WebAppConfig> getAdvancedFormPanel() {
-        return advancedForm;
-    }
-
-    @Override
-    protected AzureFormPanel<WebAppConfig> getBasicFormPanel() {
-        return basicForm;
+    protected String getDialogTitle() {
+        return "Create Function";
     }
 
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return this.panel;
-    }
-
-    protected String getDialogTitle() {
-        return TITLE_CREATE_WEBAPP_DIALOG;
+        return contentPane;
     }
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        advancedForm = new AppServiceConfigFormPanelAdvanced(project, () -> WebAppConfig.builder().build());
-        basicForm = new AppServiceConfigFormPanelBasic(project, () -> WebAppConfig.builder().build());
-        basicForm.setDeploymentVisible(false);
+        basicPanel = new AppServiceConfigFormPanelBasic(project, () -> FunctionAppConfig.builder().build());
+        advancePanel = new FunctionAppConfigFormPanelAdvance(project);
     }
 }
