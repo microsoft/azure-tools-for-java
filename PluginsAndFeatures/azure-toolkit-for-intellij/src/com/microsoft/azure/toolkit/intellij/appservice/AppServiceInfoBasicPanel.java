@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
+public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final int RG_NAME_MAX_LENGTH = 90;
     private static final int SP_NAME_MAX_LENGTH = 40;
@@ -71,7 +71,7 @@ public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends 
     private Subscription subscription;
     private Region defaultRegion;
 
-    public AppServiceConfigFormPanelBasic(final Project project, final Supplier<T> supplier) {
+    public AppServiceInfoBasicPanel(final Project project, final Supplier<T> supplier) {
         super();
         this.project = project;
         this.supplier = supplier;
@@ -148,7 +148,7 @@ public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends 
     }
 
     @Override
-    public void setData(final AppServiceConfig config) {
+    public void setData(final T config) {
         this.textName.setValue(config.getName());
         this.selectorPlatform.setValue(config.getPlatform());
     }
@@ -167,6 +167,10 @@ public class AppServiceConfigFormPanelBasic<T extends AppServiceConfig> extends 
     public void setVisible(final boolean visible) {
         this.contentPanel.setVisible(visible);
         super.setVisible(visible);
+    }
+
+    public PlatformComboBox getSelectorPlatform() {
+        return selectorPlatform;
     }
 
     private void createUIComponents() {

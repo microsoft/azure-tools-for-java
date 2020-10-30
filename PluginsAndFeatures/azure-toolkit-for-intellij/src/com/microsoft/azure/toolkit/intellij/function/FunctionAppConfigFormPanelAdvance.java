@@ -23,27 +23,37 @@
 package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelAdvanced;
+import com.intellij.ui.DocumentAdapter;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;
+import com.microsoft.azure.toolkit.intellij.appservice.insights.ApplicationInsightsComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
-import com.microsoft.intellij.runner.functions.component.ApplicationInsightsPanel;
+import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.commons.collections.ListUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
 import java.util.List;
 
 public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFormPanel<FunctionAppConfig> {
     private JTabbedPane tabPane;
     private JPanel pnlRoot;
     private Project project;
-    private AppServiceConfigFormPanelAdvanced appServiceConfigPanelAdvanced;
-    private ApplicationInsightsComboBox applicationInsightsComboBox;
-    private JRadioButton noRadioButton;
-    private JRadioButton yesRadioButton;
-    private ApplicationInsightsPanel applicationInsightsPanel;
+    private AppServiceInfoAdvancedPanel<FunctionAppConfig> appServiceConfigPanelAdvanced;
+    private AppServiceMonitorPanel appServiceMonitorPanel;
+    private JPanel pnlMonitoring;
+    private JPanel pnlAppService;
+
+    private ApplicationInsightsConfig insightsConfig;
 
     public FunctionAppConfigFormPanelAdvance(final Project project) {
         this.project = project;
+        $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
+        this.init();
     }
 
     @Override
@@ -53,30 +63,49 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
 
     @Override
     public FunctionAppConfig getData() {
-        return (FunctionAppConfig) appServiceConfigPanelAdvanced.getData();
+        final FunctionAppConfig data = appServiceConfigPanelAdvanced.getData();
+        data.setMonitorConfig(appServiceMonitorPanel.getData());
+        return data;
     }
 
     @Override
     public void setData(final FunctionAppConfig data) {
         appServiceConfigPanelAdvanced.setData(data);
+        appServiceMonitorPanel.setData(data.getMonitorConfig());
     }
 
     @Override
     public List<AzureFormInput<?>> getInputs() {
-        return appServiceConfigPanelAdvanced.getInputs();
+        return ListUtils.union(appServiceConfigPanelAdvanced.getInputs(), appServiceMonitorPanel.getInputs());
+    }
+
+    private void init() {
+        appServiceConfigPanelAdvanced.getTextName().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull final DocumentEvent documentEvent) {
+                insightsConfig.setName(appServiceConfigPanelAdvanced.getTextName().getValue());
+                ApplicationInsightsComboBox insightsComboBox = appServiceMonitorPanel.getApplicationInsightsComboBox();
+                insightsComboBox.removeItem(insightsConfig);
+                insightsComboBox.setValue(insightsConfig);
+            }
+        });
     }
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        appServiceConfigPanelAdvanced = new AppServiceConfigFormPanelAdvanced(project, () -> FunctionAppConfig.builder().build());
+        appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel(project, () -> FunctionAppConfig.builder().build());
         // Function does not support file deployment
         appServiceConfigPanelAdvanced.setDeploymentVisible(false);
+        insightsConfig = ApplicationInsightsConfig.builder().newCreate(true)
+                                                  .name(appServiceConfigPanelAdvanced.getTextName().getValue())
+                                                  .build();
 
-        applicationInsightsPanel = new ApplicationInsightsPanel();
-        applicationInsightsComboBox = new ApplicationInsightsComboBox();
+        appServiceMonitorPanel = new AppServiceMonitorPanel(project);
+        appServiceMonitorPanel.setApplicationLogVisible(true);
+        appServiceMonitorPanel.setData(MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build());
 
         appServiceConfigPanelAdvanced.getSelectorSubscription().addItemListener(event -> {
-            applicationInsightsComboBox.setSubscription(appServiceConfigPanelAdvanced.getSelectorSubscription().getValue());
+            appServiceMonitorPanel.getApplicationInsightsComboBox().setSubscription(appServiceConfigPanelAdvanced.getSelectorSubscription().getValue());
         });
     }
 }

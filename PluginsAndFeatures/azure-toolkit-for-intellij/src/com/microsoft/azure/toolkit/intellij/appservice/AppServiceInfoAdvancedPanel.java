@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
+public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final String NOT_APPLICABLE = "N/A";
     private final Project project;
@@ -76,7 +76,7 @@ public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> exten
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
-    public AppServiceConfigFormPanelAdvanced(final Project project, final Supplier<T> supplier) {
+    public AppServiceInfoAdvancedPanel(final Project project, final Supplier<T> supplier) {
         super();
         this.project = project;
         this.supplier = supplier;
@@ -110,7 +110,7 @@ public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> exten
     }
 
     @Override
-    public void setData(final AppServiceConfig config) {
+    public void setData(final T config) {
         this.selectorSubscription.setValue(config.getSubscription());
         this.selectorGroup.setValue(config.getResourceGroup());
         this.textName.setValue(config.getName());
@@ -147,6 +147,18 @@ public class AppServiceConfigFormPanelAdvanced<T extends AppServiceConfig> exten
 
     public SubscriptionComboBox getSelectorSubscription() {
         return selectorSubscription;
+    }
+
+    public PlatformComboBox getSelectorPlatform() {
+        return selectorPlatform;
+    }
+
+    public ServicePlanComboBox getSelectorServicePlan() {
+        return selectorServicePlan;
+    }
+
+    public AppNameInput getTextName() {
+        return textName;
     }
 
     private void init() {

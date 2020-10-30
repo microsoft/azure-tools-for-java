@@ -24,7 +24,7 @@ package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelBasic;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -34,7 +34,7 @@ import javax.swing.*;
 public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig> {
 
     private JPanel contentPane;
-    private AppServiceConfigFormPanelBasic basicPanel;
+    private AppServiceInfoBasicPanel basicPanel;
     private FunctionAppConfigFormPanelAdvance advancePanel;
 
     public FunctionAppCreationDialog(final Project project) {
@@ -66,7 +66,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        basicPanel = new AppServiceConfigFormPanelBasic(project, () -> FunctionAppConfig.builder().build());
+        basicPanel = new AppServiceInfoBasicPanel(project, () -> FunctionAppConfig.builder().build());
         advancePanel = new FunctionAppConfigFormPanelAdvance(project);
     }
 }

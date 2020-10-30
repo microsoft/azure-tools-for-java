@@ -24,8 +24,8 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelAdvanced;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceConfigFormPanelBasic;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import org.jetbrains.annotations.Nullable;
@@ -35,8 +35,8 @@ import javax.swing.*;
 public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
     private JPanel panel;
-    private AppServiceConfigFormPanelAdvanced advancedForm;
-    private AppServiceConfigFormPanelBasic basicForm;
+    private AppServiceInfoAdvancedPanel advancedForm;
+    private AppServiceInfoBasicPanel basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project);
@@ -78,8 +78,8 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        advancedForm = new AppServiceConfigFormPanelAdvanced(project, () -> WebAppConfig.builder().build());
-        basicForm = new AppServiceConfigFormPanelBasic(project, () -> WebAppConfig.builder().build());
+        advancedForm = new AppServiceInfoAdvancedPanel(project, () -> WebAppConfig.builder().build());
+        basicForm = new AppServiceInfoBasicPanel(project, () -> WebAppConfig.builder().build());
         basicForm.setDeploymentVisible(false);
     }
 }
