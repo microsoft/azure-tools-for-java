@@ -66,7 +66,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
         }
         Integer value = getValue();
         if (value == null) {
-            return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR).message("Value should be integer").build();
+            return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR).message("Value should be an integer").build();
         } else if ((minValue != null && value < minValue) || (maxValue != null && value > maxValue)) {
             return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR)
                                       .message(String.format("Value should be in rang [%s,%s]", minValue, maxValue)).build();

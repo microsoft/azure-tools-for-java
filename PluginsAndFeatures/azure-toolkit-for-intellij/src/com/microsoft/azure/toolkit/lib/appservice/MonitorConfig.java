@@ -47,7 +47,4 @@ public class MonitorConfig {
     boolean enableApplicationLog = true;
     @Builder.Default
     LogLevel applicationLogLevel = LogLevel.ERROR;
-    // SSH
-    @Builder.Default
-    boolean enableSSH = true;
 }

@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsightsConfig> {
 
     private Subscription subscription;
-    private ApplicationInsightsConfig newInsightsConfig = ApplicationInsightsConfig.builder().newCreate(true).build();
 
     public void setSubscription(Subscription subscription) {
         if (Objects.equals(subscription, this.subscription)) {
@@ -52,10 +51,6 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
             return;
         }
         this.refreshItems();
-    }
-
-    public ApplicationInsightsConfig getNewInsightsConfig() {
-        return newInsightsConfig;
     }
 
     @Override
@@ -100,11 +95,9 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
         final CreateApplicationInsightsDialog dialog = new CreateApplicationInsightsDialog();
         dialog.pack();
         if (dialog.showAndGet()) {
-            newInsightsConfig.setName(dialog.getApplicationInsightsName());
-            if (!getItems().contains(newInsightsConfig)) {
-                addItem(newInsightsConfig);
-            }
-            setSelectedItem(newInsightsConfig);
+            ApplicationInsightsConfig config = ApplicationInsightsConfig.builder().newCreate(true).name(dialog.getApplicationInsightsName()).build();
+            addItem(config);
+            setSelectedItem(config);
         }
     }
 }

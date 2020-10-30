@@ -47,8 +47,6 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     private JRadioButton rdoEnableFailedRequest;
     private JRadioButton rdoDisableApplicationLog;
     private JRadioButton rdoEnableApplicationLog;
-    private JRadioButton rdoDisableSSH;
-    private JRadioButton rdoEnableSSH;
     private JLabel lblInsightsEnable;
     private JLabel lblWebServerLog;
     private JRadioButton rdoDisableWebServerLog;
@@ -58,11 +56,9 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     private JLabel lblRetention;
     private JLabel lblDetailedErrorMessage;
     private JLabel lblFailedRequest;
-    private JLabel lblSSH;
     private JPanel pnlApplicationLog;
     private TitledSeparator titleApplicationInsights;
     private TitledSeparator titleAppServiceLog;
-    private TitledSeparator titleSSH;
     private IntegerTextField txtQuota;
     private IntegerTextField txtRetention;
     private LogLevelComboBox cbLogLevel;
@@ -104,12 +100,6 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
         rdoEnableWebServerLog.setSelected(visible);
     }
 
-    public void setSSHVisible(boolean visible) {
-        titleSSH.setVisible(visible);
-        rdoEnableSSH.setVisible(visible);
-        rdoDisableSSH.setVisible(visible);
-    }
-
     @Override
     public MonitorConfig getData() {
         MonitorConfig config = MonitorConfig.builder().build();
@@ -129,9 +119,6 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
                 config.setEnableApplicationLog(rdoEnableApplicationLog.isSelected());
                 config.setApplicationLogLevel(cbLogLevel.getValue());
             }
-        }
-        if (titleSSH.isVisible()) {
-            config.setEnableSSH(rdoEnableSSH.isSelected());
         }
         return config;
     }
@@ -159,9 +146,6 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
                 rdoEnableApplicationLog.setSelected(data.isEnableApplicationLog());
                 cbLogLevel.setSelectedItem(data.getApplicationLogLevel());
             }
-        }
-        if (titleSSH.isVisible()) {
-            rdoEnableSSH.setSelected(data.isEnableSSH());
         }
         this.repaint();
     }
@@ -214,10 +198,6 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
         applicationLogGroup.add(rdoDisableApplicationLog);
         rdoEnableApplicationLog.addItemListener(e -> toggleApplicationLog(rdoEnableApplicationLog.isSelected()));
         rdoDisableApplicationLog.addItemListener(e -> toggleApplicationLog(rdoEnableApplicationLog.isSelected()));
-
-        final ButtonGroup sshGroup = new ButtonGroup();
-        sshGroup.add(rdoEnableSSH);
-        sshGroup.add(rdoDisableSSH);
     }
 
     private void toggleApplicationInsights(boolean enable) {

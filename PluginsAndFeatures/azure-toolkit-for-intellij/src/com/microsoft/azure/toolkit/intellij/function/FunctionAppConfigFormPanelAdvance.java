@@ -83,6 +83,7 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
         appServiceConfigPanelAdvanced.getTextName().getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull final DocumentEvent documentEvent) {
+                // ai name pattern is the subset of function name pattern, so no need to validate the ai instance name
                 insightsConfig.setName(appServiceConfigPanelAdvanced.getTextName().getValue());
                 ApplicationInsightsComboBox insightsComboBox = appServiceMonitorPanel.getApplicationInsightsComboBox();
                 insightsComboBox.removeItem(insightsConfig);
