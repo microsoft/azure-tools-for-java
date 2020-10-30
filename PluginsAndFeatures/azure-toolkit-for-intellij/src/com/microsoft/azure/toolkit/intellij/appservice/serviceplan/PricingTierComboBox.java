@@ -32,14 +32,25 @@ import java.util.List;
 public class PricingTierComboBox extends AzureComboBox<PricingTier> {
     public static PricingTier DEFAULT_TIER = PricingTier.BASIC_B2;
 
+    private List<PricingTier> pricingTierList;
+
     public PricingTierComboBox() {
         super();
         this.setValue(DEFAULT_TIER);
+        try {
+            pricingTierList = AzureMvpModel.getInstance().listPricingTier();
+        } catch (IllegalAccessException e) {
+            handleLoadingError(e);
+        }
+    }
+
+    public void setPricingTierList(final List<PricingTier> pricingTierList) {
+        this.pricingTierList = pricingTierList;
     }
 
     @NotNull
     @Override
     protected List<? extends PricingTier> loadItems() throws Exception {
-        return AzureMvpModel.getInstance().listPricingTier();
+        return pricingTierList;
     }
 }

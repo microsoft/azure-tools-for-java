@@ -22,15 +22,21 @@
 
 package com.microsoft.intellij.runner.functions.deploy;
 
-import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
+import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
+import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionContext;
+import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 
 public class FunctionDeployModel extends IntelliJFunctionContext {
 
+    private boolean isNewResource;
     private String functionId;
 
-    public FunctionDeployModel(Project project) {
-        super(project);
+    public FunctionDeployModel() {
+
     }
 
     public String getFunctionId() {
@@ -40,4 +46,46 @@ public class FunctionDeployModel extends IntelliJFunctionContext {
     public void setFunctionId(String functionId) {
         this.functionId = functionId;
     }
+
+    public boolean isNewResource() {
+        return isNewResource;
+    }
+
+    public void setNewResource(final boolean newResource) {
+        isNewResource = newResource;
+    }
+
+    public void saveModel(FunctionAppComboBoxModel functionAppComboBoxModel) {
+        setFunctionId(functionAppComboBoxModel.getResourceId());
+        setAppName(functionAppComboBoxModel.getAppName());
+        setResourceGroup(functionAppComboBoxModel.getResourceGroup());
+        setSubscription(functionAppComboBoxModel.getSubscriptionId());
+        if (functionAppComboBoxModel.isNewCreateResource() && functionAppComboBoxModel.getFunctionAppConfig() != null) {
+            setNewResource(true);
+            final FunctionAppConfig functionAppConfig = functionAppComboBoxModel.getFunctionAppConfig();
+            setAppServicePlanName(functionAppConfig.getServicePlan().name());
+            setPricingTier(functionAppConfig.getServicePlan().pricingTier().toSkuDescription().size());
+            setRegion(functionAppConfig.getRegion().name());
+            setOs(functionAppConfig.getPlatform().getOs().name());
+            setJavaVersion(functionAppConfig.getPlatform().getStackVersionOrJavaVersion());
+            final MonitorConfig monitorConfig = functionAppConfig.getMonitorConfig();
+            final ApplicationInsightsConfig insightsModel = monitorConfig.getApplicationInsightsConfig();
+            if (insightsModel != null) {
+                setInsightsName(insightsModel.getName());
+                setInstrumentationKey(insightsModel.getInstrumentationKey());
+            } else {
+                setInsightsName(null);
+                setInstrumentationKey(null);
+            }
+        } else {
+            setNewResource(false);
+            final FunctionApp functionApp = functionAppComboBoxModel.getResource();
+            if (functionApp != null) {
+                setRegion(functionApp.regionName());
+                setOs(functionApp.operatingSystem().name());
+                setJavaVersion(FunctionUtils.getFunctionJavaVersion(functionApp));
+            }
+        }
+    }
+
 }

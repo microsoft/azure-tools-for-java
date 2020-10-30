@@ -24,8 +24,8 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import org.jetbrains.annotations.Nullable;
@@ -35,8 +35,8 @@ import javax.swing.*;
 public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
     private JPanel panel;
-    private AppServiceInfoAdvancedPanel advancedForm;
-    private AppServiceInfoBasicPanel basicForm;
+    private AppServiceInfoAdvancedPanel<WebAppConfig> advancedForm;
+    private AppServiceInfoBasicPanel<WebAppConfig> basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project);

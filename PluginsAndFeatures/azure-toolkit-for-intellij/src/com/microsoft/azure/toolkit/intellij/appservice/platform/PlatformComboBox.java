@@ -47,9 +47,23 @@ public class PlatformComboBox extends AzureComboBox<Platform> {
         Platform.Windows.JAVA11
     });
 
+    private List<Platform> platformList;
+
+    public PlatformComboBox() {
+        this(platforms);
+    }
+
+    public PlatformComboBox(List<Platform> platformList) {
+        this.platformList = platformList;
+    }
+
+    public void setPlatformList(final List<Platform> platformList) {
+        this.platformList = platformList;
+    }
+
     @NotNull
     @Override
     protected List<? extends Platform> loadItems() throws Exception {
-        return platforms;
+        return platformList;
     }
 }

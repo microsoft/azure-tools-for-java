@@ -104,7 +104,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         setTitle(DIALOG_TITLE);
         getRootPane().setDefaultButton(buttonOK);
 
-        this.functionConfiguration = new IntelliJFunctionContext(project);
+        this.functionConfiguration = new IntelliJFunctionContext();
 
         rdoLinuxOS.addActionListener(e -> selectOS());
         rdoWindowsOS.addActionListener(e -> selectOS());
@@ -236,8 +236,7 @@ public class FunctionCreationDialog extends AzureDialogWrapper {
         final IntelliJFunctionRuntimeConfiguration runtimeConfiguration = new IntelliJFunctionRuntimeConfiguration();
         runtimeConfiguration.setOs(getSelectedOperationSystemEnum() == OperatingSystem.WINDOWS ? "windows" : "linux");
         runtimeConfiguration.setJavaVersion(rdoJava8.isSelected() ? "8" : "11");
-        functionConfiguration.setRuntime(runtimeConfiguration);
-
+//        functionConfiguration.saveRuntime(runtimeConfiguration);
         functionConfiguration.setAppSettings(getFixedAppSettings());
     }
 

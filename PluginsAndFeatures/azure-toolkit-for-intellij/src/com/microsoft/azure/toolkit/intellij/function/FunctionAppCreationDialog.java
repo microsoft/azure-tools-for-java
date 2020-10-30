@@ -26,15 +26,19 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
+import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import javax.swing.*;
+import java.util.Arrays;
 
 public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig> {
 
     private JPanel contentPane;
-    private AppServiceInfoBasicPanel basicPanel;
+    private AppServiceInfoBasicPanel<FunctionAppConfig> basicPanel;
     private FunctionAppConfigFormPanelAdvance advancePanel;
 
     public FunctionAppCreationDialog(final Project project) {
@@ -66,7 +70,17 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        basicPanel = new AppServiceInfoBasicPanel(project, () -> FunctionAppConfig.builder().build());
+        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project, () -> FunctionAppConfig.builder().build()){
+            @Override
+            public FunctionAppConfig getData() {
+                // Create AI instance with same name by default
+                final FunctionAppConfig config = super.getData();
+                final MonitorConfig monitorConfig = MonitorConfig.builder().build();
+                monitorConfig.setApplicationInsightsConfig(ApplicationInsightsConfig.builder().name(config.getName()).newCreate(true).build());
+                return config;
+            }
+        };
+        basicPanel.getSelectorPlatform().setPlatformList(Arrays.asList(Platform.AzureFunction.values()));
         advancePanel = new FunctionAppConfigFormPanelAdvance(project);
     }
 }

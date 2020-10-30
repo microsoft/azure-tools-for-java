@@ -24,6 +24,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -113,5 +114,9 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     @Override
     public List<AzureFormInput<?>> getInputs() {
         return Collections.singletonList(this.textName);
+    }
+
+    public void setPricingTier(final List<PricingTier> pricingTierList) {
+        this.comboBoxPricingTier.setPricingTierList(pricingTierList);
     }
 }
