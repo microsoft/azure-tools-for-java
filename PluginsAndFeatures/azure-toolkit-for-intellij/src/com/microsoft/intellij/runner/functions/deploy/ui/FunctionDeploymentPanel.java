@@ -28,8 +28,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBox;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
@@ -63,6 +65,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private JComboBox<Module> cbFunctionModule;
     private FunctionAppComboBox functionAppComboBox;
     private AppSettingsTable appSettingsTable;
+    private FunctionAppComboBoxModel appSettingsFunctionApp;
 
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
@@ -146,6 +149,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             final FunctionAppComboBoxModel functionAppComboBoxModel =
                     new FunctionAppComboBoxModel(configuration.getModel());
             functionAppComboBox.refreshItemsWithDefaultValue(functionAppComboBoxModel);
+            appSettingsFunctionApp = functionAppComboBoxModel;
         }
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
@@ -177,6 +181,14 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         functionAppComboBox = new FunctionAppComboBox(project);
         functionAppComboBox.addItemListener(event -> {
             final FunctionAppComboBoxModel model = getSelectedFunctionApp();
+            if (model == null) {
+                return;
+            }
+            if (appSettingsFunctionApp != null && AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp)
+                    && !appSettingsTable.isDefaultAppSettings()) {
+                return;
+            }
+            appSettingsFunctionApp = model;
             if (model != null && model.getResource() != null && !model.isNewCreateResource()) {
                 presenter.loadAppSettings(model.getResource());
             }
