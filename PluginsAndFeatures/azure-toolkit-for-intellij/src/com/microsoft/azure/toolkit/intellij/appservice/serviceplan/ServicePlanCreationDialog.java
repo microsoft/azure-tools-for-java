@@ -55,13 +55,18 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     private ValidationDebouncedTextInput textName;
     private PricingTierComboBox comboBoxPricingTier;
 
-    public ServicePlanCreationDialog(final Subscription subscription, OperatingSystem os, Region region) {
+    public ServicePlanCreationDialog(final Subscription subscription,
+                                     OperatingSystem os,
+                                     Region region,
+                                     final List<PricingTier> pricingTierList, final PricingTier defaultPricingTier) {
         super();
-        this.init();
         this.subscription = subscription;
         this.os = os;
         this.region = region;
+        this.init();
         this.textName.setValidator(this::validateName);
+        this.comboBoxPricingTier.setPricingTierList(pricingTierList);
+        this.comboBoxPricingTier.setDefaultPricingTier(defaultPricingTier);
         SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, DESCRIPTION);
         this.pack();
     }
@@ -116,7 +121,4 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         return Collections.singletonList(this.textName);
     }
 
-    public void setPricingTier(final List<PricingTier> pricingTierList) {
-        this.comboBoxPricingTier.setPricingTierList(pricingTierList);
-    }
 }

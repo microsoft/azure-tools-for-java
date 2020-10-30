@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -39,6 +40,7 @@ import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -213,7 +215,9 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
     private void onServicePlanChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             final AppServicePlan plan = (AppServicePlan) e.getItem();
-            this.textSku.setText(plan.pricingTier().toString());
+            final String pricing = plan.pricingTier() == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ?
+                                   "Consumption" : plan.pricingTier().toString();
+            this.textSku.setText(pricing);
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
             this.textSku.setText(NOT_APPLICABLE);
         }
@@ -223,5 +227,13 @@ public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPa
         // TODO: place custom component creation code here
         this.selectorApplication = new AzureArtifactComboBox(project, true);
         this.selectorApplication.refreshItems();
+    }
+
+    public void setValidPricingTier(List<PricingTier> pricingTier, PricingTier defaultPricingTier) {
+        selectorServicePlan.setValidPricingTierList(pricingTier, defaultPricingTier);
+    }
+
+    public void setValidPlatform(List<Platform> platform) {
+        selectorPlatform.setPlatformList(platform);
     }
 }

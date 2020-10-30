@@ -47,9 +47,11 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
 
     private Subscription subscription;
     private List<DraftServicePlan> localItems = new ArrayList<>();
-    private List<PricingTier> pricingTierList = new ArrayList<>();
     private OperatingSystem os;
     private Region region;
+
+    private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.getAll());
+    private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
 
     @Override
     protected String getItemText(final Object item) {
@@ -95,8 +97,9 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         this.refreshItems();
     }
 
-    public void setPricingTierList(final List<PricingTier> pricingTierList) {
+    public void setValidPricingTierList(final List<PricingTier> pricingTierList, final PricingTier defaultPricingTier) {
         this.pricingTierList = pricingTierList;
+        this.defaultPricingTier = defaultPricingTier;
     }
 
     @NotNull
@@ -133,10 +136,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     private void showServicePlanCreationPopup() {
-        final ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(this.subscription, this.os, this.region);
-        if (CollectionUtils.isNotEmpty(pricingTierList)) {
-            dialog.setPricingTier(pricingTierList);
-        }
+        final ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(this.subscription, this.os, this.region, pricingTierList, defaultPricingTier);
         dialog.setOkActionListener((plan) -> {
             this.localItems.add(0, plan);
             dialog.close();
