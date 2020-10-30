@@ -26,7 +26,10 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
 import com.microsoft.azure.hdinsight.serverexplore.action.AddNewClusterAction;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction;
+import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
+import com.microsoft.intellij.actions.CreateFunctionAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
@@ -48,6 +51,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManage
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudAppNode;
@@ -79,6 +83,8 @@ public class NodeActionsMap {
                 .add(CreateRedisCacheAction.class).build());
         node2Actions.put(WebAppModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(CreateWebAppAction.class).build());
+        node2Actions.put(FunctionModule.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
+                .add(CreateFunctionAppAction.class).build());
         node2Actions.put(ContainerRegistryNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(PushToContainerRegistryAction.class).build());
         // todo: what is ConfirmDialogAction?
@@ -111,7 +117,7 @@ public class NodeActionsMap {
                 .add(SpringCloudStreamingLogsAction.class).build());
 
         node2Actions.put(FunctionNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
+                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(DeployFunctionAppAction.class).build());
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)
