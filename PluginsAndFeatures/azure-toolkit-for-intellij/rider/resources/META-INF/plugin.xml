@@ -25,7 +25,9 @@
         <p>[3.40.0-2020.3]</p>
         <ul>
           <li>Compatibility with Rider 2020.3 EAP</li>
-          <li>Add queue support to storage explorer (for Azurite storage emulator) <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/96">#96</a></li>
+          <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a></li>)</li>
+          <li>Reorganize and improve context actions in Azure Explorer (<a href="https://youtrack.jetbrains.com/issue/RIDER-48559">RIDER-48559</a>)s</li>
+          <li>Show Queues node in Azure Explorer for Storage emulator/Azurite (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/96">#96</a></li>)</li>
         </ul>
         <p>[3.40.0-2020.2]</p>
         <ul>
@@ -189,6 +191,7 @@
 
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBeforeRunTaskProvider"/>
     <configurationType implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationType"/>
+    <runConfigurationProducer implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostRunConfigurationProducer"/>
 
     <postStartupActivity implementation="com.microsoft.intellij.AzureRiderPlugin" />
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsDetector" />

@@ -6,9 +6,7 @@
     <html>
       <h4>Features:</h4>
       <ul>
-        <li>Compatibility with Rider 2020.3 EAP4</li>
-        <li>Reorganize and improve context actions in Azure Explorer (<a href="https://youtrack.jetbrains.com/issue/RIDER-48559">RIDER-48559</a>)s</li>
-        <li>Show Queues node in Azure Explorer for Storage emulator/Azurite (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/96">#96</a></li>)</li>
+        <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a></li>)</li>
       </ul>
     </html>
     ]]>
