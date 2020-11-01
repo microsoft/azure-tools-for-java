@@ -70,13 +70,15 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project, () -> FunctionAppConfig.builder().build()){
+        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project,
+            () -> FunctionAppConfig.builder().build()) {
             @Override
             public FunctionAppConfig getData() {
                 // Create AI instance with same name by default
                 final FunctionAppConfig config = super.getData();
                 final MonitorConfig monitorConfig = MonitorConfig.builder().build();
                 monitorConfig.setApplicationInsightsConfig(ApplicationInsightsConfig.builder().name(config.getName()).newCreate(true).build());
+                config.setMonitorConfig(monitorConfig);
                 return config;
             }
         };

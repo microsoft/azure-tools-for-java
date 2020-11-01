@@ -37,8 +37,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
-import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import org.apache.commons.lang.StringUtils;

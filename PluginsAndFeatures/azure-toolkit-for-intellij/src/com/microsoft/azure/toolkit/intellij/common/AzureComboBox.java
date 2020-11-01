@@ -56,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
@@ -340,9 +339,6 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 try {
                     final String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
-//                    final List<T> filteredItems = list.stream()
-//                                                      .filter(item -> filter.test(item, text))
-//                                                      .collect(Collectors.toList());
                     list.stream().filter(item -> filter.test(item, text) && !getItems().contains(item)).forEach(item -> addItem(item));
                     getItems().stream().filter(item -> !filter.test(item, text)).forEach(item -> removeItem(item));
                 } catch (BadLocationException e) {

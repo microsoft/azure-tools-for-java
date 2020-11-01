@@ -30,7 +30,8 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class MonitorConfig {
-    ApplicationInsightsConfig applicationInsightsConfig;
+    @Builder.Default
+    ApplicationInsightsConfig applicationInsightsConfig = null;
     // web server log
     @Builder.Default
     boolean enableWebServerLogging = true;

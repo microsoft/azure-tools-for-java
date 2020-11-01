@@ -27,10 +27,8 @@ import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 @Getter
 public class FunctionAppComboBoxModel extends AppServiceComboBoxModel<FunctionApp> {

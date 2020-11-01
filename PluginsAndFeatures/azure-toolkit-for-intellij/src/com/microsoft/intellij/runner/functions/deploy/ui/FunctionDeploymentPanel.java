@@ -31,7 +31,6 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBox;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
-import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
@@ -184,8 +183,8 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
             if (model == null) {
                 return;
             }
-            if (appSettingsFunctionApp != null && AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp)
-                    && !appSettingsTable.isDefaultAppSettings()) {
+            if (appSettingsFunctionApp != null &&
+                    AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) && !appSettingsTable.isDefaultAppSettings()) {
                 return;
             }
             appSettingsFunctionApp = model;
@@ -195,7 +194,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         });
     }
 
-    private FunctionAppComboBoxModel getSelectedFunctionApp(){
+    private FunctionAppComboBoxModel getSelectedFunctionApp() {
         return functionAppComboBox.getValue();
     }
 

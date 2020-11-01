@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.functions.deploy.ui;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -33,7 +32,6 @@ import rx.Subscription;
 import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 

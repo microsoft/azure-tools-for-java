@@ -31,7 +31,6 @@ public class ApplicationInsightsConfig {
     private boolean newCreate;
     private String name;
     private String instrumentationKey;
-    private ApplicationInsightsComponent component;
 
     public ApplicationInsightsConfig(String name) {
         this.newCreate = true;
@@ -42,6 +41,5 @@ public class ApplicationInsightsConfig {
         this.newCreate = false;
         this.name = component.name();
         this.instrumentationKey = component.instrumentationKey();
-        this.component = component;
     }
 }

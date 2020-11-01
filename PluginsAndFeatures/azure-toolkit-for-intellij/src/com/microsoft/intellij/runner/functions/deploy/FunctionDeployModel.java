@@ -23,36 +23,25 @@
 package com.microsoft.intellij.runner.functions.deploy;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
 import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionContext;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
+import lombok.Data;
 
+@Data
 public class FunctionDeployModel extends IntelliJFunctionContext {
 
     private boolean isNewResource;
     private String functionId;
+    private boolean enableApplicationLog;
+    private LogLevel applicationLogLevel;
 
     public FunctionDeployModel() {
 
-    }
-
-    public String getFunctionId() {
-        return functionId;
-    }
-
-    public void setFunctionId(String functionId) {
-        this.functionId = functionId;
-    }
-
-    public boolean isNewResource() {
-        return isNewResource;
-    }
-
-    public void setNewResource(final boolean newResource) {
-        isNewResource = newResource;
     }
 
     public void saveModel(FunctionAppComboBoxModel functionAppComboBoxModel) {
@@ -77,6 +66,8 @@ public class FunctionDeployModel extends IntelliJFunctionContext {
                 setInsightsName(null);
                 setInstrumentationKey(null);
             }
+            setEnableApplicationLog(monitorConfig.isEnableApplicationLog());
+            setApplicationLogLevel(monitorConfig.getApplicationLogLevel());
         } else {
             setNewResource(false);
             final FunctionApp functionApp = functionAppComboBoxModel.getResource();
