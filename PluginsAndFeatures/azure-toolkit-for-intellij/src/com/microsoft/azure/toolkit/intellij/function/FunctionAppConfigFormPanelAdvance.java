@@ -24,6 +24,7 @@ package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;
@@ -113,11 +114,16 @@ public class FunctionAppConfigFormPanelAdvance extends JPanel implements AzureFo
                                                   .build();
 
         appServiceMonitorPanel = new AppServiceMonitorPanel(project);
-        appServiceMonitorPanel.setApplicationLogVisible(true);
+        appServiceMonitorPanel.setWebServerLogVisible(false);
         appServiceMonitorPanel.setData(MonitorConfig.builder().applicationInsightsConfig(insightsConfig).build());
 
-        appServiceConfigPanelAdvanced.getSelectorSubscription().addItemListener(event -> {
+        appServiceConfigPanelAdvanced.getSelectorSubscription().addActionListener(event -> {
             appServiceMonitorPanel.getApplicationInsightsComboBox().setSubscription(appServiceConfigPanelAdvanced.getSelectorSubscription().getValue());
+        });
+
+        appServiceConfigPanelAdvanced.getSelectorPlatform().addActionListener(event -> {
+            final Platform platform = appServiceConfigPanelAdvanced.getSelectorPlatform().getValue();
+            appServiceMonitorPanel.setApplicationLogVisible(platform.getOs() == OperatingSystem.WINDOWS);
         });
     }
 }
