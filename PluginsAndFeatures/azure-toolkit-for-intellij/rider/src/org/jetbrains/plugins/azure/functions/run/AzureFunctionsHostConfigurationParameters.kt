@@ -131,7 +131,7 @@ open class AzureFunctionsHostConfigurationParameters(
                 useExternalConsole = useExternalConsole,
                 environmentVariables = envs,
                 isPassParentEnvs = isPassParentEnvs,
-                onProcessStarter = startBrowserAction,
+                onBeforeProcessStarted = startBrowserAction,
                 assemblyToDebug = coreToolsInfo.coreToolsExecutable,
                 runtimeArguments = runtimeArguments,
                 executeAsIs = true)

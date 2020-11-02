@@ -79,7 +79,7 @@ class AzureFunctionsDotNetCoreDebugProfile(
         val useExternalConsole = consoleKind == ConsoleKind.ExternalConsole
         val console = createConsole(useExternalConsole, workerProcessHandler.debuggerWorkerRealHandler,
                 workerProcessHandler.presentableCommandLine, executionEnvironment.project)
-        dotNetExecutable.onProcessStarter(executionEnvironment.runProfile, workerProcessHandler)
+        dotNetExecutable.onBeforeProcessStarted(executionEnvironment.runProfile, workerProcessHandler)
         return DefaultExecutionResult(console, workerProcessHandler)
     }
 

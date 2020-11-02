@@ -85,7 +85,7 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
 
     @Test(description = "Verifies Function Host run configuration has Build Function App before run task by default.")
     fun testFunctionHost_BeforeRunTasks_Defaults() {
-        val configuration  = createRunConfiguration(
+        val configuration = createRunConfiguration(
                 name = "Run Function App: ${project.name}",
                 configurationType = AzureFunctionsHostConfigurationType::class.java
         ) as AzureFunctionsHostConfiguration
@@ -103,7 +103,7 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
 
         val configuration = createRunConfiguration(
                 name = "Run Function App: ${project.name}",
-                type = AzureFunctionsHostConfigurationType::class.java
+                configurationType = AzureFunctionsHostConfigurationType::class.java
         ) as AzureFunctionsHostConfiguration
 
         val projectToRun = project.solution.runnableProjectsModel.projects.valueOrNull?.find { it.name == "FunctionApp" }

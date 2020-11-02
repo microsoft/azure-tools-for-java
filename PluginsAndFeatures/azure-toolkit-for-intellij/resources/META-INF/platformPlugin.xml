@@ -6,7 +6,13 @@
     <html>
       <h4>Features:</h4>
       <ul>
+        <li>Compatibility with Rider 2020.3 EAP6</li>
         <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a></li>)</li>
+      </ul>
+      <h4>Bug fix:</h4>
+      <ul>
+        <li>Fix missing icons for Function App gutter mark (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/380">#380</a>)</li>
+        <li>Fix an error while running a Function App debug (<a href="https://youtrack.jetbrains.com/issue/RIDER-53160">RIDER-53160</a>)</li>
       </ul>
     </html>
     ]]>
