@@ -23,6 +23,7 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -61,6 +62,16 @@ public class WebAppSettingModel {
     private JavaVersion jdkVersion = JavaVersion.JAVA_8_NEWEST;
     private String stack = "TOMCAT";
     private String version = "8.5-jre8";
+
+    // web server log
+    private boolean enableWebServerLogging = false;
+    private Integer webServerLogQuota = 35;
+    private Integer webServerRetentionPeriod = null;
+    private boolean enableDetailedErrorMessage = false;
+    private boolean enableFailedRequestTracing = false;
+    // application log
+    private boolean enableApplicationLog = false;
+    private LogLevel applicationLogLevel = LogLevel.ERROR;
 
     private OperatingSystem os = OperatingSystem.LINUX;
 
@@ -266,6 +277,62 @@ public class WebAppSettingModel {
 
     public void setOS(final OperatingSystem value) {
         this.os = value;
+    }
+
+    public boolean isEnableWebServerLogging() {
+        return enableWebServerLogging;
+    }
+
+    public void setEnableWebServerLogging(boolean enableWebServerLogging) {
+        this.enableWebServerLogging = enableWebServerLogging;
+    }
+
+    public Integer getWebServerLogQuota() {
+        return webServerLogQuota;
+    }
+
+    public void setWebServerLogQuota(Integer webServerLogQuota) {
+        this.webServerLogQuota = webServerLogQuota;
+    }
+
+    public Integer getWebServerRetentionPeriod() {
+        return webServerRetentionPeriod;
+    }
+
+    public void setWebServerRetentionPeriod(Integer webServerRetentionPeriod) {
+        this.webServerRetentionPeriod = webServerRetentionPeriod;
+    }
+
+    public boolean isEnableDetailedErrorMessage() {
+        return enableDetailedErrorMessage;
+    }
+
+    public void setEnableDetailedErrorMessage(boolean enableDetailedErrorMessage) {
+        this.enableDetailedErrorMessage = enableDetailedErrorMessage;
+    }
+
+    public boolean isEnableFailedRequestTracing() {
+        return enableFailedRequestTracing;
+    }
+
+    public void setEnableFailedRequestTracing(boolean enableFailedRequestTracing) {
+        this.enableFailedRequestTracing = enableFailedRequestTracing;
+    }
+
+    public boolean isEnableApplicationLog() {
+        return enableApplicationLog;
+    }
+
+    public void setEnableApplicationLog(boolean enableApplicationLog) {
+        this.enableApplicationLog = enableApplicationLog;
+    }
+
+    public LogLevel getApplicationLogLevel() {
+        return applicationLogLevel;
+    }
+
+    public void setApplicationLogLevel(LogLevel applicationLogLevel) {
+        this.applicationLogLevel = applicationLogLevel;
     }
 
     public Map<String, String> getTelemetryProperties(Map<String, String> properties) {

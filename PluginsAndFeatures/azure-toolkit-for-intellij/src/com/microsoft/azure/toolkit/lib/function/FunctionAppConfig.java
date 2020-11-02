@@ -31,6 +31,5 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class FunctionAppConfig extends AppServiceConfig {
-    @Builder.Default
-    private MonitorConfig monitorConfig = MonitorConfig.builder().build();
+
 }

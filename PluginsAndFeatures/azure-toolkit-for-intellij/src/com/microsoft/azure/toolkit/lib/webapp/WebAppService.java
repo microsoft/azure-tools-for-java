@@ -26,6 +26,7 @@ import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
+import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
@@ -84,6 +85,16 @@ public class WebAppService {
             settings.setAppServicePlanId(config.getServicePlan().id());
         }
         settings.setPricing(config.getServicePlan().pricingTier().toString());
+        final MonitorConfig monitorConfig = config.getMonitorConfig();
+        if (monitorConfig != null) {
+            settings.setEnableApplicationLog(monitorConfig.isEnableApplicationLog());
+            settings.setApplicationLogLevel(monitorConfig.getApplicationLogLevel());
+            settings.setEnableWebServerLogging(monitorConfig.isEnableWebServerLogging());
+            settings.setWebServerLogQuota(monitorConfig.getWebServerLogQuota());
+            settings.setWebServerRetentionPeriod(monitorConfig.getWebServerRetentionPeriod());
+            settings.setEnableDetailedErrorMessage(monitorConfig.isEnableDetailedErrorMessage());
+            settings.setEnableFailedRequestTracing(monitorConfig.isEnableFailedRequestTracing());
+        }
         return settings;
     }
 }

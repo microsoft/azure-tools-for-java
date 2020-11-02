@@ -37,7 +37,7 @@ public class MonitorConfig {
     @Builder.Default
     Integer webServerLogQuota = 35;
     @Builder.Default
-    Integer webServerRetentionPeriod = null;
+    Integer webServerRetentionPeriod = 0;
     @Builder.Default
     boolean enableDetailedErrorMessage = false;
     @Builder.Default
