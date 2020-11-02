@@ -23,27 +23,19 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.DocumentAdapter;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;
-import com.microsoft.azure.toolkit.intellij.appservice.insights.ApplicationInsightsComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import org.apache.commons.collections.ListUtils;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import java.util.Arrays;
 import java.util.List;
 
 public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPanel<WebAppConfig> {

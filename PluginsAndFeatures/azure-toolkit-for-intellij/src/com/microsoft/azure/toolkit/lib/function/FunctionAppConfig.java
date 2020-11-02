@@ -23,8 +23,6 @@
 package com.microsoft.azure.toolkit.lib.function;
 
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 

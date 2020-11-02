@@ -28,11 +28,9 @@ import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.List;
 
 public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
