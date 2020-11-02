@@ -25,7 +25,6 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
-import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
@@ -39,12 +38,11 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
     private static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
     private JPanel panel;
-    private AppServiceInfoAdvancedPanel<WebAppConfig> advancedForm;
+    private WebAppConfigFormPanelAdvance advancedForm;
     private AppServiceInfoBasicPanel<WebAppConfig> basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project);
-
         this.init();
         this.toggleAdvancedMode(false);
     }
@@ -82,13 +80,8 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        advancedForm = new AppServiceInfoAdvancedPanel(project, () -> WebAppConfig.builder().build());
-        try {
-            final List<PricingTier> validPricingTiers = AzureMvpModel.getInstance().listPricingTier();
-            advancedForm.setValidPricingTier(validPricingTiers, DEFAULT_PRICING_TIER);
-        } catch (IllegalAccessException e) {
-            // swallow list pricing exception
-        }
+        advancedForm = new WebAppConfigFormPanelAdvance(project);
+
         basicForm = new AppServiceInfoBasicPanel(project, () -> WebAppConfig.builder().build());
         basicForm.setDeploymentVisible(false);
     }

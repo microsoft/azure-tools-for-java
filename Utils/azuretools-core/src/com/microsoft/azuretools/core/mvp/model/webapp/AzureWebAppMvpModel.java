@@ -161,7 +161,7 @@ public class AzureWebAppMvpModel {
         } else {
             withCreate = withExistingWindowsServicePlan(azure, model);
         }
-
+        withCreate = applyDiagnosticConfig(withCreate, model);
         return withCreate
                 .withJavaVersion(model.getJdkVersion())
                 .withWebContainer(WebContainer.fromString(model.getWebContainer()))
@@ -174,14 +174,33 @@ public class AzureWebAppMvpModel {
     public WebApp createWebAppOnLinux(@NotNull WebAppSettingModel model) throws Exception {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
-        WebApp.DefinitionStages.WithDockerContainerImage withCreate;
+        WebApp.DefinitionStages.WithDockerContainerImage withDockerContainerImage;
         if (model.isCreatingAppServicePlan()) {
-            withCreate = withCreateNewLinuxServicePlan(azure, model);
+            withDockerContainerImage = withCreateNewLinuxServicePlan(azure, model);
         } else {
-            withCreate = withExistingLinuxServicePlan(azure, model);
+            withDockerContainerImage = withExistingLinuxServicePlan(azure, model);
         }
+        WebApp.DefinitionStages.WithCreate withCreate = withDockerContainerImage.withBuiltInImage(model.getLinuxRuntime());
+        return applyDiagnosticConfig(withCreate, model).create();
+    }
 
-        return withCreate.withBuiltInImage(model.getLinuxRuntime()).create();
+    private WebApp.DefinitionStages.WithCreate applyDiagnosticConfig(WebApp.DefinitionStages.WithCreate withCreate, WebAppSettingModel settingModel) {
+        final WebAppDiagnosticLogs.DefinitionStages.Blank diagnosticLogs = withCreate.defineDiagnosticLogsConfiguration();
+        WebAppDiagnosticLogs.DefinitionStages.WithAttach withAttach = null;
+        if (settingModel.isEnableApplicationLog()) {
+            withAttach = diagnosticLogs.withApplicationLogging()
+                    .withLogLevel(settingModel.getApplicationLogLevel())
+                    .withApplicationLogsStoredOnFileSystem();
+        }
+        if (settingModel.isEnableWebServerLogging()) {
+            withAttach = diagnosticLogs.withWebServerLogging()
+                    .withWebServerLogsStoredOnFileSystem()
+                    .withWebServerFileSystemQuotaInMB(settingModel.getWebServerLogQuota())
+                    .withLogRetentionDays(settingModel.getWebServerRetentionPeriod())
+                    .withDetailedErrorMessages(settingModel.isEnableDetailedErrorMessage())
+                    .withFailedRequestTracing(settingModel.isEnableFailedRequestTracing());
+        }
+        return withAttach == null ? withCreate : (WebApp.DefinitionStages.WithCreate) withAttach.attach();
     }
 
     private AppServicePlan.DefinitionStages.WithCreate prepareWithCreate(

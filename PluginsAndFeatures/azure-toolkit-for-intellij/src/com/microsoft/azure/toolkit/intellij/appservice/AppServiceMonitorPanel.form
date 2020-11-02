@@ -55,7 +55,10 @@
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
           <text value="Application Insights :"/>
+          <toolTipText value="Application Insights is a code-less attach to provide detailed observability in to your application."/>
           <visible value="true"/>
         </properties>
       </component>
@@ -80,7 +83,10 @@
           <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
           <text value="Web Server Logging:"/>
+          <toolTipText value="Gather diagnostic information for your web server"/>
         </properties>
       </component>
       <component id="90bcc" class="javax.swing.JRadioButton" binding="rdoDisableWebServerLog">
@@ -175,7 +181,10 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <horizontalTextPosition value="2"/>
+              <icon value="general/contextHelp.png"/>
               <text value="Quota(MB):"/>
+              <toolTipText value="This is the limit that restricts file system usage by app diagnostics logs.The default value is 35 MB. Value can range from 25 MB and 100 MB."/>
             </properties>
           </component>
           <grid id="f00ba" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -215,17 +224,23 @@
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <horizontalTextPosition value="10"/>
+              <icon value="general/contextHelp.png"/>
               <text value="Retention Period (Days) :"/>
+              <toolTipText value="By default, site diagnostic logs are never deleted. Using this option will delete the logs older than the specified number of days. The retention period must be a value from 0 through 99999 (0 means never deleted)."/>
             </properties>
           </component>
         </children>
       </grid>
-      <component id="e750f" class="javax.swing.JLabel">
+      <component id="e750f" class="javax.swing.JLabel" binding="lblApplicationLog">
         <constraints>
           <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
           <text value="Application Logging:"/>
+          <toolTipText value="Enable application logging to collect diagnostic traces from your web app code."/>
         </properties>
       </component>
       <component id="853ca" class="javax.swing.JRadioButton" binding="rdoDisableApplicationLog">
