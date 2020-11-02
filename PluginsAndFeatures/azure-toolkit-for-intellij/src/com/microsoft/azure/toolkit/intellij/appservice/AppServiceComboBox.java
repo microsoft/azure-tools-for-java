@@ -52,31 +52,34 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
     }
 
     // todo: optimize refreshing logic
-    public synchronized void refreshItemsWithDefaultValue(@NotNull AppServiceComboBoxModel defaultValue) {
+    public synchronized void refreshItemsWithDefaultValue(@NotNull T defaultValue) {
         unsubscribeSubscription(subscription);
         this.setLoading(true);
         this.removeAllItems();
-        this.addItem((T) defaultValue);
+        this.addItem(defaultValue);
         subscription = this.loadItemsAsync()
                            .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                               this.setItems(items);
-                               this.setLoading(false);
+                               items.forEach(this::addItem);
                                this.resetDefaultValue(defaultValue);
+                               this.setLoading(false);
                            }), (e) -> {
                                    this.handleLoadingError(e);
                                });
     }
 
-    private void resetDefaultValue(@NotNull AppServiceComboBoxModel defaultValue) {
+    private void resetDefaultValue(@NotNull T defaultValue) {
         final AppServiceComboBoxModel model = getItems()
                 .stream()
                 .filter(item -> AppServiceComboBoxModel.isSameApp(defaultValue, item))
                 .findFirst().orElse(null);
         if (model != null) {
             this.setSelectedItem(model);
+            this.removeItem(defaultValue);
         } else if (defaultValue.isNewCreateResource()) {
-            this.addItem((T) defaultValue);
-            this.setSelectedItem(defaultValue);
+            return;
+        } else {
+            this.setSelectedItem(null);
+            this.removeItem(defaultValue);
         }
     }
 

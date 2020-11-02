@@ -147,8 +147,8 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         } else {
             final FunctionAppComboBoxModel functionAppComboBoxModel =
                     new FunctionAppComboBoxModel(configuration.getModel());
-            functionAppComboBox.refreshItemsWithDefaultValue(functionAppComboBoxModel);
             appSettingsFunctionApp = functionAppComboBoxModel;
+            functionAppComboBox.refreshItemsWithDefaultValue(functionAppComboBoxModel);
         }
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
@@ -178,11 +178,12 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
 
         functionAppComboBox = new FunctionAppComboBox(project);
-        functionAppComboBox.addItemListener(event -> {
+        functionAppComboBox.addActionListener(event -> {
             final FunctionAppComboBoxModel model = getSelectedFunctionApp();
             if (model == null) {
                 return;
             }
+            // Do not refresh if selected function app is not changed except create run configuration from azure explorer
             if (appSettingsFunctionApp != null &&
                     AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) && !appSettingsTable.isDefaultAppSettings()) {
                 return;
