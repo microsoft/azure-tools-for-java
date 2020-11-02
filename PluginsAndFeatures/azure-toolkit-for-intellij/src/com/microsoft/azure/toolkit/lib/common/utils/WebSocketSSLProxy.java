@@ -99,24 +99,7 @@ public class WebSocketSSLProxy {
     }
 
     public void close() {
-        if (this.webSocket != null) {
-            this.webSocket.disconnect();
-            this.webSocket = null;
-        }
-        if (this.serverSocket != null) {
-            try {
-                serverSocket.close();
-            } catch (IOException e) {
-                // ignore
-            }
-            serverSocket = null;
-        }
-
-        if (thread != null) {
-            this.thread.interrupt();
-            this.thread = null;
-        }
-
+        closeInner();
     }
 
     public int getLocalPort() {
@@ -142,9 +125,31 @@ public class WebSocketSSLProxy {
         this.connectTimeout = connectTimeout;
     }
 
-    private void handleConnectBroken(Exception e) {
-        logger.warning(String.format("Encounter error while proxying websocket: %s", e.getMessage()));
-        close();
+    private void closeInner() {
+        if (this.webSocket != null) {
+            this.webSocket.disconnect();
+            this.webSocket = null;
+        }
+        if (this.serverSocket != null) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                // ignore
+            }
+            serverSocket = null;
+        }
+
+        if (thread != null) {
+            this.thread.interrupt();
+            this.thread = null;
+        }
+
     }
 
+    private void handleConnectBroken(Exception e) {
+        if (Objects.nonNull(serverSocket)) {
+            logger.warning(String.format("Encounter error while proxying websocket: %s", e.getMessage()));
+        }
+        closeInner();
+    }
 }

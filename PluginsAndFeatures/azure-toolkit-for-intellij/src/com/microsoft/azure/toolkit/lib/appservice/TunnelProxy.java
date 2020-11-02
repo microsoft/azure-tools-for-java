@@ -23,12 +23,12 @@
 package com.microsoft.azure.toolkit.lib.appservice;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.jcraft.jsch.*;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.common.utils.WebSocketSSLProxy;
 import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,8 +45,7 @@ public class TunnelProxy {
     private WebAppBase webAppBase;
     private WebSocketSSLProxy wssProxy;
 
-    public TunnelProxy(WebAppBase webAppBase) {
-        Preconditions.checkArgument(Objects.nonNull(webAppBase), "Null `webAppBase` parameter is not allowed for class: TunnelProxy");
+    public TunnelProxy(@NotNull WebAppBase webAppBase) {
         this.webAppBase = webAppBase;
         reset();
     }
@@ -61,13 +60,16 @@ public class TunnelProxy {
     }
 
     public void close() {
-        if (wssProxy != null) {
+        if (Objects.nonNull(wssProxy)) {
             wssProxy.close();
             wssProxy = null;
         }
     }
 
     public String executeCommandViaSSH(String cmd) throws IOException {
+        if (Objects.isNull(wssProxy)) {
+            reset();
+        }
         wssProxy.start();
         return executeSSHCommand(cmd, wssProxy.getLocalPort());
     }
@@ -83,8 +85,6 @@ public class TunnelProxy {
             session.connect();
             Channel channel = session.openChannel("exec");
             ((ChannelExec) channel).setCommand(command);
-            channel.setInputStream(null);
-            ((ChannelExec) channel).setErrStream(System.err);
             try (InputStream in = channel.getInputStream()) {
                 channel.connect();
                 String output = IOUtils.toString(in, Charset.defaultCharset());
