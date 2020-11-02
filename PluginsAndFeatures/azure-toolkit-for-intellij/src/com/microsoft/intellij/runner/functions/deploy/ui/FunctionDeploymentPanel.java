@@ -23,33 +23,27 @@
 package com.microsoft.intellij.runner.functions.deploy.ui;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Comparing;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.intellij.ui.PopupMenuListenerAdapter;
-import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBox;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
 import com.microsoft.intellij.runner.AzureSettingPanel;
-import com.microsoft.intellij.runner.functions.component.FunctionAppCombineBoxEditor;
-import com.microsoft.intellij.runner.functions.component.FunctionAppCombineBoxRender;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTable;
 import com.microsoft.intellij.runner.functions.component.table.AppSettingsTableUtils;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployConfiguration;
-import com.microsoft.intellij.runner.functions.deploy.ui.creation.FunctionCreationDialog;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.project.MavenProject;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.intellij.common.CommonConst.EMPTY_TEXT;
@@ -62,36 +56,21 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     private static final String REFRESHING_FUNCTION_APP = "Refreshing...";
     private static final String CREATE_NEW_FUNCTION = "No available function, click to create a new one";
 
-    private ResourceEx<FunctionApp> selectedFunctionApp = null;
     private FunctionDeployViewPresenter presenter = null;
 
     private JPanel pnlRoot;
-    private JComboBox cbxFunctionApp;
     private HyperlinkLabel lblCreateFunctionApp;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
+    private FunctionAppComboBox functionAppComboBox;
     private AppSettingsTable appSettingsTable;
+    private FunctionAppComboBoxModel appSettingsFunctionApp;
 
-    // presenter
-    private FunctionDeployConfiguration previousDeployConfiguration;
-    private FunctionDeployConfiguration functionDeployConfiguration;
 
     public FunctionDeploymentPanel(@NotNull Project project, @NotNull FunctionDeployConfiguration functionDeployConfiguration) {
         super(project);
-        this.functionDeployConfiguration = functionDeployConfiguration;
         this.presenter = new FunctionDeployViewPresenter();
         this.presenter.onAttachView(this);
-
-        // Set the editor of combobox, otherwise it will use box render when popup is invisible, which may render the
-        // combobox to twoline
-        cbxFunctionApp.setEditor(new FunctionAppCombineBoxEditor());
-        cbxFunctionApp.setRenderer(new FunctionAppCombineBoxRender(cbxFunctionApp));
-        cbxFunctionApp.addPopupMenuListener(new PopupMenuListenerAdapter() {
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                onFunctionSelected();
-            }
-        });
 
         cbFunctionModule.setRenderer(new ListCellRendererWrapper<Module>() {
             @Override
@@ -114,37 +93,6 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     public void disposeEditor() {
-    }
-
-    @Override
-    public void beforeFillFunctionApps() {
-        cbxFunctionApp.removeAllItems();
-        cbxFunctionApp.setEnabled(false);
-        cbxFunctionApp.addItem(REFRESHING_FUNCTION_APP);
-    }
-
-    @Override
-    public synchronized void fillFunctionApps(List<ResourceEx<FunctionApp>> functionList, boolean fillAppSettings) {
-        cbxFunctionApp.removeAllItems();
-        if (functionList.size() == 0) {
-            lblCreateFunctionApp.setVisible(true);
-            cbxFunctionApp.setVisible(false);
-        } else {
-            lblCreateFunctionApp.setVisible(false);
-            cbxFunctionApp.setVisible(true);
-            cbxFunctionApp.addItem(CREATE_NEW_FUNCTION_APP);
-            functionList.forEach(functionAppResourceEx -> cbxFunctionApp.addItem(functionAppResourceEx));
-            // Find function which id equals to configuration, or use the first available one.
-            final ResourceEx<FunctionApp> selectedFunction = functionList.stream()
-                    .filter(webAppResourceEx -> webAppResourceEx.getResource().id().equals(functionDeployConfiguration.getFunctionId()))
-                    .findFirst().orElse(functionList.get(0));
-            cbxFunctionApp.setSelectedItem(selectedFunction);
-            selectedFunctionApp = selectedFunction;
-            if (fillAppSettings || appSettingsTable.isDefaultAppSettings()) {
-                presenter.loadAppSettings(selectedFunctionApp.getResource());
-            }
-        }
-        cbxFunctionApp.setEnabled(true);
     }
 
     @Override
@@ -191,10 +139,16 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     protected void resetFromConfig(@NotNull FunctionDeployConfiguration configuration) {
-        previousDeployConfiguration = configuration;
-        functionDeployConfiguration.setFunctionId(configuration.getFunctionId());
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
+        }
+        if (StringUtils.isAllEmpty(configuration.getFunctionId(), configuration.getAppName())) {
+            functionAppComboBox.refreshItems();
+        } else {
+            final FunctionAppComboBoxModel functionAppComboBoxModel =
+                    new FunctionAppComboBoxModel(configuration.getModel());
+            functionAppComboBox.refreshItemsWithDefaultValue(functionAppComboBoxModel);
+            appSettingsFunctionApp = functionAppComboBoxModel;
         }
         final Module previousModule = configuration.getModule();
         if (previousModule != null) {
@@ -206,63 +160,42 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 }
             }
         }
-
-        presenter.loadFunctionApps(false, false);
     }
 
     @Override
     protected void apply(@NotNull FunctionDeployConfiguration configuration) {
         configuration.saveTargetModule((Module) cbFunctionModule.getSelectedItem());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
-        if (selectedFunctionApp == null || selectedFunctionApp.getResource() == null) {
-            // Use previous configuration when function is not loaded
-            configuration.setSubscription(previousDeployConfiguration.getSubscriptionId());
-            configuration.setFunctionId(previousDeployConfiguration.getFunctionId());
-            configuration.setAppName(previousDeployConfiguration.getName());
-            configuration.setResourceGroup(previousDeployConfiguration.getResourceGroup());
-        } else {
-            configuration.setSubscription(selectedFunctionApp.getSubscriptionId());
-            configuration.setTargetFunction(selectedFunctionApp.getResource());
-        }
-    }
-
-    private void onFunctionSelected() {
-        final Object value = cbxFunctionApp.getSelectedItem();
-        if (value != null && value instanceof ResourceEx) {
-            selectedFunctionApp = (ResourceEx<FunctionApp>) cbxFunctionApp.getSelectedItem();
-            presenter.loadAppSettings(selectedFunctionApp.getResource());
-        } else if (Comparing.equal(CREATE_NEW_FUNCTION_APP, value)) {
-            // Create new function app
-            cbxFunctionApp.setSelectedItem(null);
-            ApplicationManager.getApplication().invokeLater(() -> createNewFunctionApp());
-        }
-    }
-
-    private void createNewFunctionApp() {
-        cbxFunctionApp.setPopupVisible(false);
-        final FunctionCreationDialog dialog = new FunctionCreationDialog(this.project);
-        if (dialog.showAndGet()) {
-            final FunctionApp functionApp = dialog.getCreatedWebApp();
-            if (functionApp != null) {
-                functionDeployConfiguration.setFunctionId(functionApp.id());
-                // We need to reload the app settings as new created function will generate some required properties as well
-                presenter.loadFunctionApps(true, true);
-            } else {
-                // In case created failed
-                presenter.loadFunctionApps(false, false);
-            }
-        } else {
-            presenter.loadFunctionApps(false, false);
+        final FunctionAppComboBoxModel functionModel = functionAppComboBox.getValue();
+        if (functionModel != null) {
+            configuration.saveModel(functionModel);
         }
     }
 
     private void createUIComponents() {
-        lblCreateFunctionApp = new HyperlinkLabel(CREATE_NEW_FUNCTION);
-        lblCreateFunctionApp.addHyperlinkListener(e -> createNewFunctionApp());
-
         final String localSettingPath = Paths.get(project.getBasePath(), "local.settings.json").toString();
         appSettingsTable = new AppSettingsTable(localSettingPath);
         pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
+
+        functionAppComboBox = new FunctionAppComboBox(project);
+        functionAppComboBox.addItemListener(event -> {
+            final FunctionAppComboBoxModel model = getSelectedFunctionApp();
+            if (model == null) {
+                return;
+            }
+            if (appSettingsFunctionApp != null &&
+                    AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) && !appSettingsTable.isDefaultAppSettings()) {
+                return;
+            }
+            appSettingsFunctionApp = model;
+            if (model != null && model.getResource() != null && !model.isNewCreateResource()) {
+                presenter.loadAppSettings(model.getResource());
+            }
+        });
+    }
+
+    private FunctionAppComboBoxModel getSelectedFunctionApp() {
+        return functionAppComboBox.getValue();
     }
 
     private void fillModules() {

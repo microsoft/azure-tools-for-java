@@ -29,6 +29,7 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -43,6 +44,13 @@ public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxM
     @Override
     protected void createResource() {
         FunctionAppCreationDialog functionAppCreationDialog = new FunctionAppCreationDialog(project);
+        functionAppCreationDialog.setOkActionListener(functionAppConfig -> {
+            FunctionAppComboBoxModel newModel = new FunctionAppComboBoxModel(functionAppConfig);
+            newModel.setNewCreateResource(true);
+            FunctionAppComboBox.this.addItem(newModel);
+            FunctionAppComboBox.this.setSelectedItem(newModel);
+            DefaultLoader.getIdeHelper().invokeLater(functionAppCreationDialog::close);
+        });
         functionAppCreationDialog.showAndGet();
     }
 

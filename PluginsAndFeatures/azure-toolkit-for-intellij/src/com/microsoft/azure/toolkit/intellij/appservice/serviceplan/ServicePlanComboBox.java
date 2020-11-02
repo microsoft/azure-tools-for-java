@@ -26,6 +26,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
@@ -48,6 +49,9 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     private List<DraftServicePlan> localItems = new ArrayList<>();
     private OperatingSystem os;
     private Region region;
+
+    private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.getAll());
+    private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
 
     @Override
     protected String getItemText(final Object item) {
@@ -93,6 +97,11 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         this.refreshItems();
     }
 
+    public void setValidPricingTierList(final List<PricingTier> pricingTierList, final PricingTier defaultPricingTier) {
+        this.pricingTierList = pricingTierList;
+        this.defaultPricingTier = defaultPricingTier;
+    }
+
     @NotNull
     @Override
     protected List<? extends AppServicePlan> loadItems() throws Exception {
@@ -127,7 +136,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     }
 
     private void showServicePlanCreationPopup() {
-        final ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(this.subscription, this.os, this.region);
+        final ServicePlanCreationDialog dialog = new ServicePlanCreationDialog(this.subscription, this.os, this.region, pricingTierList, defaultPricingTier);
         dialog.setOkActionListener((plan) -> {
             this.localItems.add(0, plan);
             dialog.close();

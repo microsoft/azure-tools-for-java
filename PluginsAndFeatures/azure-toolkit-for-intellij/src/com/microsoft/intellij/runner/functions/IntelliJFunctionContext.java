@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.functions;
 
-import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.project.IProject;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -56,11 +55,7 @@ public class IntelliJFunctionContext implements IFunctionContext {
 
     private String deployment;
 
-    private IntelliJFunctionRuntimeConfiguration runtime;
-
     private Map<String, String> appSettings = new HashMap<>();
-
-    private Project project;
 
     private String moduleName;
 
@@ -68,8 +63,21 @@ public class IntelliJFunctionContext implements IFunctionContext {
 
     private String instrumentationKey;
 
-    public IntelliJFunctionContext(Project project) {
-        this.project = project;
+    private String os;
+
+    private String javaVersion;
+
+    @Override
+    public IntelliJFunctionRuntimeConfiguration getRuntime() {
+        IntelliJFunctionRuntimeConfiguration result = new IntelliJFunctionRuntimeConfiguration();
+        result.setJavaVersion(javaVersion);
+        result.setOs(os);
+        return result;
+    }
+
+    public void saveRuntime(IntelliJFunctionRuntimeConfiguration runtime) {
+        setOs(runtime.getOs());
+        setJavaVersion(runtime.getJavaVersion());
     }
 
     @Override
