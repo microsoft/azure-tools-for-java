@@ -108,7 +108,6 @@ public interface Platform {
     enum Windows implements Platform {
         JAVA8("java 8", "1.8"),
         JAVA11("java 11", "11"),
-        JAVA8_JBOSS72("jboss 7.2", "1.8"),
         JAVA8_TOMCAT9("tomcat 9.0", "1.8"),
         JAVA8_TOMCAT85("tomcat 8.5", "1.8"),
         JAVA11_TOMCAT9("tomcat 9.0", "11"),

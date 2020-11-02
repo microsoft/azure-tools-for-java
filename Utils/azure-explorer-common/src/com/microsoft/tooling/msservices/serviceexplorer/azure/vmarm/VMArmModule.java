@@ -36,7 +36,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class VMArmModule extends AzureRefreshableNode {
     private static final String VM_SERVICE_MODULE_ID = com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule.class.getName();
@@ -58,7 +60,11 @@ public class VMArmModule extends AzureRefreshableNode {
             }
 
             SubscriptionManager subscriptionManager = azureManager.getSubscriptionManager();
-            Set<String> sidList = subscriptionManager.getAccountSidList();
+            Set<String> sidList = subscriptionManager.getSelectedSubscriptionDetails()
+                    .stream()
+                    .filter(subscriptionDetail -> Objects.nonNull(subscriptionDetail) && subscriptionDetail.isSelected())
+                    .map(subscriptionDetail -> subscriptionDetail.getSubscriptionId())
+                    .collect(Collectors.toSet());
             for (String sid : sidList) {
                 try {
                     Azure azure = azureManager.getAzure(sid);

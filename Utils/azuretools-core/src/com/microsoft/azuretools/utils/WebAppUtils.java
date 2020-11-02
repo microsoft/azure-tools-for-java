@@ -42,6 +42,9 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
@@ -385,7 +388,7 @@ public class WebAppUtils {
     public static boolean deployWebAppToWebContainer(WebAppBase deployTarget
             , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
         int retryCount = 0;
-        String webappPath = isDeployToRoot ? null : FilenameUtils.getBaseName(artifact.getName());
+        String webappPath = isDeployToRoot ? null : WebAppUtils.encodeFileName(FilenameUtils.getBaseName(artifact.getName()));
         while (retryCount++ < DEPLOY_MAX_TRY) {
             try {
                 if (deployTarget instanceof WebApp) {
@@ -674,5 +677,13 @@ public class WebAppUtils {
             fileType = fileName.substring(index + 1);
         }
         return fileType;
+    }
+
+    private static String encodeFileName(String fileName) throws WebAppException {
+        try {
+            return URLEncoder.encode(fileName, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new WebAppException(e.getMessage());
+        }
     }
 }

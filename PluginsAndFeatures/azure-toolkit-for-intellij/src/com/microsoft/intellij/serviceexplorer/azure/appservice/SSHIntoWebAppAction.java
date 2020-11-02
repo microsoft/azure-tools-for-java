@@ -23,6 +23,7 @@
 package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
@@ -54,17 +55,17 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     private final String subscriptionId;
     private final String resourceGroupName;
     private final String os;
-    private final String fxVersion;
+    private final WebApp app;
 
     public SSHIntoWebAppAction(WebAppNode webAppNode) {
         super();
+        this.app = webAppNode.getWebapp();
         this.project = (Project) webAppNode.getProject();
         this.resourceId = webAppNode.getId();
         this.webAppName = webAppNode.getWebAppName();
         this.subscriptionId = webAppNode.getSubscriptionId();
         this.resourceGroupName = PatternUtils.parseWordByPatternAndPrefix(resourceId, RESOUCE_ELEMENT_PATTERN, RESOUCE_GROUP_PATH_PREFIX);
         this.os = webAppNode.getOs();
-        this.fxVersion = webAppNode.getFxVersion();
     }
 
     @Override
@@ -73,7 +74,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
         // ssh to connect to remote web app container.
         DefaultLoader.getIdeHelper().runInBackground(project, String.format("Connecting to Web App (%s) ...", webAppName), true, false, null, () -> {
             // check these conditions to ssh into web app
-            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, fxVersion)) {
+            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, this.app.linuxFxVersion())) {
                 return;
             }
             // build proxy between remote and local

@@ -61,7 +61,7 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
     private boolean isArtifact;
     private boolean telemetrySent;
     private Artifact lastSelectedArtifact;
-    private AzureArtifact lastSelectedAzureArtifact;
+    protected AzureArtifact lastSelectedAzureArtifact;
     protected SecureStore secureStore;
 
     public AzureSettingPanel(@NotNull Project project) {
@@ -274,15 +274,6 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
                 }
             }
         });
-
-        getCbAzureArtifact().addActionListener(e -> {
-            AzureArtifact artifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
-            syncBeforeRunTasks(artifact, configuration);
-        });
-
-        if (getCbAzureArtifact().getSelectedItem() != null) {
-            syncBeforeRunTasks((AzureArtifact) getCbAzureArtifact().getSelectedItem(), configuration);
-        }
 
         isCbArtifactInited = true;
     }

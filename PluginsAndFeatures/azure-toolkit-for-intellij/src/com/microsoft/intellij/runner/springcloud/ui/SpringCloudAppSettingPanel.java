@@ -481,7 +481,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
         } else {
             configuration.setArtifactIdentifier("");
         }
-
+        syncBeforeRunTasks(artifact, configuration);
     }
 
     private static <T, Q> T getValueFromComboBox(JComboBox comboBox, Function<Q, T> selectFunc, @NotNull Class<Q> clz) {
