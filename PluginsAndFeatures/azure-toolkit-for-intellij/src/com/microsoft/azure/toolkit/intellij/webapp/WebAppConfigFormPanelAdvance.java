@@ -24,6 +24,7 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.DocumentAdapter;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoAdvancedPanel;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel;
@@ -103,5 +104,10 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
         // Application Insights is not supported in Web App
         appServiceMonitorPanel.setApplicationInsightsVisible(false);
         appServiceMonitorPanel.setData(MonitorConfig.builder().build());
+
+        appServiceConfigPanelAdvanced.getSelectorPlatform().addActionListener(event -> {
+            final Platform platform = appServiceConfigPanelAdvanced.getSelectorPlatform().getValue();
+            appServiceMonitorPanel.setApplicationLogVisible(platform.getOs() == OperatingSystem.WINDOWS);
+        });
     }
 }

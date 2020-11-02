@@ -82,25 +82,27 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     }
 
     public void setAppServiceLogVisible(boolean visible) {
-        titleAppServiceLog.setVisible(visible);
         setApplicationInsightsVisible(visible);
         setWebServerLogVisible(visible);
+        titleAppServiceLog.setVisible(visible);
     }
 
     public void setApplicationLogVisible(boolean visible) {
+        lblApplicationLog.setVisible(visible);
         rdoEnableApplicationLog.setVisible(visible);
         rdoDisableApplicationLog.setVisible(visible);
         pnlApplicationLog.setVisible(visible);
-        lblApplicationLog.setVisible(visible);
         rdoEnableApplicationLog.setSelected(visible);
+        titleAppServiceLog.setVisible(lblApplicationLog.isVisible() || lblWebServerLog.isVisible());
     }
 
     public void setWebServerLogVisible(boolean visible) {
+        lblWebServerLog.setVisible(visible);
         rdoEnableWebServerLog.setVisible(visible);
         rdoDisableWebServerLog.setVisible(visible);
         pnlWebServerLog.setVisible(visible);
-        lblWebServerLog.setVisible(visible);
         rdoEnableWebServerLog.setSelected(visible);
+        titleAppServiceLog.setVisible(lblApplicationLog.isVisible() || lblWebServerLog.isVisible());
     }
 
     @Override
