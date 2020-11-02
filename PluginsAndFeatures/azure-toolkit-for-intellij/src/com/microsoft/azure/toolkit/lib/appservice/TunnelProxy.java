@@ -85,7 +85,7 @@ public class TunnelProxy {
             ((ChannelExec) channel).setCommand(command);
             channel.setInputStream(null);
             ((ChannelExec) channel).setErrStream(System.err);
-            try(InputStream in = channel.getInputStream()) {
+            try (InputStream in = channel.getInputStream()) {
                 channel.connect();
                 String output = IOUtils.toString(in, Charset.defaultCharset());
                 channel.disconnect();
