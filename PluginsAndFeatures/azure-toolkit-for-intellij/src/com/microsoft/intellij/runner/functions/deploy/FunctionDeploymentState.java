@@ -51,6 +51,9 @@ import java.util.Map;
 
 public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
+    private static final String TARGET_FUNCTION_DOES_NOT_EXIST =
+            "Target function does not exist, please select a valid function in function deployment run configuration.";
+
     private FunctionDeployConfiguration functionDeployConfiguration;
     private final FunctionDeployModel deployModel;
     private File stagingFolder;
@@ -72,6 +75,9 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         // Update run time information by function app
         final FunctionApp functionApp = AzureFunctionMvpModel.getInstance()
                 .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());
+        if (functionApp == null) {
+            throw new AzureExecutionException(TARGET_FUNCTION_DOES_NOT_EXIST);
+        }
         final AppServicePlan appServicePlan = AppServiceUtils.getAppServicePlanByAppService(functionApp);
         final IntelliJFunctionRuntimeConfiguration runtimeConfiguration = new IntelliJFunctionRuntimeConfiguration();
         runtimeConfiguration.setOs(appServicePlan.operatingSystem() == OperatingSystem.WINDOWS ? "windows" : "linux");

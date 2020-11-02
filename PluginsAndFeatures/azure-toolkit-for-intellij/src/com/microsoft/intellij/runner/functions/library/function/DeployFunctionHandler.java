@@ -43,7 +43,7 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
-import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
+import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
 import com.microsoft.intellij.runner.functions.library.IPrompter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -93,17 +93,16 @@ public class DeployFunctionHandler {
             + "function information (Attempt %d/%d)...";
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
-    private IAppServiceContext ctx;
+    private FunctionDeployModel ctx;
     private IPrompter prompter;
 
-    public DeployFunctionHandler(IAppServiceContext ctx, IPrompter prompter) {
+    public DeployFunctionHandler(FunctionDeployModel ctx, IPrompter prompter) {
         Preconditions.checkNotNull(ctx);
         this.ctx = ctx;
         this.prompter = prompter;
     }
 
     public FunctionApp execute() throws Exception {
-
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
@@ -220,14 +219,12 @@ public class DeployFunctionHandler {
         return AppServiceUtils.getPricingTierFromString(ctx.getPricingTier()) != null;
     }
 
-    private FunctionApp getFunctionApp() {
+    private FunctionApp getFunctionApp() throws AzureExecutionException {
         try {
-            return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(),
-                    ctx.getAppName());
-        } catch (Exception ex) {
-            // Swallow exception for non-existing Azure Functions
+            return ctx.getAzureClient().appServices().functionApps().getById(ctx.getFunctionId());
+        } catch (IOException e) {
+            throw new AzureExecutionException("Failed to get azure client");
         }
-        return null;
     }
 
     // region get App Settings

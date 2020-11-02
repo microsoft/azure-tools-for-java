@@ -182,7 +182,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
      * identity/implementation/IdentityClient.java#L366
      */
     private Pair<String, OffsetDateTime> getAccessTokenViaCli(String tid, @Nullable String resource) throws IOException {
-        if (!PATTERN_TENANT.matcher(tid).matches()) {
+        if (StringUtils.isEmpty(tid) || !PATTERN_TENANT.matcher(tid).matches()) {
             throw new InvalidParameterException(String.format("[%s] is not a valid tenant ID", tid));
         } else if (StringUtils.isNotEmpty(resource) && !PATTERN_RESOURCE.matcher(resource).matches()) {
             throw new InvalidParameterException(String.format("[%s] is not a valid resource endpoint", resource));
