@@ -189,7 +189,7 @@ public class DeployFunctionHandler {
                     return triggers;
                 }
             } catch (RuntimeException exception) {
-                // swallow sdk request run time exception
+                // swallow sdk request runtime exception
             }
         }
         throw new AzureExecutionException(NO_TRIGGERS_FOUNDED);
