@@ -650,7 +650,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                             webAppDetails.subscriptionDetail = sd;
                             webAppDetails.resourceGroup = rg;
                             webAppDetails.appServicePlan = findAppSevicePlanByID(webApp.appServicePlanId(), rgaspMap);
-                            webAppDetails.appServicePlanResourceGroup = findResouceGroupByName(
+                            webAppDetails.appServicePlanResourceGroup = findResourceGroupByName(
                                 webApp.resourceGroupName(), srgMap.get(sd));
                             webAppDetailsList.add(webAppDetails);
                         }
@@ -804,7 +804,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         return null;
     }
 
-    private ResourceGroup findResouceGroupByName(String rgName, List<ResourceGroup> rgs) {
+    private ResourceGroup findResourceGroupByName(String rgName, List<ResourceGroup> rgs) {
         if (rgs == null) {
             return null;
         }
