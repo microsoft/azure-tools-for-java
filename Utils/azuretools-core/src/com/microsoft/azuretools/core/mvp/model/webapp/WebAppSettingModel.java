@@ -82,6 +82,10 @@ public class WebAppSettingModel {
         return this.os;
     }
 
+    public void setOS(OperatingSystem os) {
+        this.os = os;
+    }
+
     public Map<String, String> getTelemetryProperties(Map<String, String> properties) {
         Map<String, String> result = new HashMap<>();
         try {
