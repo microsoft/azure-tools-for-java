@@ -37,8 +37,8 @@ import java.util.List;
 
 public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<MonitorConfig> {
     private JPanel pnlRoot;
-    private JRadioButton rdoDisableAI;
-    private JRadioButton rdoEnableAI;
+    private JRadioButton rdoDisableApplicationInsights;
+    private JRadioButton rdoEnableApplicationInsights;
     private JLabel lblApplicationInsights;
     private ApplicationInsightsComboBox applicationInsightsComboBox;
     private JRadioButton rdoDisableDetailError;
@@ -76,9 +76,9 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
         lblInsightsEnable.setVisible(visible);
         lblApplicationInsights.setVisible(visible);
         applicationInsightsComboBox.setVisible(visible);
-        rdoEnableAI.setVisible(visible);
-        rdoDisableAI.setVisible(visible);
-        rdoEnableAI.setSelected(visible);
+        rdoEnableApplicationInsights.setVisible(visible);
+        rdoDisableApplicationInsights.setVisible(visible);
+        rdoEnableApplicationInsights.setSelected(visible);
     }
 
     public void setAppServiceLogVisible(boolean visible) {
@@ -108,23 +108,16 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     @Override
     public MonitorConfig getData() {
         MonitorConfig config = MonitorConfig.builder().build();
-        if (titleApplicationInsights.isVisible() && rdoEnableApplicationLog.isSelected()) {
-            ApplicationInsightsConfig insightsConfig = rdoEnableApplicationLog.isSelected() ? applicationInsightsComboBox.getValue() : null;
-            config.setApplicationInsightsConfig(insightsConfig);
-        }
-        if (titleAppServiceLog.isVisible()) {
-            if (lblWebServerLog.isVisible() && rdoEnableWebServerLog.isSelected()) {
-                config.setEnableWebServerLogging(rdoEnableWebServerLog.isSelected());
-                config.setWebServerLogQuota(txtQuota.getValue());
-                config.setWebServerRetentionPeriod(txtRetention.getValue());
-                config.setEnableDetailedErrorMessage(rdoEnableDetailError.isSelected());
-                config.setEnableFailedRequestTracing(rdoEnableFailedRequest.isSelected());
-            }
-            if (lblApplicationLog.isVisible() && rdoEnableApplicationLog.isSelected()) {
-                config.setEnableApplicationLog(rdoEnableApplicationLog.isSelected());
-                config.setApplicationLogLevel(cbLogLevel.getValue());
-            }
-        }
+        final ApplicationInsightsConfig insightsConfig =
+                (rdoEnableApplicationInsights.isSelected() && titleAppServiceLog.isVisible()) ? applicationInsightsComboBox.getValue() : null;
+        config.setApplicationInsightsConfig(insightsConfig);
+        config.setEnableWebServerLogging(rdoEnableWebServerLog.isSelected() && lblWebServerLog.isVisible());
+        config.setWebServerLogQuota(txtQuota.getValue());
+        config.setWebServerRetentionPeriod(txtRetention.getValue());
+        config.setEnableDetailedErrorMessage(rdoEnableDetailError.isSelected());
+        config.setEnableFailedRequestTracing(rdoEnableFailedRequest.isSelected());
+        config.setEnableApplicationLog(rdoEnableApplicationLog.isSelected() && lblApplicationLog.isVisible());
+        config.setApplicationLogLevel(cbLogLevel.getValue());
         return config;
     }
 
@@ -181,10 +174,10 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
 
     private void init() {
         final ButtonGroup insightsGroup = new ButtonGroup();
-        insightsGroup.add(rdoEnableAI);
-        insightsGroup.add(rdoDisableAI);
-        rdoEnableAI.addItemListener(e -> toggleApplicationInsights(rdoEnableAI.isSelected()));
-        rdoDisableAI.addItemListener(e -> toggleApplicationInsights(rdoEnableAI.isSelected()));
+        insightsGroup.add(rdoEnableApplicationInsights);
+        insightsGroup.add(rdoDisableApplicationInsights);
+        rdoEnableApplicationInsights.addItemListener(e -> toggleApplicationInsights(rdoEnableApplicationInsights.isSelected()));
+        rdoDisableApplicationInsights.addItemListener(e -> toggleApplicationInsights(rdoEnableApplicationInsights.isSelected()));
 
         final ButtonGroup webServerGroup = new ButtonGroup();
         webServerGroup.add(rdoEnableWebServerLog);
