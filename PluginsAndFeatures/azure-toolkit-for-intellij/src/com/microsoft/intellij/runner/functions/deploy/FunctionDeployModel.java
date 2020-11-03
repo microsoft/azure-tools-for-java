@@ -53,6 +53,7 @@ public class FunctionDeployModel extends IntelliJFunctionContext {
             setNewResource(true);
             final FunctionAppConfig functionAppConfig = functionAppComboBoxModel.getFunctionAppConfig();
             setAppServicePlanName(functionAppConfig.getServicePlan().name());
+            setAppServicePlanResourceGroup(functionAppConfig.getServicePlan().resourceGroupName());
             setPricingTier(functionAppConfig.getServicePlan().pricingTier().toSkuDescription().size());
             setRegion(functionAppConfig.getRegion().name());
             setOs(functionAppConfig.getPlatform().getOs().name());
