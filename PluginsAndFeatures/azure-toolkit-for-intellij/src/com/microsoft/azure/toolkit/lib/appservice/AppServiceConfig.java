@@ -27,7 +27,6 @@ import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -44,13 +43,12 @@ public class AppServiceConfig {
     private MonitorConfig monitorConfig = MonitorConfig.builder().build();
     private String name;
     private Path application;
-    @Builder.Default
-    private Platform platform = WebAppConfig.DEFAULT_PLATFORM;
-
     private Subscription subscription;
     private ResourceGroup resourceGroup;
     private AppServicePlan servicePlan;
     private Region region;
     @Builder.Default
     private Map<String, String> appSettings = new HashMap<>();
+
+    protected Platform platform;
 }
