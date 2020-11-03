@@ -108,19 +108,19 @@ public class AppServiceMonitorPanel extends JPanel implements AzureFormPanel<Mon
     @Override
     public MonitorConfig getData() {
         MonitorConfig config = MonitorConfig.builder().build();
-        if (titleApplicationInsights.isVisible()) {
+        if (titleApplicationInsights.isVisible() && rdoEnableApplicationLog.isSelected()) {
             ApplicationInsightsConfig insightsConfig = rdoEnableApplicationLog.isSelected() ? applicationInsightsComboBox.getValue() : null;
             config.setApplicationInsightsConfig(insightsConfig);
         }
         if (titleAppServiceLog.isVisible()) {
-            if (lblWebServerLog.isVisible()) {
+            if (lblWebServerLog.isVisible() && rdoEnableWebServerLog.isSelected()) {
                 config.setEnableWebServerLogging(rdoEnableWebServerLog.isSelected());
                 config.setWebServerLogQuota(txtQuota.getValue());
                 config.setWebServerRetentionPeriod(txtRetention.getValue());
                 config.setEnableDetailedErrorMessage(rdoEnableDetailError.isSelected());
                 config.setEnableFailedRequestTracing(rdoEnableFailedRequest.isSelected());
             }
-            if (lblApplicationLog.isVisible()) {
+            if (lblApplicationLog.isVisible() && rdoEnableApplicationLog.isSelected()) {
                 config.setEnableApplicationLog(rdoEnableApplicationLog.isSelected());
                 config.setApplicationLogLevel(cbLogLevel.getValue());
             }
