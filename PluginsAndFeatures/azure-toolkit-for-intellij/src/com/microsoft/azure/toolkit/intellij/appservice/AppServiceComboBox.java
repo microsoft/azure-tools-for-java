@@ -70,7 +70,7 @@ public abstract class AppServiceComboBox<T extends AppServiceComboBoxModel> exte
     private void resetDefaultValue(@NotNull T defaultValue) {
         final AppServiceComboBoxModel model = getItems()
                 .stream()
-                .filter(item -> AppServiceComboBoxModel.isSameApp(defaultValue, item))
+                .filter(item -> AppServiceComboBoxModel.isSameApp(defaultValue, item) && item != defaultValue)
                 .findFirst().orElse(null);
         if (model != null) {
             this.setSelectedItem(model);

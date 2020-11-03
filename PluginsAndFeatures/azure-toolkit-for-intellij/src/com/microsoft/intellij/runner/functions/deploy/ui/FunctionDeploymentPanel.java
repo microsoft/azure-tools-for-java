@@ -44,6 +44,7 @@ import org.jetbrains.idea.maven.project.MavenProject;
 import javax.swing.*;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import static com.microsoft.intellij.common.CommonConst.EMPTY_TEXT;
@@ -178,21 +179,25 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
         pnlAppSettings = AppSettingsTableUtils.createAppSettingPanel(appSettingsTable);
 
         functionAppComboBox = new FunctionAppComboBox(project);
-        functionAppComboBox.addActionListener(event -> {
-            final FunctionAppComboBoxModel model = getSelectedFunctionApp();
-            if (model == null) {
-                return;
+        functionAppComboBox.addActionListener(event -> onSelectFunctionApp());
+    }
+
+    private void onSelectFunctionApp() {
+        final FunctionAppComboBoxModel model = getSelectedFunctionApp();
+        if (model == null) {
+            return;
+        } else if (model.getResource() == null) { // For new create function or template model from configuration
+            if (model.isNewCreateResource() && appSettingsFunctionApp != null && !appSettingsFunctionApp.isNewCreateResource()) {
+                // Clear app settings table when user first choose create new function app
+                this.fillAppSettings(Collections.EMPTY_MAP);
             }
-            // Do not refresh if selected function app is not changed except create run configuration from azure explorer
-            if (appSettingsFunctionApp != null &&
-                    AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) && !appSettingsTable.isDefaultAppSettings()) {
-                return;
-            }
-            appSettingsFunctionApp = model;
-            if (model != null && model.getResource() != null && !model.isNewCreateResource()) {
+        } else { // For existing Functions
+            if (!AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isDefaultAppSettings()) {
+                // Do not refresh if selected function app is not changed except create run configuration from azure explorer
                 presenter.loadAppSettings(model.getResource());
             }
-        });
+        }
+        appSettingsFunctionApp = model;
     }
 
     private FunctionAppComboBoxModel getSelectedFunctionApp() {

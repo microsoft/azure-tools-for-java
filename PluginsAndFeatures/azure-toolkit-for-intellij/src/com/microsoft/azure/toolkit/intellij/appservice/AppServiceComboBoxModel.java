@@ -28,6 +28,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
+
 @Getter
 public abstract class AppServiceComboBoxModel<T extends WebAppBase> {
     @Setter
@@ -54,6 +56,9 @@ public abstract class AppServiceComboBoxModel<T extends WebAppBase> {
     }
 
     public static boolean isSameApp(AppServiceComboBoxModel first, AppServiceComboBoxModel second) {
+        if (Objects.isNull(first) || Objects.isNull(second)) {
+            return first == second;
+        }
         return StringUtils.equalsIgnoreCase(first.resourceId, second.resourceId) ||
                 (StringUtils.equalsIgnoreCase(first.appName, second.appName) &&
                         StringUtils.equalsIgnoreCase(first.resourceGroup, second.resourceGroup) &&
