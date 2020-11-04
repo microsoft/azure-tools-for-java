@@ -596,7 +596,7 @@ public class WebAppUtils {
      * Check if the web app is a Windows or Linux Java configured web app.
      * Docker web apps are not included.
      */
-    public static boolean isJavaWebApp(@NotNull WebApp webApp) {
+    public static boolean isJavaWebApp(@NotNull WebAppBase webApp) {
         return (webApp.operatingSystem() == OperatingSystem.WINDOWS && webApp.javaVersion() != JavaVersion.OFF)
                 || (webApp.operatingSystem() == OperatingSystem.LINUX && (StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "jre")
                 || StringUtils.containsIgnoreCase(webApp.linuxFxVersion(), "java")));

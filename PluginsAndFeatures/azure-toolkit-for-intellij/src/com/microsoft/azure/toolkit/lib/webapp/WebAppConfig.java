@@ -23,8 +23,15 @@
 package com.microsoft.azure.toolkit.lib.webapp;
 
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import lombok.Builder;
+import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+@Data
 @SuperBuilder
 public class WebAppConfig extends AppServiceConfig {
+    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
+    @Builder.Default
+    protected Platform platform = DEFAULT_PLATFORM;
 }

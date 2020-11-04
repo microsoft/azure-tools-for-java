@@ -20,16 +20,16 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.webapp;
+package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.region.RegionComboBox;
 import com.microsoft.azure.toolkit.intellij.appservice.resourcegroup.ResourceGroupComboBox;
@@ -37,9 +37,10 @@ import com.microsoft.azure.toolkit.intellij.appservice.serviceplan.ServicePlanCo
 import com.microsoft.azure.toolkit.intellij.appservice.subscription.SubscriptionComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import org.apache.commons.compress.utils.FileNameUtils;
@@ -54,11 +55,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
-public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPanel<WebAppConfig> {
+public class AppServiceInfoAdvancedPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final String NOT_APPLICABLE = "N/A";
     private final Project project;
+    private final Supplier<T> supplier;
 
     private JPanel contentPanel;
 
@@ -75,15 +78,16 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
-    public WebAppConfigFormPanelAdvanced(final Project project) {
+    public AppServiceInfoAdvancedPanel(final Project project, final Supplier<T> supplier) {
         super();
         this.project = project;
+        this.supplier = supplier;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
 
     @Override
-    public WebAppConfig getData() {
+    public T getData() {
         final Subscription subscription = this.selectorSubscription.getValue();
         final ResourceGroup resourceGroup = this.selectorGroup.getValue();
         final String name = this.textName.getValue();
@@ -92,7 +96,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         final AppServicePlan servicePlan = this.selectorServicePlan.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
-        final WebAppConfig config = WebAppConfig.builder().build();
+        final T config = supplier.get();
         config.setSubscription(subscription);
         config.setResourceGroup(resourceGroup);
         config.setName(name);
@@ -108,7 +112,7 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     }
 
     @Override
-    public void setData(final WebAppConfig config) {
+    public void setData(final T config) {
         this.selectorSubscription.setValue(config.getSubscription());
         this.selectorGroup.setValue(config.getResourceGroup());
         this.textName.setValue(config.getName());
@@ -141,6 +145,22 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         this.deploymentTitle.setVisible(visible);
         this.deploymentLabel.setVisible(visible);
         this.selectorApplication.setVisible(visible);
+    }
+
+    public SubscriptionComboBox getSelectorSubscription() {
+        return selectorSubscription;
+    }
+
+    public PlatformComboBox getSelectorPlatform() {
+        return selectorPlatform;
+    }
+
+    public ServicePlanComboBox getSelectorServicePlan() {
+        return selectorServicePlan;
+    }
+
+    public AppNameInput getTextName() {
+        return textName;
     }
 
     private void init() {
@@ -195,7 +215,9 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
     private void onServicePlanChanged(final ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             final AppServicePlan plan = (AppServicePlan) e.getItem();
-            this.textSku.setText(plan.pricingTier().toString());
+            final String pricing = plan.pricingTier() == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ?
+                                   "Consumption" : plan.pricingTier().toString();
+            this.textSku.setText(pricing);
         } else if (e.getStateChange() == ItemEvent.DESELECTED) {
             this.textSku.setText(NOT_APPLICABLE);
         }
@@ -205,5 +227,13 @@ public class WebAppConfigFormPanelAdvanced extends JPanel implements AzureFormPa
         // TODO: place custom component creation code here
         this.selectorApplication = new AzureArtifactComboBox(project, true);
         this.selectorApplication.refreshItems();
+    }
+
+    public void setValidPricingTier(List<PricingTier> pricingTier, PricingTier defaultPricingTier) {
+        selectorServicePlan.setValidPricingTierList(pricingTier, defaultPricingTier);
+    }
+
+    public void setValidPlatform(List<Platform> platform) {
+        selectorPlatform.setPlatformList(platform);
     }
 }

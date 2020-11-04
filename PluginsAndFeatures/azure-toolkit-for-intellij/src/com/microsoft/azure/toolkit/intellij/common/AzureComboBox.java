@@ -39,6 +39,7 @@ import com.microsoft.azuretools.core.mvp.ui.base.SchedulerProviderFactory;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
@@ -55,7 +56,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
@@ -309,7 +309,9 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
                 getEditorComponent().getDocument().removeDocumentListener(comboFilterListener);
             }
             final Object selectedItem = AzureComboBox.this.getSelectedItem();
-            AzureComboBox.this.setItems(itemList);
+            if (!CollectionUtils.isEqualCollection(itemList, getItems())) {
+                AzureComboBox.this.setItems(itemList);
+            }
             if (!Objects.equals(selectedItem, AzureComboBox.this.getValue())) {
                 AzureComboBox.this.setSelectedItem(selectedItem);
             }
@@ -337,10 +339,8 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             DefaultLoader.getIdeHelper().invokeLater(() -> {
                 try {
                     final String text = documentEvent.getDocument().getText(0, documentEvent.getDocument().getLength());
-                    AzureComboBox.this.removeAllItems();
-                    AzureComboBox.this.setItems(list.stream()
-                                                    .filter(item -> filter.test(item, text))
-                                                    .collect(Collectors.toList()));
+                    list.stream().filter(item -> filter.test(item, text) && !getItems().contains(item)).forEach(item -> addItem(item));
+                    getItems().stream().filter(item -> !filter.test(item, text)).forEach(item -> removeItem(item));
                 } catch (BadLocationException e) {
                     // swallow exception and show all items
                 }

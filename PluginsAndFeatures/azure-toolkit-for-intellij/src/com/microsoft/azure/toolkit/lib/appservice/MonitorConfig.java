@@ -20,36 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice;
+package com.microsoft.azure.toolkit.lib.appservice;
 
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+import com.microsoft.azure.management.appservice.LogLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
-@Getter
-public class AppComboBoxModel<T extends WebAppBase> {
-    @Setter
-    protected boolean isNewCreateResource;
-    protected String subscriptionId;
-    protected String resourceGroup;
-    protected String appName;
-    protected String os;
-    protected String resourceId;
-    protected T resource;
-
-    public AppComboBoxModel() {
-
-    }
-
-    public AppComboBoxModel(ResourceEx<T> resourceEx) {
-        this.resource = resourceEx.getResource();
-        this.resourceId = resource.id();
-        this.appName = resource.name();
-        this.resourceGroup = resource.resourceGroupName();
-        this.os = StringUtils.capitalize(resource.operatingSystem().toString());
-        this.subscriptionId = resourceEx.getSubscriptionId();
-        this.isNewCreateResource = false;
-    }
+@Data
+@SuperBuilder
+public class MonitorConfig {
+    ApplicationInsightsConfig applicationInsightsConfig;
+    // web server log
+    @Builder.Default
+    boolean enableWebServerLogging = true;
+    @Builder.Default
+    Integer webServerLogQuota = 35;
+    @Builder.Default
+    Integer webServerRetentionPeriod = 0;
+    @Builder.Default
+    boolean enableDetailedErrorMessage = false;
+    @Builder.Default
+    boolean enableFailedRequestTracing = false;
+    // application log
+    @Builder.Default
+    boolean enableApplicationLog = true;
+    @Builder.Default
+    LogLevel applicationLogLevel = LogLevel.ERROR;
 }

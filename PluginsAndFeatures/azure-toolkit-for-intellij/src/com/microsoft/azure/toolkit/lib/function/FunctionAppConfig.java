@@ -20,14 +20,18 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.runner.functions.deploy.ui;
+package com.microsoft.azure.toolkit.lib.function;
 
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
+import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
-import java.util.Map;
-
-public interface FunctionDeployMvpView extends MvpView {
-    void beforeFillAppSettings();
-
-    void fillAppSettings(Map<String, String> appSettings);
+@Data
+@SuperBuilder
+public class FunctionAppConfig extends AppServiceConfig {
+    public static final Platform DEFAULT_PLATFORM = Platform.AzureFunction.Windows_Java8;
+    @Builder.Default
+    protected Platform platform = DEFAULT_PLATFORM;
 }
