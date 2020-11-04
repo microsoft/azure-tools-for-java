@@ -23,21 +23,16 @@
 package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
 
 import com.microsoft.azure.management.resources.ResourceGroup;
-import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.*;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.helpers.collections.ObservableList;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 
-import javax.swing.tree.TreePath;
+import java.io.IOException;
 import java.util.List;
 
 public class ResourceManagementModule extends AzureRefreshableNode implements ResourceManagementModuleView {
@@ -45,12 +40,12 @@ public class ResourceManagementModule extends AzureRefreshableNode implements Re
     private static final String RESOURCE_MANAGEMENT_MODULE_ID = ResourceManagementModule.class.getName();
     private static final String ICON_PATH = "arm_resourcegroup.png";
     private static final String BASE_MODULE_NAME = "Resource Management";
-    private final ResourceManagementModulePresenter rmModulePresenter;
+    private final ResourceManagementModulePresenter<ResourceManagementModule> rmModulePresenter;
     public static final Object listenerObj = new Object();
 
     public ResourceManagementModule(Node parent) {
         super(RESOURCE_MANAGEMENT_MODULE_ID, BASE_MODULE_NAME, parent, ICON_PATH);
-        rmModulePresenter = new ResourceManagementModulePresenter();
+        rmModulePresenter = new ResourceManagementModulePresenter<>();
         rmModulePresenter.onAttachView(ResourceManagementModule.this);
         createListener();
     }
@@ -59,12 +54,11 @@ public class ResourceManagementModule extends AzureRefreshableNode implements Re
     protected void refreshItems() throws AzureCmdException {
         try {
             rmModulePresenter.onModuleRefresh();
-        } catch (Exception e) {
-            DefaultLoader.getUIHelper()
-                    .showException("An error occurred while attempting to refresh the resource manage module ",
-                            e, "Azure Services Explorer - Error Refresh resource manage module", false, true);
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        } catch (final CanceledByUserException e) {
+            DefaultLoader.getUIHelper().showWarningNotification("Refreshing cancelled", "You canceled refreshing resource groups.");
         }
-
     }
 
     @Override
@@ -74,8 +68,8 @@ public class ResourceManagementModule extends AzureRefreshableNode implements Re
             removeDirectChildNode(node);
         }), (e) -> {
             DefaultLoader.getUIHelper()
-                    .showException("An error occurred while attempting to delete the resource group ",
-                            e, "Azure Services Explorer - Error Deleting Resource Group", false, true);
+                    .showException("An error occurred while attempting to delete the resource group",
+                            e, "Azure Explorer - Error Deleting Resource Group", false, true);
         });
     }
 
