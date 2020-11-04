@@ -23,6 +23,8 @@
 package com.microsoft.azure.toolkit.lib.common.utils;
 
 import com.neovisionaries.ws.client.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -35,8 +37,15 @@ import java.util.logging.Logger;
 public class WebSocketSSLProxy {
     private static final Logger logger = Logger.getLogger(WebSocketSSLProxy.class.getName());
     private static final int DEFAULT_BUFFER_SIZE = 8192;
+
+    @Setter
+    @Getter
     private int bufferSize = DEFAULT_BUFFER_SIZE;
+
+    @Setter
+    @Getter
     private int connectTimeout = 0;
+
     private String webSocketServerUri;
     private String id;
     private String password;
@@ -70,62 +79,7 @@ public class WebSocketSSLProxy {
         thread.start();
     }
 
-    public void pipeSocketDataToWebSocket(Socket socket) throws IOException {
-        byte[] buffer = new byte[getBufferSize()];
-        while (true) {
-            int bytesRead = socket.getInputStream().read(buffer);
-            if (bytesRead == -1) {
-                break;
-            }
-
-            webSocket.sendBinary(Arrays.copyOfRange(buffer, 0, bytesRead));
-        }
-    }
-
-    public void createWebSocketToSocket(Socket client) throws IOException, WebSocketException {
-        this.webSocket = new WebSocketFactory().setConnectionTimeout(connectTimeout).createSocket(webSocketServerUri)
-                                               .setUserInfo(this.id, this.password)
-                                               .addListener(new WebSocketAdapter() {
-                                                   @Override
-                                                   public void onBinaryMessage(WebSocket websocket, byte[] bytes) {
-                                                       try {
-                                                           client.getOutputStream().write(bytes);
-                                                       } catch (IOException e) {
-                                                           handleConnectionBroken(e);
-                                                       }
-                                                   }
-                                               }).addExtension(WebSocketExtension.PERMESSAGE_DEFLATE).connect();
-
-    }
-
     public void close() {
-        closeInner();
-    }
-
-    public int getLocalPort() {
-        if (Objects.isNull(serverSocket)) {
-            return 0;
-        }
-        return serverSocket.getLocalPort();
-    }
-
-    public int getBufferSize() {
-        return bufferSize;
-    }
-
-    public void setBufferSize(final int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public void setConnectTimeout(final int connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
-
-    private void closeInner() {
         if (this.webSocket != null) {
             this.webSocket.disconnect();
             this.webSocket = null;
@@ -143,13 +97,47 @@ public class WebSocketSSLProxy {
             this.thread.interrupt();
             this.thread = null;
         }
+    }
 
+    public int getLocalPort() {
+        if (Objects.isNull(serverSocket)) {
+            return 0;
+        }
+        return serverSocket.getLocalPort();
     }
 
     private void handleConnectionBroken(Exception e) {
         if (Objects.nonNull(serverSocket)) {
             logger.warning(String.format("Encounter error while proxying websocket: %s", e.getMessage()));
         }
-        closeInner();
+        close();
+    }
+
+    private void pipeSocketDataToWebSocket(Socket socket) throws IOException {
+        byte[] buffer = new byte[bufferSize];
+        while (true) {
+            int bytesRead = socket.getInputStream().read(buffer);
+            if (bytesRead == -1) {
+                break;
+            }
+
+            webSocket.sendBinary(Arrays.copyOfRange(buffer, 0, bytesRead));
+        }
+    }
+
+    private void createWebSocketToSocket(Socket client) throws IOException, WebSocketException {
+        this.webSocket = new WebSocketFactory().setConnectionTimeout(connectTimeout).createSocket(webSocketServerUri)
+                                               .setUserInfo(this.id, this.password)
+                                               .addListener(new WebSocketAdapter() {
+                                                   @Override
+                                                   public void onBinaryMessage(WebSocket websocket, byte[] bytes) {
+                                                       try {
+                                                           client.getOutputStream().write(bytes);
+                                                       } catch (IOException e) {
+                                                           handleConnectionBroken(e);
+                                                       }
+                                                   }
+                                               }).addExtension(WebSocketExtension.PERMESSAGE_DEFLATE).connect();
+
     }
 }
