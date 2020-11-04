@@ -23,10 +23,9 @@
 package com.microsoft.intellij.runner.functions.component.table;
 
 import com.intellij.ui.table.JBTable;
-import org.apache.commons.collections4.MapUtils;
 
-import javax.swing.ListSelectionModel;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,6 +45,10 @@ public class AppSettingsTable extends JBTable {
         this.setAutoscrolls(true);
         this.setMinimumSize(new Dimension(-1, 100));
         this.setPreferredScrollableViewportSize(null);
+    }
+
+    public void loadRequiredSettings() {
+        appSettingModel.loadRequiredAttributes();
     }
 
     public void loadLocalSetting() {
@@ -72,10 +75,7 @@ public class AppSettingsTable extends JBTable {
 
     public void setAppSettings(Map<String, String> appSettingMap) {
         clear();
-        if (MapUtils.isNotEmpty(appSettingMap)) {
-            addAppSettings(appSettingMap);
-            appSettingModel.addRequiredAttributes();
-        }
+        addAppSettings(appSettingMap);
     }
 
     public void clear() {
@@ -95,8 +95,8 @@ public class AppSettingsTable extends JBTable {
         return Paths.get(localSettingPath);
     }
 
-    public boolean isDefaultAppSettings() {
-        return appSettingModel.isDefaultAppSettings();
+    public boolean isEmpty() {
+        return appSettingModel.getRowCount() == 0;
     }
 
     private void scrollToRow(int target) {
