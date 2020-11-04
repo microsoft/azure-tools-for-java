@@ -44,7 +44,10 @@ import com.microsoft.azure.common.function.bindings.Binding;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
+import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.utils.JsonUtils;
+import com.microsoft.azuretools.utils.WebAppUtils;
 import com.sun.tools.sjavac.Log;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -82,6 +85,15 @@ public class FunctionUtils {
         //initialize required attributes, which will be saved to function.json even if it equals to its default value
         REQUIRED_ATTRIBUTE_MAP.put(BindingEnum.EventHubTrigger, Arrays.asList("cardinality"));
         REQUIRED_ATTRIBUTE_MAP.put(BindingEnum.HttpTrigger, Arrays.asList("authLevel"));
+    }
+
+    public static String getFunctionJavaVersion(FunctionApp functionApp) {
+        if (!WebAppUtils.isJavaWebApp(functionApp)) {
+            return null;
+        }
+        return functionApp.operatingSystem() == OperatingSystem.WINDOWS ?
+               functionApp.javaVersion().toString() :
+               functionApp.linuxFxVersion().split("|")[1];
     }
 
     public static File getTempStagingFolder() throws IOException {
@@ -198,7 +210,7 @@ public class FunctionUtils {
 
         final List<File> jarFiles = new ArrayList<>();
         OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
-            if (ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
+            if (StringUtils.isNotEmpty(lib.getName()) && ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
                 return true;
             }
 
@@ -337,6 +349,9 @@ public class FunctionUtils {
 
     private static Binding getUserDefinedBinding(final Project project, PsiAnnotation annotation) throws AzureExecutionException {
         PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
+        if (referenceElement == null) {
+            return null;
+        }
         PsiAnnotation customBindingAnnotation =
                 AnnotationUtil.findAnnotation((PsiModifierListOwner) referenceElement.resolve(),
                                               AZURE_FUNCTION_CUSTOM_BINDING_CLASS);
@@ -427,7 +442,7 @@ public class FunctionUtils {
         if (src != null && src.exists()) {
             FileUtils.copyFile(src, dest);
         } else {
-            FileUtils.write(src, defaultContent, Charset.defaultCharset());
+            FileUtils.write(dest, defaultContent, Charset.defaultCharset());
         }
     }
 

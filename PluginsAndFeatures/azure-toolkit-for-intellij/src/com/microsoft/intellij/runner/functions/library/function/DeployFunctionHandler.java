@@ -43,7 +43,7 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.Update;
-import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
+import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
 import com.microsoft.intellij.runner.functions.library.IPrompter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -93,23 +93,22 @@ public class DeployFunctionHandler {
             + "function information (Attempt %d/%d)...";
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
-    private IAppServiceContext ctx;
+    private FunctionDeployModel model;
     private IPrompter prompter;
 
-    public DeployFunctionHandler(IAppServiceContext ctx, IPrompter prompter) {
-        Preconditions.checkNotNull(ctx);
-        this.ctx = ctx;
+    public DeployFunctionHandler(FunctionDeployModel model, IPrompter prompter) {
+        Preconditions.checkNotNull(model);
+        this.model = model;
         this.prompter = prompter;
     }
 
     public FunctionApp execute() throws Exception {
-
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
         prompt(DEPLOY_START);
         getArtifactHandler().publish(deployTarget);
-        prompt(String.format(DEPLOY_FINISH, ctx.getAppName()));
+        prompt(String.format(DEPLOY_FINISH, model.getAppName()));
         listHTTPTriggerUrls();
         return (FunctionApp) deployTarget.getApp();
     }
@@ -120,7 +119,7 @@ public class DeployFunctionHandler {
         final Update update = app.update();
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        prompt(String.format(FUNCTION_APP_UPDATE_DONE, ctx.getAppName()));
+        prompt(String.format(FUNCTION_APP_UPDATE_DONE, model.getAppName()));
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -176,23 +175,26 @@ public class DeployFunctionHandler {
         for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
             Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
             prompt(String.format(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION, i + 1, LIST_TRIGGERS_MAX_RETRY));
-            functionApp.syncTriggers();
-            final List<FunctionResource> triggers =
-                    ctx.getAzureClient().appServices().functionApps()
-                       .listFunctions(ctx.getResourceGroup(),
-                                      ctx.getAppName()).stream()
-                       .map(envelope -> FunctionResource.parseFunction(envelope))
-                       .filter(function -> function != null)
-                       .collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(triggers)) {
-                return triggers;
+            try {
+                functionApp.syncTriggers();
+                final List<FunctionResource> triggers =
+                        model.getAzureClient().appServices().functionApps()
+                             .listFunctions(model.getResourceGroup(), model.getAppName()).stream()
+                             .map(envelope -> FunctionResource.parseFunction(envelope))
+                             .filter(function -> function != null)
+                             .collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(triggers)) {
+                    return triggers;
+                }
+            } catch (RuntimeException exception) {
+                // swallow sdk request runtime exception
             }
         }
         throw new AzureExecutionException(NO_TRIGGERS_FOUNDED);
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
-        final RuntimeConfiguration runtime = ctx.getRuntime();
+        final RuntimeConfiguration runtime = model.getRuntime();
         if (runtime != null && StringUtils.isNotBlank(runtime.getOs())) {
             return Utils.parseOperationSystem(runtime.getOs());
         }
@@ -200,7 +202,7 @@ public class DeployFunctionHandler {
     }
 
     private DeploymentType getDeploymentType() throws AzureExecutionException {
-        final DeploymentType deploymentType = DeploymentType.fromString(ctx.getDeploymentType());
+        final DeploymentType deploymentType = DeploymentType.fromString(model.getDeploymentType());
         return deploymentType == DeploymentType.EMPTY ? getDeploymentTypeByRuntime() : deploymentType;
     }
 
@@ -217,22 +219,20 @@ public class DeployFunctionHandler {
     }
 
     private boolean isDedicatedPricingTier() {
-        return AppServiceUtils.getPricingTierFromString(ctx.getPricingTier()) != null;
+        return AppServiceUtils.getPricingTierFromString(model.getPricingTier()) != null;
     }
 
-    private FunctionApp getFunctionApp() {
+    private FunctionApp getFunctionApp() throws AzureExecutionException {
         try {
-            return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(),
-                    ctx.getAppName());
-        } catch (Exception ex) {
-            // Swallow exception for non-existing Azure Functions
+            return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
+        } catch (IOException e) {
+            throw new AzureExecutionException("Failed to get azure client");
         }
-        return null;
     }
 
     // region get App Settings
     private Map getAppSettingsWithDefaultValue() {
-        final Map settings = ctx.getAppSettings();
+        final Map settings = model.getAppSettings();
         overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, SET_FUNCTIONS_WORKER_RUNTIME,
                 FUNCTIONS_WORKER_RUNTIME_VALUE, CHANGE_FUNCTIONS_WORKER_RUNTIME);
         setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, SET_FUNCTIONS_EXTENSION_VERSION,
@@ -268,7 +268,7 @@ public class DeployFunctionHandler {
         final DeploymentType deploymentType = getDeploymentType();
         switch (deploymentType) {
             case MSDEPLOY:
-                builder = new MSDeployArtifactHandlerImpl.Builder().functionAppName(this.ctx.getAppName());
+                builder = new MSDeployArtifactHandlerImpl.Builder().functionAppName(this.model.getAppName());
                 break;
             case FTP:
                 builder = new FTPArtifactHandlerImpl.Builder();
@@ -290,7 +290,7 @@ public class DeployFunctionHandler {
                 throw new AzureExecutionException(UNKNOW_DEPLOYMENT_TYPE);
         }
         return builder
-                .stagingDirectoryPath(this.ctx.getDeploymentStagingDirectoryPath())
+                .stagingDirectoryPath(this.model.getDeploymentStagingDirectoryPath())
                 .build();
     }
 

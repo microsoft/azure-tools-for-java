@@ -764,6 +764,16 @@ public class UIHelperImpl implements UIHelper {
         PluginUtil.showInfoNotification(title, message);
     }
 
+    @Override
+    public void showWarningNotification(String title, String message) {
+        PluginUtil.showWarnNotification(title, message);
+    }
+
+    @Override
+    public void showErrorNotification(String title, String message) {
+        PluginUtil.showErrorNotification(title, message);
+    }
+
     private static <T> T runFromDispatchThread(Supplier<T> supplier) {
         if (ApplicationManager.getApplication().isDispatchThread()) {
             return supplier.get();
