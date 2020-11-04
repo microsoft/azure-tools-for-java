@@ -53,6 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class AzureFunctionMvpModel {
+    public static final PricingTier CONSUMPTION_PRICING_TIER = new PricingTier("Consumption", "");
 
     private static final String CANNOT_GET_FUNCTION_APP_WITH_ID = "Cannot get Function App with ID: ";
     private final Map<String, List<ResourceEx<FunctionApp>>> subscriptionIdToFunctionApps;
@@ -71,6 +72,10 @@ public class AzureFunctionMvpModel {
             throw new IOException(CANNOT_GET_FUNCTION_APP_WITH_ID + id); // TODO: specify the type of exception.
         }
         return app;
+    }
+
+    public FunctionApp getFunctionByName(String sid, String resourceGroup, String name) throws IOException {
+        return getFunctionAppsClient(sid).getByResourceGroup(resourceGroup, name);
     }
 
     public void deleteFunction(String sid, String appId) throws IOException {
@@ -165,6 +170,7 @@ public class AzureFunctionMvpModel {
         pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP1"));
         pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP2"));
         pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP3"));
+        pricingTiers.add(CONSUMPTION_PRICING_TIER);
         return pricingTiers;
     }
 

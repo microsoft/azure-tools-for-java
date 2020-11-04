@@ -175,16 +175,19 @@ public class DeployFunctionHandler {
         for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
             Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
             prompt(String.format(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION, i + 1, LIST_TRIGGERS_MAX_RETRY));
-            functionApp.syncTriggers();
-            final List<FunctionResource> triggers =
-                    model.getAzureClient().appServices().functionApps()
-                         .listFunctions(model.getResourceGroup(),
-                                        model.getAppName()).stream()
-                         .map(envelope -> FunctionResource.parseFunction(envelope))
-                         .filter(function -> function != null)
-                         .collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(triggers)) {
-                return triggers;
+            try {
+                functionApp.syncTriggers();
+                final List<FunctionResource> triggers =
+                        model.getAzureClient().appServices().functionApps()
+                             .listFunctions(model.getResourceGroup(), model.getAppName()).stream()
+                             .map(envelope -> FunctionResource.parseFunction(envelope))
+                             .filter(function -> function != null)
+                             .collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(triggers)) {
+                    return triggers;
+                }
+            } catch (RuntimeException exception) {
+                // swallow sdk request runtime exception
             }
         }
         throw new AzureExecutionException(NO_TRIGGERS_FOUNDED);
