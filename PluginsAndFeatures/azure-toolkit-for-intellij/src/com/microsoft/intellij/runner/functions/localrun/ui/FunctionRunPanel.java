@@ -98,8 +98,10 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     @Override
     protected void resetFromConfig(@NotNull FunctionRunConfiguration configuration) {
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
-            appSettingsTable.setAppSettings(configuration.getAppSettings(), false);
+            appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
+        // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
+        appSettingsTable.loadRequiredSettings();
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {
             txtFunc.setText(configuration.getFuncPath());
         }

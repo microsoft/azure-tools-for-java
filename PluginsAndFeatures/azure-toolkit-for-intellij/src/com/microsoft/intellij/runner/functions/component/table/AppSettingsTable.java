@@ -47,6 +47,10 @@ public class AppSettingsTable extends JBTable {
         this.setPreferredScrollableViewportSize(null);
     }
 
+    public void loadRequiredSettings() {
+        appSettingModel.loadRequiredAttributes();
+    }
+
     public void loadLocalSetting() {
         final Map<String, String> appSettings = AppSettingsTableUtils.getAppSettingsFromLocalSettingsJson(new File(localSettingPath));
         setAppSettings(appSettings);
@@ -69,16 +73,9 @@ public class AppSettingsTable extends JBTable {
         this.refresh();
     }
 
-    public void setAppSettings(Map<String, String> appSettingMap, boolean clearRequiredAttributes) {
+    public void setAppSettings(Map<String, String> appSettingMap) {
         clear();
         addAppSettings(appSettingMap);
-        if (!clearRequiredAttributes) {
-            appSettingModel.addRequiredAttributes();
-        }
-    }
-
-    public void setAppSettings(Map<String, String> appSettingMap) {
-        setAppSettings(appSettingMap, true);
     }
 
     public void clear() {
@@ -98,8 +95,8 @@ public class AppSettingsTable extends JBTable {
         return Paths.get(localSettingPath);
     }
 
-    public boolean isDefaultAppSettings() {
-        return appSettingModel.isDefaultAppSettings();
+    public boolean isEmpty() {
+        return appSettingModel.getRowCount() == 0;
     }
 
     private void scrollToRow(int target) {

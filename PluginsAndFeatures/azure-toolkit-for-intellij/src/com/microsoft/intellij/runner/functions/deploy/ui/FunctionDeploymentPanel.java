@@ -193,7 +193,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
                 this.fillAppSettings(Collections.EMPTY_MAP);
             }
         } else { // For existing Functions
-            if (!AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isDefaultAppSettings()) {
+            if (!AppServiceComboBoxModel.isSameApp(model, appSettingsFunctionApp) || appSettingsTable.isEmpty()) {
                 // Do not refresh if selected function app is not changed except create run configuration from azure explorer
                 presenter.loadAppSettings(model.getResource());
             }
