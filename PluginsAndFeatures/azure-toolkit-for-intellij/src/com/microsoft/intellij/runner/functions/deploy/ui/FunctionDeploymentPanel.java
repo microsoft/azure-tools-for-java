@@ -94,6 +94,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
 
     @Override
     public void disposeEditor() {
+        presenter.onDetachView();
     }
 
     @Override

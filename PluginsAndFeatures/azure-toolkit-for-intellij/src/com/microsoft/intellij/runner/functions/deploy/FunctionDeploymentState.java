@@ -77,6 +77,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         final FunctionApp functionApp;
         if (deployModel.isNewResource()) {
             functionApp = createFunctionApp(processHandler);
+            functionDeployConfiguration.setFunctionId(functionApp.id());
         } else {
             functionApp = AzureFunctionMvpModel.getInstance()
                                                .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());

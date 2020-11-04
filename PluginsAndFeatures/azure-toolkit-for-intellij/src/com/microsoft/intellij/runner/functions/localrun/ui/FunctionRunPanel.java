@@ -93,13 +93,12 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     @Override
     public void disposeEditor() {
-
     }
 
     @Override
     protected void resetFromConfig(@NotNull FunctionRunConfiguration configuration) {
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
-            appSettingsTable.setAppSettings(configuration.getAppSettings());
+            appSettingsTable.setAppSettings(configuration.getAppSettings(), false);
         }
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {
             txtFunc.setText(configuration.getFuncPath());

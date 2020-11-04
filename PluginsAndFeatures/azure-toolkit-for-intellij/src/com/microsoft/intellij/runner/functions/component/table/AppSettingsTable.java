@@ -70,12 +70,16 @@ public class AppSettingsTable extends JBTable {
         this.refresh();
     }
 
-    public void setAppSettings(Map<String, String> appSettingMap) {
+    public void setAppSettings(Map<String, String> appSettingMap, boolean clearRequiredAttributes) {
         clear();
-        if (MapUtils.isNotEmpty(appSettingMap)) {
-            addAppSettings(appSettingMap);
+        addAppSettings(appSettingMap);
+        if (!clearRequiredAttributes) {
             appSettingModel.addRequiredAttributes();
         }
+    }
+
+    public void setAppSettings(Map<String, String> appSettingMap) {
+        setAppSettings(appSettingMap, true);
     }
 
     public void clear() {
