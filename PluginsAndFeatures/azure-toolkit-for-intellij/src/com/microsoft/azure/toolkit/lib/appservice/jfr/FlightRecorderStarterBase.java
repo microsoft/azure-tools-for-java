@@ -31,11 +31,11 @@ import java.util.List;
 
 public abstract class FlightRecorderStarterBase {
     protected WebAppBase appService;
-    protected FlyRecorderKuduClient client;
+    protected FlightRecorderKuduClient client;
 
     public FlightRecorderStarterBase(@NotNull WebAppBase appService) {
         this.appService = appService;
-        client = new FlyRecorderKuduClient(appService);
+        client = new FlightRecorderKuduClient(appService);
     }
 
     public abstract List<ProcessInfo> listProcess() throws IOException;
