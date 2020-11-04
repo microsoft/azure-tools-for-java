@@ -23,10 +23,9 @@
 package com.microsoft.intellij.runner.functions.component.table;
 
 import com.intellij.ui.table.JBTable;
-import org.apache.commons.collections4.MapUtils;
 
-import javax.swing.ListSelectionModel;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
