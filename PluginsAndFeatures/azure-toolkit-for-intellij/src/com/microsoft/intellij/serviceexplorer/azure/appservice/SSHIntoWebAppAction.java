@@ -46,8 +46,8 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     private static final Logger logger = Logger.getLogger(SSHIntoWebAppAction.class.getName());
 
     private static final String WEBAPP_TERMINAL_TABLE_NAME = "SSH - %s";
-    private static final String RESOUCE_GROUP_PATH_PREFIX = "resourceGroups/";
-    private static final String RESOUCE_ELEMENT_PATTERN = "[^/]+";
+    private static final String RESOURCE_GROUP_PATH_PREFIX = "resourceGroups/";
+    private static final String RESOURCE_ELEMENT_PATTERN = "[^/]+";
 
     private final Project project;
     private final String resourceId;
@@ -64,7 +64,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
         this.resourceId = webAppNode.getId();
         this.webAppName = webAppNode.getWebAppName();
         this.subscriptionId = webAppNode.getSubscriptionId();
-        this.resourceGroupName = PatternUtils.parseWordByPatternAndPrefix(resourceId, RESOUCE_ELEMENT_PATTERN, RESOUCE_GROUP_PATH_PREFIX);
+        this.resourceGroupName = PatternUtils.parseWordByPatternAndPrefix(resourceId, RESOURCE_ELEMENT_PATTERN, RESOURCE_GROUP_PATH_PREFIX);
         this.os = webAppNode.getOs();
     }
 
