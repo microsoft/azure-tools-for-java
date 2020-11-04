@@ -64,6 +64,7 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String GLOBAL_SCM_SUFFIX = ".scm.azurewebsites.net";
 
     private static final Logger LOGGER = Logger.getLogger(AzureManagerBase.class.getName());
+    private static final String MICROSOFT_INSIGHTS_NAMESPACE = "microsoft.insights";
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
     protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
@@ -171,6 +172,13 @@ public abstract class AzureManagerBase implements AzureManager {
             return null;
         }
         return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
+            try {
+                // Register insights namespace first
+                final Azure azure = getAzure(sid);
+                azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
+            } catch (IOException e) {
+                // swallow exception while get azure client
+            }
             String tid = this.subscriptionManager.getSubscriptionTenant(sid);
             return authApplicationInsights(sid, tid);
         });
