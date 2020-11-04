@@ -47,10 +47,10 @@ import rx.functions.Func1;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class MyKuduClient {
+public class FlyRecorderKuduClient {
     private KuduService service;
 
-    public MyKuduClient(WebAppBase webAppBase) {
+    public FlyRecorderKuduClient(WebAppBase webAppBase) {
         if (webAppBase.defaultHostName() == null) {
             throw new UnsupportedOperationException("Cannot initialize kudu client before web app is created");
         }
@@ -113,7 +113,7 @@ public class MyKuduClient {
         return service.listProcess()
                       .flatMap((Func1<ResponseBody, Observable<ProcessInfo[]>>) responseBody -> {
                           final BufferedSource source = responseBody.source();
-                          return streamFromBufferedSource(source).map(MyKuduClient::jsonToProcessArray);
+                          return streamFromBufferedSource(source).map(FlyRecorderKuduClient::jsonToProcessArray);
                       });
     }
 
@@ -134,7 +134,7 @@ public class MyKuduClient {
 
         return service.execute(body).flatMap((Func1<ResponseBody, Observable<CommandOutput>>) responseBody -> {
             final BufferedSource source = responseBody.source();
-            return streamFromBufferedSource(source).map(MyKuduClient::jsonToCommandOutput);
+            return streamFromBufferedSource(source).map(FlyRecorderKuduClient::jsonToCommandOutput);
         });
     }
 

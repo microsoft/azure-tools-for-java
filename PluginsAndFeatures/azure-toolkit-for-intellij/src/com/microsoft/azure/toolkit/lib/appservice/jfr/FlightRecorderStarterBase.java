@@ -22,7 +22,6 @@
 
 package com.microsoft.azure.toolkit.lib.appservice.jfr;
 
-import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.ProcessInfo;
 import org.jetbrains.annotations.NotNull;
@@ -32,13 +31,11 @@ import java.util.List;
 
 public abstract class FlightRecorderStarterBase {
     protected WebAppBase appService;
-    protected PublishingProfile publishingProfile;
-    protected MyKuduClient client;
+    protected FlyRecorderKuduClient client;
 
     public FlightRecorderStarterBase(@NotNull WebAppBase appService) {
         this.appService = appService;
-        publishingProfile = appService.getPublishingProfile();
-        client = new MyKuduClient(appService);
+        client = new FlyRecorderKuduClient(appService);
     }
 
     public abstract List<ProcessInfo> listProcess() throws IOException;
