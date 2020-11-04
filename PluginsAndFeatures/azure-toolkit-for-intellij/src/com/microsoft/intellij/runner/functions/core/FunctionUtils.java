@@ -210,7 +210,7 @@ public class FunctionUtils {
 
         final List<File> jarFiles = new ArrayList<>();
         OrderEnumerator.orderEntries(module).productionOnly().forEachLibrary(lib -> {
-            if (ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
+            if (StringUtils.isNotEmpty(lib.getName()) && ArrayUtils.contains(lib.getName().split("\\:"), FUNCTION_JAVA_LIBRARY_ARTIFACT_ID)) {
                 return true;
             }
 
@@ -349,6 +349,9 @@ public class FunctionUtils {
 
     private static Binding getUserDefinedBinding(final Project project, PsiAnnotation annotation) throws AzureExecutionException {
         PsiJavaCodeReferenceElement referenceElement = annotation.getNameReferenceElement();
+        if (referenceElement == null) {
+            return null;
+        }
         PsiAnnotation customBindingAnnotation =
                 AnnotationUtil.findAnnotation((PsiModifierListOwner) referenceElement.resolve(),
                                               AZURE_FUNCTION_CUSTOM_BINDING_CLASS);
@@ -439,7 +442,7 @@ public class FunctionUtils {
         if (src != null && src.exists()) {
             FileUtils.copyFile(src, dest);
         } else {
-            FileUtils.write(src, defaultContent, Charset.defaultCharset());
+            FileUtils.write(dest, defaultContent, Charset.defaultCharset());
         }
     }
 
