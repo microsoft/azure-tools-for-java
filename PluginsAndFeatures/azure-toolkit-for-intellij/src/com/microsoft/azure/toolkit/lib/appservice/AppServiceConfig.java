@@ -32,20 +32,23 @@ import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @SuperBuilder
 public class AppServiceConfig {
-    public static final Platform DEFAULT_PLATFORM = Platform.Linux.JAVA8_TOMCAT9;
     public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
-
+    @Builder.Default
+    private MonitorConfig monitorConfig = MonitorConfig.builder().build();
     private String name;
     private Path application;
-    @Builder.Default
-    private Platform platform = DEFAULT_PLATFORM;
-
     private Subscription subscription;
     private ResourceGroup resourceGroup;
     private AppServicePlan servicePlan;
     private Region region;
+    @Builder.Default
+    private Map<String, String> appSettings = new HashMap<>();
+
+    protected Platform platform;
 }

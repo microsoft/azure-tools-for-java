@@ -20,42 +20,20 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
+package com.microsoft.azure.toolkit.intellij.appservice;
 
-import com.microsoft.azure.management.appservice.PricingTier;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
-public class PricingTierComboBox extends AzureComboBox<PricingTier> {
-
-    private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
-    private List<PricingTier> pricingTierList = Collections.EMPTY_LIST;
-
-    public PricingTierComboBox() {
-        super();
-    }
-
-    public void setDefaultPricingTier(final PricingTier defaultPricingTier) {
-        this.defaultPricingTier = defaultPricingTier;
-        setValue(defaultPricingTier);
-    }
-
-    public void setPricingTierList(final List<PricingTier> pricingTierList) {
-        this.pricingTierList = pricingTierList;
-    }
-
-    @Override
-    protected String getItemText(final Object item) {
-        return item == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ? "Consumption" : super.getItemText(item);
-    }
+public class LogLevelComboBox extends AzureComboBox<LogLevel> {
 
     @NotNull
     @Override
-    protected List<? extends PricingTier> loadItems() throws Exception {
-        return pricingTierList;
+    protected List<? extends LogLevel> loadItems() throws Exception {
+        return Arrays.asList(LogLevel.ERROR, LogLevel.WARNING, LogLevel.INFORMATION, LogLevel.VERBOSE);
     }
 }

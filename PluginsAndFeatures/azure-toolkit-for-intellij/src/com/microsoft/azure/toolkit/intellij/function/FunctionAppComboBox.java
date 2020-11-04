@@ -20,51 +20,48 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.webapp;
+package com.microsoft.azure.toolkit.intellij.function;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
-import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
+public class FunctionAppComboBox extends AppServiceComboBox<FunctionAppComboBoxModel> {
 
-    public WebAppComboBox(final Project project) {
+    public FunctionAppComboBox(final Project project) {
         super(project);
     }
 
     @Override
     protected void createResource() {
-        // todo: hide deployment part in creation dialog
-        WebAppCreationDialog webAppCreationDialog = new WebAppCreationDialog(project);
-        webAppCreationDialog.setDeploymentVisible(false);
-        webAppCreationDialog.setOkActionListener(webAppConfig -> {
-            final WebAppComboBoxModel newModel =
-                    new WebAppComboBoxModel(WebAppService.convertConfig2Settings(webAppConfig));
+        FunctionAppCreationDialog functionAppCreationDialog = new FunctionAppCreationDialog(project);
+        functionAppCreationDialog.setOkActionListener(functionAppConfig -> {
+            FunctionAppComboBoxModel newModel = new FunctionAppComboBoxModel(functionAppConfig);
             newModel.setNewCreateResource(true);
-            WebAppComboBox.this.addItem(newModel);
-            WebAppComboBox.this.setSelectedItem(newModel);
-            DefaultLoader.getIdeHelper().invokeLater(webAppCreationDialog::close);
+            FunctionAppComboBox.this.addItem(newModel);
+            FunctionAppComboBox.this.setSelectedItem(newModel);
+            DefaultLoader.getIdeHelper().invokeLater(functionAppCreationDialog::close);
         });
-        webAppCreationDialog.show();
+        functionAppCreationDialog.showAndGet();
     }
 
     @NotNull
     @Override
-    protected List<WebAppComboBoxModel> loadItems() throws Exception {
-        final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
-        return webApps.stream()
-                      .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-                      .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-                      .map(webAppResourceEx -> new WebAppComboBoxModel(webAppResourceEx))
-                      .collect(Collectors.toList());
+    protected List<? extends FunctionAppComboBoxModel> loadItems() throws Exception {
+        final List<ResourceEx<FunctionApp>> functions = AzureFunctionMvpModel.getInstance().listAllFunctions(false);
+        return functions.stream()
+                        .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
+                        .sorted((a, b) -> StringUtils.compareIgnoreCase(a.getResource().name(), b.getResource().name()))
+                        .map(function -> new FunctionAppComboBoxModel(function))
+                        .collect(Collectors.toList());
     }
 }

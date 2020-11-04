@@ -19,15 +19,27 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.microsoft.azure.toolkit.lib.appservice;
 
-package com.microsoft.intellij.runner.functions.deploy.ui;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
-import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
+@Data
+@SuperBuilder
+public class ApplicationInsightsConfig {
+    private boolean newCreate;
+    private String name;
+    private String instrumentationKey;
 
-import java.util.Map;
+    public ApplicationInsightsConfig(String name) {
+        this.newCreate = true;
+        this.name = name;
+    }
 
-public interface FunctionDeployMvpView extends MvpView {
-    void beforeFillAppSettings();
-
-    void fillAppSettings(Map<String, String> appSettings);
+    public ApplicationInsightsConfig(ApplicationInsightsComponent component) {
+        this.newCreate = false;
+        this.name = component.name();
+        this.instrumentationKey = component.instrumentationKey();
+    }
 }
