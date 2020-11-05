@@ -121,6 +121,9 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
 
+    compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
+    compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.9'
+
     testCompile 'junit:junit:4.13'
     testCompile 'info.cukes:cucumber-junit:1.2.6'
     testCompile 'info.cukes:cucumber-java:1.2.6'
