@@ -211,8 +211,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel);
         }
         if (configuration.getAzureArtifactType() != null) {
-            lastSelectedAzureArtifact =
-                    AzureArtifactManager.getInstance(project).getAzureArtifactById(configuration.getArtifactIdentifier());
+            lastSelectedAzureArtifact = AzureArtifactManager
+                    .getInstance(project)
+                    .getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
             comboBoxArtifact.refreshItems(lastSelectedAzureArtifact);
         } else {
             comboBoxArtifact.refreshItems();
@@ -259,8 +260,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         toggleSlotPanel(configuration.isDeployToSlot() && selectedWebApp != null);
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
-            configuration.setSlotName(cbxSlotName.getSelectedItem() == null ? "" :
-                                      cbxSlotName.getSelectedItem().toString());
+            configuration.setSlotName(cbxSlotName.getSelectedItem() == null ? "" : cbxSlotName.getSelectedItem().toString());
             if (rbtNewSlot.isSelected()) {
                 configuration.setSlotName(Constants.CREATE_NEW_SLOT);
                 configuration.setNewSlotName(txtNewSlotName.getText());

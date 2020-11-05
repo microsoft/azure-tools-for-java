@@ -150,6 +150,9 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     }
 
     private void resetDefaultValue(final AzureArtifact defaultArtifact) {
+        if (defaultArtifact == null) {
+            return;
+        }
         final List<AzureArtifact> artifacts = this.getItems();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
         final Predicate<AzureArtifact> predicate = artifact -> manager.equalsAzureArtifactIdentifier(defaultArtifact, artifact);
