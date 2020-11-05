@@ -4,7 +4,7 @@
 ## 3.45.0
 ### Added
 - Add file explorer for Web App and Function App in Azure explorer
-- Suuport flight recorder for Web App
+- Support flight recorder for Web App
 
 ### Changed
 - New creation wizard for Function App with basic and advanced mode
