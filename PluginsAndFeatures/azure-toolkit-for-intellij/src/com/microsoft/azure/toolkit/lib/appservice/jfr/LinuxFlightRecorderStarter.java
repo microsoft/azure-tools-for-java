@@ -94,6 +94,11 @@ public class LinuxFlightRecorderStarter extends FlightRecorderStarterBase {
 
     @Override
     public String getFinalJfrPath(String filename) {
-        return Paths.get(HOME_PATH, filename).toString();
+        return Paths.get(HOME_PATH, filename).toString().replaceAll("\\\\", "/");
+    }
+
+    public byte[] downloadJFRFile(String fileName) {
+        // linux kudu vfs api doesn't support absolute path
+        return client.getFileContent(fileName);
     }
 }

@@ -56,12 +56,15 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        AzureValidationInfo result = AzureFormInputComponent.super.doValidate();
-        if (result.getType() == AzureValidationInfo.Type.ERROR) {
-            return result;
+        if (!this.isEnabled()) {
+            return AzureValidationInfo.OK;
         }
         final String input = getText();
         if (StringUtils.isEmpty(input)) {
+            if (this.isRequired()) {
+                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                return builder.message(MSG_REQUIRED).input(this).type(AzureValidationInfo.Type.ERROR).build();
+            }
             return AzureValidationInfo.OK;
         }
         Integer value = getValue();
