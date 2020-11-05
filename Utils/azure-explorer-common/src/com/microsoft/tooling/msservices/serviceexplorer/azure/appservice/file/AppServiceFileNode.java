@@ -31,7 +31,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import lombok.extern.java.Log;
-import rx.Observable;
 
 import javax.swing.*;
 

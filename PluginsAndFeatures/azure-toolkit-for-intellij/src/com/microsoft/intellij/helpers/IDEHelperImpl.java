@@ -48,6 +48,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.artifacts.ArtifactUtil;
@@ -484,7 +485,7 @@ public class IDEHelperImpl implements IDEHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
         final String error = String.format("Error occurs while opening file[%s].", virtualFile.getName());
-        final String failure = String.format("Can not open file %s.", virtualFile.getName());
+        final String failure = String.format("Can not open file %s. Try downloading it first and open it manually.", virtualFile.getName());
         final Consumer<Throwable> errorHandler = (Throwable e) -> {
             log.log(Level.WARNING, error, e);
             DefaultLoader.getUIHelper().showException(error, e, "Error Opening File", false, true);
@@ -531,14 +532,14 @@ public class IDEHelperImpl implements IDEHelper {
                 indicator.setIndeterminate(true);
                 writeContentTo(new FileOutputStream(destFile), file, errorHandler)
                     .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> notifyDownloadSuccess(file, destFile))
+                    .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
                     .subscribe();
             }
         };
         ProgressManager.getInstance().run(task);
     }
 
-    private void notifyDownloadSuccess(final AppServiceFile file, final File dest) {
+    private void notifyDownloadSuccess(final AppServiceFile file, final File dest, final Project project) {
         final String title = "File downloaded";
         final File directory = dest.getParentFile();
         final String message = String.format("File [%s] is successfully downloaded into [%s]", file.getName(), directory.getAbsolutePath());
@@ -549,10 +550,14 @@ public class IDEHelperImpl implements IDEHelper {
                 BrowserUtil.browse(directory);
             }
         });
-        notification.addAction(new AnAction("Open File") {
+        notification.addAction(new AnAction("Open In Editor") {
             @Override
             public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
-                BrowserUtil.browse(dest);
+                final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+                final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
+                if (Objects.nonNull(virtualFile)) {
+                    fileEditorManager.openFile(virtualFile, true, true);
+                }
             }
         });
         Notifications.Bus.notify(notification);
