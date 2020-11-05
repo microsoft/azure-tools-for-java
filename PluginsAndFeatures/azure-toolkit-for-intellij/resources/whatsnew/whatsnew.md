@@ -1,6 +1,21 @@
 <!-- Version: 3.44.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
+## 3.45.0
+### Added
+- Add file explorer for Web App and Function App in Azure explorer
+- Suuport flight recorder for Web App
+
+### Changed
+- New creation wizard for Function App with basic and advanced mode
+- More monitoring configuration in Web App/Function App creation wizard
+- Update template for function project
+
+### Fixed
+- [#4703](https://github.com/microsoft/azure-tools-for-java/pull/4703) Fix NPE issue in Function creation/deployment
+- [#4707](https://github.com/microsoft/azure-tools-for-java/pull/4707) Enhace error handling for azure cli token expires
+- [#4710](https://github.com/microsoft/azure-tools-for-java/pull/4710) Register service provider for insights before get insights client
+
 ## 3.44.0
 We are proud to announce the support for JBoss in IntelliJ Toolkit! You can now create JBoss Linux app service with totally new resource creation experience. You may create Web App more easily in the simple mode, while you could still set all the parameters in advance mode if necessary.
 
