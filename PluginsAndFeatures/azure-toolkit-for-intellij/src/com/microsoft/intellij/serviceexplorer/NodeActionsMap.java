@@ -30,6 +30,7 @@ import com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAct
 import com.microsoft.azure.toolkit.intellij.function.action.DeployFunctionAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.CreateWebAppAction;
 import com.microsoft.azure.toolkit.intellij.webapp.action.DeployWebAppAction;
+import com.microsoft.intellij.serviceexplorer.azure.appservice.ProfileFlightRecordAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
@@ -120,7 +121,8 @@ public class NodeActionsMap {
 
         node2Actions.put(WebAppNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).add(SSHIntoWebAppAction.class)
-                .add(DeployWebAppAction.class).build());
+                .add(DeployWebAppAction.class)
+                .add(ProfileFlightRecordAction.class).build());
 
         node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                 .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
