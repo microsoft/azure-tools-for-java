@@ -35,7 +35,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @Setter
@@ -45,6 +47,9 @@ public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @NotNull
     @Override
     protected List<ProcessInfo> loadItems() throws Exception {
+        if (Objects.isNull(appService)) {
+            return Collections.emptyList();
+        }
         return FlightRecorderManager.getFlightRecorderStarter(appService).listProcess();
     }
 

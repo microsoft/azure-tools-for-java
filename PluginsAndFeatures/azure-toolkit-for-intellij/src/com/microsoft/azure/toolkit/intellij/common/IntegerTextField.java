@@ -56,7 +56,7 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        if (!this.isEnabled()) {
+        if (!this.isEnabled() || !this.isVisible()) {
             return AzureValidationInfo.OK;
         }
         final String input = getText();
