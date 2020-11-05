@@ -25,6 +25,7 @@ package com.microsoft.intellij.helpers;
 import com.google.common.util.concurrent.*;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
+import com.intellij.ide.actions.RevealFileAction;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -544,10 +545,10 @@ public class IDEHelperImpl implements IDEHelper {
         final File directory = dest.getParentFile();
         final String message = String.format("File [%s] is successfully downloaded into [%s]", file.getName(), directory.getAbsolutePath());
         final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
-        notification.addAction(new AnAction("Open Directory") {
+        notification.addAction(new AnAction(RevealFileAction.getActionName()) {
             @Override
             public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
-                BrowserUtil.browse(directory);
+                RevealFileAction.openFile(dest);
             }
         });
         notification.addAction(new AnAction("Open In Editor") {
