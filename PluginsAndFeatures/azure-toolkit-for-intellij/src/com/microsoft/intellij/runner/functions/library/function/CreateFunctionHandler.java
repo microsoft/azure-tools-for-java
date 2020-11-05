@@ -162,10 +162,13 @@ public class CreateFunctionHandler {
                 throw new AzureExecutionException(String.format("Unsupported runtime %s", os));
         }
         return builder.appName(ctx.getAppName()).resourceGroup(ctx.getResourceGroup()).runtime(ctx.getRuntime())
-                .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
-                .servicePlanName(ctx.getAppServicePlanName())
-                .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
-                .functionExtensionVersion(getFunctionExtensionVersion()).azure(this.ctx.getAzureClient()).build();
+                      .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
+                      .servicePlanName(ctx.getAppServicePlanName())
+                      .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
+                      .functionExtensionVersion(getFunctionExtensionVersion())
+                      .azure(this.ctx.getAzureClient())
+                      .javaVersion(FunctionUtils.parseJavaVersion(ctx.getJavaVersion()))
+                      .build();
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
