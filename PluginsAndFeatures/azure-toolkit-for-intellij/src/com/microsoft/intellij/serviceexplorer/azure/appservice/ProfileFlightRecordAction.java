@@ -29,11 +29,14 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.intellij.appservice.jfr.RunFlightRecorderDialog;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderStarterBase;
+import com.microsoft.azuretools.telemetry.TelemetryConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.Name;
@@ -74,18 +77,20 @@ public class ProfileFlightRecordAction extends NodeActionListener {
                                                         appService.name()));
             return;
         }
-        if (StringUtils.equalsIgnoreCase(appService.state(), "running")) {
+        if (!StringUtils.equalsIgnoreCase(appService.state(), "running")) {
             notifyUserWithErrorMessage("App service not running", String.format("App service '%s' is not running.",
                                                                  appService.name()));
             return;
         }
-
-        DefaultLoader.getIdeHelper().runInBackground(project,
-                                                     PROFILE_FLIGHT_RECORDER,
-                                                     true,
-                                                     true,
-                                                     PROFILE_FLIGHT_RECORDER,
-                                                     this::doProfileFlightRecorderAll);
+        EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
+                                 "start-flight-recorder", op -> {
+                DefaultLoader.getIdeHelper().runInBackground(project,
+                                                         PROFILE_FLIGHT_RECORDER,
+                                                         true,
+                                                         true,
+                                                         PROFILE_FLIGHT_RECORDER,
+                                                         this::doProfileFlightRecorderAll);
+            });
     }
 
     private void doProfileFlightRecorderAll() {

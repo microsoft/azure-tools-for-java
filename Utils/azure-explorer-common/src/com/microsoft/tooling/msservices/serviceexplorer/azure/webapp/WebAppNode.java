@@ -35,6 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.Ap
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
     public static final String SSH_INTO = "SSH into Web App (Preview)";
+    public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     private final WebApp webapp;
@@ -152,6 +154,8 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
         getNodeActionByName(SSH_INTO).setEnabled(running);
+        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running && !StringUtils.containsIgnoreCase(this.webapp.linuxFxVersion(),
+                                                                                                          "DOCKER|"));
         return super.getNodeActions();
     }
 
