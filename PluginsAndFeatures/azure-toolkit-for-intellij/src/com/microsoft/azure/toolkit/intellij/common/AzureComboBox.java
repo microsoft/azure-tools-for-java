@@ -29,6 +29,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
+import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -132,6 +133,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             super.setSelectedItem(items.get(0));
         } else if (items.contains(this.value)) {
             super.setSelectedItem(this.value);
+        } else if (value instanceof Draft) {
+            // todo: unify model for customer created resource
+            super.addItem(value);
+            super.setSelectedItem(value);
         } else {
             super.setSelectedItem(null);
         }

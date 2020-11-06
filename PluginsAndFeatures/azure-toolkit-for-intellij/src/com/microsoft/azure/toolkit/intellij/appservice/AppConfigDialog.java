@@ -54,16 +54,18 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
 
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
-        final AzureFormPanel<T> basicForm = this.getBasicFormPanel();
-        final AzureFormPanel<T> advancedForm = this.getAdvancedFormPanel();
-        if (advancedMode) {
-            basicForm.setVisible(false);
-            advancedForm.setVisible(true);
-        } else {
-            basicForm.setVisible(true);
-            advancedForm.setVisible(false);
-        }
+        final AzureFormPanel<T> previousForm = advancedMode ? this.getBasicFormPanel() : this.getAdvancedFormPanel();
+        final AzureFormPanel<T> followingForm = advancedMode ? this.getAdvancedFormPanel() : this.getBasicFormPanel();
+        previousForm.setVisible(false);
+        followingForm.setData(previousForm.getData());
+        followingForm.setVisible(true);
         this.repaint();
+    }
+
+    protected void setFrontPanel(AzureFormPanel<T> panel) {
+        getBasicFormPanel().setVisible(false);
+        getAdvancedFormPanel().setVisible(false);
+        panel.setVisible(true);
     }
 
     protected abstract AzureFormPanel<T> getAdvancedFormPanel();

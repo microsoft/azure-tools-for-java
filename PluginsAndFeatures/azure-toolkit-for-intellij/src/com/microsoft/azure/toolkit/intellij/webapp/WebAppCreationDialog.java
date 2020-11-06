@@ -42,7 +42,7 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public WebAppCreationDialog(Project project) {
         super(project);
         this.init();
-        this.toggleAdvancedMode(false);
+        setFrontPanel(basicForm);
     }
 
     public void setDeploymentVisible(boolean visible) {
@@ -80,7 +80,7 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
         // TODO: place custom component creation code here
         advancedForm = new WebAppConfigFormPanelAdvance(project);
 
-        basicForm = new AppServiceInfoBasicPanel(project, () -> WebAppConfig.builder().build());
+        basicForm = new AppServiceInfoBasicPanel(project, WebAppConfig::getWebAppDefaultConfig);
         basicForm.setDeploymentVisible(false);
     }
 }

@@ -36,9 +36,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class AppServiceConfig {
-    public static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
+    public static final Region DEFAULT_REGION = Region.US_WEST;
     @Builder.Default
     private MonitorConfig monitorConfig = MonitorConfig.builder().build();
     private String name;
@@ -47,6 +47,7 @@ public class AppServiceConfig {
     private ResourceGroup resourceGroup;
     private AppServicePlan servicePlan;
     private Region region;
+    private PricingTier pricingTier;
     @Builder.Default
     private Map<String, String> appSettings = new HashMap<>();
 
