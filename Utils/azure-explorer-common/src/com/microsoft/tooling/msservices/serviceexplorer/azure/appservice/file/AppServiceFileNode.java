@@ -31,7 +31,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule;
 import lombok.extern.java.Log;
-import rx.Observable;
 
 import javax.swing.*;
 
@@ -55,10 +54,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         this.addAction("Download", new NodeActionListener() {
             @Override
             protected void actionPerformed(final NodeActionEvent e) {
-                final Observable<byte[]> content = AppServiceFileNode.this.fileService.getFileContent(file.getPath());
-                file.setContent(content);
                 DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
-                file.setContent(null);
             }
         });
     }
@@ -81,12 +77,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
             DefaultLoader.getUIHelper().showError("File is too large, please download it first", "File is Too Large");
             return;
         }
-        final Runnable runnable = () -> {
-            final Observable<byte[]> content = AppServiceFileNode.this.fileService.getFileContent(this.file.getPath());
-            this.file.setContent(content);
-            DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
-            this.file.setContent(null);
-        };
+        final Runnable runnable = () -> DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
         final String message = String.format("fetching file %s...", this.file.getName());
         DefaultLoader.getIdeHelper().runInBackground(this.getProject(), message, false, true, null, runnable);
     }
