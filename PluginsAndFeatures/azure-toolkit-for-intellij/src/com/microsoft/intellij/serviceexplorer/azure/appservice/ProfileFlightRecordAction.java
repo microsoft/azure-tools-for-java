@@ -98,7 +98,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText(String.format("Start to profile Web App (%s)....", appService.name()));
             CountDownLatch finishLatch = new CountDownLatch(1);
-            ApplicationManager.getApplication().invokeLater(() -> {
+            ApplicationManager.getApplication().invokeAndWait(() -> {
                 FlightRecorderConfiguration config = collectFlightRecorderConfiguration();
                 if (Objects.isNull(config)) {
                     PluginUtil.showWarningNotificationProject(
