@@ -35,12 +35,13 @@ import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,16 +55,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     private List<PricingTier> pricingTierList = new ArrayList<>(PricingTier.getAll());
     private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
 
-    @Override
-    protected String getItemText(final Object item) {
-        if (Objects.isNull(item)) {
-            return EMPTY_ITEM;
-        }
-        if (item instanceof Draft) {
-            return "(New) " + ((AppServicePlan) item).name();
-        }
-        return ((AppServicePlan) item).name();
-    }
+    private Predicate<AppServicePlan> servicePlanFilter;
 
     public void setSubscription(Subscription subscription) {
         if (Objects.equals(subscription, this.subscription)) {
@@ -98,9 +90,21 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
         this.refreshItems();
     }
 
-    public void setValidPricingTierList(final List<PricingTier> pricingTierList, final PricingTier defaultPricingTier) {
+    public void setValidPricingTierList(@NotNull final List<PricingTier> pricingTierList, @NotNull final PricingTier defaultPricingTier) {
         this.pricingTierList = pricingTierList;
         this.defaultPricingTier = defaultPricingTier;
+        this.servicePlanFilter = appServicePlan -> pricingTierList.contains(defaultPricingTier);
+    }
+
+    @Override
+    protected String getItemText(final Object item) {
+        if (Objects.isNull(item)) {
+            return EMPTY_ITEM;
+        }
+        if (item instanceof Draft) {
+            return "(New) " + ((AppServicePlan) item).name();
+        }
+        return ((AppServicePlan) item).name();
     }
 
     @NotNull
@@ -118,11 +122,14 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
                 .listAppServicePlanBySubscriptionId(subscription.subscriptionId());
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
-            if (Objects.nonNull(this.region)) {
+            if (Objects.nonNull(this.region)        ) {
                 stream = stream.filter(p -> Objects.equals(p.region(), this.region));
             }
             if (Objects.nonNull(this.os)) {
                 stream = stream.filter(p -> p.operatingSystem() == this.os);
+            }
+            if (Objects.nonNull(this.servicePlanFilter)) {
+                stream = stream.filter(servicePlanFilter);
             }
             stream = stream.sorted((first, second) -> StringUtils.compare(first.name(), second.name()));
             return stream.collect(Collectors.toList());
