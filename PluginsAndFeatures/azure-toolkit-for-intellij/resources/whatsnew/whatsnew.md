@@ -1,7 +1,19 @@
-<!-- Version: 3.44.0 -->
+<!-- Version: 3.45.0 -->
 # What's new in Azure Toolkit for IntelliJ
 
 ## 3.45.0
+Flight recorder support was added in the latest Azure Toolkit for IntelliJ v3.45.0! You may monitor your online app
+ service in Azure explorer with single click and analyze the report with [Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/) or IntelliJ (requires 2020.2 above Ultimate).
+
+<img src="https://user-images.githubusercontent.com/12445236/98337280-55d74100-2043-11eb-9de1-8fa39c4e80bb.gif" width="800" height="600" />
+
+Besides, file explorer is also added to Azure explorer, you could view and manage your files and logs in app service
+ with this new feature.
+
+![File Explorer](https://user-images.githubusercontent.com/12445236/98337930-54f2df00-2044-11eb-991b-df6a60b1afa7.png)
+
+For all the updates and fixes in this release, please refer the release notes below.
+
 ### Added
 - Add file explorer for Web App and Function App in Azure explorer
 - Support flight recorder for Web App
