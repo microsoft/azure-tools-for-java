@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
+import com.google.common.base.Throwables;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.arm.resources.AzureConfigurable;
 import com.microsoft.azure.credentials.AzureTokenCredentials;
@@ -31,6 +32,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementa
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.*;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
@@ -45,6 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -136,7 +139,10 @@ public abstract class AzureManagerBase implements AzureManager {
                 }
             } catch (final Exception e) {
                 // just skip for cases user failing to get subscriptions of tenants he/she has no permission to get access token.
-                if (e instanceof AzureRuntimeException && ((AzureRuntimeException) e).getCode() == ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN.getErrorCode()) {
+                // "AADSTS50076" is the code of a weired error related to multi-tenant configuration.
+                final Predicate<Throwable> tenantError = (c) -> c instanceof AuthException && ((AuthException) c).getErrorMessage().contains("AADSTS50076");
+                if (e instanceof AzureRuntimeException && ((AzureRuntimeException) e).getCode() == ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN.getErrorCode() ||
+                    Throwables.getCausalChain(e).stream().anyMatch(tenantError)) {
                     // TODO: @wangmi better to notify user
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
                 } else {
