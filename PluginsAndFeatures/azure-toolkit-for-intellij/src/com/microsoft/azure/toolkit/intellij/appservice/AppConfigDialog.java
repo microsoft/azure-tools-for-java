@@ -35,11 +35,13 @@ import javax.swing.*;
 public abstract class AppConfigDialog<T extends AppServiceConfig>
     extends AzureDialog<T> {
     public static final String LABEL_ADVANCED_MODE = "More settings";
+    protected Project project;
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;
 
     public AppConfigDialog(Project project) {
         super(project);
+        this.project = project;
     }
 
     public void setData(final T config) {

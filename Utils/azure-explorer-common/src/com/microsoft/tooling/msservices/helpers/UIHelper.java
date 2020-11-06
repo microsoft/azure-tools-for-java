@@ -158,4 +158,12 @@ public interface UIHelper {
     default void showInfoNotification(String title, String message) {
 
     }
+
+    default void showErrorNotification(String title, String message) {
+
+    }
+
+    default void showWarningNotification(String title, String message) {
+
+    }
 }

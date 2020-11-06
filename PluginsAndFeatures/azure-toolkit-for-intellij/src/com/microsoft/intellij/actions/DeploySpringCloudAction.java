@@ -22,6 +22,7 @@
 
 
 package com.microsoft.intellij.actions;
+
 import com.intellij.execution.BeforeRunTask;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
@@ -39,7 +40,6 @@ import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.runner.springcloud.SpringCloudConfigurationType;
-import com.microsoft.intellij.util.MavenUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +53,7 @@ public class DeploySpringCloudAction extends AzureAnAction {
 
     @Override
     public void update(AnActionEvent event) {
-        event.getPresentation().setEnabledAndVisible(MavenUtils.isMavenProject(event.getProject()));
+        event.getPresentation().setEnabledAndVisible(true);
     }
 
     @Override

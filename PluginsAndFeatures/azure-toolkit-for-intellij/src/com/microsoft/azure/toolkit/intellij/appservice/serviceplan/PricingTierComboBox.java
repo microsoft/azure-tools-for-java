@@ -25,21 +25,37 @@ package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PricingTierComboBox extends AzureComboBox<PricingTier> {
-    public static PricingTier DEFAULT_TIER = PricingTier.BASIC_B2;
+
+    private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
+    private List<PricingTier> pricingTierList = Collections.EMPTY_LIST;
 
     public PricingTierComboBox() {
         super();
-        this.setValue(DEFAULT_TIER);
+    }
+
+    public void setDefaultPricingTier(final PricingTier defaultPricingTier) {
+        this.defaultPricingTier = defaultPricingTier;
+        setValue(defaultPricingTier);
+    }
+
+    public void setPricingTierList(final List<PricingTier> pricingTierList) {
+        this.pricingTierList = pricingTierList;
+    }
+
+    @Override
+    protected String getItemText(final Object item) {
+        return item == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ? "Consumption" : super.getItemText(item);
     }
 
     @NotNull
     @Override
     protected List<? extends PricingTier> loadItems() throws Exception {
-        return AzureMvpModel.getInstance().listPricingTier();
+        return pricingTierList;
     }
 }

@@ -25,7 +25,13 @@ package com.microsoft.intellij.helpers;
 import com.google.common.util.concurrent.*;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
+import com.intellij.ide.actions.RevealFileAction;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.CompileContext;
@@ -43,6 +49,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packaging.artifacts.Artifact;
 import com.intellij.packaging.impl.artifacts.ArtifactUtil;
@@ -50,6 +57,7 @@ import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
 import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
+import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -471,16 +479,17 @@ public class IDEHelperImpl implements IDEHelper {
     private static final Key<String> APP_SERVICE_FILE_ID = new Key<>("APP_SERVICE_FILE_ID");
     private static final String ERROR_DOWNLOADING = "Failed to download file[%s] to [%s].";
     private static final String SUCCESS_DOWNLOADING = "File[%s] is successfully downloaded to [%s].";
+    private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
     @SneakyThrows
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
-        final String error = String.format("Error occurs when opening file[%s].", virtualFile.getName());
-        final String failure = String.format("Can not open file %s.", virtualFile.getName());
+        final String error = String.format("Error occurs while opening file[%s].", virtualFile.getName());
+        final String failure = String.format("Can not open file %s. Try downloading it first and open it manually.", virtualFile.getName());
         final Consumer<Throwable> errorHandler = (Throwable e) -> {
             log.log(Level.WARNING, error, e);
-            DefaultLoader.getUIHelper().showError(error, "Open File");
+            DefaultLoader.getUIHelper().showException(error, e, "Error Opening File", false, true);
         };
         final String title = String.format("Opening file %s...", virtualFile.getName());
         final Task.Modal task = new Task.Modal(null, title, true) {
@@ -488,7 +497,7 @@ public class IDEHelperImpl implements IDEHelper {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
-                writeContentTo(virtualFile.getOutputStream(null), file.getContent(), errorHandler)
+                writeContentTo(virtualFile.getOutputStream(null), file, errorHandler)
                     .doOnError(errorHandler::accept)
                     .doOnCompleted(() -> ApplicationManager.getApplication().invokeLater(() -> {
                         if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
@@ -522,19 +531,44 @@ public class IDEHelperImpl implements IDEHelper {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
-                writeContentTo(new FileOutputStream(destFile), file.getContent(), errorHandler)
+                writeContentTo(new FileOutputStream(destFile), file, errorHandler)
                     .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> UIUtils.showNotification(project, success, MessageType.INFO))
+                    .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
                     .subscribe();
             }
         };
         ProgressManager.getInstance().run(task);
     }
 
+    private void notifyDownloadSuccess(final AppServiceFile file, final File dest, final Project project) {
+        final String title = "File downloaded";
+        final File directory = dest.getParentFile();
+        final String message = String.format("File [%s] is successfully downloaded into [%s]", file.getName(), directory.getAbsolutePath());
+        final Notification notification = new Notification(NOTIFICATION_GROUP_ID, title, message, NotificationType.INFORMATION);
+        notification.addAction(new AnAction(RevealFileAction.getActionName()) {
+            @Override
+            public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
+                RevealFileAction.openFile(dest);
+            }
+        });
+        notification.addAction(new AnAction("Open In Editor") {
+            @Override
+            public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
+                final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+                final VirtualFile virtualFile = VfsUtil.findFileByIoFile(dest, true);
+                if (Objects.nonNull(virtualFile)) {
+                    fileEditorManager.openFile(virtualFile, true, true);
+                }
+            }
+        });
+        Notifications.Bus.notify(notification);
+    }
+
     @SneakyThrows
     private Observable<byte[]> writeContentTo(final OutputStream output,
-                                              final Observable<byte[]> content,
+                                              final AppServiceFile file,
                                               final Consumer<? super Throwable> errorHandler) {
+        final Observable<byte[]> content = AppServiceFileService.forApp(file.getApp()).getFileContent(file.getPath());
         return content.doOnTerminate(() -> {
             try {
                 output.flush();

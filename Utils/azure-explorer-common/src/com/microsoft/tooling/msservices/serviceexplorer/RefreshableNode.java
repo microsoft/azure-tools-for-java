@@ -98,7 +98,7 @@ public abstract class RefreshableNode extends Node {
                 refreshItems();
                 future.set(getChildNodes());
             } catch (AzureRuntimeException e) {
-                DefaultLoader.getUIHelper().showInfoNotification("MS Services - Error Refreshing Nodes", ErrorEnum.getDisplayMessageByCode(e.getCode()));
+                DefaultLoader.getUIHelper().showErrorNotification("Error occurred while refreshing node", ErrorEnum.getDisplayMessageByCode(e.getCode()));
             } catch (Exception e) {
                 future.setException(e);
             } finally {

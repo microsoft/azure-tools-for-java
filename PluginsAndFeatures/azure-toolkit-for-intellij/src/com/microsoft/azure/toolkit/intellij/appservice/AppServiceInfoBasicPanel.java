@@ -20,17 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.webapp;
+package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.toolkit.intellij.appservice.AppNameInput;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
+import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
@@ -52,12 +52,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
-public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel<WebAppConfig> {
-    private final Project project;
+public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel implements AzureFormPanel<T> {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyMMddHHmmss");
     private static final int RG_NAME_MAX_LENGTH = 90;
     private static final int SP_NAME_MAX_LENGTH = 40;
+    private final Project project;
+    private final Supplier<T> supplier;
 
     private JPanel contentPanel;
 
@@ -69,9 +71,10 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     private Subscription subscription;
     private Region defaultRegion;
 
-    public WebAppConfigFormPanelBasic(final Project project) {
+    public AppServiceInfoBasicPanel(final Project project, final Supplier<T> supplier) {
         super();
         this.project = project;
+        this.supplier = supplier;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
@@ -109,7 +112,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
 
     @SneakyThrows
     @Override
-    public WebAppConfig getData() {
+    public T getData() {
         final String date = DATE_FORMAT.format(new Date());
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
@@ -118,7 +121,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
         final PricingTier tier = WebAppConfig.DEFAULT_PRICING_TIER;
         final Region region = this.getRegion();
 
-        final WebAppConfig config = WebAppConfig.builder().build();
+        final T config = supplier.get();
         config.setSubscription(this.subscription);
         final DraftResourceGroup group = DraftResourceGroup.builder().build();
         group.setName(StringUtils.substring(String.format("rg-%s", name), 0, RG_NAME_MAX_LENGTH));
@@ -145,7 +148,7 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     }
 
     @Override
-    public void setData(final WebAppConfig config) {
+    public void setData(final T config) {
         this.textName.setValue(config.getName());
         this.selectorPlatform.setValue(config.getPlatform());
     }
@@ -164,6 +167,10 @@ public class WebAppConfigFormPanelBasic extends JPanel implements AzureFormPanel
     public void setVisible(final boolean visible) {
         this.contentPanel.setVisible(visible);
         super.setVisible(visible);
+    }
+
+    public PlatformComboBox getSelectorPlatform() {
+        return selectorPlatform;
     }
 
     private void createUIComponents() {

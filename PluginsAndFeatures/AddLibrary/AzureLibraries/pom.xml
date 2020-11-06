@@ -28,7 +28,7 @@
     <parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>utils</artifactId>
-    <version>3.45.0</version>
+    <version>3.46.0</version>
     </parent>
     <groupId>com.microsoft.azuretools</groupId>
     <artifactId>com.microsoft.azuretools.sdk.lib</artifactId>
@@ -38,7 +38,7 @@
     <organization><name>Microsoft Corp.</name></organization>
 
     <properties>
-        <azuretool.version>3.45.0</azuretool.version>
+        <azuretool.version>3.46.0</azuretool.version>
         <azuretool.sdk.version>3.25.0.qualifier</azuretool.sdk.version>
     </properties>
     <dependencies>

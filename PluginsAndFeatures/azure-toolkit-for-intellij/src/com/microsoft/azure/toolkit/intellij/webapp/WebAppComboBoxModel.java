@@ -24,7 +24,7 @@ package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.toolkit.intellij.appservice.AppComboBoxModel;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBoxModel;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
@@ -32,7 +32,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 @Getter
-public class WebAppComboBoxModel extends AppComboBoxModel<WebApp> {
+public class WebAppComboBoxModel extends AppServiceComboBoxModel<WebApp> {
 
     private String runtime;
     private WebAppSettingModel webAppSettingModel;
@@ -65,10 +65,4 @@ public class WebAppComboBoxModel extends AppComboBoxModel<WebApp> {
         this.webAppSettingModel = webAppSettingModel;
     }
 
-    public static boolean isSameWebApp(WebAppComboBoxModel first, WebAppComboBoxModel second) {
-        return StringUtils.equalsAnyIgnoreCase(first.resourceId, second.resourceId) ||
-                (StringUtils.equalsAnyIgnoreCase(first.appName, second.appName) &&
-                        StringUtils.equalsAnyIgnoreCase(first.resourceGroup, second.resourceGroup) &&
-                        StringUtils.equalsAnyIgnoreCase(first.subscriptionId, second.subscriptionId));
-    }
 }

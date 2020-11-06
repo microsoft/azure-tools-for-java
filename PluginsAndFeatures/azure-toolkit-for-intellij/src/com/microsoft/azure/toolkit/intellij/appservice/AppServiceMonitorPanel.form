@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.microsoft.azure.toolkit.intellij.appservice.AppServiceMonitorPanel">
+  <grid id="27dc6" binding="pnlRoot" layout-manager="GridLayoutManager" row-count="9" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="374"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="9ce49" class="com.intellij.ui.TitledSeparator" binding="titleApplicationInsights">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="true"/>
+        </constraints>
+        <properties>
+          <focusable value="false"/>
+          <font/>
+          <text value="Application Insights"/>
+          <titleFont style="1"/>
+        </properties>
+      </component>
+      <component id="cba20" class="javax.swing.JLabel" binding="lblInsightsEnable">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Enable Application Insights :"/>
+          <visible value="true"/>
+        </properties>
+      </component>
+      <component id="7d50" class="javax.swing.JRadioButton" binding="rdoDisableApplicationInsights">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="No"/>
+        </properties>
+      </component>
+      <component id="871fb" class="javax.swing.JRadioButton" binding="rdoEnableApplicationInsights">
+        <constraints>
+          <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="Yes"/>
+        </properties>
+      </component>
+      <hspacer id="38a56">
+        <constraints>
+          <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </hspacer>
+      <component id="a2165" class="javax.swing.JLabel" binding="lblApplicationInsights">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Application Insights :"/>
+          <toolTipText value="Application Insights is a code-less attach to provide detailed observability in to your application."/>
+          <visible value="true"/>
+        </properties>
+      </component>
+      <component id="c6aeb" class="com.microsoft.azure.toolkit.intellij.appservice.insights.ApplicationInsightsComboBox" binding="applicationInsightsComboBox" custom-create="true" default-binding="true">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </component>
+      <component id="f6d7b" class="com.intellij.ui.TitledSeparator" binding="titleAppServiceLog">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="true"/>
+        </constraints>
+        <properties>
+          <focusable value="false"/>
+          <font/>
+          <text value="App Service Logs"/>
+          <titleFont style="1"/>
+        </properties>
+      </component>
+      <component id="15da0" class="javax.swing.JLabel" binding="lblWebServerLog">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Web Server Logging:"/>
+          <toolTipText value="Gather diagnostic information for your web server"/>
+        </properties>
+      </component>
+      <component id="90bcc" class="javax.swing.JRadioButton" binding="rdoDisableWebServerLog">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Disable"/>
+        </properties>
+      </component>
+      <component id="b03" class="javax.swing.JRadioButton" binding="rdoEnableWebServerLog">
+        <constraints>
+          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="Enable"/>
+        </properties>
+      </component>
+      <grid id="eb2db" binding="pnlWebServerLog" layout-manager="GridLayoutManager" row-count="4" column-count="4" same-size-horizontally="false" same-size-vertically="true" hgap="-1" vgap="-1">
+        <margin top="0" left="25" bottom="0" right="0"/>
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="32df1" class="javax.swing.JLabel" binding="lblDetailedErrorMessage">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Detailed Error Messages:"/>
+            </properties>
+          </component>
+          <component id="4c2e5" class="javax.swing.JLabel" binding="lblFailedRequest">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Failed Request Tracing:"/>
+            </properties>
+          </component>
+          <component id="ccbe1" class="javax.swing.JRadioButton" binding="rdoDisableDetailError">
+            <constraints>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="true"/>
+              <text value="Disable"/>
+            </properties>
+          </component>
+          <component id="13330" class="javax.swing.JRadioButton" binding="rdoEnableDetailError">
+            <constraints>
+              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="false"/>
+              <text value="Enable"/>
+            </properties>
+          </component>
+          <hspacer id="b4e1e">
+            <constraints>
+              <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+          <component id="565e5" class="javax.swing.JRadioButton" binding="rdoDisableFailedRequest">
+            <constraints>
+              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="true"/>
+              <text value="Disable"/>
+            </properties>
+          </component>
+          <component id="8a274" class="javax.swing.JRadioButton" binding="rdoEnableFailedRequest">
+            <constraints>
+              <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <selected value="false"/>
+              <text value="Enable"/>
+            </properties>
+          </component>
+          <hspacer id="4e68d">
+            <constraints>
+              <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
+          <component id="6e2eb" class="javax.swing.JLabel" binding="lblQuota">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <horizontalTextPosition value="2"/>
+              <icon value="general/contextHelp.png"/>
+              <text value="Quota(MB):"/>
+              <toolTipText value="This is the limit that restricts file system usage by app diagnostics logs.The default value is 35 MB. Value can range from 25 MB and 100 MB."/>
+            </properties>
+          </component>
+          <grid id="f00ba" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="45563" class="com.microsoft.azure.toolkit.intellij.common.IntegerTextField" binding="txtQuota" custom-create="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+            </children>
+          </grid>
+          <grid id="9e754" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="d3331" class="com.microsoft.azure.toolkit.intellij.common.IntegerTextField" binding="txtRetention" custom-create="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+            </children>
+          </grid>
+          <component id="e533b" class="javax.swing.JLabel" binding="lblRetention">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <horizontalTextPosition value="10"/>
+              <icon value="general/contextHelp.png"/>
+              <text value="Retention Period (Days) :"/>
+              <toolTipText value="By default, site diagnostic logs are never deleted. Using this option will delete the logs older than the specified number of days. The retention period must be a value from 0 through 99999 (0 means never deleted)."/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <component id="e750f" class="javax.swing.JLabel" binding="lblApplicationLog">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <horizontalTextPosition value="10"/>
+          <icon value="general/contextHelp.png"/>
+          <text value="Application Logging:"/>
+          <toolTipText value="Enable application logging to collect diagnostic traces from your web app code."/>
+        </properties>
+      </component>
+      <component id="853ca" class="javax.swing.JRadioButton" binding="rdoDisableApplicationLog">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Disable"/>
+        </properties>
+      </component>
+      <component id="b5312" class="javax.swing.JRadioButton" binding="rdoEnableApplicationLog">
+        <constraints>
+          <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <selected value="true"/>
+          <text value="Enable"/>
+        </properties>
+      </component>
+      <grid id="5dfa5" binding="pnlApplicationLog" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="25" bottom="0" right="0"/>
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="a366b" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Application Log Level:"/>
+            </properties>
+          </component>
+          <component id="f5396" class="com.microsoft.azure.toolkit.intellij.appservice.LogLevelComboBox" binding="cbLogLevel" custom-create="true">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </component>
+        </children>
+      </grid>
+      <vspacer id="b5527">
+        <constraints>
+          <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+    </children>
+  </grid>
+</form>
