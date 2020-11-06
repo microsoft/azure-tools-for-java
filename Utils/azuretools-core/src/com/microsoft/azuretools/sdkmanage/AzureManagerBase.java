@@ -128,10 +128,20 @@ public abstract class AzureManagerBase implements AzureManager {
         // could be multi tenant - return all subscriptions for the current account
         final List<Tenant> tenants = getTenants(authentication);
         for (final Tenant tenant : tenants) {
-            final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
-            final List<Subscription> tenantSubscriptions = getSubscriptions(tenantAuthentication);
-            for (final Subscription subscription : tenantSubscriptions) {
-                subscriptions.add(new Pair<>(subscription, tenant));
+            try {
+                final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
+                final List<Subscription> tenantSubscriptions = getSubscriptions(tenantAuthentication);
+                for (final Subscription subscription : tenantSubscriptions) {
+                    subscriptions.add(new Pair<>(subscription, tenant));
+                }
+            } catch (final Exception e) {
+                // just skip for cases user failing to get subscriptions of tenants he/she has no permission to get access token.
+                if (e instanceof AzureRuntimeException && ((AzureRuntimeException) e).getCode() == ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN.getErrorCode()) {
+                    // TODO: @wangmi better to notify user
+                    LOGGER.log(Level.WARNING, e.getMessage(), e);
+                } else {
+                    throw e;
+                }
             }
         }
         return subscriptions;

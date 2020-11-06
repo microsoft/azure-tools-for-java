@@ -32,8 +32,8 @@ public enum ErrorEnum {
             "Authentication token invalid, sign in again or run \"az login\" if using Azure CLI credential"),
     SOCKET_TIMEOUT_EXCEPTION(100002, "Encountered a socket timeout exception.",
             "Timeout when accessing azure, please try your operation again."),
-    FAILED_TO_GET_ACCESS_TOKEN_BY_CLI(100003, "Failed to get access token by Azure CLI command.",
-            "Failed to get access token, please try to login Azure CLI using 'az login' and try again."),
+    FAILED_TO_GET_ACCESS_TOKEN(100003, "Failed to get access token by Azure CLI command.",
+                               "Failed to get access token, please try to login Azure CLI using 'az login' and try again."),
     INVALID_SUBSCRIPTION_CACHE(100004, "Invalid subscription",
             "It seems local cache of subscription is expired, please try re-login"),
     ;
