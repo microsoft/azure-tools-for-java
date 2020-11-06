@@ -153,6 +153,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
                     config.getPid(),
                     config.getProcessName()));
             File file = File.createTempFile("jfr-snapshot-" + appService.name() + "-", ".jfr");
+            FileUtils.forceDeleteOnExit(file);
             FlightRecorderStarterBase starter = FlightRecorderManager.getFlightRecorderStarter(appService);
             starter.startFlightRecorder(config.getPid(), config.getDuration(), file.getName());
             progressIndicator.setText(String.format("Recording %s seconds...", config.getDuration()));
@@ -168,7 +169,6 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             progressIndicator.setText("Downloading jfr file...");
             byte[] content = starter.downloadJFRFile(file.getName());
             if (content != null) {
-                FileUtils.forceDeleteOnExit(file);
                 FileUtils.writeByteArrayToFile(file, content);
                 progressIndicator.setText("Download jfr file complete");
                 PluginUtil.showInfoNotificationProject(
