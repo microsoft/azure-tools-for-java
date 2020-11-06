@@ -122,7 +122,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
                 .listAppServicePlanBySubscriptionId(subscription.subscriptionId());
             plans.addAll(remotePlans);
             Stream<AppServicePlan> stream = plans.stream();
-            if (Objects.nonNull(this.region)        ) {
+            if (Objects.nonNull(this.region)) {
                 stream = stream.filter(p -> Objects.equals(p.region(), this.region));
             }
             if (Objects.nonNull(this.os)) {
