@@ -65,6 +65,8 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
 
+    private Subscription subscription;
+
     public AppServiceInfoBasicPanel(final Project project, final Supplier<T> defaultConfigSupplier) {
         super();
         this.project = project;
@@ -74,7 +76,9 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     }
 
     private void init() {
+        this.subscription = AzureMvpModel.getInstance().getSelectedSubscriptions().get(0);
         this.textName.setRequired(true);
+        this.textName.setSubscription(subscription);
         this.selectorPlatform.setRequired(true);
 
         this.selectorApplication.setFileFilter(virtualFile -> {
@@ -109,7 +113,6 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
 
     private T initConfig() {
         final String appName = String.format("app-%s-%s", this.project.getName(), DATE_FORMAT.format(new Date()));
-        final Subscription subscription = AzureMvpModel.getInstance().getSelectedSubscriptions().get(0);
         final DraftResourceGroup group = DraftResourceGroup.builder().build();
         group.setName(StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
         group.setSubscription(subscription);
