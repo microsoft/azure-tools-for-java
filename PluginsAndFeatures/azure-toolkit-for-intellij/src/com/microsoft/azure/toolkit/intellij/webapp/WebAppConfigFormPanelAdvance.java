@@ -99,7 +99,7 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
 
         appServiceConfigPanelAdvanced.getSelectorPlatform().addActionListener(event -> {
             final Platform platform = appServiceConfigPanelAdvanced.getSelectorPlatform().getValue();
-            appServiceMonitorPanel.setApplicationLogVisible(platform.getOs() == OperatingSystem.WINDOWS);
+            appServiceMonitorPanel.setApplicationLogVisible(platform != null && platform.getOs() == OperatingSystem.WINDOWS);
         });
     }
 }
