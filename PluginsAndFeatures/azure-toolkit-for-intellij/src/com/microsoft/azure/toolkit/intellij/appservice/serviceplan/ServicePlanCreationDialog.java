@@ -42,11 +42,10 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         implements AzureForm<DraftServicePlan> {
-    public static final String DESCRIPTION =
-            "App Service plan pricing tier determines the location, features, cost and compute resources associated with your app.";
-    public static final String DIALOG_TITLE = "New App Service Plan";
     private Subscription subscription;
     private OperatingSystem os;
     private Region region;
@@ -67,7 +66,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
         this.textName.setValidator(this::validateName);
         this.comboBoxPricingTier.setPricingTierList(pricingTierList);
         this.comboBoxPricingTier.setDefaultPricingTier(defaultPricingTier);
-        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, DESCRIPTION);
+        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, message("appService.servicePlan.description"));
         this.pack();
     }
 
@@ -88,7 +87,7 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
 
     @Override
     protected String getDialogTitle() {
-        return DIALOG_TITLE;
+        return message("appService.servicePlan.create.title");
     }
 
     @Nullable

@@ -50,10 +50,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-    private static final String TARGET_FUNCTION_DOES_NOT_EXIST =
-            "Target function does not exist, please select a valid function in function deployment run configuration.";
+public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     private FunctionDeployConfiguration functionDeployConfiguration;
     private final FunctionDeployModel deployModel;
@@ -83,7 +82,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
                                                .getFunctionById(functionDeployConfiguration.getSubscriptionId(), functionDeployConfiguration.getFunctionId());
         }
         if (functionApp == null) {
-            throw new AzureExecutionException(TARGET_FUNCTION_DOES_NOT_EXIST);
+            throw new AzureExecutionException(message("function.deploy.error.functionNonexistent"));
         }
         final AppServicePlan appServicePlan = AppServiceUtils.getAppServicePlanByAppService(functionApp);
         functionDeployConfiguration.setOs(appServicePlan.operatingSystem().name());
@@ -109,10 +108,10 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
             functionDeployConfiguration.setNewResource(false);
             return functionApp;
         }
-        processHandler.setText(String.format("Creating function app %s ...", functionDeployConfiguration.getAppName()));
+        processHandler.setText(String.format(message("function.create.hint.creating"), functionDeployConfiguration.getAppName()));
         final CreateFunctionHandler createFunctionHandler = new CreateFunctionHandler(functionDeployConfiguration.getModel());
         functionApp = createFunctionHandler.execute();
-        processHandler.setText(String.format("Function app %s created.", functionDeployConfiguration.getAppName()));
+        processHandler.setText(String.format(message("function.create.hint.created"), functionDeployConfiguration.getAppName()));
         return functionApp;
     }
 
@@ -124,7 +123,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
             try {
                 FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
             } catch (AzureExecutionException | IOException e) {
-                throw new AzureExecutionException("Failed to prepare staging folder");
+                throw new AzureExecutionException(message("function.create.error.prepareStagingFailed"));
             }
         });
     }
@@ -136,7 +135,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Override
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
-        processHandler.setText("Deploy succeed");
+        processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
         if (functionDeployConfiguration.isNewResource() && AzureUIRefreshCore.listeners != null) {

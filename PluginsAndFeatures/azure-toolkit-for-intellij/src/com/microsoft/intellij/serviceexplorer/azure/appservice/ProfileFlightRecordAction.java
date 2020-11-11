@@ -52,6 +52,8 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 @Name("Profile Flight Recorder")
 public class ProfileFlightRecordAction extends NodeActionListener {
     private static final Logger logger = Logger.getLogger(ProfileFlightRecordAction.class.getName());
@@ -72,14 +74,13 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         // prerequisite check
         if (appService.operatingSystem() == OperatingSystem.LINUX &&
                 StringUtils.containsIgnoreCase(appService.linuxFxVersion(), "DOCKER|")) {
-            notifyUserWithErrorMessage("Flight Record not supported", String.format("Docker app service '%s' is not "
-                                                                                     + "supported.",
-                                                        appService.name()));
+            notifyUserWithErrorMessage(message("webapp.flightRecord.error.notSupport.title"),
+                                       String.format(message("webapp.flightRecord.error.notSupport.message"), appService.name()));
             return;
         }
         if (!StringUtils.equalsIgnoreCase(appService.state(), "running")) {
-            notifyUserWithErrorMessage("App service not running", String.format("App service '%s' is not running.",
-                                                                 appService.name()));
+            notifyUserWithErrorMessage(message("webapp.flightRecord.error.notRunning.title"),
+                                       String.format(message("webapp.flightRecord.error.notRunning.message"), appService.name()));
             return;
         }
         EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
@@ -96,23 +97,20 @@ public class ProfileFlightRecordAction extends NodeActionListener {
     private void doProfileFlightRecorderAll() {
         try {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
-            progressIndicator.setText(String.format("Start to profile Web App (%s)....", appService.name()));
+            progressIndicator.setText(String.format(message("webapp.flightRecord.task.startProfileWebApp.title"), appService.name()));
             CountDownLatch finishLatch = new CountDownLatch(1);
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 FlightRecorderConfiguration config = collectFlightRecorderConfiguration();
                 if (Objects.isNull(config)) {
-                    PluginUtil.showWarningNotificationProject(
-                            project,
-                            "profile flight recorder cancelled.",
-                            "Cancel profiling on app service");
+                    PluginUtil.showWarningNotificationProject(project,
+                                                              message("webapp.flightRecord.error.cancelled.title"),
+                                                              message("webapp.flightRecord.error.cancelled.message"));
                     finishLatch.countDown();
                     return;
                 }
                 if (config.getDuration() <= 0) {
-                    notifyUserWithErrorMessage("Invalid profile duration",
-                            "Cannot profile on app service due to "
-                                    + "configuration error: invalid "
-                                    + "duration");
+                    notifyUserWithErrorMessage(message("webapp.flightRecord.error.invalidDuration.title"),
+                                               message("webapp.flightRecord.error.invalidDuration.message"));
                     finishLatch.countDown();
                     return;
                 } else {
@@ -125,17 +123,13 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             finishLatch.await();
         } catch (Exception ex) {
             notifyUserWithErrorMessage(
-                    "Failed to profile on app service",
-                    "Cannot profile on app service, due to error: "
-                            + ex.getMessage());
+                    message("webapp.flightRecord.error.profileFailed.title"), message("webapp.flightRecord.error.profileFailed.message") + ex.getMessage());
         }
     }
 
     private FlightRecorderConfiguration collectFlightRecorderConfiguration() {
-        RunFlightRecorderDialog ui = new RunFlightRecorderDialog(
-                project,
-                appService);
-        ui.setTitle(String.format("Start Flight Recorder on '%s'", appService.defaultHostName()));
+        RunFlightRecorderDialog ui = new RunFlightRecorderDialog(project, appService);
+        ui.setTitle(String.format(message("webapp.flightRecord.task.startRecorder.title"), appService.defaultHostName()));
         ui.setOkActionListener((config) -> {
             ui.close(DialogWrapper.OK_EXIT_CODE);
         });
@@ -149,14 +143,12 @@ public class ProfileFlightRecordAction extends NodeActionListener {
     private void doProfileFlightRecorder(ProgressIndicator progressIndicator,
                                          FlightRecorderConfiguration config, CountDownLatch latch) {
         try {
-            progressIndicator.setText(String.format("start flight recorder for process(%d:%s)",
-                    config.getPid(),
-                    config.getProcessName()));
+            progressIndicator.setText(String.format(message("webapp.flightRecord.task.startProcessRecorder.title"), config.getPid(), config.getProcessName()));
             File file = File.createTempFile("jfr-snapshot-" + appService.name() + "-", ".jfr");
             FileUtils.forceDeleteOnExit(file);
             FlightRecorderStarterBase starter = FlightRecorderManager.getFlightRecorderStarter(appService);
             starter.startFlightRecorder(config.getPid(), config.getDuration(), file.getName());
-            progressIndicator.setText(String.format("Recording %s seconds...", config.getDuration()));
+            progressIndicator.setText(String.format(message("webapp.flightRecord.hint.recording"), config.getDuration()));
 
             progressIndicator.checkCanceled();
             try {
@@ -165,24 +157,22 @@ public class ProfileFlightRecordAction extends NodeActionListener {
                 // ignore
             }
             progressIndicator.checkCanceled();
-            progressIndicator.setText("Profile completed on server side.");
-            progressIndicator.setText("Downloading jfr file...");
+            progressIndicator.setText(message("webapp.flightRecord.hint.profileCompletedOnAzure"));
+            progressIndicator.setText(message("webapp.flightRecord.hint.downloadingJfr"));
             byte[] content = starter.downloadJFRFile(file.getName());
             if (content != null) {
                 FileUtils.writeByteArrayToFile(file, content);
-                progressIndicator.setText("Download jfr file complete");
-                PluginUtil.showInfoNotificationProject(
-                        project,
-                        "Profile flight recorder complete",
-                        getActionOnJfrFile(file.getAbsolutePath()));
+                progressIndicator.setText(message("webapp.flightRecord.hint.downloadingJfrDone"));
+                PluginUtil.showInfoNotificationProject(project,
+                                                       message("webapp.flightRecord.hint.profileRecorderComplete"),
+                                                       getActionOnJfrFile(file.getAbsolutePath()));
             } else {
-                notifyUserWithErrorMessage(
-                        "JFR file download error",
-                        "jfr file cannot be downloaded.");
+                notifyUserWithErrorMessage(message("webapp.flightRecord.error.jfrDownload.title"), message("webapp.flightRecord.error.jfrDownload.message"));
             }
 
         } catch (IOException e) {
-            notifyUserWithErrorMessage("Cannot profile flight recorder", "Caused by error:" + e.getMessage());
+            notifyUserWithErrorMessage(message("webapp.flightRecord.error.profileFlightRecorderFailed.title"),
+                                       message("webapp.flightRecord.error.profileFlightRecorderFailed.message") + e.getMessage());
         } finally {
             latch.countDown();
         }
@@ -196,12 +186,9 @@ public class ProfileFlightRecordAction extends NodeActionListener {
 
     private String getActionOnJfrFile(String filePath) {
         if (PluginUtil.isIdeaUltimate()) {
-            return String.format("To open profile result, please goto the main menu, select 'Run | Open Profiler "
-                                         + "Snapshot | Open', and choose file at %s.", filePath);
+            return String.format(message("webapp.flightRecord.hint.openJfrIntelliJ"), filePath);
         } else {
-            return String.format("To open profile result, please navigate to https://www.azul"
-                                         + ".com/products/zulu-mission-control to download 'Zulu Mission Control', "
-                                         + "select 'File | Open File' and choose file at %s.", filePath);
+            return String.format(message("webapp.flightRecord.hint.openJfrZuluMissionControl"), filePath);
         }
     }
 }

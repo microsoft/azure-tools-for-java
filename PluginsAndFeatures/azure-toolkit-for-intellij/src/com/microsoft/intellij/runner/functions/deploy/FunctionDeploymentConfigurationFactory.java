@@ -31,8 +31,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FunctionDeploymentConfigurationFactory extends ConfigurationFactory {
-    private static final String FACTORY_NAME = "Deploy Functions";
     private static final String ICON_PATH = "/icons/azure-functions-deploy.png";
 
     public FunctionDeploymentConfigurationFactory(@NotNull ConfigurationType type) {
@@ -52,7 +53,7 @@ public class FunctionDeploymentConfigurationFactory extends ConfigurationFactory
 
     @Override
     public String getName() {
-        return FACTORY_NAME;
+        return message("function.deploy.factory.name");
     }
 
     @Override

@@ -31,6 +31,8 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class IntegerTextField extends JBTextField implements AzureFormInputComponent<Integer> {
 
     @Setter
@@ -69,10 +71,11 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
         }
         Integer value = getValue();
         if (value == null) {
-            return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR).message("Value should be an integer").build();
+            return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR).message(message(
+                    "common.integer.validate.notInteger")).build();
         } else if ((minValue != null && value < minValue) || (maxValue != null && value > maxValue)) {
             return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR)
-                                      .message(String.format("Value should be in range [%s,%s]", minValue, maxValue)).build();
+                                      .message(String.format(message("common.integer.validate.invalidValue"), minValue, maxValue)).build();
         } else {
             return AzureValidationInfo.OK;
         }

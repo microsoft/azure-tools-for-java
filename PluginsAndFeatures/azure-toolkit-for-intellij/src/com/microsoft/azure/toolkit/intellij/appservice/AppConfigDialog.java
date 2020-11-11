@@ -31,10 +31,11 @@ import lombok.extern.java.Log;
 
 import javax.swing.*;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 @Log
 public abstract class AppConfigDialog<T extends AppServiceConfig>
     extends AzureDialog<T> {
-    public static final String LABEL_ADVANCED_MODE = "More settings";
     protected Project project;
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;
@@ -74,7 +75,7 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
 
     @Override
     protected JComponent createDoNotAskCheckbox() {
-        this.checkboxMode = new JCheckBox(LABEL_ADVANCED_MODE);
+        this.checkboxMode = new JCheckBox(message("appService.appConfig.advancedMode"));
         this.checkboxMode.setVisible(true);
         this.checkboxMode.setSelected(false);
         this.checkboxMode.addActionListener(e -> this.toggleAdvancedMode(this.checkboxMode.isSelected()));

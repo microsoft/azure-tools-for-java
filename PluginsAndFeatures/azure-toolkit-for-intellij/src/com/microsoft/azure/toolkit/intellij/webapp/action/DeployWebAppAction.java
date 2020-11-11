@@ -42,6 +42,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 // todo: Remove duplicate codes with Web Deploy Action
 @Name("Deploy")
 public class DeployWebAppAction extends NodeActionListener {
@@ -59,7 +61,7 @@ public class DeployWebAppAction extends NodeActionListener {
     protected void actionPerformed(final NodeActionEvent nodeActionEvent) throws AzureCmdException {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final RunnerAndConfigurationSettings settings = getRunConfigurationSettings(manager);
-        if (RunDialog.editConfiguration(project, settings, "Deploy to Azure",
+        if (RunDialog.editConfiguration(project, settings, message("webapp.deploy.configuration.title"),
                                         DefaultRunExecutor.getRunExecutorInstance())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);

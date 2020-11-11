@@ -54,19 +54,9 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
-
-    private static final String CREATE_WEBAPP = "Creating new web app...";
-    private static final String CREATE_DEPLOYMENT_SLOT = "Creating new deployment slot...";
-    private static final String CREATE_FAILED = "Failed to create web app. Error: %s ...";
-    private static final String CREATE_SLOT_FAILED = "Failed to create deployment slot. Error: %s ...";
-
-    private static final String DEPLOY_SUCCESSFUL = "Deploy successfully!";
-    private static final String STOP_DEPLOY = "Deploy failed!";
-
-    private static final String NO_WEB_APP = "Cannot get webapp for deploy.";
-    private static final String NO_TARGET_FILE = "Cannot find target file: %s.";
-
     private WebAppConfiguration webAppConfiguration;
     private final IntelliJWebAppSettingModel webAppSettingModel;
 
@@ -85,7 +75,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(getTargetPath());
         if (!file.exists()) {
-            throw new FileNotFoundException(String.format(NO_TARGET_FILE, file.getAbsolutePath()));
+            throw new FileNotFoundException(String.format(message("webapp.deploy.error.noTargetFile"), file.getAbsolutePath()));
         }
         webAppConfiguration.setTargetName(file.getName());
         WebAppBase deployTarget = getDeployTargetByConfiguration(processHandler);
@@ -121,7 +111,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         final String fileName = webAppSettingModel.getTargetName().substring(0, indexOfDot);
         final String fileType = webAppSettingModel.getTargetName().substring(indexOfDot + 1);
         final String url = getUrl(result, fileName, fileType);
-        processHandler.setText(DEPLOY_SUCCESSFUL);
+        processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.setText("URL: " + url);
         if (webAppSettingModel.isOpenBrowserAfterDeployment()) {
             openWebAppInBrowser(url, processHandler);
@@ -163,8 +153,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         final WebApp webApp = AzureWebAppMvpModel.getInstance()
             .getWebAppById(webAppSettingModel.getSubscriptionId(), webAppSettingModel.getWebAppId());
         if (webApp == null) {
-            processHandler.setText(STOP_DEPLOY);
-            throw new Exception(NO_WEB_APP);
+            processHandler.setText(message("appService.deploy.hint.failed"));
+            throw new Exception(message("webapp.deploy.error.noWebApp"));
         }
 
         if (isDeployToSlot()) {
@@ -189,30 +179,29 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     private WebApp createWebApp(@NotNull RunProcessHandler processHandler) throws Exception {
-        processHandler.setText(CREATE_WEBAPP);
+        processHandler.setText(message("webapp.deploy.hint.creatingWebApp"));
         try {
             return AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
         } catch (Exception e) {
-            processHandler.setText(STOP_DEPLOY);
-            throw new Exception(String.format(CREATE_FAILED, e.getMessage()));
+            processHandler.setText(message("webapp.deploy.error.noWebApp"));
+            throw new Exception(String.format(message("webapp.deploy.error.createFailed"), e.getMessage()));
         }
     }
 
     private DeploymentSlot createDeploymentSlot(@NotNull RunProcessHandler processHandler) throws Exception {
-        processHandler.setText(CREATE_DEPLOYMENT_SLOT);
+        processHandler.setText(message("webapp.deploy.hint.creatingDeploymentSlot"));
         try {
             return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
         } catch (Exception e) {
-            processHandler.setText(STOP_DEPLOY);
-            throw new Exception(String.format(CREATE_SLOT_FAILED, e.getMessage()));
+            processHandler.setText(message("webapp.deploy.error.noWebApp"));
+            throw new Exception(String.format(message("webapp.deploy.error.createSlotFailed"), e.getMessage()));
         }
     }
 
     @NotNull
     private String getUrl(@NotNull WebAppBase webApp, @NotNull String fileName, @NotNull String fileType) {
         String url = "https://" + webApp.defaultHostName();
-        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)
-            && !webAppSettingModel.isDeployToRoot()) {
+        if (Comparing.equal(fileType, MavenConstants.TYPE_WAR) && !webAppSettingModel.isDeployToRoot()) {
             url += "/" + WebAppUtils.encodeURL(fileName.replaceAll("#", StringUtils.EMPTY)).replaceAll("\\+", "%20");
         }
         return url;
