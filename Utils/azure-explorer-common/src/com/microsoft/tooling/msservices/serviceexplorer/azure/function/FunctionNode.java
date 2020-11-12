@@ -27,7 +27,6 @@ import com.google.gson.JsonObject;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;

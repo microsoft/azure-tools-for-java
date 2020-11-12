@@ -27,7 +27,6 @@ import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.redis.RedisCaches;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
 import java.util.HashMap;

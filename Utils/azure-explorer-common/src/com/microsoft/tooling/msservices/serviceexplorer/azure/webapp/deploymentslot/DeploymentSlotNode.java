@@ -84,8 +84,7 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             createBackgroundActionListener("Restarting Deployment Slot", () -> restart())));
         addAction(ACTION_SWAP_WITH_PRODUCTION, new WrappedTelemetryNodeActionListener(WEBAPP, SWAP_WEBAPP_SLOT,
             createBackgroundActionListener("Swapping with Production", () -> swapWithProduction())));
-        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER,
-            new NodeActionListener() {
+        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);

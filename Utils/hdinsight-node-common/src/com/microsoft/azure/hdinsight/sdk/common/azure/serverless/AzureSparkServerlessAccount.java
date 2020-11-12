@@ -55,6 +55,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
+import static com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.ApiVersion.VERSION;
+
 public class AzureSparkServerlessAccount implements IClusterDetail, ClusterContainer, ILogger {
     private static final String REST_SEGMENT_SPARK_RESOURCEPOOLS = "/activityTypes/spark/resourcePools";
     private static final String REST_SEGMENT_SPARK_BATCH_JOB = "/activityTypes/spark/batchJobs";
@@ -223,7 +225,6 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
                 .requestWithHttpResponse(new HttpGet(url), null, null, null);
     }
 
-
     /**
      * Kill Cosmos Serverless Spark batch job
      * @return http response of the killing request
@@ -248,10 +249,9 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     public Observable<JobInfoListResult> getJobs() {
         URI url = getUri().resolve(REST_SEGMENT_JOB_LIST);
         List<NameValuePair> parameters = Collections.singletonList(
-                ODataParam.filter(String.format("state eq '%s'",JobState.RUNNING.toString())));
+                ODataParam.filter(String.format("state eq '%s'", JobState.RUNNING.toString())));
 
-        return new AzureDataLakeHttpObservable(subscription.getTenantId(),
-                com.microsoft.azure.hdinsight.sdk.rest.azure.datalake.analytics.job.models.ApiVersion.VERSION)
+        return new AzureDataLakeHttpObservable(subscription.getTenantId(), VERSION)
                 .withUuidUserAgent()
                 .get(url.toString(), parameters, null, JobInfoListResult.class);
     }
@@ -288,7 +288,7 @@ public class AzureSparkServerlessAccount implements IClusterDetail, ClusterConta
     @Override
     public ImmutableSortedSet<? extends IClusterDetail> getClusters() {
         return ImmutableSortedSet.copyOf(getRawClusters().stream()
-                .filter(cluster -> ((AzureSparkCosmosCluster)cluster).isRunning()).iterator());
+                 .filter(cluster -> ((AzureSparkCosmosCluster) cluster).isRunning()).iterator());
     }
 
     /**

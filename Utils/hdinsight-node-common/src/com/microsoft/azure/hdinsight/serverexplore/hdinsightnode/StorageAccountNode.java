@@ -51,7 +51,8 @@ public class StorageAccountNode extends Node implements TelemetryProperties, ILo
     private IClusterDetail clusterDetail;
 
     public StorageAccountNode(Node parent, @NotNull IHDIStorageAccount storageAccount, @NotNull IClusterDetail clusterDetail, boolean isDefaultStorageAccount) {
-       super(STORAGE_ACCOUNT_MODULE_ID, isDefaultStorageAccount ? storageAccount.getName() + DEFAULT_STORAGE_FLAG : storageAccount.getName(), parent, getIconPath(storageAccount));
+        super(STORAGE_ACCOUNT_MODULE_ID, isDefaultStorageAccount ? storageAccount.getName() + DEFAULT_STORAGE_FLAG : storageAccount.getName(), parent,
+              getIconPath(storageAccount));
         this.storageAccount = storageAccount;
         this.clusterDetail = clusterDetail;
         loadAdditionalActions();

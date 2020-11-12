@@ -85,7 +85,8 @@ public final class RedisCacheUtil {
         return skus;
     }
 
-    public static void doValidate(SubscriptionDetail currentSub, String dnsNameValue, String selectedRegionValue, String selectedResGrpValue, String selectedPriceTierValue) throws InvalidFormDataException {
+    public static void doValidate(SubscriptionDetail currentSub, String dnsNameValue,
+            String selectedRegionValue, String selectedResGrpValue, String selectedPriceTierValue) throws InvalidFormDataException {
         if (currentSub == null) {
             throw new InvalidFormDataException(REQUIRE_SUBSCRIPTION);
         }
@@ -122,15 +123,15 @@ public final class RedisCacheUtil {
                     selectedRegionValue,
                     selectedResGrpValue
                     );
-            if(noSSLPort) {
-                if(newResGrp && canCreateNewResGrp(azure, selectedResGrpValue)) {
+            if (noSSLPort) {
+                if (newResGrp && canCreateNewResGrp(azure, selectedResGrpValue)) {
                     //e.g. BASIC0NewNoSSL
                     return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "NewNoSSL");
                 } else {
                     return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "ExistingNoSSL");
                 }
             } else {
-                if(newResGrp && canCreateNewResGrp(azure, selectedResGrpValue)) {
+                if (newResGrp && canCreateNewResGrp(azure, selectedResGrpValue)) {
                     //e.g. BASIC0NewNoSSL
                     return creator.CreatorMap().get(skus.get(selectedPriceTierValue) + "New");
                 } else {

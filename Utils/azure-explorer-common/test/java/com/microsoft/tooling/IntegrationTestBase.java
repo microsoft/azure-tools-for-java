@@ -23,8 +23,6 @@
 package com.microsoft.tooling;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Rule;
-import org.junit.rules.TestName;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -36,13 +34,11 @@ import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.serializer.AzureJacksonAdapter;
 import com.microsoft.rest.LogLevel;
 import com.microsoft.rest.RestClient;
-
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,6 +46,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 public abstract class IntegrationTestBase {
     private static final String GLOBAL_ENDPOINT = "https://management.azure.com";
@@ -130,7 +129,7 @@ public abstract class IntegrationTestBase {
             return;
         }
         wireMock.resetMappings();
-        restClient=null;
+        restClient = null;
         testRecord = null;
         currentTestName = null;
     }
@@ -197,24 +196,24 @@ public abstract class IntegrationTestBase {
 
         UrlPattern urlPattern = urlEqualTo(recordUrl);
         String method = networkCallRecord.Method;
-        MappingBuilder mBuilder;
+        MappingBuilder methodBuilder;
         if (method.equals("GET")) {
-            mBuilder = get(urlPattern);
+            methodBuilder = get(urlPattern);
         } else if (method.equals("POST")) {
-            mBuilder = post(urlPattern);
+            methodBuilder = post(urlPattern);
         } else if (method.equals("PUT")) {
-            mBuilder = put(urlPattern);
+            methodBuilder = put(urlPattern);
         } else if (method.equals("DELETE")) {
-            mBuilder = delete(urlPattern);
+            methodBuilder = delete(urlPattern);
         } else if (method.equals("PATCH")) {
-            mBuilder = patch(urlPattern);
+            methodBuilder = patch(urlPattern);
         } else if (method.equals("HEAD")) {
-            mBuilder = head(urlPattern);
+            methodBuilder = head(urlPattern);
         } else {
             throw new Exception("Invalid HTTP method.");
         }
 
-        ResponseDefinitionBuilder rBuilder = aResponse()
+        ResponseDefinitionBuilder responseBuilder = aResponse()
                 .withStatus(Integer.parseInt(networkCallRecord.Response.get("StatusCode")));
         for (Entry<String, String> header : networkCallRecord.Response.entrySet()) {
             if (!header.getKey().equals("StatusCode") && !header.getKey().equals("Body")
@@ -225,7 +224,7 @@ public abstract class IntegrationTestBase {
                         rawHeader = rawHeader.replaceAll(rule.getKey(), rule.getValue());
                     }
                 }
-                rBuilder.withHeader(header.getKey(), rawHeader);
+                responseBuilder.withHeader(header.getKey(), rawHeader);
             }
         }
 
@@ -236,12 +235,12 @@ public abstract class IntegrationTestBase {
                     rawBody = rawBody.replaceAll(rule.getKey(), rule.getValue());
                 }
             }
-            rBuilder.withBody(rawBody);
-            rBuilder.withHeader("Content-Length", String.valueOf(rawBody.getBytes("UTF-8").length));
+            responseBuilder.withBody(rawBody);
+            responseBuilder.withHeader("Content-Length", String.valueOf(rawBody.getBytes("UTF-8").length));
         }
 
-        mBuilder.willReturn(rBuilder);
-        wireMock.stubFor(mBuilder);
+        methodBuilder.willReturn(responseBuilder);
+        wireMock.stubFor(methodBuilder);
     }
 
     protected void addTextReplacementRule(String regex, String replacement) {
