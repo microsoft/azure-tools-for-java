@@ -82,15 +82,11 @@ public class ContainerRegistryMvpModel {
             return subscriptionIdToRegistryMap.get(sid);
         }
         List<ResourceEx<Registry>> registryList = new ArrayList<>();
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            for (Registry registry: azure.containerRegistries().list()) {
-                registryList.add(new ResourceEx<>(registry, sid));
-            }
-            subscriptionIdToRegistryMap.put(sid, registryList);
-        } catch (IOException e) {
-            e.printStackTrace();
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        for (Registry registry: azure.containerRegistries().list()) {
+            registryList.add(new ResourceEx<>(registry, sid));
         }
+        subscriptionIdToRegistryMap.put(sid, registryList);
         return registryList;
     }
 
@@ -134,7 +130,7 @@ public class ContainerRegistryMvpModel {
     /**
      * Set AdminUser enabled status of container registry.
      */
-    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) throws IOException {
+    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         Registries registries = azure.containerRegistries();
         if (registries != null) {

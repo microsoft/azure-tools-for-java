@@ -27,7 +27,6 @@ import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.collections.CollectionUtils;
 
-import java.io.IOException;
 import java.util.List;
 
 public class AzureLoginHelper {
@@ -42,20 +41,15 @@ public class AzureLoginHelper {
         if (!AuthMethodManager.getInstance().isSignedIn()) {
             throw new AzureExecutionException(NEED_SIGN_IN);
         }
-        try {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            final List<SubscriptionDetail> subscriptions =
-                    azureManager.getSubscriptionManager().getSubscriptionDetails();
-            if (CollectionUtils.isEmpty(subscriptions)) {
-                throw new AzureExecutionException(NO_SUBSCRIPTION);
-            }
-            final List<SubscriptionDetail> selectedSubscriptions =
-                    azureManager.getSubscriptionManager().getSelectedSubscriptionDetails();
-            if (CollectionUtils.isEmpty(selectedSubscriptions)) {
-                throw new AzureExecutionException(MUST_SELECT_SUBSCRIPTION);
-            }
-        } catch (IOException e) {
-            throw new AzureExecutionException(e.getMessage(), e);
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        final List<SubscriptionDetail> subscriptions = azureManager.getSubscriptionManager().getSubscriptionDetails();
+        if (CollectionUtils.isEmpty(subscriptions)) {
+            throw new AzureExecutionException(NO_SUBSCRIPTION);
+        }
+        final List<SubscriptionDetail> selectedSubscriptions =
+            azureManager.getSubscriptionManager().getSelectedSubscriptionDetails();
+        if (CollectionUtils.isEmpty(selectedSubscriptions)) {
+            throw new AzureExecutionException(MUST_SELECT_SUBSCRIPTION);
         }
     }
 

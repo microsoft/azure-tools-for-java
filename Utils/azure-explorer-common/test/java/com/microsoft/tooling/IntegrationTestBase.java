@@ -23,12 +23,10 @@
 package com.microsoft.tooling;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
@@ -58,12 +56,12 @@ public abstract class IntegrationTestBase {
     private static final String MOCK_HOST = "localhost";
     private static final String MOCK_PORT = String.format("3%03d", (int) (Math.random() * Math.random() * 1000));
     private static final String MOCK_URI = "http://" + MOCK_HOST + ":" + MOCK_PORT;
-    private final static String RECORD_FOLDER = "records/";
-    protected final static String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
+    private static final String RECORD_FOLDER = "records/";
+    protected static final String MOCK_SUBSCRIPTION = "00000000-0000-0000-0000-000000000000";
 
-    public static Boolean IS_MOCKED = IsMocked();
-    private static String azureAuthFile = getAuthFile();
-    private Map<String, String> textReplacementRules = new HashMap<String, String>();
+    public static Boolean IS_MOCKED = isMocked();
+    private static final String azureAuthFile = getAuthFile();
+    private final Map<String, String> textReplacementRules = new HashMap<String, String>();
     private String currentTestName = null;
 
     @Rule
@@ -137,23 +135,22 @@ public abstract class IntegrationTestBase {
         currentTestName = null;
     }
 
-    private RestClient createRestClient(ApplicationTokenCredentials credentials) throws Exception {
-        RestClient restClient;
-
+    private RestClient createRestClient(ApplicationTokenCredentials credentials) {
+        final RestClient client;
+        ApplicationTokenCredentials cred = credentials;
         if (IS_MOCKED) {
-            credentials = new TestCredentials();
-            restClient = new RestClient.Builder().withBaseUrl(MOCK_URI + "/")
-                    .withSerializerAdapter(new AzureJacksonAdapter())
-                    .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(credentials)
-                    .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
-            return restClient;
+            cred = new TestCredentials();
+            client = new RestClient.Builder().withBaseUrl(MOCK_URI + "/")
+                                                 .withSerializerAdapter(new AzureJacksonAdapter())
+                                                 .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(cred)
+                                                 .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
         } else {
-            restClient = new RestClient.Builder().withBaseUrl(GLOBAL_ENDPOINT)
-                    .withSerializerAdapter(new AzureJacksonAdapter())
-                    .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(credentials)
-                    .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
-            return restClient;
+            client = new RestClient.Builder().withBaseUrl(GLOBAL_ENDPOINT)
+                                                 .withSerializerAdapter(new AzureJacksonAdapter())
+                                                 .withResponseBuilderFactory(new AzureResponseBuilder.Factory()).withCredentials(cred)
+                                                 .withLogLevel(LogLevel.BODY_AND_HEADERS).withInterceptor(interceptor).build();
         }
+        return client;
     }
 
     private synchronized Response registerRecordedResponse(Interceptor.Chain chain) throws IOException {
@@ -172,26 +169,25 @@ public abstract class IntegrationTestBase {
     }
 
     private String removeMockHost(String url) {
-        url = url.replace("http://" + MOCK_HOST + ":", "");
-        url = url.substring(url.indexOf("/"));
-
-        return url;
+        String result = url.replace("http://" + MOCK_HOST + ":", "");
+        result = result.substring(result.indexOf("/"));
+        return result;
     }
 
     private void registerStub(Request request, String url) throws Exception {
         int index = 0;
         String requestMethod = request.method();
-        url = removeMockHost(url);
+        final String fixedUrl = removeMockHost(url);
         // TODO: map body later to get the request
         for (NetworkCallRecord record : testRecord.networkCallRecords) {
-            if (requestMethod.equalsIgnoreCase(record.Method) && url.equalsIgnoreCase(removeMockHost(record.Uri))) {
+            if (requestMethod.equalsIgnoreCase(record.Method) && fixedUrl.equalsIgnoreCase(removeMockHost(record.Uri))) {
                 break;
             }
             index++;
         }
 
         if (index >= testRecord.networkCallRecords.size()) {
-            System.out.println("NOT FOUND - " + requestMethod + " " + url);
+            System.out.println("NOT FOUND - " + requestMethod + " " + fixedUrl);
             System.out.println("Remaining records " + testRecord.networkCallRecords.size());
             return;
         }
@@ -253,19 +249,18 @@ public abstract class IntegrationTestBase {
     }
 
     private String applyRegex(String text) {
+        String result = text;
         for (Entry<String, String> rule : textReplacementRules.entrySet()) {
             if (rule.getValue() != null) {
-                text = text.replaceAll(rule.getKey(), rule.getValue());
+                result = result.replaceAll(rule.getKey(), rule.getValue());
             }
         }
-        return text;
+        return result;
     }
 
-    private static Boolean IsMocked() {
-        String keyValue = System.getProperty("isMockedCase");
-        if (keyValue != null && keyValue.equalsIgnoreCase("false"))
-            return false;
-        return true;
+    private static Boolean isMocked() {
+        final String keyValue = System.getProperty("isMockedCase");
+        return keyValue == null || !keyValue.equalsIgnoreCase("false");
     }
 
     // get auth file for nonmock case
@@ -278,8 +273,9 @@ public abstract class IntegrationTestBase {
     private File getRecordFile() {
         URL folderUrl = IntegrationTestBase.class.getClassLoader().getResource(".");
         File folderFile = new File(folderUrl.getPath() + RECORD_FOLDER);
-        if (!folderFile.exists())
+        if (!folderFile.exists()) {
             folderFile.mkdir();
+        }
         String filePath = folderFile.getPath() + "/" + currentTestName + ".json";
         return new File(filePath);
     }

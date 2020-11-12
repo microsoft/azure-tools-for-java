@@ -28,7 +28,6 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
@@ -43,7 +42,6 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -100,7 +98,7 @@ public class AzureModelController {
         AzureUIRefreshCore.removeAll();
     }
 
-    private static synchronized void subscriptionSelectionChanged(IProgressIndicator progressIndicator) throws IOException, AuthException {
+    private static synchronized void subscriptionSelectionChanged(IProgressIndicator progressIndicator) {
         System.out.println("AzureModelController.subscriptionSelectionChanged: starting");
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
@@ -235,7 +233,7 @@ public class AzureModelController {
                 });
     }
 
-    public static synchronized void updateSubscriptionMaps(IProgressIndicator progressIndicator) throws IOException, CanceledByUserException, AuthException {
+    public static synchronized void updateSubscriptionMaps(IProgressIndicator progressIndicator) throws CanceledByUserException {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
         if (azureManager == null) {
@@ -299,7 +297,7 @@ public class AzureModelController {
         azureModel.setSubscriptionToLocationMap(sdlocMap);
     }
 
-    public static synchronized void updateResourceGroupMaps(IProgressIndicator progressIndicator) throws IOException, CanceledByUserException, AuthException {
+    public static synchronized void updateResourceGroupMaps(IProgressIndicator progressIndicator) throws CanceledByUserException {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in
         if (azureManager == null) {

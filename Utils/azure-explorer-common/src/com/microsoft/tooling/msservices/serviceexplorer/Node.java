@@ -22,11 +22,9 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpView;
@@ -42,7 +40,6 @@ import javax.swing.*;
 import javax.swing.tree.TreePath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -138,11 +135,13 @@ public class Node implements MvpView, BasicTelemetryProperty {
     }
 
     public boolean isDescendant(Node node) {
-        if (isDirectChild(node))
+        if (isDirectChild(node)) {
             return true;
-        for (Node child : childNodes) {
-            if (child.isDescendant(node))
+        }
+        for (final Node child : childNodes) {
+            if (child.isDescendant(node)) {
                 return true;
+            }
         }
 
         return false;
@@ -150,11 +149,13 @@ public class Node implements MvpView, BasicTelemetryProperty {
 
     // Walk up the tree till we find a parent node who's type
     // is equal to "clazz".
-    public <T extends Node> T findParentByType(Class<T> clazz) {
-        if (parent == null)
+    public <T extends Node> @Nullable T findParentByType(Class<T> clazz) {
+        if (parent == null) {
             return null;
-        if (parent.getClass().equals(clazz))
+        }
+        if (parent.getClass().equals(clazz)) {
             return (T) parent;
+        }
         return parent.findParentByType(clazz);
     }
 
@@ -255,18 +256,8 @@ public class Node implements MvpView, BasicTelemetryProperty {
                     Class<? extends NodeActionListener> listenerClass = entry.getValue();
                     NodeActionListener actionListener = createNodeActionListener(listenerClass);
                     addAction(entry.getKey(), actionListener);
-                } catch (InstantiationException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
-                } catch (IllegalAccessException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
-                } catch (NoSuchMethodException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
-                } catch (InvocationTargetException e) {
-                    DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                            "MS Services - Error", true, false);
+                } catch (final InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    DefaultLoader.getUIHelper().showException(e.getMessage(), e, "MS Services - Error", true, false);
                 }
             }
         }
@@ -297,18 +288,8 @@ public class Node implements MvpView, BasicTelemetryProperty {
                         addAction(nameAnnotation.value(), createNodeActionListener(actionListener));
                     }
                 }
-            } catch (InstantiationException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
-            } catch (IllegalAccessException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
-            } catch (NoSuchMethodException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
-            } catch (InvocationTargetException e) {
-                DefaultLoader.getUIHelper().showException(e.getMessage(), e,
-                        "MS Services - Error", true, false);
+            } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                DefaultLoader.getUIHelper().showException(e.getMessage(), e, "MS Services - Error", true, false);
             }
         }
         return null;
@@ -328,12 +309,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
     }
 
     public NodeAction getNodeActionByName(final String name) {
-        return Iterators.tryFind(nodeActions.iterator(), new Predicate<NodeAction>() {
-            @Override
-            public boolean apply(NodeAction nodeAction) {
-                return name.compareTo(nodeAction.getName()) == 0;
-            }
-        }).orNull();
+        return Iterators.tryFind(nodeActions.iterator(), nodeAction -> name.compareTo(nodeAction.getName()) == 0).orNull();
     }
 
     public boolean hasNodeActions() {
@@ -400,7 +376,8 @@ public class Node implements MvpView, BasicTelemetryProperty {
         Node.node2Actions = node2Actions;
     }
 
-    public void removeNode(String sid, String id, Node node) { }
+    public void removeNode(String sid, String id, Node node) {
+    }
 
     public Node createNode(Node parent, String sid, NodeContent content) {
         return new Node(content.getId(), content.getName());
@@ -412,23 +389,19 @@ public class Node implements MvpView, BasicTelemetryProperty {
         return TelemetryConstants.ACTION;
     }
 
-    public void openResourcesInPortal(String subscriptionId, String resourceRelativePath) throws AzureCmdException {
-        try {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            // not signed in
-            if (azureManager == null) {
-                return;
-            }
-            final String portalUrl = azureManager.getPortalUrl();
-            final String tenantId = azureManager.getTenantIdBySubscription(subscriptionId);
-            String url = portalUrl
-                    + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
-                    + tenantId
-                    + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
-                    + resourceRelativePath;
-            DefaultLoader.getIdeHelper().openLinkInBrowser(url);
-        } catch (IOException e) {
-            throw new AzureCmdException(OPEN_RESOURCES_IN_PORTAL_FAILED, e);
+    public void openResourcesInPortal(String subscriptionId, String resourceRelativePath) {
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        // not signed in
+        if (azureManager == null) {
+            return;
         }
+        final String portalUrl = azureManager.getPortalUrl();
+        final String tenantId = azureManager.getTenantIdBySubscription(subscriptionId);
+        final String url = portalUrl
+            + REST_SEGMENT_JOB_MANAGEMENT_TENANTID
+            + tenantId
+            + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
+            + resourceRelativePath;
+        DefaultLoader.getIdeHelper().openLinkInBrowser(url);
     }
 }

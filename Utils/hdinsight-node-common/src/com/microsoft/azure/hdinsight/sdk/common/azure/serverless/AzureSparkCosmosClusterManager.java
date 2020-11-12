@@ -52,7 +52,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.http.NameValuePair;
 import rx.Observable;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,7 +80,8 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
     // FIXME!!!
     private static final String ACCOUNT_FILTER = CommonSettings.getAdEnvironment().endpoints()
             .getOrDefault("dataLakeSparkAccountFilter",
-                    "length(name) gt 4 and substring(name, length(name) sub 4) ge '-c00' and substring(name, length(name) sub 4) le '-c99'");
+                    "length(name) gt 4 and substring(name, length(name) sub 4) ge '-c00' and "
+                        + "substring(name, length(name) sub 4) le '-c99'");
 
     @NotNull
     private final HashMap<String, AzureHttpObservable> httpMap = new HashMap<>();
@@ -90,7 +90,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
     private AzureEnvironment azureEnv = CommonSettings.getAdEnvironment();
 
     @NotNull
-    private ImmutableSortedSet<? extends AzureSparkServerlessAccount> accounts= ImmutableSortedSet.of();
+    private ImmutableSortedSet<? extends AzureSparkServerlessAccount> accounts = ImmutableSortedSet.of();
 
     public AzureSparkCosmosClusterManager() {
         this.httpMap.put("common", new AzureHttpObservable(ApiVersion.VERSION));
@@ -131,13 +131,7 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
 
     @Nullable
     public AzureManager getAzureManager() {
-        try {
-            return AuthMethodManager.getInstance().getAzureManager();
-        } catch (IOException e) {
-            log().info("Can't get Azure manager now, please sign in. error: " + e);
-
-            return null;
-        }
+        return AuthMethodManager.getInstance().getAzureManager();
     }
 
     /**

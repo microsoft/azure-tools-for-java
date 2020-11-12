@@ -25,28 +25,34 @@ package com.microsoft.azuretools.core.mvp.model.webapp;
 import com.microsoft.azure.management.appservice.CsmPublishingProfileOptions;
 import com.microsoft.azure.management.appservice.PublishingProfileFormat;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import lombok.extern.java.Log;
 import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Paths;
 
+@Log
 public class AppServiceUtils {
-    public static boolean getPublishingProfileXmlWithSecrets(WebAppBase webAppBase, String filePath) throws IOException {
+    public static boolean getPublishingProfileXmlWithSecrets(WebAppBase webAppBase, String filePath) {
         final File file = new File(Paths.get(filePath, String.format("%s_%s.PublishSettings",
-                webAppBase.name(), System.currentTimeMillis())).toString());
-        file.createNewFile();
-        try (InputStream inputStream = webAppBase.manager().inner().webApps()
-                .listPublishingProfileXmlWithSecrets(webAppBase.resourceGroupName(), webAppBase.name(),
-                        new CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP));
-             OutputStream outputStream = new FileOutputStream(file);
+                                                                     webAppBase.name(), System.currentTimeMillis()))
+                                        .toString());
+        try {
+            file.createNewFile();
+        } catch (final IOException e) {
+            log.warning("failed to create publishing profile xml file");
+            return false;
+        }
+        try (final InputStream inputStream = webAppBase.manager().inner().webApps()
+                                                       .listPublishingProfileXmlWithSecrets(webAppBase.resourceGroupName(),
+                                                                                      webAppBase.name(),
+                                                                                      new CsmPublishingProfileOptions().withFormat(
+                                                                                          PublishingProfileFormat.FTP));
+             final OutputStream outputStream = new FileOutputStream(file)
         ) {
             IOUtils.copy(inputStream, outputStream);
             return true;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
             return false;
         }

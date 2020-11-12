@@ -27,7 +27,7 @@ import com.google.gson.JsonObject;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -51,7 +51,6 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -96,11 +95,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
 
     @Override
     protected void refreshItems() {
-        try {
-            functionNodePresenter.onRefreshFunctionNode(this.subscriptionId, this.functionAppId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_LOAD_TRIGGERS, functionAppName), e);
-        }
+        functionNodePresenter.onRefreshFunctionNode(this.subscriptionId, this.functionAppId);
     }
 
     @Override
@@ -126,20 +121,19 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(FUNCTION, RESTART_FUNCTION_APP,
                 createBackgroundActionListener("Restarting", () -> restartFunctionApp())));
         addAction(ACTION_DELETE, new DeleteFunctionAppAction());
-        addAction("Open in portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP,
-                new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                        openResourcesInPortal(subscriptionId, functionAppId);
-                    }
-                }));
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP,
-                new NodeActionListener() {
-                    @Override
-                    protected void actionPerformed(NodeActionEvent e) {
-                        DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionNode.this);
-                    }
-                }));
+        addAction("Open in portal", new WrappedTelemetryNodeActionListener(FUNCTION, OPEN_INBROWSER_FUNCTION_APP, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                openResourcesInPortal(subscriptionId, functionAppId);
+            }
+        }));
+        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper()
+                             .openFunctionAppPropertyView(FunctionNode.this);
+            }
+        }));
         super.loadActions();
     }
 
@@ -164,27 +158,15 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
     }
 
     public void startFunctionApp() {
-        try {
-            functionNodePresenter.onStartFunctionApp(this.subscriptionId, this.functionAppId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_START_FUNCTION_APP, functionAppName), e);
-        }
+        functionNodePresenter.onStartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
     public void restartFunctionApp() {
-        try {
-            functionNodePresenter.onRestartFunctionApp(this.subscriptionId, this.functionAppId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_RESTART_FUNCTION_APP, functionAppName), e);
-        }
+        functionNodePresenter.onRestartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
     public void stopFunctionApp() {
-        try {
-            functionNodePresenter.onStopFunctionApp(this.subscriptionId, this.functionAppId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_FUNCTION_APP, functionAppName), e);
-        }
+        functionNodePresenter.onStopFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
     // work around for API getMasterKey failed

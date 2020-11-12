@@ -32,7 +32,6 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -44,27 +43,27 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
     private static final Logger LOGGER = Logger.getLogger(SpringCloudAppNodePresenter.class.getName());
     private static final String FAILED_TO_STOP_APP = "Failed to refresh Spring Cloud App: %s";
 
-    public void onStartSpringCloudApp(String appId, String activeDeploymentName, DeploymentResourceStatus originalStatus) throws IOException {
+    public void onStartSpringCloudApp(String appId, String activeDeploymentName, DeploymentResourceStatus originalStatus) {
         AzureSpringCloudMvpModel.startApp(appId, activeDeploymentName).await();
         waitUntilStatusChanged(appId, originalStatus);
     }
 
-    public void onStopSpringCloudApp(String appId, String activeDeploymentName, DeploymentResourceStatus originalStatus) throws IOException {
+    public void onStopSpringCloudApp(String appId, String activeDeploymentName, DeploymentResourceStatus originalStatus) {
         AzureSpringCloudMvpModel.stopApp(appId, activeDeploymentName).await();
         waitUntilStatusChanged(appId, originalStatus);
     }
 
-    public void onReStartSpringCloudApp(String appId, String activeDeploymentName, DeploymentResourceStatus originalStatus) throws IOException {
+    public void onReStartSpringCloudApp(String appId, String activeDeploymentName, DeploymentResourceStatus originalStatus) {
         AzureSpringCloudMvpModel.restartApp(appId, activeDeploymentName).await();
         waitUntilStatusChanged(appId, originalStatus);
     }
 
-    public void onDeleteApp(final String appId) throws IOException {
+    public void onDeleteApp(final String appId) {
         AzureSpringCloudMvpModel.deleteApp(appId).await();
         waitUntilStatusChanged(appId, null);
     }
 
-    public static void awaitAndMonitoringStatus(String appId, DeploymentResourceStatus originalStatus) throws IOException, InterruptedException {
+    public static void awaitAndMonitoringStatus(String appId, DeploymentResourceStatus originalStatus) {
         String clusterId = getParentSegment(appId);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future future = executor.submit(() -> {
@@ -85,7 +84,7 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
                     status = deployment.properties().status();
                     SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, app, deployment);
                     Thread.sleep(1000 * 5);
-                } catch (IOException | InterruptedException e) {
+                } catch (InterruptedException e) {
                     SneakyThrowUtils.sneakyThrow(e);
                 }
 
@@ -100,11 +99,7 @@ public class SpringCloudAppNodePresenter<V extends SpringCloudAppNodeView> exten
     }
 
     private void waitUntilStatusChanged(String appId, DeploymentResourceStatus originalStatus) {
-        try {
-            awaitAndMonitoringStatus(appId, originalStatus);
-        } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_APP, SpringCloudIdHelper.getAppName(appId)), e);
-        }
+        awaitAndMonitoringStatus(appId, originalStatus);
     }
 
     private static String getParentSegment(String id) {
