@@ -41,7 +41,7 @@ namespace JetBrains.ReSharper.Azure.Daemon.RunMarkers
     {
         private static readonly ILogger ourLogger = Logger.GetLogger<FunctionAppRunMarkerGutterMark>();
 
-        public override IAnchor Anchor => BulbMenuAnchors.PermanentBackgroundItems;
+        public override IAnchor Priority => BulbMenuAnchors.PermanentBackgroundItems;
 
         protected FunctionAppRunMarkerGutterMark([NotNull] IconId iconId) : base(iconId)
         {
