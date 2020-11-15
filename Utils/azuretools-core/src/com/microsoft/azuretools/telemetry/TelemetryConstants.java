@@ -31,6 +31,7 @@ public class TelemetryConstants {
     public static final String WEBAPP = "webapp";
     public static final String FUNCTION = "function";
     public static final String SPRING_CLOUD = "springcloud";
+    public static final String MYSQL = "azure-mysql";
     public static final String ACR = "acr";
     public static final String ARM = "arm";
     public static final String DOCKER = "docker";
@@ -102,6 +103,7 @@ public class TelemetryConstants {
     public static final String SHOWPROP_SPRING_CLOUD_APP = "showprop-springcloud-app";
     public static final String OPEN_IN_BROWSER_SPRING_CLOUD_APP = "open-inbrowser-springcloud-app";
     public static final String OPEN_IN_PORTAL_SPRING_CLOUD_APP = "open-inportal-springcloud-app";
+    public static final String ENABLE_MY_PUBLIC_IP = "enable-my-public-ip";
 
     public static final String CREATE_DOCKER_FILE = "create-dockerfile";
     public static final String CREATE_DOCKER_HOST = "create-docker-host";

@@ -225,10 +225,15 @@
             <version>1.0.0-beta-2</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-tools-common</artifactId>
-            <version>0.2.0</version>
-        </dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure-tools-common</artifactId>
+			<version>0.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.microsoft.azure.mysql.v2017_12_01</groupId>
+			<artifactId>azure-mgmt-mysql</artifactId>
+			<version>1.0.0-beta-4</version>
+		</dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
