@@ -24,7 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.mysql;
 
 import com.microsoft.azure.management.mysql.v2017_12_01.Server;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
-import com.microsoft.azuretools.core.mvp.model.mysql.MySqlMvpModel;
+import com.microsoft.azuretools.core.mvp.model.mysql.MySQLMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -69,7 +69,7 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
             final MySQLModuleView view = getMvpView();
             if (view != null) {
                 try {
-                    view.renderChildren(MySqlMvpModel.listAllMySQLServers());
+                    view.renderChildren(MySQLMvpModel.listAllMySQLServers());
                 } catch (final IOException e) {
                     DefaultLoader.getUIHelper().showException(FAILED_TO_LOAD_CLUSTERS, e, ERROR_LOAD_CLUSTER, false, true);
                 }
