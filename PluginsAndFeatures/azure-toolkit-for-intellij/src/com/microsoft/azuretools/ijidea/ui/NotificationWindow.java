@@ -24,7 +24,7 @@ package com.microsoft.azuretools.ijidea.ui;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.Messages;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.interact.INotification;
 
 import javax.swing.*;
@@ -35,7 +35,7 @@ import javax.swing.*;
 public class NotificationWindow implements INotification {
     @Override
     public void deliver(String subject, String message) {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             JPanel panel = new JPanel();
             Messages.showMessageDialog(panel, message, subject, AllIcons.General.Information);
         });

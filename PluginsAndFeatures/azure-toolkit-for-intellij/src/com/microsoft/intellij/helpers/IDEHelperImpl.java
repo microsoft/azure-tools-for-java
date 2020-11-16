@@ -59,7 +59,7 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -130,12 +130,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void closeFile(@NotNull final Object projectObject, @NotNull final Object openedFile) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile);
-            }
-        });
+        AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance((Project) projectObject).closeFile((VirtualFile) openedFile));
     }
 
     @Override
@@ -145,7 +140,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void invokeAndWait(@NotNull Runnable runnable) {
-        AzureTaskRunner.getInstance().runAndWait(runnable);
+        AzureTaskManager.getInstance().runAndWait(runnable);
     }
 
     @Override
@@ -159,26 +154,16 @@ public class IDEHelperImpl implements IDEHelper {
                                 final Runnable runnable) {
         // background tasks via ProgressManager can be scheduled only on the
         // dispatch thread
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ProgressManager.getInstance().run(new Task.Backgroundable((Project) project,
-                                                                          name, canBeCancelled) {
-                    @Override
-                    public void run(@NotNull ProgressIndicator indicator) {
-                        if (isIndeterminate) {
-                            indicator.setIndeterminate(true);
-                        }
-
-                        if (indicatorText != null) {
-                            indicator.setText(indicatorText);
-                        }
-
-                        runnable.run();
-                    }
-                });
+        AzureTaskManager.getInstance().runLater(() -> AzureTaskManager.getInstance().runInBackground(new AzureTask(project, name, canBeCancelled, () -> {
+            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+            if (isIndeterminate) {
+                indicator.setIndeterminate(true);
             }
-        }, ModalityState.any());
+            if (indicatorText != null) {
+                indicator.setText(indicatorText);
+            }
+            runnable.run();
+        })));
     }
 
     @NotNull
@@ -193,13 +178,10 @@ public class IDEHelperImpl implements IDEHelper {
 
         // background tasks via ProgressManager can be scheduled only on the
         // dispatch thread
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ProgressManager.getInstance().run(getCancellableBackgroundTask(project, name, indicatorText, handle, cancellableTask));
-            }
-        }, ModalityState.any());
-
+        AzureTaskManager.getInstance().runLater(() -> {
+            final Task.Backgroundable task = getCancellableBackgroundTask(project, name, indicatorText, handle, cancellableTask);
+            ProgressManager.getInstance().run(task);
+        });
         return handle;
     }
 
@@ -501,7 +483,7 @@ public class IDEHelperImpl implements IDEHelper {
                 indicator.setIndeterminate(true);
                 writeContentTo(virtualFile.getOutputStream(null), file, errorHandler)
                     .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> AzureTaskRunner.getInstance().runLater(() -> {
+                    .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
                         if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
                             Messages.showWarningDialog(failure, "Open File");
                         }

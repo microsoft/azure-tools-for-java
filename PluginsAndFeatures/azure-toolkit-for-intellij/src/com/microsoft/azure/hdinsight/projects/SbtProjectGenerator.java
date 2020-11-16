@@ -35,7 +35,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.projectImport.ProjectImportProvider;
 import com.microsoft.azure.hdinsight.projects.util.ProjectSampleUtil;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang.StringUtils;
@@ -198,7 +198,7 @@ public class SbtProjectGenerator {
 
         final VirtualFile projectFile = VfsUtil.findFile(Paths.get(root, "build.sbt"), true);
         if (projectFile != null) {
-            AzureTaskRunner.getInstance().runLater(() -> {
+            AzureTaskManager.getInstance().runLater(() -> {
                 AddModuleWizard wizard = ImportModuleAction.createImportWizard(project,
                         null,
                         projectFile,

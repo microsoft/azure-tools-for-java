@@ -33,7 +33,7 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.IdeSchedulers;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
     }
 
     public Scheduler processBarVisibleAsync(@NotNull final String title) {
-        return from(command -> AzureTaskRunner.getInstance().runLater(() -> {
+        return from(command -> AzureTaskManager.getInstance().runLater(() -> {
             final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
                 public void run(@NotNull final ProgressIndicator progressIndicator) {
@@ -78,7 +78,7 @@ public class IdeaSchedulers implements IdeSchedulers, ILogger {
     }
 
     public Scheduler processBarVisibleSync(@NotNull final String title) {
-        return from(command -> AzureTaskRunner.getInstance().runAndWait(() -> {
+        return from(command -> AzureTaskManager.getInstance().runAndWait(() -> {
             final Backgroundable task = new Backgroundable(project, title, false) {
                 @Override
                 public void run(@NotNull final ProgressIndicator progressIndicator) {

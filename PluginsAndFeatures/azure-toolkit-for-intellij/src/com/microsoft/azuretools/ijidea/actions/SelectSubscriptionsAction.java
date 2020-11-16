@@ -29,7 +29,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -107,7 +107,7 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     }
 
     public static void updateSubscriptionWithProgressDialog(final SubscriptionManager subscriptionManager, Project project) {
-        AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Loading Subscriptions...", true, () -> {
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Subscriptions...", true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
             //System.out.println("updateSubscriptionWithProgressDialog: calling getSubscriptionDetails()");
             subscriptionManager.getSubscriptionDetails();

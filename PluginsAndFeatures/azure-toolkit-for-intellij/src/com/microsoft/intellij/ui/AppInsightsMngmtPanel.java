@@ -30,7 +30,7 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTable
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -224,7 +224,7 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
 
     private void createNewDilaog() {
         try {
-            AzureTaskRunner.getInstance().runAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 ApplicationInsightsNewDialog dialog = new ApplicationInsightsNewDialog();
                 dialog.setOnCreate(() -> DefaultLoader.getIdeHelper().invokeLater(() -> {
                     ApplicationInsightsResource resource = ApplicationInsightsNewDialog.getResource();

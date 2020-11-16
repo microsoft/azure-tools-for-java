@@ -34,7 +34,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVer
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.ServiceResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.intellij.common.AzureResourceWrapper;
 import com.microsoft.intellij.common.CommonConst;
@@ -223,7 +223,7 @@ public class SpringCloudAppSettingPanel extends AzureSettingPanel<SpringCloudDep
     private void onSelectApp() {
         final AzureResourceWrapper selectedObject = (AzureResourceWrapper) cbSpringApps.getSelectedItem();
         if (selectedObject != null && selectedObject.isFixedOption() && selectedObject.getName().equals(CREATE_APP)) {
-            AzureTaskRunner.getInstance().runLater(() -> createNewAppWizard());
+            AzureTaskManager.getInstance().runLater(() -> createNewAppWizard());
         }
     }
 

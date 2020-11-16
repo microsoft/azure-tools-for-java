@@ -25,7 +25,7 @@ package com.microsoft.intellij.secure
 import com.intellij.util.net.ssl.CertificateManager
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.sdk.common.HttpObservable
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.intellij.util.PluginUtil
 import org.apache.http.ssl.TrustStrategy
 import java.security.cert.CertificateException
@@ -81,7 +81,7 @@ object IdeaTrustStrategy : TrustStrategy, ILogger {
                 return false
             }
 
-            AzureTaskRunner.getInstance().runLater {
+            AzureTaskManager.getInstance().runLater {
                 PluginUtil.displayInfoDialog(AcceptTitle, UserAcceptCAMsg)
             }
 

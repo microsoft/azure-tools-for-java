@@ -34,7 +34,7 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -447,14 +447,14 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     private void createWebApp() {
         updateConfiguration();
-        AzureTaskRunner.getInstance().runInModal(new AzureTask(null, "Creating New WebApp...", true, () -> {
+        AzureTaskManager.getInstance().runInModal(new AzureTask(null, "Creating New WebApp...", true, () -> {
             Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, properties, null, (operation) -> {
                 progressIndicator.setIndeterminate(true);
                 EventUtil.logEvent(EventType.info, operation, properties);
                 result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
-                AzureTaskRunner.getInstance().runLater(() -> {
+                AzureTaskManager.getInstance().runLater(() -> {
                     sendTelemetry(true, null);
                     if (AzureUIRefreshCore.listeners != null) {
                         AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));

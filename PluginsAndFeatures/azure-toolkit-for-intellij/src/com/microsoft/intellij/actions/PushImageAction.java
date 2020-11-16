@@ -36,7 +36,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -61,7 +61,7 @@ public class PushImageAction extends AzureAnAction {
             notifyError(Constant.ERROR_NO_SELECTED_PROJECT);
             return true;
         }
-        AzureTaskRunner.getInstance().runLater(() -> runConfiguration(module));
+        AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
         return true;
     }
 

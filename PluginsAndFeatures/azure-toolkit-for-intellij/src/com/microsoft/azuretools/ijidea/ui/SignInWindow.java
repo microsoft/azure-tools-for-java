@@ -36,7 +36,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
@@ -296,7 +296,7 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void doLogin(Callable loginCallable, Map<String, String> properties) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
-        AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Sign In Progress", false, () -> {
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Sign In Progress", false, () -> {
             try {
                 EventUtil.logEvent(EventType.info, operation, properties);
                 operation.start();
@@ -306,7 +306,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 System.out.println(ex.getMessage());
             } catch (Exception ex) {
                 EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                AzureTaskRunner.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                AzureTaskManager.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
             } finally {
                 EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
                     AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
@@ -343,7 +343,7 @@ public class SignInWindow extends AzureDialogWrapper {
             AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
 
-            AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Load Subscriptions Progress", true, () -> {
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Load Subscriptions Progress", true, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setText("Loading subscriptions...");
                 try {
@@ -352,7 +352,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     //LOGGER.error("doCreateServicePrincipal::Task.Modal", ex);
-                    AzureTaskRunner.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error"));
+                    AzureTaskManager.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error"));
                 }
             }));
 

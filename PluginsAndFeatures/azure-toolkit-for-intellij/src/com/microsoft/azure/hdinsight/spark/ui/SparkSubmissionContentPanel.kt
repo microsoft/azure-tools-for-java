@@ -55,7 +55,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
 import com.microsoft.intellij.forms.dsl.panel
@@ -412,7 +412,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     @Synchronized
     private fun checkInputsWithErrorLabels() {
-        AzureTaskRunner.getInstance().runLater {
+        AzureTaskManager.getInstance().runLater {
             // Clean all error messages firstly
             hideAllErrors()
 
@@ -577,7 +577,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     override fun setData(data: SparkSubmitModel) {
         // Data -> Component
 
-        AzureTaskRunner.getInstance().runAndWait({
+        AzureTaskManager.getInstance().runAndWait({
             viewModel.clusterSelection.toSelectClusterByIdBehavior.onNext(data.clusterMappedId ?: data.clusterName)
 
             // TODO: Implement this in ClusterSelection ViewModel to take real effects

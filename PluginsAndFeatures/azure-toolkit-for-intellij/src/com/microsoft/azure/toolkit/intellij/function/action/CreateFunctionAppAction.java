@@ -28,7 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -87,11 +87,11 @@ public class CreateFunctionAppAction extends NodeActionListener {
                                                           message("function.create.error.createFailed"));
                 }
         });
-        AzureTaskRunner.getInstance().runInModal(task);
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     private void refreshAzureExplorer(FunctionApp functionApp) {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, functionApp));
             }

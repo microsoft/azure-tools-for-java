@@ -30,7 +30,7 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.TableEntityForm;
 import com.microsoft.intellij.forms.TablesQueryDesigner;
@@ -259,7 +259,7 @@ public class TableFileEditor implements FileEditor {
     }
 
     private void refreshGrid() {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
             columnData.put(PARTITION_KEY, new ArrayList<String>());
             columnData.put(ROW_KEY, new ArrayList<String>());

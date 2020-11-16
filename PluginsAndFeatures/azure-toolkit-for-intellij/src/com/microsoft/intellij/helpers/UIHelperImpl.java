@@ -43,7 +43,7 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -126,7 +126,7 @@ public class UIHelperImpl implements UIHelper {
                               @NotNull final String title,
                               final boolean appendEx,
                               final boolean suggestDetail) {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
             String details = getDetails(ex);
             ErrorMessageForm em = new ErrorMessageForm(title);
@@ -142,7 +142,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void showError(Component component, String message, String title) {
-        AzureTaskRunner.getInstance().runLater(() -> Messages.showErrorDialog(component, message, title));
+        AzureTaskManager.getInstance().runLater(() -> Messages.showErrorDialog(component, message, title));
     }
 
     @Override
@@ -239,7 +239,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openItem(@NotNull final Object projectObject, @NotNull final Object itemVirtualFile) {
-        AzureTaskRunner.getInstance().runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
+        AzureTaskManager.getInstance().runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
     }
 
     @org.jetbrains.annotations.NotNull
@@ -293,7 +293,7 @@ public class UIHelperImpl implements UIHelper {
             VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), queue);
             if (file != null) {
                 final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
-                AzureTaskRunner.getInstance().runLater(() -> queueFileEditor.fillGrid());
+                AzureTaskManager.getInstance().runLater(() -> queueFileEditor.fillGrid());
             }
         });
     }
@@ -306,7 +306,7 @@ public class UIHelperImpl implements UIHelper {
                 final BlobExplorerFileEditor containerFileEditor =
                     (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
                                                               .getEditors(file)[0];
-                AzureTaskRunner.getInstance().runLater(() -> containerFileEditor.fillGrid());
+                AzureTaskManager.getInstance().runLater(() -> containerFileEditor.fillGrid());
             }
         });
     }
@@ -318,7 +318,7 @@ public class UIHelperImpl implements UIHelper {
             VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
             if (file != null) {
                 final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
-                AzureTaskRunner.getInstance().runLater(() -> tableFileEditor.fillGrid());
+                AzureTaskManager.getInstance().runLater(() -> tableFileEditor.fillGrid());
             }
         });
     }
@@ -593,7 +593,7 @@ public class UIHelperImpl implements UIHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
         LightVirtualFile file = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, appId);
         if (file != null) {
-            AzureTaskRunner.getInstance().runLater(() -> fileEditorManager.closeFile(file));
+            AzureTaskManager.getInstance().runLater(() -> fileEditorManager.closeFile(file));
         }
     }
 
@@ -741,7 +741,7 @@ public class UIHelperImpl implements UIHelper {
             return supplier.get();
         }
         RunnableFuture<T> runnableFuture = new FutureTask<>(() -> supplier.get());
-        AzureTaskRunner.getInstance().runLater(runnableFuture);
+        AzureTaskManager.getInstance().runLater(runnableFuture);
         try {
             return runnableFuture.get();
         } catch (InterruptedException | ExecutionException e) {

@@ -35,7 +35,7 @@ import com.microsoft.azure.hdinsight.projects.HDInsightExternalSystem;
 import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
 import com.microsoft.azure.hdinsight.projects.HDInsightProjectTemplate;
 import com.microsoft.azure.hdinsight.projects.HDInsightTemplatesType;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -164,7 +164,7 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
             Set<String> pluginIds = new HashSet<>();
             pluginIds.add(SCALA_PLUGIN_ID);
-            AzureTaskRunner.getInstance().runAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 PluginsAdvertiser.installAndEnablePlugins(pluginIds, () -> PluginInstaller.addStateListener(
                     new PluginStateListener() {
                         @Override

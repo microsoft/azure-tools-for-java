@@ -40,7 +40,7 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementa
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
@@ -361,7 +361,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                                                 null)) {
             freezeUI();
             final String title = String.format("%s app '%s'", actionName, this.appName);
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
                 EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
                     action.accept(changes);
                 });
@@ -372,7 +372,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
 
     private void initUI() {
         // Todo: find better way to align UI labels
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             Dimension size = lblInstances.getPreferredSize();
             size.setSize(lblPersistentStorage.getWidth(), size.getHeight());
             lblInstances.setPreferredSize(size);
@@ -563,7 +563,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                              ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
             testKeyCache.refresh(clusterId);
             return Pair.of(app, deploy);
-        }).subscribeOn(Schedulers.io()).subscribe(pair -> AzureTaskRunner.getInstance().runLater(
+        }).subscribeOn(Schedulers.io()).subscribe(pair -> AzureTaskManager.getInstance().runLater(
             () -> this.prepareViewModel(pair.getLeft(), pair.getRight())));
     }
 
@@ -645,13 +645,13 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             deploymentResourceInner = AzureSpringCloudMvpModel
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
-            AzureTaskRunner.getInstance().runLater(() ->
+            AzureTaskManager.getInstance().runLater(() ->
                     PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration "
                             + "successfully"));
             refreshData();
 
         } catch (Exception e) {
-            AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
+            AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
         }
     }
 
@@ -815,7 +815,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             targetViewModel.setStatus(status.toString());
             this.updateModel(targetViewModel);
         } catch (AzureExecutionException e) {
-            AzureTaskRunner.getInstance().runLater(() -> {
+            AzureTaskManager.getInstance().runLater(() -> {
                 PluginUtil.showErrorNotificationProject(project, "Cannot binding data to Spring Cloud property view.", e.getMessage());
             });
         }

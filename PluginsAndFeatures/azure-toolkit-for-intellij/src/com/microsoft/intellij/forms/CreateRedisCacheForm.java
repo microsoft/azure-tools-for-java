@@ -33,7 +33,7 @@ import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
@@ -195,7 +195,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
 
         public Void call() throws Exception {
             final String title = String.format(CREATING_INDICATOR, ((ProcessorBase) processor).DNSName());
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
                 try {
                     processor.waitForCompletion("PRODUCE");
                 } catch (InterruptedException ex) {
@@ -273,7 +273,7 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         cbSubs.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
         if (selectedSubscriptions.size() > 0) {
             currentSub = (SubscriptionDetail) cbSubs.getSelectedItem();
-            AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);
                 } catch (Exception ex) {

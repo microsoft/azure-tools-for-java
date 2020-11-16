@@ -32,7 +32,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
@@ -111,7 +111,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     private void openItem(@NotNull final Project project,
                           @NotNull final VirtualFile virtualFile,
                           @Nullable final VirtualFile closeableVirtualFile) {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (closeableVirtualFile != null) {
                 FileEditorManager.getInstance(project).closeFile(closeableVirtualFile);
             }
@@ -197,7 +197,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public void createRefreshHdiReaderJobsWarningForm(@NotNull final HDInsightRootModule module,
                                                       @NotNull final ClusterDetail clusterDetail) {
-        AzureTaskRunner.getInstance().runLater(new Runnable() {
+        AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {
                 final Project project = (Project) module.getProject();
@@ -227,7 +227,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public void createRefreshHdiReaderStorageAccountsWarningForm(@NotNull final RefreshableNode node,
                                                                  @NotNull final String aseDeepLink) {
-        AzureTaskRunner.getInstance().runLater(new Runnable() {
+        AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {
                 final Project project = (Project) node.getProject();
@@ -260,7 +260,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public void createRefreshHdiLinkedClusterStorageAccountsWarningForm(@NotNull final RefreshableNode node,
                                                                         @NotNull final String aseDeepLink) {
-        AzureTaskRunner.getInstance().runLater(new Runnable() {
+        AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {
                 final Project project = (Project) node.getProject();

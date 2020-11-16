@@ -43,7 +43,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.common.CommonConst;
@@ -123,7 +123,7 @@ public class PluginUtil {
 
     public static void displayErrorDialogInAWTAndLog(final String title, final String message, Throwable e) {
         LOG.error(message, e);
-        AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog(title, message));
+        AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(title, message));
     }
 
     public static void displayInfoDialog(String title, String message) {
@@ -135,7 +135,7 @@ public class PluginUtil {
     }
 
     public static void displayWarningDialogInAWT(final String title, final String message) {
-        AzureTaskRunner.getInstance().runLater(() -> displayWarningDialog(title, message));
+        AzureTaskManager.getInstance().runLater(() -> displayWarningDialog(title, message));
     }
 
     /**

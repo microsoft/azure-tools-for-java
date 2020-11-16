@@ -29,7 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -95,7 +95,7 @@ public class CreateWebAppAction extends NodeActionListener {
                 DefaultLoader.getUIHelper().showError(message("webapp.create.error.title") + ex.getMessage(), message("webapp.create.error.createFailed"));
             }
         });
-        AzureTaskRunner.getInstance().runInModal(task);
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     private void deploy(final WebApp webapp, final Path application, final Project project) {
@@ -113,11 +113,11 @@ public class CreateWebAppAction extends NodeActionListener {
                 DefaultLoader.getUIHelper().showError(message("webapp.deploy.error.title") + ex.getMessage(), message("webapp.deploy.error.deployFailed"));
             }
         });
-        AzureTaskRunner.getInstance().runInModal(task);
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     private void refreshAzureExplorer() {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }

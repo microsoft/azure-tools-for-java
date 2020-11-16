@@ -38,7 +38,7 @@ import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -141,7 +141,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     protected void doOKAction() {
         deploymentName = deploymentNameTextField.getText();
         final String title = "Deploying your azure resource " + deploymentName + "...";
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.CREATE_DEPLOYMENT, (operation -> {
                 SubscriptionDetail subs = (SubscriptionDetail) subscriptionCb.getSelectedItem();
                 Azure azure = AuthMethodManager.getInstance().getAzureClient(subs.getSubscriptionId());
@@ -222,7 +222,7 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
         Map<SubscriptionDetail, List<Location>> subscription2Location =
                 AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null) {
-            AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);
                 } catch (Exception ex) {

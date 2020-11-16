@@ -25,7 +25,7 @@ package com.microsoft.intellij.serviceexplorer.azure.appservice;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
@@ -76,7 +76,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         logger.info(String.format(message("webapp.ssh.hint.startSSH"), webAppName));
         // ssh to connect to remote web app container.
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, String.format(message("webapp.ssh.task.connectWebApp.title"), webAppName), true, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, String.format(message("webapp.ssh.task.connectWebApp.title"), webAppName), true, () -> {
             // check these conditions to ssh into web app
             if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, this.app.linuxFxVersion())) {
                 return;
@@ -91,7 +91,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
                 TerminalView terminalView = TerminalView.getInstance(project);
                 ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
                 final String title = String.format(message("webapp.ssh.task.openSSH.title"), webAppName);
-                AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, title, true, () -> {
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, true, () -> {
                     // create connection to the local proxy.
                     SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
                 }));

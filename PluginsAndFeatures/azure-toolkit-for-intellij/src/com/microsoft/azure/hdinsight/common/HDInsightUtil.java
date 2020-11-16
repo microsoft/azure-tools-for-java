@@ -28,7 +28,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.microsoft.azure.hdinsight.serverexplore.HDInsightRootModuleImpl;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.intellij.util.PluginUtil;
@@ -121,7 +121,7 @@ public class HDInsightUtil {
                 initializeToolWindowProcessorWithSubscribe(
                         sparkSubmissionToolWindowProcessor, toolWindowMessageSubject);
             } else {
-                AzureTaskRunner.getInstance().runLater(()-> initializeToolWindowProcessorWithSubscribe(
+                AzureTaskManager.getInstance().runLater(()-> initializeToolWindowProcessorWithSubscribe(
                         sparkSubmissionToolWindowProcessor, toolWindowMessageSubject));
             }
         }
@@ -160,7 +160,7 @@ public class HDInsightUtil {
             if (ApplicationManager.getApplication().isDispatchThread()) {
                 toolWindow.show(null);
             } else {
-                AzureTaskRunner.getInstance().runLater(() -> toolWindow.show(null));
+                AzureTaskManager.getInstance().runLater(() -> toolWindow.show(null));
             }
         }
 

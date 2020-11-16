@@ -22,9 +22,9 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
-public class AzureTaskRunner {
+public class AzureTaskManager {
 
-    public static AzureTaskRunner getInstance() {
+    public static AzureTaskManager getInstance() {
         return null;
     }
 

@@ -34,7 +34,7 @@ import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -236,7 +236,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         setSubscription((SubscriptionDetail)subscriptionComboBox.getSelectedItem());
         if (subscription == null) {
             final String title = "Creating storage account " + nameTextField.getText() + "...";
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
                 createStorageAccount();
@@ -445,7 +445,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     public void loadRegions() {
         Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null || subscription2Location.get(subscriptionComboBox.getSelectedItem()) == null) {
-            AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
                 try {
                     AzureModelController.updateSubscriptionMaps(null);
                     fillRegions();

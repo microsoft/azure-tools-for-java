@@ -34,7 +34,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.AnActionButton;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.ListTableModel;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,7 +80,7 @@ public class EnvVariablesTable extends ListTableWithButtons<EnvironmentVariable>
     }
 
     public void editVariableName(final EnvironmentVariable environmentVariable) {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             final EnvironmentVariable actualEnvVar = ContainerUtil.find(getElements(),
                     item -> StringUtil.equals(environmentVariable.getName(), item.getName()));
             if (actualEnvVar == null) {

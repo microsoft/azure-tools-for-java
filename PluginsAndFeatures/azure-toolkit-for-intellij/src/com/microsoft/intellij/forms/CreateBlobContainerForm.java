@@ -27,7 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
@@ -90,14 +90,14 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
     protected void doOKAction() {
         final String name = nameTextField.getText();
         //Field outerFiele = onCreate.getClass().getDeclaredField("this$0");
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Creating blob container...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Creating blob container...", false, () -> {
             EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
                 ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
                 List<BlobContainer> blobs = StorageClientSDKManager.getManager()
                                                                    .getBlobContainers(connectionString);
                 for (BlobContainer blobContainer : blobs) {
                     if (blobContainer.getName().equals(name)) {
-                        AzureTaskRunner.getInstance().runLater(() -> {
+                        AzureTaskManager.getInstance().runLater(() -> {
                             DefaultLoader.getUIHelper().showError(
                                 "A blob container with the specified name already exists.", "Azure Explorer");
                         });
@@ -110,7 +110,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
                 StorageClientSDKManager.getManager().createBlobContainer(connectionString, blobContainer);
 
                 if (onCreate != null) {
-                    AzureTaskRunner.getInstance().runLater(onCreate);
+                    AzureTaskManager.getInstance().runLater(onCreate);
                 }
             }, (e) -> {
                 String msg = "An error occurred while attempting to create blob container."

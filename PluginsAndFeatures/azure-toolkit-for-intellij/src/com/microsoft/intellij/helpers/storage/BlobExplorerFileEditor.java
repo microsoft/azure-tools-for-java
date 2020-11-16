@@ -39,7 +39,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFileWrapper;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.ISubscriptionSelectionListener;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -319,7 +319,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     public void fillGrid() {
         setUIState(true);
 
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading blobs...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading blobs...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             try {
                 progressIndicator.setIndeterminate(true);
@@ -340,7 +340,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                     }
                 }
 
-                AzureTaskRunner.getInstance().runLater(() -> {
+                AzureTaskManager.getInstance().runLater(() -> {
 
                     pathLabel.setText(directoryQueue.peekLast().getPath());
                     DefaultTableModel model = (DefaultTableModel) blobListTable.getModel();
@@ -523,7 +523,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
             if (isConfirm) {
                 setUIState(true);
 
-                AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Deleting blob...", false, () -> {
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Deleting blob...", false, () -> {
                     final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                     progressIndicator.setIndeterminate(true);
                     try {
@@ -536,7 +536,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                             queryTextField.setText("");
                         }
 
-                        AzureTaskRunner.getInstance().runLater(this::fillGrid);
+                        AzureTaskManager.getInstance().runLater(this::fillGrid);
                     } catch (AzureCmdException ex) {
                         String msg = "An error occurred while attempting to delete blob." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
                         PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
@@ -583,7 +583,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
         final BlobFile fileSelection = getFileSelection();
 
         if (fileSelection != null) {
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Downloading blob...", true, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Downloading blob...", true, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 try {
                     progressIndicator.setIndeterminate(false);
@@ -691,7 +691,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
     }
 
     private void uploadFile(final String path, final File selectedFile) {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Uploading blob...", true, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Uploading blob...", true, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             try {
                 final BlobDirectory blobDirectory = directoryQueue.peekLast();
@@ -770,7 +770,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                         PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
                     }
 
-                    AzureTaskRunner.getInstance().runLater(() -> fillGrid());
+                    AzureTaskManager.getInstance().runLater(() -> fillGrid());
                 } catch (Exception e) {
                     Throwable connectionFault = e.getCause();
                     Throwable realFault = null;

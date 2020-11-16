@@ -43,7 +43,7 @@ import com.intellij.openapi.vfs.newvfs.RefreshQueue;
 import com.intellij.psi.PsiFile;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -88,12 +88,12 @@ public class AddAzureDependencyAction extends AzureAnAction {
             return true;
         }
 
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Update Azure Spring Cloud dependencies", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Update Azure Spring Cloud dependencies", false, () -> {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText("Syncing maven project " + project.getName());
             final SettableFuture<Boolean> isDirty = SettableFuture.create();
 
-            AzureTaskRunner.getInstance().runAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 ProjectNotificationAware notificationAware = ProjectNotificationAware.getInstance(project);
                 isDirty.set(notificationAware.isNotificationVisible());
                 if (notificationAware.isNotificationVisible()) {
@@ -272,7 +272,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
     private static void noticeUserVersionChanges(Project project, File pomFile, List<DependencyArtifact> versionChanges) {
         final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pomFile);
         RefreshQueue.getInstance().refresh(true, false, null, new VirtualFile[]{vf});
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             FileEditorManager.getInstance(project).closeFile(vf);
             FileEditorManager.getInstance(project).openFile(vf, true, true);
             if (versionChanges.stream().anyMatch(t -> StringUtils.isNotEmpty(t.getCurrentVersion()))) {

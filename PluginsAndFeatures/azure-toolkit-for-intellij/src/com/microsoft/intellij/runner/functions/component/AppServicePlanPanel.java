@@ -28,7 +28,7 @@ import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -152,7 +152,7 @@ public class AppServicePlanPanel extends JPanel {
             selectedAppServicePlan = (AppServicePlanWrapper) selectedObject;
             showAppServicePlan(selectedAppServicePlan);
         } else if (CREATE_APP_SERVICE_PLAN.equals(selectedObject)) {
-            AzureTaskRunner.getInstance().runLater(this::createAppServicePlan);
+            AzureTaskManager.getInstance().runLater(this::createAppServicePlan);
         } else {
             selectedAppServicePlan = null;
             showAppServicePlan(null);

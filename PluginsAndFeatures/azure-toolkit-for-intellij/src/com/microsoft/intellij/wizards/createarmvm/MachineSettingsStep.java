@@ -37,7 +37,7 @@ import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.OperatingSystemTypes;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -209,7 +209,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         if (vmSizeComboBox.getItemCount() == 0) {
             vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading VM sizes...", false, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading VM sizes...", false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
 
@@ -233,7 +233,7 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
                     }
                 });
 
-                AzureTaskRunner.getInstance().runAndWait(() -> {
+                AzureTaskManager.getInstance().runAndWait(() -> {
                     vmSizeComboBox.setModel(new DefaultComboBoxModel<>(sizes.stream().map(VirtualMachineSize::name).toArray(String[]::new)));
                     selectDefaultSize();
                 });

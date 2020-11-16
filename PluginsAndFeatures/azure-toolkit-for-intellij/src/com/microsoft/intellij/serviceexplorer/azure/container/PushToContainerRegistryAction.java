@@ -34,7 +34,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.containerregistry.Registry;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -74,7 +74,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         }
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-                AzureTaskRunner.getInstance().runLater(() -> runConfiguration(project));
+                AzureTaskManager.getInstance().runLater(() -> runConfiguration(project));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,10 +103,10 @@ public class PushToContainerRegistryAction extends NodeActionListener {
                                 imageSetting.setServerUrl(ret.getServerUrl());
                                 imageSetting.setUsername(ret.getUsername());
                                 imageSetting.setPassword(ret.getPassword());
-                                AzureTaskRunner.getInstance().runLater(() -> openRunDialog(project, settings));
+                                AzureTaskManager.getInstance().runLater(() -> openRunDialog(project, settings));
                                 return;
                             }
-                            AzureTaskRunner.getInstance().runLater(() -> openRunDialog(project, ret));
+                            AzureTaskManager.getInstance().runLater(() -> openRunDialog(project, ret));
                         },
                         err -> {
                             err.printStackTrace();

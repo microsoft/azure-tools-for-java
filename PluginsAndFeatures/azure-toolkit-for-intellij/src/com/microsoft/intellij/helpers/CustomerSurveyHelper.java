@@ -35,7 +35,7 @@ import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.ijidea.ui.SurveyPopUpDialog;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
@@ -144,7 +144,7 @@ public enum CustomerSurveyHelper {
     }
 
     private void saveConfiguration() {
-        AzureTaskRunner.getInstance().runLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             try {
                 File configFile = getConfigFile();
                 ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();

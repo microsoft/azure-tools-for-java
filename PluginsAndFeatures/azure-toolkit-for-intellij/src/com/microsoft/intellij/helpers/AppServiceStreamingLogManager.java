@@ -26,7 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -81,7 +81,7 @@ public enum AppServiceStreamingLogManager {
     }
 
     public void closeStreamingLog(Project project, String appId) {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, CLOSING_STREAMING_LOG, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, CLOSING_STREAMING_LOG, false, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 consoleViewMap.get(appId).closeStreamingLog();
             } else {
@@ -92,7 +92,7 @@ public enum AppServiceStreamingLogManager {
     }
 
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, STARTING_STREAMING_LOG, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, STARTING_STREAMING_LOG, false, () -> {
             try {
                 final String name = logStreaming.getTitle();
                 final AppServiceStreamingLogConsoleView consoleView = getOrCreateConsoleView(project, resourceId);

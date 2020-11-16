@@ -31,7 +31,7 @@ import com.microsoft.azure.management.appservice.PlatformArchitecture;
 import com.microsoft.azure.management.appservice.PublishingProfile;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
@@ -349,7 +349,7 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
     }
 
     protected void runWithProgress(IWorker worker, String title) {
-        AzureTaskRunner.getInstance().runInModal(new AzureTask(project, title + " Progress", true, () -> {
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, title + " Progress", true, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             try {
@@ -357,7 +357,7 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 //LOGGER.error("work@IWorker@run@ProgressManager@runWithProgress@RemoteDebuggingClientDialog", ex);
-                AzureTaskRunner.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), title + "Error"));
+                AzureTaskManager.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), title + "Error"));
                 try {
                     worker.rollBack(progressIndicator);
                 } catch (Exception ex1) {

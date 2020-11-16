@@ -24,7 +24,7 @@ package com.microsoft.intellij.helpers.springcloud;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.intellij.helpers.StreamingLogsToolWindowManager;
@@ -49,7 +49,7 @@ public class SpringCloudStreamingLogManager {
     public void showStreamingLog(Project project, String appId, String instanceName) {
         final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.computeIfAbsent(
                 instanceName, name -> new SpringCloudStreamingLogConsoleView(project, name));
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Starting Streaming Log...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Starting Streaming Log...", false, () -> {
             try {
                 consoleView.startLog(() -> {
                     try {
@@ -60,19 +60,19 @@ public class SpringCloudStreamingLogManager {
                 });
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, instanceName, instanceName, consoleView);
             } catch (Throwable e) {
-                AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to start streaming log", e.getMessage()));
+                AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to start streaming log", e.getMessage()));
                 consoleView.shutdown();
             }
         }));
     }
 
     public void closeStreamingLog(String instanceName) {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(null, "Closing Streaming Log...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, "Closing Streaming Log...", false, () -> {
             final SpringCloudStreamingLogConsoleView consoleView = consoleViewMap.get(instanceName);
             if (consoleView != null && consoleView.getStatus() == ACTIVE) {
                 consoleView.shutdown();
             } else {
-                AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog(
+                AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(
                     "Failed to close streaming log", "Log is not started."));
             }
         }));

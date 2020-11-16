@@ -33,7 +33,7 @@ import com.intellij.ui.table.TableView;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.ListTableModel;
 import com.intellij.util.ui.PlatformColors;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.intellij.AzurePlugin;
@@ -109,7 +109,7 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
                         String key = args.getId() + args.getStartTime().getTime();
                         if (rows.containsKey(key)) {
                             final DeploymentTableItem item = rows.get(key);
-                            AzureTaskRunner.getInstance().runLater(() -> {
+                            AzureTaskManager.getInstance().runLater(() -> {
                                 item.progress = args.getDeployCompleteness();
                                 if (args.getDeployMessage().equalsIgnoreCase(message("runStatus"))) {
                                     String html = String.format("%s%s%s%s", "  ", "<html><a href=\"" + args.getDeploymentURL() + "\">", message("runStatusVisible"), "</a></html>");
@@ -128,7 +128,7 @@ public class ActivityLogToolWindowFactory implements ToolWindowFactory {
                             final DeploymentTableItem item = new DeploymentTableItem(args.getId(), args.getDeployMessage(),
                                     dateFormat.format(args.getStartTime()), args.getDeployCompleteness());
                             rows.put(key, item);
-                            AzureTaskRunner.getInstance().runLater(() -> table.getListTableModel().addRow(item));
+                            AzureTaskManager.getInstance().runLater(() -> table.getListTableModel().addRow(item));
                         }
                     }
                 });

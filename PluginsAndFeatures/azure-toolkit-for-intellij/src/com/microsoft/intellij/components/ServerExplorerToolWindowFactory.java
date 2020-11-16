@@ -39,7 +39,7 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -281,7 +281,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // if we are not running on the dispatch thread then switch
         // to dispatch thread
         if (!ApplicationManager.getApplication().isDispatchThread()) {
-            AzureTaskRunner.getInstance().runAndWait(() -> propertyChange(evt));
+            AzureTaskManager.getInstance().runAndWait(() -> propertyChange(evt));
             return;
         }
 
@@ -313,7 +313,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             // if we are not running on the dispatch thread then switch
             // to dispatch thread
             if (!ApplicationManager.getApplication().isDispatchThread()) {
-                AzureTaskRunner.getInstance().runAndWait(() -> listChanged(e));
+                AzureTaskManager.getInstance().runAndWait(() -> listChanged(e));
                 return;
             }
 

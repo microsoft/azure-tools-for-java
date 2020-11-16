@@ -31,7 +31,7 @@ import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.QueueMessageForm;
 import com.microsoft.intellij.forms.ViewMessageForm;
@@ -228,12 +228,12 @@ public class QueueFileEditor implements FileEditor {
                         null);
 
                 if (optionDialog == 0) {
-                    AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Clearing queue messages", false, () -> {
+                    AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Clearing queue messages", false, () -> {
                            /* try {
 
                                 StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
 
-                                AzureTaskRunner.getInstance().runLater(new Runnable() {
+                                AzureTaskManager.getInstance().runLater(new Runnable() {
                                     @Override
                                     public void run() {
                                         fillGrid();

@@ -35,7 +35,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.base.BaseEditor;
@@ -149,7 +149,7 @@ public class ResourceTemplateView extends BaseEditor {
         String oldTemplate = this.originTemplate;
         String oldParameters = this.originParameters;
         final String title = "Update your azure resource " + node.getDeployment().name() + "...";
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
             EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
                 ResourceTemplateView.this.originTemplate = getTemplate();
                 ResourceTemplateView.this.originParameters = getParameters();

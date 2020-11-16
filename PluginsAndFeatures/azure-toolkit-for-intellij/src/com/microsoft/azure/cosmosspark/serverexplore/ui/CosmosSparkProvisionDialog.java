@@ -41,7 +41,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
@@ -228,7 +228,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     // Data -> Components
     @Override
     public void setData(@NotNull final CosmosSparkClusterProvisionSettingsModel data) {
-        AzureTaskRunner.getInstance().runAndWait(() -> {
+        AzureTaskManager.getInstance().runAndWait(() -> {
             clusterNameField.setText(data.getClusterName());
             adlAccountField.setText(data.getAdlAccount());
             // set sparkEventsField to "-" rather than empty string to avoid "string expected" tooltip

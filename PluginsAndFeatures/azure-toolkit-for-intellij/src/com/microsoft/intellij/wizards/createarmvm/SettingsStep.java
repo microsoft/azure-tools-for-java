@@ -38,7 +38,7 @@ import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -213,18 +213,18 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveVirtualNetworks() {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading virtual networks...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading virtual networks...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             if (virtualNetworks == null) {
                 virtualNetworks = azure.networks().list();
             }
             final Runnable task = () -> networkComboBox.setModel(getVirtualNetworkModel(model.getVirtualNetwork(), model.getSubnet()));
-            AzureTaskRunner.getInstance().runLater(task);
+            AzureTaskManager.getInstance().runLater(task);
         }));
 
         if (virtualNetworks == null) {
-            AzureTaskRunner.getInstance().runAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 final DefaultComboBoxModel loadingVNModel = new DefaultComboBoxModel(new String[]{CREATE_NEW, "<Loading...>"}) {
                     @Override
                     public void setSelectedItem(Object o) {
@@ -264,7 +264,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                         model.setWithNewNetwork(false);
                         model.setVirtualNetwork((Network) o);
                         model.setNewNetwork(null);
-                        AzureTaskRunner.getInstance().runAndWait(() -> {
+                        AzureTaskManager.getInstance().runAndWait(() -> {
                             subnetComboBox.setEnabled(false);
                             boolean validSubnet = false;
                             subnetComboBox.removeAllItems();
@@ -295,7 +295,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     } else {
                         model.setVirtualNetwork(null);
 
-                        AzureTaskRunner.getInstance().runAndWait(() -> {
+                        AzureTaskManager.getInstance().runAndWait(() -> {
                             subnetComboBox.removeAllItems();
                             subnetComboBox.setEnabled(false);
                         });
@@ -328,7 +328,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveStorageAccounts() {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading storage accounts...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading storage accounts...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             if (storageAccounts == null) {
@@ -355,7 +355,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
             loadingSAModel.setSelectedItem(null);
 
-            AzureTaskRunner.getInstance().runAndWait(() -> storageComboBox.setModel(loadingSAModel));
+            AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(loadingSAModel));
         }
     }
 
@@ -375,7 +375,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     private void refreshStorageAccounts(final StorageAccount selectedSA) {
         final DefaultComboBoxModel refreshedSAModel = getStorageAccountModel(selectedSA);
 
-        AzureTaskRunner.getInstance().runAndWait(() -> storageComboBox.setModel(refreshedSAModel));
+        AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(refreshedSAModel));
     }
 
     private DefaultComboBoxModel getStorageAccountModel(StorageAccount selectedSA) {
@@ -424,17 +424,17 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrievePublicIpAddresses() {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading public ip addresses...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading public ip addresses...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             if (publicIpAddresses == null) {
                 publicIpAddresses = azure.publicIPAddresses().list();
             }
-            AzureTaskRunner.getInstance().runLater(() -> pipCombo.setModel(getPipAddressModel(model.getPublicIpAddress())));
+            AzureTaskManager.getInstance().runLater(() -> pipCombo.setModel(getPipAddressModel(model.getPublicIpAddress())));
         }));
 
         if (publicIpAddresses == null) {
-            AzureTaskRunner.getInstance().runAndWait(new Runnable() {
+            AzureTaskManager.getInstance().runAndWait(new Runnable() {
                 @Override
                 public void run() {
                     final DefaultComboBoxModel loadingPipModel = new DefaultComboBoxModel(new String[]{NONE, CREATE_NEW, "<Loading...>"}) {
@@ -504,17 +504,17 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveNetworkSecurityGroups() {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading network security groups...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading network security groups...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             if (networkSecurityGroups == null) {
                 networkSecurityGroups = azure.networkSecurityGroups().list();
             }
-            AzureTaskRunner.getInstance().runLater(() -> nsgCombo.setModel(getNsgModel(model.getNetworkSecurityGroup())));
+            AzureTaskManager.getInstance().runLater(() -> nsgCombo.setModel(getNsgModel(model.getNetworkSecurityGroup())));
         }));
 
         if (networkSecurityGroups == null) {
-            AzureTaskRunner.getInstance().runAndWait(new Runnable() {
+            AzureTaskManager.getInstance().runAndWait(new Runnable() {
                 @Override
                 public void run() {
                     final DefaultComboBoxModel loadingNsgModel = new DefaultComboBoxModel(new String[]{NONE, "<Loading...>"}) {
@@ -573,17 +573,17 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveAvailabilitySets() {
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading availability sets...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading availability sets...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             if (availabilitySets == null) {
                 availabilitySets = azure.availabilitySets().list();
             }
-            AzureTaskRunner.getInstance().runLater(() -> availabilityComboBox.setModel(getAvailabilitySetsModel(model.getAvailabilitySet())));
+            AzureTaskManager.getInstance().runLater(() -> availabilityComboBox.setModel(getAvailabilitySetsModel(model.getAvailabilitySet())));
         }));
 
         if (availabilitySets == null) {
-            AzureTaskRunner.getInstance().runAndWait(new Runnable() {
+            AzureTaskManager.getInstance().runAndWait(new Runnable() {
                 @Override
                 public void run() {
                     final DefaultComboBoxModel loadingPipModel = new DefaultComboBoxModel(new String[]{NONE, CREATE_NEW, "<Loading...>"}) {
@@ -665,7 +665,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         final CreateArmStorageAccountForm form = new CreateArmStorageAccountForm(project);
         form.fillFields(model.getSubscription(), model.getRegion());
 
-        form.setOnCreate(() -> AzureTaskRunner.getInstance().runLater(() -> {
+        form.setOnCreate(() -> AzureTaskManager.getInstance().runLater(() -> {
             com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount = form.getStorageAccount();
 
             if (newStorageAccount != null) {
@@ -691,7 +691,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         final boolean isNewResourceGroup = createNewRadioButton.isSelected();
         final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
         Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Creating virtual machine " + model.getName() + "...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Creating virtual machine " + model.getName() + "...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
 
@@ -755,7 +755,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     AzureModelController.addNewResourceGroup(model.getSubscription(), rg);
                 }
 
-                AzureTaskRunner.getInstance().runLater(() -> {
+                AzureTaskManager.getInstance().runLater(() -> {
                     try {
                         parent.addChildNode(new com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.
                             VMNode(parent, model.getSubscription().getSubscriptionId(), vm));

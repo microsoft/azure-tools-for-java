@@ -50,7 +50,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
@@ -358,7 +358,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
             }
         }
 
-        AzureTaskRunner.getInstance().runLater(applyData)
+        AzureTaskManager.getInstance().runLater(applyData)
     }
 
     override fun getData(data: SparkSubmitAdvancedConfigModel) {

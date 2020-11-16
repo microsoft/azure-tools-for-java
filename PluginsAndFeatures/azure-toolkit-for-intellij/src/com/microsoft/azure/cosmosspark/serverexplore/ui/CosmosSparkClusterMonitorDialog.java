@@ -30,7 +30,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterStatesMod
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
@@ -104,7 +104,7 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
     // Data -> Components
     @Override
     public void setData(@NotNull final CosmosSparkClusterStatesModel data) {
-        AzureTaskRunner.getInstance().runAndWait(() -> {
+        AzureTaskManager.getInstance().runAndWait(() -> {
             masterStateLabel.setText(data.getMasterState());
             workerStateLabel.setText(data.getWorkerState());
 

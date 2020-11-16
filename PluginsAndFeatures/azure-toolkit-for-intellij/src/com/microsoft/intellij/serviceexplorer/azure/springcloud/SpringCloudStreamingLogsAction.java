@@ -26,7 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentInstance;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -69,7 +69,7 @@ public class SpringCloudStreamingLogsAction extends NodeActionListener {
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
         EventUtil.executeWithLog(SPRING_CLOUD, START_STREAMING_LOG_SPRING_CLOUD_APP, operation -> {
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Start Streaming Logs", false, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Start Streaming Logs", false, () -> {
                 try {
                     final DeploymentResourceInner deploymentResourceInner =
                             AzureSpringCloudMvpModel.getActiveDeploymentForApp(appId);

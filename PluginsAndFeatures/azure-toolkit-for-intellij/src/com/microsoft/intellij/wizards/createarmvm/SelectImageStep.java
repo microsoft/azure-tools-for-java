@@ -31,7 +31,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -249,7 +249,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 final DefaultComboBoxModel<String> loadingModel = new DefaultComboBoxModel<>(new String[]{"<Loading...>"});
                 regionComboBox.setModel(loadingModel);
                 model.getCurrentNavigationState().NEXT.setEnabled(false);
-                AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading Available Locations...", false, () -> {
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading Available Locations...", false, () -> {
                     try {
                         AzureModelController.updateSubscriptionMaps(null);
                         DefaultLoader.getIdeHelper().invokeLater(this::fillRegions);
@@ -308,7 +308,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         if (customImageBtn.isSelected()) {
             disableNext();
 
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading publishers...", false, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading publishers...", false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
 
@@ -338,7 +338,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     private void fillOffers() {
         disableNext();
 
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading offers...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading offers...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             RxJavaUtils.unsubscribeSubscription(fillOfferSubscription);
@@ -362,7 +362,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
         disableNext();
 
         if (offerComboBox.getItemCount() > 0) {
-            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading skus...", false, () -> {
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading skus...", false, () -> {
                 final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
                 progressIndicator.setIndeterminate(true);
                 RxJavaUtils.unsubscribeSubscription(fillSkuSubscription);
@@ -389,7 +389,7 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     private void fillImages() {
         disableNext();
 
-        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading images...", false, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading images...", false, () -> {
             final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setIndeterminate(true);
             VirtualMachineSku sku = (VirtualMachineSku) skuComboBox.getSelectedItem();
