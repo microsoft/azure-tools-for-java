@@ -29,15 +29,15 @@ import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
 public class AzureRedisMvpModel {
 
-    private AzureRedisMvpModel() {}
+    private AzureRedisMvpModel() {
+    }
 
-    private static final class  AzureMvpModelHolder {
+    private static final class AzureMvpModelHolder {
         private static final AzureRedisMvpModel INSTANCE = new AzureRedisMvpModel();
     }
 
@@ -48,9 +48,8 @@ public class AzureRedisMvpModel {
     /**
      * Get all redis caches.
      * @return A map containing RedisCaches with subscription id as the key
-     * @throws IOException getAzureManager Exception
      */
-    public HashMap<String, RedisCaches> getRedisCaches() throws IOException {
+    public HashMap<String, RedisCaches> getRedisCaches() {
         HashMap<String, RedisCaches> redisCacheMaps = new HashMap<>();
         List<Subscription> subscriptions = AzureMvpModel.getInstance().getSelectedSubscriptions();
         for (Subscription subscription : subscriptions) {
@@ -68,9 +67,8 @@ public class AzureRedisMvpModel {
      * @param sid Subscription Id
      * @param id Redis cache's id
      * @return Redis Cache Object
-     * @throws IOException getAzureManager Exception
      */
-    public RedisCache getRedisCache(String sid, String id) throws IOException {
+    public RedisCache getRedisCache(String sid, String id) {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {
@@ -83,9 +81,8 @@ public class AzureRedisMvpModel {
      * Delete a redis cache.
      * @param sid Subscription Id
      * @param id Redis cache's id
-     * @throws IOException getAzureManager Exception
      */
-    public void deleteRedisCache(String sid, String id) throws IOException {
+    public void deleteRedisCache(String sid, String id) {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         RedisCaches redisCaches = azure.redisCaches();
         if (redisCaches == null) {

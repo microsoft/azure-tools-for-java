@@ -54,7 +54,6 @@ import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -351,22 +350,18 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private List<EventHubNamespace> eventHubNamespaces = null;
 
     private List<EventHubNamespace> getEventHubNameSpaces() {
-        try {
-            if (eventHubNamespaces == null) {
-                eventHubNamespaces = new ArrayList<>();
-                List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
-                for (Subscription subscriptionId : subs) {
-                    Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId.subscriptionId());
-                    PagedList<EventHubNamespace> pagedList = azure.eventHubNamespaces().list();
-                    pagedList.loadAll();
-                    eventHubNamespaces.addAll(pagedList);
-                    eventHubNamespaces.sort(Comparator.comparing(HasName::name));
-                }
+        if (eventHubNamespaces == null) {
+            eventHubNamespaces = new ArrayList<>();
+            final List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
+            for (final Subscription subscriptionId : subs) {
+                final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId.subscriptionId());
+                final PagedList<EventHubNamespace> pagedList = azure.eventHubNamespaces().list();
+                pagedList.loadAll();
+                eventHubNamespaces.addAll(pagedList);
+                eventHubNamespaces.sort(Comparator.comparing(HasName::name));
             }
-            return eventHubNamespaces;
-        } catch (IOException e) {
-            return new ArrayList<>();
         }
+        return eventHubNamespaces;
     }
 
     private void fillTimerSchedule() {

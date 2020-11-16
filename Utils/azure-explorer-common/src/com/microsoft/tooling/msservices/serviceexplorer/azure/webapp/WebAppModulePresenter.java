@@ -22,8 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import java.io.IOException;
-
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 
@@ -38,7 +36,7 @@ public class WebAppModulePresenter<V extends WebAppModuleView> extends MvpPresen
         }
     }
 
-    public void onDeleteWebApp(String sid, String id) throws IOException {
+    public void onDeleteWebApp(String sid, String id) {
         AzureWebAppMvpModel.getInstance().deleteWebApp(sid, id);
     }
 }

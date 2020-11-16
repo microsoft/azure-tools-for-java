@@ -20,24 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.tooling.msservices.serviceexplorer.azure.arm;
+package com.microsoft.azure.toolkit.lib.common.exception;
 
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azuretools.authmanage.AuthMethodManager;
-import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
+import lombok.Getter;
 
-public class ResourceManagementNodePresenter<V extends ResourceManagementNodeView> extends MvpPresenter<V> {
+@Getter
+public class AzureToolkitException extends Exception {
+    private final String action;
 
-    public void onModuleRefresh(String sid, String rgName) {
-        final ResourceManagementNodeView view = getMvpView();
-        if (view != null) {
-            view.renderChildren(AzureMvpModel.getInstance().getDeploymentByRgName(sid, rgName));
-        }
+    public AzureToolkitException(String error) {
+        this(error, null, null);
     }
 
-    public void onDeleteDeployment(String sid, String deploymentId) {
-        final Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-        azure.deployments().deleteById(deploymentId);
+    public AzureToolkitException(String error, Throwable cause) {
+        this(error, cause, null);
+    }
+
+    public AzureToolkitException(String error, String action) {
+        this(error, null, action);
+    }
+
+    public AzureToolkitException(String error, Throwable cause, String action) {
+        super(error, cause);
+        this.action = action;
     }
 }

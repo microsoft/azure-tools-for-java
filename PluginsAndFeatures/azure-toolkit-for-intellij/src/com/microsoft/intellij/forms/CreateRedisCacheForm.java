@@ -154,24 +154,20 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
             return new ValidationInfo(INVALID_REDIS_CACHE_NAME, txtRedisName);
         }
 
-        try {
-            if (newResGrp) {
-                for (String resGrp : sortedGroups) {
-                    if (resGrp.equals(selectedResGrpValue)) {
-                        return new ValidationInfo(String.format(NEW_RES_GRP_ERROR_FORMAT, selectedResGrpValue), txtNewResGrp);
-                    }
-                }
-                if (!Utils.isResGrpNameValid(selectedResGrpValue)) {
-                    return new ValidationInfo(RES_GRP_NAME_RULE, txtNewResGrp);
+        if (newResGrp) {
+            for (final String resGrp : sortedGroups) {
+                if (resGrp.equals(selectedResGrpValue)) {
+                    return new ValidationInfo(String.format(NEW_RES_GRP_ERROR_FORMAT, selectedResGrpValue), txtNewResGrp);
                 }
             }
-            for (RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
-                if (existingRedisCache.name().equals(redisCacheNameValue)) {
-                    return new ValidationInfo(String.format(VALIDATION_FORMAT, redisCacheNameValue), txtRedisName);
-                }
+            if (!Utils.isResGrpNameValid(selectedResGrpValue)) {
+                return new ValidationInfo(RES_GRP_NAME_RULE, txtNewResGrp);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        for (final RedisCache existingRedisCache : azureManager.getAzure(currentSub.getSubscriptionId()).redisCaches().list()) {
+            if (existingRedisCache.name().equals(redisCacheNameValue)) {
+                return new ValidationInfo(String.format(VALIDATION_FORMAT, redisCacheNameValue), txtRedisName);
+            }
         }
 
         return null;

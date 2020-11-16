@@ -25,8 +25,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 
-import java.io.IOException;
-
 public class FunctionModulePresenter<V extends FunctionModuleView> extends MvpPresenter<V> {
 
     public void onModuleRefresh() {
@@ -36,7 +34,7 @@ public class FunctionModulePresenter<V extends FunctionModuleView> extends MvpPr
         }
     }
 
-    public void onDeleteFunctionApp(String sid, String id) throws IOException {
+    public void onDeleteFunctionApp(String sid, String id) {
         AzureFunctionMvpModel.getInstance().deleteFunction(sid, id);
     }
 }

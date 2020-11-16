@@ -29,7 +29,6 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.azuretools.core.mvp.ui.base.NodeContent;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -45,20 +44,15 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
      * Called from view when the view needs refresh.
      */
     public void onModuleRefresh() {
-        HashMap<String, ArrayList<NodeContent>> nodeMap = new HashMap<String, ArrayList<NodeContent>>();
-        try {
-            HashMap<String, RedisCaches> redisCachesMap = azureRedisMvpModel.getRedisCaches();
-            for (String sid : redisCachesMap.keySet()) {
-                ArrayList<NodeContent> nodeContentList = new ArrayList<NodeContent>();
-                for (RedisCache redisCache : redisCachesMap.get(sid).list()) {
-                    nodeContentList
-                            .add(new NodeContent(redisCache.id(), redisCache.name(), redisCache.provisioningState()));
-                }
-                nodeMap.put(sid, nodeContentList);
+        final HashMap<String, ArrayList<NodeContent>> nodeMap = new HashMap<>();
+        final HashMap<String, RedisCaches> redisCachesMap = azureRedisMvpModel.getRedisCaches();
+        for (final String sid : redisCachesMap.keySet()) {
+            final ArrayList<NodeContent> nodeContentList = new ArrayList<>();
+            for (final RedisCache redisCache : redisCachesMap.get(sid).list()) {
+                nodeContentList
+                    .add(new NodeContent(redisCache.id(), redisCache.name(), redisCache.provisioningState()));
             }
-        } catch (IOException e) {
-            getMvpView().onErrorWithException(CANNOT_GET_REDIS_ID, e);
-            return;
+            nodeMap.put(sid, nodeContentList);
         }
         getMvpView().showNode(nodeMap);
     }
@@ -82,12 +76,7 @@ public class RedisCacheModulePresenter<V extends RedisCacheModule> extends MvpPr
             getMvpView().onError(CANNOT_GET_REDIS_ID);
             return;
         }
-        try {
-            azureRedisMvpModel.deleteRedisCache(sid, id);
-        } catch (IOException e) {
-            getMvpView().onErrorWithException(CANNOT_DELETE_REDIS, e);
-            return;
-        }
+        azureRedisMvpModel.deleteRedisCache(sid, id);
         getMvpView().removeDirectChildNode(node);
     }
 }

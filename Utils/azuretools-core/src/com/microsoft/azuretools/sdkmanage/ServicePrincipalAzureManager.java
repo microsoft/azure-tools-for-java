@@ -59,8 +59,8 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
         settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_SP);
     }
 
-    public static void cleanPersist() throws IOException {
-        String subscriptionsDetailsFileName = settings.getSubscriptionsDetailsFileName();
+    public static void cleanPersist() {
+        final String subscriptionsDetailsFileName = settings.getSubscriptionsDetailsFileName();
         SubscriptionManagerPersist.deleteSubscriptions(subscriptionsDetailsFileName);
     }
 
@@ -82,12 +82,12 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public String getCurrentUserId() throws IOException {
+    public String getCurrentUserId() {
         return this.credentials.clientId();
     }
 
     @Override
-    protected String getCurrentTenantId() throws IOException {
+    protected String getCurrentTenantId() {
         return this.defaultTenantId;
     }
 
@@ -101,7 +101,7 @@ public class ServicePrincipalAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public String getManagementURI() throws IOException {
+    public String getManagementURI() {
         // default to global cloud
         return this.credentials.environment() == null ?
                 AzureEnvironment.AZURE.resourceManagerEndpoint() : this.credentials.environment().resourceManagerEndpoint();

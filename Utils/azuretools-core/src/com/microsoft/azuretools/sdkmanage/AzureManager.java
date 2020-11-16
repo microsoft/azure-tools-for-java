@@ -37,31 +37,31 @@ import java.io.IOException;
 import java.util.List;
 
 public interface AzureManager {
-    Azure getAzure(String sid) throws IOException;
+    Azure getAzure(String sid);
 
-    AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException;
+    AppPlatformManager getAzureSpringCloudClient(String sid);
 
-    InsightsManager getInsightsManager(String sid) throws IOException;
+    InsightsManager getInsightsManager(String sid);
 
-    List<Subscription> getSubscriptions() throws IOException;
+    List<Subscription> getSubscriptions();
 
-    List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException;
+    List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant();
 
     Settings getSettings();
 
     SubscriptionManager getSubscriptionManager();
 
-    void drop() throws IOException;
+    void drop();
 
-    String getCurrentUserId() throws IOException;
+    String getCurrentUserId();
 
     String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException;
 
-    String getManagementURI() throws IOException;
+    String getManagementURI();
 
     String getStorageEndpointSuffix();
 
-    String getTenantIdBySubscription(String subscriptionId) throws IOException;
+    String getTenantIdBySubscription(String subscriptionId);
 
     String getScmSuffix();
 

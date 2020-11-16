@@ -30,7 +30,6 @@ import com.microsoft.rest.RestException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -85,15 +84,11 @@ public class ValidationUtils {
         if (!isValidAppServiceName(appServiceName)) {
             cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
         }
-        try {
-            final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
-            final ResourceNameAvailabilityInner result = azure.appServices().inner()
-                    .checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
-            if (!result.nameAvailable()) {
-                cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
-            }
-        } catch (IOException e) {
-            // swallow exception when get azure client
+        final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
+        final ResourceNameAvailabilityInner result = azure.appServices().inner()
+                .checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
+        if (!result.nameAvailable()) {
+            cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
         }
         appServiceNameValidationCache.put(cacheKey, null);
     }
@@ -116,8 +111,6 @@ public class ValidationUtils {
             }
         } catch (RestException e) {
             throw new IllegalArgumentException(e.getMessage());
-        } catch (IOException e) {
-            // swallow exception when get azure client
         }
         resourceGroupValidationCache.put(subscriptionId, null);
     }
