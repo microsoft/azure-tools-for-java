@@ -62,9 +62,10 @@ public class AuthMethodManager {
 
     private AuthMethodManager(AuthMethodDetails authMethodDetails) {
         this.authMethodDetails = authMethodDetails;
+        final AzureManager manager = getAzureManager();
         // initialize subscription manager when restore authentication
-        if (this.authMethodDetails.getAuthMethod() != null) {
-            Objects.requireNonNull(getAzureManager()).getSubscriptionManager().updateSubscriptionDetailsIfNull();
+        if (this.authMethodDetails.getAuthMethod() != null && Objects.nonNull(manager)) {
+            manager.getSubscriptionManager().updateSubscriptionDetailsIfNull();
         }
     }
 
@@ -158,8 +159,8 @@ public class AuthMethodManager {
         try {
             persistAuthMethodDetails();
         } catch (final IOException e) {
-            final String error = "failed to persist auth method settings while updating";
-            final String action = "retry later";
+            final String error = "Failed to persist auth method settings while updating";
+            final String action = "Retry later";
             throw new AzureToolkitRuntimeException(error, e, action);
         }
     }
@@ -193,8 +194,8 @@ public class AuthMethodManager {
         try {
             persistAuthMethodDetails();
         } catch (final IOException e) {
-            final String error = "failed to persist local auth method settings while cleaning";
-            final String action = "retry later";
+            final String error = "Failed to persist local auth method settings while cleaning";
+            final String action = "Retry later";
             throw new AzureToolkitRuntimeException(error, e, action);
         }
     }

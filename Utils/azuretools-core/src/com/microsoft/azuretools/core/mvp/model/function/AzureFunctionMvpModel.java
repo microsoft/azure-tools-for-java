@@ -57,8 +57,8 @@ public class AzureFunctionMvpModel {
     public FunctionApp getFunctionById(String sid, String id) throws AzureToolkitRuntimeException {
         final FunctionApp app = getFunctionAppsClient(sid).getById(id);
         if (Objects.isNull(app)) {
-            final String error = String.format("cannot find FunctionApp[%s] in subscription[%s]", id, sid);
-            final String action = String.format("confirm if the FunctionApp[id=%s] still exists", id);
+            final String error = String.format("Cannot find FunctionApp[%s] in subscription[%s]", id, sid);
+            final String action = String.format("Confirm if the FunctionApp[id=%s] still exists", id);
             throw new AzureToolkitRuntimeException(error, action);
         }
         return app;

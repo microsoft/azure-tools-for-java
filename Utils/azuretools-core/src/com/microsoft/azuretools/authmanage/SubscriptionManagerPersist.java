@@ -50,8 +50,8 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
             try {
                 saveSubscriptions(subscriptionDetails, subscriptionsDetailsFileName);
             } catch (final IOException e) {
-                final String error = "failed to update local subscriptions cache while updating";
-                final String action = "retry later";
+                final String error = "Failed to update local subscriptions cache while updating";
+                final String action = "Retry later";
                 throw new AzureToolkitRuntimeException(error, e, action);
             }
         }
@@ -114,7 +114,7 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
             try {
                 fs.cleanFile();
             } catch (final IOException e) {
-                final String error = "failed to clear local cached subscriptions";
+                final String error = "Failed to clear local cached subscriptions";
                 throw new AzureToolkitRuntimeException(error, e);
             }
         }
@@ -135,8 +135,8 @@ public class SubscriptionManagerPersist extends SubscriptionManager {
             final SubscriptionDetail[] sda = JsonHelper.deserialize(SubscriptionDetail[].class, json);
             return new ArrayList<>(Arrays.asList(sda));
         } catch (final IOException e) {
-            final String error = "failed to load local cached subscriptions";
-            final String action = "retry later or logout to clear local cached subscriptions";
+            final String error = "Failed to load local cached subscriptions";
+            final String action = "Retry later or logout to clear local cached subscriptions";
             throw new AzureToolkitRuntimeException(error, e);
         }
     }
