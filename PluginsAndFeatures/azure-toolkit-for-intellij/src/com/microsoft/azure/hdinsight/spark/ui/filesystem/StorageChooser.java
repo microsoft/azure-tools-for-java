@@ -22,13 +22,12 @@
 
 package com.microsoft.azure.hdinsight.spark.ui.filesystem;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDialog;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.util.PluginUtil;
 
@@ -53,16 +52,15 @@ public class StorageChooser implements ILogger {
     }
 
     public static void handleInvalidUploadInfo() {
-        ApplicationManager.getApplication().invokeAndWait(() ->
+        AzureTaskRunner.getInstance().runAndWait(() ->
                         PluginUtil.displayErrorDialog("Prepare Azure Virtual File System Error",
                                 "Browsing files in the Azure virtual file system currently only supports ADLS Gen 2 " +
                                         "cluster. Please\n manually specify the reference file paths for other type of " +
-                                        "clusters and check upload inputs. Or\n preparing upload path has a delay, please retry.")
-                , ModalityState.any());
+                                        "clusters and check upload inputs. Or\n preparing upload path has a delay, please retry."));
     }
 
     public static void handleListChildrenFailureInfo(String errorMessage) {
-        ApplicationManager.getApplication().invokeAndWait(() ->
-                        PluginUtil.displayErrorDialog("List files failure", errorMessage), ModalityState.any());
+        AzureTaskRunner.getInstance().runAndWait(() ->
+                        PluginUtil.displayErrorDialog("List files failure", errorMessage));
     }
 }

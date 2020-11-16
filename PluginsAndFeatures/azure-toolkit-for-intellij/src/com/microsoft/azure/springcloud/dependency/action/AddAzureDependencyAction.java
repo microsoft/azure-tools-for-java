@@ -27,7 +27,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorKind;
 import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectTracker;
@@ -94,7 +93,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
             progressIndicator.setText("Syncing maven project " + project.getName());
             final SettableFuture<Boolean> isDirty = SettableFuture.create();
 
-            ApplicationManager.getApplication().invokeAndWait(() -> {
+            AzureTaskRunner.getInstance().runAndWait(() -> {
                 ProjectNotificationAware notificationAware = ProjectNotificationAware.getInstance(project);
                 isDirty.set(notificationAware.isNotificationVisible());
                 if (notificationAware.isNotificationVisible()) {
@@ -273,7 +272,7 @@ public class AddAzureDependencyAction extends AzureAnAction {
     private static void noticeUserVersionChanges(Project project, File pomFile, List<DependencyArtifact> versionChanges) {
         final VirtualFile vf = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(pomFile);
         RefreshQueue.getInstance().refresh(true, false, null, new VirtualFile[]{vf});
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskRunner.getInstance().runLater(() -> {
             FileEditorManager.getInstance(project).closeFile(vf);
             FileEditorManager.getInstance(project).openFile(vf, true, true);
             if (versionChanges.stream().anyMatch(t -> StringUtils.isNotEmpty(t.getCurrentVersion()))) {

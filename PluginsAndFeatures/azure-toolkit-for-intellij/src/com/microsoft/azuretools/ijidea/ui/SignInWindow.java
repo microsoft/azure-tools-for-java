@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -307,8 +306,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 System.out.println(ex.getMessage());
             } catch (Exception ex) {
                 EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                ApplicationManager.getApplication().invokeLater(
-                    () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+                AzureTaskRunner.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
             } finally {
                 EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
                     AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
@@ -354,13 +352,7 @@ public class SignInWindow extends AzureDialogWrapper {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     //LOGGER.error("doCreateServicePrincipal::Task.Modal", ex);
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error");
-                        }
-                    });
-
+                    AzureTaskRunner.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error"));
                 }
             }));
 

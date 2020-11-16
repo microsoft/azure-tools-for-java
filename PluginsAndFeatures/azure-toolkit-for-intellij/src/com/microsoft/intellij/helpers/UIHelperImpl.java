@@ -43,6 +43,7 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.ui.UIUtil;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -125,17 +126,12 @@ public class UIHelperImpl implements UIHelper {
                               @NotNull final String title,
                               final boolean appendEx,
                               final boolean suggestDetail) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
-
-                String details = getDetails(ex);
-
-                ErrorMessageForm em = new ErrorMessageForm(title);
-                em.showErrorMessageForm(headerMessage, details);
-                em.show();
-            }
+        AzureTaskRunner.getInstance().runLater(() -> {
+            String headerMessage = getHeaderMessage(message, ex, appendEx, suggestDetail);
+            String details = getDetails(ex);
+            ErrorMessageForm em = new ErrorMessageForm(title);
+            em.showErrorMessageForm(headerMessage, details);
+            em.show();
         });
     }
 
@@ -146,12 +142,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void showError(Component component, String message, String title) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Messages.showErrorDialog(component, message, title);
-            }
-        });
+        AzureTaskRunner.getInstance().runLater(() -> Messages.showErrorDialog(component, message, title));
     }
 
     @Override
@@ -248,12 +239,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public void openItem(@NotNull final Object projectObject, @NotNull final Object itemVirtualFile) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true);
-            }
-        });
+        AzureTaskRunner.getInstance().runLater(() -> FileEditorManager.getInstance((Project) projectObject).openFile((VirtualFile) itemVirtualFile, true, true));
     }
 
     @org.jetbrains.annotations.NotNull
@@ -303,40 +289,24 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void refreshQueue(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
                              @NotNull final Queue queue) {
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), queue);
-                if (file != null) {
-                    final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            queueFileEditor.fillGrid();
-                        }
-                    });
-                }
+        ApplicationManager.getApplication().runReadAction(() -> {
+            VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), queue);
+            if (file != null) {
+                final QueueFileEditor queueFileEditor = (QueueFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                AzureTaskRunner.getInstance().runLater(() -> queueFileEditor.fillGrid());
             }
         });
     }
 
     @Override
     public void refreshBlobs(@NotNull final Object projectObject, @NotNull final String accountName, @NotNull final BlobContainer container) {
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
-                if (file != null) {
-                    final BlobExplorerFileEditor containerFileEditor =
-                        (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
-                                                                  .getEditors(file)[0];
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            containerFileEditor.fillGrid();
-                        }
-                    });
-                }
+        ApplicationManager.getApplication().runReadAction(() -> {
+            VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
+            if (file != null) {
+                final BlobExplorerFileEditor containerFileEditor =
+                    (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
+                                                              .getEditors(file)[0];
+                AzureTaskRunner.getInstance().runLater(() -> containerFileEditor.fillGrid());
             }
         });
     }
@@ -344,19 +314,11 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void refreshTable(@NotNull final Object projectObject, @NotNull final StorageAccount storageAccount,
                              @NotNull final Table table) {
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
-                if (file != null) {
-                    final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            tableFileEditor.fillGrid();
-                        }
-                    });
-                }
+        ApplicationManager.getApplication().runReadAction(() -> {
+            VirtualFile file = (VirtualFile) getOpenedFile(projectObject, storageAccount.name(), table);
+            if (file != null) {
+                final TableFileEditor tableFileEditor = (TableFileEditor) FileEditorManager.getInstance((Project) projectObject).getEditors(file)[0];
+                AzureTaskRunner.getInstance().runLater(() -> tableFileEditor.fillGrid());
             }
         });
     }
@@ -631,7 +593,7 @@ public class UIHelperImpl implements UIHelper {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) projectObject);
         LightVirtualFile file = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, appId);
         if (file != null) {
-            ApplicationManager.getApplication().invokeLater(() -> fileEditorManager.closeFile(file));
+            AzureTaskRunner.getInstance().runLater(() -> fileEditorManager.closeFile(file));
         }
     }
 
@@ -779,7 +741,7 @@ public class UIHelperImpl implements UIHelper {
             return supplier.get();
         }
         RunnableFuture<T> runnableFuture = new FutureTask<>(() -> supplier.get());
-        ApplicationManager.getApplication().invokeLater(runnableFuture);
+        AzureTaskRunner.getInstance().runLater(runnableFuture);
         try {
             return runnableFuture.get();
         } catch (InterruptedException | ExecutionException e) {

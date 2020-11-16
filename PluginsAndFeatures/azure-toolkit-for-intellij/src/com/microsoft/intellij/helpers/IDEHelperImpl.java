@@ -145,7 +145,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void invokeAndWait(@NotNull Runnable runnable) {
-        ApplicationManager.getApplication().invokeAndWait(runnable, ModalityState.any());
+        AzureTaskRunner.getInstance().runAndWait(runnable);
     }
 
     @Override
@@ -501,11 +501,11 @@ public class IDEHelperImpl implements IDEHelper {
                 indicator.setIndeterminate(true);
                 writeContentTo(virtualFile.getOutputStream(null), file, errorHandler)
                     .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> ApplicationManager.getApplication().invokeLater(() -> {
+                    .doOnCompleted(() -> AzureTaskRunner.getInstance().runLater(() -> {
                         if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
                             Messages.showWarningDialog(failure, "Open File");
                         }
-                    }, ModalityState.NON_MODAL))
+                    }))
                     .subscribe();
             }
         };

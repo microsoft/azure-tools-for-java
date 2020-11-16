@@ -340,7 +340,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                     }
                 }
 
-                ApplicationManager.getApplication().invokeLater(() -> {
+                AzureTaskRunner.getInstance().runLater(() -> {
 
                     pathLabel.setText(directoryQueue.peekLast().getPath());
                     DefaultTableModel model = (DefaultTableModel) blobListTable.getModel();
@@ -536,7 +536,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                             queryTextField.setText("");
                         }
 
-                        ApplicationManager.getApplication().invokeLater(this::fillGrid);
+                        AzureTaskRunner.getInstance().runLater(this::fillGrid);
                     } catch (AzureCmdException ex) {
                         String msg = "An error occurred while attempting to delete blob." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
                         PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
@@ -770,12 +770,7 @@ public class BlobExplorerFileEditor implements FileEditor, TelemetryProperties {
                         PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
                     }
 
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            fillGrid();
-                        }
-                    });
+                    AzureTaskRunner.getInstance().runLater(() -> fillGrid());
                 } catch (Exception e) {
                     Throwable connectionFault = e.getCause();
                     Throwable realFault = null;

@@ -27,8 +27,6 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.util.Disposer;
@@ -43,6 +41,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSpark
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
@@ -229,7 +228,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
     // Data -> Components
     @Override
     public void setData(@NotNull final CosmosSparkClusterProvisionSettingsModel data) {
-        ApplicationManager.getApplication().invokeAndWait(() -> {
+        AzureTaskRunner.getInstance().runAndWait(() -> {
             clusterNameField.setText(data.getClusterName());
             adlAccountField.setText(data.getAdlAccount());
             // set sparkEventsField to "-" rather than empty string to avoid "string expected" tooltip
@@ -254,7 +253,7 @@ public class CosmosSparkProvisionDialog extends DialogWrapper
                 printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "x-ms-request-id: " + data.getRequestId());
                 printLogLine(ConsoleViewContentType.NORMAL_OUTPUT, "cluster guid: " + data.getClusterGuid());
             }
-        }, ModalityState.any());
+        });
     }
 
     // Components -> Data

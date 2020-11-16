@@ -31,9 +31,9 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -60,7 +60,7 @@ public class RunOnDockerHostAction extends AzureAnAction {
         if (module == null) {
             return true;
         }
-        ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+        AzureTaskRunner.getInstance().runLater(() -> runConfiguration(module));
         return true;
     }
 

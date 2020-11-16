@@ -22,10 +22,10 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -149,7 +149,7 @@ public class ResourceGroupPanel extends JPanel {
     private void onSelectResourceGroup() {
         final Object selectedObject = cbResourceGroup.getSelectedItem();
         if (CREATE_RESOURCE_GROUP.equals(selectedObject)) {
-            ApplicationManager.getApplication().invokeLater(this::createResourceGroup);
+            AzureTaskRunner.getInstance().runLater(this::createResourceGroup);
         } else if (selectedObject instanceof ResourceGroupWrapper) {
             selectedResourceGroup = (ResourceGroupWrapper) selectedObject;
         }

@@ -22,8 +22,6 @@
 
 package com.microsoft.intellij.wizards.createarmvm;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -235,10 +233,10 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
                     }
                 });
 
-                ApplicationManager.getApplication().invokeAndWait(() -> {
+                AzureTaskRunner.getInstance().runAndWait(() -> {
                     vmSizeComboBox.setModel(new DefaultComboBoxModel<>(sizes.stream().map(VirtualMachineSize::name).toArray(String[]::new)));
                     selectDefaultSize();
-                }, ModalityState.any());
+                });
             }));
         } else {
             selectDefaultSize();
@@ -301,22 +299,6 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
     }
 
     private void selectDefaultSize() {
-        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-            //                String recommendedVMSize = model.getVirtualMachineImage().getRecommendedVMSize().isEmpty()
-            //                        ? "Small"
-            //                        : model.getVirtualMachineImage().getRecommendedVMSize();
-            //
-            //                for (int i = 0; i < vmSizeComboBox.getItemCount(); i++) {
-            //                    VirtualMachineSize virtualMachineSize = (VirtualMachineSize) vmSizeComboBox.getItemAt(i);
-            //                    if (virtualMachineSize.getName().equals(recommendedVMSize)) {
-            //                        vmSizeComboBox.setSelectedItem(virtualMachineSize);
-            //                        break;
-            //                    }
-            //                }
-            }
-        }, ModalityState.any());
     }
 
     private void validateEmptyFields() {

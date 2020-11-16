@@ -36,6 +36,10 @@ public class AzureTaskRunner {
 
     }
 
+    public void runAndWait(Runnable runnable) {
+
+    }
+
     public void runInBackground(AzureTask task) {
 
     }

@@ -22,8 +22,6 @@
 
 package com.microsoft.azure.cosmosspark.serverexplore.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.microsoft.azure.cosmosspark.common.JXHyperLinkWithUri;
@@ -32,6 +30,7 @@ import com.microsoft.azure.cosmosspark.serverexplore.CosmosSparkClusterStatesMod
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterNode;
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl;
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkCosmosCluster;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.intellij.rxjava.IdeaSchedulers;
@@ -105,7 +104,7 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
     // Data -> Components
     @Override
     public void setData(@NotNull final CosmosSparkClusterStatesModel data) {
-        ApplicationManager.getApplication().invokeAndWait(() -> {
+        AzureTaskRunner.getInstance().runAndWait(() -> {
             masterStateLabel.setText(data.getMasterState());
             workerStateLabel.setText(data.getWorkerState());
 
@@ -127,7 +126,7 @@ public class CosmosSparkClusterMonitorDialog extends DialogWrapper
             clusterStateLabel.setText(data.getClusterState());
             clusterIDField.setText(data.getClusterID());
             clusterIDField.setBorder(null);
-        }, ModalityState.any());
+        });
     }
 
     // Components -> Data

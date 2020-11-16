@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.helpers.springcloud;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
@@ -30,7 +29,6 @@ import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpMo
 import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.intellij.helpers.StreamingLogsToolWindowManager;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.http.HttpException;
 
 import java.io.IOException;
@@ -62,7 +60,7 @@ public class SpringCloudStreamingLogManager {
                 });
                 StreamingLogsToolWindowManager.getInstance().showStreamingLogConsole(project, instanceName, instanceName, consoleView);
             } catch (Throwable e) {
-                ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog("Failed to start streaming log", e.getMessage()));
+                AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to start streaming log", e.getMessage()));
                 consoleView.shutdown();
             }
         }));
@@ -74,7 +72,7 @@ public class SpringCloudStreamingLogManager {
             if (consoleView != null && consoleView.getStatus() == ACTIVE) {
                 consoleView.shutdown();
             } else {
-                ApplicationManager.getApplication().invokeLater(() -> PluginUtil.displayErrorDialog(
+                AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog(
                     "Failed to close streaming log", "Log is not started."));
             }
         }));

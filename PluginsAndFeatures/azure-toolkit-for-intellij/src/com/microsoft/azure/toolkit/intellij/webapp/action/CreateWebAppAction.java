@@ -24,7 +24,6 @@ package com.microsoft.azure.toolkit.intellij.webapp.action;
 
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
@@ -118,7 +117,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     private void refreshAzureExplorer() {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskRunner.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
             }

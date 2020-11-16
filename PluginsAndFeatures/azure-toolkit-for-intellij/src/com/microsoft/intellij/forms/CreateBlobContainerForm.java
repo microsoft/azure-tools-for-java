@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.forms;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -98,7 +97,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
                                                                    .getBlobContainers(connectionString);
                 for (BlobContainer blobContainer : blobs) {
                     if (blobContainer.getName().equals(name)) {
-                        ApplicationManager.getApplication().invokeLater(() -> {
+                        AzureTaskRunner.getInstance().runLater(() -> {
                             DefaultLoader.getUIHelper().showError(
                                 "A blob container with the specified name already exists.", "Azure Explorer");
                         });
@@ -111,7 +110,7 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
                 StorageClientSDKManager.getManager().createBlobContainer(connectionString, blobContainer);
 
                 if (onCreate != null) {
-                    ApplicationManager.getApplication().invokeLater(onCreate);
+                    AzureTaskRunner.getInstance().runLater(onCreate);
                 }
             }, (e) -> {
                 String msg = "An error occurred while attempting to create blob container."

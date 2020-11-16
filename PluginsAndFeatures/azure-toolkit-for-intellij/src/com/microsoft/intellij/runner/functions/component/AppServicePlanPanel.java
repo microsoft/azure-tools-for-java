@@ -22,13 +22,13 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -152,7 +152,7 @@ public class AppServicePlanPanel extends JPanel {
             selectedAppServicePlan = (AppServicePlanWrapper) selectedObject;
             showAppServicePlan(selectedAppServicePlan);
         } else if (CREATE_APP_SERVICE_PLAN.equals(selectedObject)) {
-            ApplicationManager.getApplication().invokeLater(this::createAppServicePlan);
+            AzureTaskRunner.getInstance().runLater(this::createAppServicePlan);
         } else {
             selectedAppServicePlan = null;
             showAppServicePlan(null);

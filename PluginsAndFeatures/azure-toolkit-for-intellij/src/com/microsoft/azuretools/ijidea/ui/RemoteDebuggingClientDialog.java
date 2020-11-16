@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.ijidea.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
@@ -358,12 +357,7 @@ public class RemoteDebuggingClientDialog extends AzureDialogWrapper {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 //LOGGER.error("work@IWorker@run@ProgressManager@runWithProgress@RemoteDebuggingClientDialog", ex);
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ErrorWindow.show(project, ex.getMessage(), title + "Error");
-                    }
-                });
+                AzureTaskRunner.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), title + "Error"));
                 try {
                     worker.rollBack(progressIndicator);
                 } catch (Exception ex1) {

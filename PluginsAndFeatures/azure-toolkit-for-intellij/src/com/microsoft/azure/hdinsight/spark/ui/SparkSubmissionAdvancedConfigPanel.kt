@@ -30,8 +30,6 @@ package com.microsoft.azure.hdinsight.spark.ui
 import com.intellij.icons.AllIcons.Actions.Help
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
@@ -52,6 +50,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkBatchDebugSession
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UseKeyFile
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchRemoteDebugJobSshAuth.SSHAuthType.UsePassword
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitAdvancedConfigModel
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner
 import com.microsoft.intellij.forms.dsl.panel
 import com.microsoft.intellij.rxjava.DisposableObservers
 import com.microsoft.intellij.rxjava.IdeaSchedulers
@@ -359,7 +358,7 @@ class SparkSubmissionAdvancedConfigPanel: JPanel(), SettableControl<SparkSubmitA
             }
         }
 
-        ApplicationManager.getApplication().invokeLater(applyData, ModalityState.any())
+        AzureTaskRunner.getInstance().runLater(applyData)
     }
 
     override fun getData(data: SparkSubmitAdvancedConfigModel) {

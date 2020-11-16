@@ -22,10 +22,8 @@
 
 package com.microsoft.azure.toolkit.intellij.function.action;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
@@ -93,7 +91,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     private void refreshAzureExplorer(FunctionApp functionApp) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskRunner.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, functionApp));
             }

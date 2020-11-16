@@ -24,16 +24,12 @@ package com.microsoft.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.TableEntityForm;
@@ -263,53 +259,50 @@ public class TableFileEditor implements FileEditor {
     }
 
     private void refreshGrid() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
-                columnData.put(PARTITION_KEY, new ArrayList<String>());
-                columnData.put(ROW_KEY, new ArrayList<String>());
-                columnData.put(TIMESTAMP, new ArrayList<String>());
+        AzureTaskRunner.getInstance().runLater(() -> {
+            Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
+            columnData.put(PARTITION_KEY, new ArrayList<String>());
+            columnData.put(ROW_KEY, new ArrayList<String>());
+            columnData.put(TIMESTAMP, new ArrayList<String>());
 
-                for (TableEntity tableEntity : tableEntities) {
-                    columnData.get(PARTITION_KEY).add(tableEntity.getPartitionKey());
-                    columnData.get(ROW_KEY).add(tableEntity.getRowKey());
-                    columnData.get(TIMESTAMP).add(new SimpleDateFormat().format(tableEntity.getTimestamp().getTime()));
+            for (TableEntity tableEntity : tableEntities) {
+                columnData.get(PARTITION_KEY).add(tableEntity.getPartitionKey());
+                columnData.get(ROW_KEY).add(tableEntity.getRowKey());
+                columnData.get(TIMESTAMP).add(new SimpleDateFormat().format(tableEntity.getTimestamp().getTime()));
 
-                    for (String entityColumn : tableEntity.getProperties().keySet()) {
-                        if (!columnData.keySet().contains(entityColumn)) {
-                            columnData.put(entityColumn, new ArrayList<String>());
-                        }
-                    }
-
-                }
-
-                for (TableEntity tableEntity : tableEntities) {
-                    for (String column : columnData.keySet()) {
-                        if (!column.equals(PARTITION_KEY) && !column.equals(ROW_KEY) && !column.equals(TIMESTAMP)) {
-                            columnData.get(column).add(tableEntity.getProperties().containsKey(column)
-                                    ? getFormattedProperty(tableEntity.getProperties().get(column))
-                                    : "");
-                        }
+                for (String entityColumn : tableEntity.getProperties().keySet()) {
+                    if (!columnData.keySet().contains(entityColumn)) {
+                        columnData.put(entityColumn, new ArrayList<String>());
                     }
                 }
 
-                DefaultTableModel model = new DefaultTableModel() {
-                    @Override
-                    public boolean isCellEditable(int i, int i1) {
-                        return false;
-                    }
-                };
+            }
 
+            for (TableEntity tableEntity : tableEntities) {
                 for (String column : columnData.keySet()) {
-                    model.addColumn(column, columnData.get(column).toArray());
+                    if (!column.equals(PARTITION_KEY) && !column.equals(ROW_KEY) && !column.equals(TIMESTAMP)) {
+                        columnData.get(column).add(tableEntity.getProperties().containsKey(column)
+                                ? getFormattedProperty(tableEntity.getProperties().get(column))
+                                : "");
+                    }
                 }
+            }
 
-                entitiesTable.setModel(model);
-
-                for (int i = 0; i != entitiesTable.getColumnCount(); i++) {
-                    entitiesTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+            DefaultTableModel model = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int i, int i1) {
+                    return false;
                 }
+            };
+
+            for (String column : columnData.keySet()) {
+                model.addColumn(column, columnData.get(column).toArray());
+            }
+
+            entitiesTable.setModel(model);
+
+            for (int i = 0; i != entitiesTable.getColumnCount(); i++) {
+                entitiesTable.getColumnModel().getColumn(i).setPreferredWidth(100);
             }
         });
     }

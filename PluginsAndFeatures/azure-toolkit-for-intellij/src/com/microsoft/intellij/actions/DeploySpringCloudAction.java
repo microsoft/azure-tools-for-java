@@ -32,9 +32,9 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
@@ -61,11 +61,10 @@ public class DeploySpringCloudAction extends AzureAnAction {
         final Module module = anActionEvent.getData(LangDataKeys.MODULE);
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-                ApplicationManager.getApplication().invokeLater(() -> deployConfiguration(module));
+                AzureTaskRunner.getInstance().runLater(() -> deployConfiguration(module));
             }
         } catch (Exception e) {
-            ApplicationManager.getApplication().invokeLater(() ->
-                    PluginUtil.displayErrorDialog("Failed to deploy spring cloud", e.getMessage()));
+            AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to deploy spring cloud", e.getMessage()));
         }
         return true;
     }

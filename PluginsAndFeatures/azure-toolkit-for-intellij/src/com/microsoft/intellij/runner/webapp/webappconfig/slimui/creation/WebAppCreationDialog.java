@@ -23,7 +23,6 @@
 package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -455,11 +454,10 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
                 progressIndicator.setIndeterminate(true);
                 EventUtil.logEvent(EventType.info, operation, properties);
                 result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
-                ApplicationManager.getApplication().invokeLater(() -> {
+                AzureTaskRunner.getInstance().runLater(() -> {
                     sendTelemetry(true, null);
                     if (AzureUIRefreshCore.listeners != null) {
-                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                                                           null));
+                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
                     }
                 });
                 DefaultLoader.getIdeHelper().invokeLater(() -> WebAppCreationDialog.super.doOKAction());

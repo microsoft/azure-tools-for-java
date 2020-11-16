@@ -31,7 +31,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
@@ -44,6 +43,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.intellij.IToolWindowProcessor;
 import com.microsoft.intellij.ToolWindowKey;
 import com.microsoft.intellij.common.CommonConst;
@@ -123,12 +123,7 @@ public class PluginUtil {
 
     public static void displayErrorDialogInAWTAndLog(final String title, final String message, Throwable e) {
         LOG.error(message, e);
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                PluginUtil.displayErrorDialog(title, message);
-            }
-        });
+        AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog(title, message));
     }
 
     public static void displayInfoDialog(String title, String message) {
@@ -140,12 +135,7 @@ public class PluginUtil {
     }
 
     public static void displayWarningDialogInAWT(final String title, final String message) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                displayWarningDialog(title, message);
-            }
-        });
+        AzureTaskRunner.getInstance().runLater(() -> displayWarningDialog(title, message));
     }
 
     /**

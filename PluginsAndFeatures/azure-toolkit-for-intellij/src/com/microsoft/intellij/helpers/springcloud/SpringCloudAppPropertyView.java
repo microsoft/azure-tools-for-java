@@ -26,7 +26,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.JBMenuItem;
 import com.intellij.openapi.ui.JBPopupMenu;
@@ -373,7 +372,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
 
     private void initUI() {
         // Todo: find better way to align UI labels
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskRunner.getInstance().runLater(() -> {
             Dimension size = lblInstances.getPreferredSize();
             size.setSize(lblPersistentStorage.getWidth(), size.getHeight());
             lblInstances.setPreferredSize(size);
@@ -564,7 +563,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                              ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
             testKeyCache.refresh(clusterId);
             return Pair.of(app, deploy);
-        }).subscribeOn(Schedulers.io()).subscribe(pair -> ApplicationManager.getApplication().invokeLater(
+        }).subscribeOn(Schedulers.io()).subscribe(pair -> AzureTaskRunner.getInstance().runLater(
             () -> this.prepareViewModel(pair.getLeft(), pair.getRight())));
     }
 
@@ -646,14 +645,13 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             deploymentResourceInner = AzureSpringCloudMvpModel
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
-            ApplicationManager.getApplication().invokeLater(() ->
+            AzureTaskRunner.getInstance().runLater(() ->
                     PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration "
                             + "successfully"));
             refreshData();
 
         } catch (Exception e) {
-            ApplicationManager.getApplication().invokeLater(() ->
-                                                                    PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
+            AzureTaskRunner.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
         }
     }
 
@@ -817,7 +815,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             targetViewModel.setStatus(status.toString());
             this.updateModel(targetViewModel);
         } catch (AzureExecutionException e) {
-            ApplicationManager.getApplication().invokeLater(() -> {
+            AzureTaskRunner.getInstance().runLater(() -> {
                 PluginUtil.showErrorNotificationProject(project, "Cannot binding data to Spring Cloud property view.", e.getMessage());
             });
         }

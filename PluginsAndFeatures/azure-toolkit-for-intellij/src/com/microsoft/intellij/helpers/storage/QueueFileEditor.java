@@ -233,7 +233,7 @@ public class QueueFileEditor implements FileEditor {
 
                                 StorageClientSDKManager.getManager().clearQueue(storageAccount, queue);
 
-                                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                                AzureTaskRunner.getInstance().runLater(new Runnable() {
                                     @Override
                                     public void run() {
                                         fillGrid();

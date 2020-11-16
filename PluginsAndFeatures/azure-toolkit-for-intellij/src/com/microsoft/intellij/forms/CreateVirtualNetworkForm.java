@@ -113,7 +113,7 @@ public class CreateVirtualNetworkForm extends AzureDialogWrapper {
 //                        indicator.setIndeterminate(true);
 //                        boolean success = createVirtualNetwork();
 //                        if (success) {
-//                            ApplicationManager.getApplication().invokeLater(new Runnable() {
+//                            AzureTaskRunner.getInstance().runLater(new Runnable() {
 //                                @Override
 //                                public void run() {
 //                                    close(DialogWrapper.OK_EXIT_CODE, true);
