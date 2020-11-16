@@ -35,7 +35,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.Ap
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
