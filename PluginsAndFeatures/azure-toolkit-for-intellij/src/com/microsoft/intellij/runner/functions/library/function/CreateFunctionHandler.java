@@ -48,35 +48,22 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 /**
  * Deploy artifacts to target Azure Functions in Azure. If target Azure
  * Functions doesn't exist, it will be created.
  */
 public class CreateFunctionHandler {
-    private static final String JDK_VERSION_ERROR = "Azure Functions only support JDK 8, which is lower than local " +
-            "JDK version %s";
     private static final String FUNCTIONS_WORKER_RUNTIME_NAME = "FUNCTIONS_WORKER_RUNTIME";
     private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
-    private static final String SET_FUNCTIONS_WORKER_RUNTIME = "Set function worker runtime to java";
-    private static final String CHANGE_FUNCTIONS_WORKER_RUNTIME = "Function worker runtime doesn't " +
-            "meet the requirement, change it from %s to java";
     private static final String FUNCTIONS_EXTENSION_VERSION_NAME = "FUNCTIONS_EXTENSION_VERSION";
     private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
-    private static final String SET_FUNCTIONS_EXTENSION_VERSION = "Functions extension version " +
-            "isn't configured, setting up the default value";
-    private static final String FUNCTION_APP_CREATE_START = "The specified function app does not exist. " +
-            "Creating a new function app...";
-    private static final String FUNCTION_APP_CREATED = "Successfully created the function app: %s";
-    private static final String FUNCTION_APP_UPDATE = "Updating the specified function app...";
-    private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app.";
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
-    public static final String TARGET_FUNCTION_APP_ALREADY_EXISTS =
-            "Failed to create function app %s, target function app already exists.";
     private static final String APP_INSIGHTS_INSTRUMENTATION_KEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
 
     private FunctionDeployModel ctx;
-
 
     public CreateFunctionHandler(FunctionDeployModel ctx) {
         Preconditions.checkNotNull(ctx);
@@ -88,7 +75,7 @@ public class CreateFunctionHandler {
         if (app == null) {
             return createFunctionApp();
         } else {
-            throw new AzureExecutionException(String.format(TARGET_FUNCTION_APP_ALREADY_EXISTS, ctx.getAppName()));
+            throw new AzureExecutionException(String.format(message("function.create.error.targetExists"), ctx.getAppName()));
         }
     }
     // endregion
@@ -96,14 +83,14 @@ public class CreateFunctionHandler {
     // region Create or update Azure Functions
 
     private FunctionApp createFunctionApp() throws IOException, AzureExecutionException {
-        Log.prompt(FUNCTION_APP_CREATE_START);
+        Log.prompt(message("function.create.hint.startCreateFunction"));
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
         final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
         bindingApplicationInsights();
         configureApplicationLog(withCreate);
         configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
         FunctionApp result = withCreate.create();
-        Log.prompt(String.format(FUNCTION_APP_CREATED, ctx.getAppName()));
+        Log.prompt(String.format(message("function.create.hint.functionCreated"), ctx.getAppName()));
         return result;
     }
 
@@ -132,7 +119,7 @@ public class CreateFunctionHandler {
                                                                           region);
                 instrumentationKey = insights.instrumentationKey();
             } catch (IOException e) {
-                Log.prompt(String.format("Failed to create application insights for function %s", ctx.getAppName()));
+                Log.prompt(String.format(message("function.create.error.createApplicationInsightsFailed"), ctx.getAppName()));
             }
         }
         ctx.getAppSettings().put(APP_INSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
@@ -157,9 +144,9 @@ public class CreateFunctionHandler {
                 builder = new LinuxFunctionRuntimeHandler.Builder();
                 break;
             case Docker:
-                throw new UnsupportedOperationException("The 'docker' runtime is not supported in current version.");
+                throw new UnsupportedOperationException(message("function.create.error.dockerNotSupport"));
             default:
-                throw new AzureExecutionException(String.format("Unsupported runtime %s", os));
+                throw new AzureExecutionException(String.format(message("function.create.error.invalidRuntime"), os));
         }
         return builder.appName(ctx.getAppName()).resourceGroup(ctx.getResourceGroup()).runtime(ctx.getRuntime())
                       .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
@@ -228,9 +215,9 @@ public class CreateFunctionHandler {
     // region get App Settings
     private Map getAppSettingsWithDefaultValue() {
         final Map settings = ctx.getAppSettings();
-        overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, SET_FUNCTIONS_WORKER_RUNTIME,
-                FUNCTIONS_WORKER_RUNTIME_VALUE, CHANGE_FUNCTIONS_WORKER_RUNTIME);
-        setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, SET_FUNCTIONS_EXTENSION_VERSION,
+        overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
+                FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
+        setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
                 FUNCTIONS_EXTENSION_VERSION_VALUE);
         return settings;
     }

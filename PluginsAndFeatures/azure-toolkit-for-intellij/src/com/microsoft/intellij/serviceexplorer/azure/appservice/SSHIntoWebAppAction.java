@@ -37,6 +37,8 @@ import org.jetbrains.plugins.terminal.TerminalView;
 
 import java.util.logging.Logger;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 /**
  * SSH into Web App Action
  */
@@ -70,29 +72,32 @@ public class SSHIntoWebAppAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        logger.info(String.format("Start to perform SSH into Web App (%s)....", webAppName));
+        logger.info(String.format(message("webapp.ssh.hint.startSSH"), webAppName));
         // ssh to connect to remote web app container.
-        DefaultLoader.getIdeHelper().runInBackground(project, String.format("Connecting to Web App (%s) ...", webAppName), true, false, null, () -> {
-            // check these conditions to ssh into web app
-            if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, this.app.linuxFxVersion())) {
-                return;
-            }
-            // build proxy between remote and local
-            SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
-                    AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
-            logger.info(String.format("Complete to execute ssh connection. output message is below: %s", connectionInfo.getOutputMessage()));
-            // ssh to local proxy and open terminal.
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
-                // create a new terminal tab.
-                TerminalView terminalView = TerminalView.getInstance(project);
-                ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
-                DefaultLoader.getIdeHelper().runInBackground(project, String.format("Opening SSH - %s session ...", webAppName), true, false, null, () -> {
-                    // create connection to the local proxy.
-                    SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
+        DefaultLoader.getIdeHelper().runInBackground(
+                project, String.format(message("webapp.ssh.task.connectWebApp.title"), webAppName), true, false, null, () -> {
+                // check these conditions to ssh into web app
+                if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, this.app.linuxFxVersion())) {
+                    return;
+                }
+                // build proxy between remote and local
+                SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
+                        AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
+                logger.info(String.format(message("webapp.ssh.hint.sshConnectionDone"), connectionInfo.getOutputMessage()));
+                // ssh to local proxy and open terminal.
+                DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+                    // create a new terminal tab.
+                    TerminalView terminalView = TerminalView.getInstance(project);
+                    ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null,
+                                                                                                  String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
+                    DefaultLoader.getIdeHelper().runInBackground(
+                        project, String.format(message("webapp.ssh.task.openSSH.title"), webAppName),
+                        true, false, null, () -> {
+                            // create connection to the local proxy.
+                            SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
+                        });
                 });
             });
-
-        });
-        logger.info(String.format("End to perform SSH into Web App (%s)", webAppName));
+        logger.info(String.format(message("webapp.ssh.hint.SSHDone"), webAppName));
     }
 }

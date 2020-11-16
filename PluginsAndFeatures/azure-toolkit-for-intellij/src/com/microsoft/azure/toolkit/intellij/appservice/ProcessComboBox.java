@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @Setter
     @Getter
@@ -57,7 +59,7 @@ public class ProcessComboBox extends AzureComboBox<ProcessInfo> {
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(
-                AllIcons.Actions.Refresh, "Refresh", this::refreshItems);
+                AllIcons.Actions.Refresh, message("common.refresh"), this::refreshItems);
     }
 
     protected String getItemText(Object item) {

@@ -33,13 +33,10 @@ import rx.Subscription;
 
 import java.io.InterruptedIOException;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> extends MvpPresenter<V> {
-
-    private static final String CANNOT_LIST_WEB_APP = "Failed to list web apps.";
-    private static final String CANNOT_GET_DEPLOYMENT_SLOTS = "Failed to get the deployment slots.";
-
     private Subscription loadSlotsSubscription;
     private Subscription loadWebAppsSubscription;
 
@@ -56,7 +53,7 @@ public class WebAppDeployViewPresenterSlim<V extends WebAppDeployMvpViewSlim> ex
                           return;
                       }
                       getMvpView().fillDeploymentSlots(slots, selectedWebApp);
-                  }), e -> errorHandler(CANNOT_GET_DEPLOYMENT_SLOTS, (Exception) e));
+                  }), e -> errorHandler(message("webapp.deploy.error.getDeploymentSlotsFailed"), (Exception) e));
     }
 
     private void errorHandler(String msg, Exception e) {

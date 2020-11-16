@@ -55,6 +55,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.microsoft.azure.common.appservice.DeploymentType.*;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 /**
  * Deploy artifacts to target Azure Functions in Azure.
@@ -65,32 +66,10 @@ public class DeployFunctionHandler {
     private static final int LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS = 10;
     private static final String FUNCTIONS_WORKER_RUNTIME_NAME = "FUNCTIONS_WORKER_RUNTIME";
     private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
-    private static final String SET_FUNCTIONS_WORKER_RUNTIME = "Set function worker runtime to java";
-    private static final String CHANGE_FUNCTIONS_WORKER_RUNTIME = "Function worker runtime doesn't " +
-            "meet the requirement, change it from %s to java";
     private static final String FUNCTIONS_EXTENSION_VERSION_NAME = "FUNCTIONS_EXTENSION_VERSION";
     private static final String FUNCTIONS_EXTENSION_VERSION_VALUE = "~3";
-    private static final String SET_FUNCTIONS_EXTENSION_VERSION = "Functions extension version " +
-            "isn't configured, setting up the default value";
-    private static final String DEPLOY_START = "Trying to deploy the function app...";
-    private static final String DEPLOY_FINISH = "Successfully deployed the function app at https://%s.azurewebsites.net";
-    private static final String FUNCTION_APP_UPDATE = "Updating the specified function app...";
-    private static final String FUNCTION_APP_UPDATE_DONE = "Successfully updated the function app %s.";
-    private static final String UNKNOW_DEPLOYMENT_TYPE = "The value of <deploymentType> is unknown, supported values are: " +
-            "ftp, zip, msdeploy, run_from_blob and run_from_zip.";
-    private static final String FAILED_TO_LIST_TRIGGERS = "Deployment succeeded, but failed to list http trigger urls.";
-    private static final String UNABLE_TO_LIST_NONE_ANONYMOUS_HTTP_TRIGGERS = "Some http trigger urls cannot be displayed " +
-            "because they are non-anonymous. To access the non-anonymous triggers, "
-            + "please refer https://aka.ms/azure-functions-key.";
-    private static final String HTTP_TRIGGER_URLS = "HTTP Trigger Urls:";
-    private static final String NO_ANONYMOUS_HTTP_TRIGGER = "No anonymous HTTP Triggers found in deployed function app, "
-            + "skip list triggers.";
     private static final String AUTH_LEVEL = "authLevel";
     private static final String HTTP_TRIGGER = "httpTrigger";
-    private static final String NO_TRIGGERS_FOUNDED = "No triggers found in deployed function app, " +
-            "please try recompile the project by `Build` -> `Build Project` and deploy again.";
-    private static final String SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION = "Syncing triggers and fetching "
-            + "function information (Attempt %d/%d)...";
 
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     private FunctionDeployModel model;
@@ -106,20 +85,20 @@ public class DeployFunctionHandler {
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);
         final DeployTarget deployTarget = new DeployTarget(app, DeployTargetType.FUNCTION);
-        prompt(DEPLOY_START);
+        prompt(message("function.deploy.hint.startDeployFunction"));
         getArtifactHandler().publish(deployTarget);
-        prompt(String.format(DEPLOY_FINISH, model.getAppName()));
+        prompt(String.format(message("function.deploy.hint.deployDone"), model.getAppName()));
         listHTTPTriggerUrls();
         return (FunctionApp) deployTarget.getApp();
     }
 
     private void updateFunctionAppSettings(final FunctionApp app) throws AzureExecutionException {
-        prompt(FUNCTION_APP_UPDATE);
+        prompt(message("function.deploy.hint.updateFunctionApp"));
         // Work around of https://github.com/Azure/azure-sdk-for-java/issues/1755
         final Update update = app.update();
         configureAppSettings(update::withAppSettings, getAppSettingsWithDefaultValue());
         update.apply();
-        prompt(String.format(FUNCTION_APP_UPDATE_DONE, model.getAppName()));
+        prompt(String.format(message("function.deploy.hint.updateDone"), model.getAppName()));
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -147,16 +126,16 @@ public class DeployFunctionHandler {
                                                 AuthorizationLevel.ANONYMOUS.toString()))
                                 .collect(Collectors.toList());
             if (CollectionUtils.isEmpty(httpFunction) || CollectionUtils.isEmpty(anonymousTriggers)) {
-                prompt(NO_ANONYMOUS_HTTP_TRIGGER);
+                prompt(message("function.deploy.hint.noAnonymousHttpTrigger"));
                 return;
             }
-            prompt(HTTP_TRIGGER_URLS);
+            prompt(message("function.deploy.hint.httpTriggerUrls"));
             anonymousTriggers.forEach(trigger -> prompt(String.format("\t %s : %s", trigger.getName(), trigger.getTriggerUrl())));
             if (anonymousTriggers.size() < httpFunction.size()) {
-                prompt(UNABLE_TO_LIST_NONE_ANONYMOUS_HTTP_TRIGGERS);
+                prompt(message("function.deploy.error.listHttpTriggerFailed"));
             }
         } catch (InterruptedException | IOException e) {
-            prompt(FAILED_TO_LIST_TRIGGERS);
+            prompt(message("function.deploy.error.listTriggerFailed"));
         } catch (AzureExecutionException e) {
             prompt(e.getMessage());
         }
@@ -174,7 +153,7 @@ public class DeployFunctionHandler {
         final FunctionApp functionApp = getFunctionApp();
         for (int i = 0; i < LIST_TRIGGERS_MAX_RETRY; i++) {
             Thread.sleep(LIST_TRIGGERS_RETRY_PERIOD_IN_SECONDS * 1000);
-            prompt(String.format(SYNCING_TRIGGERS_AND_FETCH_FUNCTION_INFORMATION, i + 1, LIST_TRIGGERS_MAX_RETRY));
+            prompt(String.format(message("function.deploy.hint.syncTriggers"), i + 1, LIST_TRIGGERS_MAX_RETRY));
             try {
                 functionApp.syncTriggers();
                 final List<FunctionResource> triggers =
@@ -190,7 +169,7 @@ public class DeployFunctionHandler {
                 // swallow sdk request runtime exception
             }
         }
-        throw new AzureExecutionException(NO_TRIGGERS_FOUNDED);
+        throw new AzureExecutionException(message("function.deploy.error.noTriggers"));
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {
@@ -226,17 +205,17 @@ public class DeployFunctionHandler {
         try {
             return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
         } catch (IOException e) {
-            throw new AzureExecutionException("Failed to get azure client");
+            throw new AzureExecutionException(message("azure.error.failedToGetAzureClient"));
         }
     }
 
     // region get App Settings
     private Map getAppSettingsWithDefaultValue() {
         final Map settings = model.getAppSettings();
-        overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, SET_FUNCTIONS_WORKER_RUNTIME,
-                FUNCTIONS_WORKER_RUNTIME_VALUE, CHANGE_FUNCTIONS_WORKER_RUNTIME);
-        setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, SET_FUNCTIONS_EXTENSION_VERSION,
-                FUNCTIONS_EXTENSION_VERSION_VALUE);
+        overrideDefaultAppSetting(settings, FUNCTIONS_WORKER_RUNTIME_NAME, message("function.hint.setFunctionWorker"),
+                                  FUNCTIONS_WORKER_RUNTIME_VALUE, message("function.hint.changeFunctionWorker"));
+        setDefaultAppSetting(settings, FUNCTIONS_EXTENSION_VERSION_NAME, message("function.hint.setFunctionVersion"),
+                             FUNCTIONS_EXTENSION_VERSION_VALUE);
         return settings;
     }
 
@@ -287,7 +266,7 @@ public class DeployFunctionHandler {
                 builder = new RunFromZipArtifactHandlerImpl.Builder();
                 break;
             default:
-                throw new AzureExecutionException(UNKNOW_DEPLOYMENT_TYPE);
+                throw new AzureExecutionException(message("function.deploy.error.unknownType"));
         }
         return builder
                 .stagingDirectoryPath(this.model.getDeploymentStagingDirectoryPath())

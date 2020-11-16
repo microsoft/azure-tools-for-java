@@ -32,12 +32,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class RunProcessHandler extends ProcessHandler implements IProgressIndicator {
 
-    private static final String PROCESS_TERMINATED = "The process has been terminated";
-
     public static final Runnable THROW_TERMINATED_EXCEPTION = () -> {
-        throw new RuntimeException(PROCESS_TERMINATED);
+        throw new RuntimeException(message("appService.runProcess.hint.processTerminated"));
     };
     public static final Runnable DO_NOTHING = () -> {
     };

@@ -25,9 +25,11 @@ package com.microsoft.azure.toolkit.lib.common.form;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import org.apache.commons.lang3.ObjectUtils;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public interface AzureFormInput<T> extends Validatable {
 
-    String MSG_REQUIRED = "This field is required.";
+    String MSG_REQUIRED = message("common.input.validate.fieldRequired");
 
     T getValue();
 

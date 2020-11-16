@@ -33,12 +33,10 @@ import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extends MvpPresenter<V> {
-
-    private static final String CANNOT_LIST_WEB_APP = "Failed to list function apps.";
-    private static final String CANNOT_SHOW_APP_SETTINGS = "Failed to show app settings";
 
     private Subscription loadAppSettingsSubscription;
 
@@ -58,7 +56,7 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
                     final Map<String, String> result = new HashMap<>();
                     appSettings.entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().value()));
                     getMvpView().fillAppSettings(result);
-                }), e -> errorHandler(CANNOT_SHOW_APP_SETTINGS, (Exception) e));
+                }), e -> errorHandler(message("function.deploy.presenter.error.showAppSettingsFailed"), (Exception) e));
     }
 
     private void errorHandler(String msg, Exception e) {

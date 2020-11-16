@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Logger;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class WebSocketSSLProxy {
     private static final Logger logger = Logger.getLogger(WebSocketSSLProxy.class.getName());
     private static final int DEFAULT_BUFFER_SIZE = 8192;
@@ -108,7 +110,7 @@ public class WebSocketSSLProxy {
 
     private void handleConnectionBroken(Exception e) {
         if (Objects.nonNull(serverSocket)) {
-            logger.warning(String.format("Encounter error while proxying websocket: %s", e.getMessage()));
+            logger.warning(String.format(message("common.webSocket.error.proxyingWebSocketFailed"), e.getMessage()));
         }
         close();
     }

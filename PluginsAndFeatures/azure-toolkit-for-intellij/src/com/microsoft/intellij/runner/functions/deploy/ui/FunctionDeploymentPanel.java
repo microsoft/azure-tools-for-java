@@ -49,13 +49,10 @@ import java.util.Map;
 
 import static com.microsoft.intellij.common.CommonConst.EMPTY_TEXT;
 import static com.microsoft.intellij.common.CommonConst.LOADING_TEXT;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 
 public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployConfiguration> implements FunctionDeployMvpView {
-
-    private static final String CREATE_NEW_FUNCTION_APP = "Create Function App...";
-    private static final String REFRESHING_FUNCTION_APP = "Refreshing...";
-    private static final String CREATE_NEW_FUNCTION = "No available function, click to create a new one";
 
     private FunctionDeployViewPresenter presenter = null;
 
@@ -89,7 +86,7 @@ public class FunctionDeploymentPanel extends AzureSettingPanel<FunctionDeployCon
     @NotNull
     @Override
     public String getPanelName() {
-        return "Deploy Azure Functions";
+        return message("function.deploy.title");
     }
 
     @Override

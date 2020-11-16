@@ -50,9 +50,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModul
 import java.nio.file.Path;
 import java.util.Objects;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 @Name("Create Web App")
 public class CreateWebAppAction extends NodeActionListener {
-    private static final String ERROR_SIGNING_IN = "Error occurs on signing in";
     private final WebAppService webappService;
     private final WebAppModule webappModule;
 
@@ -67,12 +68,12 @@ public class CreateWebAppAction extends NodeActionListener {
         final Project project = (Project) webappModule.getProject();
         try {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                !AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_SIGNING_IN)) {
+                !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
                 return;
             }
         } catch (final Exception ex) {
-            AzurePlugin.log(ERROR_SIGNING_IN, ex);
-            DefaultLoader.getUIHelper().showException(ERROR_SIGNING_IN, ex, ERROR_SIGNING_IN, false, true);
+            AzurePlugin.log(message("common.error.signIn"), ex);
+            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
         }
         final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createWebApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
@@ -80,7 +81,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
-        final Task.Modal task = new Task.Modal(null, "Creating New Web App...", true) {
+        final Task.Modal task = new Task.Modal(null, message("webapp.create.task.title"), true) {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
@@ -94,7 +95,7 @@ public class CreateWebAppAction extends NodeActionListener {
                     }
                 } catch (final Exception ex) {
                     // TODO: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError("Error occurred on creating Web App: " + ex.getMessage(), "Create WebApp Failed");
+                    DefaultLoader.getUIHelper().showError(message("webapp.create.error.title") + ex.getMessage(), message("webapp.create.error.createFailed"));
                 }
             }
         };
@@ -102,7 +103,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final Task.Modal task = new Task.Modal(null, "Deploying Artifact to Web App...", true) {
+        final Task.Modal task = new Task.Modal(null, message("webapp.deploy.task.title"), true) {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
@@ -115,7 +116,7 @@ public class CreateWebAppAction extends NodeActionListener {
                     WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
                 } catch (final Exception ex) {
                     // TODO: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError("Error occurred on deploying artifact to Web App: " + ex.getMessage(), "Deployment Failed");
+                    DefaultLoader.getUIHelper().showError(message("webapp.deploy.error.title") + ex.getMessage(), message("webapp.deploy.error.deployFailed"));
                 }
             }
         };
