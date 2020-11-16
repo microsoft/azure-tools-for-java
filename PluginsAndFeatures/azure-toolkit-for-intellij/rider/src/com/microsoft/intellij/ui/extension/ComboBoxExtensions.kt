@@ -1,18 +1,18 @@
 /**
- * Copyright (c) 2018-2019 JetBrains s.r.o.
- * <p/>
+ * Copyright (c) 2018-2020 JetBrains s.r.o.
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -22,7 +22,7 @@
 
 package com.microsoft.intellij.ui.extension
 
-import com.intellij.ui.ListCellRendererWrapper
+import com.intellij.ui.SimpleListCellRenderer
 import javax.swing.Icon
 import javax.swing.JComboBox
 import javax.swing.JList
@@ -61,8 +61,8 @@ fun <T>JComboBox<T>.setDefaultRenderer(errorMessage: String,
                                        icon: Icon? = null,
                                        getValueString: (T) -> String) {
 
-    this.renderer = object : ListCellRendererWrapper<T>() {
-        override fun customize(list: JList<*>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
+    this.renderer = object : SimpleListCellRenderer<T>() {
+        override fun customize(list: JList<out T>, value: T?, index: Int, isSelected: Boolean, cellHasFocus: Boolean) {
             if (value == null) {
                 setText(errorMessage)
                 return
