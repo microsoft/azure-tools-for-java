@@ -309,7 +309,7 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             String msg = "An error occurred while attempting to create the specified storage account in subscription "
                     + ((SubscriptionDetail) subscriptionComboBox.getSelectedItem()).getSubscriptionId() + ".\n"
                     + String.format(message("webappExpMsg"), e.getMessage());
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true));
+            AzureTaskManager.getInstance().runAndWait(() -> DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true));
             EventUtil.logError(operation, ErrorType.userError, e, null, null);
             AzurePlugin.log(msg, e);
         } finally {

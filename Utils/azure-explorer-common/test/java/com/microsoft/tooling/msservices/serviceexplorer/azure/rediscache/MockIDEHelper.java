@@ -28,15 +28,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
-import com.microsoft.azuretools.azurecommons.tasks.CancellableTask.CancellableTaskHandle;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 
 public class MockIDEHelper implements IDEHelper{
     public static final String DEFAULT_PROJECT = "DEFAULT_PROJECT";
-    @Override
-    public void runInBackground(Object project, String name, boolean canBeCancelled, boolean isIndeterminate, final String indicatorText, final Runnable runnable) {
-    }
 
     @Override
     public void closeFile(Object projectObject, Object openedFile) {
@@ -115,15 +110,6 @@ public class MockIDEHelper implements IDEHelper{
 
     @Override
     public void setProperties(String name, String[] value) {
-    }
-
-    @Override
-    public CancellableTaskHandle runInBackground(
-            ProjectDescriptor projectDescriptor, String name,
-            String indicatorText, CancellableTask cancellableTask)
-            throws AzureCmdException {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

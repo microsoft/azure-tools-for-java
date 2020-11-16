@@ -86,7 +86,7 @@ public class SSHIntoWebAppAction extends NodeActionListener {
                     AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
             logger.info(String.format(message("webapp.ssh.hint.sshConnectionDone"), connectionInfo.getOutputMessage()));
             // ssh to local proxy and open terminal.
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 // create a new terminal tab.
                 TerminalView terminalView = TerminalView.getInstance(project);
                 ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));

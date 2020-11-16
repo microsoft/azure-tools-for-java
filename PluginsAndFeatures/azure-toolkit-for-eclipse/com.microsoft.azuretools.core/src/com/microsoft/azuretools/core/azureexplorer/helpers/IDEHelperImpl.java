@@ -42,30 +42,10 @@ import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
 import com.microsoft.azuretools.azurecommons.tasks.CancellableTask.CancellableTaskHandle;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
-import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 
 public class IDEHelperImpl implements IDEHelper {
     public static final String DEFAULT_PROJECT = "DEFAULT_PROJECT";
-    @Override
-    public void runInBackground(Object project, String name, boolean canBeCancelled, boolean isIndeterminate, final String indicatorText, final Runnable runnable) {
-        Job job = new Job(name) {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                monitor.beginTask(indicatorText, IProgressMonitor.UNKNOWN);
-                try {
-                    runnable.run();
-                } catch (Exception ex) {
-                    monitor.done();
-                    return Status.CANCEL_STATUS;
-                }
-                monitor.done();
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-    }
 
     @Override
     public void closeFile(Object projectObject, Object openedFile) {
@@ -164,15 +144,6 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void setProperties(String name, String[] value) {
         PreferenceUtil.savePreferences(name, value);
-    }
-
-    @Override
-    public CancellableTaskHandle runInBackground(
-            ProjectDescriptor projectDescriptor, String name,
-            String indicatorText, CancellableTask cancellableTask)
-            throws AzureCmdException {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

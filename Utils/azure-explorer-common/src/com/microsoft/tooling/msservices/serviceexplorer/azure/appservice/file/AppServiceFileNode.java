@@ -24,6 +24,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -79,7 +81,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         }
         final Runnable runnable = () -> DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
         final String message = String.format("fetching file %s...", this.file.getName());
-        DefaultLoader.getIdeHelper().runInBackground(this.getProject(), message, false, true, null, runnable);
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(this.getProject(), message, false, runnable));
     }
 
     @Override

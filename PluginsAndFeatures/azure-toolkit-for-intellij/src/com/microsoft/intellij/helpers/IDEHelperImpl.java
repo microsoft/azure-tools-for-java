@@ -33,7 +33,6 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
@@ -58,15 +57,12 @@ import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
 import com.microsoft.intellij.ApplicationSettings;
 import com.microsoft.intellij.AzureSettings;
-import com.microsoft.intellij.helpers.tasks.CancellableTaskHandleImpl;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -81,8 +77,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
@@ -135,7 +129,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void invokeLater(@NotNull Runnable runnable) {
-        ApplicationManager.getApplication().invokeLater(runnable, ModalityState.any());
+        AzureTaskManager.getInstance().runLater(runnable);
     }
 
     @Override
@@ -146,43 +140,6 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public void executeOnPooledThread(@NotNull Runnable runnable) {
         ApplicationManager.getApplication().executeOnPooledThread(runnable);
-    }
-
-    @Override
-    public void runInBackground(@Nullable final Object project, @NotNull final String name, final boolean canBeCancelled,
-                                final boolean isIndeterminate, @Nullable final String indicatorText,
-                                final Runnable runnable) {
-        // background tasks via ProgressManager can be scheduled only on the
-        // dispatch thread
-        AzureTaskManager.getInstance().runLater(() -> AzureTaskManager.getInstance().runInBackground(new AzureTask(project, name, canBeCancelled, () -> {
-            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-            if (isIndeterminate) {
-                indicator.setIndeterminate(true);
-            }
-            if (indicatorText != null) {
-                indicator.setText(indicatorText);
-            }
-            runnable.run();
-        })));
-    }
-
-    @NotNull
-    @Override
-    public CancellableTask.CancellableTaskHandle runInBackground(@NotNull ProjectDescriptor projectDescriptor,
-                                                                 @NotNull final String name,
-                                                                 @Nullable final String indicatorText,
-                                                                 @NotNull final CancellableTask cancellableTask)
-        throws AzureCmdException {
-        final CancellableTaskHandleImpl handle = new CancellableTaskHandleImpl();
-        final Project project = findOpenProject(projectDescriptor);
-
-        // background tasks via ProgressManager can be scheduled only on the
-        // dispatch thread
-        AzureTaskManager.getInstance().runLater(() -> {
-            final Task.Backgroundable task = getCancellableBackgroundTask(project, name, indicatorText, handle, cancellableTask);
-            ProgressManager.getInstance().run(task);
-        });
-        return handle;
     }
 
     @Nullable
@@ -374,69 +331,6 @@ public class IDEHelperImpl implements IDEHelper {
         }
 
         return artifact;
-    }
-
-    @org.jetbrains.annotations.NotNull
-    private static Task.Backgroundable getCancellableBackgroundTask(final Project project,
-                                                                    @NotNull final String name,
-                                                                    @Nullable final String indicatorText,
-                                                                    final CancellableTaskHandleImpl handle,
-                                                                    @NotNull final CancellableTask cancellableTask) {
-        return new Task.Backgroundable(project,
-                                       name, true) {
-            private final Semaphore lock = new Semaphore(0);
-
-            @Override
-            public void run(@org.jetbrains.annotations.NotNull ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
-
-                handle.setProgressIndicator(indicator);
-
-                if (indicatorText != null) {
-                    indicator.setText(indicatorText);
-                }
-
-                ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            cancellableTask.run(handle);
-                        } catch (Throwable t) {
-                            handle.setException(t);
-                        } finally {
-                            lock.release();
-                        }
-                    }
-                });
-
-                try {
-                    while (!lock.tryAcquire(1, TimeUnit.SECONDS)) {
-                        if (handle.isCancelled()) {
-                            ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    cancellableTask.onCancel();
-                                }
-                            });
-
-                            return;
-                        }
-                    }
-
-                    ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (handle.getException() == null) {
-                                cancellableTask.onSuccess();
-                            } else {
-                                cancellableTask.onError(handle.getException());
-                            }
-                        }
-                    });
-                } catch (InterruptedException ignored) {
-                }
-            }
-        };
     }
 
     public void openLinkInBrowser(@NotNull String url) {

@@ -22,29 +22,27 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
-public class AzureTaskManager {
+public abstract class AzureTaskManager {
+
+    private static AzureTaskManager instance;
+
+    public synchronized static void register(AzureTaskManager manager) {
+        if (AzureTaskManager.instance == null) {
+            AzureTaskManager.instance = manager;
+        }
+    }
 
     public static AzureTaskManager getInstance() {
-        return null;
+        return AzureTaskManager.instance;
     }
 
-    public void runLater(AzureTask task) {
+    public abstract void runLater(AzureTask task);
 
-    }
+    public abstract void runLater(Runnable runnable);
 
-    public void runLater(Runnable runnable) {
+    public abstract void runAndWait(Runnable runnable);
 
-    }
+    public abstract void runInBackground(AzureTask task);
 
-    public void runAndWait(Runnable runnable) {
-
-    }
-
-    public void runInBackground(AzureTask task) {
-
-    }
-
-    public void runInModal(AzureTask task) {
-
-    }
+    public abstract void runInModal(AzureTask task);
 }
