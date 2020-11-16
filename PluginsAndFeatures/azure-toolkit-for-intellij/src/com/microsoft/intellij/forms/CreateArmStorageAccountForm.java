@@ -24,7 +24,6 @@ package com.microsoft.intellij.forms;
 
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -34,6 +33,8 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -50,7 +51,6 @@ import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import com.microsoft.tooling.msservices.model.ReplicationTypes;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -235,14 +235,12 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
         // creating from Azure Explorer directly
         setSubscription((SubscriptionDetail)subscriptionComboBox.getSelectedItem());
         if (subscription == null) {
-            ProgressManager.getInstance().run(new Task.Backgroundable(project,
-                    "Creating storage account " + nameTextField.getText() + "...", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator indicator) {
-                    indicator.setIndeterminate(true);
-                    createStorageAccount();
-                }
-            });
+            final String title = "Creating storage account " + nameTextField.getText() + "...";
+            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+                final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+                progressIndicator.setIndeterminate(true);
+                createStorageAccount();
+            }));
             sendTelemetry(OK_EXIT_CODE);
             close(DialogWrapper.OK_EXIT_CODE, true);
         } else { //creating from 'create vm'
@@ -263,24 +261,6 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
             sendTelemetry(OK_EXIT_CODE);
             close(DialogWrapper.OK_EXIT_CODE, true);
         }
-//        ProgressManager.getInstance().run(
-//            new Task.Modal(project, "Creating storage account", true) {
-//                @Override
-//                public void run(@NotNull ProgressIndicator indicator) {
-//                    indicator.setIndeterminate(true);
-//                    boolean success = createStorageAccount();
-//                    if (success) {
-//                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                close(DialogWrapper.OK_EXIT_CODE, true);
-//                            }
-//                        }, ModalityState.any());
-//
-//                    }
-//                }
-//            }
-//        );
     }
 
     @Override
@@ -465,17 +445,14 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     public void loadRegions() {
         Map<SubscriptionDetail, List<Location>> subscription2Location = AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null || subscription2Location.get(subscriptionComboBox.getSelectedItem()) == null) {
-            ProgressManager.getInstance().run(new Task.Modal(project,"Loading Available Locations...", false) {
-                @Override
-                public void run(ProgressIndicator indicator) {
-                    try {
-                        AzureModelController.updateSubscriptionMaps(null);
-                        fillRegions();
-                    } catch (Exception ex) {
-                        AzurePlugin.log("Error loading locations", ex);
-                    }
+            AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+                try {
+                    AzureModelController.updateSubscriptionMaps(null);
+                    fillRegions();
+                } catch (Exception ex) {
+                    AzurePlugin.log("Error loading locations", ex);
                 }
-            });
+            }));
         } else {
             fillRegions();
         }

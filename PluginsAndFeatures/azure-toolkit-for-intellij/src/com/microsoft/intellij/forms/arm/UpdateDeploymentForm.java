@@ -22,14 +22,7 @@
 
 package com.microsoft.intellij.forms.arm;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.BROWSE_TEMPLATE_SAMPLES;
-import static com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_FAIL;
-import static com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_SUCCESS;
-
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.MessageType;
@@ -40,6 +33,8 @@ import com.intellij.ui.HyperlinkLabel;
 import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
@@ -47,14 +42,17 @@ import com.microsoft.azuretools.utils.AzureModel;
 import com.microsoft.intellij.helpers.arm.DeploymentUtils;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import java.io.FileReader;
-import java.util.Map;
-import javax.swing.*;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.io.FileReader;
+import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.BROWSE_TEMPLATE_SAMPLES;
+import static com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_FAIL;
+import static com.microsoft.intellij.serviceexplorer.azure.arm.UpdateDeploymentAction.NOTIFY_UPDATE_DEPLOYMENT_SUCCESS;
 
 public class UpdateDeploymentForm extends DeploymentBaseForm {
 
@@ -90,29 +88,25 @@ public class UpdateDeploymentForm extends DeploymentBaseForm {
     @Override
     protected void doOKAction() {
         String deploymentName = deploymentNode.getDeployment().name();
-        ProgressManager.getInstance().run(new Task.Backgroundable(project,
-            "Update your azure resource " + deploymentName + "...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.UPDATE_DEPLOYMENT, (operation -> {
-                    Deployment.Update update = deploymentNode.getDeployment().update();
+        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Update your azure resource " + deploymentName + "...", false, () -> {
+            EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.UPDATE_DEPLOYMENT, (operation -> {
+                Deployment.Update update = deploymentNode.getDeployment().update();
 
-                    String templatePath = templateTextField.getText();
-                    update = update.withTemplate(IOUtils.toString(new FileReader(templatePath)));
+                String templatePath = templateTextField.getText();
+                update = update.withTemplate(IOUtils.toString(new FileReader(templatePath)));
 
-                    String parametersPath = parametersTextField.getText();
-                    if (!StringUtils.isEmpty(parametersPath)) {
-                        String parameters = IOUtils.toString(new FileReader(parametersPath));
-                        update = update.withParameters(DeploymentUtils.parseParameters(parameters));
-                    }
-                    update.withMode(DeploymentMode.INCREMENTAL).apply();
-                    UIUtils.showNotification(statusBar, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
-                }), (e) -> {
-                    UIUtils.showNotification(statusBar, NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + e.getMessage(),
-                            MessageType.ERROR);
-                });
-            }
-        });
+                String parametersPath = parametersTextField.getText();
+                if (!StringUtils.isEmpty(parametersPath)) {
+                    String parameters = IOUtils.toString(new FileReader(parametersPath));
+                    update = update.withParameters(DeploymentUtils.parseParameters(parameters));
+                }
+                update.withMode(DeploymentMode.INCREMENTAL).apply();
+                UIUtils.showNotification(statusBar, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
+            }), (e) -> {
+                UIUtils.showNotification(statusBar, NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + e.getMessage(),
+                                         MessageType.ERROR);
+            });
+        }));
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 

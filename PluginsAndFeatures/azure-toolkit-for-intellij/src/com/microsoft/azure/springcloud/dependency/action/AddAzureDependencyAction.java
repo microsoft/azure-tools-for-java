@@ -43,6 +43,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.newvfs.RefreshQueue;
 import com.intellij.psi.PsiFile;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -50,7 +52,6 @@ import com.microsoft.intellij.maven.DependencyArtifact;
 import com.microsoft.intellij.maven.SpringCloudDependencyManager;
 import com.microsoft.intellij.util.MavenUtils;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +63,10 @@ import org.jetbrains.idea.maven.utils.MavenProcessCanceledException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class AddAzureDependencyAction extends AzureAnAction {
@@ -85,78 +89,73 @@ public class AddAzureDependencyAction extends AzureAnAction {
             return true;
         }
 
-        DefaultLoader.getIdeHelper().runInBackground(project,
-            "Update Azure Spring Cloud dependencies",
-            false,
-            true,
-            "Update Azure Spring Cloud dependencies",
-            () -> {
-                ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
-                progressIndicator.setText("Syncing maven project " + project.getName());
-                final SettableFuture<Boolean> isDirty = SettableFuture.create();
+        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Update Azure Spring Cloud dependencies", false, () -> {
+            ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setText("Syncing maven project " + project.getName());
+            final SettableFuture<Boolean> isDirty = SettableFuture.create();
 
-                ApplicationManager.getApplication().invokeAndWait(() -> {
-                    ProjectNotificationAware notificationAware = ProjectNotificationAware.getInstance(project);
-                    isDirty.set(notificationAware.isNotificationVisible());
-                    if (notificationAware.isNotificationVisible()) {
-                        ExternalSystemProjectTracker projectTracker = ExternalSystemProjectTracker.getInstance(project);
-                        projectTracker.scheduleProjectRefresh();
-                    }
-                });
-                try {
-                    if (isDirty.get().booleanValue()) {
-                        projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject)).get();
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    PluginUtil.showErrorNotification("Error",
-                            "Failed to update project due to error: "
-                                    + e.getMessage());
-                    return;
-                }
-
-                try {
-                    progressIndicator.setText("Check existing dependencies");
-                    final String evaluateEffectivePom = MavenUtils.evaluateEffectivePom(project, mavenProject);
-                    ProgressManager.checkCanceled();
-                    if (StringUtils.isEmpty(evaluateEffectivePom)) {
-                        PluginUtil.showErrorNotificationProject(project, "Error", "Failed to evaluate effective pom.");
-                        return;
-                    }
-                    final String springBootVer = getMavenLibraryVersion(mavenProject, SPRING_BOOT_GROUP_ID, "spring-boot-autoconfigure");
-                    if (StringUtils.isEmpty(springBootVer)) {
-                        throw new AzureExecutionException(String.format("Module %s is not a spring-boot application.", module.getName()));
-                    }
-                    progressIndicator.setText("Get latest versions ...");
-                    SpringCloudDependencyManager dependencyManager = new SpringCloudDependencyManager(evaluateEffectivePom);
-                    Map<String, DependencyArtifact> versionMaps = dependencyManager.getDependencyVersions();
-                    Map<String, DependencyArtifact> managerDependencyVersionsMaps = dependencyManager.getDependencyManagementVersions();
-
-                    // given the spring-cloud-commons is greater or equal to 2.2.5.RELEASE, we should not add spring-cloud-starter-azure-spring-cloud-client
-                    // because the code is already merged into spring repo: https://github.com/spring-cloud/spring-cloud-commons/pull/803
-                    boolean noAzureSpringCloudClientDependency = shouldNotAddAzureSpringCloudClientDependency(versionMaps) ||
-                            shouldNotAddAzureSpringCloudClientDependency(managerDependencyVersionsMaps);
-
-                    ProgressManager.checkCanceled();
-                    final List<DependencyArtifact> versionChanges = calculateVersionChanges(springBootVer, noAzureSpringCloudClientDependency, versionMaps);
-                    if (versionChanges.isEmpty()) {
-                        PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
-                                "No updates are needed.");
-                        return;
-                    }
-                    progressIndicator.setText("Applying versions ...");
-                    final File pomFile = new File(mavenProject.getFile().getCanonicalPath());
-                    ProgressManager.checkCanceled();
-                    if (applyVersionChanges(dependencyManager, pomFile, springBootVer, managerDependencyVersionsMaps, versionChanges)) {
-                        noticeUserVersionChanges(project, pomFile, versionChanges);
-                    } else {
-                        PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.", "No updates are needed.");
-                    }
-                } catch (DocumentException | IOException | AzureExecutionException | MavenProcessCanceledException e) {
-                    PluginUtil.showErrorNotification("Error",
-                            "Failed to update Azure Spring Cloud dependencies due to error: "
-                                    + e.getMessage());
+            ApplicationManager.getApplication().invokeAndWait(() -> {
+                ProjectNotificationAware notificationAware = ProjectNotificationAware.getInstance(project);
+                isDirty.set(notificationAware.isNotificationVisible());
+                if (notificationAware.isNotificationVisible()) {
+                    ExternalSystemProjectTracker projectTracker = ExternalSystemProjectTracker.getInstance(project);
+                    projectTracker.scheduleProjectRefresh();
                 }
             });
+            try {
+                if (isDirty.get().booleanValue()) {
+                    projectsManager.forceUpdateProjects(Collections.singletonList(mavenProject)).get();
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                PluginUtil.showErrorNotification("Error",
+                                                 "Failed to update project due to error: "
+                                                     + e.getMessage());
+                return;
+            }
+
+            try {
+                progressIndicator.setText("Check existing dependencies");
+                final String evaluateEffectivePom = MavenUtils.evaluateEffectivePom(project, mavenProject);
+                ProgressManager.checkCanceled();
+                if (StringUtils.isEmpty(evaluateEffectivePom)) {
+                    PluginUtil.showErrorNotificationProject(project, "Error", "Failed to evaluate effective pom.");
+                    return;
+                }
+                final String springBootVer = getMavenLibraryVersion(mavenProject, SPRING_BOOT_GROUP_ID, "spring-boot-autoconfigure");
+                if (StringUtils.isEmpty(springBootVer)) {
+                    throw new AzureExecutionException(String.format("Module %s is not a spring-boot application.", module.getName()));
+                }
+                progressIndicator.setText("Get latest versions ...");
+                SpringCloudDependencyManager dependencyManager = new SpringCloudDependencyManager(evaluateEffectivePom);
+                Map<String, DependencyArtifact> versionMaps = dependencyManager.getDependencyVersions();
+                Map<String, DependencyArtifact> managerDependencyVersionsMaps = dependencyManager.getDependencyManagementVersions();
+
+                // given the spring-cloud-commons is greater or equal to 2.2.5.RELEASE, we should not add spring-cloud-starter-azure-spring-cloud-client
+                // because the code is already merged into spring repo: https://github.com/spring-cloud/spring-cloud-commons/pull/803
+                boolean noAzureSpringCloudClientDependency = shouldNotAddAzureSpringCloudClientDependency(versionMaps) ||
+                    shouldNotAddAzureSpringCloudClientDependency(managerDependencyVersionsMaps);
+
+                ProgressManager.checkCanceled();
+                final List<DependencyArtifact> versionChanges = calculateVersionChanges(springBootVer, noAzureSpringCloudClientDependency, versionMaps);
+                if (versionChanges.isEmpty()) {
+                    PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.",
+                                                           "No updates are needed.");
+                    return;
+                }
+                progressIndicator.setText("Applying versions ...");
+                final File pomFile = new File(mavenProject.getFile().getCanonicalPath());
+                ProgressManager.checkCanceled();
+                if (applyVersionChanges(dependencyManager, pomFile, springBootVer, managerDependencyVersionsMaps, versionChanges)) {
+                    noticeUserVersionChanges(project, pomFile, versionChanges);
+                } else {
+                    PluginUtil.showInfoNotificationProject(project, "Your project is update-to-date.", "No updates are needed.");
+                }
+            } catch (DocumentException | IOException | AzureExecutionException | MavenProcessCanceledException e) {
+                PluginUtil.showErrorNotification("Error",
+                                                 "Failed to update Azure Spring Cloud dependencies due to error: "
+                                                     + e.getMessage());
+            }
+        }));
 
         return false;
     }

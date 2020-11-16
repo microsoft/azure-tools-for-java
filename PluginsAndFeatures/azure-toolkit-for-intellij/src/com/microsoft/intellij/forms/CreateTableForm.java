@@ -22,16 +22,14 @@
 
 package com.microsoft.intellij.forms;
 
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -92,41 +90,7 @@ public class CreateTableForm extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
-
         final String name = nameTextField.getText();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating table...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                /*try {
-                    progressIndicator.setIndeterminate(true);
-
-                    for (Table table : StorageClientSDKManager.getManager().getTables(storageAccount)) {
-                        if (table.getName().equals(name)) {
-                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    JOptionPane.showMessageDialog(null, "A table with the specified name already exists.", "Azure Explorer", JOptionPane.ERROR_MESSAGE);
-                                }
-                            });
-
-                            return;
-                        }
-                    }
-
-                    Table table = new Table(name, "");
-                    StorageClientSDKManager.getManager().createTable(storageAccount, table);
-
-                    if (onCreate != null) {
-                        DefaultLoader.getIdeHelper().invokeLater(onCreate);
-                    }
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to create table." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
-            }
-        });
-
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 

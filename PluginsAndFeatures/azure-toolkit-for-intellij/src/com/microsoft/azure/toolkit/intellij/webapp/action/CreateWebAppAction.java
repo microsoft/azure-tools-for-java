@@ -25,12 +25,12 @@ package com.microsoft.azure.toolkit.intellij.webapp.action;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -81,46 +81,40 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
-        final Task.Modal task = new Task.Modal(null, message("webapp.create.task.title"), true) {
-            @Override
-            public void run(ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
-                try {
-                    final WebApp webapp = webappService.createWebApp(config);
-                    callback.run();
-                    refreshAzureExplorer();
-                    final Path application = config.getApplication();
-                    if (Objects.nonNull(application) && application.toFile().exists()) {
-                        DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
-                    }
-                } catch (final Exception ex) {
-                    // TODO: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError(message("webapp.create.error.title") + ex.getMessage(), message("webapp.create.error.createFailed"));
+        final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), true, () -> {
+            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+            try {
+                final WebApp webapp = webappService.createWebApp(config);
+                callback.run();
+                refreshAzureExplorer();
+                final Path application = config.getApplication();
+                if (Objects.nonNull(application) && application.toFile().exists()) {
+                    DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
                 }
+            } catch (final Exception ex) {
+                // TODO: @wangmi show error with balloon notification instead of dialog
+                DefaultLoader.getUIHelper().showError(message("webapp.create.error.title") + ex.getMessage(), message("webapp.create.error.createFailed"));
             }
-        };
-        ProgressManager.getInstance().run(task);
+        });
+        AzureTaskRunner.getInstance().runInModal(task);
     }
 
     private void deploy(final WebApp webapp, final Path application, final Project project) {
-        final Task.Modal task = new Task.Modal(null, message("webapp.deploy.task.title"), true) {
-            @Override
-            public void run(ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
-                try {
-                    final RunProcessHandler processHandler = new RunProcessHandler();
-                    processHandler.addDefaultListener();
-                    final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-                    processHandler.startNotify();
-                    consoleView.attachToProcess(processHandler);
-                    WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
-                } catch (final Exception ex) {
-                    // TODO: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError(message("webapp.deploy.error.title") + ex.getMessage(), message("webapp.deploy.error.deployFailed"));
-                }
+        final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), true, () -> {
+            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+            try {
+                final RunProcessHandler processHandler = new RunProcessHandler();
+                processHandler.addDefaultListener();
+                final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+                processHandler.startNotify();
+                consoleView.attachToProcess(processHandler);
+                WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
+            } catch (final Exception ex) {
+                // TODO: @wangmi show error with balloon notification instead of dialog
+                DefaultLoader.getUIHelper().showError(message("webapp.deploy.error.title") + ex.getMessage(), message("webapp.deploy.error.deployFailed"));
             }
-        };
-        ProgressManager.getInstance().run(task);
+        });
+        AzureTaskRunner.getInstance().runInModal(task);
     }
 
     private void refreshAzureExplorer() {

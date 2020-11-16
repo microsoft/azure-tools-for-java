@@ -26,6 +26,8 @@ import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.microsoft.applicationinsights.internal.util.ThreadPoolUtils;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.intellij.helpers.ConsoleViewStatus;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.NotNull;
@@ -108,7 +110,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             }
             setStatus(ConsoleViewStatus.STOPPING);
         }
-        DefaultLoader.getIdeHelper().runInBackground(getProject(), "Closing Streaming Log", false, true, "Closing Streaming Log", () -> {
+        AzureTaskRunner.getInstance().runInBackground(new AzureTask(getProject(), "Closing Streaming Log", false, () -> {
             try {
                 if (logInputStream != null) {
                     try {
@@ -123,7 +125,7 @@ public class SpringCloudStreamingLogConsoleView extends ConsoleViewImpl {
             } finally {
                 setStatus(ConsoleViewStatus.STOPPED);
             }
-        });
+        }));
     }
 
     @Override

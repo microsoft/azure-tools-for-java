@@ -20,27 +20,27 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.util;
+package com.microsoft.azure.toolkit.lib.common.task;
 
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.project.Project;
-import com.microsoft.azuretools.utils.AzureModelController;
-import com.microsoft.intellij.AzurePlugin;
+public class AzureTaskRunner {
 
-public class FormUtils {
+    public static AzureTaskRunner getInstance() {
+        return null;
+    }
 
-    public static void loadLocationsAndResourceGrps(Project project) {
-        ProgressManager.getInstance().run(new Task.Modal(project,"Loading Available Locations...", false) {
-            @Override
-            public void run(ProgressIndicator indicator) {
-                try {
-                    AzureModelController.updateSubscriptionMaps(null);
-                } catch (Exception ex) {
-                    AzurePlugin.log("Error loading locations", ex);
-                }
-            }
-        });
+    public void runLater(AzureTask task) {
+
+    }
+
+    public void runLater(Runnable runnable) {
+
+    }
+
+    public void runInBackground(AzureTask task) {
+
+    }
+
+    public void runInModal(AzureTask task) {
+
     }
 }

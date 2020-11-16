@@ -26,7 +26,6 @@ package com.microsoft.intellij.runner.webapp.webappconfig.slimui.creation;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.Comparing;
@@ -35,6 +34,8 @@ import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.JdkModel;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
@@ -447,29 +448,27 @@ public class WebAppCreationDialog extends AzureDialogWrapper implements WebAppCr
 
     private void createWebApp() {
         updateConfiguration();
-        ProgressManager.getInstance().run(new Task.Modal(null, "Creating New WebApp...", true) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
-                EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, properties, null, (operation) -> {
-                    progressIndicator.setIndeterminate(true);
-                    EventUtil.logEvent(EventType.info, operation, properties);
-                    result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        sendTelemetry(true, null);
-                        if (AzureUIRefreshCore.listeners != null) {
-                            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
-                                null));
-                        }
-                    });
-                    DefaultLoader.getIdeHelper().invokeLater(() -> WebAppCreationDialog.super.doOKAction());
-                }, (ex) -> {
-                        DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
-                                                              "Create WebApp Failed");
-                        sendTelemetry(false, ex.getMessage());
-                    });
-            }
-        });
+        AzureTaskRunner.getInstance().runInModal(new AzureTask(null, "Creating New WebApp...", true, () -> {
+            Map<String, String> properties = webAppConfiguration.getModel().getTelemetryProperties(null);
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            EventUtil.executeWithLog(WEBAPP, CREATE_WEBAPP, properties, null, (operation) -> {
+                progressIndicator.setIndeterminate(true);
+                EventUtil.logEvent(EventType.info, operation, properties);
+                result = AzureWebAppMvpModel.getInstance().createWebApp(webAppConfiguration.getModel());
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    sendTelemetry(true, null);
+                    if (AzureUIRefreshCore.listeners != null) {
+                        AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,
+                                                                           null));
+                    }
+                });
+                DefaultLoader.getIdeHelper().invokeLater(() -> WebAppCreationDialog.super.doOKAction());
+            }, (ex) -> {
+                DefaultLoader.getUIHelper().showError("Create WebApp Failed : " + ex.getMessage(),
+                                                      "Create WebApp Failed");
+                sendTelemetry(false, ex.getMessage());
+            });
+        }));
     }
 
     private void sendTelemetry(boolean success, @Nullable String errorMsg) {

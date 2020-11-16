@@ -40,6 +40,8 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.*;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
@@ -359,14 +361,13 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                                                 new String[]{"Yes", "No"},
                                                                 null)) {
             freezeUI();
-            DefaultLoader.getIdeHelper().runInBackground(null, actionName, false, true, String.format("%s app '%s'", actionName, this.appName),
-                () -> {
-                    EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
-                        action.accept(changes);
-                    });
-                    refreshData();
+            final String title = String.format("%s app '%s'", actionName, this.appName);
+            AzureTaskRunner.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+                EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
+                    action.accept(changes);
                 });
-
+                refreshData();
+            }));
         }
     }
 

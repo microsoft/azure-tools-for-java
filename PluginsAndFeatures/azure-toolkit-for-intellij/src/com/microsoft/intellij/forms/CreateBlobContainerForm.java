@@ -23,12 +23,12 @@
 package com.microsoft.intellij.forms;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
@@ -36,12 +36,11 @@ import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager;
 import com.microsoft.tooling.msservices.model.storage.BlobContainer;
-import java.util.List;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Calendar;
+import java.util.List;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_BLOB_CONTAINER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.STORAGE;
@@ -92,37 +91,34 @@ public class CreateBlobContainerForm extends AzureDialogWrapper {
     protected void doOKAction() {
         final String name = nameTextField.getText();
         //Field outerFiele = onCreate.getClass().getDeclaredField("this$0");
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating blob container...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
-                    progressIndicator.setIndeterminate(true);
-                    List<BlobContainer> blobs = StorageClientSDKManager.getManager()
-                        .getBlobContainers(connectionString);
-                    for (BlobContainer blobContainer : blobs) {
-                        if (blobContainer.getName().equals(name)) {
-                            ApplicationManager.getApplication().invokeLater(() -> {
-                                DefaultLoader.getUIHelper().showError(
-                                        "A blob container with the specified name already exists.", "Azure Explorer");
-                            });
-                            return;
-                        }
+        AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Creating blob container...", false, () -> {
+            EventUtil.executeWithLog(STORAGE, CREATE_BLOB_CONTAINER, (operation) -> {
+                ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+                List<BlobContainer> blobs = StorageClientSDKManager.getManager()
+                                                                   .getBlobContainers(connectionString);
+                for (BlobContainer blobContainer : blobs) {
+                    if (blobContainer.getName().equals(name)) {
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            DefaultLoader.getUIHelper().showError(
+                                "A blob container with the specified name already exists.", "Azure Explorer");
+                        });
+                        return;
                     }
+                }
 
-                    BlobContainer blobContainer = new BlobContainer(name,
-                        ""/*storageAccount.getBlobsUri() + name*/, "", Calendar.getInstance(), "");
-                    StorageClientSDKManager.getManager().createBlobContainer(connectionString, blobContainer);
+                BlobContainer blobContainer = new BlobContainer(name,
+                                                                ""/*storageAccount.getBlobsUri() + name*/, "", Calendar.getInstance(), "");
+                StorageClientSDKManager.getManager().createBlobContainer(connectionString, blobContainer);
 
-                    if (onCreate != null) {
-                        ApplicationManager.getApplication().invokeLater(onCreate);
-                    }
-                }, (e) -> {
-                        String msg = "An error occurred while attempting to create blob container."
-                                + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                        PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                    });
-            }
-        });
+                if (onCreate != null) {
+                    ApplicationManager.getApplication().invokeLater(onCreate);
+                }
+            }, (e) -> {
+                String msg = "An error occurred while attempting to create blob container."
+                    + "\n" + String.format(message("webappExpMsg"), e.getMessage());
+                PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
+            });
+        }));
 
         sendTelemetry(OK_EXIT_CODE);
         this.close(DialogWrapper.OK_EXIT_CODE, true);

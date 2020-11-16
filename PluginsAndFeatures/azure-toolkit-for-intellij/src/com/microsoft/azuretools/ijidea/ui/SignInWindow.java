@@ -29,7 +29,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -37,6 +36,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.*;
@@ -296,28 +297,24 @@ public class SignInWindow extends AzureDialogWrapper {
 
     private void doLogin(Callable loginCallable, Map<String, String> properties) {
         Operation operation = TelemetryManager.createOperation(ACCOUNT, SIGNIN);
-        ProgressManager.getInstance().run(
-                new Task.Modal(project, "Sign In Progress", false) {
-                    @Override
-                    public void run(ProgressIndicator indicator) {
-                        try {
-                            EventUtil.logEvent(EventType.info, operation, properties);
-                            operation.start();
-                            loginCallable.call();
-                        } catch (AuthCanceledException ex) {
-                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                            System.out.println(ex.getMessage());
-                        } catch (Exception ex) {
-                            EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                            ApplicationManager.getApplication().invokeLater(
-                                () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
-                        } finally {
-                            EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
-                                    AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
-                            operation.complete();
-                        }
-                    }
-                });
+        AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Sign In Progress", false, () -> {
+            try {
+                EventUtil.logEvent(EventType.info, operation, properties);
+                operation.start();
+                loginCallable.call();
+            } catch (AuthCanceledException ex) {
+                EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
+                System.out.println(ex.getMessage());
+            } catch (Exception ex) {
+                EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
+                ApplicationManager.getApplication().invokeLater(
+                    () -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+            } finally {
+                EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
+                    AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));
+                operation.complete();
+            }
+        }));
     }
 
     private void doSignOut() {
@@ -348,26 +345,24 @@ public class SignInWindow extends AzureDialogWrapper {
             AccessTokenAzureManager accessTokenAzureManager = new AccessTokenAzureManager(dcAuthManager);
             SubscriptionManager subscriptionManager = accessTokenAzureManager.getSubscriptionManager();
 
-            ProgressManager.getInstance().run(new Task.Modal(project, "Load Subscriptions Progress", true) {
-                @Override
-                public void run(ProgressIndicator progressIndicator) {
-                    progressIndicator.setText("Loading subscriptions...");
-                    try {
-                        progressIndicator.setIndeterminate(true);
-                        subscriptionManager.getSubscriptionDetails();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        //LOGGER.error("doCreateServicePrincipal::Task.Modal", ex);
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error");
-                            }
-                        });
+            AzureTaskRunner.getInstance().runInModal(new AzureTask(project, "Load Subscriptions Progress", true, () -> {
+                final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+                progressIndicator.setText("Loading subscriptions...");
+                try {
+                    progressIndicator.setIndeterminate(true);
+                    subscriptionManager.getSubscriptionDetails();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    //LOGGER.error("doCreateServicePrincipal::Task.Modal", ex);
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            ErrorWindow.show(project, ex.getMessage(), "Load Subscription Error");
+                        }
+                    });
 
-                    }
                 }
-            });
+            }));
 
             SrvPriSettingsDialog d = SrvPriSettingsDialog.go(subscriptionManager.getSubscriptionDetails(), project);
             List<SubscriptionDetail> subscriptionDetailsUpdated;

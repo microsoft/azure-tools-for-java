@@ -31,9 +31,10 @@ import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.TableEntityForm;
 import com.microsoft.intellij.forms.TablesQueryDesigner;
@@ -259,21 +260,6 @@ public class TableFileEditor implements FileEditor {
     }
 
     public void fillGrid() {
-        final String queryText = queryTextField.getText();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading entities", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-                /*try {
-                    tableEntities = StorageClientSDKManager.getManager().getTableEntities(storageAccount, table, queryText);
-                    refreshGrid();
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to query entities." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
-            }
-        });
     }
 
     private void refreshGrid() {
@@ -329,35 +315,6 @@ public class TableFileEditor implements FileEditor {
     }
 
     private void deleteSelection() {
-        final TableEntity[] selectedEntities = getSelectedEntities();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting entities", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(false);
-
-                /*try {
-                    if (selectedEntities != null) {
-                        for (int i = 0; i < selectedEntities.length; i++) {
-                            progressIndicator.setFraction((double) i / selectedEntities.length);
-
-                            StorageClientSDKManager.getManager().deleteTableEntity(storageAccount, selectedEntities[i]);
-                        }
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                tableEntities.removeAll(Arrays.asList(selectedEntities));
-                                refreshGrid();
-                            }
-                        });
-                    }
-                } catch (AzureCmdException ex) {
-                    String msg = "An error occurred while attempting to delete entities." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
-                }*/
-            }
-        });
     }
 
     private TableEntity[] getSelectedEntities() {

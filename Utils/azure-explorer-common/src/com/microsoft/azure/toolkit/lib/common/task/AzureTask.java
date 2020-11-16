@@ -20,37 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.ijidea.utility;
+package com.microsoft.azure.toolkit.lib.common.task;
 
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.project.Project;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
-import com.microsoft.azuretools.utils.IProgressTaskImpl;
-import com.microsoft.azuretools.utils.IWorker;
+import lombok.Data;
 
-/**
- * Created by vlashch on 1/23/17.
- */
-public class ProgressTaskModal implements IProgressTaskImpl {
+@Data
+public class AzureTask {
+    private final Runnable runnable;
 
-    private Project project;
+    private Object project;
+    private boolean cancellable;
+    private String title;
 
-    public ProgressTaskModal(Project project) {
-        this.project = project;
+    public AzureTask(Runnable runnable) {
+        this.runnable = runnable;
     }
 
-    @Override
-    public void doWork(IWorker worker) {
-        AzureTaskRunner.getInstance().runInModal(new AzureTask(project, worker.getName(), true, () -> {
-            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
-            progressIndicator.setIndeterminate(true);
-            try {
-                worker.work(new UpdateProgressIndicator(progressIndicator));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }));
+    public AzureTask(Object project, String title, boolean cancellable, Runnable runnable) {
+        this.project = project;
+        this.title = title;
+        this.cancellable = cancellable;
+        this.runnable = runnable;
     }
 }

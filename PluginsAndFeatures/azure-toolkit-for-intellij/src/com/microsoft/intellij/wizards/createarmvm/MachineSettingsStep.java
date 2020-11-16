@@ -28,7 +28,6 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.wizard.WizardNavigationState;
@@ -39,6 +38,8 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.KnownLinuxVirtualMachineImage;
 import com.microsoft.azure.management.compute.OperatingSystemTypes;
 import com.microsoft.azure.management.compute.VirtualMachineSize;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskRunner;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -46,7 +47,6 @@ import com.microsoft.intellij.ui.components.AzureWizardStep;
 import com.microsoft.intellij.wizards.VMWizardModel;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jdesktop.swingx.JXHyperlink;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -58,7 +58,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
 
 
@@ -212,44 +211,35 @@ public class MachineSettingsStep extends AzureWizardStep<VMWizardModel> implemen
         if (vmSizeComboBox.getItemCount() == 0) {
             vmSizeComboBox.setModel(new DefaultComboBoxModel(new String[]{"<Loading...>"}));
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading VM sizes...", false) {
-                @Override
-                public void run(@NotNull ProgressIndicator progressIndicator) {
-                    progressIndicator.setIndeterminate(true);
+            AzureTaskRunner.getInstance().runInBackground(new AzureTask(project, "Loading VM sizes...", false, () -> {
+                final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+                progressIndicator.setIndeterminate(true);
 
-                    PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes =
-                            azure.virtualMachines().sizes().listByRegion(model.getRegion().name());
-                    Collections.sort(sizes, new Comparator<VirtualMachineSize>() {
-                        @Override
-                        public int compare(VirtualMachineSize t0, VirtualMachineSize t1) {
-                            if (t0.name().contains("Basic") && t1.name().contains("Basic")) {
-                                return t0.name().compareTo(t1.name());
-                            } else if (t0.name().contains("Basic")) {
-                                return -1;
-                            } else if (t1.name().contains("Basic")) {
-                                return 1;
-                            }
+                PagedList<com.microsoft.azure.management.compute.VirtualMachineSize> sizes =
+                    azure.virtualMachines().sizes().listByRegion(model.getRegion().name());
+                sizes.sort((t0, t1) -> {
+                    if (t0.name().contains("Basic") && t1.name().contains("Basic")) {
+                        return t0.name().compareTo(t1.name());
+                    } else if (t0.name().contains("Basic")) {
+                        return -1;
+                    } else if (t1.name().contains("Basic")) {
+                        return 1;
+                    }
 
-                            int coreCompare = Integer.valueOf(t0.numberOfCores()).compareTo(t1.numberOfCores());
+                    int coreCompare = Integer.valueOf(t0.numberOfCores()).compareTo(t1.numberOfCores());
 
-                            if (coreCompare == 0) {
-                                return Integer.valueOf(t0.memoryInMB()).compareTo(t1.memoryInMB());
-                            } else {
-                                return coreCompare;
-                            }
-                        }
-                    });
+                    if (coreCompare == 0) {
+                        return Integer.valueOf(t0.memoryInMB()).compareTo(t1.memoryInMB());
+                    } else {
+                        return coreCompare;
+                    }
+                });
 
-                    ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                        @Override
-                        public void run() {
-                            vmSizeComboBox.setModel(new DefaultComboBoxModel<>(sizes.stream().map(VirtualMachineSize::name).toArray(String[]::new)));
-
-                            selectDefaultSize();
-                        }
-                    }, ModalityState.any());
-                }
-            });
+                ApplicationManager.getApplication().invokeAndWait(() -> {
+                    vmSizeComboBox.setModel(new DefaultComboBoxModel<>(sizes.stream().map(VirtualMachineSize::name).toArray(String[]::new)));
+                    selectDefaultSize();
+                }, ModalityState.any());
+            }));
         } else {
             selectDefaultSize();
         }
