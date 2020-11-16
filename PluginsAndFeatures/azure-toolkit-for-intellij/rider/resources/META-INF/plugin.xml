@@ -25,9 +25,14 @@
         <p>[3.40.0-2020.3]</p>
         <ul>
           <li>Compatibility with Rider 2020.3 EAP</li>
-          <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a></li>)</li>
-          <li>Reorganize and improve context actions in Azure Explorer (<a href="https://youtrack.jetbrains.com/issue/RIDER-48559">RIDER-48559</a>)s</li>
-          <li>Show Queues node in Azure Explorer for Storage emulator/Azurite (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/96">#96</a></li>)</li>
+          <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a>)</li>
+          <li>Reorganize and improve context actions in Azure Explorer (<a href="https://youtrack.jetbrains.com/issue/RIDER-48559">RIDER-48559</a>)</li>
+          <li>Show Queues node in Azure Explorer for Storage emulator/Azurite (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/96">#96</a>)</li>
+          <li>Initial support for Azurite 3.9 alpha table storage (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/387">#387</a>)</li>
+        </ul>
+        <h4>Fixed bugs:</h4>
+        <ul>
+          <li>Azurite service should be stopped after closing the IDE <a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/391">#391</a></li>
         </ul>
         <p>[3.40.0-2020.2]</p>
         <ul>

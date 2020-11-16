@@ -199,6 +199,30 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
                                     .component.apply { queuePortLabel.labelFor = this }
                         }
                     }
+
+                    row {
+                        val tableHostLabel = JLabel(RiderAzureBundle.message("settings.azurite.row.table.host"))
+                        tableHostLabel()
+
+                        cell {
+                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_TABLE_HOST).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_TABLE_HOST_DEFAULT) },
+                                    { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_TABLE_HOST, it) })
+                                    .withValidationOnInput { validationForIpAddress(it) }
+                                    .growPolicy(GrowPolicy.SHORT_TEXT)
+                                    .component.apply { tableHostLabel.labelFor = this }
+                        }
+
+                        val tablePortLabel = JLabel(RiderAzureBundle.message("settings.azurite.row.table.port"))
+                        tablePortLabel()
+
+                        cell {
+                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_TABLE_PORT).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_TABLE_PORT_DEFAULT) },
+                                    { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_TABLE_PORT, it) })
+                                    .withValidationOnInput { validationForPort(it) }
+                                    .growPolicy(GrowPolicy.SHORT_TEXT)
+                                    .component.apply { tablePortLabel.labelFor = this }
+                        }
+                    }
                 }
 
                 // Certificate settings

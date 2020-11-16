@@ -27,13 +27,14 @@ import com.intellij.execution.process.ColoredProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.services.ServiceEventListener
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Key
 import com.intellij.util.io.BaseOutputReader
 import java.io.File
 
-class AzuriteService {
+class AzuriteService : Disposable {
 
     private val logger = Logger.getInstance(AzuriteService::class.java)
 
@@ -92,7 +93,11 @@ class AzuriteService {
         }
     }
 
-    fun stop() {
+    fun stop() = stopInternal {
+        syncServices()
+    }
+
+    private fun stopInternal(runAfter: (() -> Unit)? = null) {
         if (processHandler == null) return
 
         processHandler?.let {
@@ -102,10 +107,12 @@ class AzuriteService {
                 if (!it.isProcessTerminating && !it.isProcessTerminated) {
                     it.killProcess()
                 }
-                syncServices()
+                runAfter?.invoke()
             }
         }
     }
+
+    override fun dispose() = stopInternal()
 
     private fun syncServices() =
             ApplicationManager.getApplication().messageBus.syncPublisher(ServiceEventListener.TOPIC)

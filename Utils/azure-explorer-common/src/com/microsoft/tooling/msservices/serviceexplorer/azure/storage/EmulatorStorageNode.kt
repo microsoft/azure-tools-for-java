@@ -60,11 +60,11 @@ class EmulatorStorageNode(parent: StorageModule) : ExternalStorageNode(parent, e
     }
 
     override fun refreshItems() {
-        // NOTE: Since we only support blob storage right now, we're only checking for blob storage access
-        if (!isUrlAccessible(blobsUri)) {
+        // NOTE: Since we only support blob && queue storage right now, we're only checking for those
+        if (!isUrlAccessible(blobsUri) || !isUrlAccessible(queuesUri)) {
             logger.info("Unable to get any of storage emulator URLs: '$blobsUri', '$tablesUri', '$queuesUri'.")
             DefaultLoader.getUIHelper().showError(
-                    "Please make sure local storage emulator is running. Unable to connect to the blob ($blobsUri) storage emulator instance.",
+                    "Please make sure local storage emulator is running.\n\nUnable to connect to the blob ($blobsUri)\nand queue ($queuesUri) storage emulator instance.",
                     "Unable to connect to local storage emulator"
             )
             return

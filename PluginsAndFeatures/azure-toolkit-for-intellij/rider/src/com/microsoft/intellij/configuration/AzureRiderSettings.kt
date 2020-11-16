@@ -57,6 +57,11 @@ object AzureRiderSettings {
     const val PROPERTY_AZURITE_QUEUE_PORT = "AzureAzuriteQueuePort"
     const val VALUE_AZURITE_QUEUE_PORT_DEFAULT = "10001"
 
+    const val PROPERTY_AZURITE_TABLE_HOST = "AzureAzuriteTableHost"
+    const val VALUE_AZURITE_TABLE_HOST_DEFAULT = "127.0.0.1"
+    const val PROPERTY_AZURITE_TABLE_PORT = "AzureAzuriteTablePort"
+    const val VALUE_AZURITE_TABLE_PORT_DEFAULT = "10002"
+
     const val PROPERTY_AZURITE_LOCATION_MODE = "AzureAzuriteLocationMode"
     const val PROPERTY_AZURITE_LOCATION = "AzureAzuriteLocation"
 
