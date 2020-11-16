@@ -49,9 +49,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeployFunctionAction extends AzureAnAction {
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-    private static final String DEPLOY_AZURE_FUNCTIONS_TITLE = "Deploy Azure Functions";
+public class DeployFunctionAction extends AzureAnAction {
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
@@ -63,7 +63,7 @@ public class DeployFunctionAction extends AzureAnAction {
             }
         } catch (Exception e) {
             ApplicationManager.getApplication().invokeLater(() ->
-                    PluginUtil.displayErrorDialog("Failed to deploy function", e.getMessage()));
+                    PluginUtil.displayErrorDialog(message("function.deploy.error.title"), e.getMessage()));
         }
         return true;
     }
@@ -82,7 +82,7 @@ public class DeployFunctionAction extends AzureAnAction {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = new FunctionDeploymentConfigurationFactory(configType);
         final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(module, manager, factory);
-        if (RunDialog.editConfiguration(project, settings, DEPLOY_AZURE_FUNCTIONS_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+        if (RunDialog.editConfiguration(project, settings, message("function.deploy.configuration.title"), DefaultRunExecutor.getRunExecutorInstance())) {
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);
             manager.setSelectedConfiguration(settings);

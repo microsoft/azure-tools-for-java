@@ -46,9 +46,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WebDeployAction extends AzureAnAction {
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-    private static final String DIALOG_TITLE = "Deploy to Azure";
+public class WebDeployAction extends AzureAnAction {
 
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
 
@@ -92,7 +92,7 @@ public class WebDeployAction extends AzureAnAction {
                     String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()),
                     factory);
         }
-        if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+        if (RunDialog.editConfiguration(project, settings, message("webapp.deploy.configuration.title"), DefaultRunExecutor.getRunExecutorInstance())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);
             manager.setSelectedConfiguration(settings);

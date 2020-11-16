@@ -47,12 +47,14 @@ import rx.functions.Func1;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FlightRecorderKuduClient {
     private KuduService service;
 
     public FlightRecorderKuduClient(WebAppBase webAppBase) {
         if (webAppBase.defaultHostName() == null) {
-            throw new UnsupportedOperationException("Cannot initialize kudu client before web app is created");
+            throw new UnsupportedOperationException(message("appService.jfr.error.initializeKuduClientFailed"));
         }
         String host = webAppBase.defaultHostName().toLowerCase()
                                 .replace("http://", "")
@@ -70,7 +72,7 @@ public class FlightRecorderKuduClient {
                                 .build()
                                 .retrofit().create(KuduService.class);
         } catch (IllegalAccessException e) {
-            throw new UnsupportedOperationException("Cannot get 'KuduService' in Azure SDK.", e);
+            throw new UnsupportedOperationException(message("appService.jfr.error.noKuduService"), e);
         }
 
     }

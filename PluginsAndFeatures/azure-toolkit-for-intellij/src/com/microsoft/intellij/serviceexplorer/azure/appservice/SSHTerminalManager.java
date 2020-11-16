@@ -34,17 +34,18 @@ import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public enum SSHTerminalManager {
     INSTANCE;
 
     private static final Logger logger = Logger.getLogger(SSHTerminalManager.class.getName());
 
-    private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = "SSH into Web App Error";
-    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = "Failed to SSH into Web App. Please try again.";
-    private static final String CLI_DIALOG_MESSAGE_DEFAULT =
-            "Failed to invoke Azure CLI. Please make sure Azure CLI is installed and signed-in with same account.";
-    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS = "Azure SSH is only supported for Linux web apps";
-    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER = "Azure SSH is only supported for Linux web apps (Not in custom container).";
+    private static final String SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE = message("webapp.ssh.error.title");
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE = message("webapp.ssh.error.message");
+    private static final String CLI_DIALOG_MESSAGE_DEFAULT = message("webapp.ssh.error.cli");
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_WINDOWS = message("webapp.ssh.error.notSupport.Windows");
+    private static final String SSH_INTO_WEB_APP_ERROR_MESSAGE_NOT_SUPPORT_DOCKER = message("webapp.ssh.error.notSupport.Docker");
     private static final String OS_LINUX = "linux";
     private static final String WEB_APP_DOCKER_PREFIX = "DOCKER|";
     private static final String CMD_SSH_TO_LOCAL_PROXY =
@@ -132,8 +133,8 @@ public enum SSHTerminalManager {
      * @param connectionInfo
      */
     public void openConnectionInTerminal(ShellTerminalWidget shellTerminalWidget, CreateRemoteConnectionOutput connectionInfo) {
-        if (connectionInfo == null || !connectionInfo.isSuccess()
-                || StringUtils.isAnyBlank(connectionInfo.getPort(), connectionInfo.getUsername(), connectionInfo.getPassword())) {
+        if (connectionInfo == null || !connectionInfo.isSuccess() ||
+                StringUtils.isAnyBlank(connectionInfo.getPort(), connectionInfo.getUsername(), connectionInfo.getPassword())) {
             DefaultLoader.getUIHelper().showError(SSH_INTO_WEB_APP_ERROR_MESSAGE, SSH_INTO_WEB_APP_ERROR_DIALOG_TITLE);
             return;
         }
@@ -159,14 +160,14 @@ public enum SSHTerminalManager {
         try {
             while (count++ < countMax) {
                 if (myBuf != null && String.valueOf(myBuf).contains("password:")) {
-                    logger.info("It's ready to input password before the coming of timeout. myBuf: " + String.valueOf(myBuf));
+                    logger.info(message("webapp.ssh.hint.passwordReady") + String.valueOf(myBuf));
                     return;
                 }
                 Thread.sleep(interval);
             }
         } catch (InterruptedException e) {
         }
-        logger.info("password input is not ready. ready processing is stopped because of timeout.");
+        logger.info(message("webapp.ssh.hint.passwordNotReady"));
     }
 
     public static class CreateRemoteConnectionOutput extends CommandUtils.CommandExecOutput {

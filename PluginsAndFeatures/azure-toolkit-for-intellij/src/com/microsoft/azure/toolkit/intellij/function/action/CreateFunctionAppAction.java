@@ -43,9 +43,10 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 @Name("Create Function App")
 public class CreateFunctionAppAction extends NodeActionListener {
-    private static final String ERROR_SIGNING_IN = "Error occurs on signing in";
     private final FunctionAppService functionAppService;
     private final FunctionModule functionModule;
 
@@ -60,12 +61,12 @@ public class CreateFunctionAppAction extends NodeActionListener {
         final Project project = (Project) functionModule.getProject();
         try {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                !AzureLoginHelper.isAzureSubsAvailableOrReportError(ERROR_SIGNING_IN)) {
+                !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
                 return;
             }
         } catch (final Exception ex) {
-            AzurePlugin.log(ERROR_SIGNING_IN, ex);
-            DefaultLoader.getUIHelper().showException(ERROR_SIGNING_IN, ex, ERROR_SIGNING_IN, false, true);
+            AzurePlugin.log(message("common.error.signIn"), ex);
+            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
         }
         final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createFunctionApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
@@ -73,7 +74,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     private void createFunctionApp(final FunctionAppConfig config, Runnable callback, final Project project) {
-        final Task.Modal task = new Task.Modal(null, "Creating New Function App...", true) {
+        final Task.Modal task = new Task.Modal(null, message("function.create.task.title"), true) {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
@@ -83,7 +84,8 @@ public class CreateFunctionAppAction extends NodeActionListener {
                     refreshAzureExplorer(functionApp);
                 } catch (final Exception ex) {
                     // TODO: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError("Error occurred on creating Function App: " + ex.getMessage(), "Create Function Failed");
+                    DefaultLoader.getUIHelper().showError(message("function.create.error.title") + ex.getMessage(),
+                                                          message("function.create.error.createFailed"));
                 }
             }
         };

@@ -74,30 +74,18 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
 
     private static final int DEFAULT_FUNC_PORT = 7071;
     private static final int DEFAULT_DEBUG_PORT = 5005;
     private static final int MAX_PORT = 65535;
-    private static final String FAILED_TO_GET_JAVA_VERSION = "Failed to get java runtime version";
-    private static final String FAILED_TO_VALIDATE_FUNCTION_RUNTIME = "Failed to validate function runtime, %s";
-    private static final String INSTALL_FUNCTION_EXTENSIONS_FAIL = "Failed to install the Function extensions";
-    private static final String INSTALL_FUNCTION_EXTENSIONS_ERROR = "Failed to install the Function extensions due to"
-            + " error: ";
-
     private static final String DEBUG_PARAMETERS =
             "\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%s\"";
-    private static final String RUNTIME_NOT_FOUND = "Azure Functions Core Tools not found. " +
-            "Please go to https://aka.ms/azfunc-install to install Azure Functions Core Tools. \n"
-            + "If you have installed the core tools, please refer https://github.com/microsoft/azure-tools-for-java/wiki/FAQ to get the "
-            + "core tools path and set the value in function run configuration.";
-    private static final String FUNCTION_CORE_TOOLS_OUT_OF_DATE = "Local function core tools didn't support java 9 or higher runtime, " +
-            "to update it, see: https://aka.ms/azfunc-install.";
     private static final String HOST_JSON = "host.json";
     private static final String EXTENSION_BUNDLE = "extensionBundle";
     private static final String EXTENSION_BUNDLE_ID = "Microsoft.Azure.Functions.ExtensionBundle";
-    private static final String SKIP_INSTALL_EXTENSIONS_HTTP = "Skip install Function extension for HTTP Trigger Functions";
-    private static final String SKIP_INSTALL_EXTENSIONS_BUNDLE = "Extension bundle specified, skip install extension";
     private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("version \"(.*)\"");
     private static final ComparableVersion JAVA_9 = new ComparableVersion("9");
     private static final ComparableVersion FUNC_3 = new ComparableVersion("3");
@@ -158,29 +146,28 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         try {
             final String funcPath = functionRunConfiguration.getFuncPath();
             if (StringUtils.isEmpty(funcPath)) {
-                throw new AzureExecutionException(RUNTIME_NOT_FOUND);
+                throw new AzureExecutionException(message("function.run.error.runtimeNotFound"));
             }
             final ComparableVersion funcVersion = getFuncVersion();
             if (funcVersion == null) {
-                throw new AzureExecutionException(RUNTIME_NOT_FOUND);
+                throw new AzureExecutionException(message("function.run.error.runtimeNotFound"));
             }
             final ComparableVersion javaVersion = getJavaVersion();
             if (javaVersion == null) {
-                processHandler.setText(FAILED_TO_GET_JAVA_VERSION);
+                processHandler.setText(message("function.run.error.getJavaVersionFailed"));
                 return;
             }
             if (javaVersion.compareTo(JAVA_9) < 0) {
                 // No need validate function host version within java 8 or earlier
                 return;
             }
-            final ComparableVersion minimumVersion = funcVersion.compareTo(FUNC_3) >= 0
-                                                     ? MINIMUM_JAVA_9_SUPPORTED_VERSION
+            final ComparableVersion minimumVersion = funcVersion.compareTo(FUNC_3) >= 0 ? MINIMUM_JAVA_9_SUPPORTED_VERSION
                                                      : MINIMUM_JAVA_9_SUPPORTED_VERSION_V2;
             if (funcVersion.compareTo(minimumVersion) < 0) {
-                throw new AzureExecutionException(FUNCTION_CORE_TOOLS_OUT_OF_DATE);
+                throw new AzureExecutionException(message("function.run.error.funcOutOfDate"));
             }
         } catch (IOException e) {
-            throw new AzureExecutionException(String.format(FAILED_TO_VALIDATE_FUNCTION_RUNTIME, e.getMessage()));
+            throw new AzureExecutionException(String.format(message("function.run.error.validateRuntimeFailed"), e.getMessage()));
         }
     }
 
@@ -215,7 +202,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         isDebuggerLaunched = false;
         final int debugPort = findFreePortForApi(DEFAULT_DEBUG_PORT);
         final int funcPort = findFreePortForApi(Math.max(DEFAULT_FUNC_PORT, debugPort + 1));
-        processHandler.println(String.format("Using port : %s", funcPort), ProcessOutputTypes.SYSTEM);
+        processHandler.println(String.format(message("function.run.hint.port"), funcPort), ProcessOutputTypes.SYSTEM);
         process = getRunFunctionCliProcessBuilder(stagingFolder, funcPort, debugPort).start();
         // Redirect function cli output to console
         readInputStreamByLines(process.getInputStream(), inputLine -> {
@@ -289,7 +276,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                     installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
                 }
             } catch (AzureExecutionException | IOException e) {
-                throw new AzureExecutionException("Failed to prepare staging folder due to error: " + e.getMessage(), e);
+                throw new AzureExecutionException(message("function.run.error.prepareStagingFolderFailed") + e.getMessage(), e);
             }
         });
         if (installProcess != null) {
@@ -306,12 +293,12 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
                 });
                 int exitCode = installProcess.waitFor();
                 if (exitCode != 0) {
-                    throw new AzureExecutionException(INSTALL_FUNCTION_EXTENSIONS_FAIL);
+                    throw new AzureExecutionException(message("function.run.error.installFuncFailed"));
                 }
             } catch (AzureExecutionException e) {
                 throw e;
             } catch (Exception e) {
-                throw new AzureExecutionException(INSTALL_FUNCTION_EXTENSIONS_ERROR + e.getMessage());
+                throw new AzureExecutionException(message("function.run.error.installFuncFailed"), e);
             }
         }
     }
@@ -356,7 +343,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         stopProcessIfAlive(process);
 
         if (!processHandler.isProcessTerminated()) {
-            processHandler.setText("Function execute succeed.");
+            processHandler.setText(message("function.run.hint.succeed"));
             processHandler.notifyComplete();
         }
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
@@ -377,13 +364,13 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         final JsonObject extensionBundle = hostJson == null ? null : hostJson.getAsJsonObject(EXTENSION_BUNDLE);
         if (extensionBundle != null && extensionBundle.has("id") &&
                 StringUtils.equalsIgnoreCase(extensionBundle.get("id").getAsString(), EXTENSION_BUNDLE_ID)) {
-            processHandler.println(SKIP_INSTALL_EXTENSIONS_BUNDLE, ProcessOutputTypes.STDOUT);
+            processHandler.println(message("function.run.hint.skipInstallExtensionBundle"), ProcessOutputTypes.STDOUT);
             return false;
         }
         final boolean isNonHttpTriggersExist = bindingTypes.stream().anyMatch(binding ->
                                                                                       !Arrays.asList(FUNCTION_WITHOUT_FUNCTION_EXTENSION).contains(binding));
         if (!isNonHttpTriggersExist) {
-            processHandler.println(SKIP_INSTALL_EXTENSIONS_HTTP, ProcessOutputTypes.STDOUT);
+            processHandler.println(message("function.run.hint.skipInstallExtensionHttp"), ProcessOutputTypes.STDOUT);
             return false;
         }
         return true;

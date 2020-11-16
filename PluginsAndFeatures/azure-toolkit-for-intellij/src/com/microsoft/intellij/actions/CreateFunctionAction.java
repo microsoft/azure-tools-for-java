@@ -77,13 +77,14 @@ import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_TRIGGER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class CreateFunctionAction extends CreateElementActionBase {
     private static final String DEFAULT_EVENT_HUB_CONNECTION_STRING = "Endpoint=sb://<your-envent-hub-namespace>.servicebus.windows.net/;" +
             "SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<your-SAS-key>;";
 
     public CreateFunctionAction() {
-        super("Azure Function Class",
+        super(message("function.createFunction.action.title"),
                 "newPage.dialog.prompt", IconLoader.getIcon(AzureFunctionSupportConfigurationType.ICON_PATH,
                         AzureFunctionSupportConfigurationType.class));
     }
@@ -115,7 +116,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                         }});
                     if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                         if (StringUtils.isBlank(connectionName)) {
-                            throw new AzureExecutionException("Required property 'connection' is missing");
+                            throw new AzureExecutionException(message("function.createFunction.error.connectionMissed"));
                         }
                         parameters.putIfAbsent("eventHubName", "myeventhub");
                         parameters.putIfAbsent("consumerGroup", "$Default");
@@ -133,7 +134,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                             try {
                                 mkDirs.directory.checkCreateFile(className + ".java");
                             } catch (IncorrectOperationException e) {
-                                PluginUtil.displayErrorDialog("Create Azure Function Class error", e.getMessage());
+                                PluginUtil.displayErrorDialog(message("function.createFunction.error.title"), e.getMessage());
                                 return;
                             }
                             CommandProcessor.getInstance().executeCommand(project, () -> {
@@ -149,7 +150,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                                     AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
                                             parameters.get("connection"), connectionString);
                                 } catch (IOException e) {
-                                    PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
+                                    PluginUtil.displayErrorDialogAndLog(message("function.createFunction.error.title"), e.getMessage(), e);
                                     EventUtil.logError(operation, ErrorType.systemError, e, null, null);
                                 }
                             }

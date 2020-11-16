@@ -38,8 +38,10 @@ import javax.swing.event.PopupMenuEvent;
 import java.util.Collections;
 import java.util.List;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ApplicationInsightsPanel extends JPanel {
-    private static final String CREATE_NEW_APPLICATION_INSIGHTS = "Create New Application Insights...";
+    private static final String CREATE_NEW_APPLICATION_INSIGHTS = message("function.applicationInsights.create");
 
     private JComboBox cbInsights;
     private JPanel pnlRoot;
@@ -82,8 +84,7 @@ public class ApplicationInsightsPanel extends JPanel {
                     () -> AzureSDKManager.getInsightsResources(subscriptionId),
                     insightsComponents -> fillApplicationInsights(insightsComponents),
                     exception -> {
-                        DefaultLoader.getUIHelper().showError(
-                                "Failed to load application insights", exception.getMessage());
+                        DefaultLoader.getUIHelper().showError(message("function.applicationInsights.load.error.title"), exception.getMessage());
                         fillApplicationInsights(Collections.emptyList());
                     });
     }

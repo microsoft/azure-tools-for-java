@@ -45,6 +45,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
 
     private Subscription subscription;
@@ -141,7 +143,7 @@ public class ServicePlanComboBox extends AzureComboBox<AppServicePlan> {
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, "Create new app service plan", this::showServicePlanCreationPopup);
+            AllIcons.General.Add, message("appService.servicePlan.create.tooltip"), this::showServicePlanCreationPopup);
     }
 
     private void showServicePlanCreationPopup() {

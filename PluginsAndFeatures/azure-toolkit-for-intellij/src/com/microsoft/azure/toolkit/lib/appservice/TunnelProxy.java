@@ -37,6 +37,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class TunnelProxy {
     public static final String DEFAULT_SSH_USERNAME = "root";
     public static final String DEFAULT_SSH_PASSWORD = "Docker!";
@@ -100,7 +102,7 @@ public class TunnelProxy {
                 return output;
             }
         } catch (JSchException e) {
-            logger.warning(String.format("Encounter error while ssh into azure app service: %s ", e.getMessage()));
+            logger.warning(String.format(message("appService.tunnel.error.sshFailed"), e.getMessage()));
         }
         return null;
     }
