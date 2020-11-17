@@ -26,6 +26,8 @@ import com.microsoft.azure.management.mysql.v2017_12_01.SslEnforcementEnum;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 public class MySQLBindingInfo extends ServiceBindingInfo {
@@ -33,6 +35,9 @@ public class MySQLBindingInfo extends ServiceBindingInfo {
     private String fullyQualifiedDomainName;
     private SslEnforcementEnum sslEnforcement;
     private String database;
+    private String password;
+    private String envPrefix;
+    private Map<String, String> envMap;
 
     public MySQLBindingInfo(String id, String name) {
         super(id, name, BindingType.MySQL);
