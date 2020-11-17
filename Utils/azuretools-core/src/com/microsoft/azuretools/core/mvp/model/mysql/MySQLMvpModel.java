@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MySQLMvpModel {
-    public static List<Server> listAllMySQLServers() throws IOException {
+    public static List<Server> listAllMySQLServers() {
         final List<Server> clusters = new ArrayList<>();
         List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
         if (subs.size() == 0) {

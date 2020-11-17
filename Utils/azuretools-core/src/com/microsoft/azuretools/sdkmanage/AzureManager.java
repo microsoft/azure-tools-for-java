@@ -42,7 +42,7 @@ public interface AzureManager {
 
     AppPlatformManager getAzureSpringCloudClient(String sid);
 
-    MySQLManager getMySQLClient(String sid) throws IOException;
+    MySQLManager getMySQLClient(String sid);
 
     InsightsManager getInsightsManager(String sid);
 

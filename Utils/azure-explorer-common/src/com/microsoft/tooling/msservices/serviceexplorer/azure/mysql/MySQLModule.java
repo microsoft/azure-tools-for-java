@@ -68,11 +68,7 @@ public class MySQLModule extends AzureRefreshableNode implements MySQLModuleView
         public void onMySqlRefresh() {
             final MySQLModuleView view = getMvpView();
             if (view != null) {
-                try {
-                    view.renderChildren(MySQLMvpModel.listAllMySQLServers());
-                } catch (final IOException e) {
-                    DefaultLoader.getUIHelper().showException(FAILED_TO_LOAD_CLUSTERS, e, ERROR_LOAD_CLUSTER, false, true);
-                }
+                view.renderChildren(MySQLMvpModel.listAllMySQLServers());
             }
         }
     }
