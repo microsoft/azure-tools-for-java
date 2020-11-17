@@ -57,13 +57,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguration> implements WebAppDeployMvpViewSlim {
     private static final String[] FILE_NAME_EXT = {"war", "jar", "ear"};
     private static final String DEPLOYMENT_SLOT = "Deployment Slot";
     private static final String DEFAULT_SLOT_NAME = "slot-%s";
-    private static final String DEPLOYMENT_SLOT_HOVER = "Deployment slots are live apps with their own hostnames. App" +
-            " content and configurations elements can be swapped between two deployment slots, including the production " +
-            "slot.";
 
     private WebAppDeployViewPresenterSlim presenter = null;
 
@@ -108,7 +107,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         btnSlotHover.setIcon(informationIcon);
         btnSlotHover.setHorizontalAlignment(SwingConstants.CENTER);
         btnSlotHover.setPreferredSize(new Dimension(informationIcon.getIconWidth(), informationIcon.getIconHeight()));
-        btnSlotHover.setToolTipText(DEPLOYMENT_SLOT_HOVER);
+        btnSlotHover.setToolTipText(message("webapp.deploy.hint.deploymentSlot"));
         btnSlotHover.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent focusEvent) {
@@ -211,8 +210,9 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel);
         }
         if (configuration.getAzureArtifactType() != null) {
-            lastSelectedAzureArtifact =
-                    AzureArtifactManager.getInstance(project).getAzureArtifactById(configuration.getArtifactIdentifier());
+            lastSelectedAzureArtifact = AzureArtifactManager
+                    .getInstance(project)
+                    .getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
             comboBoxArtifact.refreshItems(lastSelectedAzureArtifact);
         } else {
             comboBoxArtifact.refreshItems();
@@ -259,8 +259,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         toggleSlotPanel(configuration.isDeployToSlot() && selectedWebApp != null);
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
-            configuration.setSlotName(cbxSlotName.getSelectedItem() == null ? "" :
-                                      cbxSlotName.getSelectedItem().toString());
+            configuration.setSlotName(cbxSlotName.getSelectedItem() == null ? "" : cbxSlotName.getSelectedItem().toString());
             if (rbtNewSlot.isSelected()) {
                 configuration.setSlotName(Constants.CREATE_NEW_SLOT);
                 configuration.setNewSlotName(txtNewSlotName.getText());
@@ -307,7 +306,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        lblNewSlot = new HyperlinkLabel("No available deployment slot, click to create a new one");
+        lblNewSlot = new HyperlinkLabel(message("webapp.deploy.noDeploymentSlot"));
         lblNewSlot.addHyperlinkListener(e -> rbtNewSlot.doClick());
 
         comboBoxWebApp = new WebAppComboBox(project);
@@ -318,6 +317,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
         });
+
     }
 
     private void loadDeploymentSlot(WebAppComboBoxModel selectedWebApp) {

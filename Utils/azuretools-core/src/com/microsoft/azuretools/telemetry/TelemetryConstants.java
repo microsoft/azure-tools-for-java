@@ -197,6 +197,7 @@ public class TelemetryConstants {
     public static final String DELETE_A_CLUSTER = "delete-a-cluster";
     public static final String UPDATE_A_CLUSTER = "update-a-cluster";
     public static final String SHOW_WHATS_NEW = "show-whats-new";
+    public static final String UNHANDLED_EXCEPTION = "unhandled-exception";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";

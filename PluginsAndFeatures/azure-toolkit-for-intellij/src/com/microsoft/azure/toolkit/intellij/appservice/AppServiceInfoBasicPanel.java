@@ -24,9 +24,7 @@ package com.microsoft.azure.toolkit.intellij.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.TitledSeparator;
-import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.appservice.platform.PlatformComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureArtifactComboBox;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
@@ -35,12 +33,9 @@ import com.microsoft.azure.toolkit.lib.appservice.DraftResourceGroup;
 import com.microsoft.azure.toolkit.lib.appservice.DraftServicePlan;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
 import com.microsoft.azure.toolkit.lib.common.form.AzureFormInput;
-import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
-import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import lombok.SneakyThrows;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +55,7 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     private static final int SP_NAME_MAX_LENGTH = 40;
     private final Project project;
     private final Supplier<T> supplier;
+    private T config;
 
     private JPanel contentPanel;
 
@@ -68,26 +64,21 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
     private AzureArtifactComboBox selectorApplication;
     private TitledSeparator deploymentTitle;
     private JLabel deploymentLabel;
-    private Subscription subscription;
-    private Region defaultRegion;
 
-    public AppServiceInfoBasicPanel(final Project project, final Supplier<T> supplier) {
+    private Subscription subscription;
+
+    public AppServiceInfoBasicPanel(final Project project, final Supplier<T> defaultConfigSupplier) {
         super();
         this.project = project;
-        this.supplier = supplier;
+        this.supplier = defaultConfigSupplier;
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
         this.init();
     }
 
     private void init() {
-        final String date = DATE_FORMAT.format(new Date());
-        final String defaultWebAppName = String.format("app-%s-%s", this.project.getName(), date);
-        this.textName.setValue(defaultWebAppName);
-        final List<Subscription> items = AzureMvpModel.getInstance().getSelectedSubscriptions();
-        this.subscription = items.get(0); // select the first subscription as the default
-        DefaultLoader.getIdeHelper().invokeLater(this::getRegion);
-        this.textName.setSubscription(this.subscription);
+        this.subscription = AzureMvpModel.getInstance().getSelectedSubscriptions().get(0);
         this.textName.setRequired(true);
+        this.textName.setSubscription(subscription);
         this.selectorPlatform.setRequired(true);
 
         this.selectorApplication.setFileFilter(virtualFile -> {
@@ -96,55 +87,48 @@ public class AppServiceInfoBasicPanel<T extends AppServiceConfig> extends JPanel
             return org.apache.commons.lang.StringUtils.isNotBlank(ext) && Platform.isSupportedArtifactType(ext, platform);
         });
         this.setDeploymentVisible(false);
-    }
-
-    @SneakyThrows
-    private Region getRegion() {
-        if (Objects.nonNull(this.defaultRegion)) {
-            return this.defaultRegion;
-        }
-        final String subId = this.subscription.subscriptionId();
-        final PricingTier tier = WebAppConfig.DEFAULT_PRICING_TIER;
-        final List<Region> regions = AzureWebAppMvpModel.getInstance().getAvailableRegions(subId, tier);
-        this.defaultRegion = regions.get(0);
-        return this.defaultRegion;
+        this.config = initConfig();
+        setData(this.config);
     }
 
     @SneakyThrows
     @Override
     public T getData() {
-        final String date = DATE_FORMAT.format(new Date());
         final String name = this.textName.getValue();
         final Platform platform = this.selectorPlatform.getValue();
         final AzureArtifact artifact = this.selectorApplication.getValue();
 
-        final PricingTier tier = WebAppConfig.DEFAULT_PRICING_TIER;
-        final Region region = this.getRegion();
-
-        final T config = supplier.get();
-        config.setSubscription(this.subscription);
-        final DraftResourceGroup group = DraftResourceGroup.builder().build();
-        group.setName(StringUtils.substring(String.format("rg-%s", name), 0, RG_NAME_MAX_LENGTH));
-        group.setSubscription(this.subscription);
-        config.setResourceGroup(group);
-        config.setName(name);
-        config.setPlatform(platform);
-        config.setRegion(region);
-
-        final DraftServicePlan plan = DraftServicePlan.builder().build();
-        plan.setSubscription(this.subscription);
-        plan.setName(StringUtils.substring(String.format("sp-%s", name), 0, SP_NAME_MAX_LENGTH));
-        plan.setTier(tier);
-        plan.setOs(platform.getOs());
-        plan.setRegion(region);
-        config.setServicePlan(plan);
+        final T result = (T) (this.config == null ? initConfig() : this.config).toBuilder().build();
+        result.setName(name);
+        result.setPlatform(platform);
 
         if (Objects.nonNull(artifact)) {
             final AzureArtifactManager manager = AzureArtifactManager.getInstance(this.project);
             final String path = manager.getFileForDeployment(this.selectorApplication.getValue());
-            config.setApplication(Paths.get(path));
+            result.setApplication(Paths.get(path));
         }
-        return config;
+        this.config = result;
+        return result;
+    }
+
+    private T initConfig() {
+        final String appName = String.format("app-%s-%s", this.project.getName(), DATE_FORMAT.format(new Date()));
+        final DraftResourceGroup group = DraftResourceGroup.builder().build();
+        group.setName(StringUtils.substring(String.format("rg-%s", appName), 0, RG_NAME_MAX_LENGTH));
+        group.setSubscription(subscription);
+        T result = supplier.get(); // need platform region pricing
+        final DraftServicePlan plan = DraftServicePlan.builder().build();
+        plan.setSubscription(subscription);
+        plan.setName(StringUtils.substring(String.format("sp-%s", appName), 0, SP_NAME_MAX_LENGTH));
+        plan.setRegion(result.getRegion());
+        plan.setOs(result.getPlatform().getOs());
+        plan.setTier(result.getPricingTier());
+        result.setName(appName);
+        result.setResourceGroup(group);
+        result.setSubscription(subscription);
+        result.setResourceGroup(group);
+        result.setServicePlan(plan);
+        return result;
     }
 
     @Override

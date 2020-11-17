@@ -36,7 +36,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebApp
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
     public static final String SSH_INTO = "SSH into Web App (Preview)";
+    public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     private final WebApp webapp;
@@ -122,36 +122,22 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     public void startWebApp() {
-        try {
-            webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
     }
 
     public void restartWebApp() {
-        try {
-            webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
     }
 
     public void stopWebApp() {
-        try {
-            webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
     }
 
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
         getNodeActionByName(SSH_INTO).setEnabled(running);
+        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running);
         return super.getNodeActions();
     }
 

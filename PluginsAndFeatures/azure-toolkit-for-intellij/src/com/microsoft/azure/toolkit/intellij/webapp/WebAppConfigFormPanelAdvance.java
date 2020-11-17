@@ -84,7 +84,7 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel(project, () -> WebAppConfig.builder().build());
+        appServiceConfigPanelAdvanced = new AppServiceInfoAdvancedPanel(project, WebAppConfig::getWebAppDefaultConfig);
         try {
             final List<PricingTier> validPricing = AzureMvpModel.getInstance().listPricingTier();
             appServiceConfigPanelAdvanced.setValidPricingTier(validPricing, WebAppConfig.DEFAULT_PRICING_TIER);
@@ -99,7 +99,7 @@ public class WebAppConfigFormPanelAdvance extends JPanel implements AzureFormPan
 
         appServiceConfigPanelAdvanced.getSelectorPlatform().addActionListener(event -> {
             final Platform platform = appServiceConfigPanelAdvanced.getSelectorPlatform().getValue();
-            appServiceMonitorPanel.setApplicationLogVisible(platform.getOs() == OperatingSystem.WINDOWS);
+            appServiceMonitorPanel.setApplicationLogVisible(platform != null && platform.getOs() == OperatingSystem.WINDOWS);
         });
     }
 }

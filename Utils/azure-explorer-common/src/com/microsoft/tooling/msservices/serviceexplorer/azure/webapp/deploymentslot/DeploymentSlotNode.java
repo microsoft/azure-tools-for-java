@@ -22,27 +22,18 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP_SLOT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPERN_WEBAPP_SLOT_BROWSER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_WEBAPP_SLOT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SHOW_WEBAPP_SLOT_PROP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_WEBAPP_SLOT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_WEBAPP_SLOT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.SWAP_WEBAPP_SLOT;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
-
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
-import java.io.IOException;
-import java.util.List;
-
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
+
+import java.util.List;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlotNodeView {
     private static final String ACTION_SWAP_WITH_PRODUCTION = "Swap with production";
@@ -93,22 +84,20 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
             createBackgroundActionListener("Restarting Deployment Slot", () -> restart())));
         addAction(ACTION_SWAP_WITH_PRODUCTION, new WrappedTelemetryNodeActionListener(WEBAPP, SWAP_WEBAPP_SLOT,
             createBackgroundActionListener("Swapping with Production", () -> swapWithProduction())));
-        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER,
-            new NodeActionListener() {
+        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, OPERN_WEBAPP_SLOT_BROWSER, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
                 DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
             }
         }));
         addAction(ACTION_DELETE, new DeleteDeploymentSlotAction());
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(WEBAPP, SHOW_WEBAPP_SLOT_PROP,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(DeploymentSlotNode.this);
-                }
-            }));
-
+        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(WEBAPP, SHOW_WEBAPP_SLOT_PROP, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(
+                    DeploymentSlotNode.this);
+            }
+        }));
         super.loadActions();
     }
 
@@ -120,49 +109,24 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
     }
 
     private void start() {
-        try {
-            presenter.onStartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        presenter.onStartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
     private void stop() {
-        try {
-            presenter.onStopDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        presenter.onStopDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
     private void restart() {
-        try {
-            presenter.onRestartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        presenter.onRestartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
     private void swapWithProduction() {
-        try {
-            presenter.onSwapWithProduction(this.subscriptionId, this.webAppId, this.slotName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        presenter.onSwapWithProduction(this.subscriptionId, this.webAppId, this.slotName);
     }
 
     @Override
     protected void refreshItems() {
-        try {
-            presenter.onRefreshNode(this.subscriptionId, this.webAppId, this.slotName);
-        } catch (Exception e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        presenter.onRefreshNode(this.subscriptionId, this.webAppId, this.slotName);
     }
 
     private class DeleteDeploymentSlotAction extends AzureNodeActionPromptListener {

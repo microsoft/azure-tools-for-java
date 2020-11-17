@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     private Subscription subscription;
     private List<DraftResourceGroup> localItems = new ArrayList<>();
@@ -89,7 +91,7 @@ public class ResourceGroupComboBox extends AzureComboBox<ResourceGroup> {
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(
-            AllIcons.General.Add, "Create new resource group", this::showResourceGroupCreationPopup);
+                AllIcons.General.Add, message("appService.resourceGroup.create.tooltip"), this::showResourceGroupCreationPopup);
     }
 
     private void showResourceGroupCreationPopup() {

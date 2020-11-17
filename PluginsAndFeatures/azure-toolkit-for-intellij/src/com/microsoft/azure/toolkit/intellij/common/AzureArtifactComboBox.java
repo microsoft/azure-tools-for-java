@@ -46,10 +46,10 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
-    private static final String ARTIFACT_NOT_SUPPORTED = "The selected platform does not support this type of artifact.";
     private final Project project;
     private final boolean fileArtifactOnly;
     private Condition<? super VirtualFile> fileFilter;
@@ -117,7 +117,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
             final VirtualFile referencedObject = (VirtualFile) artifact.getReferencedObject();
             if (!this.fileFilter.value(referencedObject)) {
                 final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
-                return builder.input(this).message(ARTIFACT_NOT_SUPPORTED).type(AzureValidationInfo.Type.ERROR).build();
+                return builder.input(this).message(message("common.artifact.artifactNotSupport")).type(AzureValidationInfo.Type.ERROR).build();
             }
         }
         return info;
@@ -128,7 +128,7 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
         if (fileFilter != null) {
             fileDescriptor.withFileFilter(fileFilter);
         }
-        fileDescriptor.withTitle("Select Artifact to Deploy");
+        fileDescriptor.withTitle(message("common.artifact.selector.title"));
         final VirtualFile file = FileChooser.chooseFile(fileDescriptor, null, null);
         if (file != null && file.exists()) {
             addOrSelectExistingVirtualFile(file);
@@ -150,6 +150,9 @@ public class AzureArtifactComboBox extends AzureComboBox<AzureArtifact> {
     }
 
     private void resetDefaultValue(final AzureArtifact defaultArtifact) {
+        if (defaultArtifact == null) {
+            return;
+        }
         final List<AzureArtifact> artifacts = this.getItems();
         final AzureArtifactManager manager = AzureArtifactManager.getInstance(project);
         final Predicate<AzureArtifact> predicate = artifact -> manager.equalsAzureArtifactIdentifier(defaultArtifact, artifact);

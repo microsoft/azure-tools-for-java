@@ -32,8 +32,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
-    public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
     private static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
     private JPanel panel;
     private WebAppConfigFormPanelAdvance advancedForm;
@@ -42,7 +43,7 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public WebAppCreationDialog(Project project) {
         super(project);
         this.init();
-        this.toggleAdvancedMode(false);
+        setFrontPanel(basicForm);
     }
 
     public void setDeploymentVisible(boolean visible) {
@@ -73,14 +74,14 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     }
 
     protected String getDialogTitle() {
-        return TITLE_CREATE_WEBAPP_DIALOG;
+        return message("webapp.create.dialog.title");
     }
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
         advancedForm = new WebAppConfigFormPanelAdvance(project);
 
-        basicForm = new AppServiceInfoBasicPanel(project, () -> WebAppConfig.builder().build());
+        basicForm = new AppServiceInfoBasicPanel(project, WebAppConfig::getWebAppDefaultConfig);
         basicForm.setDeploymentVisible(false);
     }
 }

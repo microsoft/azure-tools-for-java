@@ -31,6 +31,8 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class IntegerTextField extends JBTextField implements AzureFormInputComponent<Integer> {
 
     @Setter
@@ -56,20 +58,24 @@ public class IntegerTextField extends JBTextField implements AzureFormInputCompo
     @NotNull
     @Override
     public AzureValidationInfo doValidate() {
-        AzureValidationInfo result = AzureFormInputComponent.super.doValidate();
-        if (result.getType() == AzureValidationInfo.Type.ERROR) {
-            return result;
+        if (!this.isEnabled() || !this.isVisible()) {
+            return AzureValidationInfo.OK;
         }
         final String input = getText();
         if (StringUtils.isEmpty(input)) {
+            if (this.isRequired()) {
+                final AzureValidationInfo.AzureValidationInfoBuilder builder = AzureValidationInfo.builder();
+                return builder.message(MSG_REQUIRED).input(this).type(AzureValidationInfo.Type.ERROR).build();
+            }
             return AzureValidationInfo.OK;
         }
         Integer value = getValue();
         if (value == null) {
-            return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR).message("Value should be an integer").build();
+            return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR).message(message(
+                    "common.integer.validate.notInteger")).build();
         } else if ((minValue != null && value < minValue) || (maxValue != null && value > maxValue)) {
             return AzureValidationInfo.builder().input(this).type(AzureValidationInfo.Type.ERROR)
-                                      .message(String.format("Value should be in range [%s,%s]", minValue, maxValue)).build();
+                                      .message(String.format(message("common.integer.validate.invalidValue"), minValue, maxValue)).build();
         } else {
             return AzureValidationInfo.OK;
         }

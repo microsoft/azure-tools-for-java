@@ -46,9 +46,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class RunFunctionAction extends AzureAnAction {
 
-    private static final String RUN_FUNCTIONS_TITLE = "Run Functions";
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
@@ -72,7 +73,7 @@ public class RunFunctionAction extends AzureAnAction {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = new FunctionRunConfigurationFactory(configType);
         final RunnerAndConfigurationSettings settings = RunConfigurationUtils.getOrCreateRunConfigurationSettings(module, manager, factory);
-        if (RunDialog.editConfiguration(project, settings, RUN_FUNCTIONS_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+        if (RunDialog.editConfiguration(project, settings, message("function.run.configuration.title"), DefaultRunExecutor.getRunExecutorInstance())) {
             final List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);
             manager.setSelectedConfiguration(settings);

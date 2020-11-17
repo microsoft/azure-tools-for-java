@@ -28,7 +28,6 @@ import static com.microsoft.azuretools.telemetry.TelemetryConstants.SELECT_SUBSC
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -168,31 +167,21 @@ public class SubscriptionsDialog extends AzureTitleAreaDialogWrapper {
     }
 
     private void setSubscriptionDetails() {
-        try {
-            sdl = subscriptionManager.getSubscriptionDetails();
-            for (SubscriptionDetail sd : sdl) {
-                TableItem item = new TableItem(table, SWT.NULL);
-                item.setText(new String[] {sd.getSubscriptionName(), sd.getSubscriptionId()});
-                item.setChecked(sd.isSelected());
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "setSubscriptionDetails@SubscriptionDialog", ex));
+        sdl = subscriptionManager.getSubscriptionDetails();
+        for (SubscriptionDetail sd : sdl) {
+            TableItem item = new TableItem(table, SWT.NULL);
+            item.setText(new String[] {sd.getSubscriptionName(), sd.getSubscriptionId()});
+            item.setChecked(sd.isSelected());
         }
     }
 
     private void refreshSubscriptions() {
-        try {
-            System.out.println("refreshSubscriptions");
-            table.removeAll();
-            subscriptionManager.cleanSubscriptions();
-            refreshSubscriptionsAsync();
-            setSubscriptionDetails();
-            subscriptionManager.setSubscriptionDetails(sdl);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            LOG.log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "refreshSubscriptions@SubscriptionDialog", ex));
-        }
+        System.out.println("refreshSubscriptions");
+        table.removeAll();
+        subscriptionManager.cleanSubscriptions();
+        refreshSubscriptionsAsync();
+        setSubscriptionDetails();
+        subscriptionManager.setSubscriptionDetails(sdl);
     }
 
     /**

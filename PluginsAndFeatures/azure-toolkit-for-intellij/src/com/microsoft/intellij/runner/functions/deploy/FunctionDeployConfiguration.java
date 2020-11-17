@@ -45,12 +45,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FunctionDeployConfiguration extends AzureRunConfigurationBase<FunctionDeployModel>
     implements RunProfileWithCompileBeforeLaunchOption {
 
-    public static final String NEED_SPECIFY_MODULE = "Please specify module";
-    public static final String NEED_SPECIFY_TARGET_FUNCTION = "Please specify target function";
-    public static final String NEED_SPECIFY_VALID_STAGING_DIRECTORY_PATH = "Please specify valid staging directory path";
     private FunctionDeployModel functionDeployModel;
     private Module module;
 
@@ -247,10 +246,10 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public void validate() throws ConfigurationException {
         checkAzurePreconditions();
         if (this.module == null) {
-            throw new ConfigurationException(NEED_SPECIFY_MODULE);
+            throw new ConfigurationException(message("function.deploy.validate.noModule"));
         }
         if (StringUtils.isEmpty(this.getFunctionId()) && !isNewResource()) {
-            throw new ConfigurationException(NEED_SPECIFY_TARGET_FUNCTION);
+            throw new ConfigurationException(message("function.deploy.validate.noTarget"));
         }
     }
 

@@ -31,10 +31,11 @@ import lombok.extern.java.Log;
 
 import javax.swing.*;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 @Log
 public abstract class AppConfigDialog<T extends AppServiceConfig>
     extends AzureDialog<T> {
-    public static final String LABEL_ADVANCED_MODE = "More settings";
     protected Project project;
     private JCheckBox checkboxMode;
     private boolean advancedMode = false;
@@ -54,16 +55,18 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
 
     protected void toggleAdvancedMode(boolean advancedMode) {
         this.advancedMode = advancedMode;
-        final AzureFormPanel<T> basicForm = this.getBasicFormPanel();
-        final AzureFormPanel<T> advancedForm = this.getAdvancedFormPanel();
-        if (advancedMode) {
-            basicForm.setVisible(false);
-            advancedForm.setVisible(true);
-        } else {
-            basicForm.setVisible(true);
-            advancedForm.setVisible(false);
-        }
+        final AzureFormPanel<T> previousForm = advancedMode ? this.getBasicFormPanel() : this.getAdvancedFormPanel();
+        final AzureFormPanel<T> followingForm = advancedMode ? this.getAdvancedFormPanel() : this.getBasicFormPanel();
+        previousForm.setVisible(false);
+        followingForm.setData(previousForm.getData());
+        followingForm.setVisible(true);
         this.repaint();
+    }
+
+    protected void setFrontPanel(AzureFormPanel<T> panel) {
+        getBasicFormPanel().setVisible(false);
+        getAdvancedFormPanel().setVisible(false);
+        panel.setVisible(true);
     }
 
     protected abstract AzureFormPanel<T> getAdvancedFormPanel();
@@ -72,7 +75,7 @@ public abstract class AppConfigDialog<T extends AppServiceConfig>
 
     @Override
     protected JComponent createDoNotAskCheckbox() {
-        this.checkboxMode = new JCheckBox(LABEL_ADVANCED_MODE);
+        this.checkboxMode = new JCheckBox(message("appService.appConfig.advancedMode"));
         this.checkboxMode.setVisible(true);
         this.checkboxMode.setSelected(false);
         this.checkboxMode.addActionListener(e -> this.toggleAdvancedMode(this.checkboxMode.isSelected()));

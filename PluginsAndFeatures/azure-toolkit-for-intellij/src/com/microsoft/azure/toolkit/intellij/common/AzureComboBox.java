@@ -29,6 +29,7 @@ import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.intellij.ui.components.fields.ExtendableTextField;
+import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.common.utils.TailingDebouncer;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -57,9 +58,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormInputComponent<T> {
     public static final String EMPTY_ITEM = StringUtils.EMPTY;
-    private static final String ERROR_LOADING_ITEMS = "Failed to list resources";
     private static final int DEBOUNCE_DELAY = 500;
     private final TailingDebouncer refresher;
     private AzureComboBoxEditor loadingSpinner;
@@ -132,6 +134,10 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             super.setSelectedItem(items.get(0));
         } else if (items.contains(this.value)) {
             super.setSelectedItem(this.value);
+        } else if (value instanceof Draft) {
+            // todo: unify model for custom created resource
+            super.addItem(value);
+            super.setSelectedItem(value);
         } else {
             super.setSelectedItem(null);
         }
@@ -228,7 +234,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
     protected void handleLoadingError(Throwable e) {
         final MvpUIHelper uiHelper = MvpUIHelperFactory.getInstance().getMvpUIHelper();
         if (uiHelper != null) {
-            uiHelper.showException(ERROR_LOADING_ITEMS, (Exception) e);
+            uiHelper.showException(message("common.comboBox.error.loadingItemsFailed"), (Exception) e);
         }
     }
 
@@ -277,7 +283,7 @@ public abstract class AzureComboBox<T> extends ComboBox<T> implements AzureFormI
             // do nothing: item can not be set on loading
             super.setItem(item);
             if (item == null) {
-                this.editor.setText("Refreshing...");
+                this.editor.setText(message("common.refreshing"));
             }
         }
 

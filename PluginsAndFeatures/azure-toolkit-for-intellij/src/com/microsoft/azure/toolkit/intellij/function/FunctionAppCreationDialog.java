@@ -26,14 +26,14 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
 import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
-import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
-import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azure.toolkit.lib.appservice.*;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
-import com.microsoft.azure.toolkit.lib.appservice.ApplicationInsightsConfig;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 
 import javax.swing.*;
 import java.util.Arrays;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig> {
 
@@ -44,7 +44,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
     public FunctionAppCreationDialog(final Project project) {
         super(project);
         this.init();
-        this.toggleAdvancedMode(false);
+        setFrontPanel(basicPanel);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     @Override
     protected String getDialogTitle() {
-        return "Create Function";
+        return message("function.create.dialog.title");
     }
 
     @Nullable
@@ -70,8 +70,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project,
-            () -> FunctionAppConfig.builder().build()) {
+        basicPanel = new AppServiceInfoBasicPanel<FunctionAppConfig>(project, FunctionAppConfig::getFunctionAppDefaultConfig) {
             @Override
             public FunctionAppConfig getData() {
                 // Create AI instance with same name by default

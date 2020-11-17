@@ -33,7 +33,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.io.IOException;
 import java.util.List;
 
 public class FunctionModule extends AzureRefreshableNode implements FunctionModuleView {
@@ -57,7 +56,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
         try {
             functionModulePresenter.onDeleteFunctionApp(sid, id);
             removeDirectChildNode(node);
-        } catch (IOException | CloudException e) {
+        } catch (CloudException e) {
             DefaultLoader.getUIHelper().showException(String.format(FAILED_TO_DELETE_FUNCTION_APP, node.getName()),
                     e, ERROR_DELETING_FUNCTION_APP, false, true);
             functionModulePresenter.onModuleRefresh();

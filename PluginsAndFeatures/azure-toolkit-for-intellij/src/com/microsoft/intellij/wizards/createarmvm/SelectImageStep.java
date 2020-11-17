@@ -262,6 +262,10 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
                 fillRegions();
             }
         }
+        if ((knownImageBtn.isSelected() && knownImageComboBox.getSelectedItem() == null) ||
+                (customImageBtn.isSelected() && imageLabelList.getSelectedValue() == null)) {
+            disableNext();
+        }
         return rootPanel;
     }
 

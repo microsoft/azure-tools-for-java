@@ -24,14 +24,22 @@ package com.microsoft.azure.toolkit.lib.function;
 
 import com.microsoft.azure.toolkit.lib.appservice.AppServiceConfig;
 import com.microsoft.azure.toolkit.lib.appservice.Platform;
+import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class FunctionAppConfig extends AppServiceConfig {
     public static final Platform DEFAULT_PLATFORM = Platform.AzureFunction.Windows_Java8;
     @Builder.Default
     protected Platform platform = DEFAULT_PLATFORM;
+
+    public static FunctionAppConfig getFunctionAppDefaultConfig() {
+        return FunctionAppConfig.builder()
+                                .platform(FunctionAppConfig.DEFAULT_PLATFORM)
+                                .pricingTier(AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER)
+                                .region(AppServiceConfig.DEFAULT_REGION).build();
+    }
 }

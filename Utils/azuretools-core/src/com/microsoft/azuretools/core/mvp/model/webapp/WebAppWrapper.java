@@ -32,7 +32,6 @@ import rx.Completable;
 import rx.Observable;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 public class WebAppWrapper extends WebAppBaseWrapper implements WebApp {
@@ -122,14 +121,10 @@ public class WebAppWrapper extends WebAppBaseWrapper implements WebApp {
     }
 
     private WebApp getWebApp() {
-        try {
-            if (this.webapp == null) {
-                final AzureWebAppMvpModel instance = AzureWebAppMvpModel.getInstance();
-                this.webapp = instance.getWebAppById(getSubscriptionId(), inner().id());
-            }
-            return this.webapp;
-        } catch (final IOException e) {
-            throw new RuntimeException("Failed to get webapp instance");
+        final AzureWebAppMvpModel instance = AzureWebAppMvpModel.getInstance();
+        if (this.webapp == null) {
+            this.webapp = instance.getWebAppById(getSubscriptionId(), inner().id());
         }
+        return this.webapp;
     }
 }

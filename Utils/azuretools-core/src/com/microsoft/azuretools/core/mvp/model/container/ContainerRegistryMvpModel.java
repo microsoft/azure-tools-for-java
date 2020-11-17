@@ -35,7 +35,6 @@ import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,15 +81,11 @@ public class ContainerRegistryMvpModel {
             return subscriptionIdToRegistryMap.get(sid);
         }
         List<ResourceEx<Registry>> registryList = new ArrayList<>();
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            for (Registry registry: azure.containerRegistries().list()) {
-                registryList.add(new ResourceEx<>(registry, sid));
-            }
-            subscriptionIdToRegistryMap.put(sid, registryList);
-        } catch (IOException e) {
-            e.printStackTrace();
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        for (Registry registry: azure.containerRegistries().list()) {
+            registryList.add(new ResourceEx<>(registry, sid));
         }
+        subscriptionIdToRegistryMap.put(sid, registryList);
         return registryList;
     }
 
@@ -134,7 +129,7 @@ public class ContainerRegistryMvpModel {
     /**
      * Set AdminUser enabled status of container registry.
      */
-    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) throws IOException {
+    public Registry setAdminUserEnabled(String sid, String id, boolean enabled) {
         Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
         Registries registries = azure.containerRegistries();
         if (registries != null) {

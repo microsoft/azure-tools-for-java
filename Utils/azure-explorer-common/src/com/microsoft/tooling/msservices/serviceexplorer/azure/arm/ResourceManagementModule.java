@@ -27,12 +27,14 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.*;
+import com.microsoft.azuretools.utils.AzureUIRefreshCore;
+import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import com.microsoft.azuretools.utils.AzureUIRefreshListener;
+import com.microsoft.azuretools.utils.CanceledByUserException;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.io.IOException;
 import java.util.List;
 
 public class ResourceManagementModule extends AzureRefreshableNode implements ResourceManagementModuleView {
@@ -54,8 +56,6 @@ public class ResourceManagementModule extends AzureRefreshableNode implements Re
     protected void refreshItems() throws AzureCmdException {
         try {
             rmModulePresenter.onModuleRefresh();
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
         } catch (final CanceledByUserException e) {
             DefaultLoader.getUIHelper().showWarningNotification("Refreshing cancelled", "You canceled refreshing resource groups.");
         }

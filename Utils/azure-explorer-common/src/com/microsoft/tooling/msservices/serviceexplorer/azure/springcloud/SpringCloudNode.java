@@ -30,16 +30,13 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
 import io.reactivex.rxjava3.disposables.Disposable;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.OPEN_IN_PORTAL_SPRING_CLOUD_APP;
@@ -95,24 +92,17 @@ public class SpringCloudNode extends RefreshableNode implements TelemetryPropert
     @Override
     protected void loadActions() {
         super.loadActions();
-        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    openResourcesInPortal(subscriptionId, clusterId);
-                }
-            }));
+        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+                openResourcesInPortal(subscriptionId, clusterId);
+            }
+        }));
     }
 
     @Override
     protected void refreshItems() {
-        try {
-            springCloudNodePresenter.onRefreshSpringCloudServiceNode(this.subscriptionId, this.clusterId);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_LOAD_APPS, this.clusterName), e);
-            DefaultLoader.getUIHelper().showException(String.format(FAILED_TO_LOAD_APPS, this.clusterName),
-                                                      e, ERROR_LOAD_APP, false, true);
-        }
+        springCloudNodePresenter.onRefreshSpringCloudServiceNode(this.subscriptionId, this.clusterId);
     }
 
     @Override

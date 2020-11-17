@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.44.0</version>
+  <version>3.45.0</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,34 +24,32 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.44.0</h3>
+    <h3>3.45.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Support new runtime JBOSS 7.2 for Linux Web App</li>
-        <li>Support Gradle projects for Web App and Spring Cloud</li>
-        <li>Support file deploy for Web App</li>
+        <li>Add file explorer for Web App and Function App in Azure explorer</li>
+        <li>Support flight recorder for Web App</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>New creation wizard for Web App with basic and advanced mode</li>
+        <li>New creation wizard for Function App with basic and advanced mode</li>
+        <li>More monitoring configuration in Web App/Function App creation wizard</li>
+        <li>Update template for function project</li>
     </ul>
     <h4>Fixed</h4>
     <ul>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/2975">#2975</a>,<a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/4600">#4600</a>,<a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/4605">#4605</a>,<a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/4544">#4544</a> Enhance error handling for
-            network issues</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4545">#4545</a>,<a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/4566">#4566</a> Unhandled
-            ProcessCanceledException while start up</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4530">#4530</a> Unhandled exception in whats
-            new document</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/issues/4591">#4591</a>,<a
-                href="https://github.com/microsoft/azure-tools-for-java/issues/4599">#4599</a> Fix Spring Cloud deployment
-            error handling</li>
-        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4604">#4558</a> Unhandled exception in device
-            login</li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4703">#4703</a>
+            Fix NPE issue in Function creation/deployment
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4707">#4707</a>
+            Enhace error handling for azure cli token expires
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4710">#4710</a>
+            Register service provider for insights before get insights client
+        </li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

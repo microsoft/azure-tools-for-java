@@ -3,6 +3,7 @@
 All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in this file.
 
 - [Change Log](#change-log)
+  - [3.45.0](#3450)
   - [3.44.0](#3440)
   - [3.43.0](#3430)
   - [3.42.0](#3420)
@@ -57,6 +58,21 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
   - [3.0.8](#308)
   - [3.0.7](#307)
   - [3.0.6](#306)
+
+## 3.45.0
+### Added
+- Add file explorer for Web App and Function App in Azure explorer
+- Support flight recorder for Web App
+
+### Changed
+- New creation wizard for Function App with basic and advanced mode
+- More monitoring configuration in Web App/Function App creation wizard
+- Update template for function project
+
+### Fixed
+- [#4703](https://github.com/microsoft/azure-tools-for-java/pull/4703) Fix NPE issue in Function creation/deployment
+- [#4707](https://github.com/microsoft/azure-tools-for-java/pull/4707) Enhace error handling for azure cli token expires
+- [#4710](https://github.com/microsoft/azure-tools-for-java/pull/4710) Register service provider for insights before get insights client
 
 ## 3.44.0
 ### Added

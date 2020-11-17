@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FunctionRunConfiguration extends AzureRunConfigurationBase<FunctionRunModel>
     implements LocatableConfiguration, RunProfileWithCompileBeforeLaunchOption {
     private JsonObject appSettingsJsonObject;
@@ -213,16 +215,16 @@ public class FunctionRunConfiguration extends AzureRunConfigurationBase<Function
     @Override
     public void validate() throws ConfigurationException {
         if (getModule() == null) {
-            throw new ConfigurationException("Please specify module");
+            throw new ConfigurationException(message("function.run.validate.noModule"));
         }
 
         if (StringUtils.isEmpty(getFuncPath())) {
-            throw new ConfigurationException("Please specify function cli path");
+            throw new ConfigurationException(message("function.run.validate.noFuncPath"));
         }
 
         final File func = new File(getFuncPath());
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
-            throw new ConfigurationException("Please specify correct function cli path");
+            throw new ConfigurationException(message("function.run.validate.invalidFuncPath"));
         }
     }
 

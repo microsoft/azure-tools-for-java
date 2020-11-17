@@ -24,10 +24,9 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deployment
 
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
-import java.io.IOException;
 
 public class DeploymentSlotModulePresenter<V extends DeploymentSlotModuleView> extends MvpPresenter<V> {
-    public void onRefreshDeploymentSlotModule(final String subscriptionId, final String webAppId) throws IOException {
+    public void onRefreshDeploymentSlotModule(final String subscriptionId, final String webAppId) {
         final DeploymentSlotModuleView view = getMvpView();
         if (view != null) {
             view.renderDeploymentSlots(AzureWebAppMvpModel.getInstance().getDeploymentSlots(subscriptionId, webAppId));
@@ -35,7 +34,7 @@ public class DeploymentSlotModulePresenter<V extends DeploymentSlotModuleView> e
     }
 
     public void onDeleteDeploymentSlot(final String subscriptionId, final String webAppId,
-                                       final String slotName) throws IOException {
+                                       final String slotName) {
         AzureWebAppMvpModel.getInstance().deleteDeploymentSlotNode(subscriptionId, webAppId, slotName);
     }
 }

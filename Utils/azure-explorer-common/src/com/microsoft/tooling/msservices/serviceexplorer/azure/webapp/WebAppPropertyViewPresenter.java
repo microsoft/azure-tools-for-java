@@ -22,22 +22,20 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBasePropertyViewPresenter;
 
+import java.util.Map;
+import java.util.Set;
+
 public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter {
     @Override
     protected void updateAppSettings(@NotNull final String sid, @NotNull final String webAppId,
                                      @Nullable final String name, final Map toUpdate,
-                                     final Set toRemove) throws Exception {
+                                     final Set toRemove) {
         AzureWebAppMvpModel.getInstance().updateWebAppSettings(sid, webAppId, toUpdate, toRemove);
     }
 
@@ -50,7 +48,7 @@ public class WebAppPropertyViewPresenter extends WebAppBasePropertyViewPresenter
 
     @Override
     protected WebAppBase getWebAppBase(@NotNull final String sid, @NotNull final String webAppId,
-                                       @Nullable final String name) throws Exception {
+                                       @Nullable final String name) {
         return AzureWebAppMvpModel.getInstance().getWebAppById(sid, webAppId);
     }
 }

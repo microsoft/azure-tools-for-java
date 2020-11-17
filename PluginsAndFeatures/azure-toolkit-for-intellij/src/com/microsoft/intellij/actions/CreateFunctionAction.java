@@ -39,13 +39,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.PsiNameHelper;
-import com.intellij.psi.PsiPackage;
+import com.intellij.psi.*;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.util.IncorrectOperationException;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
@@ -55,11 +49,7 @@ import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.forms.function.CreateFunctionForm;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.util.AzureFunctionsUtils;
@@ -70,20 +60,18 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_TRIGGER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class CreateFunctionAction extends CreateElementActionBase {
     private static final String DEFAULT_EVENT_HUB_CONNECTION_STRING = "Endpoint=sb://<your-envent-hub-namespace>.servicebus.windows.net/;" +
             "SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<your-SAS-key>;";
 
     public CreateFunctionAction() {
-        super("Azure Function Class",
+        super(message("function.createFunction.action.title"),
                 "newPage.dialog.prompt", IconLoader.getIcon(AzureFunctionSupportConfigurationType.ICON_PATH,
                         AzureFunctionSupportConfigurationType.class));
     }
@@ -115,7 +103,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                         }});
                     if (StringUtils.equalsIgnoreCase(triggerType, CreateFunctionForm.EVENT_HUB_TRIGGER)) {
                         if (StringUtils.isBlank(connectionName)) {
-                            throw new AzureExecutionException("Required property 'connection' is missing");
+                            throw new AzureExecutionException(message("function.createFunction.error.connectionMissed"));
                         }
                         parameters.putIfAbsent("eventHubName", "myeventhub");
                         parameters.putIfAbsent("consumerGroup", "$Default");
@@ -133,7 +121,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                             try {
                                 mkDirs.directory.checkCreateFile(className + ".java");
                             } catch (IncorrectOperationException e) {
-                                PluginUtil.displayErrorDialog("Create Azure Function Class error", e.getMessage());
+                                PluginUtil.displayErrorDialog(message("function.createFunction.error.title"), e.getMessage());
                                 return;
                             }
                             CommandProcessor.getInstance().executeCommand(project, () -> {
@@ -149,7 +137,7 @@ public class CreateFunctionAction extends CreateElementActionBase {
                                     AzureFunctionsUtils.applyKeyValueToLocalSettingFile(new File(project.getBasePath(), "local.settings.json"),
                                             parameters.get("connection"), connectionString);
                                 } catch (IOException e) {
-                                    PluginUtil.displayErrorDialogAndLog("Create Azure Function Class error", e.getMessage(), e);
+                                    PluginUtil.displayErrorDialogAndLog(message("function.createFunction.error.title"), e.getMessage(), e);
                                     EventUtil.logError(operation, ErrorType.systemError, e, null, null);
                                 }
                             }
@@ -219,14 +207,10 @@ public class CreateFunctionAction extends CreateElementActionBase {
     }
 
     private String getEventHubNamespaceConnectionString(EventHubNamespace eventHubNamespace) {
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(eventHubNamespace.id().split("/")[2]);
-            EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = azure.eventHubNamespaces().
-                    authorizationRules().getByName(eventHubNamespace.resourceGroupName(), eventHubNamespace.name(),
-                    "RootManageSharedAccessKey");
-            return eventHubNamespaceAuthorizationRule.getKeys().primaryConnectionString();
-        } catch (IOException e) {
-            return null;
-        }
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(eventHubNamespace.id().split("/")[2]);
+        EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = azure.eventHubNamespaces().
+            authorizationRules().getByName(eventHubNamespace.resourceGroupName(), eventHubNamespace.name(),
+            "RootManageSharedAccessKey");
+        return eventHubNamespaceAuthorizationRule.getKeys().primaryConnectionString();
     }
 }
