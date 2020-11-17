@@ -28,7 +28,6 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.intellij.runner.functions.library.IFunctionContext;
 import lombok.Data;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -86,7 +85,7 @@ public class IntelliJFunctionContext implements IFunctionContext {
     }
 
     @Override
-    public Azure getAzureClient() throws IOException {
+    public Azure getAzureClient() {
         return AuthMethodManager.getInstance().getAzureManager().getAzure(subscription);
     }
 

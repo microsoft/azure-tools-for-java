@@ -22,6 +22,8 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
+
 public abstract class AzureTaskManager {
 
     private static AzureTaskManager instance;
@@ -36,13 +38,51 @@ public abstract class AzureTaskManager {
         return AzureTaskManager.instance;
     }
 
-    public abstract void runLater(AzureTask task);
+    public final void runLater(Runnable task) {
+        final Runnable runnable = this.initClosure(task);
+        this.doRunLater(runnable);
+    }
 
-    public abstract void runLater(Runnable runnable);
+    public final void runAndWait(Runnable task) {
+        final Runnable runnable = this.initClosure(task);
+        this.doRunAndWait(runnable);
+    }
 
-    public abstract void runAndWait(Runnable runnable);
+    public final void runLater(AzureTask task) {
+        final Runnable runnable = this.initClosure(task.getRunnable());
+        task.setRunnable(runnable);
+        this.doRunLater(task);
+    }
 
-    public abstract void runInBackground(AzureTask task);
+    public final void runInBackground(AzureTask task) {
+        final Runnable runnable = this.initClosure(task.getRunnable());
+        task.setRunnable(runnable);
+        this.doRunInBackground(task);
+    }
 
-    public abstract void runInModal(AzureTask task);
+    public final void runInModal(AzureTask task) {
+        final Runnable runnable = this.initClosure(task.getRunnable());
+        task.setRunnable(runnable);
+        this.doRunInModal(task);
+    }
+
+    protected abstract void doRunLater(AzureTask task);
+
+    protected abstract void doRunLater(final Runnable runnable);
+
+    protected abstract void doRunAndWait(Runnable runnable);
+
+    protected abstract void doRunInBackground(AzureTask task);
+
+    protected abstract void doRunInModal(AzureTask task);
+
+    private Runnable initClosure(final Runnable runnable) {
+        return AzureOperationsContext.deriveClosure(() -> {
+            try {
+                runnable.run();
+            } catch (final RuntimeException e) {
+                //TODO: @miller handle exception
+            }
+        });
+    }
 }
