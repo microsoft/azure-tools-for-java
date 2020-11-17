@@ -24,6 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -389,6 +390,11 @@ public class Node implements MvpView, BasicTelemetryProperty {
         return TelemetryConstants.ACTION;
     }
 
+    @AzureOperation(
+        value = "open home page of [$s] in portal",
+        params = {"@id"},
+        type = AzureOperation.Type.ACTION
+    )
     public void openResourcesInPortal(String subscriptionId, String resourceRelativePath) {
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in

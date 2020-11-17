@@ -31,6 +31,7 @@ import com.microsoft.azure.common.utils.AppServiceUtils;
 import com.microsoft.azure.management.appservice.AppServicePlan;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -69,6 +70,11 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
+    @AzureOperation(
+        value = "deploy function[%s] to Azure Cloud",
+        params = {"@deployModel.getAppName()"},
+        type = AzureOperation.Type.ACTION
+    )
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         updateTelemetryMap(telemetryMap);
@@ -99,6 +105,11 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         return deployFunctionHandler.execute();
     }
 
+    @AzureOperation(
+        value = "get or create function[%s] details from Azure server",
+        params = {"@deployModel.getAppName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     private FunctionApp createFunctionApp(RunProcessHandler processHandler) throws IOException, AzureExecutionException {
         FunctionApp functionApp =
                 AzureFunctionMvpModel.getInstance().getFunctionByName(functionDeployConfiguration.getSubscriptionId(),
@@ -134,6 +145,11 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
+    @AzureOperation(
+        value = "complete the deployment of function[%s] and refresh Azure Explorer",
+        params = {"@deployModel.getAppName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("appService.deploy.hint.succeed"));
         processHandler.notifyComplete();

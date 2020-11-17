@@ -26,6 +26,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
@@ -129,11 +130,19 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(FUNCTION, SHOWPROP_FUNCTION_APP, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getUIHelper()
-                             .openFunctionAppPropertyView(FunctionNode.this);
+                showProperties();
             }
         }));
         super.loadActions();
+    }
+
+    @AzureOperation(
+        value = "show properties web app[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.ACTION
+    )
+    private void showProperties() {
+        DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionNode.this);
     }
 
     @Override
@@ -156,14 +165,29 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         return this.functionAppName;
     }
 
+    @AzureOperation(
+        value = "start function app[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.ACTION
+    )
     public void startFunctionApp() {
         functionNodePresenter.onStartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
+    @AzureOperation(
+        value = "restart function app[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.ACTION
+    )
     public void restartFunctionApp() {
         functionNodePresenter.onRestartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
+    @AzureOperation(
+        value = "stop function app[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.ACTION
+    )
     public void stopFunctionApp() {
         functionNodePresenter.onStopFunctionApp(this.subscriptionId, this.functionAppId);
     }

@@ -28,6 +28,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.intellij.webapp.WebAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
@@ -79,6 +80,17 @@ public class CreateWebAppAction extends NodeActionListener {
         dialog.show();
     }
 
+    @AzureOperation(
+        value = "create web app[%s, os=%s, rg=%s, sp=%s] in subscription[%s]",
+        params = {
+            "$config.getName()",
+            "$config.getPlatform().getOs()",
+            "$config.getResourceGroup().name()",
+            "$config.getServicePlan().name()",
+            "$config.getSubscription().displayName()"
+        },
+        type = AzureOperation.Type.ACTION
+    )
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
@@ -98,6 +110,11 @@ public class CreateWebAppAction extends NodeActionListener {
         AzureTaskManager.getInstance().runInModal(task);
     }
 
+    @AzureOperation(
+        value = "deploy artifact[%s] to web app[%s]",
+        params = {"$application.getFileName().toString()", "$config.getName()"},
+        type = AzureOperation.Type.ACTION
+    )
     private void deploy(final WebApp webapp, final Path application, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
@@ -116,6 +133,10 @@ public class CreateWebAppAction extends NodeActionListener {
         AzureTaskManager.getInstance().runInModal(task);
     }
 
+    @AzureOperation(
+        value = "refresh azure explorer",
+        type = AzureOperation.Type.ACTION
+    )
     private void refreshAzureExplorer() {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

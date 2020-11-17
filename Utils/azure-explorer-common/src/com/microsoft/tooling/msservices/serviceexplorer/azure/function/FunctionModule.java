@@ -24,7 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.function;
 
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
@@ -52,6 +52,11 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
+    @AzureOperation(
+        value = "remove function app[%s] in subscription[%s]",
+        params = {"$id", "$sid"},
+        type = AzureOperation.Type.ACTION
+    )
     public void removeNode(String sid, String id, Node node) {
         try {
             functionModulePresenter.onDeleteFunctionApp(sid, id);
@@ -72,7 +77,11 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    @AzureOperation(
+        value = "reload function apps in selected subscription(s)",
+        type = AzureOperation.Type.ACTION
+    )
+    protected void refreshItems() {
         functionModulePresenter.onModuleRefresh();
     }
 

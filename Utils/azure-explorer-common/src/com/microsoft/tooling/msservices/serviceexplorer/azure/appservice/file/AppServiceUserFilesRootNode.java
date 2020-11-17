@@ -24,7 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file;
 
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
@@ -59,7 +59,8 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     }
 
     @Override
-    protected void refreshItems() throws AzureCmdException {
+    @AzureOperation(value = "reload (log)files of web app[%s]", params = {"@app.name()"})
+    protected void refreshItems() {
         final AppServiceFileService service = this.getFileService();
         service.getFilesInDirectory(getRootPath()).stream()
                .map(file -> new AppServiceFileNode(file, this, service))

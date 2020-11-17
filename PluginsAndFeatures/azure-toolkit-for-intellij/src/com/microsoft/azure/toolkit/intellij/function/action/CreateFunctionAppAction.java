@@ -27,6 +27,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
@@ -73,23 +74,39 @@ public class CreateFunctionAppAction extends NodeActionListener {
         dialog.show();
     }
 
+    @AzureOperation(
+        value = "create function app[%s, os=%s, rg=%s, sp=%s] in subscription[%s]",
+        params = {
+            "$config.getName()",
+            "$config.getPlatform().getOs()",
+            "$config.getResourceGroup().name()",
+            "$config.getServicePlan().name()",
+            "$config.getSubscription().displayName()"
+        },
+        type = AzureOperation.Type.ACTION
+    )
     private void createFunctionApp(final FunctionAppConfig config, Runnable callback, final Project project) {
         final AzureTask task = new AzureTask(null, message("function.create.task.title"), true, () -> {
-                final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-                indicator.setIndeterminate(true);
-                try {
-                    final FunctionApp functionApp = functionAppService.createFunctionApp(config);
-                    callback.run();
-                    refreshAzureExplorer(functionApp);
-                } catch (final Exception ex) {
-                    // TODO: @wangmi show error with balloon notification instead of dialog
-                    DefaultLoader.getUIHelper().showError(message("function.create.error.title") + ex.getMessage(),
-                                                          message("function.create.error.createFailed"));
-                }
+            final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+            indicator.setIndeterminate(true);
+            try {
+                final FunctionApp functionApp = functionAppService.createFunctionApp(config);
+                callback.run();
+                refreshAzureExplorer(functionApp);
+            } catch (final Exception ex) {
+                // TODO: @wangmi show error with balloon notification instead of dialog
+                final String title = message("function.create.error.title") + ex.getMessage();
+                final String description = message("function.create.error.createFailed");
+                DefaultLoader.getUIHelper().showError(title, description);
+            }
         });
         AzureTaskManager.getInstance().runInModal(task);
     }
 
+    @AzureOperation(
+        value = "refresh azure explorer",
+        type = AzureOperation.Type.ACTION
+    )
     private void refreshAzureExplorer(FunctionApp functionApp) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

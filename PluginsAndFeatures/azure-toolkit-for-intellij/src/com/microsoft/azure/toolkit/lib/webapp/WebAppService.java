@@ -27,6 +27,7 @@ import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.toolkit.lib.appservice.Draft;
 import com.microsoft.azure.toolkit.lib.appservice.MonitorConfig;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.WebAppSettingModel;
 import com.microsoft.azuretools.telemetrywrapper.*;
@@ -44,6 +45,7 @@ public class WebAppService {
         return WebAppService.instance;
     }
 
+    @AzureOperation(value = "create webapp[%s]", params = {"$config.getName()"})
     public WebApp createWebApp(final WebAppConfig config) throws Exception {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);

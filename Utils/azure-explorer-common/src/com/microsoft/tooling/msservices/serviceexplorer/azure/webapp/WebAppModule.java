@@ -25,6 +25,7 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
@@ -57,11 +58,20 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     }
 
     @Override
+    @AzureOperation(
+        value = "reload web apps in selected subscription(s)",
+        type = AzureOperation.Type.ACTION
+    )
     protected void refreshItems() throws AzureCmdException {
         webAppModulePresenter.onModuleRefresh();
     }
 
     @Override
+    @AzureOperation(
+        value = "delete web app[%s]",
+        params = {"$id", "$sid"},
+        type = AzureOperation.Type.ACTION
+    )
     public void removeNode(String sid, String id, Node node) {
         try {
             webAppModulePresenter.onDeleteWebApp(sid, id);
