@@ -30,12 +30,7 @@ import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 import com.microsoft.azuretools.utils.Pair;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -58,25 +53,25 @@ public class SubscriptionManager {
         this.azureManager = azureManager;
     }
 
-    public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() throws IOException {
+    public synchronized Map<String, SubscriptionDetail> getSubscriptionIdToSubscriptionDetailsMap() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionDetailsMap()");
         updateSubscriptionDetailsIfNull();
         return subscriptionIdToSubscriptionDetailMap;
     }
 
-    public synchronized Map<String, Subscription> getSubscriptionIdToSubscriptionMap() throws IOException {
+    public synchronized Map<String, Subscription> getSubscriptionIdToSubscriptionMap() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionIdToSubscriptionMap()");
         updateSubscriptionDetailsIfNull();
         return subscriptionIdToSubscriptionMap;
     }
 
-    public synchronized List<SubscriptionDetail> getSubscriptionDetails() throws IOException {
+    public synchronized List<SubscriptionDetail> getSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
         return subscriptionDetails;
     }
 
-    public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() throws IOException {
+    public synchronized List<SubscriptionDetail> getSelectedSubscriptionDetails() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.getSelectedSubscriptionDetails()");
         updateSubscriptionDetailsIfNull();
 
@@ -85,14 +80,14 @@ public class SubscriptionManager {
                 .collect(Collectors.toList());
     }
 
-    public void updateSubscriptionDetailsIfNull() throws IOException {
+    public void updateSubscriptionDetailsIfNull() {
         if (subscriptionDetails == null) {
             List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
             doSetSubscriptionDetails(sdl);
         }
     }
 
-    protected List<SubscriptionDetail> updateAccountSubscriptionList() throws IOException {
+    protected List<SubscriptionDetail> updateAccountSubscriptionList() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.updateAccountSubscriptionList()");
 
         if (azureManager == null) {
@@ -115,7 +110,7 @@ public class SubscriptionManager {
         return sdl;
     }
 
-    private synchronized void doSetSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws IOException {
+    private synchronized void doSetSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.doSetSubscriptionDetails()");
         this.subscriptionDetails = subscriptionDetails;
         updateMapAccordingToList(); // WORKAROUND: Update SubscriptionId->SubscriptionDetail Map
@@ -123,7 +118,7 @@ public class SubscriptionManager {
     }
 
     // WORKAROUND: private helper to construct SubscriptionId->SubscriptionDetail map
-    private void updateMapAccordingToList() throws IOException {
+    private void updateMapAccordingToList() {
         Map<String, SubscriptionDetail> sid2sd = new ConcurrentHashMap<>();
         for (SubscriptionDetail sd : this.subscriptionDetails) {
             sid2sd.put(sd.getSubscriptionId(),
@@ -136,7 +131,7 @@ public class SubscriptionManager {
         this.subscriptionIdToSubscriptionDetailMap = sid2sd;
     }
 
-    public void setSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) throws IOException {
+    public void setSubscriptionDetails(List<SubscriptionDetail> subscriptionDetails) {
         System.out.println("SubscriptionManager.setSubscriptionDetails() " + Thread.currentThread().getId());
         doSetSubscriptionDetails(subscriptionDetails);
         notifyAllListeners();
@@ -171,7 +166,7 @@ public class SubscriptionManager {
         return sidToTid.keySet();
     }
 
-    public void cleanSubscriptions() throws IOException {
+    public void cleanSubscriptions() {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.cleanSubscriptions()");
         synchronized (this) {
             if (subscriptionDetails != null) {

@@ -35,6 +35,7 @@ import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
 import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.*;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
 import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
@@ -42,7 +43,6 @@ import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -108,7 +108,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public String getTenantIdBySubscription(String subscriptionId) throws IOException {
+    public String getTenantIdBySubscription(String subscriptionId) {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
                 .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
@@ -122,12 +122,12 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public List<Subscription> getSubscriptions() throws IOException {
+    public List<Subscription> getSubscriptions() {
         return getSubscriptionsWithTenant().stream().map(Pair::first).collect(Collectors.toList());
     }
 
     @Override
-    public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException {
+    public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() {
         final List<Pair<Subscription, Tenant>> subscriptions = new LinkedList<>();
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
         // could be multi tenant - return all subscriptions for the current account
@@ -156,7 +156,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public Azure getAzure(String sid) throws IOException {
+    public @Nullable Azure getAzure(String sid) {
         if (!isSignedIn()) {
             return null;
         }
@@ -172,18 +172,18 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public AppPlatformManager getAzureSpringCloudClient(String sid) throws IOException {
+    public @Nullable AppPlatformManager getAzureSpringCloudClient(String sid) {
         if (!isSignedIn()) {
             return null;
         }
         return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
+            final String tid = this.subscriptionManager.getSubscriptionTenant(sid);
             return authSpringCloud(sid, tid);
         });
     }
 
     @Override
-    public MySQLManager getMySQLClient(String sid) throws IOException {
+    public MySQLManager getMySQLClient(String sid) {
         if (!isSignedIn()) {
             return null;
         }
@@ -193,20 +193,15 @@ public abstract class AzureManagerBase implements AzureManager {
         });
     }
 
-    @Override
-    public InsightsManager getInsightsManager(String sid) throws IOException {
+    public @Nullable InsightsManager getInsightsManager(String sid) {
         if (!isSignedIn()) {
             return null;
         }
         return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
-            try {
-                // Register insights namespace first
-                final Azure azure = getAzure(sid);
-                azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
-            } catch (IOException e) {
-                // swallow exception while get azure client
-            }
-            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
+            // Register insights namespace first
+            final Azure azure = getAzure(sid);
+            azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
+            final String tid = this.subscriptionManager.getSubscriptionTenant(sid);
             return authApplicationInsights(sid, tid);
         });
     }
@@ -225,7 +220,7 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public String getManagementURI() throws IOException {
+    public @Nullable String getManagementURI() {
         if (!isSignedIn()) {
             return null;
         }
@@ -247,12 +242,12 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
-    public void drop() throws IOException {
+    public void drop() {
         LOGGER.log(Level.INFO, "ServicePrincipalAzureManager.drop()");
         this.subscriptionManager.cleanSubscriptions();
     }
 
-    protected abstract String getCurrentTenantId() throws IOException;
+    protected abstract String getCurrentTenantId();
 
     protected boolean isSignedIn() {
         return false;

@@ -22,8 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import java.io.IOException;
-
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
@@ -68,7 +66,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
         try {
             webAppModulePresenter.onDeleteWebApp(sid, id);
             removeDirectChildNode(node);
-        } catch (IOException | CloudException e) {
+        } catch (CloudException e) {
             DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
                     e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
         }

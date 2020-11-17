@@ -39,13 +39,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
-import com.intellij.psi.PsiNameHelper;
-import com.intellij.psi.PsiPackage;
+import com.intellij.psi.*;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.util.IncorrectOperationException;
 import com.microsoft.azure.common.exceptions.AzureExecutionException;
@@ -55,11 +49,7 @@ import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.eventhub.EventHubNamespaceAuthorizationRule;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
-import com.microsoft.azuretools.telemetrywrapper.ErrorType;
-import com.microsoft.azuretools.telemetrywrapper.EventType;
-import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.telemetrywrapper.Operation;
-import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+import com.microsoft.azuretools.telemetrywrapper.*;
 import com.microsoft.intellij.forms.function.CreateFunctionForm;
 import com.microsoft.intellij.runner.functions.AzureFunctionSupportConfigurationType;
 import com.microsoft.intellij.util.AzureFunctionsUtils;
@@ -70,10 +60,7 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.CREATE_FUNCTION_TRIGGER;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.FUNCTION;
@@ -220,14 +207,10 @@ public class CreateFunctionAction extends CreateElementActionBase {
     }
 
     private String getEventHubNamespaceConnectionString(EventHubNamespace eventHubNamespace) {
-        try {
-            Azure azure = AuthMethodManager.getInstance().getAzureClient(eventHubNamespace.id().split("/")[2]);
-            EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = azure.eventHubNamespaces().
-                    authorizationRules().getByName(eventHubNamespace.resourceGroupName(), eventHubNamespace.name(),
-                    "RootManageSharedAccessKey");
-            return eventHubNamespaceAuthorizationRule.getKeys().primaryConnectionString();
-        } catch (IOException e) {
-            return null;
-        }
+        Azure azure = AuthMethodManager.getInstance().getAzureClient(eventHubNamespace.id().split("/")[2]);
+        EventHubNamespaceAuthorizationRule eventHubNamespaceAuthorizationRule = azure.eventHubNamespaces().
+            authorizationRules().getByName(eventHubNamespace.resourceGroupName(), eventHubNamespace.name(),
+            "RootManageSharedAccessKey");
+        return eventHubNamespaceAuthorizationRule.getKeys().primaryConnectionString();
     }
 }

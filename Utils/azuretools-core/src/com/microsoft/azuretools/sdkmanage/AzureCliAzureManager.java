@@ -34,9 +34,9 @@ import com.microsoft.azuretools.authmanage.AzureManagerFactory;
 import com.microsoft.azuretools.authmanage.CommonSettings;
 import com.microsoft.azuretools.authmanage.Environment;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.utils.CommandUtils;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang.ObjectUtils;
@@ -107,7 +107,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public void drop() throws IOException {
+    public void drop() {
         this.currentClientId = null;
         this.currentTenantId = null;
         this.tenantTokens.clear();
@@ -142,11 +142,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
             authResult.setAzureEnv(credentials.environment().toString());
             return authResult;
         } catch (final IOException e) {
-            try {
-                drop();
-            } catch (final IOException ignore) {
-                // swallow exception while clean up
-            }
+            drop();
             throw new AzureExecutionException(FAILED_TO_AUTH_WITH_AZURE_CLI, e);
         }
     }
