@@ -160,7 +160,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
         @NotNull
         private String resourcePoolVersion = "";
         @NotNull
-        private String sparkVersion = "2.3.0";
+        private String sparkVersion = "2.4.4";
         @NotNull
         private String userStorageAccount = "";
         @NotNull

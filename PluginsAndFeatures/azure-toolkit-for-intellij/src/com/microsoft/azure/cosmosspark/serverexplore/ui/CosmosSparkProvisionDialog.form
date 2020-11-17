@@ -99,7 +99,7 @@
               <editable value="false"/>
               <enabled value="true"/>
               <model>
-                <item value="Spark 2.3.0"/>
+                <item value="Spark 2.4.4"/>
               </model>
             </properties>
           </component>
