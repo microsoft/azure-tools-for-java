@@ -35,6 +35,9 @@ import java.util.Map;
 
 public class MavenDependencyManager {
     public static final String POM_NAMESPACE = "http://maven.apache.org/POM/4.0.0";
+    private static final String MAVEN_ARTIFACT_ID = "artifactId";
+    private static final String MAVEN_GROUP_ID = "groupId";
+    private static final String MAVEN_VERSION = "version";
 
     protected Document doc;
 
@@ -47,8 +50,8 @@ public class MavenDependencyManager {
 
     public String getPluginConfiguration(String groupId, String artifactId, String configurationName) {
         for (Node node : doc.selectNodes("//ns:project/ns:build/ns:plugins/ns:plugin")) {
-            String myGroupId = ((Element) node).elementTextTrim("groupId");
-            String myArtifactId = ((Element) node).elementTextTrim("artifactId");
+            String myGroupId = ((Element) node).elementTextTrim(MAVEN_GROUP_ID);
+            String myArtifactId = ((Element) node).elementTextTrim(MAVEN_ARTIFACT_ID);
             if (StringUtils.equals(groupId, myGroupId) && StringUtils.equals(artifactId, myArtifactId)) {
                 Element configurationNode = ((Element) node).element("configuration");
                 return configurationNode == null ? null : configurationNode.elementTextTrim(configurationName);
@@ -81,9 +84,10 @@ public class MavenDependencyManager {
 
     protected static void collectDependencyVersionsFromNodes(List<Node> nodes, Map<String, DependencyArtifact> versionMap) {
         for (Node node : nodes) {
-            String groupId = ((Element) node).elementTextTrim("groupId");
-            String artifactId = ((Element) node).elementTextTrim("artifactId");
-            DependencyArtifact artifact = new DependencyArtifact(groupId, artifactId, ((Element) node).elementTextTrim("version"));
+            String groupId = ((Element) node).elementTextTrim(MAVEN_GROUP_ID);
+            String artifactId = ((Element) node).elementTextTrim(MAVEN_ARTIFACT_ID);
+            DependencyArtifact artifact = new DependencyArtifact(groupId, artifactId, ((Element) node).elementTextTrim(
+                    MAVEN_VERSION));
             versionMap.put(artifact.getKey(), artifact);
         }
     }
