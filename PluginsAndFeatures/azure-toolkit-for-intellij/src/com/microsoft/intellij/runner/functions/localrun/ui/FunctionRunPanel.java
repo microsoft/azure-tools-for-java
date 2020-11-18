@@ -93,7 +93,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     @Override
     public void disposeEditor() {
-
     }
 
     @Override
@@ -101,6 +100,8 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
+        // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
+        appSettingsTable.loadRequiredSettings();
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {
             txtFunc.setText(configuration.getFuncPath());
         }

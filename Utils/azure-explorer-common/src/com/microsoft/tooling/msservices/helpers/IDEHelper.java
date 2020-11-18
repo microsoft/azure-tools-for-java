@@ -22,14 +22,16 @@
 
 package com.microsoft.tooling.msservices.helpers;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
+
+import javax.swing.*;
+import java.io.File;
+import java.util.List;
 
 public interface IDEHelper {
     class ProjectDescriptor {
@@ -152,4 +154,16 @@ public interface IDEHelper {
 
     void openLinkInBrowser(@NotNull String url);
 
+    @Nullable
+    default Icon getFileTypeIcon(String name, boolean isDirectory) {
+        return null;
+    }
+
+    default void saveAppServiceFile(@NotNull final AppServiceFile file, @NotNull Object context, @Nullable File dest) {
+        // do nothing in default
+    }
+
+    default void openAppServiceFile(final AppServiceFile file, Object context) {
+        // do nothing in default
+    }
 }

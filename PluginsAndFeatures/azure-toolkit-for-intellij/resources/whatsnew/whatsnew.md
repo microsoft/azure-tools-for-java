@@ -1,5 +1,32 @@
-<!-- Version: 3.44.0 -->
+<!-- Version: 3.45.0 -->
 # What's new in Azure Toolkit for IntelliJ
+
+## 3.45.0
+Flight recorder support was added in the latest Azure Toolkit for IntelliJ v3.45.0! You may monitor your online app
+ service in Azure explorer with single click and analyze the report with [Zulu Mission Control](https://www.azul.com/products/zulu-mission-control/) or IntelliJ (requires 2020.2 above Ultimate).
+
+<img src="https://user-images.githubusercontent.com/12445236/98444079-b0a79000-214a-11eb-8015-51cd2a05a1c1.gif" width="800" height="600" />
+
+Besides, file explorer is also added to Azure explorer, you could view and manage your files and logs in app service
+ with this new feature.
+
+![File Explorer](https://user-images.githubusercontent.com/12445236/98444253-93bf8c80-214b-11eb-8759-8176b520d515.png)
+
+For all the updates and fixes in this release, please refer the release notes below.
+
+### Added
+- Add file explorer for Web App and Function App in Azure explorer
+- Support flight recorder for Web App
+
+### Changed
+- New creation wizard for Function App with basic and advanced mode
+- More monitoring configuration in Web App/Function App creation wizard
+- Update template for function project
+
+### Fixed
+- [#4703](https://github.com/microsoft/azure-tools-for-java/pull/4703) Fix NPE issue in Function creation/deployment
+- [#4707](https://github.com/microsoft/azure-tools-for-java/pull/4707) Enhace error handling for azure cli token expires
+- [#4710](https://github.com/microsoft/azure-tools-for-java/pull/4710) Register service provider for insights before get insights client
 
 ## 3.44.0
 We are proud to announce the support for JBoss in IntelliJ Toolkit! You can now create JBoss Linux app service with totally new resource creation experience. You may create Web App more easily in the simple mode, while you could still set all the parameters in advance mode if necessary.
@@ -78,63 +105,6 @@ For all the updates and fixes in this release, please refer the release notes be
 
 ### Changed
 - Show non-anonymous HTTP trigger urls after function deployment
-
-## 3.39.0
-
-[Azure CLI](https://docs.microsoft.com/cli/azure/) is supported as a sign in option. You can now sign in with single click if you have already signed in with Azure CLI.
-
-![azure-cli-auth](https://user-images.githubusercontent.com/12445236/86110888-b1734a00-baf8-11ea-9d12-6bffef0d6823.gif)
-
-Besides, Azure toolkit add new support on [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) now! The following features are waiting to be discovered.
- - Monitor Spark batch job on Spark history server UI and Spark job details UI
-
- ![monitor-spark-batch-job](https://user-images.githubusercontent.com/32627233/86082318-0ba8e680-baca-11ea-97db-bfdb21c33310.gif)
-
- - Run Apache Spark Livy interactive console on Azure Synapse
-
-![spark-interactive-console](https://user-images.githubusercontent.com/32627233/84374160-319c4300-ac10-11ea-902a-f98dec9d6f99.gif)
-
-### Added
-- Support Azure Functions with Java 11 runtime(Preview)
-- Support authentication with Azure CLI credentials
-
-### Changed
-- Show Apache Spark on Cosmos node by default no matter whether there are SoC clusters under user's subscription or not
-- Remove Docker Host in Azure Explorer
-
-### Fixed
-- Fix Spark history server link broken for Azure Synapse issue
-- [#3712](https://github.com/microsoft/azure-tools-for-java/issues/3712) Fixes NPE while refreshing Azure node
-- [#4449](https://github.com/microsoft/azure-tools-for-java/issues/4449) Fixes NPE while parsing Function bindings
-- [#2226](https://github.com/microsoft/azure-tools-for-java/issues/2226) Fixes AuthException for no subscrition account
-- [#4102](https://github.com/microsoft/azure-tools-for-java/issues/4102) Fixes Exception when app service run process is terminated
-- [#4389](https://github.com/microsoft/azure-tools-for-java/issues/4389) Fixes check box UI issue when create function project
-- [#4307](https://github.com/microsoft/azure-tools-for-java/issues/4307) Selecting wrong module automatically when adding function run configuration for gradle function project
-
-
-## 3.38.0
-We are proud to announce the support for [Azure Synapse](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/intellij-tool-synapse) in Azure toolkit! The following features are waiting to be discovered.
- - List Azure Synapse workspaces and Apache Spark pools
-
-![list-workspaces-pools-blur](https://user-images.githubusercontent.com/32627233/84378742-3dd7ce80-ac17-11ea-871f-d85e9bedf99f.gif)
-
- - Submit Apache Spark batch jobs to Apache Spark pools
-
-![synapse-submit-middle-quick](https://user-images.githubusercontent.com/32627233/84487331-2f4ded80-acd1-11ea-8fe1-b6cc15b9371b.gif)
-
-### Added
-- Support create application insights connection while creating new function app
-
-### Changed
-- Deprecate Docker Host(will be removed in v3.39.0)
-
-### Fixed
-- [#4423](https://github.com/microsoft/azure-tools-for-java/issues/4423) Spark local run mockfs issue with Hive support enabled
-- [#4410](https://github.com/microsoft/azure-tools-for-java/issues/4410) The context menu <code>Submit Spark Application</code> action regression issue at IDEA 2020.1
-- [#4419](https://github.com/microsoft/azure-tools-for-java/issues/4419) The run configuration Spark config table changes didn't take effects regression
-- [#4413](https://github.com/microsoft/azure-tools-for-java/issues/4413) The regression issue of Spark local console with Scala plugin 2020.1.36
-- [#4422](https://github.com/microsoft/azure-tools-for-java/issues/4422) Fixes <code>ConcurrentModificationException</code> while refreshing spring cloud clusters
-- [#4438](https://github.com/microsoft/azure-tools-for-java/issues/4438) Fixes modality state issue when open what's new document
 
 ## Summary
 

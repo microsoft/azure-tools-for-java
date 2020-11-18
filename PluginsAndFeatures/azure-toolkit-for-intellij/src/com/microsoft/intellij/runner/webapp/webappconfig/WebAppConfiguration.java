@@ -419,6 +419,13 @@ public class WebAppConfiguration extends AzureRunConfigurationBase<IntelliJWebAp
             setWebContainer(settingModel.getWebContainer());
             setCreatingResGrp(settingModel.isCreatingResGrp());
             setCreatingAppServicePlan(settingModel.isCreatingAppServicePlan());
+            webAppSettingModel.setEnableApplicationLog(settingModel.isEnableApplicationLog());
+            webAppSettingModel.setApplicationLogLevel(settingModel.getApplicationLogLevel());
+            webAppSettingModel.setEnableWebServerLogging(settingModel.isEnableWebServerLogging());
+            webAppSettingModel.setWebServerLogQuota(settingModel.getWebServerLogQuota());
+            webAppSettingModel.setWebServerRetentionPeriod(settingModel.getWebServerRetentionPeriod());
+            webAppSettingModel.setEnableDetailedErrorMessage(settingModel.isEnableDetailedErrorMessage());
+            webAppSettingModel.setEnableFailedRequestTracing(settingModel.isEnableFailedRequestTracing());
         } else {
             setCreatingNew(false);
             final WebApp webApp = webAppComboBoxModel.getResource();

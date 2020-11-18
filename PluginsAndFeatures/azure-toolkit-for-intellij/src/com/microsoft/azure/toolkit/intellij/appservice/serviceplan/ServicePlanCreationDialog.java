@@ -24,6 +24,7 @@ package com.microsoft.azure.toolkit.intellij.appservice.serviceplan;
 
 import com.intellij.ui.components.JBLabel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.toolkit.intellij.common.AzureDialog;
@@ -54,13 +55,18 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     private ValidationDebouncedTextInput textName;
     private PricingTierComboBox comboBoxPricingTier;
 
-    public ServicePlanCreationDialog(final Subscription subscription, OperatingSystem os, Region region) {
+    public ServicePlanCreationDialog(final Subscription subscription,
+                                     OperatingSystem os,
+                                     Region region,
+                                     final List<PricingTier> pricingTierList, final PricingTier defaultPricingTier) {
         super();
-        this.init();
         this.subscription = subscription;
         this.os = os;
         this.region = region;
+        this.init();
         this.textName.setValidator(this::validateName);
+        this.comboBoxPricingTier.setPricingTierList(pricingTierList);
+        this.comboBoxPricingTier.setDefaultPricingTier(defaultPricingTier);
         SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, DESCRIPTION);
         this.pack();
     }
@@ -114,4 +120,5 @@ public class ServicePlanCreationDialog extends AzureDialog<DraftServicePlan>
     public List<AzureFormInput<?>> getInputs() {
         return Collections.singletonList(this.textName);
     }
+
 }

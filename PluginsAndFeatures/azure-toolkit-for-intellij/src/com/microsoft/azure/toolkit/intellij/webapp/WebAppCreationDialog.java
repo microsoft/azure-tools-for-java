@@ -23,7 +23,9 @@
 package com.microsoft.azure.toolkit.intellij.webapp;
 
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.toolkit.intellij.appservice.AppConfigDialog;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceInfoBasicPanel;
 import com.microsoft.azure.toolkit.intellij.common.AzureFormPanel;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppConfig;
 import org.jetbrains.annotations.Nullable;
@@ -32,17 +34,15 @@ import javax.swing.*;
 
 public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     public static final String TITLE_CREATE_WEBAPP_DIALOG = "Create Web App";
-    private Project project;
+    private static final PricingTier DEFAULT_PRICING_TIER = PricingTier.BASIC_B2;
     private JPanel panel;
-    private WebAppConfigFormPanelAdvanced advancedForm;
-    private WebAppConfigFormPanelBasic basicForm;
+    private WebAppConfigFormPanelAdvance advancedForm;
+    private AppServiceInfoBasicPanel<WebAppConfig> basicForm;
 
     public WebAppCreationDialog(Project project) {
         super(project);
-        this.project = project;
-
         this.init();
-        this.toggleAdvancedMode(false);
+        setFrontPanel(basicForm);
     }
 
     public void setDeploymentVisible(boolean visible) {
@@ -52,13 +52,18 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
     }
 
     @Override
+    public WebAppConfig getData() {
+        return super.getData();
+    }
+
+    @Override
     protected AzureFormPanel<WebAppConfig> getAdvancedFormPanel() {
-        return this.advancedForm;
+        return advancedForm;
     }
 
     @Override
     protected AzureFormPanel<WebAppConfig> getBasicFormPanel() {
-        return this.basicForm;
+        return basicForm;
     }
 
     @Nullable
@@ -73,7 +78,9 @@ public class WebAppCreationDialog extends AppConfigDialog<WebAppConfig> {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        advancedForm = new WebAppConfigFormPanelAdvanced(project);
-        basicForm = new WebAppConfigFormPanelBasic(project);
+        advancedForm = new WebAppConfigFormPanelAdvance(project);
+
+        basicForm = new AppServiceInfoBasicPanel(project, WebAppConfig::getWebAppDefaultConfig);
+        basicForm.setDeploymentVisible(false);
     }
 }

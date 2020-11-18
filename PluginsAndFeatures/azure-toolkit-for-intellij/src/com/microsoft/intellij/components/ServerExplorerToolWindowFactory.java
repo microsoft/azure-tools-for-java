@@ -54,31 +54,19 @@ import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureModule;
-
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import javax.swing.*;
+import javax.swing.tree.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -107,6 +95,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
 
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    treeNodeDblClicked(e, tree, project);
+                }
+            }
+
             @Override
             public void mousePressed(MouseEvent e) {
                 treeMousePressed(e, tree);
@@ -171,6 +166,17 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         return root;
     }
 
+    private void treeNodeDblClicked(MouseEvent e, JTree tree, final Project project) {
+        final TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+        if (treePath == null) {
+            return;
+        }
+        final Node node = getTreeNodeOnMouseClick(tree, treePath);
+        if (!node.isLoading()) {
+            node.onNodeDblClicked(project);
+        }
+    }
+
     private void treeMousePressed(MouseEvent e, JTree tree) {
         // delegate click to the node's click action if this is a left button click
         if (SwingUtilities.isLeftMouseButton(e)) {
@@ -185,8 +191,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             if (!node.isLoading()) {
                 node.getClickAction().fireNodeActionEvent();
             }
-        // for right click show the context menu populated with all the
-        // actions from the node
+            // for right click show the context menu populated with all the
+            // actions from the node
         } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
             TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
             if (treePath == null) {
@@ -369,8 +375,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 return;
             }
 
-            String iconPath = node.getIconPath();
-            if (iconPath != null && !iconPath.isEmpty()) {
+            final Icon icon = node.getIcon();
+            final String iconPath = node.getIconPath();
+            if (Objects.nonNull(icon)) {
+                setIcon(icon);
+            } else if (iconPath != null && !iconPath.isEmpty()) {
                 setIcon(UIHelperImpl.loadIcon(iconPath));
             }
 
@@ -395,8 +404,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                 @Override
                                 public void update(AnActionEvent e) {
                                     boolean isDarkTheme = DefaultLoader.getUIHelper().isDarkTheme();
-                                    e.getPresentation().setIcon(UIHelperImpl.loadIcon(isDarkTheme
-                                            ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT));
+                                    final String iconPath = isDarkTheme ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT;
+                                    e.getPresentation().setIcon(UIHelperImpl.loadIcon(iconPath));
                                 }
                             },
                             new AzureSignInAction(),

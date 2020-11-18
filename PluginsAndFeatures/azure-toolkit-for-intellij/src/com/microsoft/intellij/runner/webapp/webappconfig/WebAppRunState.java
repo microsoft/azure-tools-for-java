@@ -42,6 +42,7 @@ import com.microsoft.intellij.runner.webapp.Constants;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.util.MavenRunTaskUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
@@ -212,7 +213,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         String url = "https://" + webApp.defaultHostName();
         if (Comparing.equal(fileType, MavenConstants.TYPE_WAR)
             && !webAppSettingModel.isDeployToRoot()) {
-            url += "/" + fileName;
+            url += "/" + WebAppUtils.encodeURL(fileName.replaceAll("#", StringUtils.EMPTY)).replaceAll("\\+", "%20");
         }
         return url;
     }

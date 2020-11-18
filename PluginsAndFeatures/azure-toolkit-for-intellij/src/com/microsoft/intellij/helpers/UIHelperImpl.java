@@ -111,9 +111,9 @@ public class UIHelperImpl implements UIHelper {
 
     public static final Key<String> SLOT_NAME = new Key<>("slotName");
     private Map<Class<? extends StorageServiceTreeItem>, Key<? extends StorageServiceTreeItem>> name2Key =
-            ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
-                Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
-                Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
+        ImmutableMap.of(BlobContainer.class, BlobExplorerFileEditorProvider.CONTAINER_KEY,
+                        Queue.class, QueueExplorerFileEditorProvider.QUEUE_KEY,
+                        Table.class, TableExplorerFileEditorProvider.TABLE_KEY);
 
     private static final String UNABLE_TO_OPEN_BROWSER = "Unable to open external web browser";
     private static final String UNABLE_TO_OPEN_EDITOR_WINDOW = "Unable to open new editor window";
@@ -156,7 +156,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public boolean showConfirmation(@NotNull String message, @NotNull String title, @NotNull String[] options,
-                              String defaultOption) {
+                                    String defaultOption) {
         return runFromDispatchThread(() -> 0 == Messages.showDialog(message,
                                                                     title,
                                                                     options,
@@ -328,8 +328,8 @@ public class UIHelperImpl implements UIHelper {
                 VirtualFile file = (VirtualFile) getOpenedFile(projectObject, accountName, container);
                 if (file != null) {
                     final BlobExplorerFileEditor containerFileEditor =
-                            (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
-                                    .getEditors(file)[0];
+                        (BlobExplorerFileEditor) FileEditorManager.getInstance((Project) projectObject)
+                                                                  .getEditors(file)[0];
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -387,10 +387,10 @@ public class UIHelperImpl implements UIHelper {
                 return;
             }
             LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                RedisCachePropertyViewProvider.TYPE, resId);
+                                                                  RedisCachePropertyViewProvider.TYPE, resId);
             if (itemVirtualFile == null) {
                 itemVirtualFile = createVirtualFile(redisName, RedisCachePropertyViewProvider.TYPE,
-                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+                                                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
             }
             FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true, true);
             for (FileEditor editor : editors) {
@@ -419,7 +419,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, RedisCacheExplorerProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(redisName, RedisCacheExplorerProvider.TYPE,
-                    RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
+                                                RedisCacheNode.REDISCACHE_ICON_PATH, sid, resId);
         }
         fileEditorManager.openFile(itemVirtualFile, true, true);
     }
@@ -435,7 +435,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, TYPE, node.getId());
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(node.getName(), TYPE,
-                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -459,7 +459,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, SPRING_CLOUD_APP_PROPERTY_TYPE, id);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(appName, SPRING_CLOUD_APP_PROPERTY_TYPE,
-                    DeploymentNode.ICON_PATH, subscription, id);
+                                                DeploymentNode.ICON_PATH, subscription, id);
         }
         itemVirtualFile.putUserData(CLUSTER_ID, node.getClusterId());
         itemVirtualFile.putUserData(APP_ID, id);
@@ -475,10 +475,10 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, ResourceTemplateViewProvider.TYPE,
-            node.getId());
+                                                              node.getId());
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(node.getName(), ResourceTemplateViewProvider.TYPE,
-                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
+                                                DeploymentNode.ICON_PATH, node.getSubscriptionId(), node.getId());
         }
         FileEditor[] fileEditors = fileEditorManager.openFile(itemVirtualFile, true, true);
         for (FileEditor fileEditor : fileEditors) {
@@ -512,15 +512,15 @@ public class UIHelperImpl implements UIHelper {
             return;
         }
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager,
-                ContainerRegistryPropertyViewProvider.TYPE, resId);
+                                                              ContainerRegistryPropertyViewProvider.TYPE, resId);
         if (itemVirtualFile == null) {
             itemVirtualFile = createVirtualFile(registryName, ContainerRegistryPropertyViewProvider.TYPE,
-                    ContainerRegistryNode.ICON_PATH, sid, resId);
+                                                ContainerRegistryNode.ICON_PATH, sid, resId);
         }
         FileEditor[] editors = fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
         for (FileEditor editor: editors) {
             if (editor.getName().equals(ContainerRegistryPropertyView.ID) &&
-                    editor instanceof ContainerRegistryPropertyView) {
+                editor instanceof ContainerRegistryPropertyView) {
                 ((ContainerRegistryPropertyView) editor).onReadProperty(sid, resId);
             }
         }
@@ -551,7 +551,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, webAppId);
         if (itemVirtualFile == null) {
             final String iconPath = node.getParent() == null ? node.getIconPath()
-                : node.getParent().getIconPath();
+                                                             : node.getParent().getIconPath();
             itemVirtualFile = createVirtualFile(node.getWebAppName(), type, iconPath, sid, webAppId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
@@ -570,14 +570,14 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, resourceId);
         if (itemVirtualFile == null) {
             final String iconPath = node.getParent() == null ? node.getIconPath()
-                : node.getParent().getIconPath();
+                                                             : node.getParent().getIconPath();
             final Map<Key, String> userData = new HashMap<>();
             userData.put(SUBSCRIPTION_ID, sid);
             userData.put(RESOURCE_ID, resourceId);
             userData.put(WEBAPP_ID, node.getWebAppId());
             userData.put(SLOT_NAME, node.getName());
             itemVirtualFile = createVirtualFile(node.getWebAppName() + "-" + node.getName(),
-                type, iconPath, userData);
+                                                type, iconPath, userData);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
     }
@@ -594,7 +594,7 @@ public class UIHelperImpl implements UIHelper {
         LightVirtualFile itemVirtualFile = searchExistingFile(fileEditorManager, type, functionApId);
         if (itemVirtualFile == null) {
             final String iconPath = functionNode.getParent() == null ? functionNode.getIconPath()
-                    : functionNode.getParent().getIconPath();
+                                                                     : functionNode.getParent().getIconPath();
             itemVirtualFile = createVirtualFile(functionNode.getFunctionAppName(), type, iconPath, subscriptionId, functionApId);
         }
         fileEditorManager.openFile(itemVirtualFile, true /*focusEditor*/, true /*searchForOpen*/);
@@ -612,9 +612,9 @@ public class UIHelperImpl implements UIHelper {
             StorageAccount editedStorageAccount = editedFile.getUserData(STORAGE_KEY);
             ClientStorageAccount editedClientStorageAccount = editedFile.getUserData(CLIENT_STORAGE_KEY);
             if (((editedStorageAccount != null && editedStorageAccount.name().equals(accountName))
-                    || (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
-                    && editedItem != null
-                    && editedItem.getName().equals(item.getName())) {
+                || (editedClientStorageAccount != null && editedClientStorageAccount.getName().equals(accountName)))
+                && editedItem != null
+                && editedItem.getName().equals(item.getName())) {
                 return editedFile;
             }
         }
@@ -649,7 +649,7 @@ public class UIHelperImpl implements UIHelper {
         if (suggestDetail) {
             String separator = headerMessage.matches("^.*\\d$||^.*\\w$") ? ". " : " ";
             headerMessage = headerMessage + separator + "Click on '" +
-                    ErrorMessageForm.advancedInfoText + "' for detailed information on the cause of the error.";
+                ErrorMessageForm.advancedInfoText + "' for detailed information on the cause of the error.";
         }
 
         return headerMessage;
@@ -686,7 +686,7 @@ public class UIHelperImpl implements UIHelper {
         for (VirtualFile editedFile : fileEditorManager.getOpenFiles()) {
             String fileResourceId = editedFile.getUserData(RESOURCE_ID);
             if (fileResourceId != null && fileResourceId.equals(resourceId) &&
-                    editedFile.getFileType().getName().equals(fileType)) {
+                editedFile.getFileType().getName().equals(fileType)) {
                 virtualFile = (LightVirtualFile) editedFile;
                 break;
             }
@@ -739,7 +739,7 @@ public class UIHelperImpl implements UIHelper {
 
     @Override
     public int showConfirmDialog(Component component, String message, String title, String[] options,
-                               String defaultOption, Icon icon) {
+                                 String defaultOption, Icon icon) {
         return runFromDispatchThread(() -> Messages.showDialog(component,
                                                                message,
                                                                title,
@@ -751,7 +751,7 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public boolean showYesNoDialog(Component component, String message, String title, Icon icon) {
         return runFromDispatchThread(() -> Messages.showYesNoDialog(component, message, title, icon)
-                == Messages.YES);
+            == Messages.YES);
     }
 
     @Override
@@ -762,6 +762,16 @@ public class UIHelperImpl implements UIHelper {
     @Override
     public void showInfoNotification(String title, String message) {
         PluginUtil.showInfoNotification(title, message);
+    }
+
+    @Override
+    public void showWarningNotification(String title, String message) {
+        PluginUtil.showWarnNotification(title, message);
+    }
+
+    @Override
+    public void showErrorNotification(String title, String message) {
+        PluginUtil.showErrorNotification(title, message);
     }
 
     private static <T> T runFromDispatchThread(Supplier<T> supplier) {

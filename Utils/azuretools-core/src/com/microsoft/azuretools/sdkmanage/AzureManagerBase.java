@@ -31,22 +31,23 @@ import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementa
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
+import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
+import com.microsoft.azuretools.adauth.AuthException;
 import com.microsoft.azuretools.authmanage.*;
-import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
 import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
 import com.microsoft.azuretools.utils.Pair;
 import org.apache.commons.lang3.StringUtils;
-import rx.Observable;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ public abstract class AzureManagerBase implements AzureManager {
     private static final String GLOBAL_SCM_SUFFIX = ".scm.azurewebsites.net";
 
     private static final Logger LOGGER = Logger.getLogger(AzureManagerBase.class.getName());
+    private static final String MICROSOFT_INSIGHTS_NAMESPACE = "microsoft.insights";
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
     protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
@@ -108,7 +110,7 @@ public abstract class AzureManagerBase implements AzureManager {
         final Pair<Subscription, Tenant> subscriptionTenantPair = getSubscriptionsWithTenant().stream()
                 .filter(pair -> pair != null && pair.first() != null && pair.second() != null)
                 .filter(pair -> StringUtils.equals(pair.first().subscriptionId(), subscriptionId))
-                .findFirst().orElseThrow(() -> new IOException("Failed to find storage subscription id"));
+                .findFirst().orElseThrow(() -> new AzureRuntimeException(ErrorEnum.INVALID_SUBSCRIPTION_CACHE));
         return subscriptionTenantPair.second().tenantId();
     }
 
@@ -128,11 +130,24 @@ public abstract class AzureManagerBase implements AzureManager {
         final Azure.Authenticated authentication = authTenant(getCurrentTenantId());
         // could be multi tenant - return all subscriptions for the current account
         final List<Tenant> tenants = getTenants(authentication);
-        for (Tenant tenant : tenants) {
-            final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
-            final List<Subscription> tenantSubscriptions = getSubscriptions(tenantAuthentication);
-            for (Subscription subscription : tenantSubscriptions) {
-                subscriptions.add(new Pair<>(subscription, tenant));
+        for (final Tenant tenant : tenants) {
+            try {
+                final Azure.Authenticated tenantAuthentication = authTenant(tenant.tenantId());
+                final List<Subscription> tenantSubscriptions = getSubscriptions(tenantAuthentication);
+                for (final Subscription subscription : tenantSubscriptions) {
+                    subscriptions.add(new Pair<>(subscription, tenant));
+                }
+            } catch (final Exception e) {
+                // just skip for cases user failing to get subscriptions of tenants he/she has no permission to get access token.
+                // "AADSTS50076" is the code of a weired error related to multi-tenant configuration.
+                final Predicate<Throwable> tenantError = (c) -> c instanceof AuthException && ((AuthException) c).getErrorMessage().contains("AADSTS50076");
+                if (e instanceof AzureRuntimeException && ((AzureRuntimeException) e).getCode() == ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN.getErrorCode() ||
+                    Throwables.getCausalChain(e).stream().anyMatch(tenantError)) {
+                    // TODO: @wangmi better to notify user
+                    LOGGER.log(Level.WARNING, e.getMessage(), e);
+                } else {
+                    throw e;
+                }
             }
         }
         return subscriptions;
@@ -171,6 +186,13 @@ public abstract class AzureManagerBase implements AzureManager {
             return null;
         }
         return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
+            try {
+                // Register insights namespace first
+                final Azure azure = getAzure(sid);
+                azure.providers().register(MICROSOFT_INSIGHTS_NAMESPACE);
+            } catch (IOException e) {
+                // swallow exception while get azure client
+            }
             String tid = this.subscriptionManager.getSubscriptionTenant(sid);
             return authApplicationInsights(sid, tid);
         });
@@ -234,38 +256,25 @@ public abstract class AzureManagerBase implements AzureManager {
         return getSubscriptions(authTenant(tenantId));
     }
 
-    private List<Subscription> getSubscriptions(Azure.Authenticated tenantAuthentication) {
-        return tenantAuthentication.subscriptions().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-                    return Observable.empty();
-                })
+    private List<Subscription> getSubscriptions(Azure.Authenticated authentication) {
+        return authentication.subscriptions().listAsync()
                 .toList()
                 .toBlocking()
                 .singleOrDefault(Collections.emptyList());
     }
 
     private List<Tenant> getTenants(Azure.Authenticated authentication) {
-        try {
-            return authentication.tenants().listAsync()
-                    .toList()
-                    .toBlocking()
-                    .singleOrDefault(Collections.emptyList());
-        } catch (Exception err) {
-            LOGGER.warning(Throwables.getStackTraceAsString(err));
-            if (Throwables.getCausalChain(err).stream().filter(e -> e instanceof UnknownHostException).count() > 0) {
-                throw new AzureRuntimeException(ErrorEnum.UNKNOWN_HOST_EXCEPTION);
-            } else if (err instanceof AzureRuntimeException) {
-                throw err;
-            }
-            return Collections.emptyList();
-        }
+        return authentication.tenants().listAsync()
+                .toList()
+                .toBlocking()
+                .singleOrDefault(Collections.emptyList());
     }
 
     protected Azure.Authenticated authTenant(String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return Azure.configure()
                 .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
                 .withUserAgent(CommonSettings.USER_AGENT)
                 .authenticate(credentials);
     }
@@ -273,12 +282,16 @@ public abstract class AzureManagerBase implements AzureManager {
     protected AppPlatformManager authSpringCloud(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return buildAzureManager(AppPlatformManager.configure())
+                .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
                 .authenticate(credentials, subscriptionId);
     }
 
     protected InsightsManager authApplicationInsights(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return buildAzureManager(InsightsManager.configure())
+                .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
                 .authenticate(credentials, subscriptionId);
     }
 }

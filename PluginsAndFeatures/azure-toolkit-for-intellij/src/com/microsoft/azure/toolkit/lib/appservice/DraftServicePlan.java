@@ -76,7 +76,7 @@ public class DraftServicePlan implements AppServicePlan, Draft {
 
     @Override
     public String resourceGroupName() {
-        throw new OperationNotSupportedException();
+        return null;
     }
 
     @Override

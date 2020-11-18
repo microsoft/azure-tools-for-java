@@ -182,7 +182,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
      * identity/implementation/IdentityClient.java#L366
      */
     private Pair<String, OffsetDateTime> getAccessTokenViaCli(String tid, @Nullable String resource) throws IOException {
-        if (!PATTERN_TENANT.matcher(tid).matches()) {
+        if (StringUtils.isEmpty(tid) || !PATTERN_TENANT.matcher(tid).matches()) {
             throw new InvalidParameterException(String.format("[%s] is not a valid tenant ID", tid));
         } else if (StringUtils.isNotEmpty(resource) && !PATTERN_RESOURCE.matcher(resource).matches()) {
             throw new InvalidParameterException(String.format("[%s] is not a valid resource endpoint", resource));
@@ -192,7 +192,7 @@ public class AzureCliAzureManager extends AzureManagerBase {
                                String.format(CLI_TOKEN_FORMAT_ACCESSOR_RESOURCE, tid, resource);
         final String jsonToken = CommandUtils.exec(command);
         if (StringUtils.isBlank(jsonToken)) {
-            throw new AzureRuntimeException(ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN_BY_CLI);
+            throw new AzureRuntimeException(ErrorEnum.FAILED_TO_GET_ACCESS_TOKEN);
         }
         final Map<String, Object> objectMap = JsonUtils.fromJson(jsonToken, Map.class);
         final String strToken = (String) objectMap.get(CLI_TOKEN_PROP_ACCESS_TOKEN);

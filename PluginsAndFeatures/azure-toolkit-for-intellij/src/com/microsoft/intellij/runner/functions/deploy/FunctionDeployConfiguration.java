@@ -36,8 +36,8 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.common.function.configurations.RuntimeConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.intellij.function.FunctionAppComboBoxModel;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-import com.microsoft.intellij.runner.functions.IntelliJFunctionRuntimeConfiguration;
 import com.microsoft.intellij.runner.functions.core.FunctionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -51,12 +51,12 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
     public static final String NEED_SPECIFY_MODULE = "Please specify module";
     public static final String NEED_SPECIFY_TARGET_FUNCTION = "Please specify target function";
     public static final String NEED_SPECIFY_VALID_STAGING_DIRECTORY_PATH = "Please specify valid staging directory path";
-    private final FunctionDeployModel functionDeployModel;
+    private FunctionDeployModel functionDeployModel;
     private Module module;
 
     public FunctionDeployConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        functionDeployModel = new FunctionDeployModel(project);
+        functionDeployModel = new FunctionDeployModel();
     }
 
     @NotNull
@@ -97,6 +97,10 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         functionDeployModel.setResourceGroup(resourceGroup);
     }
 
+    public String getAppName() {
+        return functionDeployModel.getAppName();
+    }
+
     public void setAppName(String appName) {
         functionDeployModel.setAppName(appName);
     }
@@ -111,10 +115,6 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
 
     public void setFunctionId(String functionId) {
         functionDeployModel.setFunctionId(functionId);
-    }
-
-    public void setRuntime(IntelliJFunctionRuntimeConfiguration runtime) {
-        functionDeployModel.setRuntime(runtime);
     }
 
     public void setAppSettings(Map<String, String> appSettings) {
@@ -182,13 +182,74 @@ public class FunctionDeployConfiguration extends AzureRunConfigurationBase<Funct
         }
     }
 
+    public boolean isNewResource() {
+        return functionDeployModel.isNewResource();
+    }
+
+    public void setNewResource(final boolean newResource) {
+        functionDeployModel.setNewResource(newResource);
+    }
+
+    public void setAppServicePlanName(final String name) {
+        functionDeployModel.setAppServicePlanName(name);
+    }
+
+    public void setAppServicePlanResourceGroup(final String resourceGroupName) {
+        functionDeployModel.setAppServicePlanResourceGroup(resourceGroupName);
+    }
+
+    public void setFunctionDeployModel(final FunctionDeployModel functionDeployModel) {
+        this.functionDeployModel = functionDeployModel;
+    }
+
+    public String getOs() {
+        return functionDeployModel.getOs();
+    }
+
+    public void setOs(final String os) {
+        functionDeployModel.setOs(os);
+    }
+
+    public String getJavaVersion() {
+        return functionDeployModel.getJavaVersion();
+    }
+
+    public void setJavaVersion(final String javaVersion) {
+        functionDeployModel.setJavaVersion(javaVersion);
+    }
+
+    public void setInstrumentationKey(String instrumentationKey) {
+        this.functionDeployModel.setInstrumentationKey(instrumentationKey);
+    }
+
+    public String getInstrumentationKey() {
+        return functionDeployModel.getInstrumentationKey();
+    }
+
+    public void setInsightsName(String insightsName) {
+        this.functionDeployModel.setInsightsName(insightsName);
+    }
+
+    public String getInsightsName() {
+        return functionDeployModel.getInsightsName();
+    }
+
+    public void saveModel(FunctionAppComboBoxModel functionAppComboBoxModel) {
+        if (functionAppComboBoxModel.getFunctionDeployModel() != null) {
+            setFunctionDeployModel(functionAppComboBoxModel.getFunctionDeployModel());
+            return;
+        } else {
+            functionDeployModel.saveModel(functionAppComboBoxModel);
+        }
+    }
+
     @Override
     public void validate() throws ConfigurationException {
         checkAzurePreconditions();
         if (this.module == null) {
             throw new ConfigurationException(NEED_SPECIFY_MODULE);
         }
-        if (StringUtils.isEmpty(this.getFunctionId())) {
+        if (StringUtils.isEmpty(this.getFunctionId()) && !isNewResource()) {
             throw new ConfigurationException(NEED_SPECIFY_TARGET_FUNCTION);
         }
     }

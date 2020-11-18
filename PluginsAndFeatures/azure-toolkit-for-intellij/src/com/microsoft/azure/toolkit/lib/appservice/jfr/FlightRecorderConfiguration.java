@@ -20,36 +20,17 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.toolkit.intellij.appservice;
+package com.microsoft.azure.toolkit.lib.appservice.jfr;
 
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azuretools.core.mvp.model.ResourceEx;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
+@Setter
 @Getter
-public class AppComboBoxModel<T extends WebAppBase> {
-    @Setter
-    protected boolean isNewCreateResource;
-    protected String subscriptionId;
-    protected String resourceGroup;
-    protected String appName;
-    protected String os;
-    protected String resourceId;
-    protected T resource;
-
-    public AppComboBoxModel() {
-
-    }
-
-    public AppComboBoxModel(ResourceEx<T> resourceEx) {
-        this.resource = resourceEx.getResource();
-        this.resourceId = resource.id();
-        this.appName = resource.name();
-        this.resourceGroup = resource.resourceGroupName();
-        this.os = StringUtils.capitalize(resource.operatingSystem().toString());
-        this.subscriptionId = resourceEx.getSubscriptionId();
-        this.isNewCreateResource = false;
-    }
+@Builder
+public class FlightRecorderConfiguration {
+    private int pid;
+    private String processName;
+    private int duration;
 }
