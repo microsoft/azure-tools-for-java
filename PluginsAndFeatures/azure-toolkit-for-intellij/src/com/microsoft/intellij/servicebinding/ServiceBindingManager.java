@@ -30,6 +30,7 @@ public enum ServiceBindingManager {
     public static ServiceBindingManager getInstance() {
         return INSTANCE;
     }
+
     private List<ServiceBindingInfo> serviceBindingList = new ArrayList<>();
 
     public List<ServiceBindingInfo> listAll() {
