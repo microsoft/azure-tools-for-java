@@ -32,9 +32,9 @@ import lombok.Setter;
 public class ServiceBindingInfo {
 
     private String id;
+    private String resourceId;
     private String name;
     private BindingType bindingType;
-
 
     enum BindingType {
         MySQL;

@@ -24,6 +24,7 @@ package com.microsoft.intellij.servicebinding;
 
 import java.util.ArrayList;
 import java.util.List;
+
 public enum ServiceBindingManager {
     INSTANCE;
     public static ServiceBindingManager getInstance() {
@@ -36,6 +37,7 @@ public enum ServiceBindingManager {
     }
 
     public <T extends ServiceBindingInfo> void addBinding(T binding) {
+        System.out.println("Start to binding service to your application. bindingInfo = " + binding);
         this.serviceBindingList.add(binding);
     }
 }

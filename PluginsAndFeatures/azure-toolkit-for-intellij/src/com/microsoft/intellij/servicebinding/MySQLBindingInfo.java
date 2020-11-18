@@ -22,24 +22,29 @@
 
 package com.microsoft.intellij.servicebinding;
 
-import com.microsoft.azure.management.mysql.v2017_12_01.SslEnforcementEnum;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Getter
 @Setter
 public class MySQLBindingInfo extends ServiceBindingInfo {
-    private String administratorLogin;
     private String fullyQualifiedDomainName;
-    private SslEnforcementEnum sslEnforcement;
     private String database;
+    private String username;
     private String password;
     private String envPrefix;
+
+    private String administratorLogin;
+    private Boolean sslEnforcement;
+    // append
+    private Boolean allowAccessToAzureServices;
+    private Boolean allowAccessToLocal;
     private Map<String, String> envMap;
 
-    public MySQLBindingInfo(String id, String name) {
-        super(id, name, BindingType.MySQL);
+    public MySQLBindingInfo(String resourceId, String name) {
+        super(UUID.randomUUID().toString(), resourceId, name, BindingType.MySQL);
     }
 }
