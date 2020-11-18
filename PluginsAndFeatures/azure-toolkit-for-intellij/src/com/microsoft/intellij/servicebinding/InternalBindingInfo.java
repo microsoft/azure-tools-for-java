@@ -22,31 +22,39 @@
 
 package com.microsoft.intellij.servicebinding;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intellij.util.xmlb.annotations.Attribute;
+import com.intellij.util.xmlb.annotations.Text;
+import com.microsoft.azuretools.utils.JsonUtils;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.UUID;
 
-@Getter
 @Setter
-@NoArgsConstructor
-public class MySQLBindingInfo extends ServiceBindingInfo {
-    private String fullyQualifiedDomainName;
-    private String database;
-    private String username;
-    private String password;
-    private String envPrefix;
+@Getter
+public class InternalBindingInfo {
+    @Attribute("className")
+    private String className;
+    @Text
+    private String jsonpText;
 
-    private String administratorLogin;
-    private Boolean sslEnforcement;
-    // append
-    private Boolean allowAccessToAzureServices;
-    private Boolean allowAccessToLocal;
-    private Map<String, String> envMap;
+    public static InternalBindingInfo fromBindingInfo(@NotNull ServiceBindingInfo info) {
+        InternalBindingInfo internalBindingInfo = new InternalBindingInfo();
+        internalBindingInfo.setClassName(info.getClass().getCanonicalName());
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, Object> props = mapper.convertValue(info, Map.class);
+        internalBindingInfo.setJsonpText(JsonUtils.getGson().toJson(props));
+        return internalBindingInfo;
+    }
 
-    public MySQLBindingInfo(String resourceId, String name) {
-        super(UUID.randomUUID().toString(), resourceId, name, BindingType.MySQL);
+    @SneakyThrows
+    public ServiceBindingInfo toBindingInfo() {
+        Class<? extends ServiceBindingInfo> clz = (Class<? extends ServiceBindingInfo>) Class.forName(this.className);
+        Map<String, Object> properties = JsonUtils.fromJsonString(this.jsonpText, Map.class);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.convertValue(properties, clz);
     }
 }

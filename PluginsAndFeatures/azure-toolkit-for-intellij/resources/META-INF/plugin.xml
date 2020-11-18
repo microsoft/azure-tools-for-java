@@ -86,6 +86,7 @@
                          dynamic="true"/>
     <projectService serviceInterface="com.microsoft.intellij.AzureSettings"
                     serviceImplementation="com.microsoft.intellij.AzureSettings"/>
+    <projectService serviceImplementation="com.microsoft.intellij.servicebinding.ServiceBindingState"/>
     <applicationService serviceInterface="com.microsoft.intellij.ApplicationSettings"
                         serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
