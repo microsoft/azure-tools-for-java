@@ -52,7 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class AddSpringClouMavenDependencyAction extends AzureMavenDependencyActionBase {
+public class AddSpringCloudMavenDependencyAction extends AzureMavenDependencyActionBase {
     public static final String SPRING_CLOUD_GROUP_ID = "org.springframework.cloud";
     public static final String SPRING_BOOT_GROUP_ID = "org.springframework.boot";
     private static final String GROUP_ID = "com.microsoft.azure";
