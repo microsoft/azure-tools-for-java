@@ -38,8 +38,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
-import com.microsoft.azuretools.azurecommons.tasks.CancellableTask.CancellableTaskHandle;
 import com.microsoft.azuretools.core.utils.Messages;
 import com.microsoft.azuretools.core.utils.PluginUtil;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -49,8 +47,6 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void closeFile(Object projectObject, Object openedFile) {
-//        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-//        page.closeEditor((IEditorPart) openedFile, false);
     }
 
     @Override
@@ -118,7 +114,7 @@ public class IDEHelperImpl implements IDEHelper {
 
     @Override
     public void setProperty(String name, String value) {
-         PreferenceUtil.savePreference(name, value);
+        PreferenceUtil.savePreference(name, value);
     }
 
     @Override
@@ -149,7 +145,6 @@ public class IDEHelperImpl implements IDEHelper {
     @Override
     public List<ArtifactDescriptor> getArtifacts(
             ProjectDescriptor projectDescriptor) throws AzureCmdException {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -157,7 +152,6 @@ public class IDEHelperImpl implements IDEHelper {
     public ListenableFuture<String> buildArtifact(
             ProjectDescriptor projectDescriptor,
             ArtifactDescriptor artifactDescriptor) {
-        // TODO Auto-generated method stub
         return null;
     }
 

@@ -26,7 +26,7 @@ public abstract class AzureTaskManager {
 
     private static AzureTaskManager instance;
 
-    public synchronized static void register(AzureTaskManager manager) {
+    public static synchronized void register(AzureTaskManager manager) {
         if (AzureTaskManager.instance == null) {
             AzureTaskManager.instance = manager;
         }

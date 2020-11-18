@@ -22,15 +22,15 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
-import java.util.List;
-
 import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.tooling.msservices.helpers.IDEHelper;
 
-public class MockIDEHelper implements IDEHelper{
+import java.util.List;
+
+public class MockIDEHelper implements IDEHelper {
     public static final String DEFAULT_PROJECT = "DEFAULT_PROJECT";
 
     @Override
@@ -115,7 +115,6 @@ public class MockIDEHelper implements IDEHelper{
     @Override
     public List<ArtifactDescriptor> getArtifacts(
             ProjectDescriptor projectDescriptor) throws AzureCmdException {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -123,7 +122,6 @@ public class MockIDEHelper implements IDEHelper{
     public ListenableFuture<String> buildArtifact(
             ProjectDescriptor projectDescriptor,
             ArtifactDescriptor artifactDescriptor) {
-        // TODO Auto-generated method stub
         return null;
     }
 
