@@ -29,6 +29,7 @@ import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
+import com.microsoft.azure.management.mysql.v2017_12_01.implementation.MySQLManager;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azure.toolkit.lib.common.rest.RestExceptionHandlerInterceptor;
@@ -69,6 +70,7 @@ public abstract class AzureManagerBase implements AzureManager {
 
     protected Map<String, Azure> sidToAzureMap = new ConcurrentHashMap<>();
     protected Map<String, AppPlatformManager> sidToAzureSpringCloudManagerMap = new ConcurrentHashMap<>();
+    protected Map<String, MySQLManager> sidToMySQLManagerMap = new ConcurrentHashMap<>();
     protected Map<String, InsightsManager> sidToInsightsManagerMap = new ConcurrentHashMap<>();
     protected final SubscriptionManager subscriptionManager;
     protected static final Settings settings = new Settings();
@@ -181,6 +183,16 @@ public abstract class AzureManagerBase implements AzureManager {
     }
 
     @Override
+    public MySQLManager getMySQLClient(String sid) {
+        if (!isSignedIn()) {
+            return null;
+        }
+        return sidToMySQLManagerMap.computeIfAbsent(sid, s -> {
+            String tid = this.subscriptionManager.getSubscriptionTenant(sid);
+            return authMySQL(sid, tid);
+        });
+    }
+
     public @Nullable InsightsManager getInsightsManager(String sid) {
         if (!isSignedIn()) {
             return null;
@@ -216,6 +228,7 @@ public abstract class AzureManagerBase implements AzureManager {
         return getEnvironment().getAzureEnvironment().resourceManagerEndpoint();
     }
 
+    @Override
     public String getStorageEndpointSuffix() {
         if (!isSignedIn()) {
             return null;
@@ -278,6 +291,14 @@ public abstract class AzureManagerBase implements AzureManager {
     protected AppPlatformManager authSpringCloud(String subscriptionId, String tenantId) {
         final AzureTokenCredentials credentials = getCredentials(tenantId);
         return buildAzureManager(AppPlatformManager.configure())
+                .withInterceptor(new TelemetryInterceptor())
+                .withInterceptor(new RestExceptionHandlerInterceptor())
+                .authenticate(credentials, subscriptionId);
+    }
+
+    protected MySQLManager authMySQL(String subscriptionId, String tenantId) {
+        final AzureTokenCredentials credentials = getCredentials(tenantId);
+        return buildAzureManager(MySQLManager.configure())
                 .withInterceptor(new TelemetryInterceptor())
                 .withInterceptor(new RestExceptionHandlerInterceptor())
                 .authenticate(credentials, subscriptionId);

@@ -25,8 +25,6 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
@@ -158,15 +156,6 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
             }
         }));
         super.loadActions();
-    }
-
-    private static NodeActionListener createBackgroundActionListener(final String actionName, final Runnable runnable) {
-        return new NodeActionListener() {
-            @Override
-            protected void actionPerformed(NodeActionEvent e) {
-                AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
-            }
-        };
     }
 
     private static String getStatusDisplay(DeploymentResourceStatus status) {

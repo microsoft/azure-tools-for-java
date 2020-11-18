@@ -25,6 +25,7 @@ package com.microsoft.azuretools.authmanage;
 
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
+import com.microsoft.azure.management.mysql.v2017_12_01.implementation.MySQLManager;
 import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azuretools.adauth.JsonHelper;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
@@ -37,6 +38,7 @@ import com.microsoft.azuretools.telemetrywrapper.EventType;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
+import lombok.Lombok;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -82,9 +84,7 @@ public class AuthMethodManager {
                 return azure;
             }
         }
-        final String error = "Failed to initialize request";
-        final String action = "Confirm you have already signed in with subscription: " + sid;
-        throw new AzureToolkitRuntimeException(error, action);
+        throw Lombok.sneakyThrow(newAzureToolkitRuntimeExceptionWhenNotSignedIn(sid));
     }
 
     public AppPlatformManager getAzureSpringCloudClient(String sid) {
@@ -92,9 +92,16 @@ public class AuthMethodManager {
         if (manager != null) {
             return getAzureManager().getAzureSpringCloudClient(sid);
         }
-        final String error = "Failed to initialize request";
-        final String action = "Confirm you have already signed in with subscription: " + sid;
-        throw new AzureToolkitRuntimeException(error, action);
+        throw Lombok.sneakyThrow(newAzureToolkitRuntimeExceptionWhenNotSignedIn(sid));
+    }
+
+    public MySQLManager getMySQLClient(String sid) {
+        final AzureManager manager = getAzureManager();
+        if (manager != null) {
+            return manager.getMySQLClient(sid);
+        }
+        throw Lombok.sneakyThrow(newAzureToolkitRuntimeExceptionWhenNotSignedIn(sid));
+
     }
 
     public void addSignInEventListener(Runnable l) {
@@ -246,5 +253,11 @@ public class AuthMethodManager {
             System.out.println("Failed to loading authMethodDetails settings. Use defaults.");
             return new AuthMethodDetails();
         }
+    }
+
+    private static AzureToolkitRuntimeException newAzureToolkitRuntimeExceptionWhenNotSignedIn(final String sid) {
+        final String error = "Failed to initialize request";
+        final String action = "Confirm you have already signed in with subscription: " + sid;
+        return new AzureToolkitRuntimeException(error, action);
     }
 }

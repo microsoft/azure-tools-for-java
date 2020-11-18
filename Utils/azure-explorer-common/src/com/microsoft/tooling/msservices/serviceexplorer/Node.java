@@ -24,6 +24,8 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -403,5 +405,15 @@ public class Node implements MvpView, BasicTelemetryProperty {
             + REST_SEGMENT_JOB_MANAGEMENT_RESOURCE
             + resourceRelativePath;
         DefaultLoader.getIdeHelper().openLinkInBrowser(url);
+    }
+
+    protected static NodeActionListener createBackgroundActionListener(final String actionName,
+                                                                      final Runnable runnable) {
+        return new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
+            }
+        };
     }
 }
