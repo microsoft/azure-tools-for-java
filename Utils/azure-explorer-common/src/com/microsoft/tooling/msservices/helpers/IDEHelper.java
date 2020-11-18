@@ -87,6 +87,11 @@ public interface IDEHelper {
 
     void executeOnPooledThread(@NotNull Runnable runnable);
 
+    default void runInBackground(@Nullable Object project, @NotNull String name, boolean canBeCancelled,
+                                 boolean isIndeterminate, @Nullable String indicatorText,
+                                 Runnable runnable) {
+    }
+
     @Nullable
     String getProperty(@NotNull String name);
 
