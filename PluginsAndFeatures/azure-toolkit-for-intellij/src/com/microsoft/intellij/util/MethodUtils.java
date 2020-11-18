@@ -45,7 +45,8 @@ public class MethodUtils {
         try {
             Module[] modules = ModuleManager.getInstance(project).getModules();
             for (Module module : modules) {
-                if (module!= null && module.isLoaded() && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))) {
+                if (module != null && module.isLoaded()
+                        && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE))) {
                     String aiXMLPath = String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, message("aiXMLPath"));
                     String webXMLPath = String.format("%s%s%s", PluginUtil.getModulePath(module), File.separator, message("xmlPath"));
                     AILibraryHandler handler = new AILibraryHandler();
@@ -62,7 +63,7 @@ public class MethodUtils {
                     }
                 }
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage(), ex);
         }
         return name;
