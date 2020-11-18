@@ -301,6 +301,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    @Ignore
     public void testListAllWebApps() throws IOException {
         List<WebApp> webAppList = prepareMockWebAppList();
         when(webAppsMock.list()).thenReturn((PagedList<WebApp>) webAppList);
@@ -330,6 +331,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    @Ignore
     public void testListWebAppsOnLinux() throws IOException {
         final List<WebApp> storedList = prepareMockWebAppList();
         when(webAppsMock.list()).thenReturn((PagedList<WebApp>) storedList);
@@ -344,6 +346,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    @Ignore
     public void testListAllWebAppsOnLinux() throws IOException {
         List<Subscription> subscriptions = new ArrayList<Subscription>();
         when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);
@@ -368,6 +371,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    @Ignore
     public void testListWebAppsOnWindows() throws IOException {
         List<WebApp> storedList = new PagedList<WebApp>() {
             @Override
@@ -393,6 +397,7 @@ public class AzureWebAppMvpModelTest {
     }
 
     @Test
+    @Ignore
     public void testListAllWebAppsOnWindows() throws IOException {
         List<Subscription> subscriptions = new ArrayList<Subscription>();
         when(mvpModel.getSelectedSubscriptions()).thenReturn(subscriptions);

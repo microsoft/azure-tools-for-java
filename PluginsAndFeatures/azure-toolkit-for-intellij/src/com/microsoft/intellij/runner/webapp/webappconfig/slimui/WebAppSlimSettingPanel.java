@@ -39,7 +39,6 @@ import com.microsoft.intellij.runner.webapp.webappconfig.WebAppConfiguration;
 import com.microsoft.intellij.ui.components.AzureArtifact;
 import com.microsoft.intellij.ui.components.AzureArtifactManager;
 import com.microsoft.intellij.ui.util.UIUtils;
-import com.microsoft.intellij.util.BeforeRunTaskUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -62,8 +61,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private static final String[] FILE_NAME_EXT = {"war", "jar", "ear"};
     private static final String DEPLOYMENT_SLOT = "Deployment Slot";
     private static final String DEFAULT_SLOT_NAME = "slot-%s";
-    private static final String CREATE_NEW_WEBAPP = "Create New WebApp";
-    private static final String REFRESHING_WEBAPP = "Refreshing...";
     private static final String DEPLOYMENT_SLOT_HOVER = "Deployment slots are live apps with their own hostnames. App" +
             " content and configurations elements can be swapped between two deployment slots, including the production " +
             "slot.";
@@ -94,14 +91,10 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
     private WebAppComboBox comboBoxWebApp;
     private HideableDecorator slotDecorator;
 
-    private AzureArtifact previousArtifact;
-    private WebAppConfiguration webAppConfiguration;
-
     public WebAppSlimSettingPanel(@NotNull Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project, false);
         this.presenter = new WebAppDeployViewPresenterSlim();
         this.presenter.onAttachView(this);
-        this.webAppConfiguration = webAppConfiguration;
 
         final ButtonGroup slotButtonGroup = new ButtonGroup();
         slotButtonGroup.add(rbtNewSlot);
@@ -215,11 +208,13 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         if (StringUtils.isAllEmpty(configurationModel.getAppName(), configurationModel.getResourceId())) {
             comboBoxWebApp.refreshItems();
         } else {
-            comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel, WebAppComboBoxModel::isSameWebApp);
+            comboBoxWebApp.refreshItemsWithDefaultValue(configurationModel);
         }
         if (configuration.getAzureArtifactType() != null) {
-            previousArtifact = AzureArtifactManager.getInstance(project).getAzureArtifactById(configuration.getArtifactIdentifier());
-            comboBoxArtifact.refreshItems(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
+            lastSelectedAzureArtifact = AzureArtifactManager
+                    .getInstance(project)
+                    .getAzureArtifactById(configuration.getAzureArtifactType(), configuration.getArtifactIdentifier());
+            comboBoxArtifact.refreshItems(lastSelectedAzureArtifact);
         } else {
             comboBoxArtifact.refreshItems();
         }
@@ -265,8 +260,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         toggleSlotPanel(configuration.isDeployToSlot() && selectedWebApp != null);
         if (chkDeployToSlot.isSelected()) {
             configuration.setDeployToSlot(true);
-            configuration.setSlotName(cbxSlotName.getSelectedItem() == null ? "" :
-                                      cbxSlotName.getSelectedItem().toString());
+            configuration.setSlotName(cbxSlotName.getSelectedItem() == null ? "" : cbxSlotName.getSelectedItem().toString());
             if (rbtNewSlot.isSelected()) {
                 configuration.setSlotName(Constants.CREATE_NEW_SLOT);
                 configuration.setNewSlotName(txtNewSlotName.getText());
@@ -277,6 +271,7 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
         }
         configuration.setDeployToRoot(chkToRoot.isVisible() && chkToRoot.isSelected());
         configuration.setOpenBrowserAfterDeployment(chkOpenBrowser.isSelected());
+        syncBeforeRunTasks(comboBoxArtifact.getValue(), configuration);
     }
 
     private boolean isAbleToDeployToRoot(final AzureArtifact azureArtifact) {
@@ -323,28 +318,6 @@ public class WebAppSlimSettingPanel extends AzureSettingPanel<WebAppConfiguratio
             final String ext = FileNameUtils.getExtension(virtualFile.getPath());
             return ArrayUtils.contains(FILE_NAME_EXT, ext);
         });
-        comboBoxArtifact.addItemListener(event -> {
-            if (!(event.getItem() instanceof AzureArtifact)) {
-                return;
-            } else {
-                syncBeforeRunTasks((AzureArtifact) event.getItem());
-            }
-        });
-    }
-
-    private synchronized void syncBeforeRunTasks(AzureArtifact azureArtifact) {
-        try {
-            if (AzureArtifactManager.getInstance(project).equalsAzureArtifactIdentifier(previousArtifact, azureArtifact)) {
-                return;
-            }
-            if (previousArtifact != null) {
-                BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), previousArtifact, webAppConfiguration, false);
-            }
-            previousArtifact = azureArtifact;
-            BeforeRunTaskUtils.addOrRemoveBeforeRunTask(this.getMainPanel(), azureArtifact, webAppConfiguration, true);
-        } catch (IllegalAccessException e) {
-            // swallow before run task errors
-        }
     }
 
     private void loadDeploymentSlot(WebAppComboBoxModel selectedWebApp) {

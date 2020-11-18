@@ -22,29 +22,27 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESTART_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.START_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.STOP_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_OPEN_INBROWSER;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP_SHOWPROP;
-
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
+import org.apache.commons.lang.StringUtils;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.microsoft.azuretools.telemetry.AppInsightsConstants;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
-import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete the Web App: %s.\n"
@@ -52,35 +50,15 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App";
     private static final String LABEL = "WebApp";
     public static final String SSH_INTO = "SSH into Web App (Preview)";
+    public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
-    protected String webAppName;
-    protected String webAppId;
-    protected String fxVersion;
-    protected Map<String, String> propertyMap;
+    private final WebApp webapp;
 
-    /**
-     * Constructor.
-     */
-    @Deprecated
-    public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
-                      String state, String hostName, String os, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, LABEL, parent, subscriptionId, hostName, os, state);
-        this.webAppId = webAppId;
-        this.webAppName = webAppName;
-        this.propertyMap = propertyMap;
-        webAppNodePresenter = new WebAppNodePresenter<>();
-        webAppNodePresenter.onAttachView(WebAppNode.this);
-        loadActions();
-    }
-
-    public WebAppNode(WebAppModule parent, String subscriptionId, WebApp delegate, Map<String, String> propertyMap) {
+    public WebAppNode(WebAppModule parent, String subscriptionId, WebApp delegate) {
         super(delegate.id(), delegate.name(), LABEL, parent, subscriptionId, delegate.defaultHostName(),
-                delegate.operatingSystem().toString(), delegate.state());
-        this.webAppId = delegate.id();
-        this.webAppName = delegate.name();
-        this.fxVersion = delegate.linuxFxVersion();
-        this.propertyMap = propertyMap;
+              delegate.operatingSystem().toString(), delegate.state());
+        this.webapp = delegate;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
         loadActions();
@@ -93,33 +71,35 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public void renderSubModules() {
-        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webAppId));
+        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webapp));
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
     }
 
     @Override
     protected void loadActions() {
-        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED),
-            new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP,
-                createBackgroundActionListener("Stopping Web App", () -> stopWebApp())));
-        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(WEBAPP, START_WEBAPP,
-            createBackgroundActionListener("Starting Web App", () -> startWebApp())));
-        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP,
-            createBackgroundActionListener("Restarting Web App", () -> restartWebApp())));
+        final NodeActionListener stopping_web_app = createBackgroundActionListener("Stopping Web App", this::stopWebApp);
+        final WrappedTelemetryNodeActionListener actionListener = new WrappedTelemetryNodeActionListener(WEBAPP, STOP_WEBAPP, stopping_web_app);
+        addAction(ACTION_STOP, getIcon(this.os, this.label, WebAppBaseState.STOPPED), actionListener);
+        final NodeActionListener starting_web_app = createBackgroundActionListener("Starting Web App", this::startWebApp);
+        addAction(ACTION_START, new WrappedTelemetryNodeActionListener(WEBAPP, START_WEBAPP, starting_web_app));
+        final NodeActionListener restarting_web_app = createBackgroundActionListener("Restarting Web App", this::restartWebApp);
+        addAction(ACTION_RESTART, new WrappedTelemetryNodeActionListener(WEBAPP, RESTART_WEBAPP, restarting_web_app));
         addAction(ACTION_DELETE, new DeleteWebAppAction());
-        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_OPEN_INBROWSER,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) {
-                    DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
-                }
-            }));
-        addAction(ACTION_SHOW_PROPERTY, null, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_SHOWPROP,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) {
-                    DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
-                }
-            }));
+        final NodeActionListener openBrowserListener = new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
+            }
+        };
+        addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_OPEN_INBROWSER, openBrowserListener));
+        final NodeActionListener showPropListener = new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
+            }
+        };
+        addAction(ACTION_SHOW_PROPERTY, null, new WrappedTelemetryNodeActionListener(WEBAPP, WEBAPP_SHOWPROP, showPropListener));
         super.loadActions();
     }
 
@@ -127,25 +107,25 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.propertyMap.get("regionName"));
+        properties.put(AppInsightsConstants.Region, this.webapp.regionName());
         return properties;
     }
 
     public String getWebAppId() {
-        return this.webAppId;
+        return this.webapp.id();
     }
 
     public String getWebAppName() {
-        return this.webAppName;
+        return this.webapp.name();
     }
 
     public String getFxVersion() {
-        return fxVersion;
+        return this.webapp.linuxFxVersion();
     }
 
     public void startWebApp() {
         try {
-            webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webAppId);
+            webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -154,7 +134,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     public void restartWebApp() {
         try {
-            webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webAppId);
+            webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -163,7 +143,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     public void stopWebApp() {
         try {
-            webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webAppId);
+            webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -174,13 +154,19 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
         getNodeActionByName(SSH_INTO).setEnabled(running);
+        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running && !StringUtils.containsIgnoreCase(this.webapp.linuxFxVersion(),
+                                                                                                          "DOCKER|"));
         return super.getNodeActions();
+    }
+
+    public WebApp getWebapp() {
+        return webapp;
     }
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {
         DeleteWebAppAction() {
             super(WebAppNode.this, String.format(DELETE_WEBAPP_PROMPT_MESSAGE, getWebAppName()),
-                    DELETE_WEBAPP_PROGRESS_MESSAGE);
+                  DELETE_WEBAPP_PROGRESS_MESSAGE);
         }
 
         @Override

@@ -22,117 +22,27 @@
 
 package com.microsoft.azure.toolkit.intellij.webapp;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
-import com.intellij.ui.SimpleListCellRenderer;
-import com.intellij.ui.components.fields.ExtendableTextComponent;
 import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.toolkit.intellij.common.AzureComboBox;
+import com.microsoft.azure.toolkit.intellij.appservice.AppServiceComboBox;
 import com.microsoft.azure.toolkit.lib.webapp.WebAppService;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.utils.WebAppUtils;
-import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import rx.Subscription;
 
-import javax.swing.*;
-import java.io.InterruptedIOException;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
-
-public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
-
-    private Project project;
-    private Subscription subscription;
+public class WebAppComboBox extends AppServiceComboBox<WebAppComboBoxModel> {
 
     public WebAppComboBox(final Project project) {
-        super(false);
-        this.project = project;
-        this.setRenderer(new WebAppCombineBoxRender(this));
-    }
-
-    // todo: optimize refreshing logic
-    public synchronized void refreshItemsWithDefaultValue(@NotNull WebAppComboBoxModel defaultValue,
-                                                          @NotNull BiPredicate<WebAppComboBoxModel, WebAppComboBoxModel> comparator) {
-        unsubscribeSubscription(subscription);
-        this.setLoading(true);
-        this.removeAllItems();
-        this.addItem(defaultValue);
-        subscription = this.loadItemsAsync()
-                           .subscribe(items -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                               this.setItems(items);
-                               this.setLoading(false);
-                               this.resetDefaultValue(defaultValue, comparator);
-                           }), (e) -> {
-                                   this.handleLoadingError(e);
-                               });
-    }
-
-    private void resetDefaultValue(@NotNull WebAppComboBoxModel defaultValue, @NotNull BiPredicate<WebAppComboBoxModel,
-                                   WebAppComboBoxModel> comparator) {
-        final WebAppComboBoxModel model =
-                (WebAppComboBoxModel) UIUtils.listComboBoxItems(this)
-                                             .stream()
-                                             .filter(item -> comparator.test((WebAppComboBoxModel) item, defaultValue))
-                                             .findFirst().orElse(null);
-        if (model != null) {
-            this.setSelectedItem(model);
-        } else if (defaultValue.isNewCreateResource()) {
-            this.addItem(defaultValue);
-            this.setSelectedItem(defaultValue);
-        }
+        super(project);
     }
 
     @Override
-    protected void handleLoadingError(final Throwable e) {
-        final Throwable rootCause = ExceptionUtils.getRootCause(e);
-        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
-            // Swallow interrupted exception caused by unsubscribe
-            return;
-        }
-        this.setLoading(false);
-        super.handleLoadingError(e);
-    }
-
-    @NotNull
-    @Override
-    protected List<WebAppComboBoxModel> loadItems() throws Exception {
-        final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
-        return webApps.stream()
-                      .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
-                      .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-                      .map(webAppResourceEx -> new WebAppComboBoxModel(webAppResourceEx))
-                      .collect(Collectors.toList());
-    }
-
-    @Nullable
-    @Override
-    protected ExtendableTextComponent.Extension getExtension() {
-        return ExtendableTextComponent.Extension.create(
-                AllIcons.General.Add, "Create", this::createNewWebApp);
-    }
-
-    @Override
-    protected String getItemText(final Object item) {
-        if (item instanceof WebAppComboBoxModel) {
-            final WebAppComboBoxModel selectedItem = (WebAppComboBoxModel) item;
-            return selectedItem.isNewCreateResource() ?
-                   String.format("(New) %s", selectedItem.getAppName()) : selectedItem.getAppName();
-        } else {
-            return Objects.toString(item, StringUtils.EMPTY);
-        }
-    }
-
-    private void createNewWebApp() {
+    protected void createResource() {
         // todo: hide deployment part in creation dialog
         WebAppCreationDialog webAppCreationDialog = new WebAppCreationDialog(project);
         webAppCreationDialog.setDeploymentVisible(false);
@@ -147,34 +57,14 @@ public class WebAppComboBox extends AzureComboBox<WebAppComboBoxModel> {
         webAppCreationDialog.show();
     }
 
-    public class WebAppCombineBoxRender extends SimpleListCellRenderer {
-        private final JComboBox comboBox;
-
-        public WebAppCombineBoxRender(JComboBox comboBox) {
-            this.comboBox = comboBox;
-        }
-
-        @Override
-        public void customize(JList list, Object value, int index, boolean b, boolean b1) {
-            if (value instanceof WebAppComboBoxModel) {
-                final WebAppComboBoxModel webApp = (WebAppComboBoxModel) value;
-                if (index >= 0) {
-                    setText(getWebAppLabelText(webApp));
-                } else {
-                    setText(webApp.getAppName());
-                }
-            }
-        }
-
-        private String getWebAppLabelText(WebAppComboBoxModel webApp) {
-            final String webAppName = webApp.isNewCreateResource() ?
-                                      String.format("(New) %s", webApp.getAppName()) : webApp.getAppName();
-            final String os = webApp.getOs();
-            final String runtime = webApp.getRuntime();
-            final String resourceGroup = webApp.getResourceGroup();
-
-            return String.format("<html><div>%s</div></div><small>Runtime: %s | Resource Group: %s</small></html>",
-                    webAppName, runtime, resourceGroup);
-        }
+    @NotNull
+    @Override
+    protected List<WebAppComboBoxModel> loadItems() throws Exception {
+        final List<ResourceEx<WebApp>> webApps = AzureWebAppMvpModel.getInstance().listAllWebApps(false);
+        return webApps.stream()
+                      .filter(resource -> WebAppUtils.isJavaWebApp(resource.getResource()))
+                      .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
+                      .map(webAppResourceEx -> new WebAppComboBoxModel(webAppResourceEx))
+                      .collect(Collectors.toList());
     }
 }

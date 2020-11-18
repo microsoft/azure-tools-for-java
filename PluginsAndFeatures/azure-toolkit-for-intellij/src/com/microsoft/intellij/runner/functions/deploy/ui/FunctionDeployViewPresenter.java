@@ -23,37 +23,31 @@
 package com.microsoft.intellij.runner.functions.deploy.ui;
 
 import com.microsoft.azure.management.appservice.FunctionApp;
-import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import rx.Observable;
+import rx.Subscription;
 
+import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static com.microsoft.intellij.util.RxJavaUtils.unsubscribeSubscription;
 
 public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extends MvpPresenter<V> {
 
     private static final String CANNOT_LIST_WEB_APP = "Failed to list function apps.";
     private static final String CANNOT_SHOW_APP_SETTINGS = "Failed to show app settings";
 
-    public void loadFunctionApps(boolean forceRefresh, boolean fillAppSettings) {
-        Observable.fromCallable(() -> {
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> getMvpView().beforeFillFunctionApps());
-            return AzureFunctionMvpModel.getInstance().listAllFunctions(forceRefresh)
-                    .stream()
-                    .sorted((a, b) -> a.getResource().name().compareToIgnoreCase(b.getResource().name()))
-                    .collect(Collectors.toList());
-        }).subscribeOn(getSchedulerProvider().io())
-                .subscribe(functionApps -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                    if (!isViewDetached()) {
-                        getMvpView().fillFunctionApps(functionApps, fillAppSettings);
-                    }
-                }), e -> errorHandler(CANNOT_LIST_WEB_APP, (Exception) e));
-    }
+    private Subscription loadAppSettingsSubscription;
 
     public void loadAppSettings(FunctionApp functionApp) {
-        Observable.fromCallable(() -> {
+        if (functionApp == null) {
+            return;
+        }
+        unsubscribeSubscription(loadAppSettingsSubscription);
+        loadAppSettingsSubscription = Observable.fromCallable(() -> {
             DefaultLoader.getIdeHelper().invokeAndWait(() -> getMvpView().beforeFillAppSettings());
             return functionApp.getAppSettings();
         }).subscribeOn(getSchedulerProvider().io())
@@ -68,6 +62,11 @@ public class FunctionDeployViewPresenter<V extends FunctionDeployMvpView> extend
     }
 
     private void errorHandler(String msg, Exception e) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        if (rootCause instanceof InterruptedIOException || rootCause instanceof InterruptedException) {
+            // Swallow interrupted exception caused by unsubscribe
+            return;
+        }
         DefaultLoader.getIdeHelper().invokeLater(() -> {
             if (isViewDetached()) {
                 return;

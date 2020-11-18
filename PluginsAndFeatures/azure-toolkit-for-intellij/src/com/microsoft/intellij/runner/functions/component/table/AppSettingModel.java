@@ -43,14 +43,12 @@ public class AppSettingModel implements TableModel {
     private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
     private static final String AZURE_WEB_JOB_STORAGE_VALUE = "";
 
-    public static final String REQUIRED_APP_SETTINGS_PROMPTION = "%s is a required parameter";
+    public static final String REQUIRED_APP_SETTINGS_PROMOTION = "%s is a required parameter";
 
     private List<Pair<String, String>> appSettings = new ArrayList<>();
     private List<TableModelListener> tableModelListenerList = new ArrayList<>();
 
     public AppSettingModel() {
-        appSettings.add(Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, FUNCTIONS_WORKER_RUNTIME_VALUE));
-        appSettings.add(Pair.of(AZURE_WEB_JOB_STORAGE_KEY, AZURE_WEB_JOB_STORAGE_VALUE));
     }
 
     @Override
@@ -123,7 +121,7 @@ public class AppSettingModel implements TableModel {
         }
         final Pair<String, String> target = appSettings.get(row);
         if (FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey())) {
-            throw new IllegalArgumentException(String.format(REQUIRED_APP_SETTINGS_PROMPTION, target.getKey()));
+            throw new IllegalArgumentException(String.format(REQUIRED_APP_SETTINGS_PROMOTION, target.getKey()));
         }
         appSettings.remove(row);
         fireTableChanged();
@@ -161,14 +159,7 @@ public class AppSettingModel implements TableModel {
         tableModelListenerList.remove(tableModelListener);
     }
 
-    public boolean isDefaultAppSettings() {
-        final Map<String, String> appSettingsMap = getAppSettings();
-        return appSettingsMap.size() == 2 &&
-                StringUtils.equals(appSettingsMap.get(FUNCTIONS_WORKER_RUNTIME_KEY), FUNCTIONS_WORKER_RUNTIME_VALUE) &&
-                StringUtils.equals(appSettingsMap.get(AZURE_WEB_JOB_STORAGE_KEY), AZURE_WEB_JOB_STORAGE_VALUE);
-    }
-
-    public void addRequiredAttributes() {
+    public void loadRequiredAttributes() {
         final Map<String, String> appSettingsMap = getAppSettings();
         if (!appSettingsMap.containsKey(FUNCTIONS_WORKER_RUNTIME_KEY)) {
             appSettings.add(Pair.of(FUNCTIONS_WORKER_RUNTIME_KEY, FUNCTIONS_WORKER_RUNTIME_VALUE));

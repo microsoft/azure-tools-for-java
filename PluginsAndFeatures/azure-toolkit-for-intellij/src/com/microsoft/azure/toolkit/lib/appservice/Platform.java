@@ -22,9 +22,11 @@
 
 package com.microsoft.azure.toolkit.lib.appservice;
 
+import com.microsoft.azure.management.appservice.JavaVersion;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
@@ -106,7 +108,6 @@ public interface Platform {
     enum Windows implements Platform {
         JAVA8("java 8", "1.8"),
         JAVA11("java 11", "11"),
-        JAVA8_JBOSS72("jboss 7.2", "1.8"),
         JAVA8_TOMCAT9("tomcat 9.0", "1.8"),
         JAVA8_TOMCAT85("tomcat 8.5", "1.8"),
         JAVA11_TOMCAT9("tomcat 9.0", "11"),
@@ -143,6 +144,42 @@ public interface Platform {
                 return String.format("Windows-Java %s (Embedded Web Server)", javaVersionString);
             }
             return String.format("Windows-Java %s-%s", javaVersionString, this.webContainer.toUpperCase());
+        }
+    }
+
+    @Getter
+    enum AzureFunction implements Platform {
+        Windows_Java8(OperatingSystem.WINDOWS, JavaVersion.JAVA_8_NEWEST),
+        Windows_Java11(OperatingSystem.WINDOWS, JavaVersion.JAVA_11),
+        Linux_Java8(OperatingSystem.LINUX, JavaVersion.JAVA_8_NEWEST),
+        Linux_Java11(OperatingSystem.LINUX, JavaVersion.JAVA_11);
+
+        private OperatingSystem os;
+        private JavaVersion javaVersion;
+
+        AzureFunction(final OperatingSystem os, final JavaVersion javaVersion) {
+            this.os = os;
+            this.javaVersion = javaVersion;
+        }
+
+        @Override
+        public OperatingSystem getOs() {
+            return this.os;
+        }
+
+        @Override
+        public String getStackOrWebContainer() {
+            return "Java";
+        }
+
+        @Override
+        public String getStackVersionOrJavaVersion() {
+            return javaVersion == JavaVersion.JAVA_8_NEWEST ? "8" : "11";
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s-Java %s", StringUtils.capitalize(os.name()), javaVersion);
         }
     }
 }

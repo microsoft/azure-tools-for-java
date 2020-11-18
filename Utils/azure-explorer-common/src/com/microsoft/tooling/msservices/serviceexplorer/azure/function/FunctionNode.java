@@ -36,6 +36,8 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import org.apache.commons.lang3.ArrayUtils;
@@ -111,6 +113,8 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         for (FunctionEnvelope functionEnvelope : functionEnvelopes) {
             addChildNode(new SubFunctionNode(functionEnvelope, this));
         }
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.functionApp));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.functionApp));
     }
 
     @Override

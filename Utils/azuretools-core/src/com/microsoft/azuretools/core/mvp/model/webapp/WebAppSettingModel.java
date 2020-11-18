@@ -23,13 +23,17 @@
 package com.microsoft.azuretools.core.mvp.model.webapp;
 
 import com.microsoft.azure.management.appservice.JavaVersion;
+import com.microsoft.azure.management.appservice.LogLevel;
 import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.RuntimeStack;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.utils.WebAppUtils;
+import lombok.Data;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Data
 public class WebAppSettingModel {
 
     // common settings
@@ -49,10 +53,8 @@ public class WebAppSettingModel {
     // create related
     private String webAppName = "";
     private String webContainer = "";
-
     private boolean creatingResGrp = false;
     private String resourceGroup = "";
-
     private boolean creatingAppServicePlan = false;
     private String appServicePlanName = "";
     private String appServicePlanId = "";
@@ -61,200 +63,16 @@ public class WebAppSettingModel {
     private JavaVersion jdkVersion = JavaVersion.JAVA_8_NEWEST;
     private String stack = "TOMCAT";
     private String version = "8.5-jre8";
-
+    // web server log
+    private boolean enableWebServerLogging = false;
+    private Integer webServerLogQuota = 35;
+    private Integer webServerRetentionPeriod = null;
+    private boolean enableDetailedErrorMessage = false;
+    private boolean enableFailedRequestTracing = false;
+    // application log
+    private boolean enableApplicationLog = false;
+    private LogLevel applicationLogLevel = LogLevel.ERROR;
     private OperatingSystem os = OperatingSystem.LINUX;
-
-    public String getWebAppId() {
-        return webAppId;
-    }
-
-    public String getSubscriptionId() {
-        return this.subscriptionId;
-    }
-
-    public void setWebAppId(String webAppId) {
-        this.webAppId = webAppId;
-    }
-
-    public void setSubscriptionId(String subId) {
-        this.subscriptionId = subId;
-    }
-
-    public boolean isDeployToRoot() {
-        return deployToRoot;
-    }
-
-    public void setDeployToRoot(boolean deployToRoot) {
-        this.deployToRoot = deployToRoot;
-    }
-
-    public boolean isDeployToSlot() {
-        return deployToSlot;
-    }
-
-    public void setDeployToSlot(boolean deployToSlot) {
-        this.deployToSlot = deployToSlot;
-    }
-
-    public String getTargetPath() {
-        return targetPath;
-    }
-
-    public void setTargetPath(String targetPath) {
-        this.targetPath = targetPath;
-    }
-
-    public String getTargetName() {
-        return targetName;
-    }
-
-    public void setTargetName(String targetName) {
-        this.targetName = targetName;
-    }
-
-    public String getProjectBase() {
-        return projectBase;
-    }
-
-    public void setProjectBase(String projectBase) {
-        this.projectBase = projectBase;
-    }
-
-    public String getProjectType() {
-        return projectType;
-    }
-
-    public void setProjectType(String projectType) {
-        this.projectType = projectType;
-    }
-
-    public boolean isCreatingNew() {
-        return creatingNew;
-    }
-
-    public void setCreatingNew(boolean creatingNew) {
-        this.creatingNew = creatingNew;
-    }
-
-    public String getWebAppName() {
-        return webAppName;
-    }
-
-    public void setWebAppName(String webAppName) {
-        this.webAppName = webAppName;
-    }
-
-    public String getSlotName() {
-        return this.slotName;
-    }
-
-    public void setSlotName(final String slotName) {
-        this.slotName = slotName;
-    }
-
-    public String getNewSlotName() {
-        return this.newSlotName;
-    }
-
-    public void setNewSlotName(final String newSlotName) {
-        this.newSlotName = newSlotName;
-    }
-
-    public String getNewSlotConfigurationSource() {
-        return this.newSlotConfigurationSource;
-    }
-
-    public void setNewSlotConfigurationSource(final String newSlotConfigurationSource) {
-        this.newSlotConfigurationSource = newSlotConfigurationSource;
-    }
-
-    public String getWebContainer() {
-        return webContainer;
-    }
-
-    public void setWebContainer(String webContainer) {
-        this.webContainer = webContainer;
-    }
-
-    public String getResourceGroup() {
-        return resourceGroup;
-    }
-
-    public void setResourceGroup(String resourceGroup) {
-        this.resourceGroup = resourceGroup;
-    }
-
-    public boolean isCreatingResGrp() {
-        return creatingResGrp;
-    }
-
-    public void setCreatingResGrp(boolean creatingResGrp) {
-        this.creatingResGrp = creatingResGrp;
-    }
-
-    public boolean isCreatingAppServicePlan() {
-        return creatingAppServicePlan;
-    }
-
-    public void setCreatingAppServicePlan(boolean creatingAppServicePlan) {
-        this.creatingAppServicePlan = creatingAppServicePlan;
-    }
-
-    public String getAppServicePlanName() {
-        return appServicePlanName;
-    }
-
-    public void setAppServicePlanName(String appServicePlan) {
-        this.appServicePlanName = appServicePlan;
-    }
-
-    public String getAppServicePlanId() {
-        return appServicePlanId;
-    }
-
-    public void setAppServicePlanId(String appServicePlanId) {
-        this.appServicePlanId = appServicePlanId;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
-    }
-
-    public String getPricing() {
-        return pricing;
-    }
-
-    public void setPricing(String pricing) {
-        this.pricing = pricing;
-    }
-
-    public JavaVersion getJdkVersion() {
-        return jdkVersion;
-    }
-
-    public void setJdkVersion(JavaVersion jdkVersion) {
-        this.jdkVersion = jdkVersion;
-    }
-
-    public String getStack() {
-        return this.stack;
-    }
-
-    public void setStack(final String value) {
-        this.stack = value;
-    }
-
-    public String getVersion() {
-        return this.version;
-    }
-
-    public void setVersion(final String value) {
-        this.version = value;
-    }
 
     public RuntimeStack getLinuxRuntime() {
         return new RuntimeStack(this.stack, this.version);
@@ -264,8 +82,8 @@ public class WebAppSettingModel {
         return this.os;
     }
 
-    public void setOS(final OperatingSystem value) {
-        this.os = value;
+    public void setOS(OperatingSystem os) {
+        this.os = os;
     }
 
     public Map<String, String> getTelemetryProperties(Map<String, String> properties) {
@@ -274,9 +92,8 @@ public class WebAppSettingModel {
             if (properties != null) {
                 result.putAll(properties);
             }
-            result.put(TelemetryConstants.RUNTIME,
-                os == OperatingSystem.LINUX ? "linux-" + getLinuxRuntime()
-                    .toString() : "windows-" + getWebContainer());
+            result.put(TelemetryConstants.RUNTIME, os == OperatingSystem.LINUX ?
+                    "linux-" + getLinuxRuntime().toString() : "windows-" + getWebContainer());
             result.put(TelemetryConstants.WEBAPP_DEPLOY_TO_SLOT, String.valueOf(isDeployToSlot()));
             result.put(TelemetryConstants.SUBSCRIPTIONID, getSubscriptionId());
             result.put(TelemetryConstants.CREATE_NEWWEBAPP, String.valueOf(isCreatingNew()));
