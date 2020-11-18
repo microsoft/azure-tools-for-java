@@ -88,6 +88,28 @@ public abstract class AzureAnAction extends AnAction {
             null, buildProp(anActionEvent, extraInfo));
     }
 
+    public void sendTelemetryOnSuccess(AnActionEvent anActionEvent, Map<String, String> extraInfo) {
+        sendTelemetryOnAction(anActionEvent, "Success", extraInfo);
+    }
+
+    public void sendTelemetryOnException(AnActionEvent anActionEvent, Throwable e) {
+        Map<String, String> extraInfo = new HashMap<>();
+        extraInfo.put("ErrorMessage", e.getMessage());
+        this.sendTelemetryOnAction(anActionEvent, "Exception", extraInfo);
+    }
+
+    protected String getServiceName(AnActionEvent event) {
+        return TelemetryConstants.ACTION;
+    }
+
+    protected String getOperationName(AnActionEvent event) {
+        try {
+            return event.getPresentation().getText().toLowerCase().trim().replace(" ", "-");
+        } catch (Exception ignore) {
+            return "";
+        }
+    }
+
     private Map<String, String> buildProp(AnActionEvent anActionEvent, Map<String, String> extraInfo) {
         final Map<String, String> properties = new HashMap<>();
         properties.put("Text", anActionEvent.getPresentation().getText());
@@ -101,18 +123,6 @@ public abstract class AzureAnAction extends AnAction {
             properties.putAll(((TelemetryProperties) this).toProperties());
         }
         return properties;
-    }
-
-    protected String getServiceName(AnActionEvent event) {
-        return TelemetryConstants.ACTION;
-    }
-
-    protected String getOperationName(AnActionEvent event) {
-        try {
-            return event.getPresentation().getText().toLowerCase().trim().replace(" ", "-");
-        } catch (Exception ignore) {
-            return "";
-        }
     }
 
     /**
@@ -137,15 +147,5 @@ public abstract class AzureAnAction extends AnAction {
         } catch (Exception ignore) {
         }
         return serviceName;
-    }
-
-    public void sendTelemetryOnSuccess(AnActionEvent anActionEvent, Map<String, String> extraInfo) {
-        sendTelemetryOnAction(anActionEvent, "Success", extraInfo);
-    }
-
-    public void sendTelemetryOnException(AnActionEvent anActionEvent, Throwable e) {
-        Map<String, String> extraInfo = new HashMap<>();
-        extraInfo.put("ErrorMessage", e.getMessage());
-        this.sendTelemetryOnAction(anActionEvent, "Exception", extraInfo);
     }
 }

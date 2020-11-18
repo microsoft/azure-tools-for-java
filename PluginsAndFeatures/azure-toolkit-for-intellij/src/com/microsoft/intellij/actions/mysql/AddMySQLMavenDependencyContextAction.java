@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.springcloud.dependency.action;
+package com.microsoft.intellij.actions.mysql;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -28,7 +28,7 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.module.Module;
 import org.jetbrains.annotations.NotNull;
 
-public class AddAzureDependencyContextAction extends AddAzureDependencyAction {
+public class AddMySQLMavenDependencyContextAction extends AddMySQLMavenDependencyAction {
     public void update(@NotNull AnActionEvent event) {
         final Presentation presentation = event.getPresentation();
         final Module module = event.getData(LangDataKeys.MODULE);

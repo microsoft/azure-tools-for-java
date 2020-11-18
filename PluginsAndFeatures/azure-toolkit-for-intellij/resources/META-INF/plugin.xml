@@ -291,9 +291,12 @@
             text="SparkJobRun"/>
     <action id="SparkJobDebug" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobDebugAction"
             text="SparkJobDebug"/>
-    <action id="Actions.AddAzureDependencyAction" class="com.microsoft.azure.springcloud.dependency.action.AddAzureDependencyAction" text="Add Azure Spring Cloud dependency"  icon="/icons/azure-springcloud-app-dependency.png">
+    <action id="Actions.AddAzureDependencyAction" class="com.microsoft.azure.springcloud.dependency.action.AddSpringClouMavenDependencyAction" text="Add Azure Spring Cloud dependency" icon="/icons/azure-springcloud-app-dependency.png">
     </action>
-    <action id="Actions.AddAzureDependencyContextAction" class="com.microsoft.azure.springcloud.dependency.action.AddAzureDependencyContextAction" text="Add Azure Spring Cloud dependency"  icon="/icons/azure-springcloud-app-dependency.png">
+    <action id="Actions.AddAzureDependencyContextAction" class="com.microsoft.azure.springcloud.dependency.action.AddSpringClouMavenDependencyContextAction" text="Add Azure Spring Cloud dependency" icon="/icons/azure-springcloud-app-dependency.png">
+      <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
+    </action>
+    <action id="Actions.AddMySQLDependencyContextAction" class="com.microsoft.intellij.actions.mysql.AddMySQLMavenDependencyContextAction" text="Add MySQL driver" icon="/icons/azure-add-mysql-dependency.png">
       <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
     </action>
 
