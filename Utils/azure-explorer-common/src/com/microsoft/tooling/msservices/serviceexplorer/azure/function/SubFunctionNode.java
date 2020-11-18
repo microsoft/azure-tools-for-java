@@ -26,6 +26,8 @@ import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionEnvelope;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
@@ -68,8 +70,7 @@ public class SubFunctionNode extends Node {
                     @Override
                     protected void actionPerformed(NodeActionEvent e) {
                         try {
-                            DefaultLoader.getIdeHelper().runInBackground(getProject(), "Triggering Function",
-                                    false, false, null, () -> trigger());
+                            AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Triggering Function", false, () -> trigger()));
                         } catch (Exception exception) {
                             DefaultLoader.getUIHelper().showError(SubFunctionNode.this, exception.getMessage());
                         }

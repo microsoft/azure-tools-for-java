@@ -31,9 +31,9 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
@@ -59,11 +59,10 @@ public class DeployFunctionAction extends AzureAnAction {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
-                ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+                AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
             }
         } catch (Exception e) {
-            ApplicationManager.getApplication().invokeLater(() ->
-                    PluginUtil.displayErrorDialog(message("function.deploy.error.title"), e.getMessage()));
+            AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog(message("function.deploy.error.title"), e.getMessage()));
         }
         return true;
     }

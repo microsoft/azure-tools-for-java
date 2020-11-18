@@ -27,9 +27,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorImpl;
 import com.intellij.openapi.fileEditor.impl.text.PsiAwareTextEditorProvider;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -37,6 +34,8 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.util.messages.MessageBusConnection;
 import com.microsoft.azure.management.resources.DeploymentMode;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.helpers.base.BaseEditor;
@@ -149,27 +148,23 @@ public class ResourceTemplateView extends BaseEditor {
     private void updateDeployment() {
         String oldTemplate = this.originTemplate;
         String oldParameters = this.originParameters;
-        ProgressManager.getInstance().run(new Task.Backgroundable(project,
-                "Update your azure resource " + node.getDeployment().name() + "...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
-                    ResourceTemplateView.this.originTemplate = getTemplate();
-                    ResourceTemplateView.this.originParameters = getParameters();
-                    node.getDeployment().update()
-                            .withTemplate(ResourceTemplateView.this.originTemplate)
-                            .withParameters(ResourceTemplateView.this.originParameters)
-                            .withMode(DeploymentMode.INCREMENTAL).apply();
-                    UIUtils.showNotification(project, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
-                }), (e) -> {
-                    // Fall back the origin value when update fail.
-                    ResourceTemplateView.this.originTemplate = oldTemplate;
-                    ResourceTemplateView.this.originParameters = oldParameters;
-                    UIUtils.showNotification(project,
-                            NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + e.getMessage(), MessageType.ERROR);
-                });
-            }
-        });
+        final String title = "Update your azure resource " + node.getDeployment().name() + "...";
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+            EventUtil.executeWithLog(ARM, UPDATE_DEPLOYMENT_SHORTCUT, (operation -> {
+                ResourceTemplateView.this.originTemplate = getTemplate();
+                ResourceTemplateView.this.originParameters = getParameters();
+                node.getDeployment().update()
+                    .withTemplate(ResourceTemplateView.this.originTemplate)
+                    .withParameters(ResourceTemplateView.this.originParameters)
+                    .withMode(DeploymentMode.INCREMENTAL).apply();
+                UIUtils.showNotification(project, NOTIFY_UPDATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
+            }), (e) -> {
+                // Fall back the origin value when update fail.
+                ResourceTemplateView.this.originTemplate = oldTemplate;
+                ResourceTemplateView.this.originParameters = oldParameters;
+                UIUtils.showNotification(project, NOTIFY_UPDATE_DEPLOYMENT_FAIL + ", " + e.getMessage(), MessageType.ERROR);
+            });
+        }));
     }
 
     public boolean isTemplateUpdate(){

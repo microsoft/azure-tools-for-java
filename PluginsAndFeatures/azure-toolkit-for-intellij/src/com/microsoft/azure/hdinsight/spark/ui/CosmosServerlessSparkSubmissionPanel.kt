@@ -1,13 +1,12 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.uiDesigner.core.GridConstraints
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.run.configuration.CosmosServerlessSparkSubmitModel
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.intellij.forms.dsl.panel
 import org.apache.commons.lang3.exception.ExceptionUtils
 import javax.swing.JComponent
@@ -31,13 +30,13 @@ open class CosmosServerlessSparkSubmissionPanel(private val project: Project)
 
     override fun setData(data: SparkSubmitModel) {
         super.setData(data)
-        ApplicationManager.getApplication().invokeAndWait({
+        AzureTaskManager.getInstance().runAndWait {
             (data as? CosmosServerlessSparkSubmitModel)?.apply {
                 additionalFieldsPanel.sparkEventsDirectoryField.text = getSparkEventsDirectoryPath()
                 additionalFieldsPanel.sparkEventsDirectoryPrefixField.text = sparkEventsDirectoryPrefix
                 additionalFieldsPanel.extendedPropertiesField.envs = getExtendedProperties()
             }
-        }, ModalityState.any())
+        }
     }
 
     private val additionalFieldsPanel = CosmosServerlessSparkAdditionalFieldsPanel()

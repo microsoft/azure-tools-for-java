@@ -107,39 +107,6 @@ public class CreateQueueForm extends AzureDialogWrapper {
     @Override
     protected void doOKAction() {
         final String name = nameTextField.getText();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating queue...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                /*try {
-                    progressIndicator.setIndeterminate(true);
-
-                    for (Queue queue : StorageClientSDKManager.getManager().getQueues(storageAccount)) {
-                        if (queue.getName().equals(name)) {
-                            DefaultLoader.getIdeHelper().invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    JOptionPane.showMessageDialog(null, "A queue with the specified name already exists.", "Azure Explorer", JOptionPane.ERROR_MESSAGE);
-                                }
-                            });
-
-                            return;
-                        }
-                    }
-
-                    Queue queue = new Queue(name, "", 0);
-                    StorageClientSDKManager.getManager().createQueue(storageAccount, queue);
-
-                    if (onCreate != null) {
-                        DefaultLoader.getIdeHelper().invokeLater(onCreate);
-                    }
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to create queue." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
-            }
-        });
-
         sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);
     }

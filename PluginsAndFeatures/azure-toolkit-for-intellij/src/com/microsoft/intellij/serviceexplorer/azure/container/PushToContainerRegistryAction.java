@@ -32,9 +32,9 @@ import com.intellij.execution.impl.RunDialog;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -74,7 +74,7 @@ public class PushToContainerRegistryAction extends NodeActionListener {
         }
         try {
             if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-                ApplicationManager.getApplication().invokeLater(() -> runConfiguration(project));
+                AzureTaskManager.getInstance().runLater(() -> runConfiguration(project));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,10 +103,10 @@ public class PushToContainerRegistryAction extends NodeActionListener {
                                 imageSetting.setServerUrl(ret.getServerUrl());
                                 imageSetting.setUsername(ret.getUsername());
                                 imageSetting.setPassword(ret.getPassword());
-                                ApplicationManager.getApplication().invokeLater(() -> openRunDialog(project, settings));
+                                AzureTaskManager.getInstance().runLater(() -> openRunDialog(project, settings));
                                 return;
                             }
-                            ApplicationManager.getApplication().invokeLater(() -> openRunDialog(project, ret));
+                            AzureTaskManager.getInstance().runLater(() -> openRunDialog(project, ret));
                         },
                         err -> {
                             err.printStackTrace();

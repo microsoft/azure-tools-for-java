@@ -35,6 +35,8 @@ import com.microsoft.azure.toolkit.intellij.appservice.jfr.RunFlightRecorderDial
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderConfiguration;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderManager;
 import com.microsoft.azure.toolkit.lib.appservice.jfr.FlightRecorderStarterBase;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.util.PluginUtil;
@@ -85,12 +87,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
         }
         EventUtil.executeWithLog(appService instanceof WebApp ? TelemetryConstants.WEBAPP : TelemetryConstants.FUNCTION,
                                  "start-flight-recorder", op -> {
-                DefaultLoader.getIdeHelper().runInBackground(project,
-                                                         PROFILE_FLIGHT_RECORDER,
-                                                         true,
-                                                         true,
-                                                         PROFILE_FLIGHT_RECORDER,
-                                                         this::doProfileFlightRecorderAll);
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, PROFILE_FLIGHT_RECORDER, true, this::doProfileFlightRecorderAll));
             });
     }
 
@@ -99,7 +96,7 @@ public class ProfileFlightRecordAction extends NodeActionListener {
             ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
             progressIndicator.setText(String.format(message("webapp.flightRecord.task.startProfileWebApp.title"), appService.name()));
             CountDownLatch finishLatch = new CountDownLatch(1);
-            ApplicationManager.getApplication().invokeAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 FlightRecorderConfiguration config = collectFlightRecorderConfiguration();
                 if (Objects.isNull(config)) {
                     PluginUtil.showWarningNotificationProject(project,
@@ -112,14 +109,13 @@ public class ProfileFlightRecordAction extends NodeActionListener {
                     notifyUserWithErrorMessage(message("webapp.flightRecord.error.invalidDuration.title"),
                                                message("webapp.flightRecord.error.invalidDuration.message"));
                     finishLatch.countDown();
-                    return;
                 } else {
                     new Thread(() -> {
                         doProfileFlightRecorder(progressIndicator,
                                                 config, finishLatch);
                     }).start();
                 }
-            }, ModalityState.NON_MODAL);
+            });
             finishLatch.await();
         } catch (Exception ex) {
             notifyUserWithErrorMessage(

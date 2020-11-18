@@ -20,32 +20,26 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azurecommons.tasks;
+package com.microsoft.azure.toolkit.lib.common.task;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import lombok.Data;
 
-public interface CancellableTask {
-    interface CancellationHandle {
-        boolean isCancelled();
+@Data
+public class AzureTask {
+    private final Runnable runnable;
+
+    private Object project;
+    private boolean cancellable;
+    private String title;
+
+    public AzureTask(Runnable runnable) {
+        this.runnable = runnable;
     }
 
-    interface CancellableTaskHandle extends CancellationHandle {
-        boolean isFinished();
-
-        boolean isSuccessful();
-
-        @Nullable
-        Throwable getException();
-
-        void cancel();
+    public AzureTask(Object project, String title, boolean cancellable, Runnable runnable) {
+        this.project = project;
+        this.title = title;
+        this.cancellable = cancellable;
+        this.runnable = runnable;
     }
-
-    void run(CancellationHandle cancellationHandle) throws Throwable;
-
-    void onCancel();
-
-    void onSuccess();
-
-    void onError(@NotNull Throwable exception);
 }

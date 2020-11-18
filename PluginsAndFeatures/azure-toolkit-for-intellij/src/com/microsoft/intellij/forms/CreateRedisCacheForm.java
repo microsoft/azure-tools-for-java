@@ -32,6 +32,8 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
@@ -43,9 +45,10 @@ import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
 import com.microsoft.azuretools.utils.AzureModel;
+import com.microsoft.azuretools.utils.AzureModelController;
+import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.helpers.LinkListener;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
-import com.microsoft.intellij.util.FormUtils;
 import com.microsoft.intellij.util.PluginUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import org.jetbrains.annotations.Nullable;
@@ -191,23 +194,15 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         }
 
         public Void call() throws Exception {
-            DefaultLoader.getIdeHelper().runInBackground(
-                    null,
-                    String.format(CREATING_INDICATOR, ((ProcessorBase) processor).DNSName()),
-                    false,
-                    true,
-                    String.format(CREATING_INDICATOR, ((ProcessorBase) processor).DNSName()),
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                processor.waitForCompletion("PRODUCE");
-                            } catch (InterruptedException ex) {
-                                String msg = String.format(CREATING_ERROR_INDICATOR, "waitForCompletion", ex.getMessage());
-                                PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
-                            }
-                        }
-                    });
+            final String title = String.format(CREATING_INDICATOR, ((ProcessorBase) processor).DNSName());
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+                try {
+                    processor.waitForCompletion("PRODUCE");
+                } catch (InterruptedException ex) {
+                    String msg = String.format(CREATING_ERROR_INDICATOR, "waitForCompletion", ex.getMessage());
+                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
+                }
+            }));
             // consume
             processor.process().notifyCompletion();
             return null;
@@ -278,7 +273,13 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
         cbSubs.setModel(new DefaultComboBoxModel<>(selectedSubscriptions.toArray(new SubscriptionDetail[selectedSubscriptions.size()])));
         if (selectedSubscriptions.size() > 0) {
             currentSub = (SubscriptionDetail) cbSubs.getSelectedItem();
-            FormUtils.loadLocationsAndResourceGrps(project);
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+                try {
+                    AzureModelController.updateSubscriptionMaps(null);
+                } catch (Exception ex) {
+                    AzurePlugin.log("Error loading locations", ex);
+                }
+            }));
             fillLocationsAndResourceGrps(currentSub);
         }
 

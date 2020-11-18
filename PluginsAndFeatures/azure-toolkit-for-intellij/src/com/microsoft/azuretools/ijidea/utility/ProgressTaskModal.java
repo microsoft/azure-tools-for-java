@@ -24,8 +24,9 @@ package com.microsoft.azuretools.ijidea.utility;
 
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.utils.IProgressTaskImpl;
 import com.microsoft.azuretools.utils.IWorker;
 
@@ -42,17 +43,14 @@ public class ProgressTaskModal implements IProgressTaskImpl {
 
     @Override
     public void doWork(IWorker worker) {
-        ProgressManager.getInstance().run(new Task.Modal(project, worker.getName(), true) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                try {
-                    progressIndicator.setIndeterminate(true);
-                    worker.work(new UpdateProgressIndicator(progressIndicator));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, worker.getName(), true, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
+            try {
+                worker.work(new UpdateProgressIndicator(progressIndicator));
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-        });
-
+        }));
     }
 }

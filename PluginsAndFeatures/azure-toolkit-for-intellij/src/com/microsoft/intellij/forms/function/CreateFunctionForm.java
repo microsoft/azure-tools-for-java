@@ -23,7 +23,6 @@
 package com.microsoft.intellij.forms.function;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -40,6 +39,7 @@ import com.microsoft.azure.management.eventhub.EventHubConsumerGroup;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -182,7 +182,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 Object selectedCron = cbCron.getSelectedItem();
                 if (selectedCron instanceof String && StringUtils.equals((CharSequence) selectedCron, "Customized Schedule")) {
-                    ApplicationManager.getApplication().invokeLater(() -> addTimer());
+                    AzureTaskManager.getInstance().runLater(() -> addTimer());
                 }
             }
         });

@@ -23,10 +23,8 @@
 package com.microsoft.intellij.wizards.createarmvm;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.wizard.WizardNavigationState;
@@ -39,6 +37,8 @@ import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -58,7 +58,6 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import com.microsoft.tooling.msservices.model.vm.VirtualNetwork;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
@@ -214,48 +213,34 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveVirtualNetworks() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading virtual networks...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-                if (virtualNetworks == null) {
-                    virtualNetworks = azure.networks().list();
-                }
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        networkComboBox.setModel(getVirtualNetworkModel(model.getVirtualNetwork(), model.getSubnet()));
-                    }
-                });
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading virtual networks...", false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
+            if (virtualNetworks == null) {
+                virtualNetworks = azure.networks().list();
             }
-        });
+            final Runnable task = () -> networkComboBox.setModel(getVirtualNetworkModel(model.getVirtualNetwork(), model.getSubnet()));
+            AzureTaskManager.getInstance().runLater(task);
+        }));
 
         if (virtualNetworks == null) {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                                      @Override
-                                      public void run() {
-                                          final DefaultComboBoxModel loadingVNModel = new DefaultComboBoxModel(new String[]{CREATE_NEW, "<Loading...>"}) {
-                                              @Override
-                                              public void setSelectedItem(Object o) {
-                                                  super.setSelectedItem(o);
-                                                  if (CREATE_NEW.equals(o)) {
-                                                      showNewVirtualNetworkForm();
-//                                                      model.setWithNewNetwork(true);
-//                                                      model.setVirtualNetwork(null);
-//                                                      model.setSubnet(null);
-                                                  } else {
-//                                                      super.setSelectedItem(o);
-                                                      model.setVirtualNetwork((Network) o);
-                                                  }
-                                              }
-                                          };
-                                          loadingVNModel.setSelectedItem(null);
-                                          networkComboBox.setModel(loadingVNModel);
-
-                                          subnetComboBox.removeAllItems();
-                                          subnetComboBox.setEnabled(false);
-                                      }
-                                  }, ModalityState.any());
+            AzureTaskManager.getInstance().runAndWait(() -> {
+                final DefaultComboBoxModel loadingVNModel = new DefaultComboBoxModel(new String[]{CREATE_NEW, "<Loading...>"}) {
+                    @Override
+                    public void setSelectedItem(Object o) {
+                        super.setSelectedItem(o);
+                        if (CREATE_NEW.equals(o)) {
+                            showNewVirtualNetworkForm();
+                        } else {
+                            model.setVirtualNetwork((Network) o);
+                        }
+                    }
+                };
+                loadingVNModel.setSelectedItem(null);
+                networkComboBox.setModel(loadingVNModel);
+                subnetComboBox.removeAllItems();
+                subnetComboBox.setEnabled(false);
+            });
         }
     }
 
@@ -279,27 +264,24 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                         model.setWithNewNetwork(false);
                         model.setVirtualNetwork((Network) o);
                         model.setNewNetwork(null);
-                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                            @Override
-                            public void run() {
-                                subnetComboBox.setEnabled(false);
-                                boolean validSubnet = false;
-                                subnetComboBox.removeAllItems();
-                                for (String subnet : ((Network) o).subnets().keySet()) {
-                                    subnetComboBox.addItem(subnet);
-                                    if (subnet.equals(selectedSN)) {
-                                        validSubnet = true;
-                                    }
+                        AzureTaskManager.getInstance().runAndWait(() -> {
+                            subnetComboBox.setEnabled(false);
+                            boolean validSubnet = false;
+                            subnetComboBox.removeAllItems();
+                            for (String subnet : ((Network) o).subnets().keySet()) {
+                                subnetComboBox.addItem(subnet);
+                                if (subnet.equals(selectedSN)) {
+                                    validSubnet = true;
                                 }
-                                if (validSubnet) {
-                                    subnetComboBox.setSelectedItem(selectedSN);
-                                } else {
-                                    model.setSubnet(null);
-                                    subnetComboBox.setSelectedItem(null);
-                                }
-                                subnetComboBox.setEnabled(true);
                             }
-                        }, ModalityState.any());
+                            if (validSubnet) {
+                                subnetComboBox.setSelectedItem(selectedSN);
+                            } else {
+                                model.setSubnet(null);
+                                subnetComboBox.setSelectedItem(null);
+                            }
+                            subnetComboBox.setEnabled(true);
+                        });
                     } else if (o instanceof String) {
                         // new virtual network
                         if (model.getNewNetwork() != null) {
@@ -313,13 +295,10 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     } else {
                         model.setVirtualNetwork(null);
 
-                        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                            @Override
-                            public void run() {
-                                subnetComboBox.removeAllItems();
-                                subnetComboBox.setEnabled(false);
-                            }
-                        }, ModalityState.any());
+                        AzureTaskManager.getInstance().runAndWait(() -> {
+                            subnetComboBox.removeAllItems();
+                            subnetComboBox.setEnabled(false);
+                        });
                     }
                 }
             }
@@ -349,21 +328,18 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveStorageAccounts() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading storage accounts...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-                if (storageAccounts == null) {
-                    List<StorageAccount> accounts = azure.storageAccounts().list();
-                    storageAccounts = new TreeMap<String, StorageAccount>();
-
-                    for (StorageAccount storageAccount : accounts) {
-                        storageAccounts.put(storageAccount.name(), storageAccount);
-                    }
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading storage accounts...", false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
+            if (storageAccounts == null) {
+                List<StorageAccount> accounts = azure.storageAccounts().list();
+                storageAccounts = new TreeMap<>();
+                for (StorageAccount storageAccount : accounts) {
+                    storageAccounts.put(storageAccount.name(), storageAccount);
                 }
-                refreshStorageAccounts(null);
             }
-        });
+            refreshStorageAccounts(null);
+        }));
 
         if (storageAccounts == null) {
             final DefaultComboBoxModel loadingSAModel = new DefaultComboBoxModel(new String[]{CREATE_NEW, "<Loading...>"}) {
@@ -379,12 +355,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 
             loadingSAModel.setSelectedItem(null);
 
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    storageComboBox.setModel(loadingSAModel);
-                }
-            }, ModalityState.any());
+            AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(loadingSAModel));
         }
     }
 
@@ -404,12 +375,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     private void refreshStorageAccounts(final StorageAccount selectedSA) {
         final DefaultComboBoxModel refreshedSAModel = getStorageAccountModel(selectedSA);
 
-        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                storageComboBox.setModel(refreshedSAModel);
-            }
-        }, ModalityState.any());
+        AzureTaskManager.getInstance().runAndWait(() -> storageComboBox.setModel(refreshedSAModel));
     }
 
     private DefaultComboBoxModel getStorageAccountModel(StorageAccount selectedSA) {
@@ -458,24 +424,17 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrievePublicIpAddresses() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading public ip addresses...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-                if (publicIpAddresses == null) {
-                    publicIpAddresses = azure.publicIPAddresses().list();
-                }
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        pipCombo.setModel(getPipAddressModel(model.getPublicIpAddress()));
-                    }
-                });
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading public ip addresses...", false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
+            if (publicIpAddresses == null) {
+                publicIpAddresses = azure.publicIPAddresses().list();
             }
-        });
+            AzureTaskManager.getInstance().runLater(() -> pipCombo.setModel(getPipAddressModel(model.getPublicIpAddress())));
+        }));
 
         if (publicIpAddresses == null) {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            AzureTaskManager.getInstance().runAndWait(new Runnable() {
                 @Override
                 public void run() {
                     final DefaultComboBoxModel loadingPipModel = new DefaultComboBoxModel(new String[]{NONE, CREATE_NEW, "<Loading...>"}) {
@@ -496,7 +455,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     loadingPipModel.setSelectedItem(null);
                     pipCombo.setModel(loadingPipModel);
                 }
-            }, ModalityState.any());
+            });
         }
     }
 
@@ -545,24 +504,17 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveNetworkSecurityGroups() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading network security groups...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-                if (networkSecurityGroups == null) {
-                    networkSecurityGroups = azure.networkSecurityGroups().list();
-                }
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        nsgCombo.setModel(getNsgModel(model.getNetworkSecurityGroup()));
-                    }
-                });
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading network security groups...", false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
+            if (networkSecurityGroups == null) {
+                networkSecurityGroups = azure.networkSecurityGroups().list();
             }
-        });
+            AzureTaskManager.getInstance().runLater(() -> nsgCombo.setModel(getNsgModel(model.getNetworkSecurityGroup())));
+        }));
 
         if (networkSecurityGroups == null) {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            AzureTaskManager.getInstance().runAndWait(new Runnable() {
                 @Override
                 public void run() {
                     final DefaultComboBoxModel loadingNsgModel = new DefaultComboBoxModel(new String[]{NONE, "<Loading...>"}) {
@@ -579,7 +531,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     loadingNsgModel.setSelectedItem(null);
                     nsgCombo.setModel(loadingNsgModel);
                 }
-            }, ModalityState.any());
+            });
         }
     }
 
@@ -621,24 +573,17 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
     }
 
     private void retrieveAvailabilitySets() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading availability sets...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-                if (availabilitySets == null) {
-                    availabilitySets = azure.availabilitySets().list();
-                }
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        availabilityComboBox.setModel(getAvailabilitySetsModel(model.getAvailabilitySet()));
-                    }
-                });
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Loading availability sets...", false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
+            if (availabilitySets == null) {
+                availabilitySets = azure.availabilitySets().list();
             }
-        });
+            AzureTaskManager.getInstance().runLater(() -> availabilityComboBox.setModel(getAvailabilitySetsModel(model.getAvailabilitySet())));
+        }));
 
         if (availabilitySets == null) {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            AzureTaskManager.getInstance().runAndWait(new Runnable() {
                 @Override
                 public void run() {
                     final DefaultComboBoxModel loadingPipModel = new DefaultComboBoxModel(new String[]{NONE, CREATE_NEW, "<Loading...>"}) {
@@ -659,7 +604,7 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
                     loadingPipModel.setSelectedItem(null);
                     pipCombo.setModel(loadingPipModel);
                 }
-            }, ModalityState.any());
+            });
         }
     }
 
@@ -720,26 +665,18 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         final CreateArmStorageAccountForm form = new CreateArmStorageAccountForm(project);
         form.fillFields(model.getSubscription(), model.getRegion());
 
-        form.setOnCreate(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount = form.getStorageAccount();
+        form.setOnCreate(() -> AzureTaskManager.getInstance().runLater(() -> {
+            com.microsoft.tooling.msservices.model.storage.StorageAccount newStorageAccount = form.getStorageAccount();
 
-                        if (newStorageAccount != null) {
-                            model.setNewStorageAccount(newStorageAccount);
-                            model.setWithNewStorageAccount(true);
-                            ((DefaultComboBoxModel)storageComboBox.getModel()).insertElementAt(newStorageAccount.getName() + " (New)", 0);
-                            storageComboBox.setSelectedIndex(0);
-                        } else {
-                            storageComboBox.setSelectedItem(null);
-                        }
-                    }
-                });
+            if (newStorageAccount != null) {
+                model.setNewStorageAccount(newStorageAccount);
+                model.setWithNewStorageAccount(true);
+                ((DefaultComboBoxModel)storageComboBox.getModel()).insertElementAt(newStorageAccount.getName() + " (New)", 0);
+                storageComboBox.setSelectedIndex(0);
+            } else {
+                storageComboBox.setSelectedItem(null);
             }
-        });
+        }));
 
         form.show();
     }
@@ -754,28 +691,26 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
         final boolean isNewResourceGroup = createNewRadioButton.isSelected();
         final String resourceGroupName = isNewResourceGroup ? resourceGrpField.getText() : resourceGrpCombo.getSelectedItem().toString();
         Operation operation = TelemetryManager.createOperation(VM, CREATE_VM);
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating virtual machine " + model.getName() + "...", false) {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, "Creating virtual machine " + model.getName() + "...", false, () -> {
+            final ProgressIndicator progressIndicator = ProgressManager.getInstance().getProgressIndicator();
+            progressIndicator.setIndeterminate(true);
 
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-
-                try {
-                    operation.start();
-                    String certificate = model.getCertificate();
-                    byte[] certData = new byte[0];
-                    if (!certificate.isEmpty()) {
-                        File certFile = new File(certificate);
-                        if (certFile.exists()) {
-                            try (FileInputStream certStream = new FileInputStream(certFile)) {
-                                certData = new byte[(int) certFile.length()];
-                                if (certStream.read(certData) != certData.length) {
-                                    throw new Exception("Unable to process certificate: stream longer than informed size.");
-                                }
-                            } finally {
+            try {
+                operation.start();
+                String certificate = model.getCertificate();
+                byte[] certData = new byte[0];
+                if (!certificate.isEmpty()) {
+                    File certFile = new File(certificate);
+                    if (certFile.exists()) {
+                        try (FileInputStream certStream = new FileInputStream(certFile)) {
+                            certData = new byte[(int) certFile.length()];
+                            if (certStream.read(certData) != certData.length) {
+                                throw new Exception("Unable to process certificate: stream longer than informed size.");
                             }
+                        } finally {
                         }
                     }
+                }
 
 //                    for (StorageAccount account : AzureManagerImpl.getManager(project).getStorageAccounts(
 //                            model.getSubscription().getId(), true)) {
@@ -784,70 +719,62 @@ public class SettingsStep extends AzureWizardStep<VMWizardModel> implements Tele
 //                            break;
 //                        }
 //                    }
-                    final com.microsoft.azure.management.compute.VirtualMachine vm = AzureSDKManager
-                            .createVirtualMachine(model.getSubscription().getSubscriptionId(),
-                                    model.getName(),
-                                    resourceGroupName,
-                                    createNewRadioButton.isSelected(),
-                                    model.getSize(),
-                                    model.getRegion().name(),
-                                    model.getVirtualMachineImage(),
-                                    model.getKnownMachineImage(),
-                                    model.isKnownMachineImage(),
-                                    model.getStorageAccount(),
-                                    model.getNewStorageAccount(),
-                                    model.isWithNewStorageAccount(),
-                                    model.getVirtualNetwork(),
-                                    model.getNewNetwork(),
-                                    model.isWithNewNetwork(),
-                                    model.getSubnet(),
-                                    model.getPublicIpAddress(),
-                                    model.isWithNewPip(),
-                                    model.getAvailabilitySet(),
-                                    model.isWithNewAvailabilitySet(),
-                                    model.getUserName(),
-                                    model.getPassword(),
-                                    certData.length > 0 ? new String(certData) : null);
-                    // update resource groups cache if new resource group was created when creating vm
-                    ResourceGroup rg = null;
-                    if (createNewRadioButton.isSelected()) {
-                        rg = azure.resourceGroups().getByName(resourceGroupName);
-                        AzureModelController.addNewResourceGroup(model.getSubscription(), rg);
-                    }
-                    if (model.isWithNewStorageAccount() && model.getNewStorageAccount().isNewResourceGroup() &&
-                            (rg == null || !rg.name().equals(model.getNewStorageAccount().getResourceGroupName()))) {
-                        rg = azure.resourceGroups().getByName(model.getNewStorageAccount().getResourceGroupName());
-                        AzureModelController.addNewResourceGroup(model.getSubscription(), rg);
-                    }
-
-                    ApplicationManager.getApplication().invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                parent.addChildNode(new com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.
-                                    VMNode(parent, model.getSubscription().getSubscriptionId(), vm));
-                            } catch (AzureCmdException e) {
-                                String msg = "An error occurred while attempting to refresh the list of virtual machines.";
-                                DefaultLoader.getUIHelper().showException(msg,
-                                        e,
-                                        "Azure Services Explorer - Error Refreshing VM List",
-                                        false,
-                                        true);
-                                AzurePlugin.log(msg, e);
-                            }
-                        }
-                    });
-                } catch (Exception e) {
-                    EventUtil.logError(operation, ErrorType.userError, e, null, null);
-                    String msg = "An error occurred while attempting to create the specified virtual machine."
-                        + "<br>" + String.format(message("webappExpMsg"), e.getMessage());
-                    DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true);
-                    AzurePlugin.log(msg, e);
-                } finally {
-                    operation.complete();
+                final com.microsoft.azure.management.compute.VirtualMachine vm = AzureSDKManager
+                    .createVirtualMachine(model.getSubscription().getSubscriptionId(),
+                                          model.getName(),
+                                          resourceGroupName,
+                                          createNewRadioButton.isSelected(),
+                                          model.getSize(),
+                                          model.getRegion().name(),
+                                          model.getVirtualMachineImage(),
+                                          model.getKnownMachineImage(),
+                                          model.isKnownMachineImage(),
+                                          model.getStorageAccount(),
+                                          model.getNewStorageAccount(),
+                                          model.isWithNewStorageAccount(),
+                                          model.getVirtualNetwork(),
+                                          model.getNewNetwork(),
+                                          model.isWithNewNetwork(),
+                                          model.getSubnet(),
+                                          model.getPublicIpAddress(),
+                                          model.isWithNewPip(),
+                                          model.getAvailabilitySet(),
+                                          model.isWithNewAvailabilitySet(),
+                                          model.getUserName(),
+                                          model.getPassword(),
+                                          certData.length > 0 ? new String(certData) : null);
+                // update resource groups cache if new resource group was created when creating vm
+                ResourceGroup rg = null;
+                if (createNewRadioButton.isSelected()) {
+                    rg = azure.resourceGroups().getByName(resourceGroupName);
+                    AzureModelController.addNewResourceGroup(model.getSubscription(), rg);
                 }
+                if (model.isWithNewStorageAccount() && model.getNewStorageAccount().isNewResourceGroup() &&
+                    (rg == null || !rg.name().equals(model.getNewStorageAccount().getResourceGroupName()))) {
+                    rg = azure.resourceGroups().getByName(model.getNewStorageAccount().getResourceGroupName());
+                    AzureModelController.addNewResourceGroup(model.getSubscription(), rg);
+                }
+
+                AzureTaskManager.getInstance().runLater(() -> {
+                    try {
+                        parent.addChildNode(new com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.
+                            VMNode(parent, model.getSubscription().getSubscriptionId(), vm));
+                    } catch (AzureCmdException e) {
+                        String msg = "An error occurred while attempting to refresh the list of virtual machines.";
+                        DefaultLoader.getUIHelper().showException(msg, e, "Azure Services Explorer - Error Refreshing VM List", false, true);
+                        AzurePlugin.log(msg, e);
+                    }
+                });
+            } catch (Exception e) {
+                EventUtil.logError(operation, ErrorType.userError, e, null, null);
+                String msg = "An error occurred while attempting to create the specified virtual machine."
+                    + "<br>" + String.format(message("webappExpMsg"), e.getMessage());
+                DefaultLoader.getUIHelper().showException(msg, e, message("errTtl"), false, true);
+                AzurePlugin.log(msg, e);
+            } finally {
+                operation.complete();
             }
-        });
+        }));
         return super.onFinish();
     }
 

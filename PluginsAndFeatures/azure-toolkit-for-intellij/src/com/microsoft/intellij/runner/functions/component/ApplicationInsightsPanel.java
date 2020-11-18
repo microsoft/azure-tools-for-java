@@ -22,10 +22,10 @@
 
 package com.microsoft.intellij.runner.functions.component;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.ui.PopupMenuListenerAdapter;
 import com.intellij.ui.SimpleListCellRenderer;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.common.CommonConst;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
@@ -113,7 +113,7 @@ public class ApplicationInsightsPanel extends JPanel {
     private void onSelectApplicationInsights() {
         final Object selectedObject = cbInsights.getSelectedItem();
         if (CREATE_NEW_APPLICATION_INSIGHTS.equals(selectedObject)) {
-            ApplicationManager.getApplication().invokeLater(this::onSelectCreateApplicationInsights);
+            AzureTaskManager.getInstance().runLater(this::onSelectCreateApplicationInsights);
         } else if (selectedObject instanceof ApplicationInsightsWrapper) {
             selectWrapper = (ApplicationInsightsWrapper) selectedObject;
         }

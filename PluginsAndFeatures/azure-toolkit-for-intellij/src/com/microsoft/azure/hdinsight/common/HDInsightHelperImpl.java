@@ -22,8 +22,6 @@
 
 package com.microsoft.azure.hdinsight.common;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
@@ -34,6 +32,7 @@ import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
 import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootModule;
 import com.microsoft.azure.hdinsight.serverexplore.ui.AddNewHDInsightReaderClusterForm;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
@@ -112,7 +111,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     private void openItem(@NotNull final Project project,
                           @NotNull final VirtualFile virtualFile,
                           @Nullable final VirtualFile closeableVirtualFile) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (closeableVirtualFile != null) {
                 FileEditorManager.getInstance(project).closeFile(closeableVirtualFile);
             }
@@ -198,7 +197,7 @@ public class HDInsightHelperImpl implements HDInsightHelper {
     @Override
     public void createRefreshHdiReaderJobsWarningForm(@NotNull final HDInsightRootModule module,
                                                       @NotNull final ClusterDetail clusterDetail) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {
                 final Project project = (Project) module.getProject();
@@ -222,13 +221,13 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                 };
                 form.show();
             }
-        }, ModalityState.any());
+        });
     }
 
     @Override
     public void createRefreshHdiReaderStorageAccountsWarningForm(@NotNull final RefreshableNode node,
                                                                  @NotNull final String aseDeepLink) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {
                 final Project project = (Project) node.getProject();
@@ -255,13 +254,13 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                 };
                 form.show();
             }
-        }, ModalityState.any());
+        });
     }
 
     @Override
     public void createRefreshHdiLinkedClusterStorageAccountsWarningForm(@NotNull final RefreshableNode node,
                                                                         @NotNull final String aseDeepLink) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+        AzureTaskManager.getInstance().runLater(new Runnable() {
             @Override
             public void run() {
                 final Project project = (Project) node.getProject();
@@ -285,6 +284,6 @@ public class HDInsightHelperImpl implements HDInsightHelper {
                 };
                 form.show();
             }
-        }, ModalityState.any());
+        });
     }
 }

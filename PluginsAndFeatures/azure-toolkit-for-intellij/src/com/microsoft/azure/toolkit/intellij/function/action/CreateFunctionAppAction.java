@@ -22,13 +22,13 @@
 
 package com.microsoft.azure.toolkit.intellij.function.action;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.toolkit.intellij.function.FunctionAppCreationDialog;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppConfig;
 import com.microsoft.azure.toolkit.lib.function.FunctionAppService;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -74,9 +74,8 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     private void createFunctionApp(final FunctionAppConfig config, Runnable callback, final Project project) {
-        final Task.Modal task = new Task.Modal(null, message("function.create.task.title"), true) {
-            @Override
-            public void run(ProgressIndicator indicator) {
+        final AzureTask task = new AzureTask(null, message("function.create.task.title"), true, () -> {
+                final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                 indicator.setIndeterminate(true);
                 try {
                     final FunctionApp functionApp = functionAppService.createFunctionApp(config);
@@ -87,13 +86,12 @@ public class CreateFunctionAppAction extends NodeActionListener {
                     DefaultLoader.getUIHelper().showError(message("function.create.error.title") + ex.getMessage(),
                                                           message("function.create.error.createFailed"));
                 }
-            }
-        };
-        ProgressManager.getInstance().run(task);
+        });
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     private void refreshAzureExplorer(FunctionApp functionApp) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {
                 AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, functionApp));
             }
