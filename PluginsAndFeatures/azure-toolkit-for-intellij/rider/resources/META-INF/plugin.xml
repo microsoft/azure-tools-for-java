@@ -173,7 +173,6 @@
 
   <depends>com.intellij.modules.rider</depends>
   <depends>com.intellij.database</depends>
-  <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.jetbrains.restClient</depends>
   <depends>JavaScript</depends>
 

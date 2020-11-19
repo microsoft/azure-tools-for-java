@@ -72,7 +72,7 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
     private val presenter = CreateSqlServerViewPresenter<CreateSqlServerDialog>()
 
-    private val activityNotifier = AzureDeploymentProgressNotification(project)
+    private val activityNotifier = AzureDeploymentProgressNotification()
 
     init {
         title = dialogTitle

@@ -23,25 +23,17 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azure.management.appservice.OperatingSystem;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 import org.apache.commons.lang.StringUtils;
@@ -51,7 +43,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
 
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete the Web App: %s.\n"
@@ -62,19 +55,15 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
-    protected String webAppName;
-    protected String webAppId;
-    protected Map<String, String> propertyMap;
+    private final WebApp webapp;
 
     /**
      * Constructor.
      */
-    public WebAppNode(WebAppModule parent, String subscriptionId, String webAppId, String webAppName,
-                      String state, String hostName, String os, Map<String, String> propertyMap) {
-        super(webAppId, webAppName, LABEL, parent, subscriptionId, hostName, os, state);
-        this.webAppId = webAppId;
-        this.webAppName = webAppName;
-        this.propertyMap = propertyMap;
+    public WebAppNode(WebAppModule parent, String subscriptionId, WebApp delegate) {
+        super(delegate.id(), delegate.name(), LABEL, parent, subscriptionId, delegate.defaultHostName(),
+                delegate.operatingSystem().toString(), delegate.state());
+        this.webapp = delegate;
         webAppNodePresenter = new WebAppNodePresenter<>();
         webAppNodePresenter.onAttachView(WebAppNode.this);
         loadActions();
@@ -127,7 +116,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     @Override
     public void renderSubModules() {
-        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webAppId));
+        addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webapp));
         addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
         addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
     }
@@ -182,10 +171,24 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
-        getNodeActionByName(SSH_INTO).setEnabled(running);
-        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running && !StringUtils.containsIgnoreCase(this.webapp.linuxFxVersion(),
-                                                                                                          "DOCKER|"));
-        return super.getNodeActions();
+        NodeAction sshNodeAction = getNodeActionByName(SSH_INTO);
+
+        List<NodeAction> nodeActions = super.getNodeActions();
+        if (sshNodeAction != null && this.webapp.operatingSystem() != OperatingSystem.LINUX)
+            nodeActions.remove(sshNodeAction);
+
+        if (sshNodeAction != null)
+            sshNodeAction.setEnabled(running);
+
+        NodeAction profileNodeAction = getNodeActionByName(PROFILE_FLIGHT_RECORDER);
+        if (profileNodeAction != null)
+            // TODO: Ignore the linuxFxVersion check since it is a heavy call that make an extra request
+            //  and cause context menu show delay or failure (if no internet). We could replace it with constructor parameter
+            //  that will be executed on module refresh, but it will slow down showing items in the Web App module node
+            //  because of an extra call for each Web App node.
+            profileNodeAction.setEnabled(running);// && !StringUtils.containsIgnoreCase(this.webapp.linuxFxVersion(), "DOCKER|"));
+
+        return nodeActions;
     }
 
     public WebApp getWebapp() {

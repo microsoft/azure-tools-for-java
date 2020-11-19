@@ -34,7 +34,7 @@ import java.util.*
 
 object DatabaseDeployUtil {
 
-    private val activityNotifier = AzureDeploymentProgressNotification(null)
+    private val activityNotifier = AzureDeploymentProgressNotification()
 
     fun getOrCreateSqlDatabaseFromConfig(model: DatabasePublishModel, processHandler: RunProcessHandler): SqlDatabase {
         if (model.isCreatingSqlDatabase) {

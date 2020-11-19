@@ -1,3 +1,5 @@
+import org.jetbrains.intellij.IntelliJPluginExtension
+
 buildscript {
     repositories {
         maven { url "https://cache-redirector.jetbrains.com/intellij-repository/snapshots" }
@@ -25,28 +27,35 @@ dependencies {
     compile 'net.minidev:json-smart:2.3'
     compile 'com.microsoft.azure:azure-client-runtime:1.7.5', { force = true }
     compile 'com.microsoft.azure:azure-client-authentication:1.7.5', { force = true }
-    compile 'com.microsoft.azuretools:azuretools-core:3.41.0', {
+    compile 'com.microsoft.azuretools:azuretools-core:3.46.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:azure-explorer-common:3.41.0', {
+    compile 'com.microsoft.azuretools:azure-explorer-common:3.46.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile 'com.microsoft.azuretools:hdinsight-node-common:3.41.0', {
+    compile 'com.microsoft.azuretools:hdinsight-node-common:3.46.0', {
         exclude group: "com.microsoft.azure", module: "azure-client-authentication"
         exclude group: "com.microsoft.azure", module: "azure-client-runtime"
         exclude group: "javax.xml.bind", module: "jaxb-api"
     }
-    compile group: 'com.microsoft.azure', name: 'azure-auth-helper', version: '0.4.0'
-    compile 'com.microsoft.azure:azure-tools-common:0.5.0'
+    compile group: 'com.microsoft.azure', name: 'azure-auth-helper', version: '0.6.0'
+    compile 'com.microsoft.azure:azure-tools-common:0.10.0'
     compile group: 'com.microsoft.azure.appplatform.v2019_05_01_preview', name: 'azure-mgmt-appplatform', version: '1.0.0-beta-2'
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
 
     compile "org.jetbrains.kotlin:kotlin-reflect:${kotlin_version}"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:${jackson_kotlin_version}"
+
+    compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
+    compile group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.9'
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly "org.projectlombok:lombok:${lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${lombok_version}"
 
     testImplementation "org.assertj:assertj-core:${assertj_version}"
 }
@@ -70,12 +79,17 @@ allprojects {
         main {
             java.srcDirs 'src'
             kotlin.srcDirs 'src'
-            resources.srcDirs 'resources'
+            resources {
+                srcDir 'resources'
+                exclude 'bundle/**'
+            }
         }
         test {
-            java.srcDirs = ['test/java', 'Test/java']
-            kotlin.srcDirs 'test/kotlin'
-            resources.srcDir 'test/resources'
+            java.srcDirs = [ 'test/java', 'Test/java' ]
+            kotlin.srcDirs = [ 'test/kotlin', 'Test/java' ]
+            resources {
+                srcDir 'test/resources'
+            }
         }
     }
 }
@@ -115,6 +129,8 @@ configure(mainProjects) {
             default:
                 throw new Exception("Unsupported value for build_common_code_with: " + build_common_code_with)
         }
+
+        plugins = ['terminal']
 
         updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
         downloadSources = Boolean.valueOf(sources)

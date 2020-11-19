@@ -49,7 +49,7 @@ object FunctionAppDeployStateUtil {
 
     private val logger = Logger.getInstance(FunctionAppDeployStateUtil::class.java)
 
-    private val activityNotifier = AzureDeploymentProgressNotification(null)
+    private val activityNotifier = AzureDeploymentProgressNotification()
 
     fun functionAppStart(app: FunctionApp, processHandler: RunProcessHandler) =
             appStart(app = app,

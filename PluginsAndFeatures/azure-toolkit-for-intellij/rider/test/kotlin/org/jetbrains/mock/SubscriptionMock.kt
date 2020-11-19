@@ -23,15 +23,13 @@
 package org.jetbrains.mock
 
 import com.microsoft.azure.PagedList
-import com.microsoft.azure.management.resources.Location
-import com.microsoft.azure.management.resources.Subscription
-import com.microsoft.azure.management.resources.SubscriptionPolicies
-import com.microsoft.azure.management.resources.SubscriptionState
+import com.microsoft.azure.management.resources.*
 import com.microsoft.azure.management.resources.fluentcore.arm.Region
 import com.microsoft.azure.management.resources.implementation.SubscriptionInner
 
 class SubscriptionMock(
         private val subscriptionId: String = "test-subscription-id",
+        private val tenantId: String = "test-tenant-id",
         private val name: String = "TestSubscriptionName",
         private val state: SubscriptionState = SubscriptionState.ENABLED
 ) : Subscription {
@@ -48,7 +46,13 @@ class SubscriptionMock(
 
     override fun subscriptionId(): String = subscriptionId
 
+    override fun tenantId(): String = tenantId
+
     override fun subscriptionPolicies(): SubscriptionPolicies {
+        TODO("Not yet implemented")
+    }
+
+    override fun managedByTenants(): MutableList<ManagedByTenant> {
         TODO("Not yet implemented")
     }
 

@@ -1,24 +1,25 @@
 <idea-plugin url="https://github.com/JetBrains/azure-tools-for-intellij">
-  <!--<version>3.20.0</version>-->
+  <!--<version>3.46.0</version>-->
 
   <change-notes>
     <![CDATA[
     <html>
       <h4>Features:</h4>
       <ul>
-        <li>Compatibility with Rider 2020.3 EAP6</li>
-        <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a></li>)</li>
+        <li>Add file explorer for Web App and Function App in Azure explorer</li>
+        <li>Support flight recorder for Web App</li>
       </ul>
       <h4>Bug fix:</h4>
       <ul>
-        <li>Fix missing icons for Function App gutter mark (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/380">#380</a>)</li>
-        <li>Fix an error while running a Function App debug (<a href="https://youtrack.jetbrains.com/issue/RIDER-53160">RIDER-53160</a>)</li>
+        <li>Enhance error handling for azure cli token expires (<a href="https://github.com/microsoft/azure-tools-for-java/pull/4707">#4707</a>)</li>
       </ul>
     </html>
     ]]>
   </change-notes>
 
   <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
+
+  <depends>org.jetbrains.plugins.terminal</depends>
 
   <extensionPoints>
     <extensionPoint qualifiedName="com.microsoft.intellij.nodeActionsMap"
@@ -39,7 +40,13 @@
           canCloseContents="true"
           icon="CommonIcons.ToolWindow.AzureLog" />
 
+    <projectConfigurable groupId="root"
+                         id="com.microsoft.intellij.AzureConfigurable"
+                         provider="com.microsoft.intellij.AzureConfigurableProvider"
+                         dynamic="true"/>
+
     <projectService serviceImplementation="com.microsoft.intellij.AzureSettings"/>
+
     <applicationService serviceImplementation="com.microsoft.intellij.ApplicationSettings"/>
 
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.storage.BlobExplorerFileEditorProvider"/>
@@ -98,10 +105,6 @@
             text="Show Azure Explorer"
             description="Show Azure Explorer"
             icon="CommonIcons.AzureExplorer" />
-
-    <action id="Actions.AzureDockerHostDeploy" class="com.microsoft.intellij.actions.AzureDockerHostDeployAction"
-            text="Publish as Docker Container..." description="Azure website deployment for Java on Docker"
-            icon="/icons/PublishDockerContainer_16.png" />
 
     <action id="AzureToolkit.AzureSignIn"
             class="com.microsoft.azuretools.ijidea.actions.AzureSignInAction"

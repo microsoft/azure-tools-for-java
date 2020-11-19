@@ -52,7 +52,7 @@ object WebAppDeployStateUtil {
 
     private val logger = Logger.getInstance(WebAppDeployStateUtil::class.java)
 
-    private val activityNotifier = AzureDeploymentProgressNotification(null)
+    private val activityNotifier = AzureDeploymentProgressNotification()
 
     fun webAppStart(app: WebApp, processHandler: RunProcessHandler) =
             appStart(app = app,

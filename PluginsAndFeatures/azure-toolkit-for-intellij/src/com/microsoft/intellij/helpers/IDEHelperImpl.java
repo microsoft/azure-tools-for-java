@@ -25,7 +25,6 @@ package com.microsoft.intellij.helpers;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.*;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.RevealFileAction;
@@ -50,10 +49,6 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.artifacts.ArtifactUtil;
-import com.intellij.packaging.impl.compiler.ArtifactCompileScope;
-import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
@@ -73,16 +68,13 @@ import lombok.extern.java.Log;
 import org.apache.commons.lang.StringUtils;
 import rx.Observable;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -157,30 +149,29 @@ public class IDEHelperImpl implements IDEHelper {
     }
 
     @Override
-    public void runInBackground(@Nullable final Object project, @NotNull final String name, final boolean canBeCancelled,
+    public void runInBackground(@Nullable final Object projectObj, @NotNull final String name,
+                                final boolean canBeCancelled,
                                 final boolean isIndeterminate, @Nullable final String indicatorText,
                                 final Runnable runnable) {
         // background tasks via ProgressManager can be scheduled only on the
         // dispatch thread
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                ProgressManager.getInstance().run(new Task.Backgroundable((Project) project,
-                                                                          name, canBeCancelled) {
-                    @Override
-                    public void run(@NotNull ProgressIndicator indicator) {
-                        if (isIndeterminate) {
-                            indicator.setIndeterminate(true);
-                        }
-
-                        if (indicatorText != null) {
-                            indicator.setText(indicatorText);
-                        }
-
-                        runnable.run();
+        ApplicationManager.getApplication().invokeLater(() -> {
+            final Project project = (Project) projectObj;
+            if (project == null || project.isDisposed()) return;
+            ProgressManager.getInstance().run(new Task.Backgroundable(project, name, canBeCancelled) {
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    if (isIndeterminate) {
+                        indicator.setIndeterminate(true);
                     }
-                });
-            }
+
+                    if (indicatorText != null) {
+                        indicator.setText(indicatorText);
+                    }
+
+                    runnable.run();
+                }
+            });
         }, ModalityState.any());
     }
 
@@ -426,14 +417,19 @@ public class IDEHelperImpl implements IDEHelper {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
-                writeContentTo(virtualFile.getOutputStream(null), file, errorHandler)
-                    .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> ApplicationManager.getApplication().invokeLater(() -> {
-                        if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
-                            Messages.showWarningDialog(failure, "Open File");
-                        }
-                    }, ModalityState.NON_MODAL))
-                    .subscribe();
+                try {
+                    writeContentTo(virtualFile.getOutputStream(null), file, errorHandler)
+                        .doOnError(errorHandler::accept)
+                        .doOnCompleted(() -> ApplicationManager.getApplication().invokeLater(() -> {
+                            if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
+                                Messages.showWarningDialog(failure, "Open File");
+                            }
+                        }, ModalityState.NON_MODAL))
+                        .subscribe();
+                } catch (IOException e) {
+                    DefaultLoader.getUIHelper().logError(
+                            String.format("Error while opening the file %s", virtualFile.getPath()), e);
+                }
             }
         };
         ProgressManager.getInstance().run(task);
@@ -460,10 +456,15 @@ public class IDEHelperImpl implements IDEHelper {
             @Override
             public void run(ProgressIndicator indicator) {
                 indicator.setIndeterminate(true);
-                writeContentTo(new FileOutputStream(destFile), file, errorHandler)
-                    .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
-                    .subscribe();
+                try {
+                    writeContentTo(new FileOutputStream(destFile), file, errorHandler)
+                        .doOnError(errorHandler::accept)
+                        .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
+                        .subscribe();
+                } catch (FileNotFoundException e) {
+                    DefaultLoader.getUIHelper().logError(
+                            String.format("Exception downloading file '%s'", file.getName()), e);
+                }
             }
         };
         ProgressManager.getInstance().run(task);

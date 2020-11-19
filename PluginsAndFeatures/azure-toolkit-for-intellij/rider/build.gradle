@@ -45,6 +45,7 @@ intellij {
     def extraPlugins = [ "rider-plugins-appender" ]
     plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient'] + extraPlugins
 
+    updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
     downloadSources = Boolean.valueOf(sources)
 }
 

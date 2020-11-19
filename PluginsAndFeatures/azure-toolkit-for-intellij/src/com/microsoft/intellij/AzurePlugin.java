@@ -23,7 +23,13 @@
 
 package com.microsoft.intellij;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginInstaller;
+import com.intellij.ide.plugins.PluginStateListener;
 import com.intellij.ide.plugins.cl.PluginClassLoader;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.PermanentInstallationID;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -36,30 +42,42 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.util.ExceptionUtil;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.containers.HashSet;
+import com.microsoft.applicationinsights.core.dependencies.apachecommons.io.FileUtils;
+import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
+import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventArgs;
 import com.microsoft.azuretools.azurecommons.deploy.DeploymentEventListener;
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper;
-import com.microsoft.azuretools.azurecommons.util.FileUtil;
-import com.microsoft.azuretools.azurecommons.util.GetHashMac;
-import com.microsoft.azuretools.azurecommons.util.WAEclipseHelperMethods;
+import com.microsoft.azuretools.azurecommons.util.*;
 import com.microsoft.azuretools.azurecommons.xmlhandling.DataOperations;
+import com.microsoft.azuretools.telemetry.AppInsightsClient;
+import com.microsoft.azuretools.telemetry.AppInsightsConstants;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.intellij.common.CommonConst;
+import com.microsoft.intellij.helpers.CustomerSurveyHelper;
+import com.microsoft.intellij.helpers.WhatsNewManager;
+import com.microsoft.intellij.ui.libraries.AILibraryHandler;
+import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.messages.AzureBundle;
 import com.microsoft.intellij.util.PluginHelper;
 import com.microsoft.intellij.util.PluginUtil;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Document;
 
 import javax.swing.event.EventListenerList;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AzurePlugin implements StartupActivity.DumbAware {
@@ -413,6 +431,8 @@ public class AzurePlugin implements StartupActivity.DumbAware {
     public static void log(String message) {
         LOG.info(message);
     }
+
+    private static final String HTML_ZIP_FILE_NAME = "/hdinsight_jobview_html.zip";
 
     protected synchronized boolean isFirstInstallationByVersion() {
         if (firstInstallationByVersion != null) {

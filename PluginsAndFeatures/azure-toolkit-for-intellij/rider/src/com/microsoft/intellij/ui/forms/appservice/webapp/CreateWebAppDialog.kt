@@ -72,7 +72,7 @@ class CreateWebAppDialog(private val lifetimeDef: LifetimeDefinition,
     private val pnlCreate = WebAppCreateNewComponent(lifetime)
 
     private val presenter = CreateWebAppViewPresenter<CreateWebAppDialog>()
-    private val activityNotifier = AzureDeploymentProgressNotification(project)
+    private val activityNotifier = AzureDeploymentProgressNotification()
 
     init {
         title = dialogTitle

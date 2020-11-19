@@ -41,7 +41,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.AzureAp
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.function.FunctionModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud.SpringCloudModule;
@@ -136,9 +135,9 @@ public class AzureModule extends AzureRefreshableNode {
         } catch (AzureRuntimeException e) {
             DefaultLoader.getUIHelper().showInfoNotification(
                     ERROR_GETTING_SUBSCRIPTIONS_TITLE, ErrorEnum.getDisplayMessageByCode(e.getCode()));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
-            DefaultLoader.getUIHelper().logError(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
+            DefaultLoader.getUIHelper().logError(msg, e);
         }
         return BASE_MODULE_NAME;
     }

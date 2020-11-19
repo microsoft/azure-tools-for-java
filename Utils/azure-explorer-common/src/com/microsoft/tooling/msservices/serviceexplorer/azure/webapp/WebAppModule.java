@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -35,8 +36,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.util.HashMap;
-
+import java.io.IOException;
 import java.util.List;
 
 public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
@@ -97,12 +97,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                                 try {
                                     addChildNode(new WebAppNode(WebAppModule.this,
                                             ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
-                                            webAppDetails.webApp.id(),
-                                            webAppDetails.webApp.name(),
-                                            webAppDetails.webApp.state(),
-                                            webAppDetails.webApp.defaultHostName(),
-                                            webAppDetails.webApp.operatingSystem().toString(),
-                                            null));
+                                            webAppDetails.webApp));
                                 } catch (Exception ex) {
                                     DefaultLoader.getUIHelper().logError("WebAppModule::createListener ADD", ex);
                                     ex.printStackTrace();
