@@ -1,0 +1,5 @@
+<assembly name="Microsoft.Azure.WebJobs">
+    <member name="T:Microsoft.Azure.WebJobs.FunctionNameAttribute">
+        <attribute ctor="M:JetBrains.Annotations.MeansImplicitUseAttribute.#ctor" />
+    </member>
+</assembly>
