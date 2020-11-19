@@ -85,7 +85,7 @@ public class SubscriptionManager {
                 .collect(Collectors.toList());
     }
 
-    private void updateSubscriptionDetailsIfNull() throws IOException {
+    public void updateSubscriptionDetailsIfNull() throws IOException {
         if (subscriptionDetails == null) {
             List<SubscriptionDetail> sdl = updateAccountSubscriptionList();
             doSetSubscriptionDetails(sdl);
@@ -187,9 +187,7 @@ public class SubscriptionManager {
         System.out.println(Thread.currentThread().getId() + " SubscriptionManager.updateSidToTidMap()");
         sidToTid.clear();
         for (SubscriptionDetail sd : subscriptionDetails) {
-            if (sd.isSelected()) {
-                sidToTid.put(sd.getSubscriptionId(), sd.getTenantId());
-            }
+            sidToTid.put(sd.getSubscriptionId(), sd.getTenantId());
         }
     }
 }

@@ -27,6 +27,8 @@ import com.microsoft.azure.hdinsight.serverexplore.hdinsightnode.HDInsightRootMo
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
+import com.microsoft.azuretools.enums.ErrorEnum;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
@@ -76,8 +78,6 @@ public class AzureModule extends AzureRefreshableNode {
     @Nullable
     private HDInsightRootModule arcadiaModule;
     @NotNull
-    private DockerHostModule dockerHostModule;
-    @NotNull
     private ContainerRegistryModule containerRegistryModule;
     @NotNull
     private AzureDatabaseModule azureDatabaseModule;
@@ -103,7 +103,6 @@ public class AzureModule extends AzureRefreshableNode {
         //hdInsightModule = new HDInsightRootModule(this);
         vmArmServiceModule = new VMArmModule(this);
         redisCacheModule = new RedisCacheModule(this);
-        dockerHostModule = new DockerHostModule(this);
         containerRegistryModule = new ContainerRegistryModule(this);
         azureDatabaseModule = new AzureDatabaseModule(this);
         azureAppServiceModule = new AzureAppServiceModule(this);
@@ -134,9 +133,12 @@ public class AzureModule extends AzureRefreshableNode {
                     .filter(SubscriptionDetail::isSelected).collect(Collectors.toList());
             return String.format("%s (%s)", BASE_MODULE_NAME, getAccountDescription(selectedSubscriptions));
 
-        } catch (Throwable e) {
+        } catch (AzureRuntimeException e) {
+            DefaultLoader.getUIHelper().showInfoNotification(
+                    ERROR_GETTING_SUBSCRIPTIONS_TITLE, ErrorEnum.getDisplayMessageByCode(e.getCode()));
+        } catch (Exception e) {
             final String msg = String.format(ERROR_GETTING_SUBSCRIPTIONS_MESSAGE, e.getMessage());
-            DefaultLoader.getUIHelper().logError(msg, e);
+            DefaultLoader.getUIHelper().logError(msg, e, ERROR_GETTING_SUBSCRIPTIONS_TITLE, false, true);
         }
         return BASE_MODULE_NAME;
     }
@@ -194,16 +196,14 @@ public class AzureModule extends AzureRefreshableNode {
 //            addChildNode(arcadiaModule);
 //        }
 
-        if (!isDirectChild(dockerHostModule)) {
-            addChildNode(dockerHostModule);
-        }
-
         if (!isDirectChild(containerRegistryModule)) {
             addChildNode(containerRegistryModule);
         }
+
         if (!isDirectChild(azureDatabaseModule)) {
             addChildNode(azureDatabaseModule);
         }
+
         if (!isDirectChild(azureAppServiceModule)) {
             addChildNode(azureAppServiceModule);
         }
@@ -237,7 +237,6 @@ public class AzureModule extends AzureRefreshableNode {
                     arcadiaModule.load(true);
                 }
 
-                dockerHostModule.load(true);
                 containerRegistryModule.load(true);
 
                 azureDatabaseModule.load(true);

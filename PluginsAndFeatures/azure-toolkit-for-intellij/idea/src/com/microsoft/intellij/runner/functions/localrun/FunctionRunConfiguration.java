@@ -56,7 +56,7 @@ public class FunctionRunConfiguration extends JavaAzureRunConfigurationBase<Func
 
     protected FunctionRunConfiguration(@NotNull Project project, @NotNull ConfigurationFactory factory, String name) {
         super(project, factory, name);
-        this.functionRunModel = new FunctionRunModel(project);
+        this.functionRunModel = new FunctionRunModel();
         this.myModule = new JavaRunConfigurationModule(project, true);
     }
 
@@ -224,9 +224,6 @@ public class FunctionRunConfiguration extends JavaAzureRunConfigurationBase<Func
         final File func = new File(getFuncPath());
         if (!func.exists() || !func.isFile() || !func.getName().contains("func")) {
             throw new ConfigurationException("Please specify correct function cli path");
-        }
-        if (!FunctionUtils.isValidStagingFolderPath(getStagingFolder())) {
-            throw new ConfigurationException("Please specify correct staging folder path");
         }
     }
 

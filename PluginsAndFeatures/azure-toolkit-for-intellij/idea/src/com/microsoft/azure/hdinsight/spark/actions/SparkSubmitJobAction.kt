@@ -55,17 +55,21 @@ open class SparkSubmitJobAction : AzureAnAction() {
     }
 
     override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
-        if (submitWithPopupMenu(anActionEvent)) {
+        try {
+            if (submitWithPopupMenu(anActionEvent)) {
+                return true
+            }
+
+            val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING)
+                    ?: getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return true
+            val cluster = anActionEvent.dataContext.getData(CLUSTER)
+            val mainClassName = anActionEvent.dataContext.getData(MAIN_CLASS_NAME)
+
+            submit(runConfigurationSetting, cluster, mainClassName, operation)
+            return false
+        } catch (ignored: RuntimeException) {
             return true
         }
-
-        val runConfigurationSetting = anActionEvent.dataContext.getData(RUN_CONFIGURATION_SETTING) ?:
-                getRunConfigurationFromDataContext(anActionEvent.dataContext) ?: return true
-        val cluster = anActionEvent.dataContext.getData(CLUSTER)
-        val mainClassName = anActionEvent.dataContext.getData(MAIN_CLASS_NAME)
-
-        submit(runConfigurationSetting, cluster, mainClassName, operation)
-        return false
     }
 
     override fun update(event: AnActionEvent) {

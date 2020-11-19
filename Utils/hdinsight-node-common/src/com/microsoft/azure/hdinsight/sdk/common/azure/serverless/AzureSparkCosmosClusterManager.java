@@ -333,9 +333,9 @@ public class AzureSparkCosmosClusterManager implements ClusterContainer,
             props.put("requestUri", serviceException.getRequestUri() != null ? serviceException.getRequestUri().toString() : "");
             props.put("statusCode", String.valueOf(serviceException.getStatusCode()));
             props.put("x-ms-request-id", serviceException.getRequestId());
-            EventUtil.logError(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.serviceError, serviceException,  props, null);
+            EventUtil.logErrorClassNameOnly(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.serviceError, serviceException,  props, null);
         } else {
-            EventUtil.logError(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.unclassifiedError, ex,  props, null);
+            EventUtil.logErrorClassNameOnly(TelemetryConstants.SPARK_ON_COSMOS, operationName, ErrorType.unclassifiedError, ex,  props, null);
         }
     }
 

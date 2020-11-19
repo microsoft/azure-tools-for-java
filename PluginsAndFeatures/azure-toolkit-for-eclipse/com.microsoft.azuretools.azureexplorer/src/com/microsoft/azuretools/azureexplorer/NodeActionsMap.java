@@ -34,31 +34,24 @@ import com.microsoft.azuretools.azureexplorer.actions.CreateArmVMAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateQueueAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateRedisCacheAction;
 import com.microsoft.azuretools.azureexplorer.actions.CreateTableAction;
-import com.microsoft.azuretools.azureexplorer.actions.docker.CreateNewDockerHostAction;
-import com.microsoft.azuretools.azureexplorer.actions.docker.DeleteDockerHostAction;
-import com.microsoft.azuretools.azureexplorer.actions.docker.DeployDockerContainerAction;
-import com.microsoft.azuretools.azureexplorer.actions.docker.PublishDockerContainerAction;
-import com.microsoft.azuretools.azureexplorer.actions.docker.ViewDockerHostAction;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.vmarm.VMArmModule;
 
 public class NodeActionsMap {
+
     public static final Map<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>> node2Actions =
             new HashMap<Class<? extends Node>, ImmutableList<Class<? extends NodeActionListener>>>();
+
     static {
         node2Actions.put(VMArmModule.class, new ImmutableList.Builder().add(CreateArmVMAction.class).build());
         node2Actions.put(RedisCacheModule.class, new ImmutableList.Builder().add(CreateRedisCacheAction.class).build());
         node2Actions.put(TableModule.class, new ImmutableList.Builder().add(CreateTableAction.class).build());
         node2Actions.put(QueueModule.class, new ImmutableList.Builder().add(CreateQueueAction.class).build());
-        node2Actions.put(StorageModule.class, new ImmutableList.Builder().add(CreateArmStorageAccountAction.class, AttachExternalStorageAccountAction.class).build());
-//        node2Actions.put(ExternalStorageNode.class, new ImmutableList.Builder().add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
+        node2Actions.put(StorageModule.class, new ImmutableList.Builder().add(CreateArmStorageAccountAction.class,
+            AttachExternalStorageAccountAction.class).build());
         node2Actions.put(HDInsightRootModuleImpl.class, new ImmutableList.Builder().add(AddNewClusterAction.class).build());
-        node2Actions.put(DockerHostNode.class, new ImmutableList.Builder().add(DeployDockerContainerAction.class, ViewDockerHostAction.class, DeleteDockerHostAction.class).build());
-        node2Actions.put(DockerHostModule.class, new ImmutableList.Builder().add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
     }
 }

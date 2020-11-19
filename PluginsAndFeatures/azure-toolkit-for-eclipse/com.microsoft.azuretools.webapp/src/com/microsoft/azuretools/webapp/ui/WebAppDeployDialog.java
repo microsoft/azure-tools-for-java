@@ -241,9 +241,9 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
 
     private void createAppGroup(Composite container) {
         table = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
-        GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-        gd_table.heightHint = 250;
-        table.setLayoutData(gd_table);
+        GridData gridTable = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+        gridTable.heightHint = 250;
+        table.setLayoutData(gridTable);
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         table.addListener(SWT.Selection, (e) -> {
@@ -375,12 +375,12 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         Composite compositeSlot = new Composite(grpSlot, SWT.NONE);
         compositeSlot.setLayout(new GridLayout(2, false));
 
-        Composite compositeSlotCb = new Composite(compositeSlot, SWT.LEFT);
         RowLayout rowLayout = new RowLayout();
         rowLayout.marginLeft = 0;
         rowLayout.marginTop = 0;
         rowLayout.marginRight = 0;
         rowLayout.marginBottom = 0;
+        Composite compositeSlotCb = new Composite(compositeSlot, SWT.LEFT);
         compositeSlotCb.setLayout(rowLayout);
 
         btnDeployToSlot = new Button(compositeSlotCb, SWT.CHECK);
@@ -650,7 +650,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
                             webAppDetails.subscriptionDetail = sd;
                             webAppDetails.resourceGroup = rg;
                             webAppDetails.appServicePlan = findAppSevicePlanByID(webApp.appServicePlanId(), rgaspMap);
-                            webAppDetails.appServicePlanResourceGroup = findResouceGroupByName(
+                            webAppDetails.appServicePlanResourceGroup = findResourceGroupByName(
                                 webApp.resourceGroupName(), srgMap.get(sd));
                             webAppDetailsList.add(webAppDetails);
                         }
@@ -804,7 +804,7 @@ public class WebAppDeployDialog extends AppServiceBaseDialog {
         return null;
     }
 
-    private ResourceGroup findResouceGroupByName(String rgName, List<ResourceGroup> rgs) {
+    private ResourceGroup findResourceGroupByName(String rgName, List<ResourceGroup> rgs) {
         if (rgs == null) {
             return null;
         }

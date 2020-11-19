@@ -2,7 +2,7 @@
 <feature
       id="com.microsoft.azuretools.azureexplorer.feature"
       label="Azure Explorer for Eclipse"
-      version="3.23.0.qualifier"
+      version="3.25.0.qualifier"
       provider-name="Microsoft Corp.">
 
    <description>

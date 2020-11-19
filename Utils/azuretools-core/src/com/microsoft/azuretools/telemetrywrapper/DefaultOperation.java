@@ -28,7 +28,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.*;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.DURATION;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CLASSNAME;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_CODE;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_MSG;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_STACKTRACE;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.ERROR_TYPE;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_ID;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.OPERATION_NAME;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.mergeProperties;
+import static com.microsoft.azuretools.telemetrywrapper.CommonUtil.sendTelemetry;
+import static com.microsoft.azuretools.telemetrywrapper.EventUtil.isAbleToCollectErrorStacks;
 
 public class DefaultOperation implements Operation {
 
@@ -70,33 +80,15 @@ public class DefaultOperation implements Operation {
         }
     }
 
+    // We define this new API to remove error message and stacktrace as per privacy review requirements
+    public synchronized void logErrorClassNameOnly(ErrorType errorType, Throwable e, Map<String, String> properties,
+                                                   Map<String, Double> metrics) {
+        logError(errorType, e, properties, metrics, false);
+    }
+
     public synchronized void logError(ErrorType errorType, Throwable e, Map<String, String> properties,
-        Map<String, Double> metrics) {
-        try {
-            if (isComplete) {
-                return;
-            }
-            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
-            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
-
-            error = new Error();
-            error.errorType = errorType == null ? ErrorType.systemError : errorType;
-            error.errMsg = e == null ? "" : e.getMessage();
-            error.className = e == null ? "" : e.getClass().getName();
-            error.stackTrace = ExceptionUtils.getStackTrace(e);
-
-            mutableProps.put(ERROR_CODE, "1");
-            mutableProps.put(ERROR_MSG, error.errMsg);
-            mutableProps.put(ERROR_TYPE, error.errorType.name());
-            mutableProps.put(ERROR_CLASSNAME, error.className);
-            mutableProps.put(ERROR_STACKTRACE, error.stackTrace);
-            mutableProps.put(OPERATION_ID, operationId);
-            mutableProps.put(OPERATION_NAME, operationName);
-
-            mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
-            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
-        } catch (Exception ignore) {
-        }
+                                      Map<String, Double> metrics) {
+        logError(errorType, e, properties, metrics, true);
     }
 
     @Override
@@ -138,6 +130,36 @@ public class DefaultOperation implements Operation {
     @Override
     public void close() {
         complete();
+    }
+
+    private synchronized void logError(ErrorType errorType, Throwable e, Map<String, String> properties,
+                                       Map<String, Double> metrics, boolean logErrorTraces) {
+        try {
+            if (isComplete) {
+                return;
+            }
+            error = new Error();
+            error.errorType = errorType == null ? ErrorType.systemError : errorType;
+            error.errMsg = e == null ? "" : e.getMessage();
+            error.className = e == null ? "" : e.getClass().getName();
+            error.stackTrace = ExceptionUtils.getStackTrace(e);
+
+            Map<String, String> mutableProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
+            mutableProps.put(ERROR_CODE, "1");
+            mutableProps.put(ERROR_TYPE, error.errorType.name());
+            mutableProps.put(ERROR_CLASSNAME, error.className);
+            if (logErrorTraces && isAbleToCollectErrorStacks()) {
+                mutableProps.put(ERROR_MSG, error.errMsg);
+                mutableProps.put(ERROR_STACKTRACE, error.stackTrace);
+            }
+            mutableProps.put(OPERATION_ID, operationId);
+            mutableProps.put(OPERATION_NAME, operationName);
+
+            Map<String, Double> mutableMetrics = metrics == null ? new HashMap<>() : new HashMap<>(metrics);
+            mutableMetrics.put(DURATION, Double.valueOf(System.currentTimeMillis() - timeStart));
+            sendTelemetry(EventType.error, serviceName, mergeProperties(mutableProps), mutableMetrics);
+        } catch (Exception ignore) {
+        }
     }
 
     private void clear() {

@@ -30,37 +30,50 @@ import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.azuretools.sdkmanage.ServicePrincipalAzureManager;
+import com.microsoft.azuretools.telemetrywrapper.ErrorType;
+import com.microsoft.azuretools.telemetrywrapper.EventType;
+import com.microsoft.azuretools.telemetrywrapper.EventUtil;
 import com.microsoft.azuretools.utils.AzureUIRefreshCore;
 import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_AUTH_METHOD_DETAILS;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.ACCOUNT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.AZURE_ENVIRONMENT;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.RESIGNIN;
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.SIGNIN_METHOD;
 
 public class AuthMethodManager {
     private static final Logger LOGGER = Logger.getLogger(AuthMethodManager.class.getName());
-    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. "
-            + "Please check if you have already signed in.";
-    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure with Subscription ID: %s. "
-            + "Please check if you have already signed in with this Subscription.";
+    private static final String CANNOT_GET_AZURE_MANAGER = "Cannot get Azure Manager. " +
+            "Please check if you have already signed in.";
+    private static final String CANNOT_GET_AZURE_BY_SID = "Cannot get Azure with Subscription ID: %s. " +
+            "Please check if you have already signed in with this Subscription.";
+    private static final String FAILED_TO_GET_AZURE_MANAGER_INSTANCE = "Failed to get an AzureManager instance " +
+            "for AuthMethodDetails: %s with error %s";
 
     private AuthMethodDetails authMethodDetails;
     private volatile AzureManager azureManager;
-    private Set<Runnable> signInEventListeners = new HashSet<>();
-    private Set<Runnable> signOutEventListeners = new HashSet<>();
+    private final Set<Runnable> signInEventListeners = new HashSet<>();
+    private final Set<Runnable> signOutEventListeners = new HashSet<>();
 
-    private AuthMethodManager() {
-        final AuthMethodDetails savedAuthMethodDetails = loadSettings();
-        authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ? new AuthMethodDetails() :
-                savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
-    }
-
-    private static class LazyHolder {
-        static final AuthMethodManager INSTANCE = new AuthMethodManager();
+    private AuthMethodManager(AuthMethodDetails authMethodDetails) {
+        this.authMethodDetails = authMethodDetails;
+        // initialize subscription manager when restore authentication
+        if (this.authMethodDetails.getAuthMethod() != null) {
+            try {
+                getAzureManager().getSubscriptionManager().updateSubscriptionDetailsIfNull();
+            } catch (IOException e) {
+                // swallow exception
+            }
+        }
     }
 
     public static AuthMethodManager getInstance() {
@@ -86,27 +99,19 @@ public class AuthMethodManager {
     }
 
     public void addSignInEventListener(Runnable l) {
-        if (!signInEventListeners.contains(l)) {
-            signInEventListeners.add(l);
-        }
+        signInEventListeners.add(l);
     }
 
     public void removeSignInEventListener(Runnable l) {
-        if (signInEventListeners.contains(l)) {
-            signInEventListeners.remove(l);
-        }
+        signInEventListeners.remove(l);
     }
 
     public void addSignOutEventListener(Runnable l) {
-        if (!signOutEventListeners.contains(l)) {
-            signOutEventListeners.add(l);
-        }
+        signOutEventListeners.add(l);
     }
 
     public void removeSignOutEventListener(Runnable l) {
-        if (signOutEventListeners.contains(l)) {
-            signOutEventListeners.remove(l);
-        }
+        signOutEventListeners.remove(l);
     }
 
     public void notifySignInEventListener() {
@@ -132,29 +137,46 @@ public class AuthMethodManager {
         return getAzureManager(getAuthMethod());
     }
 
-    private synchronized AzureManager getAzureManager(final AuthMethod authMethod) throws IOException {
-        AzureManager localAzureManagerRef = azureManager;
-
-        if (localAzureManagerRef == null) {
-            try {
-                localAzureManagerRef = authMethod.createAzureManager(getAuthMethodDetails());
-            } catch (RuntimeException ex) {
-                LOGGER.info(String.format(
-                        "Failed to get an AzureManager instance for AuthMethodDetails: %s with error %s",
-                        getAuthMethodDetails(), ex.getMessage()));
-
-                cleanAll();
-            }
-
-            azureManager = localAzureManagerRef;
-        }
-
-        return localAzureManagerRef;
-    }
-
     public void signOut() throws IOException {
         cleanAll();
         notifySignOutEventListener();
+    }
+
+    public boolean isSignedIn() {
+        try {
+            return getAzureManager() != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public AuthMethod getAuthMethod() {
+        return authMethodDetails == null ? null : authMethodDetails.getAuthMethod();
+    }
+
+    public AuthMethodDetails getAuthMethodDetails() {
+        return this.authMethodDetails;
+    }
+
+    public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) throws IOException {
+        cleanAll();
+        this.authMethodDetails = authMethodDetails;
+        saveSettings();
+    }
+
+    private synchronized AzureManager getAzureManager(final AuthMethod authMethod) throws IOException {
+        if (authMethod == null) {
+            return null;
+        }
+        if (azureManager == null) {
+            try {
+                azureManager = authMethod.createAzureManager(getAuthMethodDetails());
+            } catch (RuntimeException ex) {
+                LOGGER.info(String.format(FAILED_TO_GET_AZURE_MANAGER_INSTANCE, getAuthMethodDetails(), ex.getMessage()));
+                cleanAll();
+            }
+        }
+        return azureManager;
     }
 
     private synchronized void cleanAll() throws IOException {
@@ -171,30 +193,38 @@ public class AuthMethodManager {
         saveSettings();
     }
 
-    public boolean isSignedIn() {
-        try {
-            return getAzureManager() != null;
-        } catch (IOException e) {
-            return false;
-        }
+    private void saveSettings() throws IOException {
+        System.out.println("saving authMethodDetails...");
+        String sd = JsonHelper.serialize(authMethodDetails);
+        FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
+        fs.write(sd.getBytes(StandardCharsets.UTF_8));
     }
 
-    public AuthMethod getAuthMethod() {
-        return authMethodDetails.getAuthMethod();
+    private static class LazyHolder {
+        static final AuthMethodManager INSTANCE = initAuthMethodManagerFromSettings();
     }
 
-    public AuthMethodDetails getAuthMethodDetails() {
-        return this.authMethodDetails;
+    private static AuthMethodManager initAuthMethodManagerFromSettings() {
+        return EventUtil.executeWithLog(ACCOUNT, RESIGNIN, operation -> {
+            try {
+                final AuthMethodDetails savedAuthMethodDetails = loadSettings();
+                final AuthMethodDetails authMethodDetails = savedAuthMethodDetails.getAuthMethod() == null ?
+                        new AuthMethodDetails() : savedAuthMethodDetails.getAuthMethod().restoreAuth(savedAuthMethodDetails);
+                final String authMethod = authMethodDetails.getAuthMethod() == null ? "Empty" : authMethodDetails.getAuthMethod().name();
+                final Map<String, String> telemetryProperties = new HashMap<String, String>() {{
+                        put(SIGNIN_METHOD, authMethod);
+                        put(AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName());
+                    }};
+                EventUtil.logEvent(EventType.info, operation, telemetryProperties);
+                return new AuthMethodManager(authMethodDetails);
+            } catch (RuntimeException ignore) {
+                EventUtil.logError(operation, ErrorType.systemError, ignore, null, null);
+                return new AuthMethodManager(new AuthMethodDetails());
+            }
+        });
     }
 
-    public synchronized void setAuthMethodDetails(AuthMethodDetails authMethodDetails) throws IOException {
-        cleanAll();
-        this.authMethodDetails = authMethodDetails;
-        saveSettings();
-        //if (isSignedIn()) notifySignInEventListener();
-    }
-
-    private AuthMethodDetails loadSettings() {
+    private static AuthMethodDetails loadSettings() {
         System.out.println("loading authMethodDetails...");
         try {
             FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
@@ -204,18 +234,10 @@ public class AuthMethodManager {
                 System.out.println(FILE_NAME_AUTH_METHOD_DETAILS + " is empty");
                 return new AuthMethodDetails();
             }
-
             return JsonHelper.deserialize(AuthMethodDetails.class, json);
         } catch (IOException ignored) {
             System.out.println("Failed to loading authMethodDetails settings. Use defaults.");
             return new AuthMethodDetails();
         }
-    }
-
-    private void saveSettings() throws IOException {
-        System.out.println("saving authMethodDetails...");
-        String sd = JsonHelper.serialize(authMethodDetails);
-        FileStorage fs = new FileStorage(FILE_NAME_AUTH_METHOD_DETAILS, CommonSettings.getSettingsBaseDir());
-        fs.write(sd.getBytes(StandardCharsets.UTF_8));
     }
 }

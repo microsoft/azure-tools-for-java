@@ -64,6 +64,8 @@ import static com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdH
 
 
 public class AzureSpringCloudMvpModel {
+    private static final int SPRING_LOG_STREAMING_CONNECT_TIMEOUT = 3 * 1000; // 3s
+    private static final int SPRING_LOG_STREAMING_READ_TIMEOUT = 10 * 60 * 1000; // 10min
     private static final String LOG_STREAMING_ENDPOINT = "%s/api/logstream/apps/%s/instances/%s?follow=%b";
 
     public static List<ServiceResourceInner> listAllSpringCloudClusters() throws IOException {
@@ -240,8 +242,8 @@ public class AzureSpringCloudMvpModel {
         final String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
         connection.setRequestProperty("Authorization", basicAuth);
 
-        connection.setReadTimeout(50000);
-        connection.setConnectTimeout(3000);
+        connection.setReadTimeout(SPRING_LOG_STREAMING_READ_TIMEOUT);
+        connection.setConnectTimeout(SPRING_LOG_STREAMING_CONNECT_TIMEOUT);
         connection.setRequestMethod("GET");
         connection.connect();
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {

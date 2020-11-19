@@ -23,7 +23,6 @@
 package com.microsoft.intellij.util;
 
 import com.intellij.openapi.project.Project;
-import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.intellij.maven.SpringCloudDependencyManager;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
@@ -34,26 +33,43 @@ import org.jetbrains.idea.maven.server.MavenEmbedderWrapper;
 import org.jetbrains.idea.maven.utils.MavenProcessCanceledException;
 
 import java.nio.file.Paths;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.Objects;
 
 public class MavenUtils {
-    private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool();
+    private static final String SPRING_BOOT_MAVEN_PLUGIN = "spring-boot-maven"
+            + "-plugin";
+    private static final String MAVEN_PROJECT_NOT_FOUND = "Cannot find maven project at folder: %s";
 
-    public static String getSpringBootFinalJarPath(@NotNull Project ideaProject, @NotNull MavenProject mavenProject)
-            throws AzureExecutionException, DocumentException, MavenProcessCanceledException {
-        String xml = evaluateEffectivePom(ideaProject, mavenProject);
-        if (StringUtils.isEmpty(xml)) {
-            throw new AzureExecutionException("Failed to evaluate effective pom for project: " + ideaProject.getName());
+    public static boolean isMavenProject(Project project) {
+        return MavenProjectsManager.getInstance(project).isMavenizedProject();
+    }
+
+    public static List<MavenProject> getMavenProjects(Project project) {
+        return MavenProjectsManager.getInstance(project).getRootProjects();
+    }
+
+    public static String getTargetFile(@NotNull MavenProject mavenProject) {
+        return Paths.get(mavenProject.getBuildDirectory(),
+                         mavenProject.getFinalName() + "." + mavenProject.getPackaging()).toString();
+    }
+
+    public static String getSpringBootFinalJarFilePath(@NotNull Project ideaProject,
+                                                       @NotNull MavenProject mavenProject) {
+        String finalName = null;
+        try {
+            String xml = evaluateEffectivePom(ideaProject, mavenProject);
+            if (StringUtils.isNotEmpty(xml) && xml.contains(SPRING_BOOT_MAVEN_PLUGIN)) {
+                SpringCloudDependencyManager manager = new SpringCloudDependencyManager(xml);
+                finalName = manager.getPluginConfiguration("org.springframework.boot",
+                                                           SPRING_BOOT_MAVEN_PLUGIN, "finalName");
+
+            }
+        } catch (MavenProcessCanceledException | DocumentException ex) {
+            // ignore
         }
-        SpringCloudDependencyManager manager = new SpringCloudDependencyManager(xml);
-        String finalName = manager.getPluginConfiguration("org.springframework.boot", "spring-boot-maven"
-                + "-plugin", "finalName");
         if (StringUtils.isEmpty(finalName)) {
             finalName = mavenProject.getFinalName();
-        }
-
-        if (StringUtils.isEmpty(finalName)) {
-            throw new AzureExecutionException("Failed to evaluate <finalName> for project: " + ideaProject.getName());
         }
         return Paths.get(mavenProject.getBuildDirectory(), finalName + "." + mavenProject.getPackaging()).toString();
     }
@@ -67,6 +83,12 @@ public class MavenUtils {
         MavenEmbedderWrapper embedder = embeddersManager.getEmbedder(mavenProject,
                                                                      MavenEmbeddersManager.FOR_DEPENDENCIES_RESOLVE);
         embedder.clearCachesFor(mavenProject.getMavenId());
-        return embedder.evaluateEffectivePom(mavenProject.getFile(), profiles.getEnabledProfiles(), profiles.getDisabledProfiles());
+        return embedder.evaluateEffectivePom(mavenProject.getFile(),
+                                             profiles.getEnabledProfiles(),
+                                             profiles.getDisabledProfiles());
+    }
+
+    public static String getMavenModulePath(MavenProject mavenProject) {
+        return Objects.isNull(mavenProject) ? null : mavenProject.getFile().getPath();
     }
 }

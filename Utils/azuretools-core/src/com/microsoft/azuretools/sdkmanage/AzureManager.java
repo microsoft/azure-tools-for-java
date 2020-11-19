@@ -22,7 +22,6 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.azure.keyvault.KeyVaultClient;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
@@ -53,8 +52,6 @@ public interface AzureManager {
     SubscriptionManager getSubscriptionManager();
 
     void drop() throws IOException;
-
-    KeyVaultClient getKeyVaultClient(String tid) throws Exception;
 
     String getCurrentUserId() throws IOException;
 

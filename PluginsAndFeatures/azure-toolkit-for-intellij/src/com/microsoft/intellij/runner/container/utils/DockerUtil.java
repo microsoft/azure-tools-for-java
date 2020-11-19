@@ -22,7 +22,9 @@
 
 package com.microsoft.intellij.runner.container.utils;
 
+import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azuretools.azurecommons.util.Utils;
+import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificates;
 import com.spotify.docker.client.DockerClient;
@@ -50,6 +52,8 @@ import java.util.Optional;
 
 
 public class DockerUtil {
+    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
+
     /**
      * create a docker file in specified folder.
      */
@@ -177,14 +181,25 @@ public class DockerUtil {
      * Else return an empty String.
      */
     public static String getDefaultDockerFilePathIfExist(String basePath) {
-        try{
+        try {
             if (!Utils.isEmptyString(basePath)) {
                 Path targetDockerfile = Paths.get(basePath, Constant.DOCKERFILE_NAME);
                 if (targetDockerfile != null && targetDockerfile.toFile().exists()) {
                     return targetDockerfile.toString();
                 }
             }
-        } catch (RuntimeException ignored) {}
+        } catch (RuntimeException ignored) {
+        }
         return "";
+    }
+
+    public static void ping(DockerClient docker) throws AzureExecutionException {
+        try {
+            docker.ping();
+        } catch (DockerException | InterruptedException e) {
+            final String msg = String.format(DOCKER_PING_ERROR, docker.getHost());
+            DefaultLoader.getUIHelper().showError(msg, "Failed to connect docker host");
+            throw new AzureExecutionException(String.format("Failed to connect docker host: %s", docker.getHost()));
+        }
     }
 }

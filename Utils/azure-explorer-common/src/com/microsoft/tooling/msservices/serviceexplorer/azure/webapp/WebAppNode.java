@@ -23,11 +23,16 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azuretools.telemetry.AppInsightsConstants;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
+import com.microsoft.tooling.msservices.serviceexplorer.NodeAction;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
+import com.microsoft.tooling.msservices.serviceexplorer.WrappedTelemetryNodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceLogFilesRootNode;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.AppServiceUserFilesRootNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
 
@@ -37,12 +42,24 @@ import java.util.Map;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.DELETE_WEBAPP;
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.WEBAPP;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
+import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
+import org.apache.commons.lang.StringUtils;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
 
 public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     private static final String DELETE_WEBAPP_PROMPT_MESSAGE = "This operation will delete the Web App: %s.\n"
         + "Are you sure you want to continue?";
     private static final String DELETE_WEBAPP_PROGRESS_MESSAGE = "Deleting Web App '%s'...";
     private static final String LABEL = "WebApp";
+    public static final String SSH_INTO = "SSH into Web App (Preview)";
+    public static final String PROFILE_FLIGHT_RECORDER = "Profile Flight Recorder";
 
     private final WebAppNodePresenter<WebAppNode> webAppNodePresenter;
     protected String webAppName;
@@ -111,27 +128,33 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     @Override
     public void renderSubModules() {
         addChildNode(new DeploymentSlotModule(this, this.subscriptionId, this.webAppId));
+        addChildNode(new AppServiceUserFilesRootNode(this, this.subscriptionId, this.webapp));
+        addChildNode(new AppServiceLogFilesRootNode(this, this.subscriptionId, this.webapp));
     }
 
     @Override
     public Map<String, String> toProperties() {
         final Map<String, String> properties = new HashMap<>();
         properties.put(AppInsightsConstants.SubscriptionId, this.subscriptionId);
-        properties.put(AppInsightsConstants.Region, this.propertyMap.get("regionName"));
+        properties.put(AppInsightsConstants.Region, this.webapp.regionName());
         return properties;
     }
 
     public String getWebAppId() {
-        return this.webAppId;
+        return this.webapp.id();
     }
 
     public String getWebAppName() {
-        return this.webAppName;
+        return this.webapp.name();
+    }
+
+    public String getFxVersion() {
+        return this.webapp.linuxFxVersion();
     }
 
     public void startWebApp() {
         try {
-            webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webAppId);
+            webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -140,7 +163,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     public void restartWebApp() {
         try {
-            webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webAppId);
+            webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
@@ -149,11 +172,24 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
 
     public void stopWebApp() {
         try {
-            webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webAppId);
+            webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
         } catch (IOException e) {
             e.printStackTrace();
             // TODO: Error handling
         }
+    }
+
+    @Override
+    public List<NodeAction> getNodeActions() {
+        boolean running = this.state == WebAppBaseState.RUNNING;
+        getNodeActionByName(SSH_INTO).setEnabled(running);
+        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running && !StringUtils.containsIgnoreCase(this.webapp.linuxFxVersion(),
+                                                                                                          "DOCKER|"));
+        return super.getNodeActions();
+    }
+
+    public WebApp getWebapp() {
+        return webapp;
     }
 
     private class DeleteWebAppAction extends AzureNodeActionPromptListener {

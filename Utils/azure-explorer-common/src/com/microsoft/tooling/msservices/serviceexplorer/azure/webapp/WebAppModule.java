@@ -36,6 +36,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
 import java.util.HashMap;
+
 import java.util.List;
 
 public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
@@ -66,8 +67,9 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
         try {
             webAppModulePresenter.onDeleteWebApp(sid, id);
             removeDirectChildNode(node);
-        } catch (Throwable e) {
-            throw new RuntimeException("An error occurred while attempting to delete the Web App ", e);
+        } catch (IOException | CloudException e) {
+            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
+                    e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
         }
     }
 
@@ -124,16 +126,10 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     public void renderChildren(@NotNull final List<ResourceEx<WebApp>> resourceExes) {
         for (final ResourceEx<WebApp> resourceEx : resourceExes) {
             final WebApp app = resourceEx.getResource();
-            final WebAppNode node = new WebAppNode(this, resourceEx.getSubscriptionId(), app.id(), app.name(),
-                app.state(), app.defaultHostName(), app.operatingSystem().toString(),
-                new HashMap<String, String>() {
-                    {
-                        put("regionName", app.regionName());
-                    }
-                });
+            final String sId = resourceEx.getSubscriptionId();
+            final WebAppNode node = new WebAppNode(this, sId, app);
 
             addChildNode(node);
-            node.refreshItems();
         }
     }
 }

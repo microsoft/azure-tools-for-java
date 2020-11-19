@@ -39,6 +39,7 @@ import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.microsoft.intellij.ui.messages.AzureBundle.message;
@@ -167,14 +168,17 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
 
     @Override
     protected void doOKAction() {
+        final boolean grpNotSelected = Objects.isNull(comboGrp.getSelectedItem()) || ((String) comboGrp.getSelectedItem()).isEmpty();
+        final boolean regNotSelected = Objects.isNull(comboReg.getSelectedItem()) || ((String) comboReg.getSelectedItem()).isEmpty();
+        final boolean subNotSelected = comboSub.getSelectedItem() == null;
         if (txtName.getText().trim().isEmpty()
-                || comboSub.getSelectedItem() == null
-                || ((((String) comboGrp.getSelectedItem()).isEmpty() && useExistingBtn.isSelected())
-                || (textGrp.getText().isEmpty() && createNewBtn.isSelected()))
-                || ((String) comboReg.getSelectedItem()).isEmpty()) {
-            if (comboSub.getSelectedItem() == null || comboSub.getItemCount() <= 0) {
+                || subNotSelected
+                || (grpNotSelected && useExistingBtn.isSelected())
+                || (textGrp.getText().isEmpty() && createNewBtn.isSelected())
+                || regNotSelected) {
+            if (subNotSelected || comboSub.getItemCount() <= 0) {
                 PluginUtil.displayErrorDialog(message("aiErrTtl"), message("noSubErrMsg"));
-            } else if (((String) comboGrp.getSelectedItem()).isEmpty() || comboGrp.getItemCount() <= 0) {
+            } else if (grpNotSelected || comboGrp.getItemCount() <= 0) {
                 PluginUtil.displayErrorDialog(message("aiErrTtl"), message("noResGrpErrMsg"));
             } else {
                 PluginUtil.displayErrorDialog(message("aiErrTtl"), message("nameEmptyMsg"));

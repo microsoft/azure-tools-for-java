@@ -26,7 +26,6 @@ import com.intellij.openapi.project.Project;
 import com.microsoft.intellij.runner.AzureSettingPanel;
 import com.microsoft.intellij.runner.AzureSettingsEditor;
 import com.microsoft.intellij.runner.webapp.webappconfig.slimui.WebAppSlimSettingPanel;
-import com.microsoft.intellij.runner.webapp.webappconfig.ui.WebAppSettingPanel;
 import org.jetbrains.annotations.NotNull;
 
 public class WebAppSettingEditor extends AzureSettingsEditor<WebAppConfiguration> {
@@ -36,11 +35,7 @@ public class WebAppSettingEditor extends AzureSettingsEditor<WebAppConfiguration
 
     public WebAppSettingEditor(Project project, @NotNull WebAppConfiguration webAppConfiguration) {
         super(project);
-        if (webAppConfiguration.getUiVersion() == IntelliJWebAppSettingModel.UIVersion.NEW) {
-            mainPanel = new WebAppSlimSettingPanel(project, webAppConfiguration);
-        } else {
-            mainPanel = new WebAppSettingPanel(project, webAppConfiguration);
-        }
+        mainPanel = new WebAppSlimSettingPanel(project, webAppConfiguration);
         this.webAppConfiguration = webAppConfiguration;
     }
 

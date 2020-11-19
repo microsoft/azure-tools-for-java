@@ -38,8 +38,9 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.RuntimeVer
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.ServiceResource;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
+import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
+import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.intellij.runner.AzureRunConfigurationBase;
-import com.microsoft.intellij.runner.functions.core.JsonUtils;
 import com.microsoft.intellij.runner.springcloud.SpringCloudModel;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +53,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<SpringCloudModel> {
-    private static final String NEED_SPECIFY_PROJECT = "Please select a maven project";
+    private static final String NEED_SPECIFY_ARTIFACT = "Please select an artifact";
     private static final String NEED_SPECIFY_SUBSCRIPTION = "Please select your subscription.";
     private static final String NEED_SPECIFY_CLUSTER = "Please select a target cluster.";
     private static final String NEED_SPECIFY_APP_NAME = "Please select a target app.";
@@ -80,6 +81,14 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
     protected SpringCloudDeployConfiguration(@NotNull SpringCloudDeployConfiguration source) {
         super(source);
         this.springCloudModel = JsonUtils.deepCopyWithJson(source.getModel());
+    }
+
+    public String getArtifactIdentifier() {
+        return springCloudModel.getArtifactIdentifier();
+    }
+
+    public void setArtifactIdentifier(final String artifactIdentifier) {
+        springCloudModel.setArtifactIdentifier(artifactIdentifier);
     }
 
     @Override
@@ -152,8 +161,14 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         return springCloudModel.getJvmOptions();
     }
 
-    public String getProjectName() {
-        return springCloudModel.getProjectName();
+    public String getResourceGroup() {
+        final String clusterId = getClusterId();
+        return StringUtils.isEmpty(clusterId) ? null : SpringCloudIdHelper.getResourceGroup(clusterId);
+    }
+
+    public String getClusterName() {
+        final String clusterId = getClusterId();
+        return StringUtils.isEmpty(clusterId) ? null : SpringCloudIdHelper.getClusterName(clusterId);
     }
 
     public boolean isEnablePersistentStorage() {
@@ -212,15 +227,11 @@ public class SpringCloudDeployConfiguration extends AzureRunConfigurationBase<Sp
         springCloudModel.setEnvironment(environment);
     }
 
-    public void setProjectName(String moduleName) {
-        springCloudModel.setProjectName(moduleName);
-    }
-
     @Override
     public void validate() throws ConfigurationException {
         checkAzurePreconditions();
-        if (StringUtils.isEmpty(getProjectName())) {
-            throw new ConfigurationException(NEED_SPECIFY_PROJECT);
+        if (StringUtils.isEmpty(getArtifactIdentifier())) {
+            throw new ConfigurationException(NEED_SPECIFY_ARTIFACT);
         }
         if (StringUtils.isEmpty(getSubscriptionId())) {
             throw new ConfigurationException(NEED_SPECIFY_SUBSCRIPTION);

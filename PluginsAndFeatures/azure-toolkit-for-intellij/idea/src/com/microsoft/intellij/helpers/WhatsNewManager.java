@@ -83,7 +83,7 @@ public enum WhatsNewManager {
         virtualFile.setContent(null, content, true);
         virtualFile.putUserData(WHAT_S_NEW_ID, WHAT_S_NEW_CONSTANT);
         virtualFile.setWritable(false);
-        ApplicationManager.getApplication().invokeLater(() -> {
+        ApplicationManager.getApplication().invokeAndWait(() -> {
             final FileEditor[] fileEditors = fileEditorManager.openFile(virtualFile, true, true);
             for (FileEditor fileEditor : fileEditors) {
 //                if (fileEditor instanceof MarkdownSplitEditor) {

@@ -22,40 +22,55 @@
 
 package com.microsoft.azuretools.sdkmanage;
 
-import com.microsoft.azure.keyvault.KeyVaultClient;
-import com.microsoft.azure.keyvault.authentication.KeyVaultCredentials;
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.applicationinsights.v2015_05_01.implementation.InsightsManager;
-import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppPlatformManager;
-import com.microsoft.azure.management.resources.Subscription;
-import com.microsoft.azure.management.resources.Tenant;
 import com.microsoft.azuretools.adauth.PromptBehavior;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.authmanage.AdAuthManagerBuilder;
 import com.microsoft.azuretools.authmanage.AzureManagerFactory;
 import com.microsoft.azuretools.authmanage.BaseADAuthManager;
-import com.microsoft.azuretools.authmanage.CommonSettings;
-import com.microsoft.azuretools.authmanage.Environment;
-import com.microsoft.azuretools.authmanage.RefreshableTokenCredentials;
-import com.microsoft.azuretools.authmanage.SubscriptionManager;
-import com.microsoft.azuretools.authmanage.SubscriptionManagerPersist;
 import com.microsoft.azuretools.authmanage.models.AuthMethodDetails;
-import com.microsoft.azuretools.telemetry.TelemetryInterceptor;
-import com.microsoft.azuretools.utils.AzureRegisterProviderNamespaces;
-import com.microsoft.azuretools.utils.Pair;
-import com.microsoft.rest.credentials.ServiceClientCredentials;
-import rx.Observable;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Logger;
+import java.util.Objects;
 
 import static com.microsoft.azuretools.Constants.FILE_NAME_SUBSCRIPTIONS_DETAILS_AT;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class AccessTokenAzureManager extends AzureManagerBase {
+    private final BaseADAuthManager delegateADAuthManager;
+
+    static {
+        settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_AT);
+    }
+
+    public AccessTokenAzureManager(final BaseADAuthManager delegateADAuthManager) {
+        this.delegateADAuthManager = delegateADAuthManager;
+    }
+
+    @Override
+    public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
+        return delegateADAuthManager.getAccessToken(tid, resource, promptBehavior);
+    }
+
+    @Override
+    public String getCurrentUserId() throws IOException {
+        return delegateADAuthManager.getAccountEmail();
+    }
+
+    @Override
+    protected String getCurrentTenantId() {
+        return delegateADAuthManager.getCommonTenantId();
+    }
+
+    protected boolean isSignedIn() {
+        return Objects.nonNull(this.delegateADAuthManager);
+    }
+
+    @Override
+    public void drop() throws IOException {
+        super.drop();
+        delegateADAuthManager.signOut();
+    }
+
     public static class AccessTokenAzureManagerFactory implements AzureManagerFactory, AdAuthManagerBuilder {
         private final BaseADAuthManager adAuthManager;
 
@@ -89,183 +104,4 @@ public class AccessTokenAzureManager extends AzureManagerBase {
             return adAuthManager;
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger(AccessTokenAzureManager.class.getName());
-    private final SubscriptionManager subscriptionManager;
-    private final BaseADAuthManager delegateADAuthManager;
-
-    public AccessTokenAzureManager(final BaseADAuthManager delegateADAuthManager) {
-        this.delegateADAuthManager = delegateADAuthManager;
-        this.subscriptionManager = new SubscriptionManagerPersist(this);
-    }
-
-    @Override
-    public SubscriptionManager getSubscriptionManager() {
-        return subscriptionManager;
-    }
-
-    @Override
-    public void drop() throws IOException {
-        subscriptionManager.cleanSubscriptions();
-        delegateADAuthManager.signOut();
-    }
-
-    private static Settings settings;
-
-    static {
-        settings = new Settings();
-        settings.setSubscriptionsDetailsFileName(FILE_NAME_SUBSCRIPTIONS_DETAILS_AT);
-    }
-
-    @Override
-    public Azure getAzure(String sid) throws IOException {
-        if (sidToAzureMap.containsKey(sid)) {
-            return sidToAzureMap.get(sid);
-        }
-        String tid = subscriptionManager.getSubscriptionTenant(sid);
-        Azure azure = authTid(tid).withSubscription(sid);
-        // TODO: remove this call after Azure SDK properly implements handling of unregistered provider namespaces
-        AzureRegisterProviderNamespaces.registerAzureNamespaces(azure);
-        sidToAzureMap.put(sid, azure);
-        return azure;
-    }
-
-    @Override
-    public AppPlatformManager getAzureSpringCloudClient(String sid) {
-        return sidToAzureSpringCloudManagerMap.computeIfAbsent(sid, s -> {
-            String tid = subscriptionManager.getSubscriptionTenant(sid);
-            return authSpringCloud(sid, tid);
-        });
-    }
-
-    @Override
-    public InsightsManager getInsightsManager(String sid) {
-        return sidToInsightsManagerMap.computeIfAbsent(sid, s -> {
-            String tid = subscriptionManager.getSubscriptionTenant(sid);
-            return authApplicationInsights(sid, tid);
-        });
-    }
-
-    @Override
-    public List<Subscription> getSubscriptions() throws IOException {
-        List<Subscription> sl = new LinkedList<Subscription>();
-        // could be multi tenant - return all subscriptions for the current account
-        List<Tenant> tl = getTenants(delegateADAuthManager.getCommonTenantId());
-        for (Tenant t : tl) {
-            sl.addAll(getSubscriptions(t.tenantId()));
-        }
-        return sl;
-    }
-
-    @Override
-    public List<Pair<Subscription, Tenant>> getSubscriptionsWithTenant() throws IOException {
-        List<Pair<Subscription, Tenant>> stl = new LinkedList<>();
-        for (Tenant t : getTenants(delegateADAuthManager.getCommonTenantId())) {
-            String tid = t.tenantId();
-            for (Subscription s : getSubscriptions(tid)) {
-                stl.add(new Pair<Subscription, Tenant>(s, t));
-            }
-        }
-        return stl;
-    }
-
-    @Override
-    public Settings getSettings() {
-        return settings;
-    }
-
-    public List<Subscription> getSubscriptions(String tid) throws IOException {
-        List<Subscription> sl = authTid(tid).subscriptions().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-
-                    return Observable.empty();
-                })
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
-
-        return sl;
-    }
-
-    public List<Tenant> getTenants(String tid) throws IOException {
-        List<Tenant> tl = authTid(tid).tenants().listAsync()
-                .onErrorResumeNext(err -> {
-                    LOGGER.warning(err.getMessage());
-
-                    return Observable.empty();
-                })
-                .toList()
-                .toBlocking()
-                .singleOrDefault(Collections.emptyList());
-
-        return tl;
-    }
-
-    //    public static Azure.Authenticated auth(String accessToken) throws Exception {
-    //        return Azure.configure().authenticate(getTokenCredentials(accessToken));
-    //    }
-
-    //    private static TokenCredentials getTokenCredentials(String token) throws Exception {
-    //        return null;
-    //    }
-
-    private Azure.Authenticated authTid(String tid) throws IOException {
-        return Azure.configure()
-                .withInterceptor(new TelemetryInterceptor())
-                .withUserAgent(CommonSettings.USER_AGENT)
-                .authenticate(new RefreshableTokenCredentials(this, tid));
-    }
-
-    private AppPlatformManager authSpringCloud(String sid, String tid) {
-        return buildAzureManager(AppPlatformManager.configure())
-                .authenticate(new RefreshableTokenCredentials(this, tid), sid);
-    }
-
-    private InsightsManager authApplicationInsights(String sid, String tid) {
-        return buildAzureManager(InsightsManager.configure())
-                .authenticate(new RefreshableTokenCredentials(this, tid), sid);
-    }
-
-    @Override
-    public KeyVaultClient getKeyVaultClient(String tid) {
-        ServiceClientCredentials creds = new KeyVaultCredentials() {
-            @Override
-            public String doAuthenticate(String authorization, String resource, String scope) {
-                try {
-                    // TODO: check usage
-                    return delegateADAuthManager.getAccessToken(tid, resource, PromptBehavior.Auto);
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        };
-        return new KeyVaultClient(creds);
-    }
-
-    @Override
-    public String getCurrentUserId() throws IOException {
-        return delegateADAuthManager.getAccountEmail();
-    }
-
-    @Override
-    public String getAccessToken(String tid, String resource, PromptBehavior promptBehavior) throws IOException {
-        return delegateADAuthManager.getAccessToken(tid, resource, promptBehavior);
-    }
-
-    @Override
-    public String getManagementURI() throws IOException {
-        // environments other than global cloud are not supported for interactive login for now
-        return CommonSettings.getAdEnvironment().resourceManagerEndpoint();
-    }
-
-    public String getStorageEndpointSuffix() {
-        return CommonSettings.getAdEnvironment().storageEndpointSuffix();
-    }
-
-    @Override
-    public Environment getEnvironment() {
-        return CommonSettings.getEnvironment();
-    }
-
 }

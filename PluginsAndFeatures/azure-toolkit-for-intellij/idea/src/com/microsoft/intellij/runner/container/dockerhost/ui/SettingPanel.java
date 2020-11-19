@@ -104,7 +104,7 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
         });
 
         cbArtifact.addActionListener(e -> {
-            artifactActionPeformed((Artifact) cbArtifact.getSelectedItem());
+            artifactActionPerformed((Artifact) cbArtifact.getSelectedItem());
         });
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
@@ -128,7 +128,7 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
 
         cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
             @Override
-            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+            public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
                 if (mavenProject != null) {
                     setIcon(MavenIcons.MavenProject);
                     setText(mavenProject.toString());
@@ -214,7 +214,7 @@ public class SettingPanel extends AzureSettingPanel<DockerHostRunConfiguration> 
         }
     }
 
-     /**
+    /**
      * Function triggered by any content change events.
      *
      * @param conf configuration instance

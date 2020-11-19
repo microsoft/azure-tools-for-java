@@ -32,7 +32,7 @@ import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
 import com.microsoft.intellij.ui.libraries.AzureLibrary;
 import com.microsoft.intellij.ui.libraries.LibrariesConfigurationDialog;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
+import com.microsoft.intellij.util.MavenUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,7 +66,7 @@ public class LibraryConfigurationAction extends AzureAnAction {
 
     public void update(AnActionEvent event) {
         final Module module = event.getData(LangDataKeys.MODULE);
-        boolean isMavenOrNull = (module == null || MavenRunTaskUtil.isMavenProject(module.getProject()));
+        boolean isMavenOrNull = (module == null || MavenUtils.isMavenProject(module.getProject()));
         event.getPresentation().setEnabledAndVisible(!isMavenOrNull && ModuleTypeId.JAVA_MODULE.equals(module.getOptionValue(Module.ELEMENT_TYPE)));
     }
 }

@@ -52,7 +52,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     private JPanel settings;
     private JPanel pnlMain;
-    private TextFieldWithBrowseButton txtStagingFolder;
     private TextFieldWithBrowseButton txtFunc;
     private JPanel pnlAppSettings;
     private JComboBox<Module> cbFunctionModule;
@@ -74,15 +73,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
             }
         });
 
-        cbFunctionModule.addItemListener(itemEvent -> {
-            final String targetFolder = FunctionUtils.getTargetFolder((Module) cbFunctionModule.getSelectedItem());
-            txtStagingFolder.setText(targetFolder);
-        });
-
-        txtStagingFolder.addActionListener(
-                UIUtils.createFileChooserListenerWithTextPath(txtStagingFolder, project,
-                        FileChooserDescriptorFactory.createSingleFolderDescriptor()));
-
         txtFunc.addActionListener(
                 UIUtils.createFileChooserListenerWithTextPath(txtFunc, project,
                         FileChooserDescriptorFactory.createSingleFileDescriptor()));
@@ -103,7 +93,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
 
     @Override
     public void disposeEditor() {
-
     }
 
     @Override
@@ -111,6 +100,8 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
         if (MapUtils.isNotEmpty(configuration.getAppSettings())) {
             appSettingsTable.setAppSettings(configuration.getAppSettings());
         }
+        // In case `FUNCTIONS_WORKER_RUNTIME` or `AZURE_WEB_JOB_STORAGE_KEY` was missed in configuration
+        appSettingsTable.loadRequiredSettings();
         if (StringUtils.isNotEmpty(configuration.getFuncPath())) {
             txtFunc.setText(configuration.getFuncPath());
         }
@@ -126,7 +117,6 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     @Override
     protected void apply(@NotNull FunctionRunConfiguration configuration) {
         configuration.setFuncPath(txtFunc.getText());
-        configuration.setStagingFolder(txtStagingFolder.getText());
         configuration.setAppSettings(appSettingsTable.getAppSettings());
         configuration.saveModule((Module) cbFunctionModule.getSelectedItem());
     }

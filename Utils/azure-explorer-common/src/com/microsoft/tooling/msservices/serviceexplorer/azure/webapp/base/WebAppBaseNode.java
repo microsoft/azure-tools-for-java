@@ -187,4 +187,8 @@ public abstract class WebAppBaseNode extends RefreshableNode implements Telemetr
     public void setStreamingLogStarted(boolean value) {
         WebAppBaseStreamingLogs.INSTANCE.setStreamingLogsStarted(this.id, value);
     }
+
+    public String getOs() {
+        return this.os;
+    }
 }

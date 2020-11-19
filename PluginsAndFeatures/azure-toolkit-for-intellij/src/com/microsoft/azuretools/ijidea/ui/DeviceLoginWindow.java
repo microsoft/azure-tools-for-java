@@ -42,21 +42,18 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class DeviceLoginWindow extends AzureDialogWrapper {
     private static final String TITLE = "Azure Device Login";
-    private JPanel jPanel;
+    private JPanel panel;
     private JEditorPane editorPanel;
     private AuthenticationResult authenticationResult = null;
     private Future<?> authExecutor;
@@ -73,15 +70,11 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         this.deviceCode = deviceCode;
         setModal(true);
         setTitle(TITLE);
-        editorPanel.setBackground(jPanel.getBackground());
+        editorPanel.setBackground(panel.getBackground());
         editorPanel.setText(createHtmlFormatMessage());
         editorPanel.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                try {
-                    Desktop.getDesktop().browse(e.getURL().toURI());
-                } catch (IOException | URISyntaxException e1) {
-                    e1.printStackTrace();
-                }
+                BrowserUtil.open(e.getURL().toString());
             }
         });
         editorPanel.setFocusable(false);
@@ -156,12 +149,12 @@ public class DeviceLoginWindow extends AzureDialogWrapper {
         ApplicationManager.getApplication().invokeLater(() -> {
             final Window w = getWindow();
             w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
-        }, ModalityState.stateForComponent(jPanel));
+        }, ModalityState.stateForComponent(panel));
     }
 
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return jPanel;
+        return panel;
     }
 }
