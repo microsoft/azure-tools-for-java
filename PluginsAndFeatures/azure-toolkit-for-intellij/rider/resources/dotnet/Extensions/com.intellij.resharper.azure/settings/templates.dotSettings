@@ -1005,7 +1005,7 @@ public async Task Run(
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Description/@EntryValue">HTTP Trigger</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=0A4B10E8DE974748B8F05B9F438BDC92/Text/@EntryValue">namespace $NAMESPACE$
 
 open System
 open System.IO
@@ -1080,7 +1080,7 @@ module $CLASS$ =
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Description/@EntryValue">Event Grid Trigger</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2BFA324C21EC8947BA43B5A897FB8F5B/Text/@EntryValue">namespace $NAMESPACE$
 // Default URL for triggering event grid function in the local environment.
 // http://localhost:7071/runtime/webhooks/EventGrid?functionName={functionname}
 
@@ -1116,7 +1116,7 @@ module $CLASS$ =
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Description/@EntryValue">Timer Trigger</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=3CA2A97142C5824EAF8D4A1BB410A6B2/Text/@EntryValue">namespace $NAMESPACE$
 
 open System
 open Microsoft.Azure.WebJobs
@@ -1153,7 +1153,7 @@ module $CLASS$ =
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Description/@EntryValue">Blob Trigger</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=53F73E3ED7813041A8C9AFF5CABC23ED/Text/@EntryValue">namespace $NAMESPACE$
 
 open System.IO
 open Microsoft.Azure.WebJobs
@@ -1194,7 +1194,7 @@ module $CLASS$ =
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Description/@EntryValue">Event Hub Trigger</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=CB73324A95D5D64B9B698EAF71120B55/Text/@EntryValue">namespace $NAMESPACE$
 
 open System
 open System.Text
@@ -1252,7 +1252,7 @@ module $CLASS$ =
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Description/@EntryValue">Queue Trigger</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5C7CCBF430AC24FA4D4580D1265B536/Text/@EntryValue">namespace $NAMESPACE$
 
 open System
 open Microsoft.Azure.WebJobs
@@ -1293,7 +1293,7 @@ module $CLASS$ =
     <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Description/@EntryValue">CosmosDB Trigger</s:String>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Reformat/@EntryValue">True</s:Boolean>
     <s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Text/@EntryValue">$HEADER$namespace $NAMESPACE$
+    <s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=F2E6EBF145B0764487EFD9458EC74C23/Text/@EntryValue">namespace $NAMESPACE$
 
 open System.Collections.Generic
 open Microsoft.Azure.Documents
