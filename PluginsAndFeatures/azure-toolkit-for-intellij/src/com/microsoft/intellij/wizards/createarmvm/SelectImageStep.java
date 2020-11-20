@@ -31,6 +31,7 @@ import com.intellij.ui.wizard.WizardNavigationState;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.*;
 import com.microsoft.azure.management.resources.Location;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -289,8 +290,13 @@ public class SelectImageStep extends AzureWizardStep<VMWizardModel> implements T
     }
 
     private void fillRegions() {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(model.getSubscription())
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+        List<Location> locations = AzureModel
+                .getInstance().getSubscriptionToLocationMap().get(model.getSubscription())
+                .stream()
+                .filter(location -> Arrays.stream(Region.values()).anyMatch(region -> region.name().equalsIgnoreCase(location.name())))
+                .sorted(Comparator.comparing(Location::displayName))
+                .collect(Collectors.toList());
+
         regionComboBox.setModel(new DefaultComboBoxModel(locations.toArray()));
         if (locations.size() > 0) {
             selectRegion();

@@ -32,6 +32,7 @@ import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.redis.RedisCache;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.RedisCacheUtil;
 import com.microsoft.azuretools.azurecommons.rediscacheprocessors.ProcessingStrategy;
@@ -58,6 +59,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -401,7 +403,11 @@ public class CreateRedisCacheForm extends AzureDialogWrapper {
     private void fillLocationsAndResourceGrps(SubscriptionDetail selectedSub) {
         List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(selectedSub);
         if (locations != null) {
-            List<Location> sortedLocations = locations.stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+            List<Location> sortedLocations = locations
+                    .stream()
+                    .sorted(Comparator.comparing(Location::displayName))
+                    .filter(location -> Arrays.stream(Region.values()).anyMatch(region -> region.name().equalsIgnoreCase(location.name())))
+                    .collect(Collectors.toList());
             cbLocations.setModel(new DefaultComboBoxModel(sortedLocations.toArray()));
         }
         List<ResourceGroup> groups = AzureModel.getInstance().getSubscriptionToResourceGroupMap().get(selectedSub);
