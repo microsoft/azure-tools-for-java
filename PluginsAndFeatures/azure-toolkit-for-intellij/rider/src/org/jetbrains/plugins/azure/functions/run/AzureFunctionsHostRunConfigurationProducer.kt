@@ -27,6 +27,7 @@ import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationTypeUtil
 import com.intellij.openapi.util.Ref
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.util.io.systemIndependentPath
 import com.intellij.psi.PsiElement
 import com.jetbrains.rider.model.RunnableProjectKind
 import com.jetbrains.rider.model.runnableProjectsModel
@@ -45,13 +46,13 @@ class AzureFunctionsHostRunConfigurationProducer
             configuration: AzureFunctionsHostConfiguration,
             context: ConfigurationContext
     ) : Boolean {
-        val selectedProjectFilePath = context.getSelectedProject()?.getFile()?.path  ?: return false
+        val selectedProjectFilePathInvariant = context.getSelectedProject()?.getFile()?.systemIndependentPath ?: return false
 
         val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
         val runnableProject = projects.firstOrNull {
             it.kind == RunnableProjectKind.AzureFunctions &&
-            it.projectFilePath == selectedProjectFilePath &&
-            configuration.parameters.projectFilePath == selectedProjectFilePath
+            FileUtil.toSystemIndependentName(it.projectFilePath) == selectedProjectFilePathInvariant &&
+            FileUtil.toSystemIndependentName(configuration.parameters.projectFilePath) == selectedProjectFilePathInvariant
         }
 
         return runnableProject != null
@@ -62,16 +63,19 @@ class AzureFunctionsHostRunConfigurationProducer
             context: ConfigurationContext,
             ref: Ref<PsiElement>
     ): Boolean {
-        val selectedProjectFilePath = context.getSelectedProject()?.getFile()?.path  ?: return false
+        val selectedProjectFilePathInvariant = context.getSelectedProject()?.getFile()?.systemIndependentPath ?: return false
 
         val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
         val runnableProject = projects.firstOrNull {
             it.kind == RunnableProjectKind.AzureFunctions &&
-            it.projectFilePath == selectedProjectFilePath
+            FileUtil.toSystemIndependentName(it.projectFilePath) == selectedProjectFilePathInvariant
         } ?: return false
 
+        if (configuration.name.isEmpty()) {
+            configuration.name = runnableProject.name
+        }
         configuration.parameters.apply {
-            projectFilePath = selectedProjectFilePath
+            projectFilePath = selectedProjectFilePathInvariant
             projectTfm = runnableProject.projectOutputs.firstOrNull()?.tfm ?: projectTfm
         }
 
