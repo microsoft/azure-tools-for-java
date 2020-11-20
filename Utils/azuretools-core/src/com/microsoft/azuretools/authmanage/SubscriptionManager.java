@@ -77,6 +77,7 @@ public class SubscriptionManager {
 
         return getAccountSidList().stream()
                 .map(sid -> subscriptionIdToSubscriptionDetailMap.get(sid))
+                .filter(s -> Objects.nonNull(s) && s.isSelected())
                 .collect(Collectors.toList());
     }
 
