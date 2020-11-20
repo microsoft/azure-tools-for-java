@@ -6,6 +6,9 @@
     <html>
       <h4>Features:</h4>
       <ul>
+        <li>Compatibility with Rider 2020.3 EAP8</li>
+        <li>Add support for Azure Table Storage Settings (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/387">#387</a>)</li>
+        <li>Add Run/Debug Function App actions into Project context menu if applicable (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/382">#382</a>)</li>
         <li>Add file explorer for Web App and Function App in Azure explorer</li>
         <li>Support flight recorder for Web App</li>
       </ul>
