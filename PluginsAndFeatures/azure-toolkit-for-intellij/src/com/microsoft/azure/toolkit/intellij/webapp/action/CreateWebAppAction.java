@@ -64,6 +64,7 @@ public class CreateWebAppAction extends NodeActionListener {
     }
 
     @Override
+    @AzureOperation(value = "start to create a new web app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) webappModule.getProject();
         try {

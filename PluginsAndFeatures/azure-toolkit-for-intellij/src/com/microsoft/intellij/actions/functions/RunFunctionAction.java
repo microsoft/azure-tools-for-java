@@ -33,6 +33,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetrywrapper.Operation;
@@ -53,6 +54,7 @@ public class RunFunctionAction extends AzureAnAction {
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
+    @AzureOperation(value = "trigger request to function on Azure within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));

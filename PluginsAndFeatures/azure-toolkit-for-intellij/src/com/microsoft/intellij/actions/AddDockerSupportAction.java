@@ -33,6 +33,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.ErrorType;
@@ -60,6 +61,7 @@ public class AddDockerSupportAction extends AzureAnAction {
     String pomXmlBasePath;
 
     @Override
+    @AzureOperation(value = "add docker support to model within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         if (module == null) {

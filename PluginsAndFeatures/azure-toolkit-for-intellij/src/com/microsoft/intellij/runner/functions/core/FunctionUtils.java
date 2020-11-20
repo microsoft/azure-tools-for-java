@@ -136,6 +136,11 @@ public class FunctionUtils {
                      .findFirst().orElse(null);
     }
 
+    @AzureOperation(
+        value = "check if project[%s] is a valid function project",
+        params = {"$project.getName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public static boolean isFunctionProject(Project project) {
         if (project == null) {
             return false;

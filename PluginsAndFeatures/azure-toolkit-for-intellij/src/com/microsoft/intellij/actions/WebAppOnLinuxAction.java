@@ -33,6 +33,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -57,6 +58,7 @@ public class WebAppOnLinuxAction extends AzureAnAction {
     }
 
     @Override
+    @AzureOperation(value = "start dockerized web app on Azure within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {
