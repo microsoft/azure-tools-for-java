@@ -45,7 +45,17 @@ public class WebAppService {
         return WebAppService.instance;
     }
 
-    @AzureOperation(value = "create webapp[%s]", params = {"$config.getName()"})
+    @AzureOperation(
+        value = "create web app[%s, os=%s, rg=%s, sp=%s] in subscription[%s]",
+        params = {
+            "$config.getName()",
+            "$config.getPlatform().getOs()",
+            "$config.getResourceGroup().name()",
+            "$config.getServicePlan().name()",
+            "$config.getSubscription().displayName()"
+        },
+        type = AzureOperation.Type.SERVICE
+    )
     public WebApp createWebApp(final WebAppConfig config) throws Exception {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);
@@ -63,6 +73,10 @@ public class WebAppService {
         }
     }
 
+    @AzureOperation(
+        value = "init web app configuration",
+        type = AzureOperation.Type.TASK
+    )
     public static WebAppSettingModel convertConfig2Settings(final WebAppConfig config) {
         final WebAppSettingModel settings = new WebAppSettingModel();
         settings.setSubscriptionId(config.getSubscription().subscriptionId());

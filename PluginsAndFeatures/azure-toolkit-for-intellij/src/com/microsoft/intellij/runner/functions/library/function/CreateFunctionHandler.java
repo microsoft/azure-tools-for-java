@@ -40,6 +40,7 @@ import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
@@ -82,6 +83,11 @@ public class CreateFunctionHandler {
 
     // region Create or update Azure Functions
 
+    @AzureOperation(
+        value = "create function app[%s, rg=%s, sp=%s] in subscription[%s]",
+        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()", "@ctx.getAppServicePlanName()", "@ctx.getSubscription()"},
+        type = AzureOperation.Type.SERVICE
+    )
     private FunctionApp createFunctionApp() throws IOException, AzureExecutionException {
         Log.prompt(message("function.create.hint.startCreateFunction"));
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
@@ -198,13 +204,13 @@ public class CreateFunctionHandler {
                 : AppServiceUtils.getPricingTierFromString(pricingTier);
     }
 
+    @AzureOperation(
+        value = "get function app[%s] in resource group[%s]",
+        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()"},
+        type = AzureOperation.Type.SERVICE
+    )
     private FunctionApp getFunctionApp() {
-        try {
-            return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(),
-                    ctx.getAppName());
-        } catch (Exception ex) {
-        }
-        return null;
+        return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(), ctx.getAppName());
     }
 
     private FunctionExtensionVersion getFunctionExtensionVersion() throws AzureExecutionException {

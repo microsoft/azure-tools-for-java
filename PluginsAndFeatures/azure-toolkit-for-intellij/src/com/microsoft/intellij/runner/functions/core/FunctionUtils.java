@@ -46,6 +46,7 @@ import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.sun.tools.sjavac.Log;
@@ -149,6 +150,11 @@ public class FunctionUtils {
         return libraries.size() > 0;
     }
 
+    @AzureOperation(
+        value = "find function methods from module[%s] by annotation",
+        params = {"$model.getName"},
+        type = AzureOperation.Type.SERVICE
+    )
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
         final PsiClass functionNameClass = JavaPsiFacade.getInstance(module.getProject())
                                                         .findClass(AZURE_FUNCTION_ANNOTATION_CLASS,
@@ -179,6 +185,11 @@ public class FunctionUtils {
         }
     }
 
+    @AzureOperation(
+        value = "copy local settings[%s] to staging folder[%s]",
+        params = {"$model.getName"},
+        type = AzureOperation.Type.SERVICE
+    )
     public static void copyLocalSettingsToStagingFolder(Path stagingFolder,
                                                         Path localSettingJson,
                                                         Map<String, String> appSettings) throws IOException {
@@ -189,6 +200,10 @@ public class FunctionUtils {
         }
     }
 
+    @AzureOperation(
+        value = "prepare staging folder for function method",
+        type = AzureOperation.Type.SERVICE
+    )
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
             throws AzureExecutionException, IOException {
         final Map<String, FunctionConfiguration> configMap = generateConfigurations(methods);

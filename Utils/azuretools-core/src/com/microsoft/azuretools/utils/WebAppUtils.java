@@ -35,6 +35,7 @@ import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
 import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -96,6 +97,10 @@ public class WebAppUtils {
     public static final String COPYING_RESOURCES = "Copying resources to staging folder...";
 
     @NotNull
+    @AzureOperation(
+        value = "prepare ftp connection for deployment",
+        type = AzureOperation.Type.SERVICE
+    )
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
         System.out.println("\t\t" + pp.ftpUrl());
         System.out.println("\t\t" + pp.ftpUsername());
@@ -320,6 +325,11 @@ public class WebAppUtils {
      * @param isDeployToRoot
      * @param progressIndicator
      */
+    @AzureOperation(
+        value = "deploy artifact[%s] to app[%s]",
+        params = {"$artifact.getName()", "$deployTarget.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public static void deployArtifactsToAppService(WebAppBase deployTarget
             , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
         if (!(deployTarget instanceof WebApp || deployTarget instanceof DeploymentSlot)) {
@@ -369,6 +379,11 @@ public class WebAppUtils {
         }
     }
 
+    @AzureOperation(
+        value = "archive artifact[%s] to zip file for deployment",
+        params = {"$artifact.getName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     private static File prepareZipPackage(WebAppBase deployTarget, File artifact, IProgressIndicator progressIndicator)
             throws IOException {
         try {
@@ -468,7 +483,12 @@ public class WebAppUtils {
         throw new IOException("Unknown web container: " + webContainer.toString());
     }
 
-    public static void deleteAppService(WebAppDetails webAppDetails) throws IOException {
+    @AzureOperation(
+        value = "delete web app[%s]",
+        params = {"$webAppDetails.webApp.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    public static void deleteAppService(WebAppDetails webAppDetails) {
         AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         Azure azure = azureManager.getAzure(webAppDetails.subscriptionDetail.getSubscriptionId());
         azure.webApps().deleteById(webAppDetails.webApp.id());
@@ -482,6 +502,11 @@ public class WebAppUtils {
         }
     }
 
+    @AzureOperation(
+        value = "update artifact of web app[%s]",
+        params = {"$webApp.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public static void uploadWebConfig(WebApp webApp, InputStream fileStream, IProgressIndicator indicator) throws IOException {
         FTPClient ftp = null;
         try {
@@ -509,6 +534,11 @@ public class WebAppUtils {
         }
     }
 
+    @AzureOperation(
+        value = "upload artifact[%s] to web app[%s]",
+        params = {"$fileName", "$webApp.name()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public static int uploadToRemoteServer(WebAppBase webApp, String fileName, InputStream ins,
                                            IProgressIndicator indicator, String targetPath) throws IOException {
         FTPClient ftp = null;
@@ -526,6 +556,10 @@ public class WebAppUtils {
         }
     }
 
+    @AzureOperation(
+        value = "upload file to ftp server",
+        type = AzureOperation.Type.SERVICE
+    )
     private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) throws IOException {
         boolean success;
         int count = 0;
