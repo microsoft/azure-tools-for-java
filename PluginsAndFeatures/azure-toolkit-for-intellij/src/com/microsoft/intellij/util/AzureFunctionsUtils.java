@@ -29,7 +29,7 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.template.FunctionTemplate;
 import com.microsoft.azure.common.function.utils.FunctionUtils;
 import com.microsoft.azure.hdinsight.common.StreamUtil;
-import com.microsoft.intellij.runner.functions.core.JsonUtils;
+import com.microsoft.azuretools.utils.JsonUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;

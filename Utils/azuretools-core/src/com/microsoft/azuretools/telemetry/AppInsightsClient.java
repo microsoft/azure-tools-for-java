@@ -26,6 +26,7 @@ import com.microsoft.applicationinsights.TelemetryClient;
 import com.microsoft.azuretools.adauth.StringUtils;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.telemetrywrapper.TelemetryManager;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,7 +48,7 @@ public class AppInsightsClient {
         Azure
     }
 
-    public static String getInstallationId(){
+    public static String getInstallationId() {
         return configuration == null ? null : configuration.installationId();
     }
 
@@ -77,7 +78,8 @@ public class AppInsightsClient {
         createByType(eventType, objectName, action, properties, false);
     }
 
-    public static void createByType(final EventType eventType, final String objectName, final String action, final Map<String, String> properties, final boolean force) {
+    public static void createByType(final EventType eventType, final String objectName, final String action, final Map<String, String> properties,
+                                    final boolean force) {
         if (!isAppInsightsClientAvailable())
             return;
 
@@ -108,7 +110,7 @@ public class AppInsightsClient {
     }
 
     private static void create(String eventName, String version, @Nullable Map<String, String> myProperties,
-        Map<String, Double> metrics, boolean force) {
+                               Map<String, Double> metrics, boolean force) {
         if (isAppInsightsClientAvailable() && configuration.validated()) {
             String prefValue = configuration.preferenceVal();
             if (prefValue == null || prefValue.isEmpty() || prefValue.equalsIgnoreCase("true") || force) {
@@ -128,7 +130,7 @@ public class AppInsightsClient {
         properties.put("IDE", configuration.ide());
 
         // Telemetry client doesn't accept null value for ConcurrentHashMap doesn't accept null as key or value..
-        for (Iterator<Map.Entry<String, String>> iter = properties.entrySet().iterator(); iter.hasNext(); ) {
+        for (Iterator<Map.Entry<String, String>> iter = properties.entrySet().iterator(); iter.hasNext();) {
             Map.Entry<String, String> entry = iter.next();
             if (StringUtils.isNullOrEmpty(entry.getKey()) || StringUtils.isNullOrEmpty(entry.getValue())) {
                 iter.remove();
@@ -177,7 +179,7 @@ public class AppInsightsClient {
                 properties.put("Installation ID", instID);
             }
         }
-        synchronized(TelemetryClientSingleton.class){
+        synchronized (TelemetryClientSingleton.class) {
             telemetry.trackEvent(eventName, properties, null);
             telemetry.flush();
         }
@@ -192,6 +194,7 @@ public class AppInsightsClient {
             TelemetryManager.getInstance().setCommonProperties(buildProperties("", new HashMap<>()));
             TelemetryManager.getInstance().setTelemetryClient(TelemetryClientSingleton.getTelemetry());
             TelemetryManager.getInstance().setEventNamePrefix(configuration.eventName());
+            TelemetryManager.getInstance().sendCachedTelemetries();
         } catch (Exception ignore) {
         }
     }

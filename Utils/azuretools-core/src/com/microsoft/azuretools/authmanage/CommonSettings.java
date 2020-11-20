@@ -63,10 +63,14 @@ public class CommonSettings {
 
     private static String settingsBaseDir = null;
     private static IUIFactory uiFactory;
-    private static Environment ENV = Environment.GLOBAL;
+    private static Environment env = Environment.GLOBAL;
 
     public static String getSettingsBaseDir() {
         return settingsBaseDir;
+    }
+
+    public static void setUpEnvironment(Environment environment) {
+        env = environment;
     }
 
     public static void setUpEnvironment(@NotNull String basePath, String deprecatedPath) throws IOException {
@@ -93,7 +97,7 @@ public class CommonSettings {
                 JsonObject jsonObject = jsonTree.getAsJsonObject();
                 JsonElement envElement = jsonObject.get(ENV_NAME_KEY);
                 String envName = (envElement != null ? envElement.getAsString() : null);
-                if (null != envName){
+                if (null != envName) {
                     // Provider file firstly
                     ProvidedEnvironment providedEnv = null;
 
@@ -102,8 +106,8 @@ public class CommonSettings {
                         JsonElement providedEnvElem = StreamSupport.stream(envs.spliterator(), false)
                                 .map(JsonElement::getAsJsonObject)
                                 .filter(obj -> obj != null &&
-                                                obj.get("envName") != null &&
-                                                obj.get("envName").getAsString().equals(envName))
+                                        obj.get("envName") != null &&
+                                        obj.get("envName").getAsString().equals(envName))
                                 .findFirst()
                                 .orElse(null);
 
@@ -112,7 +116,7 @@ public class CommonSettings {
                                 providedEnv = new Gson().fromJson(providedEnvElem, ProvidedEnvironment.class);
                             } catch (Exception e) {
                                 LOGGER.warning("Parsing JSON String from " + providedEnvElem +
-                                        "as provided environment failed, got the exception: " + e );
+                                        "as provided environment failed, got the exception: " + e);
                             }
                         }
                     }
@@ -120,7 +124,7 @@ public class CommonSettings {
                     if (providedEnv == null) {
                         setEnvironment(envName, null);
                     } else {
-                        ENV = providedEnv;
+                        env = providedEnv;
                     }
                 }
             }
@@ -132,19 +136,21 @@ public class CommonSettings {
     public static IUIFactory getUiFactory() {
         return uiFactory;
     }
+
     public static void setUiFactory(IUIFactory uiFactory) {
         CommonSettings.uiFactory = uiFactory;
     }
 
     public static AzureEnvironment getAdEnvironment() {
-        return ENV.getAzureEnvironment();
+        return env.getAzureEnvironment();
     }
 
     public static Environment getEnvironment() {
-        return ENV;
+        return env;
     }
 
     public static String USER_AGENT = "Azure Toolkit";
+
     /**
      * Need this as a static method when we call this class directly from Eclipse or IntelliJ plugin to know plugin version
      */
@@ -155,9 +161,9 @@ public class CommonSettings {
     private static void setEnvironment(@NotNull String env, Map<String, String> endPointMap) {
         // TODO: endPointMap currently is not used. Leave it in the api in case there is later change.
         try {
-            ENV = Environment.valueOf(env.toUpperCase());
+            CommonSettings.env = Environment.valueOf(env.toUpperCase());
         } catch (Exception e) {
-            ENV = Environment.GLOBAL;
+            CommonSettings.env = Environment.GLOBAL;
         }
     }
 
@@ -168,7 +174,7 @@ public class CommonSettings {
 
     private static void initBaseDir(@NotNull String basePath) throws IOException {
         File baseDir = new File(basePath);
-        if(!baseDir.exists()){
+        if (!baseDir.exists()) {
             FileUtils.forceMkdir(baseDir);
         }
         if (Utils.isWindows()) {
@@ -185,12 +191,12 @@ public class CommonSettings {
         cleanDeprecatedFolder(deprecatedDir);
     }
 
-    private static boolean isToolkitResourceFile(File file){
+    private static boolean isToolkitResourceFile(File file) {
         return file.isFile() && RESOURCE_FILE_LIST.stream()
                 .anyMatch(resource -> StringUtils.containsIgnoreCase(file.getName(), resource));
     }
 
-    private static void moveToolkitResourceFileToFolder(File resourceFile, File baseDir){
+    private static void moveToolkitResourceFileToFolder(File resourceFile, File baseDir) {
         try {
             FileUtils.moveToDirectory(resourceFile, baseDir, true);
         } catch (IOException e) {

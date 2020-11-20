@@ -64,6 +64,10 @@ public class RunFunctionAction extends AzureAnAction {
     }
 
     private void runConfiguration(Module module) {
+        // todo: investigate when will module be null
+        if (module == null) {
+            return;
+        }
         final Project project = module.getProject();
         final RunManagerEx manager = RunManagerEx.getInstanceEx(project);
         final ConfigurationFactory factory = new FunctionRunConfigurationFactory(configType);

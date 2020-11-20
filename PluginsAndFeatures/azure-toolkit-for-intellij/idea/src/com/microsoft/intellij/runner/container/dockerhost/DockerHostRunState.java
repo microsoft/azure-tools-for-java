@@ -53,6 +53,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 public class DockerHostRunState extends AzureRunProfileState<String> {
+    private static final String DOCKER_PING_ERROR = "Failed to connect docker host: %s\nIs Docker installed and running?";
     private final DockerHostRunSetting dataModel;
 
 
@@ -130,7 +131,7 @@ public class DockerHostRunState extends AzureRunProfileState<String> {
                 dataModel.isTlsEnabled(),
                 dataModel.getDockerCertPath()
         );
-
+        DockerUtil.ping(docker);
         DockerUtil.buildImage(docker,
                 imageNameWithTag,
                 targetDockerfile.getParent(),

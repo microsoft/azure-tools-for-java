@@ -23,6 +23,7 @@
 package com.microsoft.intellij.serviceexplorer
 
 import com.google.common.collect.ImmutableList
+import com.microsoft.intellij.serviceexplorer.azure.appservice.SSHIntoWebAppAction
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction
 import com.microsoft.intellij.serviceexplorer.azure.database.actions.*
@@ -38,6 +39,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode
 import java.util.*
+
 
 class RiderNodeActionsMap : NodeActionsMap() {
 
@@ -70,6 +72,7 @@ class RiderNodeActionsMap : NodeActionsMap() {
                     .add(WebAppCreateAction::class.java)
                     .build()
 
+            // TODO: Check for com.microsoft.azure.toolkit.intellij.function.action.CreateFunctionAppAction
             node2Actions[AzureFunctionAppModule::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
                     .add(FunctionAppCreateAction::class.java)
                     .build()
@@ -77,6 +80,7 @@ class RiderNodeActionsMap : NodeActionsMap() {
             node2Actions[WebAppNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
                     .add(StartStreamingLogsAction::class.java)
                     .add(StopStreamingLogsAction::class.java)
+                    .add(SSHIntoWebAppAction::class.java)
                     .build()
 
             node2Actions[FunctionAppNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()

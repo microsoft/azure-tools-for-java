@@ -32,6 +32,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azure.management.storage.AccessTier;
 import com.microsoft.azure.management.storage.Kind;
 import com.microsoft.azure.management.storage.SkuTier;
@@ -59,6 +60,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -483,8 +485,12 @@ public class CreateArmStorageAccountForm extends AzureDialogWrapper {
     }
 
     private void fillRegions() {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap().get(subscriptionComboBox.getSelectedItem())
-                .stream().sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+        final List<Location> locations =
+                AzureModel.getInstance().getSubscriptionToLocationMap().get(subscriptionComboBox.getSelectedItem())
+                          .stream()
+                          .filter(location -> Arrays.stream(Region.values()).anyMatch(region -> region.name().equalsIgnoreCase(location.name())))
+                          .sorted(Comparator.comparing(Location::displayName)).collect(Collectors.toList());
+
         regionComboBox.setModel(new DefaultComboBoxModel(locations.toArray()));
         loadGroups();
     }

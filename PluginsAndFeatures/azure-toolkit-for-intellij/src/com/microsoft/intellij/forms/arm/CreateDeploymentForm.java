@@ -63,6 +63,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -241,9 +242,14 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     }
 
     private void fillRegion() {
-        List<Location> locations = AzureModel.getInstance().getSubscriptionToLocationMap()
-            .get(subscriptionCb.getSelectedItem()).stream().sorted(Comparator.comparing(Location::displayName)).
-                collect(Collectors.toList());
+        List<Location> locations = AzureModel
+                .getInstance().getSubscriptionToLocationMap()
+                .get(subscriptionCb.getSelectedItem())
+                .stream()
+                .filter(location -> Arrays.stream(Region.values()).anyMatch(region -> region.name().equalsIgnoreCase(location.name())))
+                .sorted(Comparator.comparing(Location::displayName))
+                .collect(Collectors.toList());
+
         regionCb.removeAllItems();
         for (Location location : locations) {
             Region region = location.region();

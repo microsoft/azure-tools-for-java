@@ -94,6 +94,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         processHandler.setText(String.format("Building image ...  [%s]",
                 acrInfo.getImageTagWithServerUrl()));
         DockerClient docker = DefaultDockerClient.fromEnv().build();
+        DockerUtil.ping(docker);
         DockerUtil.buildImage(docker,
                 acrInfo.getImageTagWithServerUrl(),
                 targetDockerfile.getParent(),
@@ -144,7 +145,7 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
         processHandler.setText("Job done");
         processHandler.notifyComplete();
         if (deployModel.isCreatingNewWebAppOnLinux() && AzureUIRefreshCore.listeners != null) {
-            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH,null));
+            AzureUIRefreshCore.execute(new AzureUIRefreshEvent(AzureUIRefreshEvent.EventType.REFRESH, null));
         }
     }
 

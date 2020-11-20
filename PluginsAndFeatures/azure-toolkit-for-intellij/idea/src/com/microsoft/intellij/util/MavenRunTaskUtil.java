@@ -32,31 +32,28 @@ import com.intellij.packaging.artifacts.ArtifactManager;
 import com.intellij.packaging.artifacts.ArtifactType;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.model.MavenConstants;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.idea.maven.tasks.MavenBeforeRunTasksProvider;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class MavenRunTaskUtil {
 
     private static final String MAVEN_TASK_PACKAGE = "package";
-
-    public static boolean isMavenProject(Project project) {
-        return MavenProjectsManager.getInstance(project).isMavenizedProject();
-    }
 
     /**
      * Add Maven package goal into the run configuration's before run task.
      */
     public static void addMavenPackageBeforeRunTask(RunConfiguration runConfiguration) {
         final RunManagerEx manager = RunManagerEx.getInstanceEx(runConfiguration.getProject());
-        if (isMavenProject(runConfiguration.getProject())) {
+        if (MavenUtils.isMavenProject(runConfiguration.getProject())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(runConfiguration));
             if (MavenRunTaskUtil.shouldAddMavenPackageTask(tasks, runConfiguration.getProject())) {
                 MavenBeforeRunTask task = new MavenBeforeRunTask();
@@ -65,35 +62,19 @@ public class MavenRunTaskUtil {
                         + MavenConstants.POM_XML);
                 task.setGoal(MAVEN_TASK_PACKAGE);
                 tasks.add(task);
-                manager.setBeforeRunTasks(runConfiguration, tasks, false);
+                manager.setBeforeRunTasks(runConfiguration, tasks);
             }
         }
     }
 
-    /**
-     * Get the MavenProject object if the given project is a maven typed project.
-     */
-    @Nullable
-    public static MavenProject getMavenProject(Project project) {
-        List<MavenProject> mavenProjects = MavenProjectsManager.getInstance(project).getRootProjects();
-        if (mavenProjects.size() > 0) {
-            return mavenProjects.get(0);
-        }
-        return null;
-    }
-
     @NotNull
     public static List<Artifact> collectProjectArtifact(@NotNull Project project) {
-        List<Artifact> artifacts = new ArrayList<>();
-        ArtifactType warArtifactType = ArtifactType.findById(MavenConstants.TYPE_WAR);
-        ArtifactType jarArtifactType = ArtifactType.findById(MavenConstants.TYPE_JAR);
-        if (warArtifactType != null) {
-            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(warArtifactType));
-        }
-        if (jarArtifactType != null) {
-            artifacts.addAll(ArtifactManager.getInstance(project).getArtifactsByType(jarArtifactType));
-        }
-        return artifacts;
+        return Arrays.asList(MavenConstants.TYPE_WAR, "ear", MavenConstants.TYPE_JAR).stream()
+              .map(ArtifactType::findById)
+              .filter(Objects::nonNull)
+              .flatMap(type -> ArtifactManager.getInstance(project).getArtifactsByType(type).stream()).collect(
+                Collectors.toList());
+
     }
 
     public static String getTargetPath(MavenProject mavenProject) {
@@ -106,6 +87,10 @@ public class MavenRunTaskUtil {
 
     }
 
+    /**
+     * Legacy code, will be replaced by BeforeRunTaskUtils
+     * @deprecated
+     */
     private static boolean shouldAddMavenPackageTask(List<BeforeRunTask> tasks, Project project) {
         boolean shouldAdd = true;
         for (BeforeRunTask task : tasks) {

@@ -25,14 +25,9 @@ package com.microsoft.intellij.runner;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.packaging.artifacts.Artifact;
-import com.intellij.packaging.impl.run.BuildArtifactsBeforeRunTaskProvider;
-import com.microsoft.intellij.runner.functions.core.FunctionUtils;
-import com.microsoft.intellij.util.MavenRunTaskUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JComponent;
-import java.util.List;
 
 public abstract class AzureSettingsEditor<T extends AzureRunConfigurationBase> extends SettingsEditor<T> {
     private final Project project;
@@ -49,19 +44,6 @@ public abstract class AzureSettingsEditor<T extends AzureRunConfigurationBase> e
 
     @Override
     protected void resetEditorFrom(@NotNull T conf) {
-        if (conf.isFirstTimeCreated()) {
-            if (FunctionUtils.isFunctionProject(conf.getProject())) {
-                // Todo: Add before run build job
-            } else if (MavenRunTaskUtil.isMavenProject(project)) {
-                MavenRunTaskUtil.addMavenPackageBeforeRunTask(conf);
-            } else {
-                final List<Artifact> artifacts = MavenRunTaskUtil.collectProjectArtifact(project);
-                if (artifacts.size() > 0) {
-                    BuildArtifactsBeforeRunTaskProvider.setBuildArtifactBeforeRun(project, conf, artifacts.get(0));
-                }
-            }
-        }
-        conf.setFirstTimeCreated(false);
         this.getPanel().reset(conf);
     }
 

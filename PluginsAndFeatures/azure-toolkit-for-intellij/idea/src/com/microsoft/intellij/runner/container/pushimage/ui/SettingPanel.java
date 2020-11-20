@@ -60,7 +60,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
         $$$setupUI$$$(); // tell IntelliJ to call createUIComponents() here.
 
         cbArtifact.addActionListener(e -> {
-            artifactActionPeformed((Artifact) cbArtifact.getSelectedItem());
+            artifactActionPerformed((Artifact) cbArtifact.getSelectedItem());
         });
 
         cbArtifact.setRenderer(new ListCellRendererWrapper<Artifact>() {
@@ -84,7 +84,7 @@ public class SettingPanel extends AzureSettingPanel<PushImageRunConfiguration> {
 
         cbMavenProject.setRenderer(new ListCellRendererWrapper<MavenProject>() {
             @Override
-            public void customize(JList jList, MavenProject mavenProject, int i, boolean b, boolean b1) {
+            public void customize(JList list, MavenProject mavenProject, int i, boolean b, boolean b1) {
                 if (mavenProject != null) {
                     setIcon(MavenIcons.MavenProject);
                     setText(mavenProject.toString());

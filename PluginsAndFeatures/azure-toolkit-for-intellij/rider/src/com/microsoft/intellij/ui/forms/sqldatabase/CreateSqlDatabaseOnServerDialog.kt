@@ -72,7 +72,7 @@ class CreateSqlDatabaseOnServerDialog(private val lifetimeDef: LifetimeDefinitio
     private val pnlCreate = SqlDatabaseCreateNewComponent(lifetimeDef, sqlServer)
 
     private val presenter = CreateSqlDatabaseOnServerViewPresenter<CreateSqlDatabaseOnServerDialog>()
-    private val activityNotifier = AzureDeploymentProgressNotification(project)
+    private val activityNotifier = AzureDeploymentProgressNotification()
 
     init {
         title = dialogTitle

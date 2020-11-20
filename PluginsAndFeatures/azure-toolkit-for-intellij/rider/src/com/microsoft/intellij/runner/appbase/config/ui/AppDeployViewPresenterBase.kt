@@ -29,6 +29,7 @@ import com.jetbrains.rd.util.lifetime.isAlive
 import com.jetbrains.rd.util.reactive.Signal
 import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
+import com.microsoft.azure.arm.resources.Region
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.resources.Location
@@ -96,7 +97,10 @@ abstract class AppDeployViewPresenterBase<T : AppDeployMvpViewBase> : AzureMvpPr
                 locationSignal,
                 message("progress.publish.location.collect"),
                 message("run_config.publish.location.collect_error"),
-                { AzureMvpModel.getInstance().listLocationsBySubscriptionId(subscriptionId) },
+                { AzureMvpModel.getInstance().listLocationsBySubscriptionId(subscriptionId)
+                        // TODO: This is a workaround for locations that cause exceptions on create entries.
+                        .filter { location -> Region.values().any { region -> region.name().equals(location.name(), true) } }
+                },
                 { mvpView.fillLocation(it) })
     }
 

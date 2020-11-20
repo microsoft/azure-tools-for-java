@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StartStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.appservice.StopStreamingLogsAction;
 import com.microsoft.intellij.serviceexplorer.azure.arm.*;
-import com.microsoft.intellij.serviceexplorer.azure.docker.*;
 import com.microsoft.intellij.serviceexplorer.azure.rediscache.CreateRedisCacheAction;
 import com.microsoft.intellij.serviceexplorer.azure.storage.*;
 import com.microsoft.intellij.serviceexplorer.azure.storagearm.CreateStorageAccountAction;
@@ -37,8 +36,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostModule;
-import com.microsoft.tooling.msservices.serviceexplorer.azure.docker.DockerHostNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisCacheModule;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.*;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.asm.ClientBlobModule;
@@ -83,17 +80,6 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
         node2Actions.put(ExternalStorageNode.class,
                 new ImmutableList.Builder<Class<? extends NodeActionListener>>()
                         .add(ConfirmDialogAction.class, ModifyExternalStorageAccountAction.class).build());
-
-        //noinspection unchecked
-        node2Actions.put(DockerHostNode.class,
-                         new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                                 .add(ViewDockerHostAction.class, DeployDockerContainerAction.class,
-                                      DeleteDockerHostAction.class).build());
-
-        //noinspection unchecked
-        node2Actions.put(DockerHostModule.class,
-                         new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-                                 .add(CreateNewDockerHostAction.class, PublishDockerContainerAction.class).build());
 
         final List<Class<? extends NodeActionListener>> deploymentNodeList = new ArrayList<>(Arrays.asList(
                 EditDeploymentAction.class,

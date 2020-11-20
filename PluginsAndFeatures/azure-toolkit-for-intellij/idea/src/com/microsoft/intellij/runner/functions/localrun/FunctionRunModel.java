@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.functions.localrun;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.packaging.artifacts.Artifact;
 import com.microsoft.intellij.runner.functions.IntelliJFunctionContext;
 
@@ -34,10 +33,6 @@ public class FunctionRunModel extends IntelliJFunctionContext {
     private String funcPath;
     private String hostJsonPath;
     private String localSettingsJsonPath;
-
-    public FunctionRunModel(Project project) {
-        super(project);
-    }
 
     public Artifact getArtifact() {
         return artifact;

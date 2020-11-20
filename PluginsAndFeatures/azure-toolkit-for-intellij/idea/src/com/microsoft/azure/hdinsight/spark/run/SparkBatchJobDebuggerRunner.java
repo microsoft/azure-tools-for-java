@@ -159,7 +159,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
         } catch (final Exception e) {
             final ExecutionException exp = new ExecutionException("Failed to create SSH session for debugging. "
                                                                           + ExceptionUtils.getRootCauseMessage(e));
-            EventUtil.logErrorWithComplete(operation, ErrorType.systemError, exp, null, null);
+            EventUtil.logErrorClassNameOnlyWithComplete(operation, ErrorType.systemError, exp, null, null);
             throw exp;
         }
 
@@ -219,7 +219,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
             final String errMsg = "The Spark job remote debug is cancelled due to "
                     + ExceptionUtils.getRootCauseMessage(err);
             jobDriverEnvReady.setError(errMsg);
-            EventUtil.logErrorWithComplete(operation,
+            EventUtil.logErrorClassNameOnlyWithComplete(operation,
                                            ErrorType.systemError,
                                            new UncheckedExecutionException(errMsg, err),
                                            null,
@@ -231,7 +231,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                 jobDriverEnvReady.setError(errMsg);
 
                 final Map<String, String> props = ImmutableMap.of("isDebugCancelled", "true");
-                EventUtil.logErrorWithComplete(
+                EventUtil.logErrorClassNameOnlyWithComplete(
                         operation, ErrorType.userError, new ExecutionException(errMsg), props, null);
             }
         });
@@ -350,7 +350,7 @@ public class SparkBatchJobDebuggerRunner extends GenericDebuggerRunner implement
                     executorDebugHandler.getRemoteDebugProcess().start();
                 }
             } catch (final ExecutionException e) {
-                EventUtil.logErrorWithComplete(
+                EventUtil.logErrorClassNameOnlyWithComplete(
                         operation, ErrorType.systemError, new UncheckedExecutionException(e), null, null);
                 throw new UncheckedExecutionException(e);
             }

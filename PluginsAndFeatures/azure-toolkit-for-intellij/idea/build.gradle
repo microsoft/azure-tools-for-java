@@ -32,7 +32,7 @@ intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = intellij_version
     updateSinceUntilBuild = Boolean.valueOf(updateVersionRange)
-    plugins = ['java', 'maven', dep_plugins, "properties", 'markdown']
+    plugins = ['java', 'maven', 'gradle', dep_plugins, 'properties', 'markdown', 'terminal']
     downloadSources = Boolean.valueOf(sources)
 }
 
@@ -47,6 +47,10 @@ dependencies {
 
     compile group: 'org.dom4j', name: 'dom4j', version: '2.1.3'
     compile group: 'jaxen', name: 'jaxen', version: '1.2.0'
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
 
     testCompile 'junit:junit:4.13'
     testCompile 'info.cukes:cucumber-junit:1.2.6'
@@ -107,6 +111,7 @@ defaultTasks 'buildPlugin'
 //wrapper() {
 //    gradleVersion = '5.0'
 //    distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+//    gradle-${gradleVersion}-all.zip"
 //}
 
 installIdea.dependsOn buildPlugin

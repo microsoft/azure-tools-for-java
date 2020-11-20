@@ -145,7 +145,7 @@ if $BUILD_INTELLIJ; then
 fi
 
 if $BUILD_RIDER; then
-    BUILD_NUMBER="3.40.0.$BUILD_COUNTER-2020.3"
+    BUILD_NUMBER="3.46.0.$BUILD_COUNTER-2020.3"
     BUILD_CONFIGURATION=Release
 
     tc_open "Building Rider plugin"

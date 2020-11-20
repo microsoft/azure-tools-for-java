@@ -100,7 +100,7 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
 
         addAction("Open Spark Master UI", new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 try {
                     Desktop.getDesktop().browse(URI.create(String.valueOf(cluster.getSparkMasterUiUri() + suffix)));
                 } catch (IOException ignore) {
@@ -109,7 +109,7 @@ public class CosmosSparkClusterNode extends AzureRefreshableNode implements ILog
         });
         addAction("Open Spark History UI", new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 try {
                     Desktop.getDesktop().browse(URI.create(String.valueOf(cluster.getSparkHistoryUiUri() + suffix)));
                 } catch (IOException ignore) {

@@ -205,6 +205,14 @@ public class Node implements MvpView, BasicTelemetryProperty {
         propertyChangeSupport.firePropertyChange("iconPath", oldValue, iconPath);
     }
 
+    /**
+     * higher priority than iconPath
+     */
+    @Nullable
+    public Icon getIcon() {
+        return null;
+    }
+
     public void addChildNode(Node child) {
         childNodes.add(child);
     }
@@ -321,6 +329,9 @@ public class Node implements MvpView, BasicTelemetryProperty {
     // add a handler for the case when something needs to be
     // done when the user left-clicks this node in the tree view
     protected void onNodeClick(NodeActionEvent e) {
+    }
+
+    public void onNodeDblClicked(Object context) {
     }
 
     public List<NodeAction> getNodeActions() {

@@ -31,6 +31,7 @@ import com.intellij.util.ui.update.Activatable
 import com.intellij.util.ui.update.UiNotifyConnector
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rider.model.PublishableProjectModel
+import com.microsoft.azure.arm.resources.Region
 import com.microsoft.azure.management.appservice.AppServicePlan
 import com.microsoft.azure.management.appservice.PricingTier
 import com.microsoft.azure.management.appservice.WebApp

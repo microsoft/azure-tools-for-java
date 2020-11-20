@@ -158,4 +158,16 @@ public interface UIHelper {
     default String showInputDialog(Component component, String message, String title, Icon icon) {
         return (String) JOptionPane.showInputDialog(component, message, title, JOptionPane.QUESTION_MESSAGE, icon, null, null);
     }
+
+    default void showInfoNotification(String title, String message) {
+
+    }
+
+    default void showErrorNotification(String title, String message) {
+
+    }
+
+    default void showWarningNotification(String title, String message) {
+
+    }
 }

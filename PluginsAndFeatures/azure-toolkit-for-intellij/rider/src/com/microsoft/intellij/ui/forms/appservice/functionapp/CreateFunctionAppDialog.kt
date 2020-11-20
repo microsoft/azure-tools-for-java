@@ -78,7 +78,7 @@ class CreateFunctionAppDialog(private val lifetimeDef: LifetimeDefinition,
 
     private val presenter = CreateFunctionAppViewPresenter<CreateFunctionAppDialog>()
 
-    private val activityNotifier = AzureDeploymentProgressNotification(project)
+    private val activityNotifier = AzureDeploymentProgressNotification()
 
     init {
         title = dialogTitle

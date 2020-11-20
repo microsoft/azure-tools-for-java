@@ -67,6 +67,7 @@ public class TelemetryConstants {
     public static final String STOP_WEBAPP = "stop-webapp";
     public static final String RESTART_WEBAPP = "restart-webapp";
     public static final String WEBAPP_SHOWPROP = "showprop-webapp";
+    public static final String WEBAPP_SSHINTO = "sshinto-webapp";
     public static final String WEBAPP_OPEN_INBROWSER = "open-inbrowser-webapp";
     public static final String START_STREAMING_LOG_WEBAPP = "start-streaming-log-webapp";
     public static final String STOP_STREAMING_LOG_WEBAPP = "stop-streaming-log-webapp";
@@ -132,6 +133,7 @@ public class TelemetryConstants {
     public static final String REFRESH_METADATA = "refresh";
     public static final String SIGNIN = "signin";
     public static final String SIGNOUT = "signout";
+    public static final String RESIGNIN = "re-signin";
     public static final String SELECT_SUBSCRIPTIONS = "select-subscriptions";
     public static final String GET_SUBSCRIPTIONS = "get-subscriptions";
     public static final String REPORT_ISSUES = "report-issues";
@@ -194,6 +196,7 @@ public class TelemetryConstants {
     public static final String PROVISION_A_CLUSTER = "provision-a-cluster";
     public static final String DELETE_A_CLUSTER = "delete-a-cluster";
     public static final String UPDATE_A_CLUSTER = "update-a-cluster";
+    public static final String SHOW_WHATS_NEW = "show-whats-new";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";
@@ -206,6 +209,7 @@ public class TelemetryConstants {
     public static final String ARTIFACT_UPLOAD_COUNT = "artifactUploadCount";
     public static final String JAVA_APPNAME = "javaAppName";
     public static final String SIGNIN_METHOD = "signinMethod";
+    public static final String AZURE_ENVIRONMENT = "azureEnvironment";
 
     public static final Map<String, String> signInSPProp = new HashMap<>();
     public static final Map<String, String> signInDCProp = new HashMap<>();

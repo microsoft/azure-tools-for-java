@@ -90,6 +90,7 @@ public class PushImageRunState extends AzureRunProfileState<String> {
         PrivateRegistryImageSetting acrInfo = dataModel.getPrivateRegistryImageSetting();
         processHandler.setText(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
         DockerClient docker = DefaultDockerClient.fromEnv().build();
+        DockerUtil.ping(docker);
         String image = DockerUtil.buildImage(docker,
                 acrInfo.getImageTagWithServerUrl(),
                 targetDockerfile.getParent(),

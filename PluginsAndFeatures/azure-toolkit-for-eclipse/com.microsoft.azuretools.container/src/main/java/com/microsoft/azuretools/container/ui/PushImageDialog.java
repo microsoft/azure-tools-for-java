@@ -294,6 +294,7 @@ public class PushImageDialog extends AzureTitleAreaDialogWrapper {
             PrivateRegistryImageSetting acrInfo = model.getPrivateRegistryImageSetting();
             ConsoleLogger.info(String.format("Building image ...  [%s]", acrInfo.getImageTagWithServerUrl()));
             DockerClient docker = DefaultDockerClient.fromEnv().build();
+            DockerUtil.ping(docker);
             DockerUtil.buildImage(docker, acrInfo.getImageTagWithServerUrl(), targetDockerfile.getParent(),
                     targetDockerfile.getFileName().toString(), new DockerProgressHandler());
 

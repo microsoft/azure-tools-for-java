@@ -106,6 +106,6 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     private static boolean isFunctionModuleEvent(Object eventObject) {
-        return eventObject == null || FunctionModule.class.getName().equals(eventObject);
+        return eventObject != null && eventObject instanceof FunctionApp;
     }
 }

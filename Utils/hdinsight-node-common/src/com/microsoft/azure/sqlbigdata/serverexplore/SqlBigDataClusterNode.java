@@ -50,7 +50,7 @@ public class SqlBigDataClusterNode extends RefreshableNode {
 
         addAction("Open Spark History UI", new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 try {
                     DefaultLoader.getIdeHelper().openLinkInBrowser(cluster.getSparkHistoryUrl());
                 } catch (Exception ignore) {
@@ -60,7 +60,7 @@ public class SqlBigDataClusterNode extends RefreshableNode {
 
         addAction("Open Yarn UI", new NodeActionListener() {
             @Override
-            protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
+            protected void actionPerformed(NodeActionEvent e) {
                 try {
                     DefaultLoader.getIdeHelper().openLinkInBrowser(cluster.getYarnUIUrl());
                 } catch (Exception ignore) {

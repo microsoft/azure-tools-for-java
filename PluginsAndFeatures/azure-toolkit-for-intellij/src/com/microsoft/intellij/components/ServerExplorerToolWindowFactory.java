@@ -65,10 +65,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServerExplorerToolWindowFactory implements ToolWindowFactory, PropertyChangeListener {
     public static final String EXPLORER_WINDOW = "Azure Explorer";
@@ -104,6 +102,13 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // add a click handler for the tree
         tree.addMouseListener(new MouseAdapter() {
             @Override
+            public void mouseClicked(final MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    treeNodeDblClicked(e, tree, project);
+                }
+            }
+
+            @Override
             public void mousePressed(MouseEvent e) {
                 treeMousePressed(e, tree);
             }
@@ -135,8 +140,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                     if (!node.isLoading()) {
                         node.getClickAction().fireNodeActionEvent();
                     }
-                }
-                else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+                } else if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
                     if (node.hasNodeActions()) {
                         JPopupMenu menu = createPopupMenuForNode(node);
                         menu.show(e.getComponent(), (int) rectangle.getX(), (int) rectangle.getY());
@@ -146,9 +150,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         });
 
         // add the tree to the window
-        JBScrollPane scrollPane = new JBScrollPane(tree);
-        scrollPane.setBorder(JBUI.Borders.empty());
-        toolWindow.getComponent().add(scrollPane);
+        toolWindow.getComponent().add(new JBScrollPane(tree));
 
         // set tree and tree path to expand the node later
         azureModule.setTree(tree);
@@ -170,30 +172,40 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         return root;
     }
 
-    private void treeMousePressed(MouseEvent e, JTree tree) {
-        // get the tree node associated with this mouse click
-        TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+    private void treeNodeDblClicked(MouseEvent e, JTree tree, final Project project) {
+        final TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
         if (treePath == null) {
             return;
         }
+        final Node node = getTreeNodeOnMouseClick(tree, treePath);
+        if (!node.isLoading()) {
+            node.onNodeDblClicked(project);
+        }
+    }
 
-        SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
-        Node node = (Node) treeNode.getUserObject();
-
-        // set tree and tree path to expand the node later
-        node.setTree(tree);
-        node.setTreePath(treePath);
-
+    private void treeMousePressed(MouseEvent e, JTree tree) {
         // delegate click to the node's click action if this is a left button click
         if (SwingUtilities.isLeftMouseButton(e)) {
+            TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+            if (treePath == null) {
+                return;
+            }
+            // get the tree node associated with left mouse click
+            Node node = getTreeNodeOnMouseClick(tree, treePath);
             // if the node in question is in a "loading" state then we
             // do not propagate the click event to it
             if (!node.isLoading()) {
                 node.getClickAction().fireNodeActionEvent();
             }
-        // for right click show the context menu populated with all the
-        // actions from the node
+            // for right click show the context menu populated with all the
+            // actions from the node
         } else if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+            TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
+            if (treePath == null) {
+                return;
+            }
+            // get the tree node associated with right mouse click
+            Node node = getTreeNodeOnMouseClick(tree, treePath);
             if (node.hasNodeActions()) {
                 // select the node which was right-clicked
                 tree.getSelectionModel().setSelectionPath(treePath);
@@ -202,6 +214,15 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }
+    }
+
+    private Node getTreeNodeOnMouseClick(JTree tree, TreePath treePath) {
+        SortableTreeNode treeNode = (SortableTreeNode) treePath.getLastPathComponent();
+        Node node = (Node) treeNode.getUserObject();
+        // set tree and tree path to expand the node later
+        node.setTree(tree);
+        node.setTreePath(treePath);
+        return node;
     }
 
     private JPopupMenu createPopupMenuForNode(Node node) {
@@ -336,10 +357,6 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
     }
 
     private class NodeTreeCellRenderer extends NodeRenderer {
-        /** @see com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode#load for where this string is defined */
-        private static final String REFRESHING_MARKER = " (Refreshing...)";
-        private static final String REFRESHING_SUFFIX = " \u00b7 Refreshing...";
-
         @Override
         protected void doPaint(Graphics2D g) {
             super.doPaint(g);
@@ -366,16 +383,11 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                 return;
             }
 
-            // Show "Refreshing..." suffix?
-            int refreshingMarkerPosition = node.getName().indexOf(REFRESHING_MARKER);
-            if (refreshingMarkerPosition >= 0) {
-                clear();
-                append(node.getName().substring(0, refreshingMarkerPosition), SimpleTextAttributes.REGULAR_ATTRIBUTES);
-                append(REFRESHING_SUFFIX, SimpleTextAttributes.GRAYED_ITALIC_ATTRIBUTES);
-            }
-
-            String iconPath = node.getIconPath();
-            if (iconPath != null && !iconPath.isEmpty()) {
+            final Icon icon = node.getIcon();
+            final String iconPath = node.getIconPath();
+            if (Objects.nonNull(icon)) {
+                setIcon(icon);
+            } else if (iconPath != null && !iconPath.isEmpty()) {
                 setIcon(UIHelperImpl.loadIcon(iconPath));
             }
 
@@ -400,8 +412,8 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
                                 @Override
                                 public void update(AnActionEvent e) {
                                     boolean isDarkTheme = DefaultLoader.getUIHelper().isDarkTheme();
-                                    e.getPresentation().setIcon(UIHelperImpl.loadIcon(isDarkTheme
-                                            ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT));
+                                    final String iconPath = isDarkTheme ? RefreshableNode.REFRESH_ICON_DARK : RefreshableNode.REFRESH_ICON_LIGHT;
+                                    e.getPresentation().setIcon(UIHelperImpl.loadIcon(iconPath));
                                 }
                             },
                             new AzureSignInAction(),

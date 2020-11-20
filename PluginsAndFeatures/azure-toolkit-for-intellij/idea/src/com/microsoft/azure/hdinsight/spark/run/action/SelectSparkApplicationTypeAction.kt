@@ -38,7 +38,11 @@ import com.microsoft.tooling.msservices.components.DefaultLoader
 abstract class SelectSparkApplicationTypeAction
     : AzureAnAction() , Toggleable {
     override fun onActionPerformed(anActionEvent: AnActionEvent, operation: Operation?): Boolean {
-        DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.getSparkApplicationType().toString())
+        try {
+            DefaultLoader.getIdeHelper().setApplicationProperty(CommonConst.SPARK_APPLICATION_TYPE, this.getSparkApplicationType().toString())
+        } catch (ignored: RuntimeException) {
+        }
+
         return true
     }
 

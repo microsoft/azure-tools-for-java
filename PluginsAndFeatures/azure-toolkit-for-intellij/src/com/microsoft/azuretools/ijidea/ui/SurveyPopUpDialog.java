@@ -124,7 +124,7 @@ public class SurveyPopUpDialog extends JDialog {
         if (isMac) {
             return;
         }
-        if (UIUtils.isUnderIntelliJTheme()) {
+        if (UIUtils.isUnderLightTheme()) {
             UIUtils.setPanelBackGroundColor(contentPane, Color.WHITE);
             ButtonUI buttonUI = new MetalButtonUI();
             giveFeedbackButton.setUI(buttonUI);
@@ -187,8 +187,8 @@ public class SurveyPopUpDialog extends JDialog {
 
     // Set pop up window to right bottom side of IDE
     private void setLocationRelativeToIDE(Project project) {
-        project = project != null ? project : ProjectManagerImpl.getInstance().getOpenProjects()[0];
-        JFrame ideFrame = WindowManagerImpl.getInstance().getFrame(project);
+        final Project openProject = project != null ? project : ProjectManagerImpl.getInstance().getOpenProjects()[0];
+        JFrame ideFrame = WindowManagerImpl.getInstance().getFrame(openProject);
         if (ideFrame == null) {
             // In case user close project after start up
             ideFrame = WindowManagerImpl.getInstance().findVisibleFrame();

@@ -35,11 +35,13 @@ import com.microsoft.azure.common.function.handlers.runtime.WindowsFunctionRunti
 import com.microsoft.azure.common.function.utils.FunctionUtils;
 import com.microsoft.azure.common.logging.Log;
 import com.microsoft.azure.common.utils.AppServiceUtils;
+import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.FunctionApp.DefinitionStages.WithCreate;
 import com.microsoft.azure.management.appservice.PricingTier;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.intellij.runner.functions.library.IAppServiceContext;
+import com.microsoft.intellij.runner.functions.deploy.FunctionDeployModel;
+import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -71,18 +73,20 @@ public class CreateFunctionHandler {
     private static final OperatingSystemEnum DEFAULT_OS = OperatingSystemEnum.Windows;
     public static final String TARGET_FUNCTION_APP_ALREADY_EXISTS =
             "Failed to create function app %s, target function app already exists.";
-    private IAppServiceContext ctx;
+    private static final String APP_INSIGHTS_INSTRUMENTATION_KEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
+
+    private FunctionDeployModel ctx;
 
 
-    public CreateFunctionHandler(IAppServiceContext ctx) {
+    public CreateFunctionHandler(FunctionDeployModel ctx) {
         Preconditions.checkNotNull(ctx);
         this.ctx = ctx;
     }
 
-    public void execute() throws IOException, AzureExecutionException {
+    public FunctionApp execute() throws IOException, AzureExecutionException {
         final FunctionApp app = getFunctionApp();
         if (app == null) {
-            createFunctionApp();
+            return createFunctionApp();
         } else {
             throw new AzureExecutionException(String.format(TARGET_FUNCTION_APP_ALREADY_EXISTS, ctx.getAppName()));
         }
@@ -91,13 +95,47 @@ public class CreateFunctionHandler {
 
     // region Create or update Azure Functions
 
-    private void createFunctionApp() throws IOException, AzureExecutionException {
+    private FunctionApp createFunctionApp() throws IOException, AzureExecutionException {
         Log.prompt(FUNCTION_APP_CREATE_START);
         final FunctionRuntimeHandler runtimeHandler = getFunctionRuntimeHandler();
         final WithCreate withCreate = runtimeHandler.defineAppWithRuntime();
+        bindingApplicationInsights();
+        configureApplicationLog(withCreate);
         configureAppSettings(withCreate::withAppSettings, getAppSettingsWithDefaultValue());
-        withCreate.create();
+        FunctionApp result = withCreate.create();
         Log.prompt(String.format(FUNCTION_APP_CREATED, ctx.getAppName()));
+        return result;
+    }
+
+    private WithCreate configureApplicationLog(WithCreate withCreate) {
+        if (ctx.isEnableApplicationLog()) {
+            return (WithCreate) withCreate.defineDiagnosticLogsConfiguration()
+                                          .withApplicationLogging()
+                                          .withLogLevel(ctx.getApplicationLogLevel())
+                                          .withApplicationLogsStoredOnFileSystem().attach();
+        }
+        return withCreate;
+    }
+
+    private void bindingApplicationInsights() {
+        if (StringUtils.isAllEmpty(ctx.getInsightsName(), ctx.getInstrumentationKey())) {
+            return;
+        }
+        String instrumentationKey = ctx.getInstrumentationKey();
+        if (StringUtils.isEmpty(instrumentationKey)) {
+            final String region = ctx.getRegion();
+            final ApplicationInsightsComponent insights;
+            try {
+                insights = AzureSDKManager.getOrCreateApplicationInsights(ctx.getSubscription(),
+                                                                          ctx.getResourceGroup(),
+                                                                          ctx.getInsightsName(),
+                                                                          region);
+                instrumentationKey = insights.instrumentationKey();
+            } catch (IOException e) {
+                Log.prompt(String.format("Failed to create application insights for function %s", ctx.getAppName()));
+            }
+        }
+        ctx.getAppSettings().put(APP_INSIGHTS_INSTRUMENTATION_KEY, instrumentationKey);
     }
 
     private void configureAppSettings(final Consumer<Map> withAppSettings, final Map appSettings) {
@@ -124,10 +162,13 @@ public class CreateFunctionHandler {
                 throw new AzureExecutionException(String.format("Unsupported runtime %s", os));
         }
         return builder.appName(ctx.getAppName()).resourceGroup(ctx.getResourceGroup()).runtime(ctx.getRuntime())
-                .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
-                .servicePlanName(ctx.getAppServicePlanName())
-                .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
-                .functionExtensionVersion(getFunctionExtensionVersion()).azure(this.ctx.getAzureClient()).build();
+                      .region(Region.fromName(ctx.getRegion())).pricingTier(getPricingTier())
+                      .servicePlanName(ctx.getAppServicePlanName())
+                      .servicePlanResourceGroup(ctx.getAppServicePlanResourceGroup())
+                      .functionExtensionVersion(getFunctionExtensionVersion())
+                      .azure(this.ctx.getAzureClient())
+                      .javaVersion(FunctionUtils.parseJavaVersion(ctx.getJavaVersion()))
+                      .build();
     }
 
     private OperatingSystemEnum getOsEnum() throws AzureExecutionException {

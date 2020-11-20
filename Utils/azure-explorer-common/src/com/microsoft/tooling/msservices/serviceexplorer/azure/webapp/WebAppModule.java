@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
+import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -35,7 +36,7 @@ import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.AzureRefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.List;
 
 public class WebAppModule extends AzureRefreshableNode implements WebAppModuleView {
@@ -66,8 +67,9 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
         try {
             webAppModulePresenter.onDeleteWebApp(sid, id);
             removeDirectChildNode(node);
-        } catch (Throwable e) {
-            throw new RuntimeException("An error occurred while attempting to delete the Web App ", e);
+        } catch (IOException | CloudException e) {
+            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
+                    e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
         }
     }
 
@@ -95,12 +97,7 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                                 try {
                                     addChildNode(new WebAppNode(WebAppModule.this,
                                             ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
-                                            webAppDetails.webApp.id(),
-                                            webAppDetails.webApp.name(),
-                                            webAppDetails.webApp.state(),
-                                            webAppDetails.webApp.defaultHostName(),
-                                            webAppDetails.webApp.operatingSystem().toString(),
-                                            null));
+                                            webAppDetails.webApp));
                                 } catch (Exception ex) {
                                     DefaultLoader.getUIHelper().logError("WebAppModule::createListener ADD", ex);
                                     ex.printStackTrace();
@@ -124,16 +121,10 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     public void renderChildren(@NotNull final List<ResourceEx<WebApp>> resourceExes) {
         for (final ResourceEx<WebApp> resourceEx : resourceExes) {
             final WebApp app = resourceEx.getResource();
-            final WebAppNode node = new WebAppNode(this, resourceEx.getSubscriptionId(), app.id(), app.name(),
-                app.state(), app.defaultHostName(), app.operatingSystem().toString(),
-                new HashMap<String, String>() {
-                    {
-                        put("regionName", app.regionName());
-                    }
-                });
+            final String sId = resourceEx.getSubscriptionId();
+            final WebAppNode node = new WebAppNode(this, sId, app);
 
             addChildNode(node);
-            node.refreshItems();
         }
     }
 }

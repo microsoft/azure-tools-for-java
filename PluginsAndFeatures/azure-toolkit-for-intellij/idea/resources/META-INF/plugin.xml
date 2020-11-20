@@ -1,7 +1,7 @@
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-<!--  <version>3.40.0</version>-->
+<!--  <version>3.46.0</version>-->
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,14 +24,32 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.40.0</h3>
+    <h3>3.45.0</h3>
     <h4>Added</h4>
     <ul>
-        <li>Support IntelliJ 2020.2 EAP</li>
+        <li>Add file explorer for Web App and Function App in Azure explorer</li>
+        <li>Support flight recorder for Web App</li>
     </ul>
     <h4>Changed</h4>
     <ul>
-        <li>Show non-anonymous HTTP trigger urls after function deployment</li>
+        <li>New creation wizard for Function App with basic and advanced mode</li>
+        <li>More monitoring configuration in Web App/Function App creation wizard</li>
+        <li>Update template for function project</li>
+    </ul>
+    <h4>Fixed</h4>
+    <ul>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4703">#4703</a>
+            Fix NPE issue in Function creation/deployment
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4707">#4707</a>
+            Enhace error handling for azure cli token expires
+        </li>
+        <li>
+            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4710">#4710</a>
+            Register service provider for insights before get insights client
+        </li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
@@ -43,12 +61,14 @@
 
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
   <idea-version since-build="201.6668.60" until-build="201.*"/>
-  <resource-bundle>com.microsoft.intellij.ui.messages.messages</resource-bundle>
+
   <resource-bundle>com.microsoft.intellij.hdinsight.messages.messages</resource-bundle>
+
   <depends optional="true" config-file="">org.intellij.scala</depends>
   <depends>org.jetbrains.idea.maven</depends>
   <depends>com.intellij.modules.java</depends>
   <depends>org.intellij.plugins.markdown</depends>
+  <depends>com.intellij.gradle</depends>
   <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
   <!-- uncomment to enable plugin in all products
@@ -56,12 +76,7 @@
   -->
 
   <extensions defaultExtensionNs="com.intellij">
-    <projectConfigurable groupId="root"
-                         id="com.microsoft.intellij.AzureConfigurable"
-                         provider="com.microsoft.intellij.AzureConfigurableProvider"
-                         dynamic="true"/>
     <fileEditorProvider implementation="com.microsoft.azure.hdinsight.jobs.framework.JobViewEditorProvider" />
-    <fileEditorProvider implementation="com.microsoft.intellij.helpers.function.FunctionAppPropertyViewProvider"/>
     <fileEditorProvider implementation="com.microsoft.intellij.helpers.springcloud.SpringCloudAppPropertyViewProvider"/>
 
     <moduleBuilder builderClass="com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder"/>
@@ -130,13 +145,13 @@
             description="Show What's New">
       <add-to-group group-id="AzureToolkit.Feedback" anchor="after" relative-to-action="AzureToolkit.Survey"/>
     </action>
-    
+
     <action id="Actions.LibraryConfigurationAction"
             class="com.microsoft.intellij.actions.LibraryConfigurationAction" text="Libraries Configuration"
             description="Libraries Configuration"/>
-    
+
     <action id="Actions.ApplicationInsightsAction"
-            class="com.microsoft.intellij.actions.ApplicatioInsightsAction" text="Configure Application Insights..."
+            class="com.microsoft.intellij.actions.ApplicationInsightsAction" text="Configure Application Insights..."
             description="Configure Application Insights..." icon="/icons/ApplicationInsights_16.png"/>
 
     <action id="Actions.AzureCodeSamples"
@@ -187,6 +202,14 @@
       <separator/>
     </group>
 
+    <action id="AzureToolkit.GithubIssue"
+            class="com.microsoft.azuretools.ijidea.actions.NewCustomerIssueFeedbackAction"
+            text="Report Issues" />
+
+    <action id="AzureToolkit.FeatureRequest"
+            class="com.microsoft.azuretools.ijidea.actions.NewFeatureRequestFeedbackAction"
+            text="Request Feature" />
+
     <group id="AzureToolkit.Feedback">
       <add-to-group group-id="AzureToolkit.AzureActionGroup"
                     anchor="after"
@@ -207,60 +230,86 @@
       <separator/>
     </group>
 
-    <action id="Actions.WebDeployAction" class="com.microsoft.intellij.actions.WebDeployAction"
-            text="Deploy to Azure Web Apps" description="Deploy to Azure Web Apps"
+    <action id="Actions.WebDeployAction"
+            class="com.microsoft.intellij.actions.WebDeployAction"
+            text="Deploy to Azure Web Apps"
+            description="Deploy to Azure Web Apps"
             icon="/icons/PublishWebApp_16.png">
     </action>
 
     <!-- Functions Start -->
-    <action id="Actions.RunFunction" class="com.microsoft.intellij.actions.functions.RunFunctionAction"
-            text="Run Function" description="Run function project locally"
+    <action id="Actions.RunFunction"
+            class="com.microsoft.intellij.actions.functions.RunFunctionAction"
+            text="Run Function"
+            description="Run function project locally"
             icon="/icons/azure-functions-run.png">
     </action>
 
-    <action id="Actions.DeployFunction" class="com.microsoft.intellij.actions.functions.DeployFunctionAction"
-            text="Deploy to Azure Functions" description="Deploy Java Function to Azure"
+    <action id="Actions.DeployFunction"
+            class="com.microsoft.intellij.actions.functions.DeployFunctionAction"
+            text="Deploy to Azure Functions"
+            description="Deploy Java Function to Azure"
             icon="/icons/azure-functions-deploy.png">
     </action>
     <!-- Functions End -->
 
-    <action id="Actions.DeploySpringCloud" class="com.microsoft.intellij.actions.DeploySpringCloudAction"
-            text="Deploy to Azure Spring Cloud" description="Deploy Spring Cloud app to Azure"
+    <action id="Actions.DeploySpringCloud"
+            class="com.microsoft.intellij.actions.DeploySpringCloudAction"
+            text="Deploy to Azure Spring Cloud"
+            description="Deploy Spring Cloud app to Azure"
             icon="/icons/azure-springcloud-small.png">
     </action>
-    <action id="Actions.AddDockerSupport" class="com.microsoft.intellij.actions.AddDockerSupportAction"
-            text="Add Docker Support" description="Add Docker Support"
+    <action id="Actions.AddDockerSupport"
+            class="com.microsoft.intellij.actions.AddDockerSupportAction"
+            text="Add Docker Support"
+            description="Add Docker Support"
             icon="/icons/AddDockerSupport_16.png">
     </action>
-    <action id="Actions.RunOnDockerHost" class="com.microsoft.intellij.actions.RunOnDockerHostAction"
-            text="Docker Run" description="Docker Run"
+    <action id="Actions.RunOnDockerHost"
+            class="com.microsoft.intellij.actions.RunOnDockerHostAction"
+            text="Docker Run"
+            description="Docker Run"
             icon="/icons/DockerRun_16.png">
     </action>
-    <action id="Actions.PushImage" class="com.microsoft.intellij.actions.PushImageAction"
-            text="Push Image" description="Push Image"
+    <action id="Actions.PushImage"
+            class="com.microsoft.intellij.actions.PushImageAction"
+            text="Push Image"
+            description="Push Image"
             icon="/icons/PushImage_16.png">
     </action>
-    <action id="Actions.WebAppOnLinux" class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
-            text="Run on Web App for Containers" description="Run on Web App for Containers"
+    <action id="Actions.WebAppOnLinux"
+            class="com.microsoft.intellij.actions.WebAppOnLinuxAction"
+            text="Run on Web App for Containers"
+            description="Run on Web App for Containers"
             icon="/icons/PublishWebAppOnLinux_16.png">
     </action>
-    <action id="Actions.SparkJobDisconnect" class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
-            text="Disconnect" description="Disconnect the log view from remote Spark Job"
+    <action id="Actions.SparkJobDisconnect"
+            class="com.microsoft.azure.hdinsight.spark.run.action.SparkBatchJobDisconnectAction"
+            text="Disconnect"
+            description="Disconnect the log view from remote Spark Job"
             icon="/icons/SparkJobDisconnect.png">
       <keyboard-shortcut first-keystroke="ctrl shift alt F2" keymap="$default"/>
     </action>
-    <action id="Spark.RunScalaLocalConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"
-            text="Run Apache Spark Local Console(Scala)" description="Run Apache Spark Local Console (Scala language)">
+    <action id="Spark.RunScalaLocalConsole"
+            class="com.microsoft.azure.hdinsight.spark.console.RunSparkLocalConsoleActionDelegate"
+            text="Run Apache Spark Local Console(Scala)"
+            description="Run Apache Spark Local Console (Scala language)">
     </action>
-    <action id="Spark.RunScalaLivyConsole" class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleActionDelegate"
-            text="Run Apache Spark Livy Interactive Session Console(Scala)" description="Run Apache Spark Livy Interactive Session Console (Scala language)">
+    <action id="Spark.RunScalaLivyConsole"
+            class="com.microsoft.azure.hdinsight.spark.console.RunSparkLivyConsoleActionDelegate"
+            text="Run Apache Spark Livy Interactive Session Console(Scala)"
+            description="Run Apache Spark Livy Interactive Session Console (Scala language)">
     </action>
-    <action id="SparkConsole.Execute" class="com.microsoft.azure.hdinsight.spark.console.SparkConsoleExecuteAction" text="Execute Spark Console Statement">
+    <action id="SparkConsole.Execute"
+            class="com.microsoft.azure.hdinsight.spark.console.SparkConsoleExecuteAction"
+            text="Execute Spark Console Statement">
       <keyboard-shortcut first-keystroke="control ENTER" keymap="$default"/>
       <keyboard-shortcut keymap="Mac OS X" first-keystroke="meta shift ENTER"/>
     </action>
-    <action id="Spark.SendSelectionToConsole" class="com.microsoft.azure.hdinsight.spark.console.SparkSendSelectionToConsoleActionDelegate"
-            text="Send Selection To Apache Spark Console" description="Send selection to Apache Spark console">
+    <action id="Spark.SendSelectionToConsole"
+            class="com.microsoft.azure.hdinsight.spark.console.SparkSendSelectionToConsoleActionDelegate"
+            text="Send Selection To Apache Spark Console"
+            description="Send selection to Apache Spark console">
       <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
       <keyboard-shortcut first-keystroke="control shift S" keymap="$default"/>
       <keyboard-shortcut keymap="Mac OS X" first-keystroke="ctrl shift S"/>
@@ -269,13 +318,21 @@
       <keyboard-shortcut keymap="Mac OS X 10.5+" first-keystroke="meta shift S" remove="true"/>
     </action>
 
-    <action id="SparkJobRun" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobRunAction"
+    <action id="SparkJobRun"
+            class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobRunAction"
             text="SparkJobRun"/>
-    <action id="SparkJobDebug" class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobDebugAction"
+    <action id="SparkJobDebug"
+            class="com.microsoft.azure.hdinsight.spark.run.action.SparkJobDebugAction"
             text="SparkJobDebug"/>
-    <action id="Actions.AddAzureDependencyAction" class="com.microsoft.azure.springcloud.dependency.action.AddAzureDependencyAction" text="Add Azure Spring Cloud dependency"  icon="/icons/azure-springcloud-app-dependency.png">
+    <action id="Actions.AddAzureDependencyAction"
+            class="com.microsoft.azure.springcloud.dependency.action.AddAzureDependencyAction"
+            text="Add Azure Spring Cloud dependency"
+            icon="/icons/azure-springcloud-app-dependency.png">
     </action>
-    <action id="Actions.AddAzureDependencyContextAction" class="com.microsoft.azure.springcloud.dependency.action.AddAzureDependencyContextAction" text="Add Azure Spring Cloud dependency"  icon="/icons/azure-springcloud-app-dependency.png">
+    <action id="Actions.AddAzureDependencyContextAction"
+            class="com.microsoft.azure.springcloud.dependency.action.AddAzureDependencyContextAction"
+            text="Add Azure Spring Cloud dependency"
+            icon="/icons/azure-springcloud-app-dependency.png">
       <add-to-group group-id="RunContextPopupGroup" anchor="last"/>
     </action>
 
@@ -293,18 +350,17 @@
       <reference ref="Actions.PushImage"/>
       <reference ref="Actions.WebAppOnLinux"/>
       <separator/>
-      <reference ref="Actions.AzureDockerHostDeploy"/>
-      <separator/>
       <reference ref="Actions.ApplicationInsightsAction"/>
       <reference ref="Actions.LibraryConfigurationAction"/>
     </group>
 
-    <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
-      <reference ref="Actions.WebDeployAction"/>
-      <reference ref="Actions.WebAppOnLinux"/>
-      <reference ref="Actions.AzureDockerHostDeploy"/>
-
-      <add-to-group group-id="AzureToolbarGroup" />
+    <group id="AzureToolbarGroup" text="Azure" description="Azure">
+      <group id="PublishToAzureGroup" text="Publish Group" description="Publish Group" popup="true" icon="/icons/Publish_16.png">
+        <reference ref="Actions.WebDeployAction"/>
+        <reference ref="Actions.WebAppOnLinux"/>
+      </group>
+      <reference ref="Actions.AzureExplorerOpenAction"/>
+      <reference ref="Actions.AzureCodeSamples"/>
     </group>
 
     <group id="SparkConsoleGroup" text="Apache Spark Console" description="Apache Spark Console" popup="true">
@@ -339,41 +395,61 @@
       </action>
     </group>
 
-    <action id="Actions.SparkSubmitJobActionGroups" class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups" text="Submit Apache Spark Application"/>
+    <action id="Actions.SparkSubmitJobActionGroups"
+            class="com.microsoft.azure.hdinsight.spark.run.action.SparkSubmitJobActionGroups"
+            text="Submit Apache Spark Application"/>
 
-    <action id="Actions.SparkRunLivyConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLivyConsoleActionGroups" text="Run Apache Spark Console"/>
+    <action id="Actions.SparkRunLivyConsoleActionGroups"
+            class="com.microsoft.azure.hdinsight.spark.console.SparkRunLivyConsoleActionGroups"
+            text="Run Apache Spark Console"/>
 
-    <action id="Actions.SparkRunLocalConsoleActionGroups" class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups" text="Run Apache Spark Local Console"/>
+    <action id="Actions.SparkRunLocalConsoleActionGroups"
+            class="com.microsoft.azure.hdinsight.spark.console.SparkRunLocalConsoleActionGroups"
+            text="Run Apache Spark Local Console"/>
 
     <action id="Actions.RunArcadiaSparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLivyConsoleAction"
             text="Apache Spark on Azure Synapse"
-            description="Start an interactive console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
+            description="Start an interactive console for Apache Spark on Azure Synapse Application"
+            icon="/icons/Spark.png"/>
     <action id="Actions.RunLivySparkConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction" text="Apache Spark on HDInsight"
-            description="Start an interactive console for Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLivyConsoleAction"
+            text="Apache Spark on HDInsight"
+            description="Start an interactive console for Apache Spark on HDInsight Application"
+            icon="/icons/Spark.png"/>
     <action id="Actions.RunCosmosSparkConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction" text="Apache Spark on Cosmos"
-            description="Start an interactive console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLivyConsoleAction"
+            text="Apache Spark on Cosmos"
+            description="Start an interactive console for Apache Spark on Cosmos Application"
+            icon="/icons/Spark.png"/>
     <action id="Actions.RunArisSparkConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLivyConsoleAction"
             text="Apache Spark on SQL Server Big Data Cluster"
-            description="Start an interactive console for Apache Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
+            description="Start an interactive console for Apache Spark on SQL Server Big Data Cluster Application"
+            icon="/icons/Spark.png"/>
 
     <action id="Actions.RunArcadiaSparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Azure Synapse"
-            description="Start a Apache Spark local console for Apache Spark on Azure Synapse Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectArcadiaSparkTypeThenRunLocalConsoleAction"
+            text="Apache Spark on Azure Synapse"
+            description="Start a Apache Spark local console for Apache Spark on Azure Synapse Application"
+            icon="/icons/Spark.png"/>
     <action id="Actions.RunLivySparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction" text="Apache Spark on HDInsight"
-            description="Start a Apache Spark local console for Apache Spark on HDInsight Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectLivySparkTypeThenRunLocalConsoleAction"
+            text="Apache Spark on HDInsight"
+            description="Start a Apache Spark local console for Apache Spark on HDInsight Application"
+            icon="/icons/Spark.png"/>
     <action id="Actions.RunCosmosSparkLocalConsoleAction"
-            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction" text="Apache Spark on Cosmos"
-            description="Start a Apache Spark local console for Apache Spark on Cosmos Application" icon="/icons/Spark.png"/>
+            class="com.microsoft.azure.hdinsight.spark.console.SelectCosmosSparkTypeThenRunLocalConsoleAction"
+            text="Apache Spark on Cosmos"
+            description="Start a Apache Spark local console for Apache Spark on Cosmos Application"
+            icon="/icons/Spark.png"/>
     <action id="Actions.RunArisSparkLocalConsoleAction"
             class="com.microsoft.azure.hdinsight.spark.console.SelectArisSparkTypeThenRunLocalConsoleAction"
             text="Apache Spark on SQL Server Big Data Cluster"
-            description="Start a Apache Spark local console for Apache Spark on SQL Server Big Data Cluster Application" icon="/icons/Spark.png"/>
-    <action id="page.new" class="com.microsoft.intellij.actions.CreateFunctionAction"
+            description="Start a Apache Spark local console for Apache Spark on SQL Server Big Data Cluster Application"
+            icon="/icons/Spark.png"/>
+    <action id="page.new"
+            class="com.microsoft.intellij.actions.CreateFunctionAction"
             text="Azure Function Class"
             description="Create New Azure Function Class">
       <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFile"/>
