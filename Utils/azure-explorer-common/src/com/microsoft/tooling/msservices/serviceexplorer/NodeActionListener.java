@@ -24,6 +24,7 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -81,6 +82,7 @@ public abstract class NodeActionListener implements EventListener {
             return Futures.immediateFuture(null);
         } catch (AzureCmdException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
+            AzureExceptionHandler.getInstance().handleException(ex, true);
             return Futures.immediateFailedFuture(ex);
         } finally {
             operation.complete();

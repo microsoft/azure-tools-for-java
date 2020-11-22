@@ -22,6 +22,7 @@
 
 package com.microsoft.azure.toolkit.lib.common.task;
 
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
 
 public abstract class AzureTaskManager {
@@ -82,6 +83,7 @@ public abstract class AzureTaskManager {
                 runnable.run();
             } catch (final RuntimeException e) {
                 //TODO: @miller handle exception
+                AzureExceptionHandler.getInstance().handleException(e);
             }
         });
     }

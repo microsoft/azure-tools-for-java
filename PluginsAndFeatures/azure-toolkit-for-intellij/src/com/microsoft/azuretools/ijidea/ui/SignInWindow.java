@@ -35,6 +35,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.microsoft.azure.auth.AzureAuthHelper;
 import com.microsoft.azure.auth.AzureTokenWrapper;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.adauth.AuthCanceledException;
@@ -301,12 +302,8 @@ public class SignInWindow extends AzureDialogWrapper {
                 EventUtil.logEvent(EventType.info, operation, properties);
                 operation.start();
                 loginCallable.call();
-            } catch (AuthCanceledException ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                System.out.println(ex.getMessage());
-            } catch (Exception ex) {
-                EventUtil.logError(operation, ErrorType.userError, ex, properties, null);
-                AzureTaskManager.getInstance().runLater(() -> ErrorWindow.show(project, ex.getMessage(), SIGN_IN_ERROR));
+            } catch (Exception e) {
+                throw new AzureToolkitRuntimeException(e.getMessage(), e);
             } finally {
                 EventUtil.logEvent(EventType.info, operation, Collections.singletonMap(
                     AZURE_ENVIRONMENT, CommonSettings.getEnvironment().getName()));

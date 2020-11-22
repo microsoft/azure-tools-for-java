@@ -28,6 +28,8 @@ import com.microsoft.azure.management.resources.Deployment;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
@@ -82,6 +84,11 @@ public class AzureMvpModel {
             ret = map.get(sid);
         }
         return ret;
+    }
+
+    @AzureOperation(value = "Test exception with input `%s`", params = {"$input"}, type = AzureOperation.Type.SERVICE)
+    public void testException(String input) {
+        throw new AzureToolkitRuntimeException("Test exception", null , "Please retry", "001");
     }
 
     /**

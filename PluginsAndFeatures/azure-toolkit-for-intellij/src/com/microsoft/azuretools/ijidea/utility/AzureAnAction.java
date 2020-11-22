@@ -24,6 +24,7 @@ package com.microsoft.azuretools.ijidea.utility;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azuretools.telemetry.AppInsightsClient;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -75,7 +76,7 @@ public abstract class AzureAnAction extends AnAction {
             actionReturnVal = onActionPerformed(anActionEvent, operation);
         } catch (RuntimeException ex) {
             EventUtil.logError(operation, ErrorType.systemError, ex, null, null);
-            throw ex;
+            AzureExceptionHandler.getInstance().handleException(ex);
         } finally {
             if (actionReturnVal) {
                 operation.complete();
