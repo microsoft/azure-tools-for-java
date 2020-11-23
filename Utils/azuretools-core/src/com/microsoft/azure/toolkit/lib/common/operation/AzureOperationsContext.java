@@ -22,10 +22,14 @@
 
 package com.microsoft.azure.toolkit.lib.common.operation;
 
+import rx.Completable;
+import rx.Observable;
+import rx.Single;
+
 import java.util.*;
 
 public class AzureOperationsContext {
-    private static final ThreadLocal<Deque<AzureOperationRef>> operations = ThreadLocal.withInitial(ArrayDeque::new);
+    static final ThreadLocal<Deque<AzureOperationRef>> operations = ThreadLocal.withInitial(ArrayDeque::new);
 
     public static List<AzureOperationRef> getOperations() {
         return Collections.unmodifiableList(new ArrayList<>(operations.get()));
@@ -40,6 +44,10 @@ public class AzureOperationsContext {
     }
 
     public static Object execute(final AzureOperationRef operation, final OperationProceedable proceedable) throws Throwable {
+        final AzureOperation.Type type = AzureOperationUtils.getAnnotation(operation).type();
+        if (type == AzureOperation.Type.ACTION) {
+            operations.get().clear();
+        }
         AzureOperationsContext.push(operation);
         try {
             return proceedable.proceed();
@@ -53,6 +61,30 @@ public class AzureOperationsContext {
         return () -> {
             operations.set(closure);
             runnable.run();
+        };
+    }
+
+    public static Single.OnSubscribe<?> deriveClosure(final Single.OnSubscribe<?> action) {
+        final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
+        return (o) -> {
+            operations.set(closure);
+            action.call(o);
+        };
+    }
+
+    public static Observable.OnSubscribe<?> deriveClosure(final Observable.OnSubscribe<?> action) {
+        final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
+        return (o) -> {
+            operations.set(closure);
+            action.call(o);
+        };
+    }
+
+    public static Completable.OnSubscribe deriveClosure(final Completable.OnSubscribe action) {
+        final Deque<AzureOperationRef> closure = new ArrayDeque<>(AzureOperationsContext.getOperations());
+        return (o) -> {
+            operations.set(closure);
+            action.call(o);
         };
     }
 
