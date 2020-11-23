@@ -27,7 +27,7 @@
     <h3>3.45.1</h3>
     <h4>Fixed</h4>
     <ul>
-        <li>Sync before run tasks while initialize setting panel</li>
+        <li><a href="https://github.com/microsoft/azure-tools-for-java/pull/4765">#4765</a> Fixes no before run tasks when deploy Spring Cloud app in project menu</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>

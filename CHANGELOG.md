@@ -61,7 +61,7 @@ All notable changes to "Azure Toolkit for IntelliJ IDEA" will be documented in t
 
 ## 3.45.1
 ### Fixed
--  Sync before run tasks while initialize setting panel
+- [#4765](https://github.com/microsoft/azure-tools-for-java/pull/4765) Fixes no before run tasks when deploy Spring Cloud app in project menu
 
 ## 3.45.0
 ### Added
