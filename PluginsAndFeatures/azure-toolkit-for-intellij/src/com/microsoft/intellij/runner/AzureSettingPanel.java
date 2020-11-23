@@ -256,6 +256,10 @@ public abstract class AzureSettingPanel<T extends AzureRunConfigurationBase> {
                     getCbAzureArtifact().setSelectedItem(azureArtifact);
                 }
             }
+            final AzureArtifact defaultArtifact = (AzureArtifact) getCbAzureArtifact().getSelectedItem();
+            if (defaultArtifact != null) {
+                syncBeforeRunTasks(defaultArtifact, configuration);
+            }
         }
 
         getLblAzureArtifact().setVisible(true);
