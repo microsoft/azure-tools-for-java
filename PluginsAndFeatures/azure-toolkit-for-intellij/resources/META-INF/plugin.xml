@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/Microsoft/azure-tools-for-java">
   <id>com.microsoft.tooling.msservices.intellij.azure</id>
   <name>Azure Toolkit for IntelliJ</name>
-  <version>3.45.0</version>
+  <version>3.45.1</version>
   <vendor email="java@microsoft.com" url="http://www.microsoft.com">Microsoft</vendor>
 
   <description><![CDATA[
@@ -24,32 +24,10 @@
   <change-notes>
     <![CDATA[
     <html>
-    <h3>3.45.0</h3>
-    <h4>Added</h4>
-    <ul>
-        <li>Add file explorer for Web App and Function App in Azure explorer</li>
-        <li>Support flight recorder for Web App</li>
-    </ul>
-    <h4>Changed</h4>
-    <ul>
-        <li>New creation wizard for Function App with basic and advanced mode</li>
-        <li>More monitoring configuration in Web App/Function App creation wizard</li>
-        <li>Update template for function project</li>
-    </ul>
+    <h3>3.45.1</h3>
     <h4>Fixed</h4>
     <ul>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4703">#4703</a>
-            Fix NPE issue in Function creation/deployment
-        </li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4707">#4707</a>
-            Enhace error handling for azure cli token expires
-        </li>
-        <li>
-            <a href="https://github.com/microsoft/azure-tools-for-java/pull/4710">#4710</a>
-            Register service provider for insights before get insights client
-        </li>
+        <li>Sync before run tasks while initialize setting panel</li>
     </ul>
     <p>You may get the full change log <a
             href="https://github.com/Microsoft/azure-tools-for-java/blob/develop/CHANGELOG.md">here</a></p>
