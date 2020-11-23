@@ -30,18 +30,12 @@ compileTestKotlin {
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
-//apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
+apply plugin: 'checkstyle'
 
-//checkstyle {
-//    toolVersion = '8.30'
-//    configFile = new File('config/checkstyle/checkstyle.xml')
-//    showViolations = false
-//}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
+checkstyle {
+    toolVersion = '8.30'
+    configFile = new File('config/checkstyle/checkstyle.xml')
+    showViolations = false
 }
 
 intellij {
@@ -182,14 +176,14 @@ test.dependsOn cucumber
 defaultTasks 'buildPlugin'
 
 wrapper() {
-    gradleVersion = '5.0'
+    gradleVersion = '6.5'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
 apply plugin: BundleBuildIDEAPlugin
 
 installIdea.dependsOn buildPlugin
-//installIdea.dependsOn checkstyleMain
+installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild
