@@ -730,7 +730,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         value = "get all web containers",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public List<WebAppUtils.WebContainerMod> listWebContainers() {
         final List<WebAppUtils.WebContainerMod> webContainers = new ArrayList<>();
@@ -743,7 +743,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "get all available JDKs",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public List<JdkModel> listJdks() {
         final List<JdkModel> jdkModels = new ArrayList<>();
@@ -758,7 +758,7 @@ public class AzureWebAppMvpModel {
      */
     @AzureOperation(
         value = "get all available linux runtime stacks",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public List<RuntimeStack> getLinuxRuntimes() {
         return WebAppUtils.getAllJavaLinuxRuntimeStacks();
@@ -850,7 +850,7 @@ public class AzureWebAppMvpModel {
 
     @AzureOperation(
         value = "clear local cache of web apps",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public void clearWebAppsCache() {
         subscriptionIdToWebApps.clear();

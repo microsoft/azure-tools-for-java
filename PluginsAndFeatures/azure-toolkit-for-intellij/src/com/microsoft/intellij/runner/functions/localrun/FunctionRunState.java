@@ -112,11 +112,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         return "null";
     }
 
-    @AzureOperation(
-        value = "launch debugger for function[%s]",
-        params = {"@functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "launch debugger for function", type = AzureOperation.Type.TASK)
     private void launchDebugger(final Project project, int debugPort) {
         final Runnable runnable = () -> {
             final RunManagerImpl manager = new RunManagerImpl(project);
@@ -136,11 +132,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     @Override
-    @AzureOperation(
-        value = "trigger function[%s]",
-        params = {"@functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "trigger function app", type = AzureOperation.Type.ACTION)
     protected FunctionApp executeSteps(@NotNull RunProcessHandler processHandler, @NotNull Map<String, String> telemetryMap) throws Exception {
         // Prepare staging Folder
         updateTelemetryMap(telemetryMap);
@@ -156,7 +148,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     @AzureOperation(
         value = "validate runtime of function[%s]",
         params = {"@functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     private void validateFunctionRuntime(RunProcessHandler processHandler) {
         try {
@@ -190,7 +182,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     @AzureOperation(
         value = "get version of function[%s]",
         params = {"@functionRunConfiguration.getFuncPath()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     private ComparableVersion getFuncVersion() throws IOException {
         final File func = new File(functionRunConfiguration.getFuncPath());
@@ -206,7 +198,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     // Get java version of JAVA_HOME first, fall back to use PATH if JAVA_HOME not exists
     @AzureOperation(
         value = "validate version of local jre",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     private ComparableVersion getJavaVersion() throws IOException {
         final String javaHome = System.getenv("JAVA_HOME");
@@ -223,7 +215,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     @AzureOperation(
-        value = "run function CLI from staging folder[%s]",
+        value = "run function CLI command from staging folder[%s]",
         params = {"$stagingFolder.getName()"},
         type = AzureOperation.Type.SERVICE
     )
@@ -366,7 +358,7 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     @AzureOperation(
         value = "complete running function model[%s] and clean up staging folder[%s]",
         params = {"@functionRunConfiguration.getFuncPath()", "$stagingFolder.getName()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     protected void onSuccess(FunctionApp result, RunProcessHandler processHandler) {
         stopProcessIfAlive(process);

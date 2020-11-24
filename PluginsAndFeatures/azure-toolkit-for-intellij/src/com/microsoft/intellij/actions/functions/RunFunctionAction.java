@@ -54,7 +54,7 @@ public class RunFunctionAction extends AzureAnAction {
     private final AzureFunctionSupportConfigurationType configType = AzureFunctionSupportConfigurationType.getInstance();
 
     @Override
-    @AzureOperation(value = "trigger request to function on Azure within run/debug configuration", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "trigger function app within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent anActionEvent, @Nullable Operation operation) {
         final Module module = DataKeys.MODULE.getData(anActionEvent.getDataContext());
         AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));

@@ -55,7 +55,7 @@ public class PushImageAction extends AzureAnAction {
     private final AzureDockerSupportConfigurationType configType = AzureDockerSupportConfigurationType.getInstance();
 
     @Override
-    @AzureOperation(value = "push image to web app on Azure within run/debug configuration", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "push image to web app within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
 
         Module module = DataKeys.MODULE.getData(event.getDataContext());

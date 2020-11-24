@@ -70,11 +70,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
-    @AzureOperation(
-        value = "deploy function[%s] to Azure Cloud",
-        params = {"@deployModel.getAppName()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "deploy function app", type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
             , @NotNull Map<String, String> telemetryMap) throws Exception {
         updateTelemetryMap(telemetryMap);
@@ -129,7 +125,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     @AzureOperation(
         value = "prepare staging folder[%s] for function[%s]",
         params = {"$stagingFolder.getName()", "@deployModel.getAppName()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
         ReadAction.run(() -> {
@@ -148,7 +144,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     @AzureOperation(
         value = "complete the deployment of function[%s] and refresh Azure Explorer",
         params = {"@deployModel.getAppName()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("appService.deploy.hint.succeed"));

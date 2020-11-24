@@ -101,21 +101,13 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         super.loadActions();
     }
 
-    @AzureOperation(
-        value = "show properties of deployment slot[%s] of app[%s]",
-        params = {"@slotName", "@webAppName"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "show properties of deployment slot", type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openDeploymentSlotPropertyView(
             DeploymentSlotNode.this);
     }
 
-    @AzureOperation(
-        value = "open deployment slot[%s] of app[%s] in local browser",
-        params = {"@slotName", "@webAppName"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "open deployment slot in local browser", type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
     }
@@ -127,48 +119,28 @@ public class DeploymentSlotNode extends WebAppBaseNode implements DeploymentSlot
         // Override the function to do noting to disable the auto refresh functionality.
     }
 
-    @AzureOperation(
-        value = "start deployment slot[%s] of app[%s]",
-        params = {"@slotName", "@webAppName"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "start deployment slot", type = AzureOperation.Type.ACTION)
     private void start() {
         presenter.onStartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
-    @AzureOperation(
-        value = "stop deployment slot[%s] of app[%s]",
-        params = {"@slotName", "@webAppName"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "stop deployment slot", type = AzureOperation.Type.ACTION)
     private void stop() {
         presenter.onStopDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
-    @AzureOperation(
-        value = "restart deployment slot[%s] of app[%s]",
-        params = {"@slotName", "@webAppName"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "restart deployment slot", type = AzureOperation.Type.ACTION)
     private void restart() {
         presenter.onRestartDeploymentSlot(this.subscriptionId, this.webAppId, this.slotName);
     }
 
-    @AzureOperation(
-        value = "swap deployment slot[%s] of app[%s] for production",
-        params = {"@slotName", "@webAppName"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "swap deployment slot for production", type = AzureOperation.Type.ACTION)
     private void swapWithProduction() {
         presenter.onSwapWithProduction(this.subscriptionId, this.webAppId, this.slotName);
     }
 
     @Override
-    @AzureOperation(
-        value = "refresh deployment slot[%s] of app[%s]",
-        params = {"@slotName", "@webAppName"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "refresh deployment slot", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         presenter.onRefreshNode(this.subscriptionId, this.webAppId, this.slotName);
     }

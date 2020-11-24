@@ -54,7 +54,7 @@ public class WebDeployAction extends AzureAnAction {
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
 
     @Override
-    @AzureOperation(value = "deploy web app to Azure within run/debug configuration", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "deploy web app within run/debug configuration", type = AzureOperation.Type.ACTION)
     public boolean onActionPerformed(@NotNull AnActionEvent event, @Nullable Operation operation) {
         Module module = DataKeys.MODULE.getData(event.getDataContext());
         if (module == null) {

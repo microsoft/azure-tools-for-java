@@ -210,7 +210,7 @@ public class AzureFunctionMvpModel {
 
     @AzureOperation(
         value = "get all available pricing tiers for function apps",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public List<PricingTier> listFunctionPricingTier() {
         final List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
@@ -239,7 +239,7 @@ public class AzureFunctionMvpModel {
     @AzureOperation(
         value = "turn on application log for function app[%s]",
         params = {"$functionApp.name()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static void enableApplicationLog(FunctionApp functionApp) {
         functionApp.update().updateDiagnosticLogsConfiguration()
@@ -275,6 +275,11 @@ public class AzureFunctionMvpModel {
         return functions;
     }
 
+    @AzureOperation(
+        value = "get function apps client for subscription[%s]",
+        params = {"$sId"},
+        type = AzureOperation.Type.TASK
+    )
     private static FunctionApps getFunctionAppsClient(String sid) {
         return AuthMethodManager.getInstance().getAzureClient(sid).appServices().functionApps();
     }

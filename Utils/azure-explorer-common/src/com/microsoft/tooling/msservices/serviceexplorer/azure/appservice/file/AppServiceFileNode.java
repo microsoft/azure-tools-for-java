@@ -62,21 +62,13 @@ public class AppServiceFileNode extends AzureRefreshableNode {
         });
     }
 
-    @AzureOperation(
-        value = "download file[%s]",
-        params = {"@file.getName()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "download file", type = AzureOperation.Type.ACTION)
     private void download() {
         DefaultLoader.getIdeHelper().saveAppServiceFile(file, getProject(), null);
     }
 
     @Override
-    @AzureOperation(
-        value = "refresh file[%s]",
-        params = {"@file.getName()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "refresh file", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         if (this.file.getType() != AppServiceFile.Type.DIRECTORY) {
             return;
@@ -86,11 +78,7 @@ public class AppServiceFileNode extends AzureRefreshableNode {
                         .forEach(this::addChildNode);
     }
 
-    @AzureOperation(
-        value = "open file[%s] in editor",
-        params = {"@file.getName()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "open file in editor", type = AzureOperation.Type.ACTION)
     private void open(final Object context) {
         DefaultLoader.getIdeHelper().openAppServiceFile(this.file, context);
     }

@@ -56,6 +56,7 @@ import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
@@ -360,6 +361,11 @@ public class IDEHelperImpl implements IDEHelper {
     private static final String NOTIFICATION_GROUP_ID = "Azure Plugin";
 
     @SneakyThrows
+    @AzureOperation(
+        value = "open file[%s] in editor",
+        params = {"$file.getName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void openAppServiceFile(final AppServiceFile file, Object context) {
         final FileEditorManager fileEditorManager = FileEditorManager.getInstance((Project) context);
         final VirtualFile virtualFile = getOrCreateVirtualFile(file, fileEditorManager);
@@ -391,6 +397,11 @@ public class IDEHelperImpl implements IDEHelper {
     /**
      * user is asked to choose where to save the file is @param dest is null
      */
+    @AzureOperation(
+        value = "download file[%s] to local",
+        params = {"$file.getName()"},
+        type = AzureOperation.Type.SERVICE
+    )
     public void saveAppServiceFile(@NotNull final AppServiceFile file, @NotNull Object context, @Nullable File dest) {
         final File destFile = Objects.isNull(dest) ? DefaultLoader.getUIHelper().showFileSaver("Download", file.getName()) : dest;
         if (Objects.isNull(destFile)) {

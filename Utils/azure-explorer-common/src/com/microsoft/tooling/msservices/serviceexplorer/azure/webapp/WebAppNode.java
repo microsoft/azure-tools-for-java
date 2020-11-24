@@ -64,11 +64,7 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     @Override
-    @AzureOperation(
-        value = "refresh content of web app[%s]",
-        params = {"@webapp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "refresh content of web app", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         webAppNodePresenter.onNodeRefresh();
     }
@@ -106,20 +102,12 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         super.loadActions();
     }
 
-    @AzureOperation(
-        value = "show properties web app[%s]",
-        params = {"@webapp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openWebAppPropertyView(WebAppNode.this);
     }
 
-    @AzureOperation(
-        value = "open web app[%s] in local browser",
-        params = {"@webapp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "open web app in local browser", type = AzureOperation.Type.ACTION)
     private void openInBrowser() {
         DefaultLoader.getUIHelper().openInBrowser("http://" + hostName);
     }
@@ -144,29 +132,17 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
         return this.webapp.linuxFxVersion();
     }
 
-    @AzureOperation(
-        value = "start web app[%s]",
-        params = {"@webapp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "start web app", type = AzureOperation.Type.ACTION)
     public void startWebApp() {
         webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
     }
 
-    @AzureOperation(
-        value = "restart web app[%s]",
-        params = {"@webapp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "restart web app", type = AzureOperation.Type.ACTION)
     public void restartWebApp() {
         webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
     }
 
-    @AzureOperation(
-        value = "stop web app[%s]",
-        params = {"@webapp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "stop web app", type = AzureOperation.Type.ACTION)
     public void stopWebApp() {
         webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
     }

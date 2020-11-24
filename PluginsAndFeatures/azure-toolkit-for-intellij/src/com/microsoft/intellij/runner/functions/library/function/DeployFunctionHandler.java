@@ -83,7 +83,7 @@ public class DeployFunctionHandler {
         this.prompter = prompter;
     }
 
-    @AzureOperation(value = "deploy artifacts to function", type = AzureOperation.Type.ACTION)
+    @AzureOperation(value = "deploy artifacts to function", type = AzureOperation.Type.SERVICE)
     public FunctionApp execute() throws Exception {
         final FunctionApp app = getFunctionApp();
         updateFunctionAppSettings(app);

@@ -390,11 +390,7 @@ public class Node implements MvpView, BasicTelemetryProperty {
         return TelemetryConstants.ACTION;
     }
 
-    @AzureOperation(
-        value = "open home page of [$s] in portal",
-        params = {"@id"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "open setting page in portal", type = AzureOperation.Type.ACTION)
     public void openResourcesInPortal(String subscriptionId, String resourceRelativePath) {
         final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
         // not signed in

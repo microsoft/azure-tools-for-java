@@ -58,10 +58,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
-    @AzureOperation(
-        value = "create function",
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "create new function app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
         if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
@@ -95,10 +92,7 @@ public class CreateFunctionAppAction extends NodeActionListener {
         AzureTaskManager.getInstance().runInModal(task);
     }
 
-    @AzureOperation(
-        value = "refresh azure explorer",
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "refresh azure explorer", type = AzureOperation.Type.TASK)
     private void refreshAzureExplorer(FunctionApp functionApp) {
         AzureTaskManager.getInstance().runLater(() -> {
             if (AzureUIRefreshCore.listeners != null) {

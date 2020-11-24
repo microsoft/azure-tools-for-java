@@ -75,11 +75,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
 
     @Nullable
     @Override
-    @AzureOperation(
-        value = "run web app[%s] in Azure",
-        params = {"@webAppConfiguration.getName()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "run web app", type = AzureOperation.Type.ACTION)
     public WebAppBase executeSteps(@NotNull RunProcessHandler processHandler
         , @NotNull Map<String, String> telemetryMap) throws Exception {
         File file = new File(getTargetPath());
@@ -97,11 +93,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         return !webAppSettingModel.isCreatingNew() && webAppSettingModel.isDeployToSlot();
     }
 
-    @AzureOperation(
-        value = "open url of web app[%s] in local browser",
-        params = {"@webAppConfiguration.getName()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "open web app in local browser", type = AzureOperation.Type.ACTION)
     private void openWebAppInBrowser(String url, RunProcessHandler processHandler) {
         try {
             Desktop.getDesktop().browse(new URL(url).toURI());
@@ -116,10 +108,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    @AzureOperation(
-        value = "update local configuration and open url of web app[%s] in local browser",
-        params = {"@webAppConfiguration.getName()"},
-        type = AzureOperation.Type.ACTION
+    @AzureOperation(value = "update local configuration and open url of web app in local browser", type = AzureOperation.Type.ACTION
     )
     protected void onSuccess(WebAppBase result, @NotNull RunProcessHandler processHandler) {
         if (webAppSettingModel.isCreatingNew() && AzureUIRefreshCore.listeners != null) {
@@ -197,7 +186,7 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
                 AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getAzureArtifactType(),
                                                                                webAppConfiguration.getArtifactIdentifier());
         if (Objects.isNull(azureArtifact)) {
-            final String error = String.format("The artifact '%s' you selected doesn't exists", webAppConfiguration.getArtifactIdentifier());
+            final String error = String.format("selected artifact[%s] not found", webAppConfiguration.getArtifactIdentifier());
             throw new AzureExecutionException(error);
         }
         return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
@@ -212,10 +201,9 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         processHandler.setText(message("webapp.deploy.hint.creatingWebApp"));
         try {
             return AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
-        } catch (Exception e) {
-            final String error = message("webapp.deploy.error.noWebApp");
-            processHandler.setText(error);
-            throw new AzureToolkitRuntimeException(error, e);
+        } catch (final RuntimeException e) {
+            processHandler.setText(message("webapp.deploy.error.noWebApp"));
+            throw e;
         }
     }
 
@@ -228,10 +216,9 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         processHandler.setText(message("webapp.deploy.hint.creatingDeploymentSlot"));
         try {
             return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
-        } catch (Exception e) {
-            final String error = message("webapp.deploy.error.noWebApp");
-            processHandler.setText(error);
-            throw new AzureToolkitRuntimeException(error, e);
+        } catch (final RuntimeException e) {
+            processHandler.setText(message("webapp.deploy.error.noWebApp"));
+            throw e;
         }
     }
 

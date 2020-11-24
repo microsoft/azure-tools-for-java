@@ -137,11 +137,7 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         super.loadActions();
     }
 
-    @AzureOperation(
-        value = "show properties web app[%s]",
-        params = {"@functionApp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "show properties of web app", type = AzureOperation.Type.ACTION)
     private void showProperties() {
         DefaultLoader.getUIHelper().openFunctionAppPropertyView(FunctionNode.this);
     }
@@ -166,29 +162,17 @@ public class FunctionNode extends WebAppBaseNode implements FunctionNodeView {
         return this.functionAppName;
     }
 
-    @AzureOperation(
-        value = "start function app[%s]",
-        params = {"@functionApp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "start function app", type = AzureOperation.Type.ACTION)
     public void startFunctionApp() {
         functionNodePresenter.onStartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
-    @AzureOperation(
-        value = "restart function app[%s]",
-        params = {"@functionApp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "restart function app", type = AzureOperation.Type.ACTION)
     public void restartFunctionApp() {
         functionNodePresenter.onRestartFunctionApp(this.subscriptionId, this.functionAppId);
     }
 
-    @AzureOperation(
-        value = "stop function app[%s]",
-        params = {"@functionApp.name()"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "stop function app", type = AzureOperation.Type.ACTION)
     public void stopFunctionApp() {
         functionNodePresenter.onStopFunctionApp(this.subscriptionId, this.functionAppId);
     }

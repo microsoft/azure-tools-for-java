@@ -107,7 +107,7 @@ public class DockerUtil {
     @AzureOperation(
         value = "build docker image[%s] in dir[%s] on docker host[%s]",
         params = {"imageNameWithTag", "dockerDirectory.toString()", "$docker.getHost()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static String buildImage(DockerClient docker, String imageNameWithTag, Path dockerDirectory,
                                     String dockerFile, ProgressHandler progressHandler)
@@ -122,7 +122,7 @@ public class DockerUtil {
     @AzureOperation(
         value = "push docker image[%s] to registry[%s]",
         params = {"$targetImageName", "$registryUrl"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static void pushImage(DockerClient dockerClient, String registryUrl, String registryUsername,
                                  String registryPassword, String targetImageName,
@@ -198,7 +198,7 @@ public class DockerUtil {
     @AzureOperation(
         value = "try connecting docker[%s]",
         params = {"$docker.getHost()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static void ping(DockerClient docker) throws AzureExecutionException {
         try {

@@ -52,11 +52,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
-    @AzureOperation(
-        value = "remove function app[%s] in subscription[%s]",
-        params = {"$id", "$sid"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "remove function app", type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         try {
             functionModulePresenter.onDeleteFunctionApp(sid, id);
@@ -75,10 +71,7 @@ public class FunctionModule extends AzureRefreshableNode implements FunctionModu
     }
 
     @Override
-    @AzureOperation(
-        value = "reload function apps in selected subscription(s)",
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "reload function apps", type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         functionModulePresenter.onModuleRefresh();
     }

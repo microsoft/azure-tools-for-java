@@ -57,20 +57,13 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     }
 
     @Override
-    @AzureOperation(
-        value = "reload web apps in selected subscription(s)",
-        type = AzureOperation.Type.ACTION
-    )
-    protected void refreshItems() throws AzureCmdException {
+    @AzureOperation(value = "reload web apps", type = AzureOperation.Type.ACTION)
+    protected void refreshItems() {
         webAppModulePresenter.onModuleRefresh();
     }
 
     @Override
-    @AzureOperation(
-        value = "delete web app[%s]",
-        params = {"$id"},
-        type = AzureOperation.Type.ACTION
-    )
+    @AzureOperation(value = "delete web app", type = AzureOperation.Type.ACTION)
     public void removeNode(String sid, String id, Node node) {
         webAppModulePresenter.onDeleteWebApp(sid, id);
         removeDirectChildNode(node);

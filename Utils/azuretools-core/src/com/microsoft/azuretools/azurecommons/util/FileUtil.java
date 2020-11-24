@@ -22,6 +22,7 @@
 
 package com.microsoft.azuretools.azurecommons.util;
 
+import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -159,6 +160,11 @@ public class FileUtil {
      * @param sourceFiles source files array
      * @param targetZipFile ZIP file that will be created or overwritten
      */
+    @AzureOperation(
+        value = "archive files to [%s]",
+        params = {"$targetZipFile.getName()"},
+        type = AzureOperation.Type.TASK
+    )
     public static void zipFiles(@NotNull final File[] sourceFiles,
                                 @NotNull final File targetZipFile) throws Exception {
         ensureValidZipSourceAndTarget(sourceFiles, targetZipFile);

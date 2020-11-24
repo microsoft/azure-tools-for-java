@@ -69,7 +69,7 @@ public class SubFunctionNode extends Node {
     protected void loadActions() {
         addAction("Trigger Function", new WrappedTelemetryNodeActionListener(FUNCTION, TRIGGER_FUNCTION, new NodeActionListener() {
             @Override
-            @AzureOperation(value = "trigger function", type = AzureOperation.Type.ACTION)
+            @AzureOperation(value = "trigger function app", type = AzureOperation.Type.ACTION)
             protected void actionPerformed(NodeActionEvent e) {
                 AzureTaskManager.getInstance().runInBackground(new AzureTask(getProject(), "Triggering Function", false, () -> trigger()));
             }
@@ -80,7 +80,7 @@ public class SubFunctionNode extends Node {
     @AzureOperation(
         value = "trigger function[%s]",
         params = {"@functionApp.name()"},
-        type = AzureOperation.Type.ACTION
+        type = AzureOperation.Type.SERVICE
     )
     private void trigger() {
         final Map triggerBinding = getTriggerBinding();
@@ -109,7 +109,11 @@ public class SubFunctionNode extends Node {
     }
 
     // Refers https://docs.microsoft.com/mt-mt/Azure/azure-functions/functions-manually-run-non-http
-    @AzureOperation(value = "start timer trigger for function[%s]", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(
+        value = "start timer trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
     private void triggerTimerTrigger() {
         try {
             final HttpPost request = getFunctionTriggerRequest();
@@ -122,7 +126,11 @@ public class SubFunctionNode extends Node {
         }
     }
 
-    @AzureOperation(value = "start event hub trigger for function[%s]", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(
+        value = "start event hub trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
     private void triggerEventHubTrigger() {
         try {
             final HttpPost request = getFunctionTriggerRequest();
@@ -136,7 +144,11 @@ public class SubFunctionNode extends Node {
         }
     }
 
-    @AzureOperation(value = "start http trigger for function[%s]", type = AzureOperation.Type.SERVICE)
+    @AzureOperation(
+        value = "start http trigger for function[%s]",
+        params = {"@functionApp.name()"},
+        type = AzureOperation.Type.TASK
+    )
     private void triggerHttpTrigger(Map binding) {
         final AuthorizationLevel authLevel = AuthorizationLevel.valueOf((String) binding.get("authLevel"));
         String targetUrl;

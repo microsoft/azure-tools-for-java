@@ -145,7 +145,7 @@ public class FunctionUtils {
     @AzureOperation(
         value = "check if project[%s] is a valid function project",
         params = {"$project.getName()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static boolean isFunctionProject(Project project) {
         if (project == null) {
@@ -164,7 +164,7 @@ public class FunctionUtils {
     @AzureOperation(
         value = "find function methods from module[%s] by annotation",
         params = {"$model.getName"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static PsiMethod[] findFunctionsByAnnotation(Module module) {
         final PsiClass functionNameClass = JavaPsiFacade.getInstance(module.getProject())
@@ -199,7 +199,7 @@ public class FunctionUtils {
     @AzureOperation(
         value = "copy local settings[%s] to staging folder[%s]",
         params = {"$model.getName"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static void copyLocalSettingsToStagingFolder(Path stagingFolder,
                                                         Path localSettingJson,
@@ -213,7 +213,7 @@ public class FunctionUtils {
 
     @AzureOperation(
         value = "prepare staging folder for function method",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static Map<String, FunctionConfiguration> prepareStagingFolder(Path stagingFolder, Path hostJson, Module module, PsiMethod[] methods)
             throws AzureExecutionException, IOException {

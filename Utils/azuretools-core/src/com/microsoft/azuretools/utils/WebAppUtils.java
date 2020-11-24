@@ -82,7 +82,7 @@ public class WebAppUtils {
     @NotNull
     @AzureOperation(
         value = "prepare ftp connection for deployment",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     public static FTPClient getFtpConnection(PublishingProfile pp) throws IOException {
         System.out.println("\t\t" + pp.ftpUrl());
@@ -361,9 +361,9 @@ public class WebAppUtils {
     }
 
     @AzureOperation(
-        value = "archive artifact[%s] to zip file for deployment",
+        value = "archive artifact[%s] to temporary zip file for deployment",
         params = {"$artifact.getName()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     private static File prepareZipPackage(WebAppBase deployTarget, File artifact, IProgressIndicator progressIndicator) {
         try {
@@ -541,7 +541,7 @@ public class WebAppUtils {
 
     @AzureOperation(
         value = "upload file to ftp server",
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) {
         boolean success;

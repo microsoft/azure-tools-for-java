@@ -219,7 +219,7 @@ public class CreateFunctionHandler {
     @AzureOperation(
         value = "get function app[%s] in resource group[%s]",
         params = {"@ctx.getAppName()", "@ctx.getResourceGroup()"},
-        type = AzureOperation.Type.SERVICE
+        type = AzureOperation.Type.TASK
     )
     private FunctionApp getFunctionApp() {
         return ctx.getAzureClient().appServices().functionApps().getByResourceGroup(ctx.getResourceGroup(), ctx.getAppName());
