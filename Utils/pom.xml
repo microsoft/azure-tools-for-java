@@ -127,11 +127,23 @@
                     </configuration>
                     <executions>
                         <execution>
+                            <id>compile-with-aspectj</id>
+                            <phase>process-classes</phase>
                             <goals>
                                 <goal>compile</goal>
-                                <!-- use this goal to weave all your main classes -->
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>test-compile-with-aspectj</id>
+                            <phase>process-classes</phase>
+                            <goals>
                                 <goal>test-compile</goal>
                             </goals>
+                            <configuration>
+                                <weaveDirectories>
+                                    <weaveDirectory>${project.build.directory}/test-classes</weaveDirectory>
+                                </weaveDirectories>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
