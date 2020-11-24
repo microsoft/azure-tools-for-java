@@ -35,22 +35,22 @@ import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 public class IntellijAzureTaskManager extends AzureTaskManager {
 
     @Override
-    public void runLater(final AzureTask task) {
+    protected void doRunLater(final AzureTask task) {
         ApplicationManager.getApplication().invokeLater(task.getRunnable(), ModalityState.any());
     }
 
     @Override
-    public void runLater(final Runnable runnable) {
+    protected void doRunLater(final Runnable runnable) {
         ApplicationManager.getApplication().invokeLater(runnable, ModalityState.any());
     }
 
     @Override
-    public void runAndWait(final Runnable runnable) {
+    protected void doRunAndWait(final Runnable runnable) {
         ApplicationManager.getApplication().invokeAndWait(runnable, ModalityState.any());
     }
 
     @Override
-    public void runInBackground(final AzureTask task) {
+    protected void doRunInBackground(final AzureTask task) {
         final Task.Backgroundable backgroundTask = new Task.Backgroundable((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {
@@ -61,7 +61,7 @@ public class IntellijAzureTaskManager extends AzureTaskManager {
     }
 
     @Override
-    public void runInModal(final AzureTask task) {
+    protected void doRunInModal(final AzureTask task) {
         final Task.Modal modalTask = new Task.Modal((Project) task.getProject(), task.getTitle(), task.isCancellable()) {
             @Override
             public void run(@NotNull final ProgressIndicator progressIndicator) {

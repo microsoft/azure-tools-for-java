@@ -33,6 +33,7 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.compiler.CompileStatusNotification;
@@ -40,9 +41,7 @@ import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.MessageType;
@@ -57,6 +56,7 @@ import com.intellij.packaging.impl.compiler.ArtifactsWorkspaceSettings;
 import com.intellij.testFramework.LightVirtualFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFileService;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
@@ -370,22 +370,22 @@ public class IDEHelperImpl implements IDEHelper {
             DefaultLoader.getUIHelper().showException(error, e, "Error Opening File", false, true);
         };
         final String title = String.format("Opening file %s...", virtualFile.getName());
-        final Task.Modal task = new Task.Modal(null, title, true) {
+        final AzureTask task = new AzureTask(null, title, true, new Runnable() {
             @SneakyThrows
             @Override
-            public void run(ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
+            public void run() {
+                ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
                 writeContentTo(virtualFile.getOutputStream(null), file, errorHandler)
                     .doOnError(errorHandler::accept)
-                    .doOnCompleted(() -> AzureTaskManager.getInstance().runLater(() -> {
+                    .doOnCompleted(() -> ApplicationManager.getApplication().invokeLater(() -> {
                         if (fileEditorManager.openFile(virtualFile, true, true).length == 0) {
                             Messages.showWarningDialog(failure, "Open File");
                         }
-                    }))
+                    }, ModalityState.NON_MODAL))
                     .subscribe();
             }
-        };
-        ProgressManager.getInstance().run(task);
+        });
+        AzureTaskManager.getInstance().runInModal(task);
     }
 
     /**
@@ -404,18 +404,18 @@ public class IDEHelperImpl implements IDEHelper {
             UIUtils.showNotification(project, error, MessageType.ERROR);
         };
         final String title = String.format("Downloading file %s...", file.getName());
-        final Task.Backgroundable task = new Task.Backgroundable(project, title, true) {
+        final AzureTask task = new AzureTask(project, title, true, new Runnable() {
             @SneakyThrows
             @Override
-            public void run(ProgressIndicator indicator) {
-                indicator.setIndeterminate(true);
+            public void run() {
+                ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
                 writeContentTo(new FileOutputStream(destFile), file, errorHandler)
                     .doOnError(errorHandler::accept)
                     .doOnCompleted(() -> notifyDownloadSuccess(file, destFile, ((Project) context)))
                     .subscribe();
             }
-        };
-        ProgressManager.getInstance().run(task);
+        });
+        AzureTaskManager.getInstance().runInBackground(task);
     }
 
     private void notifyDownloadSuccess(final AppServiceFile file, final File dest, final Project project) {
