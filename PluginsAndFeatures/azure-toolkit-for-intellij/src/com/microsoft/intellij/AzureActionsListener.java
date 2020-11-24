@@ -159,7 +159,7 @@ public class AzureActionsListener implements AppLifecycleListener, PluginCompone
             java.util.logging.Logger l = java.util.logging.Logger.getLogger("");
             logFileHandler.setFormatter(new SimpleFormatter());
             l.addHandler(logFileHandler);
-            // FIXME: use environment variable to set level
+            // TODO: use environment variable to set level
             l.setLevel(Level.INFO);
             l.info("=== Log session started ===");
         } catch (IOException e) {

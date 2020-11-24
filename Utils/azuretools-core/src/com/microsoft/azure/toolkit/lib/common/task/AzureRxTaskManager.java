@@ -26,7 +26,6 @@ import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.plugins.RxJavaHooks;
 
