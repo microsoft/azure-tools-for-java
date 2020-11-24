@@ -23,7 +23,6 @@
 package com.microsoft.intellij;
 
 import com.google.gson.Gson;
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.AppLifecycleListener;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;

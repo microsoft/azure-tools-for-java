@@ -50,6 +50,7 @@ import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
@@ -90,19 +91,17 @@ public class AddDockerSupportAction extends AzureAnAction {
                 dockerFileContent = Constant.DOCKERFILE_CONTENT_SPRING;
             }
         }
+        final Path path = Paths.get(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME);
         try {
             // create docker file
             DockerUtil.createDockerFile(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME,
                     String.format(dockerFileContent, artifactRelativePath));
             VirtualFileManager.getInstance().asyncRefresh(() -> {
-                        VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(Paths.get(
-                                pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME
-                        ).toString());
-                        if (virtualDockerFile != null) {
-                            new OpenFileDescriptor(module.getProject(), virtualDockerFile).navigate(true);
-                        }
-                    }
-            );
+                VirtualFile virtualDockerFile = LocalFileSystem.getInstance().findFileByPath(path.toString());
+                if (virtualDockerFile != null) {
+                    new OpenFileDescriptor(module.getProject(), virtualDockerFile).navigate(true);
+                }
+            });
         } catch (IOException e) {
             EventUtil.logError(operation, ErrorType.userError, e, null, null);
             e.printStackTrace();
@@ -120,8 +119,7 @@ public class AddDockerSupportAction extends AzureAnAction {
         }
         // print instructions
         String notificationContent = "";
-        notificationContent += String.format(Constant.MESSAGE_DOCKERFILE_CREATED,
-                Paths.get(pomXmlBasePath, Constant.DOCKERFILE_FOLDER, Constant.DOCKERFILE_NAME).normalize()) + "\n";
+        notificationContent += String.format(Constant.MESSAGE_DOCKERFILE_CREATED, path.normalize()) + "\n";
         notificationContent += String.format(Constant.MESSAGE_DOCKER_HOST_INFO, defaultDockerHost) + "\n";
         notificationContent += Constant.MESSAGE_ADD_DOCKER_SUPPORT_OK + "\n";
         notificationContent += Constant.MESSAGE_INSTRUCTION + "\n";

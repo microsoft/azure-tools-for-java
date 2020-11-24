@@ -24,13 +24,8 @@ package com.microsoft.azuretools.azurecommons.util;
 
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -71,11 +66,10 @@ public class FileUtil {
 
     /**
      * Copies jar file from zip
+     *
      * @throws IOException
      */
-    public static boolean copyFileFromZip(File zipResource, String fileName, File destFile)
-    throws IOException {
-
+    public static boolean copyFileFromZip(File zipResource, String fileName, File destFile) throws IOException {
         boolean success = false;
 
         ZipFile zipFile = new ZipFile(zipResource);
@@ -84,17 +78,17 @@ public class FileUtil {
         File destParentFile = destFile.getParentFile();
 
         // create parent directories if not existing
-        if (destFile != null && destParentFile != null    && !destParentFile.exists()) {
+        if (destFile != null && destParentFile != null && !destParentFile.exists()) {
             destParentFile.mkdir();
         }
 
         while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                if (zipEntry.getName().equals(fileName)) {
-                    writeFile(zipFile.getInputStream(zipEntry), new BufferedOutputStream(new FileOutputStream(destFile)));
-                    success = true;
-                    break;
-                }
+            ZipEntry zipEntry = entries.nextElement();
+            if (zipEntry.getName().equals(fileName)) {
+                writeFile(zipFile.getInputStream(zipEntry), new BufferedOutputStream(new FileOutputStream(destFile)));
+                success = true;
+                break;
+            }
         }
         zipFile.close();
 
@@ -184,7 +178,7 @@ public class FileUtil {
         }
     }
 
-    public static boolean isNonEmptyFolder(String filePath){
+    public static boolean isNonEmptyFolder(String filePath) {
         File file = new File(filePath);
         return file.exists() && file.isDirectory() && file.listFiles() != null && file.listFiles().length > 0;
     }
