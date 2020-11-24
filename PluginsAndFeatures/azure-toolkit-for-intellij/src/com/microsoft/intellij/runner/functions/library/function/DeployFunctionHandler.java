@@ -201,12 +201,8 @@ public class DeployFunctionHandler {
         return AppServiceUtils.getPricingTierFromString(model.getPricingTier()) != null;
     }
 
-    private FunctionApp getFunctionApp() throws AzureExecutionException {
-        try {
-            return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
-        } catch (IOException e) {
-            throw new AzureExecutionException(message("azure.error.failedToGetAzureClient"));
-        }
+    private FunctionApp getFunctionApp() {
+        return model.getAzureClient().appServices().functionApps().getById(model.getFunctionId());
     }
 
     // region get App Settings
