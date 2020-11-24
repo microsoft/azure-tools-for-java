@@ -46,7 +46,8 @@ import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.plugins.gradle.execution.GradleBeforeRunTaskProvider;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
-import javax.swing.JComponent;
+import javax.swing.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,9 +109,10 @@ public class BeforeRunTaskUtils {
                                                                    RunConfiguration runConfiguration,
                                                                    boolean add) throws IllegalAccessException {
         String pomXmlPath = MavenUtils.getMavenModulePath(mavenProject);
-        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, MavenBeforeRunTask.class, task ->
-                                      Objects.nonNull(task) && StringUtils.equals(task.getProjectPath(), pomXmlPath)
-                                              && StringUtils.equals(MAVEN_TASK_PACKAGE, task.getGoal()),
+        addOrRemoveBeforeRunOption(runConfigurationEditorComponent, MavenBeforeRunTask.class,
+            task -> Objects.nonNull(task) && Objects.nonNull(task.getProjectPath()) &&
+                    Objects.nonNull(pomXmlPath) && Paths.get(task.getProjectPath()).equals(Paths.get(pomXmlPath)) &&
+                    StringUtils.equals(MAVEN_TASK_PACKAGE, task.getGoal()),
             () -> {
                 MavenBeforeRunTask task = new MavenBeforeRunTask();
                 task.setEnabled(true);
