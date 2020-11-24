@@ -27,7 +27,6 @@ import com.intellij.ide.util.treeView.NodeRenderer;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
@@ -40,6 +39,7 @@ import com.microsoft.azure.arcadia.serverexplore.ArcadiaSparkClusterRootModuleIm
 import com.microsoft.azure.cosmosspark.serverexplore.cosmossparknode.CosmosSparkClusterRootModuleImpl;
 import com.microsoft.azure.hdinsight.common.HDInsightUtil;
 import com.microsoft.azure.sqlbigdata.serverexplore.SqlBigDataClusterModule;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.actions.SelectSubscriptionsAction;
@@ -223,6 +223,9 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         JPopupMenu menu = new JPopupMenu();
 
         for (final NodeAction nodeAction : node.getNodeActions()) {
+            if (!nodeAction.isEnabled()) {
+                continue;
+            }
             JMenuItem menuItem = new JMenuItem(nodeAction.getName());
             menuItem.setEnabled(nodeAction.isEnabled());
             if (nodeAction.getIconPath() != null) {
@@ -281,8 +284,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
         // if we are not running on the dispatch thread then switch
         // to dispatch thread
         if (!ApplicationManager.getApplication().isDispatchThread()) {
-            ApplicationManager.getApplication().invokeAndWait(() -> propertyChange(evt), ModalityState.any());
-
+            AzureTaskManager.getInstance().runAndWait(() -> propertyChange(evt));
             return;
         }
 
@@ -314,8 +316,7 @@ public class ServerExplorerToolWindowFactory implements ToolWindowFactory, Prope
             // if we are not running on the dispatch thread then switch
             // to dispatch thread
             if (!ApplicationManager.getApplication().isDispatchThread()) {
-                ApplicationManager.getApplication().invokeAndWait(() -> listChanged(e), ModalityState.any());
-
+                AzureTaskManager.getInstance().runAndWait(() -> listChanged(e));
                 return;
             }
 

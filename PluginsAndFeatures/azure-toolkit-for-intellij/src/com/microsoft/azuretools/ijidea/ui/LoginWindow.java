@@ -129,12 +129,9 @@ class LoginWindow extends AzureDialogWrapper {
     }
 
     private void closeDlg() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Window w = getWindow();
-                w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
-            }
+        ApplicationManager.getApplication().invokeLater(() -> {
+            Window w = getWindow();
+            w.dispatchEvent(new WindowEvent(w, WindowEvent.WINDOW_CLOSING));
         }, ModalityState.stateForComponent(fxPanel));
     }
 

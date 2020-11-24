@@ -27,7 +27,6 @@ import com.microsoft.azure.toolkit.lib.appservice.file.AppServiceFile;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
-import com.microsoft.azuretools.azurecommons.tasks.CancellableTask;
 
 import javax.swing.*;
 import java.io.File;
@@ -88,15 +87,10 @@ public interface IDEHelper {
 
     void executeOnPooledThread(@NotNull Runnable runnable);
 
-    void runInBackground(@Nullable Object project, @NotNull String name, boolean canBeCancelled,
-                         boolean isIndeterminate, @Nullable String indicatorText,
-                         Runnable runnable);
-
-    @NotNull
-    CancellableTask.CancellableTaskHandle runInBackground(@NotNull ProjectDescriptor projectDescriptor,
-                                                          @NotNull String name,
-                                                          @Nullable String indicatorText,
-                                                          @NotNull CancellableTask cancellableTask) throws AzureCmdException;
+    default void runInBackground(@Nullable Object project, @NotNull String name, boolean canBeCancelled,
+                                 boolean isIndeterminate, @Nullable String indicatorText,
+                                 Runnable runnable) {
+    }
 
     @Nullable
     String getProperty(@NotNull String name);

@@ -24,6 +24,8 @@ package com.microsoft.intellij.serviceexplorer.azure.appservice;
 
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.appservice.WebApp;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.utils.AzureCliUtils;
 import com.microsoft.intellij.util.PatternUtils;
@@ -36,6 +38,8 @@ import org.jetbrains.plugins.terminal.ShellTerminalWidget;
 import org.jetbrains.plugins.terminal.TerminalView;
 
 import java.util.logging.Logger;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 /**
  * SSH into Web App Action
@@ -70,9 +74,9 @@ public class SSHIntoWebAppAction extends NodeActionListener {
 
     @Override
     protected void actionPerformed(NodeActionEvent nodeActionEvent) throws AzureCmdException {
-        logger.info(String.format("Start to perform SSH into Web App (%s)....", webAppName));
+        logger.info(String.format(message("webapp.ssh.hint.startSSH"), webAppName));
         // ssh to connect to remote web app container.
-        DefaultLoader.getIdeHelper().runInBackground(project, String.format("Connecting to Web App (%s) ...", webAppName), true, false, null, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, String.format(message("webapp.ssh.task.connectWebApp.title"), webAppName), true, () -> {
             // check these conditions to ssh into web app
             if (!SSHTerminalManager.INSTANCE.beforeExecuteAzCreateRemoteConnection(subscriptionId, os, this.app.linuxFxVersion())) {
                 return;
@@ -80,19 +84,19 @@ public class SSHIntoWebAppAction extends NodeActionListener {
             // build proxy between remote and local
             SSHTerminalManager.CreateRemoteConnectionOutput connectionInfo = SSHTerminalManager.INSTANCE.executeAzCreateRemoteConnectionAndGetOutput(
                     AzureCliUtils.formatCreateWebAppRemoteConnectionParameters(subscriptionId, resourceGroupName, webAppName));
-            logger.info(String.format("Complete to execute ssh connection. output message is below: %s", connectionInfo.getOutputMessage()));
+            logger.info(String.format(message("webapp.ssh.hint.sshConnectionDone"), connectionInfo.getOutputMessage()));
             // ssh to local proxy and open terminal.
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 // create a new terminal tab.
                 TerminalView terminalView = TerminalView.getInstance(project);
                 ShellTerminalWidget shellTerminalWidget = terminalView.createLocalShellWidget(null, String.format(WEBAPP_TERMINAL_TABLE_NAME, webAppName));
-                DefaultLoader.getIdeHelper().runInBackground(project, String.format("Opening SSH - %s session ...", webAppName), true, false, null, () -> {
+                final String title = String.format(message("webapp.ssh.task.openSSH.title"), webAppName);
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, true, () -> {
                     // create connection to the local proxy.
                     SSHTerminalManager.INSTANCE.openConnectionInTerminal(shellTerminalWidget, connectionInfo);
-                });
+                }));
             });
-
-        });
-        logger.info(String.format("End to perform SSH into Web App (%s)", webAppName));
+        }));
+        logger.info(String.format(message("webapp.ssh.hint.SSHDone"), webAppName));
     }
 }

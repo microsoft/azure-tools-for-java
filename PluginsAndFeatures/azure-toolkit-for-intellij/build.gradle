@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.intellij" version "0.4.18"
+    id "org.jetbrains.intellij" version "0.4.21"
     id "org.jetbrains.kotlin.jvm" version "1.3.41"
     id "de.undercouch.download" version "4.0.4"
     id "com.github.ben-manes.versions" version "0.28.0"
@@ -30,14 +30,14 @@ compileTestKotlin {
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
-apply plugin: 'checkstyle'
+//apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
 
-checkstyle {
-    toolVersion = '8.30'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
+//checkstyle {
+//    toolVersion = '8.30'
+//    configFile = new File('config/checkstyle/checkstyle.xml')
+//    showViolations = false
+//}
 
 findbugs {
     toolVersion = "3.0.1"
@@ -189,7 +189,7 @@ wrapper() {
 apply plugin: BundleBuildIDEAPlugin
 
 installIdea.dependsOn buildPlugin
-installIdea.dependsOn checkstyleMain
+//installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild

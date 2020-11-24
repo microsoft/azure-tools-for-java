@@ -52,9 +52,10 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ImportAppSettingsDialog extends JDialog implements ImportAppSettingsView {
     private static final String LOCAL_SETTINGS_JSON = "local.settings.json";
-    private static final String TITLE_IMPORT_APP_SETTINGS = "Import App Settings";
     private JPanel contentPanel;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -72,7 +73,7 @@ public class ImportAppSettingsDialog extends JDialog implements ImportAppSetting
     public ImportAppSettingsDialog(Path localSettingsPath) {
         setContentPane(contentPanel);
         setModal(true);
-        setTitle(TITLE_IMPORT_APP_SETTINGS);
+        setTitle(message("function.appSettings.import.title"));
         setMinimumSize(new Dimension(-1, 250));
         setAlwaysOnTop(true);
         getRootPane().setDefaultButton(buttonOK);

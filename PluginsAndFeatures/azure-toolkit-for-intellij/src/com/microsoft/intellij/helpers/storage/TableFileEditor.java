@@ -24,16 +24,13 @@ package com.microsoft.intellij.helpers.storage;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
 import com.intellij.ide.structureView.StructureViewBuilder;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.fileEditor.FileEditorStateLevel;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.intellij.forms.TableEntityForm;
 import com.microsoft.intellij.forms.TablesQueryDesigner;
@@ -259,105 +256,58 @@ public class TableFileEditor implements FileEditor {
     }
 
     public void fillGrid() {
-        final String queryText = queryTextField.getText();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Loading entities", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-                /*try {
-                    tableEntities = StorageClientSDKManager.getManager().getTableEntities(storageAccount, table, queryText);
-                    refreshGrid();
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to query entities." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
-            }
-        });
     }
 
     private void refreshGrid() {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
-                columnData.put(PARTITION_KEY, new ArrayList<String>());
-                columnData.put(ROW_KEY, new ArrayList<String>());
-                columnData.put(TIMESTAMP, new ArrayList<String>());
+        AzureTaskManager.getInstance().runLater(() -> {
+            Map<String, List<String>> columnData = new LinkedHashMap<String, List<String>>();
+            columnData.put(PARTITION_KEY, new ArrayList<String>());
+            columnData.put(ROW_KEY, new ArrayList<String>());
+            columnData.put(TIMESTAMP, new ArrayList<String>());
 
-                for (TableEntity tableEntity : tableEntities) {
-                    columnData.get(PARTITION_KEY).add(tableEntity.getPartitionKey());
-                    columnData.get(ROW_KEY).add(tableEntity.getRowKey());
-                    columnData.get(TIMESTAMP).add(new SimpleDateFormat().format(tableEntity.getTimestamp().getTime()));
+            for (TableEntity tableEntity : tableEntities) {
+                columnData.get(PARTITION_KEY).add(tableEntity.getPartitionKey());
+                columnData.get(ROW_KEY).add(tableEntity.getRowKey());
+                columnData.get(TIMESTAMP).add(new SimpleDateFormat().format(tableEntity.getTimestamp().getTime()));
 
-                    for (String entityColumn : tableEntity.getProperties().keySet()) {
-                        if (!columnData.keySet().contains(entityColumn)) {
-                            columnData.put(entityColumn, new ArrayList<String>());
-                        }
-                    }
-
-                }
-
-                for (TableEntity tableEntity : tableEntities) {
-                    for (String column : columnData.keySet()) {
-                        if (!column.equals(PARTITION_KEY) && !column.equals(ROW_KEY) && !column.equals(TIMESTAMP)) {
-                            columnData.get(column).add(tableEntity.getProperties().containsKey(column)
-                                    ? getFormattedProperty(tableEntity.getProperties().get(column))
-                                    : "");
-                        }
+                for (String entityColumn : tableEntity.getProperties().keySet()) {
+                    if (!columnData.keySet().contains(entityColumn)) {
+                        columnData.put(entityColumn, new ArrayList<String>());
                     }
                 }
 
-                DefaultTableModel model = new DefaultTableModel() {
-                    @Override
-                    public boolean isCellEditable(int i, int i1) {
-                        return false;
-                    }
-                };
+            }
 
+            for (TableEntity tableEntity : tableEntities) {
                 for (String column : columnData.keySet()) {
-                    model.addColumn(column, columnData.get(column).toArray());
+                    if (!column.equals(PARTITION_KEY) && !column.equals(ROW_KEY) && !column.equals(TIMESTAMP)) {
+                        columnData.get(column).add(tableEntity.getProperties().containsKey(column)
+                                ? getFormattedProperty(tableEntity.getProperties().get(column))
+                                : "");
+                    }
                 }
+            }
 
-                entitiesTable.setModel(model);
-
-                for (int i = 0; i != entitiesTable.getColumnCount(); i++) {
-                    entitiesTable.getColumnModel().getColumn(i).setPreferredWidth(100);
+            DefaultTableModel model = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int i, int i1) {
+                    return false;
                 }
+            };
+
+            for (String column : columnData.keySet()) {
+                model.addColumn(column, columnData.get(column).toArray());
+            }
+
+            entitiesTable.setModel(model);
+
+            for (int i = 0; i != entitiesTable.getColumnCount(); i++) {
+                entitiesTable.getColumnModel().getColumn(i).setPreferredWidth(100);
             }
         });
     }
 
     private void deleteSelection() {
-        final TableEntity[] selectedEntities = getSelectedEntities();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Deleting entities", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(false);
-
-                /*try {
-                    if (selectedEntities != null) {
-                        for (int i = 0; i < selectedEntities.length; i++) {
-                            progressIndicator.setFraction((double) i / selectedEntities.length);
-
-                            StorageClientSDKManager.getManager().deleteTableEntity(storageAccount, selectedEntities[i]);
-                        }
-
-                        ApplicationManager.getApplication().invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                tableEntities.removeAll(Arrays.asList(selectedEntities));
-                                refreshGrid();
-                            }
-                        });
-                    }
-                } catch (AzureCmdException ex) {
-                    String msg = "An error occurred while attempting to delete entities." + "\n" + String.format(message("webappExpMsg"), ex.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, ex);
-                }*/
-            }
-        });
     }
 
     private TableEntity[] getSelectedEntities() {

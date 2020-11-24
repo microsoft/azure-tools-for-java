@@ -22,8 +22,6 @@
 package com.microsoft.azure.hdinsight.spark.ui
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.ConfigurationException
@@ -57,6 +55,7 @@ import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.SubmissionTableModel
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.AzureStorageVirtualFile
 import com.microsoft.azure.hdinsight.spark.ui.filesystem.StorageChooser
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.azurecommons.helpers.StringHelper
 import com.microsoft.intellij.forms.dsl.panel
@@ -413,7 +412,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
 
     @Synchronized
     private fun checkInputsWithErrorLabels() {
-        ApplicationManager.getApplication().invokeLater({
+        AzureTaskManager.getInstance().runLater {
             // Clean all error messages firstly
             hideAllErrors()
 
@@ -446,7 +445,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             if (result != null) {
                 setVisibleForFixedErrorMessage(ErrorMessage.JobConfiguration, true, result.messaqge, Warning)
             }
-        }, ModalityState.any())
+        }
     }
 
     @Throws(ConfigurationException::class)
@@ -578,7 +577,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
     override fun setData(data: SparkSubmitModel) {
         // Data -> Component
 
-        ApplicationManager.getApplication().invokeAndWait({
+        AzureTaskManager.getInstance().runAndWait({
             viewModel.clusterSelection.toSelectClusterByIdBehavior.onNext(data.clusterMappedId ?: data.clusterName)
 
             // TODO: Implement this in ClusterSelection ViewModel to take real effects
@@ -608,7 +607,7 @@ open class SparkSubmissionContentPanel(private val myProject: Project, val type:
             if (!data.artifactName.isNullOrBlank()) {
                 selectedArtifactComboBox.model.apply { selectedItem = findFirst { it.name == data.artifactName } }
             }
-        }, ModalityState.any())
+        })
 
         // set Job Upload Storage panel data
         storageWithUploadPathPanel.setData(data.jobUploadStorageModel)

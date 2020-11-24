@@ -33,6 +33,8 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import javax.swing.*;
 import java.util.Arrays;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig> {
 
     private JPanel contentPane;
@@ -57,7 +59,7 @@ public class FunctionAppCreationDialog extends AppConfigDialog<FunctionAppConfig
 
     @Override
     protected String getDialogTitle() {
-        return "Create Function";
+        return message("function.create.dialog.title");
     }
 
     @Nullable

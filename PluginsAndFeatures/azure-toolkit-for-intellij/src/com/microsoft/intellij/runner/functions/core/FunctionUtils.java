@@ -65,6 +65,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FunctionUtils {
     public static final String FUNCTION_JAVA_LIBRARY_ARTIFACT_ID = "azure-functions-java-library";
     private static final String AZURE_FUNCTION_ANNOTATION_CLASS =
@@ -332,9 +334,9 @@ public class FunctionUtils {
         }
         if (!(annotation instanceof PsiAnnotation)) {
             throw new AzureExecutionException(
-                    String.format("Cannot parse annotation information, expect type: %s, actual type: %s",
-                                                                    PsiAnnotation.class.getCanonicalName(),
-                                                                    annotation.getClass().getCanonicalName()));
+                    String.format(message("function.binding.error.parseFailed"),
+                                  PsiAnnotation.class.getCanonicalName(),
+                                  annotation.getClass().getCanonicalName()));
         }
 
         final BindingEnum annotationEnum =
@@ -413,7 +415,8 @@ public class FunctionUtils {
                                                                            StorageAccount.class.getCanonicalName());
 
         if (storageAccount != null) {
-            System.out.println("StorageAccount annotation found.");
+            // todo: Remove System.out.println
+            System.out.println(message("function.binding.storage.found"));
 
             final String connectionString = AnnotationUtil.getDeclaredStringAttributeValue(storageAccount, "value");
             // Replace empty connection string
@@ -422,7 +425,8 @@ public class FunctionUtils {
                     .forEach(binding -> binding.setAttribute("connection", connectionString));
 
         } else {
-            System.out.println("No StorageAccount annotation found.");
+            // todo: Remove System.out.println
+            System.out.println(message("function.binding.storage.notFound"));
         }
     }
 

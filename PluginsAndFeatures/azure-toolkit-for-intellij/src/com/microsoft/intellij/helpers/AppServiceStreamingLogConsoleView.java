@@ -31,12 +31,11 @@ import rx.schedulers.Schedulers;
 
 import static com.intellij.execution.ui.ConsoleViewContentType.NORMAL_OUTPUT;
 import static com.intellij.execution.ui.ConsoleViewContentType.SYSTEM_OUTPUT;
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
 
     private static final String SEPARATOR = System.getProperty("line.separator");
-    private static final String START_LOG_STREAMING = "Connecting to log stream...";
-    private static final String STOP_LOG_STREAMING = "Disconnected from log-streaming service.";
 
     private boolean isDisposed;
     private String resourceId;
@@ -50,9 +49,9 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
 
     public void startStreamingLog(Observable<String> logStreaming) {
         if (!isActive()) {
-            printlnToConsole(START_LOG_STREAMING, SYSTEM_OUTPUT);
+            printlnToConsole(message("appService.logStreaming.hint.connect"), SYSTEM_OUTPUT);
             subscription = logStreaming.subscribeOn(Schedulers.io())
-                                       .doAfterTerminate(() -> printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT))
+                                       .doAfterTerminate(() -> printlnToConsole(message("appService.logStreaming.hint.disconnected"), SYSTEM_OUTPUT))
                                        .subscribe((log) -> printlnToConsole(log, NORMAL_OUTPUT));
         }
     }
@@ -60,7 +59,7 @@ public class AppServiceStreamingLogConsoleView extends ConsoleViewImpl {
     public void closeStreamingLog() {
         if (isActive()) {
             subscription.unsubscribe();
-            printlnToConsole(STOP_LOG_STREAMING, SYSTEM_OUTPUT);
+            printlnToConsole(message("appService.logStreaming.hint.disconnected"), SYSTEM_OUTPUT);
         }
     }
 

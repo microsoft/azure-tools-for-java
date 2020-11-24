@@ -39,11 +39,10 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         implements AzureForm<DraftResourceGroup> {
-    public static final String DESCRIPTION =
-            "A resource group is a container that holds related resources for an Azure solution.";
-    public static final String DIALOG_TITLE = "New Resource Group";
     private Subscription subscription;
     private JBLabel labelDescription;
     private JPanel contentPanel;
@@ -54,7 +53,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
         this.init();
         this.subscription = subscription;
         this.textName.setValidator(this::validateName);
-        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, DESCRIPTION);
+        SwingUtils.setTextAndEnableAutoWrap(this.labelDescription, message("appService.resourceGroup.description"));
         this.pack();
     }
 
@@ -75,7 +74,7 @@ public class ResourceGroupCreationDialog extends AzureDialog<DraftResourceGroup>
 
     @Override
     protected String getDialogTitle() {
-        return DIALOG_TITLE;
+        return message("appService.resourceGroup.create.title");
     }
 
     @Nullable

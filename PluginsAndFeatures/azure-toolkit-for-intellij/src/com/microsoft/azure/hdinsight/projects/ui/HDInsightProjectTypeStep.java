@@ -26,7 +26,6 @@ import com.intellij.ide.plugins.*;
 import com.intellij.ide.projectWizard.ProjectTemplateList;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.options.ConfigurationException;
@@ -36,6 +35,7 @@ import com.microsoft.azure.hdinsight.projects.HDInsightExternalSystem;
 import com.microsoft.azure.hdinsight.projects.HDInsightModuleBuilder;
 import com.microsoft.azure.hdinsight.projects.HDInsightProjectTemplate;
 import com.microsoft.azure.hdinsight.projects.HDInsightTemplatesType;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -164,22 +164,21 @@ public class HDInsightProjectTypeStep extends ModuleWizardStep implements Dispos
 
             Set<String> pluginIds = new HashSet<>();
             pluginIds.add(SCALA_PLUGIN_ID);
-            ApplicationManager.getApplication().invokeAndWait(() ->
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 PluginsAdvertiser.installAndEnablePlugins(pluginIds, () -> PluginInstaller.addStateListener(
-                        new PluginStateListener() {
-                            @Override
-                            public void install(@NotNull IdeaPluginDescriptor descriptor) {
-                                if (descriptor.getPluginId().toString().equals(SCALA_PLUGIN_ID)) {
-                                    showRestartDialog();
-                                }
-                            }
-
-                            @Override
-                            public void uninstall(@NotNull IdeaPluginDescriptor descriptor) {
+                    new PluginStateListener() {
+                        @Override
+                        public void install(@NotNull IdeaPluginDescriptor descriptor) {
+                            if (descriptor.getPluginId().toString().equals(SCALA_PLUGIN_ID)) {
+                                showRestartDialog();
                             }
                         }
-                ))
-            );
+
+                        @Override
+                        public void uninstall(@NotNull IdeaPluginDescriptor descriptor) {
+                        }
+                    }));
+            });
         }
     }
 

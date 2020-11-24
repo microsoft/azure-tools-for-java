@@ -25,6 +25,8 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
 import com.microsoft.azure.management.appservice.*;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -44,24 +46,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 
 public enum AppServiceStreamingLogManager {
     INSTANCE;
 
-    private static final String STREAMING_LOG_NOT_STARTED = "Streaming log is not started.";
-    private static final String ENABLE_FILE_LOGGING_PROMPT = "Do you want to enable file logging for %s";
+    private static final String STREAMING_LOG_NOT_STARTED = message("appService.logStreaming.hint.notStart");
+    private static final String ENABLE_FILE_LOGGING_PROMPT = message("appService.logStreaming.hint.enablePrompt");
+    private static final String STARTING_STREAMING_LOG = message("appService.logStreaming.hint.start");
+    private static final String LOG_STREAMING_IS_NOT_SUPPORTED = message("appService.logStreaming.hint.notSupport");
+    private static final String FAILED_TO_START_STREAMING_LOG = message("appService.logStreaming.error.startFailed");
+    private static final String FAILED_TO_CLOSE_STREAMING_LOG = message("appService.logStreaming.error.closeFailed");
+    private static final String CLOSING_STREAMING_LOG = message("appService.logStreaming.hint.closing");
     private static final String ENABLE_LOGGING = "Enable logging";
-    private static final String[] YES_NO = {"Yes", "No"};
-    private static final String STARTING_STREAMING_LOG = "Starting Streaming Log...";
     private static final String NOT_SUPPORTED = "Not supported";
-    private static final String LOG_STREAMING_IS_NOT_SUPPORTED =
-            "Log streaming for %s is not supported in current version.";
-    private static final String FAILED_TO_START_STREAMING_LOG = "Failed to start streaming log";
-    private static final String FAILED_TO_CLOSE_STREAMING_LOG = "Failed to close streaming log";
-    private static final String CLOSING_STREAMING_LOG = "Closing Streaming Log...";
     private static final String SITES = "sites";
-    private static final String SUBSCRIPTIONS = "subscriptions";
     private static final String SLOTS = "slots";
+    private static final String SUBSCRIPTIONS = "subscriptions";
+    private static final String[] YES_NO = {"Yes", "No"};
 
     private Map<String, AppServiceStreamingLogConsoleView> consoleViewMap = new HashMap<>();
 
@@ -78,18 +81,18 @@ public enum AppServiceStreamingLogManager {
     }
 
     public void closeStreamingLog(Project project, String appId) {
-        DefaultLoader.getIdeHelper().runInBackground(project, CLOSING_STREAMING_LOG, false, true, null, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, CLOSING_STREAMING_LOG, false, () -> {
             if (consoleViewMap.containsKey(appId) && consoleViewMap.get(appId).isActive()) {
                 consoleViewMap.get(appId).closeStreamingLog();
             } else {
                 DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                         FAILED_TO_CLOSE_STREAMING_LOG, STREAMING_LOG_NOT_STARTED));
             }
-        });
+        }));
     }
 
     private void showAppServiceStreamingLog(Project project, String resourceId, ILogStreaming logStreaming) {
-        DefaultLoader.getIdeHelper().runInBackground(project, STARTING_STREAMING_LOG, false, true, null, () -> {
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, STARTING_STREAMING_LOG, false, () -> {
             try {
                 final String name = logStreaming.getTitle();
                 final AppServiceStreamingLogConsoleView consoleView = getOrCreateConsoleView(project, resourceId);
@@ -121,7 +124,7 @@ public enum AppServiceStreamingLogManager {
                 DefaultLoader.getIdeHelper().invokeLater(() -> PluginUtil.displayErrorDialog(
                         FAILED_TO_START_STREAMING_LOG, e.getMessage()));
             }
-        });
+        }));
     }
 
     private AppServiceStreamingLogConsoleView getOrCreateConsoleView(Project project, String resourceId) {
@@ -144,15 +147,12 @@ public enum AppServiceStreamingLogManager {
         Observable<String> getStreamingLogContent() throws IOException;
     }
 
-    class FunctionLogStreaming implements ILogStreaming {
+    static class FunctionLogStreaming implements ILogStreaming {
 
         private static final String APPINSIGHTS_INSTRUMENTATIONKEY = "APPINSIGHTS_INSTRUMENTATIONKEY";
-        private static final String APPLICATION_INSIGHT_PATTERN = "%s/#blade/AppInsightsExtension/QuickPulseBladeV2"
-                + "/ComponentId/%s/ResourceId/%s";
-        private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS =
-                "You must configure Application Insights to enable streaming logs on Linux Function Apps.";
-        private static final String AI_INSTANCES_NOT_FOUND =
-                "Application Insights instance defined in app settings cannot be found in current subscription %s";
+        private static final String APPLICATION_INSIGHT_PATTERN = "%s/#blade/AppInsightsExtension/QuickPulseBladeV2/ComponentId/%s/ResourceId/%s";
+        private static final String MUST_CONFIGURE_APPLICATION_INSIGHTS = message("appService.logStreaming.error.noApplicationInsights");
+        private static final String AI_INSTANCES_NOT_FOUND = message("appService.logStreaming.error.aiNotFound");
 
         private String resourceId;
         private FunctionApp functionApp;
@@ -231,7 +231,7 @@ public enum AppServiceStreamingLogManager {
         }
     }
 
-    class WebAppLogStreaming implements ILogStreaming {
+    static class WebAppLogStreaming implements ILogStreaming {
         private String resourceId;
         private WebApp webApp;
 
@@ -268,7 +268,7 @@ public enum AppServiceStreamingLogManager {
         }
     }
 
-    class WebAppSlotLogStreaming implements ILogStreaming {
+    static class WebAppSlotLogStreaming implements ILogStreaming {
         private String resourceId;
         private DeploymentSlot deploymentSlot;
 

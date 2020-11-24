@@ -34,6 +34,8 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class AnnotationHelper {
     public static Map<String, Object> evaluateAnnotationProperties(Project project, PsiAnnotation annotation,
             List<String> requiredProperties) throws AzureExecutionException {
@@ -49,8 +51,8 @@ public class AnnotationHelper {
 
                 for (PsiMethod method : methods) {
                     // we only care user declared or required properties
-                    if (annotation.findDeclaredAttributeValue(method.getName()) != null
-                            || (requiredProperties != null && requiredProperties.contains(method.getName()))) {
+                    if (annotation.findDeclaredAttributeValue(method.getName()) != null ||
+                            (requiredProperties != null && requiredProperties.contains(method.getName()))) {
                         PsiAnnotationMemberValue attrValue = annotation.findAttributeValue(method.getName());
                         Object obj;
                         if (attrValue instanceof PsiAnnotation) {
@@ -146,8 +148,7 @@ public class AnnotationHelper {
         if (obj instanceof PsiClassType) {
             return ((PsiClassType) obj).resolve().getQualifiedName();
         }
-        throw new AzureExecutionException(String.format("Invalid type: %s for annotation.",
-                                                                PsiAnnotation.class.getCanonicalName(),
-                                                        obj.getClass().getCanonicalName()));
+        throw new AzureExecutionException(String.format(message("function.annotation.error.invalidAnnotationType"),
+                                                        PsiAnnotation.class.getCanonicalName(), obj.getClass().getCanonicalName()));
     }
 }

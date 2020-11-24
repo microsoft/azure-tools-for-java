@@ -22,8 +22,6 @@
 
 package com.microsoft.intellij.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.ValidationInfo;
@@ -32,6 +30,7 @@ import com.microsoft.applicationinsights.preference.ApplicationInsightsPageTable
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResourceRegistry;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
@@ -225,22 +224,19 @@ public class AppInsightsMngmtPanel implements AzureAbstractConfigurablePanel {
 
     private void createNewDilaog() {
         try {
-            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    ApplicationInsightsNewDialog dialog = new ApplicationInsightsNewDialog();
-                    dialog.setOnCreate(() -> DefaultLoader.getIdeHelper().invokeLater(() -> {
-                        ApplicationInsightsResource resource = ApplicationInsightsNewDialog.getResource();
-                        if (resource != null && !ApplicationInsightsResourceRegistry.getAppInsightsResrcList().contains(resource)) {
-                            ApplicationInsightsResourceRegistry.getAppInsightsResrcList().add(resource);
-                            AzureSettings.getSafeInstance(myProject).saveAppInsights();
-                            ((InsightsTableModel) insightsTable.getModel()).setResources(getTableContent());
-                            ((InsightsTableModel) insightsTable.getModel()).fireTableDataChanged();
-                        }
-                    }));
-                    dialog.show();
-                }
-            }, ModalityState.defaultModalityState());
+            AzureTaskManager.getInstance().runAndWait(() -> {
+                ApplicationInsightsNewDialog dialog = new ApplicationInsightsNewDialog();
+                dialog.setOnCreate(() -> DefaultLoader.getIdeHelper().invokeLater(() -> {
+                    ApplicationInsightsResource resource = ApplicationInsightsNewDialog.getResource();
+                    if (resource != null && !ApplicationInsightsResourceRegistry.getAppInsightsResrcList().contains(resource)) {
+                        ApplicationInsightsResourceRegistry.getAppInsightsResrcList().add(resource);
+                        AzureSettings.getSafeInstance(myProject).saveAppInsights();
+                        ((InsightsTableModel) insightsTable.getModel()).setResources(getTableContent());
+                        ((InsightsTableModel) insightsTable.getModel()).fireTableDataChanged();
+                    }
+                }));
+                dialog.show();
+            });
         } catch (Exception ex) {
             AzurePlugin.log(ex.getMessage(), ex);
         }

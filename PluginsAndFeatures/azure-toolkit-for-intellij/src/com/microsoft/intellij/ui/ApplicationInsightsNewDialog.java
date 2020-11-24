@@ -26,13 +26,14 @@ import com.intellij.openapi.ui.TitlePanel;
 import com.microsoft.applicationinsights.preference.ApplicationInsightsResource;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.applicationinsights.v2015_05_01.ApplicationInsightsComponent;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
 import com.microsoft.intellij.AzurePlugin;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.intellij.util.PluginUtil;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.helpers.azure.sdk.AzureSDKManager;
 
 import javax.swing.*;
@@ -186,31 +187,23 @@ public class ApplicationInsightsNewDialog extends AzureDialogWrapper {
         } else {
             boolean isNewGroup = createNewBtn.isSelected();
             String resourceGroup = isNewGroup ? textGrp.getText() : (String) comboGrp.getSelectedItem();
-            DefaultLoader.getIdeHelper().runInBackground(null,
-                                                         "Creating Application Insights Resource " + txtName.getText(),
-                                                         false,
-                                                         true,
-                                                         "Creating Application Insights Resource " + txtName.getText(),
-                                                         new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                ApplicationInsightsComponent resource =
-                                        AzureSDKManager.createInsightsResource(
-                                                currentSub,
-                                                resourceGroup,
-                                                isNewGroup,
-                                                txtName.getText(),
-                                                (String) comboReg.getSelectedItem());
-                                resourceToAdd = new ApplicationInsightsResource(resource, currentSub , true);
-                                if (onCreate != null) {
-                                    onCreate.run();
-                                }
-                            } catch (Exception ex) {
-                                PluginUtil.displayErrorDialogInAWTAndLog(message("aiErrTtl"), message("resCreateErrMsg"), ex);
-                            }
-                        }
-                    });
+            final String title = "Creating Application Insights Resource " + txtName.getText();
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+                try {
+                    ApplicationInsightsComponent resource = AzureSDKManager.createInsightsResource(
+                            currentSub,
+                            resourceGroup,
+                            isNewGroup,
+                            txtName.getText(),
+                            (String) comboReg.getSelectedItem());
+                    resourceToAdd = new ApplicationInsightsResource(resource, currentSub, true);
+                    if (onCreate != null) {
+                        onCreate.run();
+                    }
+                } catch (Exception ex) {
+                    PluginUtil.displayErrorDialogInAWTAndLog(message("aiErrTtl"), message("resCreateErrMsg"), ex);
+                }
+            }));
             super.doOKAction();
         }
     }

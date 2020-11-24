@@ -28,6 +28,8 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.intellij.ui.components.AzureDialogWrapper;
 import com.microsoft.tooling.msservices.model.storage.ClientStorageAccount;
 import com.microsoft.tooling.msservices.model.storage.Queue;
@@ -115,30 +117,6 @@ public class QueueMessageForm extends AzureDialogWrapper {
 
         final String message = messageTextArea.getText();
         final int expireSeconds = getExpireSeconds();
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Adding queue message", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                /*try {
-                    QueueMessage queueMessage = new QueueMessage(
-                            "",
-                            queue.getName(),
-                            message,
-                            new GregorianCalendar(),
-                            new GregorianCalendar(),
-                            0);
-
-                    StorageClientSDKManager.getManager().createQueueMessage(storageAccount, queueMessage, expireSeconds);
-
-                    if (onAddedMessage != null) {
-                        ApplicationManager.getApplication().invokeLater(onAddedMessage);
-                    }
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to add queue message." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
-            }
-        });
 
         sendTelemetry(OK_EXIT_CODE);
         close(DialogWrapper.OK_EXIT_CODE, true);

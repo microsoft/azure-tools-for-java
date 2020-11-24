@@ -25,7 +25,8 @@ package com.microsoft.tooling.msservices.serviceexplorer.azure.springcloud;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.DeploymentResourceStatus;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
-import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.*;
@@ -33,9 +34,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPro
 import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.microsoft.azuretools.telemetry.TelemetryConstants.*;
@@ -131,13 +130,12 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
         addAction(ACTION_DELETE, new DeleteSpringCloudAppAction());
 
-        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) throws AzureCmdException {
-                    openResourcesInPortal(getSubscriptionId(), getAppId());
-                }
-            }));
+        addAction(ACTION_OPEN_IN_PORTAL, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_PORTAL_SPRING_CLOUD_APP, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                openResourcesInPortal(getSubscriptionId(), getAppId());
+            }
+        }));
         addAction(ACTION_OPEN_IN_BROWSER, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, OPEN_IN_BROWSER_SPRING_CLOUD_APP, new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
@@ -150,19 +148,15 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
                 }
             }
         }));
-        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, SHOWPROP_SPRING_CLOUD_APP,
-            new NodeActionListener() {
-                @Override
-                protected void actionPerformed(NodeActionEvent e) {
-                    DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(
-                           SpringCloudAppNode.this);
-                    // add this statement for false updating notice to update Property view
-                    // immediately
-                    SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId,
-                                                                          app, deploy);
-
-                }
-            }));
+        addAction(ACTION_SHOW_PROPERTY, new WrappedTelemetryNodeActionListener(SPRING_CLOUD, SHOWPROP_SPRING_CLOUD_APP, new NodeActionListener() {
+            @Override
+            protected void actionPerformed(NodeActionEvent e) {
+                DefaultLoader.getUIHelper().openSpringCloudAppPropertyView(SpringCloudAppNode.this);
+                // add this statement for false updating notice to update Property view
+                // immediately
+                SpringCloudStateManager.INSTANCE.notifySpringAppUpdate(clusterId, app, deploy);
+            }
+        }));
         super.loadActions();
     }
 
@@ -170,8 +164,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
         return new NodeActionListener() {
             @Override
             protected void actionPerformed(NodeActionEvent e) {
-                DefaultLoader.getIdeHelper().runInBackground(null, actionName, false,
-                                                             true, String.format("%s...", actionName), runnable);
+                AzureTaskManager.getInstance().runInBackground(new AzureTask(null, String.format("%s...", actionName), false, runnable));
             }
         };
     }
@@ -187,27 +180,15 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
     }
 
     private void startSpringCloudApp() {
-        try {
-            springCloudAppNodePresenter.onStartSpringCloudApp(this.app.id(), this.app.properties().activeDeploymentName(), status);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_START_APP, this.app.name()), e);
-        }
+        springCloudAppNodePresenter.onStartSpringCloudApp(this.app.id(), this.app.properties().activeDeploymentName(), status);
     }
 
     private void restartSpringCloudApp() {
-        try {
-            springCloudAppNodePresenter.onReStartSpringCloudApp(this.app.id(), this.app.properties().activeDeploymentName(), status);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_RESTART_APP, this.app.name()), e);
-        }
+        springCloudAppNodePresenter.onReStartSpringCloudApp(this.app.id(), this.app.properties().activeDeploymentName(), status);
     }
 
     private void stopSpringCloudApp() {
-        try {
-            springCloudAppNodePresenter.onStopSpringCloudApp(this.app.id(), this.app.properties().activeDeploymentName(), status);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format(FAILED_TO_STOP_APP, this.app.name()), e);
-        }
+        springCloudAppNodePresenter.onStopSpringCloudApp(this.app.id(), this.app.properties().activeDeploymentName(), status);
     }
 
     private void syncActionState() {
@@ -250,12 +231,7 @@ public class SpringCloudAppNode extends Node implements SpringCloudAppNodeView {
 
         @Override
         protected void azureNodeAction(NodeActionEvent event) {
-            try {
-                springCloudAppNodePresenter.onDeleteApp(id);
-            } catch (IOException e) {
-                DefaultLoader.getUIHelper().showException(String.format(FAILED_TO_DELETE_APP, SpringCloudAppNode.this.getName()),
-                                                          e, ERROR_DELETING_APP, false, true);
-            }
+            springCloudAppNodePresenter.onDeleteApp(id);
         }
 
         @Override

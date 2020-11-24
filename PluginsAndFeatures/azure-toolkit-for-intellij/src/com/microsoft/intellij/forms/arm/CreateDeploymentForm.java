@@ -23,9 +23,6 @@
 package com.microsoft.intellij.forms.arm;
 
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.MessageType;
@@ -40,6 +37,8 @@ import com.microsoft.azure.management.resources.DeploymentMode;
 import com.microsoft.azure.management.resources.Location;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
@@ -58,7 +57,6 @@ import com.microsoft.intellij.ui.util.UIUtils.ElementWrapper;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.ResourceManagementNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -142,53 +140,50 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
     @Override
     protected void doOKAction() {
         deploymentName = deploymentNameTextField.getText();
-        ProgressManager.getInstance().run(new Task.Backgroundable(project,
-            "Deploying your azure resource " + deploymentName + "...", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.CREATE_DEPLOYMENT, (operation -> {
-                    SubscriptionDetail subs = (SubscriptionDetail) subscriptionCb.getSelectedItem();
-                    Azure azure = AuthMethodManager.getInstance().getAzureClient(subs.getSubscriptionId());
-                    WithTemplate template;
-                    if (createNewRgButton.isSelected()) {
-                        rgName = rgNameTextFiled.getText();
-                        template = azure
-                            .deployments().define(deploymentName)
-                            .withNewResourceGroup(rgNameTextFiled.getText(),
-                                ((ElementWrapper<Region>) regionCb.getSelectedItem()).getValue());
-                    } else {
-                        ResourceGroup rg = ((ElementWrapper<ResourceGroup>) rgNameCb.getSelectedItem()).getValue();
-                        List<ResourceEx<Deployment>> deployments = AzureMvpModel.getInstance()
-                                .getDeploymentByRgName(subs.getSubscriptionId(), rg.name());
-                        boolean isExist = deployments.parallelStream()
-                                .anyMatch(deployment -> deployment.getResource().name().equals(deploymentName));
-                        if (isExist) {
-                            throw new RuntimeException(DUPLICATED_DEPLOYMENT_NAME);
-                        }
-                        rgName = rg.name();
-                        template = azure.deployments().define(deploymentName).withExistingResourceGroup(rg);
+        final String title = "Deploying your azure resource " + deploymentName + "...";
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(project, title, false, () -> {
+            EventUtil.executeWithLog(TelemetryConstants.ARM, TelemetryConstants.CREATE_DEPLOYMENT, (operation -> {
+                SubscriptionDetail subs = (SubscriptionDetail) subscriptionCb.getSelectedItem();
+                Azure azure = AuthMethodManager.getInstance().getAzureClient(subs.getSubscriptionId());
+                WithTemplate template;
+                if (createNewRgButton.isSelected()) {
+                    rgName = rgNameTextFiled.getText();
+                    template = azure
+                        .deployments().define(deploymentName)
+                        .withNewResourceGroup(rgNameTextFiled.getText(),
+                                              ((ElementWrapper<Region>) regionCb.getSelectedItem()).getValue());
+                } else {
+                    ResourceGroup rg = ((ElementWrapper<ResourceGroup>) rgNameCb.getSelectedItem()).getValue();
+                    List<ResourceEx<Deployment>> deployments = AzureMvpModel.getInstance()
+                                                                            .getDeploymentByRgName(subs.getSubscriptionId(), rg.name());
+                    boolean isExist = deployments.parallelStream()
+                                                 .anyMatch(deployment -> deployment.getResource().name().equals(deploymentName));
+                    if (isExist) {
+                        throw new RuntimeException(DUPLICATED_DEPLOYMENT_NAME);
                     }
+                    rgName = rg.name();
+                    template = azure.deployments().define(deploymentName).withExistingResourceGroup(rg);
+                }
 
-                    String fileText = templateTextField.getText();
-                    String content = IOUtils.toString(new FileReader(fileText));
-                    String parametersPath = parametersTextField.getText();
-                    String parameters = StringUtils.isEmpty(parametersPath) ? "{}" :
-                            IOUtils.toString(new FileReader(parametersPath));
-                    parameters = DeploymentUtils.parseParameters(parameters);
-                    template.withTemplate(content)
-                            .withParameters(parameters)
-                            .withMode(DeploymentMode.INCREMENTAL)
-                            .create();
+                String fileText = templateTextField.getText();
+                String content = IOUtils.toString(new FileReader(fileText));
+                String parametersPath = parametersTextField.getText();
+                String parameters = StringUtils.isEmpty(parametersPath) ? "{}" :
+                                    IOUtils.toString(new FileReader(parametersPath));
+                parameters = DeploymentUtils.parseParameters(parameters);
+                template.withTemplate(content)
+                        .withParameters(parameters)
+                        .withMode(DeploymentMode.INCREMENTAL)
+                        .create();
 
-                    UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
-                    updateUI();
-                }), (ex) -> {
-                        UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
-                            MessageType.ERROR);
-                        updateUI();
-                    });
-            }
-        });
+                UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_SUCCESS, MessageType.INFO);
+                updateUI();
+            }), (ex) -> {
+                UIUtils.showNotification(statusBar, NOTIFY_CREATE_DEPLOYMENT_FAIL + ", " + ex.getMessage(),
+                                         MessageType.ERROR);
+                updateUI();
+            });
+        }));
         close(DialogWrapper.OK_EXIT_CODE, true);
     }
 
@@ -227,16 +222,13 @@ public class CreateDeploymentForm extends DeploymentBaseForm {
         Map<SubscriptionDetail, List<Location>> subscription2Location =
                 AzureModel.getInstance().getSubscriptionToLocationMap();
         if (subscription2Location == null) {
-            ProgressManager.getInstance().run(new Task.Modal(project, "Loading Available Locations...", false) {
-                @Override
-                public void run(ProgressIndicator indicator) {
-                    try {
-                        AzureModelController.updateSubscriptionMaps(null);
-                    } catch (Exception ex) {
-                        AzurePlugin.log("Error loading locations", ex);
-                    }
+            AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Available Locations...", false, () -> {
+                try {
+                    AzureModelController.updateSubscriptionMaps(null);
+                } catch (Exception ex) {
+                    AzurePlugin.log("Error loading locations", ex);
                 }
-            });
+            }));
         }
     }
 

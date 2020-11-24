@@ -25,11 +25,11 @@ package com.microsoft.azuretools.ijidea.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.SubscriptionManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
@@ -107,19 +107,10 @@ public class SelectSubscriptionsAction extends AzureAnAction {
     }
 
     public static void updateSubscriptionWithProgressDialog(final SubscriptionManager subscriptionManager, Project project) {
-        ProgressManager.getInstance().run(new Task.Modal(project, "Loading Subscriptions...", true) {
-            @Override
-            public void run(ProgressIndicator progressIndicator) {
-                try {
-                    progressIndicator.setIndeterminate(true);
-                    //System.out.println("updateSubscriptionWithProgressDialog: calling getSubscriptionDetails()");
-                    subscriptionManager.getSubscriptionDetails();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    // Don't handle subscription exception there.
-                    // LOGGER.error("updateSubscriptionWithProgressDialog", ex);
-                }
-            }
-        });
+        AzureTaskManager.getInstance().runInModal(new AzureTask(project, "Loading Subscriptions...", true, () -> {
+            ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
+            //System.out.println("updateSubscriptionWithProgressDialog: calling getSubscriptionDetails()");
+            subscriptionManager.getSubscriptionDetails();
+        }));
     }
 }
