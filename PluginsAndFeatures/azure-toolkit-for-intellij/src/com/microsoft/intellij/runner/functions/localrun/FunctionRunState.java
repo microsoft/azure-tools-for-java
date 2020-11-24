@@ -44,6 +44,7 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.common.function.bindings.BindingEnum;
 import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.management.appservice.FunctionApp;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -157,15 +158,15 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         params = {"@functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.SERVICE
     )
-    private void validateFunctionRuntime(RunProcessHandler processHandler) throws AzureExecutionException {
+    private void validateFunctionRuntime(RunProcessHandler processHandler) {
         try {
             final String funcPath = functionRunConfiguration.getFuncPath();
             if (StringUtils.isEmpty(funcPath)) {
-                throw new AzureExecutionException(message("function.run.error.runtimeNotFound"));
+                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"));
             }
             final ComparableVersion funcVersion = getFuncVersion();
             if (funcVersion == null) {
-                throw new AzureExecutionException(message("function.run.error.runtimeNotFound"));
+                throw new AzureToolkitRuntimeException(message("function.run.error.runtimeNotFound"));
             }
             final ComparableVersion javaVersion = getJavaVersion();
             if (javaVersion == null) {
@@ -179,10 +180,10 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
             final ComparableVersion minimumVersion = funcVersion.compareTo(FUNC_3) >= 0 ? MINIMUM_JAVA_9_SUPPORTED_VERSION
                                                      : MINIMUM_JAVA_9_SUPPORTED_VERSION_V2;
             if (funcVersion.compareTo(minimumVersion) < 0) {
-                throw new AzureExecutionException(message("function.run.error.funcOutOfDate"));
+                throw new AzureToolkitRuntimeException(message("function.run.error.funcOutOfDate"));
             }
         } catch (IOException e) {
-            throw new AzureExecutionException(String.format(message("function.run.error.validateRuntimeFailed"), e.getMessage()));
+            throw new AzureToolkitRuntimeException(String.format(message("function.run.error.validateRuntimeFailed"), e.getMessage()));
         }
     }
 
@@ -294,45 +295,34 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
         params = {"$stagingFolder.getName()", "@functionRunConfiguration.getFuncPath()"},
         type = AzureOperation.Type.SERVICE
     )
-    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws AzureExecutionException {
+    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
         ReadAction.run(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final Path localSettingsJson = Paths.get(functionRunConfiguration.getLocalSettingsJsonPath());
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionRunConfiguration.getModule());
-            try {
-                Map<String, FunctionConfiguration> configMap =
-                        FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
-                FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(),
-                                                                                localSettingsJson, functionRunConfiguration.getAppSettings());
+            Map<String, FunctionConfiguration> configMap =
+                    FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionRunConfiguration.getModule(), methods);
+            FunctionUtils.copyLocalSettingsToStagingFolder(stagingFolder.toPath(), localSettingsJson, functionRunConfiguration.getAppSettings());
 
-                final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
-                if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
-                    installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
-                }
-            } catch (AzureExecutionException | IOException e) {
-                throw new AzureExecutionException(message("function.run.error.prepareStagingFolderFailed") + e.getMessage(), e);
+            final Set<BindingEnum> bindingClasses = getFunctionBindingEnums(configMap);
+            if (isInstallingExtensionNeeded(bindingClasses, processHandler)) {
+                installProcess = getRunFunctionCliExtensionInstallProcessBuilder(stagingFolder).start();
             }
         });
         if (installProcess != null) {
-            try {
-                readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
-                    if (processHandler.isProcessRunning()) {
-                        processHandler.println(inputLine, ProcessOutputTypes.STDERR);
-                    }
-                });
-                readInputStreamByLines(installProcess.getInputStream(), inputLine -> {
-                    if (processHandler.isProcessRunning()) {
-                        processHandler.setText(inputLine);
-                    }
-                });
-                int exitCode = installProcess.waitFor();
-                if (exitCode != 0) {
-                    throw new AzureExecutionException(message("function.run.error.installFuncFailed"));
+            readInputStreamByLines(installProcess.getErrorStream(), inputLine -> {
+                if (processHandler.isProcessRunning()) {
+                    processHandler.println(inputLine, ProcessOutputTypes.STDERR);
                 }
-            } catch (AzureExecutionException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new AzureExecutionException(message("function.run.error.installFuncFailed"), e);
+            });
+            readInputStreamByLines(installProcess.getInputStream(), inputLine -> {
+                if (processHandler.isProcessRunning()) {
+                    processHandler.setText(inputLine);
+                }
+            });
+            int exitCode = installProcess.waitFor();
+            if (exitCode != 0) {
+                throw new AzureExecutionException(message("function.run.error.installFuncFailed"));
             }
         }
     }

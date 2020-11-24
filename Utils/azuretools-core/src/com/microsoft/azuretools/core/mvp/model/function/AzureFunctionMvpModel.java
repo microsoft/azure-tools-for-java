@@ -212,7 +212,7 @@ public class AzureFunctionMvpModel {
         value = "get all available pricing tiers for function apps",
         type = AzureOperation.Type.SERVICE
     )
-    public List<PricingTier> listFunctionPricingTier() throws IllegalAccessException {
+    public List<PricingTier> listFunctionPricingTier() {
         final List<PricingTier> pricingTiers = AzureMvpModel.getInstance().listPricingTier();
         // Add Premium pricing tiers
         pricingTiers.add(new PricingTier(SkuName.ELASTIC_PREMIUM.toString(), "EP1"));

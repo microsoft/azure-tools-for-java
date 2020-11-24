@@ -56,7 +56,7 @@ public class WebAppService {
         },
         type = AzureOperation.Type.SERVICE
     )
-    public WebApp createWebApp(final WebAppConfig config) throws Exception {
+    public WebApp createWebApp(final WebAppConfig config) {
         final WebAppSettingModel settings = convertConfig2Settings(config);
         settings.setCreatingNew(true);
         final Map<String, String> properties = settings.getTelemetryProperties(null);
@@ -65,7 +65,7 @@ public class WebAppService {
             operation.start();
             EventUtil.logEvent(EventType.info, operation, properties);
             return AzureWebAppMvpModel.getInstance().createWebApp(settings);
-        } catch (final Exception e) {
+        } catch (final RuntimeException e) {
             EventUtil.logError(operation, ErrorType.userError, e, properties, null);
             throw e;
         } finally {

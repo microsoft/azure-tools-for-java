@@ -111,7 +111,7 @@ public class FunctionsModuleInfoStep extends ModuleWizardStep implements Disposa
             panel.add(ScrollPaneFactory.createScrollPane(formBuilder.getPanel(), true), "North");
         } catch (final RuntimeException e) {
             LOGGER.error(e.getLocalizedMessage(), e);
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 

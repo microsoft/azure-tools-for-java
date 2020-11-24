@@ -25,30 +25,17 @@ package com.microsoft.azuretools.utils;
 
 import com.microsoft.applicationinsights.web.dependencies.apachecommons.io.FileUtils;
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.JavaVersion;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PublishingProfile;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.management.appservice.WebContainer;
+import com.microsoft.azure.management.appservice.*;
 import com.microsoft.azure.management.resources.ResourceGroup;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.Constants;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.util.FileUtil;
+import com.microsoft.azuretools.exception.AzureRuntimeException;
 import com.microsoft.azuretools.sdkmanage.AzureManager;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
@@ -56,15 +43,11 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -210,7 +193,7 @@ public class WebAppUtils {
         return uploadingTryCount;
     }
 
-    private static void ensureWebAppsFolderExist(FTPClient ftp) throws IOException {
+    private static void ensureWebAppsFolderExist(FTPClient ftp) {
         int count = 0;
         while (count++ < FTP_MAX_TRY) {
             try {
@@ -221,18 +204,12 @@ public class WebAppUtils {
                 if (ftp.makeDirectory(FTP_WEB_APPS_PATH)) {
                     return;
                 }
-                try {
-                    Thread.sleep(SLEEP_TIME);
-                } catch (InterruptedException ignore) {
-                }
-            } catch (Exception e) {
-                if (count == FTP_MAX_TRY) {
-                    throw new IOException("FTP client can't make directory, reply code: " + ftp.getReplyCode(), e);
-                }
+                Thread.sleep(SLEEP_TIME);
+            } catch (final Exception e) {
             }
         }
-
-        throw new IOException("FTP client can't make directory, reply code: " + ftp.getReplyCode());
+        final String error = "failed to make directory at server with error code: " + ftp.getReplyCode();
+        throw new AzureToolkitRuntimeException(error);
     }
 
     public static void removeFtpDirectory(FTPClient ftpClient, String path, IProgressIndicator pi) throws IOException {
@@ -331,9 +308,11 @@ public class WebAppUtils {
         type = AzureOperation.Type.SERVICE
     )
     public static void deployArtifactsToAppService(WebAppBase deployTarget
-            , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
+            , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) {
         if (!(deployTarget instanceof WebApp || deployTarget instanceof DeploymentSlot)) {
-            throw new WebAppException("Illegal deploy target.");
+            final String error = "the deployment target is not a valid (deployment slot of) Web App";
+            final String action = "select a valid Web App or deployment slot to deploy the artifact";
+            throw new AzureToolkitRuntimeException(error, action);
         }
         // stop target app service
         String stopMessage = deployTarget instanceof WebApp ? STOP_WEB_APP : STOP_DEPLOYMENT_SLOT;
@@ -360,7 +339,7 @@ public class WebAppUtils {
     }
 
     public static boolean deployWebAppToJavaSERuntime(WebAppBase deployTarget
-            , File artifact, IProgressIndicator progressIndicator) throws WebAppException {
+            , File artifact, IProgressIndicator progressIndicator) {
         try {
             File zipPackage = prepareZipPackage(deployTarget, artifact, progressIndicator);
             int retryCount = 0;
@@ -372,10 +351,12 @@ public class WebAppUtils {
                     progressIndicator.setText(String.format(RETRY_MESSAGE, e.getMessage(), retryCount, DEPLOY_MAX_TRY));
                 }
             }
-            throw new WebAppException(String.format(RETRY_FAIL_MESSAGE, DEPLOY_MAX_TRY));
-        } catch (IOException e) {
+            final String error = String.format(RETRY_FAIL_MESSAGE, DEPLOY_MAX_TRY);
+            final String action = "try later to deploy";
+            throw new AzureToolkitRuntimeException(error, action);
+        } catch (final Exception e) {
             progressIndicator.setText(String.format("Deploy failed, %s", e.getMessage()));
-            throw new WebAppException(e.getMessage());
+            throw e;
         }
     }
 
@@ -384,8 +365,7 @@ public class WebAppUtils {
         params = {"$artifact.getName()"},
         type = AzureOperation.Type.SERVICE
     )
-    private static File prepareZipPackage(WebAppBase deployTarget, File artifact, IProgressIndicator progressIndicator)
-            throws IOException {
+    private static File prepareZipPackage(WebAppBase deployTarget, File artifact, IProgressIndicator progressIndicator) {
         try {
             final File tempFolder = Files.createTempDirectory(TEMP_FOLDER_PREFIX).toFile();
             // copying artifacts to staging folder and rename it to app.jar
@@ -396,12 +376,13 @@ public class WebAppUtils {
             FileUtil.zipFiles(tempFolder.listFiles(), result);
             return result;
         } catch (Exception e) {
-            throw new IOException(e);
+            final String error = String.format("failed to archive the artifact[%s] into temp zip file", artifact.getName());
+            throw new AzureToolkitRuntimeException(error, e);
         }
     }
 
     public static boolean deployWebAppToWebContainer(WebAppBase deployTarget
-            , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) throws WebAppException {
+            , File artifact, boolean isDeployToRoot, IProgressIndicator progressIndicator) {
         int retryCount = 0;
         String webappPath = isDeployToRoot ? null : FilenameUtils.getBaseName(artifact.getName()).replaceAll("#", StringUtils.EMPTY);
         while (retryCount++ < DEPLOY_MAX_TRY) {
@@ -416,7 +397,9 @@ public class WebAppUtils {
                 progressIndicator.setText(String.format(RETRY_MESSAGE, e.getMessage(), retryCount, DEPLOY_MAX_TRY));
             }
         }
-        throw new WebAppException(String.format(RETRY_FAIL_MESSAGE, DEPLOY_MAX_TRY));
+        final String error = String.format(RETRY_FAIL_MESSAGE, DEPLOY_MAX_TRY);
+        final String action = "try later to deploy";
+        throw new AzureToolkitRuntimeException(error, action);
     }
 
     public static class WebAppException extends Exception {
@@ -560,10 +543,11 @@ public class WebAppUtils {
         value = "upload file to ftp server",
         type = AzureOperation.Type.SERVICE
     )
-    private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) throws IOException {
+    private static int uploadFileToFtp(FTPClient ftp, String path, InputStream stream, IProgressIndicator indicator) {
         boolean success;
         int count = 0;
         int rc = 0;
+        final String error = "failed to upload the artifact to FTP server, reply code: " + rc;
         while (count++ < FTP_MAX_TRY) {
             try {
                 success = ftp.storeFile(path, stream);
@@ -574,17 +558,11 @@ public class WebAppUtils {
                     return count;
                 }
                 rc = ftp.getReplyCode();
-                try {
-                    Thread.sleep(SLEEP_TIME);
-                } catch (InterruptedException ignore) {
-                }
-            } catch (Exception e) {
-                if (count == FTP_MAX_TRY) {
-                    throw new IOException("FTP client can't store the artifact, reply code: " + rc, e);
-                }
+                Thread.sleep(SLEEP_TIME);
+            } catch (final Exception e) {
             }
         }
-        throw new IOException("FTP client can't store the artifact, reply code: " + rc);
+        throw new AzureToolkitRuntimeException(error);
     }
 
     public static class WebAppDetails {

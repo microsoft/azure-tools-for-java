@@ -22,7 +22,6 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.webapp;
 
-import com.microsoft.azure.CloudException;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.resources.fluentcore.arm.ResourceId;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
@@ -69,17 +68,12 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
     @Override
     @AzureOperation(
         value = "delete web app[%s]",
-        params = {"$id", "$sid"},
+        params = {"$id"},
         type = AzureOperation.Type.ACTION
     )
     public void removeNode(String sid, String id, Node node) {
-        try {
-            webAppModulePresenter.onDeleteWebApp(sid, id);
-            removeDirectChildNode(node);
-        } catch (CloudException e) {
-            DefaultLoader.getUIHelper().showException("An error occurred while attempting to delete the Web App ",
-                    e, "Azure Services Explorer - Error Deleting Web App for Containers", false, true);
-        }
+        webAppModulePresenter.onDeleteWebApp(sid, id);
+        removeDirectChildNode(node);
     }
 
     private void createListener() {
@@ -103,20 +97,13 @@ public class WebAppModule extends AzureRefreshableNode implements WebAppModuleVi
                     switch (event.opsType) {
                         case ADD:
                             DefaultLoader.getIdeHelper().invokeLater(() -> {
-                                try {
-                                    addChildNode(new WebAppNode(WebAppModule.this,
-                                            ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
-                                            webAppDetails.webApp));
-                                } catch (Exception ex) {
-                                    DefaultLoader.getUIHelper().logError("WebAppModule::createListener ADD", ex);
-                                    ex.printStackTrace();
-                                }
+                                addChildNode(new WebAppNode(WebAppModule.this,
+                                        ResourceId.fromString(webAppDetails.webApp.id()).subscriptionId(),
+                                        webAppDetails.webApp));
                             });
                             break;
                         case UPDATE:
-                            break;
                         case REMOVE:
-                            break;
                         default:
                             break;
                     }

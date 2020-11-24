@@ -110,7 +110,7 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         params = {"@deployModel.getAppName()"},
         type = AzureOperation.Type.SERVICE
     )
-    private FunctionApp createFunctionApp(RunProcessHandler processHandler) throws IOException, AzureExecutionException {
+    private FunctionApp createFunctionApp(RunProcessHandler processHandler) {
         FunctionApp functionApp =
                 AzureFunctionMvpModel.getInstance().getFunctionByName(functionDeployConfiguration.getSubscriptionId(),
                                                                       functionDeployConfiguration.getResourceGroup(),
@@ -126,16 +126,16 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
         return functionApp;
     }
 
-    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler)
-            throws AzureExecutionException {
+    @AzureOperation(
+        value = "prepare staging folder[%s] for function[%s]",
+        params = {"$stagingFolder.getName()", "@deployModel.getAppName()"},
+        type = AzureOperation.Type.SERVICE
+    )
+    private void prepareStagingFolder(File stagingFolder, RunProcessHandler processHandler) throws Exception {
         ReadAction.run(() -> {
             final Path hostJsonPath = FunctionUtils.getDefaultHostJson(project);
             final PsiMethod[] methods = FunctionUtils.findFunctionsByAnnotation(functionDeployConfiguration.getModule());
-            try {
-                FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
-            } catch (AzureExecutionException | IOException e) {
-                throw new AzureExecutionException(message("function.create.error.prepareStagingFailed"));
-            }
+            FunctionUtils.prepareStagingFolder(stagingFolder.toPath(), hostJsonPath, functionDeployConfiguration.getModule(), methods);
         });
     }
 

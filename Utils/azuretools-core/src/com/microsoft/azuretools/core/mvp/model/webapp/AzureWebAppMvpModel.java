@@ -49,6 +49,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -119,14 +120,14 @@ public class AzureWebAppMvpModel {
         params = {"$model.getWebAppName()", "$model.getOS()", "$model.getResourceGroup()", "$model.getAppServicePlanName()", "$model.getSubscriptionId()"},
         type = AzureOperation.Type.SERVICE
     )
-    public WebApp createWebApp(@NotNull WebAppSettingModel model) throws Exception {
+    public WebApp createWebApp(@NotNull WebAppSettingModel model) {
         switch (model.getOS()) {
             case WINDOWS:
                 return createWebAppOnWindows(model);
             case LINUX:
                 return createWebAppOnLinux(model);
             default:
-                throw new Exception("Invalid operating system setting: " + model.getOS());
+                throw new IllegalArgumentException("Invalid operating system setting: " + model.getOS());
         }
     }
 
@@ -167,9 +168,8 @@ public class AzureWebAppMvpModel {
      *
      * @param model parameters
      * @return instance of created WebApp
-     * @throws Exception exception
      */
-    public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) throws Exception {
+    public WebApp createWebAppOnWindows(@NotNull WebAppSettingModel model) {
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
         WebApp.DefinitionStages.WithCreate withCreate;
@@ -188,7 +188,7 @@ public class AzureWebAppMvpModel {
     /**
      * API to create Web App on Linux.
      */
-    public WebApp createWebAppOnLinux(@NotNull WebAppSettingModel model) throws Exception {
+    public WebApp createWebAppOnLinux(@NotNull WebAppSettingModel model) {
         final Azure azure = AuthMethodManager.getInstance().getAzureClient(model.getSubscriptionId());
 
         final WebApp.DefinitionStages.WithDockerContainerImage withDockerContainerImage;
@@ -223,12 +223,10 @@ public class AzureWebAppMvpModel {
         return withAttach == null ? withCreate : (WebApp.DefinitionStages.WithCreate) withAttach.attach();
     }
 
-    private AppServicePlan.DefinitionStages.WithCreate prepareWithCreate(
-        @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
-
+    private AppServicePlan.DefinitionStages.WithCreate prepareWithCreate(@NotNull Azure azure, @NotNull WebAppSettingModel model) {
         final String[] tierSize = model.getPricing().split("_");
         if (tierSize.length != 2) {
-            throw new Exception("Cannot get valid price tier");
+            throw new IllegalArgumentException("invalid price tier");
         }
         final PricingTier pricingTier = new PricingTier(tierSize[0], tierSize[1]);
 
@@ -265,16 +263,14 @@ public class AzureWebAppMvpModel {
     }
 
     private WebApp.DefinitionStages.WithCreate withCreateNewWindowsServicePlan(
-        @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
-
+        @NotNull Azure azure, @NotNull WebAppSettingModel model) {
         final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
         final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
         return withNewAppServicePlan.withNewWindowsPlan(withCreate);
     }
 
     private WebApp.DefinitionStages.WithDockerContainerImage withCreateNewLinuxServicePlan(
-        @NotNull Azure azure, @NotNull WebAppSettingModel model) throws Exception {
-
+        @NotNull Azure azure, @NotNull WebAppSettingModel model) {
         final AppServicePlan.DefinitionStages.WithCreate withCreate = prepareWithCreate(azure, model);
         final WebApp.DefinitionStages.WithNewAppServicePlan withNewAppServicePlan = prepareServicePlan(azure, model);
         return withNewAppServicePlan.withNewLinuxPlan(withCreate);
@@ -282,7 +278,6 @@ public class AzureWebAppMvpModel {
 
     private WebApp.DefinitionStages.WithCreate withExistingWindowsServicePlan(
         @NotNull Azure azure, @NotNull WebAppSettingModel model) {
-
         final AppServicePlan servicePlan = azure.appServices().appServicePlans().getById(model.getAppServicePlanId());
         final WebApp.DefinitionStages.ExistingWindowsPlanWithGroup withGroup = azure
             .webApps()
@@ -440,7 +435,6 @@ public class AzureWebAppMvpModel {
      * @param webAppId webapp id
      * @param toUpdate entries to add/modify
      * @param toRemove entries to remove
-     * @throws Exception exception
      */
     @AzureOperation(
         value = "update settings of web app[%s]",
@@ -579,15 +573,8 @@ public class AzureWebAppMvpModel {
         type = AzureOperation.Type.SERVICE
     )
     public List<AppServicePlan> listAppServicePlanBySubscriptionIdAndResourceGroupName(String sid, String group) {
-        final List<AppServicePlan> appServicePlans = new ArrayList<>();
-
-        try {
-            final Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
-            appServicePlans.addAll(azure.appServices().appServicePlans().listByResourceGroup(group));
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
-        return appServicePlans;
+        final Azure azure = AuthMethodManager.getInstance().getAzureClient(sid);
+        return new ArrayList<>(azure.appServices().appServicePlans().listByResourceGroup(group));
     }
 
     /**
@@ -799,7 +786,6 @@ public class AzureWebAppMvpModel {
      * @param webAppId webapp id
      * @param filePath file path to save publish profile
      * @return status indicating whether it is successful or not
-     * @throws Exception exception
      */
     @AzureOperation(
         value = "get publishing profile of web app[%s] with secret",
@@ -846,7 +832,7 @@ public class AzureWebAppMvpModel {
             IOUtils.copy(inputStream, outputStream);
             return true;
         } catch (final IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, e.getMessage(), e);
             return false;
         }
     }

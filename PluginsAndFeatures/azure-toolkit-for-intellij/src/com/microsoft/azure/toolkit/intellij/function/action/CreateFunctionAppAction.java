@@ -58,16 +58,15 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @Override
+    @AzureOperation(
+        value = "create function",
+        type = AzureOperation.Type.ACTION
+    )
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) functionModule.getProject();
-        try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                return;
-            }
-        } catch (final Exception ex) {
-            AzurePlugin.log(message("common.error.signIn"), ex);
-            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
+        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
+            !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+            return;
         }
         final FunctionAppCreationDialog dialog = new FunctionAppCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createFunctionApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
@@ -83,22 +82,15 @@ public class CreateFunctionAppAction extends NodeActionListener {
             "$config.getServicePlan().name()",
             "$config.getSubscription().displayName()"
         },
-        type = AzureOperation.Type.ACTION
+        type = AzureOperation.Type.SERVICE
     )
     private void createFunctionApp(final FunctionAppConfig config, Runnable callback, final Project project) {
         final AzureTask task = new AzureTask(null, message("function.create.task.title"), true, () -> {
             final ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
             indicator.setIndeterminate(true);
-            try {
-                final FunctionApp functionApp = functionAppService.createFunctionApp(config);
-                callback.run();
-                refreshAzureExplorer(functionApp);
-            } catch (final Exception ex) {
-                // TODO: @wangmi show error with balloon notification instead of dialog
-                final String title = message("function.create.error.title") + ex.getMessage();
-                final String description = message("function.create.error.createFailed");
-                DefaultLoader.getUIHelper().showError(title, description);
-            }
+            final FunctionApp functionApp = functionAppService.createFunctionApp(config);
+            callback.run();
+            refreshAzureExplorer(functionApp);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }

@@ -67,14 +67,9 @@ public class CreateWebAppAction extends NodeActionListener {
     @AzureOperation(value = "start to create a new web app", type = AzureOperation.Type.ACTION)
     public void actionPerformed(NodeActionEvent e) {
         final Project project = (Project) webappModule.getProject();
-        try {
-            if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
-                !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
-                return;
-            }
-        } catch (final Exception ex) {
-            AzurePlugin.log(message("common.error.signIn"), ex);
-            DefaultLoader.getUIHelper().showException(message("common.error.signIn"), ex, message("common.error.signIn"), false, true);
+        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project) ||
+            !AzureLoginHelper.isAzureSubsAvailableOrReportError(message("common.error.signIn"))) {
+            return;
         }
         final WebAppCreationDialog dialog = new WebAppCreationDialog(project);
         dialog.setOkActionListener((data) -> this.createWebApp(data, () -> DefaultLoader.getIdeHelper().invokeLater(dialog::close), project));
@@ -95,17 +90,12 @@ public class CreateWebAppAction extends NodeActionListener {
     private void createWebApp(final WebAppConfig config, Runnable callback, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.create.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            try {
-                final WebApp webapp = webappService.createWebApp(config);
-                callback.run();
-                refreshAzureExplorer();
-                final Path application = config.getApplication();
-                if (Objects.nonNull(application) && application.toFile().exists()) {
-                    DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
-                }
-            } catch (final Exception ex) {
-                // TODO: @wangmi show error with balloon notification instead of dialog
-                DefaultLoader.getUIHelper().showError(message("webapp.create.error.title") + ex.getMessage(), message("webapp.create.error.createFailed"));
+            final WebApp webapp = webappService.createWebApp(config);
+            callback.run();
+            refreshAzureExplorer();
+            final Path application = config.getApplication();
+            if (Objects.nonNull(application) && application.toFile().exists()) {
+                DefaultLoader.getIdeHelper().invokeLater(() -> deploy(webapp, application, project));
             }
         });
         AzureTaskManager.getInstance().runInModal(task);
@@ -119,17 +109,12 @@ public class CreateWebAppAction extends NodeActionListener {
     private void deploy(final WebApp webapp, final Path application, final Project project) {
         final AzureTask task = new AzureTask(null, message("webapp.deploy.task.title"), true, () -> {
             ProgressManager.getInstance().getProgressIndicator().setIndeterminate(true);
-            try {
-                final RunProcessHandler processHandler = new RunProcessHandler();
-                processHandler.addDefaultListener();
-                final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-                processHandler.startNotify();
-                consoleView.attachToProcess(processHandler);
-                WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
-            } catch (final Exception ex) {
-                // TODO: @wangmi show error with balloon notification instead of dialog
-                DefaultLoader.getUIHelper().showError(message("webapp.deploy.error.title") + ex.getMessage(), message("webapp.deploy.error.deployFailed"));
-            }
+            final RunProcessHandler processHandler = new RunProcessHandler();
+            processHandler.addDefaultListener();
+            final ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+            processHandler.startNotify();
+            consoleView.attachToProcess(processHandler);
+            WebAppUtils.deployArtifactsToAppService(webapp, application.toFile(), true, processHandler);
         });
         AzureTaskManager.getInstance().runInModal(task);
     }

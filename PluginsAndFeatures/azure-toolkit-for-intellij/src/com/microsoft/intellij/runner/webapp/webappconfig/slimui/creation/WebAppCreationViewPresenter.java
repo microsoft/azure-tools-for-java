@@ -95,11 +95,7 @@ public class WebAppCreationViewPresenter<V extends WebAppCreationMvpView> extend
      * Load pricing tier from model.
      */
     public void onLoadPricingTier() {
-        try {
-            getMvpView().fillPricingTier(AzureMvpModel.getInstance().listPricingTier());
-        } catch (IllegalAccessException e) {
-            errorHandler(CANNOT_LIST_PRICING_TIER, e);
-        }
+        getMvpView().fillPricingTier(AzureMvpModel.getInstance().listPricingTier());
     }
 
     /**

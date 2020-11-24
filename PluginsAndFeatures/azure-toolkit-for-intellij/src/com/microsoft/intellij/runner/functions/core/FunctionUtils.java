@@ -46,7 +46,9 @@ import com.microsoft.azure.common.function.configurations.FunctionConfiguration;
 import com.microsoft.azure.functions.annotation.StorageAccount;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import com.microsoft.azure.management.appservice.OperatingSystem;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
+import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import com.microsoft.azuretools.utils.JsonUtils;
 import com.microsoft.azuretools.utils.WebAppUtils;
 import com.sun.tools.sjavac.Log;
@@ -99,11 +101,15 @@ public class FunctionUtils {
                functionApp.linuxFxVersion().split("|")[1];
     }
 
-    public static File getTempStagingFolder() throws IOException {
-        final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
-        final File file = path.toFile();
-        FileUtils.forceDeleteOnExit(file);
-        return file;
+    public static File getTempStagingFolder() {
+        try {
+            final Path path = Files.createTempDirectory(AZURE_FUNCTIONS);
+            final File file = path.toFile();
+            FileUtils.forceDeleteOnExit(file);
+            return file;
+        } catch (IOException e) {
+            throw new AzureToolkitRuntimeException("failed to get temp staging folder", e);
+        }
     }
 
     public static void cleanUpStagingFolder(File stagingFolder) {
@@ -180,7 +186,7 @@ public class FunctionUtils {
                                                   ContainerUtil.immutableList(FunctionUtils.AZURE_FUNCTION_ANNOTATION_CLASS));
     }
 
-    public static final Path createTempleHostJson() {
+    public static @Nullable Path createTempleHostJson() {
         try {
             final File result = File.createTempFile("host", ".json");
             FileUtils.write(result, DEFAULT_HOST_JSON, Charset.defaultCharset());

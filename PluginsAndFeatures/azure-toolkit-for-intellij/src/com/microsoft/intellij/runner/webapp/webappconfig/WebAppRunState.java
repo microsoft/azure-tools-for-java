@@ -29,6 +29,7 @@ import com.microsoft.azure.common.exceptions.AzureExecutionException;
 import com.microsoft.azure.management.appservice.DeploymentSlot;
 import com.microsoft.azure.management.appservice.WebApp;
 import com.microsoft.azure.management.appservice.WebAppBase;
+import com.microsoft.azure.toolkit.lib.common.exception.AzureToolkitRuntimeException;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperation;
 import com.microsoft.azuretools.core.mvp.model.webapp.AzureWebAppMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
@@ -196,7 +197,8 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
                 AzureArtifactManager.getInstance(project).getAzureArtifactById(webAppConfiguration.getAzureArtifactType(),
                                                                                webAppConfiguration.getArtifactIdentifier());
         if (Objects.isNull(azureArtifact)) {
-            throw new AzureExecutionException(String.format("The artifact '%s' you selected doesn't exists", webAppConfiguration.getArtifactIdentifier()));
+            final String error = String.format("The artifact '%s' you selected doesn't exists", webAppConfiguration.getArtifactIdentifier());
+            throw new AzureExecutionException(error);
         }
         return AzureArtifactManager.getInstance(project).getFileForDeployment(azureArtifact);
     }
@@ -206,13 +208,14 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         params = {"@webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
-    private WebApp createWebApp(@NotNull RunProcessHandler processHandler) throws Exception {
+    private WebApp createWebApp(@NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("webapp.deploy.hint.creatingWebApp"));
         try {
             return AzureWebAppMvpModel.getInstance().createWebApp(webAppSettingModel);
         } catch (Exception e) {
-            processHandler.setText(message("webapp.deploy.error.noWebApp"));
-            throw new Exception(String.format(message("webapp.deploy.error.createFailed"), e.getMessage()));
+            final String error = message("webapp.deploy.error.noWebApp");
+            processHandler.setText(error);
+            throw new AzureToolkitRuntimeException(error, e);
         }
     }
 
@@ -221,13 +224,14 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
         params = {"@webAppConfiguration.getName()"},
         type = AzureOperation.Type.SERVICE
     )
-    private DeploymentSlot createDeploymentSlot(@NotNull RunProcessHandler processHandler) throws Exception {
+    private DeploymentSlot createDeploymentSlot(@NotNull RunProcessHandler processHandler) {
         processHandler.setText(message("webapp.deploy.hint.creatingDeploymentSlot"));
         try {
             return AzureWebAppMvpModel.getInstance().createDeploymentSlot(webAppSettingModel);
         } catch (Exception e) {
-            processHandler.setText(message("webapp.deploy.error.noWebApp"));
-            throw new Exception(String.format(message("webapp.deploy.error.createSlotFailed"), e.getMessage()));
+            final String error = message("webapp.deploy.error.noWebApp");
+            processHandler.setText(error);
+            throw new AzureToolkitRuntimeException(error, e);
         }
     }
 
