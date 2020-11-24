@@ -28,7 +28,6 @@ import com.microsoft.azuretools.sdkmanage.AzureManager;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -191,13 +190,9 @@ public class EventUtil {
 
     // Will collect error stack traces only if user signed in with Azure account
     public static boolean isAbleToCollectErrorStacks() {
-        try {
-            final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
-            return azureManager != null && azureManager.getEnvironment() != null &&
-                    ObjectUtils.equals(azureManager.getEnvironment().getAzureEnvironment(), Environment.GLOBAL.getAzureEnvironment());
-        } catch (IOException e) {
-            return false;
-        }
+        final AzureManager azureManager = AuthMethodManager.getInstance().getAzureManager();
+        return azureManager != null && azureManager.getEnvironment() != null &&
+            ObjectUtils.equals(azureManager.getEnvironment().getAzureEnvironment(), Environment.GLOBAL.getAzureEnvironment());
     }
 
     private static void logError(String serviceName, String operName, ErrorType errorType, Throwable e,

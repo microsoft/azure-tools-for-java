@@ -26,6 +26,9 @@ import com.intellij.openapi.diagnostic.ErrorReportSubmitter
 import com.intellij.openapi.diagnostic.IdeaLoggingEvent
 import com.intellij.openapi.diagnostic.SubmittedReportInfo
 import com.intellij.util.Consumer
+import com.microsoft.azuretools.telemetry.TelemetryConstants
+import com.microsoft.azuretools.telemetrywrapper.ErrorType
+import com.microsoft.azuretools.telemetrywrapper.EventUtil
 import java.awt.Component
 
 class MSErrorReportHandler : ErrorReportSubmitter() {
@@ -48,6 +51,7 @@ class MSErrorReportHandler : ErrorReportSubmitter() {
 
         githubIssue.report()
 
+        EventUtil.logError(TelemetryConstants.SYSTEM, TelemetryConstants.UNHANDLED_EXCEPTION, ErrorType.systemError, event.throwable, null, null);
         // TODO: Check if there is duplicated issue
 
         val reportInfo = SubmittedReportInfo(SubmittedReportInfo.SubmissionStatus.NEW_ISSUE)

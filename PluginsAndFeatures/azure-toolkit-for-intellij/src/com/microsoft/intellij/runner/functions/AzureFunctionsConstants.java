@@ -27,14 +27,15 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class AzureFunctionsConstants {
     public static final String DISPLAY_NAME = "Azure Functions";
     public static final String AZURE_FUNCTIONS_ICON = "azure-functions-small.png";
 
     public static final Map<String, String> HINT = new HashMap<String, String>() {{
-            put("AzureWebJobsStorage", "The Azure Functions runtime uses this storage account connection " +
-                    "string for all functions except for HTTP triggered functions.");
-            put("FUNCTIONS_WORKER_RUNTIME", "The language worker runtime to load in the function app.");
+            put("AzureWebJobsStorage", message("function.hint.azureWebJobsStorage"));
+            put("FUNCTIONS_WORKER_RUNTIME", message("function.hint.functionsWorkerRuntime"));
         }};
 
     public static String getAppSettingHint(String appSettingKey) {

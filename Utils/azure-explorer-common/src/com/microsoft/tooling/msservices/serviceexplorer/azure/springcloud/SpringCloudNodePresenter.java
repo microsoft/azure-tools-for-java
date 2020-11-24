@@ -29,14 +29,12 @@ import com.microsoft.azuretools.core.mvp.ui.base.MvpPresenter;
 import org.apache.commons.lang3.StringUtils;
 import rx.Observable;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SpringCloudNodePresenter<V extends SpringCloudNodeView> extends MvpPresenter<V> {
-    public void onRefreshSpringCloudServiceNode(final String subscriptionId, final String clusterId)
-            throws IOException {
+    public void onRefreshSpringCloudServiceNode(final String subscriptionId, final String clusterId) {
         final SpringCloudNodeView view = getMvpView();
         if (view != null) {
             final List<AppResourceInner> appList = AzureSpringCloudMvpModel.listAppsByClusterId(clusterId);

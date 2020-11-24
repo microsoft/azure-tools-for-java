@@ -23,7 +23,6 @@
 package com.microsoft.intellij.forms.function;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -40,6 +39,7 @@ import com.microsoft.azure.management.eventhub.EventHubConsumerGroup;
 import com.microsoft.azure.management.eventhub.EventHubNamespace;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.models.HasName;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.telemetry.TelemetryProperties;
@@ -54,7 +54,6 @@ import rx.schedulers.Schedulers;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -183,7 +182,7 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 Object selectedCron = cbCron.getSelectedItem();
                 if (selectedCron instanceof String && StringUtils.equals((CharSequence) selectedCron, "Customized Schedule")) {
-                    ApplicationManager.getApplication().invokeLater(() -> addTimer());
+                    AzureTaskManager.getInstance().runLater(() -> addTimer());
                 }
             }
         });
@@ -351,22 +350,18 @@ public class CreateFunctionForm extends DialogWrapper implements TelemetryProper
     private List<EventHubNamespace> eventHubNamespaces = null;
 
     private List<EventHubNamespace> getEventHubNameSpaces() {
-        try {
-            if (eventHubNamespaces == null) {
-                eventHubNamespaces = new ArrayList<>();
-                List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
-                for (Subscription subscriptionId : subs) {
-                    Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId.subscriptionId());
-                    PagedList<EventHubNamespace> pagedList = azure.eventHubNamespaces().list();
-                    pagedList.loadAll();
-                    eventHubNamespaces.addAll(pagedList);
-                    eventHubNamespaces.sort(Comparator.comparing(HasName::name));
-                }
+        if (eventHubNamespaces == null) {
+            eventHubNamespaces = new ArrayList<>();
+            final List<Subscription> subs = AzureMvpModel.getInstance().getSelectedSubscriptions();
+            for (final Subscription subscriptionId : subs) {
+                final Azure azure = AuthMethodManager.getInstance().getAzureClient(subscriptionId.subscriptionId());
+                final PagedList<EventHubNamespace> pagedList = azure.eventHubNamespaces().list();
+                pagedList.loadAll();
+                eventHubNamespaces.addAll(pagedList);
+                eventHubNamespaces.sort(Comparator.comparing(HasName::name));
             }
-            return eventHubNamespaces;
-        } catch (IOException e) {
-            return new ArrayList<>();
         }
+        return eventHubNamespaces;
     }
 
     private void fillTimerSchedule() {

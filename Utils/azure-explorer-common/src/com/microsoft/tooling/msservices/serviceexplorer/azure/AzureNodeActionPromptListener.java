@@ -22,6 +22,7 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure;
 
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
@@ -47,7 +48,7 @@ public abstract class AzureNodeActionPromptListener extends AzureNodeActionListe
     @Override
     protected Callable<Boolean> beforeAsyncActionPerformed() {
         return () -> {
-            DefaultLoader.getIdeHelper().invokeAndWait(() -> {
+            AzureTaskManager.getInstance().runAndWait(() -> {
                 final Component component = (azureNode == null || azureNode.getTree() == null) ? null : this.azureNode.getTree().getParent();
                 optionDialog = component == null ?
                         DefaultLoader.getUIHelper().showConfirmation(promptMessage, PROMPT_TITLE, PROMPT_OPTIONS, null) :

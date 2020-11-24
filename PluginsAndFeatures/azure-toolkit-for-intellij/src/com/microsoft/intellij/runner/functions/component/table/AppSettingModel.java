@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class AppSettingModel implements TableModel {
 
     private static final String[] TITLE = {"Key", "Value"};
@@ -42,8 +44,6 @@ public class AppSettingModel implements TableModel {
     private static final String AZURE_WEB_JOB_STORAGE_KEY = "AzureWebJobsStorage";
     private static final String FUNCTIONS_WORKER_RUNTIME_VALUE = "java";
     private static final String AZURE_WEB_JOB_STORAGE_VALUE = "";
-
-    public static final String REQUIRED_APP_SETTINGS_PROMOTION = "%s is a required parameter";
 
     private List<Pair<String, String>> appSettings = new ArrayList<>();
     private List<TableModelListener> tableModelListenerList = new ArrayList<>();
@@ -93,7 +93,7 @@ public class AppSettingModel implements TableModel {
     @Override
     public void setValueAt(Object value, int row, int col) {
         if (value != null && !(value instanceof String)) {
-            throw new IllegalArgumentException("Illegal value type, only String is supported");
+            throw new IllegalArgumentException(message("function.appSettings.validate.illegalType"));
         }
         while (row >= appSettings.size()) {
             appSettings.add(Pair.of("", ""));
@@ -121,7 +121,7 @@ public class AppSettingModel implements TableModel {
         }
         final Pair<String, String> target = appSettings.get(row);
         if (FUNCTIONS_WORKER_RUNTIME_KEY.equals(target.getKey()) || AZURE_WEB_JOB_STORAGE_KEY.equals(target.getKey())) {
-            throw new IllegalArgumentException(String.format(REQUIRED_APP_SETTINGS_PROMOTION, target.getKey()));
+            throw new IllegalArgumentException(String.format(message("function.appSettings.validate.requiredParameter"), target.getKey()));
         }
         appSettings.remove(row);
         fireTableChanged();

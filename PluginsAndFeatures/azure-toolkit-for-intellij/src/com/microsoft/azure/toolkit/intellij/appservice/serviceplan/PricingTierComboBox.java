@@ -30,6 +30,8 @@ import com.microsoft.azuretools.core.mvp.model.function.AzureFunctionMvpModel;
 import java.util.Collections;
 import java.util.List;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class PricingTierComboBox extends AzureComboBox<PricingTier> {
 
     private PricingTier defaultPricingTier = PricingTier.BASIC_B2;
@@ -50,7 +52,7 @@ public class PricingTierComboBox extends AzureComboBox<PricingTier> {
 
     @Override
     protected String getItemText(final Object item) {
-        return item == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ? "Consumption" : super.getItemText(item);
+        return item == AzureFunctionMvpModel.CONSUMPTION_PRICING_TIER ? message("appService.pricingTier.consumption") : super.getItemText(item);
     }
 
     @NotNull

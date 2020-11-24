@@ -26,7 +26,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.JBMenuItem;
 import com.intellij.openapi.ui.JBPopupMenu;
@@ -40,6 +39,8 @@ import com.microsoft.azure.management.appplatform.v2019_05_01_preview.*;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.AppResourceInner;
 import com.microsoft.azure.management.appplatform.v2019_05_01_preview.implementation.DeploymentResourceInner;
 import com.microsoft.azure.management.resources.Subscription;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.core.mvp.model.AzureMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.AzureSpringCloudMvpModel;
 import com.microsoft.azuretools.core.mvp.model.springcloud.SpringCloudIdHelper;
@@ -359,20 +360,19 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                                                 new String[]{"Yes", "No"},
                                                                 null)) {
             freezeUI();
-            DefaultLoader.getIdeHelper().runInBackground(null, actionName, false, true, String.format("%s app '%s'", actionName, this.appName),
-                () -> {
-                    EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
-                        action.accept(changes);
-                    });
-                    refreshData();
+            final String title = String.format("%s app '%s'", actionName, this.appName);
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(null, title, false, () -> {
+                EventUtil.executeWithLog(TelemetryConstants.SPRING_CLOUD, operation, logOperation -> {
+                    action.accept(changes);
                 });
-
+                refreshData();
+            }));
         }
     }
 
     private void initUI() {
         // Todo: find better way to align UI labels
-        ApplicationManager.getApplication().invokeLater(() -> {
+        AzureTaskManager.getInstance().runLater(() -> {
             Dimension size = lblInstances.getPreferredSize();
             size.setSize(lblPersistentStorage.getWidth(), size.getHeight());
             lblInstances.setPreferredSize(size);
@@ -563,7 +563,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
                                              ? AzureSpringCloudMvpModel.getAppDeployment(appId, app.properties().activeDeploymentName()) : null;
             testKeyCache.refresh(clusterId);
             return Pair.of(app, deploy);
-        }).subscribeOn(Schedulers.io()).subscribe(pair -> ApplicationManager.getApplication().invokeLater(
+        }).subscribeOn(Schedulers.io()).subscribe(pair -> AzureTaskManager.getInstance().runLater(
             () -> this.prepareViewModel(pair.getLeft(), pair.getRight())));
     }
 
@@ -645,14 +645,13 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             deploymentResourceInner = AzureSpringCloudMvpModel
                     .updateProperties(appId, appResourceInner.properties().activeDeploymentName(), deploymentResourceProperties);
 
-            ApplicationManager.getApplication().invokeLater(() ->
+            AzureTaskManager.getInstance().runLater(() ->
                     PluginUtil.showInfoNotificationProject(project, "Update successfully", "Update app configuration "
                             + "successfully"));
             refreshData();
 
         } catch (Exception e) {
-            ApplicationManager.getApplication().invokeLater(() ->
-                                                                    PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
+            AzureTaskManager.getInstance().runLater(() -> PluginUtil.displayErrorDialog("Failed to update app configuration", e.getMessage()));
         }
     }
 
@@ -816,7 +815,7 @@ public class SpringCloudAppPropertyView extends BaseEditor {
             targetViewModel.setStatus(status.toString());
             this.updateModel(targetViewModel);
         } catch (AzureExecutionException e) {
-            ApplicationManager.getApplication().invokeLater(() -> {
+            AzureTaskManager.getInstance().runLater(() -> {
                 PluginUtil.showErrorNotificationProject(project, "Cannot binding data to Spring Cloud property view.", e.getMessage());
             });
         }

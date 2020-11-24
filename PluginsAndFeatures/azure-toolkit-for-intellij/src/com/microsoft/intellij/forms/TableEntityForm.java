@@ -219,33 +219,6 @@ public class TableEntityForm extends AzureDialogWrapper {
 
             properties.put(name, property);
         }
-
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, tableEntity == null ? "Creating entity" : "Updating entity", false) {
-            @Override
-            public void run(@NotNull ProgressIndicator progressIndicator) {
-                progressIndicator.setIndeterminate(true);
-
-                /*try {
-                    if (tableEntity == null) {
-                        tableEntity = StorageClientSDKManager.getManager().createTableEntity(storageAccount,
-                                tableName,
-                                partitionKey,
-                                rowKey,
-                                properties);
-                    } else {
-                        tableEntity.getProperties().clear();
-                        tableEntity.getProperties().putAll(properties);
-                        tableEntity = StorageClientSDKManager.getManager().updateTableEntity(storageAccount, tableEntity);
-                    }
-
-                    onFinish.run();
-                } catch (AzureCmdException e) {
-                    String msg = "An error occurred while attempting to create entity." + "\n" + String.format(message("webappExpMsg"), e.getMessage());
-                    PluginUtil.displayErrorDialogAndLog(message("errTtl"), msg, e);
-                }*/
-            }
-        });
-
         dispose();
     }
 

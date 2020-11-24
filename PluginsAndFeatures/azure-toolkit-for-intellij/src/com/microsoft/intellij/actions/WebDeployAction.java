@@ -31,9 +31,9 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction;
 import com.microsoft.azuretools.ijidea.utility.AzureAnAction;
@@ -46,9 +46,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WebDeployAction extends AzureAnAction {
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
-    private static final String DIALOG_TITLE = "Deploy to Azure";
+public class WebDeployAction extends AzureAnAction {
 
     private final WebAppConfigurationType configType = WebAppConfigurationType.getInstance();
 
@@ -62,7 +62,7 @@ public class WebDeployAction extends AzureAnAction {
             if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), module.getProject())) {
                 return true;
             }
-            ApplicationManager.getApplication().invokeLater(() -> runConfiguration(module));
+            AzureTaskManager.getInstance().runLater(() -> runConfiguration(module));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,7 +92,7 @@ public class WebDeployAction extends AzureAnAction {
                     String.format("%s: %s:%s", factory.getName(), project.getName(), module.getName()),
                     factory);
         }
-        if (RunDialog.editConfiguration(project, settings, DIALOG_TITLE, DefaultRunExecutor.getRunExecutorInstance())) {
+        if (RunDialog.editConfiguration(project, settings, message("webapp.deploy.configuration.title"), DefaultRunExecutor.getRunExecutorInstance())) {
             List<BeforeRunTask> tasks = new ArrayList<>(manager.getBeforeRunTasks(settings.getConfiguration()));
             manager.addConfiguration(settings, false, tasks, false);
             manager.setSelectedConfiguration(settings);

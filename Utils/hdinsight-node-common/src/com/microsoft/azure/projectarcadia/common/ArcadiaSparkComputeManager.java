@@ -42,7 +42,6 @@ import org.apache.http.NameValuePair;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -69,13 +68,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
 
     @Nullable
     public AzureManager getAzureManager() {
-        try {
-            return AuthMethodManager.getInstance().getAzureManager();
-        } catch (IOException e) {
-            log().info("Failed to get AzureManager. Error: " + e);
-
-            return null;
-        }
+        return AuthMethodManager.getInstance().getAzureManager();
     }
 
     public ArcadiaSparkComputeManager() {
@@ -159,7 +152,7 @@ public class ArcadiaSparkComputeManager implements ClusterContainer, ILogger {
         return Collections.singletonList(ODataParam.filter(SYNAPSE_WORKSPACE_FILTER));
     }
 
-        @NotNull
+    @NotNull
     private Observable<List<ArcadiaWorkSpace>> getWorkSpacesRequest() {
         AzureManager azureManager = getAzureManager();
         if (azureManager == null) {

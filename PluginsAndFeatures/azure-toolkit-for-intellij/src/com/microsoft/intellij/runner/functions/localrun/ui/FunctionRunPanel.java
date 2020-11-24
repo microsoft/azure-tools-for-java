@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration> {
 
     private JPanel settings;
@@ -88,7 +90,7 @@ public class FunctionRunPanel extends AzureSettingPanel<FunctionRunConfiguration
     @NotNull
     @Override
     public String getPanelName() {
-        return "Run Function";
+        return message("function.run.title");
     }
 
     @Override

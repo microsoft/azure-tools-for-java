@@ -20,32 +20,28 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azuretools.azurecommons.tasks;
+package com.microsoft.azure.toolkit.lib.common.exception;
 
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.azuretools.azurecommons.helpers.Nullable;
+import lombok.Getter;
 
-public interface CancellableTask {
-    interface CancellationHandle {
-        boolean isCancelled();
+@Getter
+public class AzureToolkitRuntimeException extends RuntimeException {
+    private final String action;
+
+    public AzureToolkitRuntimeException(String error) {
+        this(error, null, null);
     }
 
-    interface CancellableTaskHandle extends CancellationHandle {
-        boolean isFinished();
-
-        boolean isSuccessful();
-
-        @Nullable
-        Throwable getException();
-
-        void cancel();
+    public AzureToolkitRuntimeException(String error, Throwable cause) {
+        this(error, cause, null);
     }
 
-    void run(CancellationHandle cancellationHandle) throws Throwable;
+    public AzureToolkitRuntimeException(String error, String action) {
+        this(error, null, action);
+    }
 
-    void onCancel();
-
-    void onSuccess();
-
-    void onError(@NotNull Throwable exception);
+    public AzureToolkitRuntimeException(String error, Throwable cause, String action) {
+        super(error, cause);
+        this.action = action;
+    }
 }

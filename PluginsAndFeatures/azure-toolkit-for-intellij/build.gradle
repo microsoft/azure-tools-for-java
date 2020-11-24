@@ -36,14 +36,14 @@ javafx {
 
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
-apply plugin: 'checkstyle'
+//apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
 
-checkstyle {
-    toolVersion = '8.30'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
+//checkstyle {
+//    toolVersion = '8.30'
+//    configFile = new File('config/checkstyle/checkstyle.xml')
+//    showViolations = false
+//}
 
 findbugs {
     toolVersion = "3.0.1"
@@ -197,7 +197,7 @@ wrapper() {
 apply plugin: BundleBuildIDEAPlugin
 
 installIdea.dependsOn buildPlugin
-installIdea.dependsOn checkstyleMain
+//installIdea.dependsOn checkstyleMain
 
 patchPluginXml {
     sinceBuild = patchPluginXmlSinceBuild

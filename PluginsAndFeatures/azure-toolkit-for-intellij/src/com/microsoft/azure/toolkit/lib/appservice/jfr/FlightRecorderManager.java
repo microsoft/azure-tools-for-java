@@ -29,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class FlightRecorderManager {
     private static Map<String, FlightRecorderStarterBase> jfrStarters = new ConcurrentHashMap<>();
 
@@ -39,9 +41,7 @@ public class FlightRecorderManager {
             } else if (appService.operatingSystem() == OperatingSystem.WINDOWS) {
                 return new WindowFlightRecorderStarter(appService);
             } else {
-                throw new IllegalStateException(String.format("Unknown os for app service(%s):",
-                                                              appService.name(),
-                                                              appService.operatingSystem()));
+                throw new IllegalStateException(String.format(message("appService.jfr.error.unknownOs"), appService.name(), appService.operatingSystem()));
             }
         });
     }

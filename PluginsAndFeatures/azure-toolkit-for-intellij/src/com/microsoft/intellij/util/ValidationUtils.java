@@ -30,13 +30,14 @@ import com.microsoft.rest.RestException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
 
 public class ValidationUtils {
     private static final String PACKAGE_NAME_REGEX = "[a-zA-Z]([\\.a-zA-Z0-9_])*";
@@ -78,21 +79,16 @@ public class ValidationUtils {
             return;
         }
         if (StringUtils.isEmpty(subscriptionId)) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, "Subscription can not be null");
+            cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.empty"));
         }
         if (!isValidAppServiceName(appServiceName)) {
-            cacheAndThrow(appServiceNameValidationCache, cacheKey, "App service names only allow alphanumeric"
-                    + " characters, periods, underscores, hyphens and parenthesis and cannot end in a period.");
+            cacheAndThrow(appServiceNameValidationCache, cacheKey, message("appService.subscription.validate.invalidName"));
         }
-        try {
-            final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
-            final ResourceNameAvailabilityInner result = azure.appServices().inner()
-                    .checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
-            if (!result.nameAvailable()) {
-                cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
-            }
-        } catch (IOException e) {
-            // swallow exception when get azure client
+        final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
+        final ResourceNameAvailabilityInner result = azure.appServices().inner()
+                .checkNameAvailability(appServiceName, CheckNameResourceTypes.MICROSOFT_WEBSITES);
+        if (!result.nameAvailable()) {
+            cacheAndThrow(appServiceNameValidationCache, cacheKey, result.message());
         }
         appServiceNameValidationCache.put(cacheKey, null);
     }
@@ -103,45 +99,42 @@ public class ValidationUtils {
             return;
         }
         if (StringUtils.isEmpty(subscriptionId)) {
-            cacheAndThrow(resourceGroupValidationCache, subscriptionId, "Subscription can not be null");
+            cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.subscription.validate.empty"));
         }
         if (StringUtils.isEmpty(resourceGroup)) {
-            cacheAndThrow(resourceGroupValidationCache, subscriptionId, "Resource group name can not be null");
+            cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.empty"));
         }
         try {
             final Azure azure = AuthMethodManager.getInstance().getAzureManager().getAzure(subscriptionId);
             if (azure.resourceGroups().getByName(resourceGroup) != null) {
-                cacheAndThrow(resourceGroupValidationCache, subscriptionId, "A resource group with the "
-                        + "same name already exists in the selected subscription.");
+                cacheAndThrow(resourceGroupValidationCache, subscriptionId, message("appService.resourceGroup.validate.exist"));
             }
         } catch (RestException e) {
             throw new IllegalArgumentException(e.getMessage());
-        } catch (IOException e) {
-            // swallow exception when get azure client
         }
         resourceGroupValidationCache.put(subscriptionId, null);
     }
 
     public static void validateAppServicePlanName(String appServicePlan) {
         if (StringUtils.isEmpty(appServicePlan)) {
-            throw new IllegalArgumentException("App Service Plan name is required");
+            throw new IllegalArgumentException(message("appService.servicePlan.validate.empty"));
         } else if (!appServicePlan.matches(APP_SERVICE_PLAN_NAME_PATTERN)) {
-            throw new IllegalArgumentException(String.format("App Service Plan Name should match %s", APP_SERVICE_PLAN_NAME_PATTERN));
+            throw new IllegalArgumentException(String.format(message("appService.servicePlan.validate.invalidName"), APP_SERVICE_PLAN_NAME_PATTERN));
         }
     }
 
     public static void validateApplicationInsightsName(String applicationInsightsName) {
         if (StringUtils.isEmpty(applicationInsightsName)) {
-            throw new IllegalArgumentException("Application Insights name is required");
+            throw new IllegalArgumentException(message("function.applicationInsights.validate.empty"));
         }
         if (applicationInsightsName.length() > 255) {
-            throw new IllegalArgumentException("Application insights name cannot be longer than 255 characters.");
+            throw new IllegalArgumentException(message("function.applicationInsights.validate.length"));
         }
         if (applicationInsightsName.endsWith(".")) {
-            throw new IllegalArgumentException("Application insights name cannot end with '.'.");
+            throw new IllegalArgumentException(message("function.applicationInsights.validate.point"));
         }
         if (applicationInsightsName.endsWith(" ") || applicationInsightsName.startsWith(" ")) {
-            throw new IllegalArgumentException("Application insights name cannot begin or end with space character.");
+            throw new IllegalArgumentException(message("function.applicationInsights.validate.space"));
         }
         final Pattern pattern = Pattern.compile(APP_INSIGHTS_NAME_INVALID_CHARACTERS);
         final Matcher matcher = pattern.matcher(applicationInsightsName);
@@ -150,9 +143,8 @@ public class ValidationUtils {
             invalidCharacters.add(matcher.group());
         }
         if (!invalidCharacters.isEmpty()) {
-            throw new IllegalArgumentException(String.format(
-                    "The following characters are not valid in an application insights name: %s",
-                    String.join(",", invalidCharacters)));
+            throw new IllegalArgumentException(String.format(message("function.applicationInsights.validate.invalidChar"),
+                                                             String.join(",", invalidCharacters)));
         }
     }
 

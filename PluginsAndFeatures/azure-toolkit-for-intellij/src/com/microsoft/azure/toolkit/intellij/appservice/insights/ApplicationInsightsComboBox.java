@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static com.microsoft.intellij.ui.messages.AzureBundle.message;
+
 public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsightsConfig> {
 
     private Subscription subscription;
@@ -79,7 +81,7 @@ public class ApplicationInsightsComboBox extends AzureComboBox<ApplicationInsigh
     @Override
     protected ExtendableTextComponent.Extension getExtension() {
         return ExtendableTextComponent.Extension.create(
-                AllIcons.General.Add, "Create new application insights instance", this::onCreateApplicationInsights);
+                AllIcons.General.Add, message("appService.insights.create.tooltip"), this::onCreateApplicationInsights);
     }
 
     @Override

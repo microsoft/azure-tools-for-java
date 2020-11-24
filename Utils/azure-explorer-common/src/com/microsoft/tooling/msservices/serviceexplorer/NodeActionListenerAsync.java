@@ -24,9 +24,10 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
-import com.microsoft.tooling.msservices.components.DefaultLoader;
 
 import java.util.concurrent.Callable;
 
@@ -57,15 +58,14 @@ public abstract class NodeActionListenerAsync extends NodeActionListener {
         final SettableFuture<Void> future = SettableFuture.create();
 
         if (shouldRun) {
-            DefaultLoader.getIdeHelper().runInBackground(actionEvent.getAction().getNode().getProject(),
-                    progressMessage, true, false, null, () -> {
-                        try {
-                            actionPerformed(actionEvent);
-                            future.set(null);
-                        } catch (AzureCmdException e) {
-                            future.setException(e);
-                        }
-                    });
+            AzureTaskManager.getInstance().runInBackground(new AzureTask(actionEvent.getAction().getNode().getProject(), progressMessage, true, () -> {
+                try {
+                    actionPerformed(actionEvent);
+                    future.set(null);
+                } catch (AzureCmdException e) {
+                    future.setException(e);
+                }
+            }));
         } else {
             future.set(null);
         }

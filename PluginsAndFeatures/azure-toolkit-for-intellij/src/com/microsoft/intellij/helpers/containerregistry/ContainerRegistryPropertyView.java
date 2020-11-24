@@ -25,9 +25,6 @@ package com.microsoft.intellij.helpers.containerregistry;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.util.Comparing;
@@ -39,6 +36,8 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import com.microsoft.azure.management.containerregistry.Registry;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTask;
+import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.util.Utils;
 import com.microsoft.azuretools.core.mvp.model.container.ContainerRegistryMvpModel;
 import com.microsoft.azuretools.core.mvp.model.webapp.PrivateRegistryImageSetting;
@@ -50,25 +49,13 @@ import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.util.UIUtils;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.container.ContainerRegistryPropertyViewPresenter;
-
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -483,31 +470,28 @@ public class ContainerRegistryPropertyView extends BaseEditor implements Contain
     }
 
     private void pullImage() {
-        ProgressManager.getInstance().run(new Task.Backgroundable(null, PULL_IMAGE, true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                try {
-                    if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {
-                        throw new Exception(REPO_TAG_NOT_AVAILABLE);
-                    }
-                    final Registry registry = ContainerRegistryMvpModel.getInstance()
-                            .getContainerRegistry(subscriptionId, registryId);
-                    final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
-                            .createImageSettingWithRegistry(registry);
-                    final String image = String.format("%s:%s", currentRepo, currentTag);
-                    final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
-                    DockerClient docker = DefaultDockerClient.fromEnv().build();
-                    DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
-                            setting.getPassword(), fullImageTagName);
-                    String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
-                    UIUtils.showNotification(statusBar, message, MessageType.INFO);
-                    sendTelemetry(true, subscriptionId, null);
-                } catch (Exception e) {
-                    UIUtils.showNotification(statusBar, e.getMessage(), MessageType.ERROR);
-                    sendTelemetry(false, subscriptionId, e.getMessage());
+        AzureTaskManager.getInstance().runInBackground(new AzureTask(null, PULL_IMAGE, true, () -> {
+            try {
+                if (Utils.isEmptyString(currentRepo) || Utils.isEmptyString(currentTag)) {
+                    throw new Exception(REPO_TAG_NOT_AVAILABLE);
                 }
+                final Registry registry = ContainerRegistryMvpModel.getInstance()
+                                                                   .getContainerRegistry(subscriptionId, registryId);
+                final PrivateRegistryImageSetting setting = ContainerRegistryMvpModel.getInstance()
+                                                                                     .createImageSettingWithRegistry(registry);
+                final String image = String.format("%s:%s", currentRepo, currentTag);
+                final String fullImageTagName = String.format("%s/%s", registry.loginServerUrl(), image);
+                DockerClient docker = DefaultDockerClient.fromEnv().build();
+                DockerUtil.pullImage(docker, registry.loginServerUrl(), setting.getUsername(),
+                                     setting.getPassword(), fullImageTagName);
+                String message = String.format(IMAGE_PULL_SUCCESS, fullImageTagName);
+                UIUtils.showNotification(statusBar, message, MessageType.INFO);
+                sendTelemetry(true, subscriptionId, null);
+            } catch (Exception e) {
+                UIUtils.showNotification(statusBar, e.getMessage(), MessageType.ERROR);
+                sendTelemetry(false, subscriptionId, e.getMessage());
             }
-        });
+        }));
     }
 
     private void cleanTableData(DefaultTableModel model) {

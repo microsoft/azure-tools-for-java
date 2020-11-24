@@ -52,7 +52,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public String getCurrentUserId() throws IOException {
+    public String getCurrentUserId() {
         return delegateADAuthManager.getAccountEmail();
     }
 
@@ -66,7 +66,7 @@ public class AccessTokenAzureManager extends AzureManagerBase {
     }
 
     @Override
-    public void drop() throws IOException {
+    public void drop() {
         super.drop();
         delegateADAuthManager.signOut();
     }

@@ -35,9 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.file.Ap
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.base.WebAppBaseState;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.deploymentslot.DeploymentSlotModule;
-import org.apache.commons.lang.StringUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,38 +122,22 @@ public class WebAppNode extends WebAppBaseNode implements WebAppNodeView {
     }
 
     public void startWebApp() {
-        try {
-            webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        webAppNodePresenter.onStartWebApp(this.subscriptionId, this.webapp.id());
     }
 
     public void restartWebApp() {
-        try {
-            webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        webAppNodePresenter.onRestartWebApp(this.subscriptionId, this.webapp.id());
     }
 
     public void stopWebApp() {
-        try {
-            webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO: Error handling
-        }
+        webAppNodePresenter.onStopWebApp(this.subscriptionId, this.webapp.id());
     }
 
     @Override
     public List<NodeAction> getNodeActions() {
         boolean running = this.state == WebAppBaseState.RUNNING;
         getNodeActionByName(SSH_INTO).setEnabled(running);
-        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running && !StringUtils.containsIgnoreCase(this.webapp.linuxFxVersion(),
-                                                                                                          "DOCKER|"));
+        getNodeActionByName(PROFILE_FLIGHT_RECORDER).setEnabled(running);
         return super.getNodeActions();
     }
 

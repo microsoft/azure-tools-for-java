@@ -28,16 +28,13 @@ import com.microsoft.azuretools.azurecommons.helpers.AzureCmdException;
 import com.microsoft.azuretools.core.mvp.model.ResourceEx;
 import com.microsoft.azuretools.telemetry.TelemetryConstants;
 import com.microsoft.azuretools.telemetrywrapper.EventUtil;
-import com.microsoft.azuretools.utils.AzureUIRefreshCore;
-import com.microsoft.azuretools.utils.AzureUIRefreshEvent;
-import com.microsoft.azuretools.utils.AzureUIRefreshListener;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.Node;
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent;
 import com.microsoft.tooling.msservices.serviceexplorer.RefreshableNode;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.AzureNodeActionPromptListener;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.arm.deployments.DeploymentNode;
-import java.io.IOException;
+
 import java.util.List;
 
 public class ResourceManagementNode extends RefreshableNode implements ResourceManagementNodeView {
@@ -63,11 +60,7 @@ public class ResourceManagementNode extends RefreshableNode implements ResourceM
 
     @Override
     protected void refreshItems() throws AzureCmdException {
-        try {
-            rmNodePresenter.onModuleRefresh(sid, rgName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        rmNodePresenter.onModuleRefresh(sid, rgName);
     }
 
     @Override
