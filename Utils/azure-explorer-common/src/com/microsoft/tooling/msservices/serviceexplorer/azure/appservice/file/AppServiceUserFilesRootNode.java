@@ -59,7 +59,7 @@ public class AppServiceUserFilesRootNode extends AzureRefreshableNode {
     }
 
     @Override
-    @AzureOperation(value = "reload (log)files of web app[%s]", params = {"@app.name()"})
+    @AzureOperation(value = "reload (log)files of web app[%s]", params = {"@app.name()"}, type = AzureOperation.Type.ACTION)
     protected void refreshItems() {
         final AppServiceFileService service = this.getFileService();
         service.getFilesInDirectory(getRootPath()).stream()
