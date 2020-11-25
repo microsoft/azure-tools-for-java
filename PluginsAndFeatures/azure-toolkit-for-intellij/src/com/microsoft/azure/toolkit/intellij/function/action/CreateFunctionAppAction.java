@@ -70,12 +70,10 @@ public class CreateFunctionAppAction extends NodeActionListener {
     }
 
     @AzureOperation(
-        value = "create function app[%s, os=%s, rg=%s, sp=%s] in subscription[%s]",
+        value = "create function app[%s, rg=%s] in subscription[%s]",
         params = {
             "$config.getName()",
-            "$config.getPlatform().getOs()",
             "$config.getResourceGroup().name()",
-            "$config.getServicePlan().name()",
             "$config.getSubscription().displayName()"
         },
         type = AzureOperation.Type.SERVICE

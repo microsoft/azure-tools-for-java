@@ -46,12 +46,10 @@ public class WebAppService {
     }
 
     @AzureOperation(
-        value = "create web app[%s, os=%s, rg=%s, sp=%s] in subscription[%s]",
+        value = "create web app[%s, rg=%s] in subscription[%s]",
         params = {
             "$config.getName()",
-            "$config.getPlatform().getOs()",
             "$config.getResourceGroup().name()",
-            "$config.getServicePlan().name()",
             "$config.getSubscription().displayName()"
         },
         type = AzureOperation.Type.SERVICE

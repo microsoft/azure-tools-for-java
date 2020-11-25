@@ -28,14 +28,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
+import org.jtwig.environment.EnvironmentConfiguration;
+import org.jtwig.environment.EnvironmentConfigurationBuilder;
+import org.jtwig.functions.FunctionRequest;
+import org.jtwig.functions.SimpleJtwigFunction;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 public class AzureOperationUtils {
+    private static final Uri2NameFunction toName = new Uri2NameFunction();
+    public static final EnvironmentConfiguration jgConfig = EnvironmentConfigurationBuilder.configuration().functions().add(toName).and().build();
 
     public static AzureOperation getAnnotation(@NotNull AzureOperationRef ref) {
         final Method method = ref.getMethod();
@@ -54,10 +61,8 @@ public class AzureOperationUtils {
         final String[] paramNames = ref.getParamNames();
         final Object[] paramValues = ref.getParamValues();
         final Object targetInstance = ref.getInstance();
-        final String fixedExpression = StringUtils.substring(expression, 1);
-        final String parameterName = StringUtils.contains(expression, ".")
-                                     ? StringUtils.substring(fixedExpression, 0, StringUtils.indexOf(fixedExpression, "."))
-                                     : fixedExpression;
+        final String fixedExpression = StringUtils.substring(expression, 1).trim();
+        final String parameterName = fixedExpression.split("[\\s|.]")[0].trim();
         Object object = null;
         if (StringUtils.startsWith(expression, "$")) {
             // process parameter
@@ -84,9 +89,32 @@ public class AzureOperationUtils {
     }
 
     private static String interpretInline(String expr, Map<String, Object> variableMap) {
-        final JtwigTemplate template = JtwigTemplate.inlineTemplate(String.format("{{%s}}", expr));
+        final JtwigTemplate template = JtwigTemplate.inlineTemplate(String.format("{{%s}}", expr), jgConfig);
         final JtwigModel model = JtwigModel.newModel();
         variableMap.forEach(model::with);
         return template.render(model);
+    }
+
+    private static class Uri2NameFunction extends SimpleJtwigFunction {
+
+        @Override
+        public String name() {
+            return "uri_to_name";
+        }
+
+        @Override
+        public Object execute(FunctionRequest request) {
+            final String input = getInput(request);
+            if (Objects.nonNull(input) && input.contains("/")) {
+                final String[] parts = input.split("/");
+                return input.endsWith("/") ? parts[parts.length - 2] : parts[parts.length - 1];
+            }
+            return input;
+        }
+
+        private String getInput(FunctionRequest request) {
+            request.minimumNumberOfArguments(1).maximumNumberOfArguments(1);
+            return request.getEnvironment().getValueEnvironment().getStringConverter().convert(request.get(0));
+        }
     }
 }

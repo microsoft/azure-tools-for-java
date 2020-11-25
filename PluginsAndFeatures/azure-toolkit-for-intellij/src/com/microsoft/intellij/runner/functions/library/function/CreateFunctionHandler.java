@@ -87,8 +87,8 @@ public class CreateFunctionHandler {
     // region Create or update Azure Functions
 
     @AzureOperation(
-        value = "create function app[%s, rg=%s, sp=%s] in subscription[%s]",
-        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()", "@ctx.getAppServicePlanName()", "@ctx.getSubscription()"},
+        value = "create function app[%s, rg=%s] in subscription[%s]",
+        params = {"@ctx.getAppName()", "@ctx.getResourceGroup()", "@ctx.getSubscription()"},
         type = AzureOperation.Type.SERVICE
     )
     private FunctionApp createFunctionApp() {
