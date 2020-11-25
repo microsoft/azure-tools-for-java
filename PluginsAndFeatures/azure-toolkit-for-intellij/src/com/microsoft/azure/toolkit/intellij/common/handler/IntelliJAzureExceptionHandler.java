@@ -69,6 +69,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
 
     @Override
     protected void onHandleException(final Throwable throwable, final @Nullable AzureExceptionAction[] actions) {
+        // todo: detect foreground/background from call stack
         onHandleException(throwable, false, actions);
     }
 
