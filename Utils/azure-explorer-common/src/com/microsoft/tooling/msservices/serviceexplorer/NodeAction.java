@@ -25,7 +25,6 @@ package com.microsoft.tooling.msservices.serviceexplorer;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +60,7 @@ public class NodeAction {
                 listener.beforeActionPerformed(event);
                 Futures.addCallback(listener.actionPerformedAsync(event), new FutureCallback<Void>() {
                     @Override
-                    public void onSuccess(Void aVoid) {
+                    public void onSuccess(Void voidParameter) {
                         listener.afterActionPerformed(event);
                     }
 

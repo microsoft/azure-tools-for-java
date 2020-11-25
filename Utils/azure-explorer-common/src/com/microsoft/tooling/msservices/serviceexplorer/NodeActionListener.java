@@ -43,7 +43,6 @@ public abstract class NodeActionListener implements EventListener {
 
     protected void beforeActionPerformed(NodeActionEvent e) {
         // mark node as loading
-//        e.getAction().getNode().setLoading(true);
         sendTelemetry(e);
     }
 
@@ -133,6 +132,5 @@ public abstract class NodeActionListener implements EventListener {
 
     protected void afterActionPerformed(NodeActionEvent e) {
         // mark node as done loading
-//        e.getAction().getNode().setLoading(false);
     }
 }
