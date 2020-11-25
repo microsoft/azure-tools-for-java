@@ -157,12 +157,6 @@ public class WebAppOnLinuxDeployState extends AzureRunProfileState<WebApp> {
     }
 
     @Override
-    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
-    }
-
-    @Override
     protected void updateTelemetryMap(@NotNull Map<String, String> telemetryMap) {
         telemetryMap.put("SubscriptionId", deployModel.getSubscriptionId());
         telemetryMap.put("CreateNewApp", String.valueOf(deployModel.isCreatingNewWebAppOnLinux()));

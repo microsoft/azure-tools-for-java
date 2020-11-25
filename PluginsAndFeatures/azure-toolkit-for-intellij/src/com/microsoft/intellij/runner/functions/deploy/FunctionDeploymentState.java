@@ -22,7 +22,6 @@
 
 package com.microsoft.intellij.runner.functions.deploy;
 
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiMethod;
@@ -155,9 +154,8 @@ public class FunctionDeploymentState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected void onFail(String errMsg, @NotNull RunProcessHandler processHandler) {
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
+    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
+        super.onFail(error, processHandler);
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
     }
 

@@ -127,12 +127,6 @@ public class WebAppRunState extends AzureRunProfileState<WebAppBase> {
     }
 
     @Override
-    protected void onFail(@NotNull String errMsg, @NotNull RunProcessHandler processHandler) {
-        processHandler.println(errMsg, ProcessOutputTypes.STDERR);
-        processHandler.notifyComplete();
-    }
-
-    @Override
     protected String getDeployTarget() {
         return isDeployToSlot() ? "DeploymentSlot" : "WebApp";
     }

@@ -37,7 +37,6 @@ import com.microsoft.azure.toolkit.lib.common.handler.AzureExceptionHandler;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationRef;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationUtils;
 import com.microsoft.azure.toolkit.lib.common.operation.AzureOperationsContext;
-import com.microsoft.azure.toolkit.lib.common.task.AzureTaskManager;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
 import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import org.apache.commons.collections.CollectionUtils;
@@ -125,7 +124,7 @@ public class IntelliJAzureExceptionHandler extends AzureExceptionHandler {
                 }
             });
         }
-        AzureTaskManager.getInstance().runLater(() -> Notifications.Bus.notify(notification, project));
+        Notifications.Bus.notify(notification, project);
     }
 
     private String convertListToHtml(List<String> stringList) {

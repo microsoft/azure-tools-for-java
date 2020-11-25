@@ -371,12 +371,9 @@ public class FunctionRunState extends AzureRunProfileState<FunctionApp> {
     }
 
     @Override
-    protected void onFail(String errMsg, RunProcessHandler processHandler) {
+    protected void onFail(@NotNull Throwable error, @NotNull RunProcessHandler processHandler) {
+        super.onFail(error, processHandler);
         stopProcessIfAlive(process);
-        if (!processHandler.isProcessTerminated()) {
-            processHandler.println(errMsg, ProcessOutputTypes.STDERR);
-            processHandler.notifyComplete();
-        }
         FunctionUtils.cleanUpStagingFolder(stagingFolder);
     }
 
